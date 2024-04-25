@@ -31,6 +31,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.enumerations import SimulationTypes
 
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
@@ -334,7 +335,7 @@ class DiagramsMain(CompiledArraysMain):
 
         if current_study == sim.PowerFlowDriver.tpe.value:
             if t_idx is None:
-                results: sim.PowerFlowResults = self.session.get_results(sim.SimulationTypes.PowerFlow_run)
+                results: sim.PowerFlowResults = self.session.get_results(SimulationTypes.PowerFlow_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -370,7 +371,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
-                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(sim.SimulationTypes.PowerFlowTimeSeries_run)
+                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(SimulationTypes.PowerFlowTimeSeries_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -404,7 +405,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             if t_idx is None:
                 results: sim.ContinuationPowerFlowResults = self.session.get_results(
-                    sim.SimulationTypes.ContinuationPowerFlow_run
+                    SimulationTypes.ContinuationPowerFlow_run
                 )
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
@@ -437,7 +438,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
             if t_idx is None:
                 results: sim.StochasticPowerFlowResults = self.session.get_results(
-                    sim.SimulationTypes.StochasticPowerFlow)
+                    SimulationTypes.StochasticPowerFlow)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -469,7 +470,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             if t_idx is None:
-                results: sim.ShortCircuitResults = self.session.get_results(sim.SimulationTypes.ShortCircuit_run)
+                results: sim.ShortCircuitResults = self.session.get_results(SimulationTypes.ShortCircuit_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
@@ -500,7 +501,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             if t_idx is None:
-                results: sim.OptimalPowerFlowResults = self.session.get_results(sim.SimulationTypes.OPF_run)
+                results: sim.OptimalPowerFlowResults = self.session.get_results(SimulationTypes.OPF_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -533,7 +534,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if t_idx is not None:
                 results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
-                    sim.SimulationTypes.OPFTimeSeries_run
+                    SimulationTypes.OPFTimeSeries_run
                 )
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
@@ -565,7 +566,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.LinearAnalysisDriver.tpe.value:
             if t_idx is None:
-                results: sim.LinearAnalysisResults = self.session.get_results(sim.SimulationTypes.LinearAnalysis_run)
+                results: sim.LinearAnalysisResults = self.session.get_results(SimulationTypes.LinearAnalysis_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -595,7 +596,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
-                    sim.SimulationTypes.LinearAnalysis_TS_run)
+                    SimulationTypes.LinearAnalysis_TS_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -624,7 +625,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if t_idx is None:
                 results: sim.ContingencyAnalysisResults = self.session.get_results(
-                    sim.SimulationTypes.ContingencyAnalysis_run)
+                    SimulationTypes.ContingencyAnalysis_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -652,7 +653,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
-                    sim.SimulationTypes.ContingencyAnalysisTS_run)
+                    SimulationTypes.ContingencyAnalysisTS_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -680,7 +681,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
             if t_idx is None:
-                results = self.session.get_results(sim.SimulationTypes.InputsAnalysis_run)
+                results = self.session.get_results(SimulationTypes.InputsAnalysis_run)
                 nbus = self.circuit.get_bus_number()
                 nbr = self.circuit.get_branch_number()
                 bus_active = [bus.active for bus in self.circuit.buses]

@@ -803,7 +803,7 @@ class SchematicWidget(QSplitter):
         :return: BusBarGraphicItem
         """
 
-        graphic_object = BusBarGraphicItem(editor=self, node=node, x=x, y=y, h=h, w=w)
+        graphic_object = BusBarGraphicItem(editor=self, busbar=node, x=x, y=y, h=h, w=w)
         return graphic_object
 
     def set_data(self, circuit: MultiCircuit, diagram: SchematicDiagram):
@@ -1380,7 +1380,6 @@ class SchematicWidget(QSplitter):
         self.add_to_scene(self.started_branch)
 
         port.setZValue(0)
-        # port.process_callbacks(port.parent.pos() + port.pos())
 
         return self.started_branch
 
@@ -1416,18 +1415,28 @@ class SchematicWidget(QSplitter):
             self.displacement = self.newCenterPos - self.startPos
             self.editor_graphics_view.setDragMode(QGraphicsView.DragMode.NoDrag)
 
-    def create_line(self, bus_from: Bus, bus_to: Bus, from_port: BarTerminalItem, to_port: BarTerminalItem):
+    def create_line(self,
+                    from_port: BarTerminalItem,
+                    to_port: BarTerminalItem,
+                    bus_from: Union[None, Bus] = None,
+                    bus_to: Union[None, Bus] = None,
+                    cn_from: Union[None, ConnectivityNode] = None,
+                    cn_to: Union[None, ConnectivityNode] = None):
         """
 
-        :param bus_from:
-        :param bus_to:
         :param from_port:
         :param to_port:
+        :param bus_from:
+        :param bus_to:
+        :param cn_from:
+        :param cn_to:
         :return:
         """
         name = 'Line ' + str(len(self.circuit.lines) + 1)
         obj = Line(bus_from=bus_from,
                    bus_to=bus_to,
+                   cn_from=cn_from,
+                   cn_to=cn_to,
                    name=name)
 
         graphic_object = LineGraphicItem(from_port=from_port,
@@ -1689,7 +1698,7 @@ class SchematicWidget(QSplitter):
                                 )
 
                                 tr3_graphic_object.set_connection(i, bus, winding_graphics)
-                                tr3_graphic_object.update_conn()
+                                tr3_graphic_object.update_conn()  # create winding
 
                         elif self.started_branch.connected_between_bus_and_tr3():
 
@@ -1761,6 +1770,62 @@ class SchematicWidget(QSplitter):
 
                             self.create_line(bus_from=bus,
                                              bus_to=fn_bus,
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_bus_and_cn():
+
+                            self.create_line(bus_from=self.started_branch.get_bus_from(),
+                                             cn_to=self.started_branch.get_cn_to(),
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_cn_and_bus():
+
+                            self.create_line(bus_to=self.started_branch.get_bus_to(),
+                                             cn_from=self.started_branch.get_cn_from(),
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_cn():
+
+                            self.create_line(cn_from=self.started_branch.get_cn_from(),
+                                             cn_to=self.started_branch.get_cn_to(),
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_busbar_and_bus():
+
+                            self.create_line(cn_from=self.started_branch.get_busbar_from().cn,
+                                             bus_to=self.started_branch.get_bus_to(),
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_bus_and_busbar():
+
+                            self.create_line(bus_from=self.started_branch.get_bus_from(),
+                                             cn_to=self.started_branch.get_busbar_to().cn,
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_busbar_and_cn():
+
+                            self.create_line(cn_from=self.started_branch.get_busbar_from().cn,
+                                             cn_to=self.started_branch.get_cn_to(),
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_cn_and_busbar():
+
+                            self.create_line(cn_from=self.started_branch.get_cn_from(),
+                                             cn_to=self.started_branch.get_busbar_to().cn,
+                                             from_port=self.started_branch.get_terminal_from(),
+                                             to_port=self.started_branch.get_terminal_to())
+
+                        elif self.started_branch.connected_between_busbar():
+
+                            self.create_line(cn_from=self.started_branch.get_busbar_from().cn,
+                                             cn_to=self.started_branch.get_busbar_to().cn,
                                              from_port=self.started_branch.get_terminal_from(),
                                              to_port=self.started_branch.get_terminal_to())
 

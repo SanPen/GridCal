@@ -15,12 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-import numpy as np
-from typing import Union, TYPE_CHECKING
-from PySide6 import QtWidgets, QtCore, QtGui
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QPainterPath
-from PySide6.QtWidgets import QGraphicsScene, QGraphicsLineItem, QGraphicsPathItem
+from typing import TYPE_CHECKING
 
 from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 from GridCalEngine.Devices.types import BRANCH_TYPES

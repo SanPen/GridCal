@@ -42,7 +42,7 @@ class Segment(QGraphicsLineItem):
         self.update_endings()
         self.needsUpdate = True
 
-    def set_line_color(self, color):
+    def set_line_color(self, color: QColor) -> None:
         """
 
         :param color:
@@ -54,7 +54,7 @@ class Segment(QGraphicsLineItem):
         pen.setColor(color)  # Set the color
         self.setPen(pen)
 
-    def update_endings(self):
+    def update_endings(self) -> None:
         """
         Update the endings of this segment
         """

@@ -16,8 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
+from PySide6.QtWidgets import QApplication
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
@@ -74,7 +75,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
 
         # Create a pen with reduced line width
-        self.change_pen_width(0.5)
+        self.change_pen_width(1)
 
         # self.colorInner = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         # self.colorBorder = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -89,7 +90,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.needsUpdateFirst = True
         self.needsUpdateSecond = True
 
-    def updateRealPos(self):
+    def updateRealPos(self) -> None:
         """
 
         :return:
@@ -150,21 +151,23 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
 
-    def hoverEnterEvent(self, event):
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
         self.hovered = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
+        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
-    def hoverLeaveEvent(self, event):
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse leaves the item.
         """
         self.hovered = False
         self.setDefaultColor()
+        QApplication.instance().restoreOverrideCursor()
 
-    def setNodeColor(self, inner_color=None, border_color=None):
+    def setNodeColor(self, inner_color: QColor, border_color: QColor = None) -> None:
         """
 
         :param inner_color:
@@ -180,7 +183,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
             pen.setColor(border_color)
             self.setPen(pen)
 
-    def setDefaultColor(self):
+    def setDefaultColor(self) -> None:
         """
 
         :return:
@@ -188,7 +191,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         # Example: color assignment
         self.setNodeColor(self.colorInner, self.colorBorder)
 
-    def getPos(self):
+    def getPos(self) -> QPointF:
         """
 
         :return:

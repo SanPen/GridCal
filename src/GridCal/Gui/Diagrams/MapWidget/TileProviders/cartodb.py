@@ -44,16 +44,16 @@ class CartoDbTiles(Tiles):
         self.level = min(self.levels)
         self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y = self.GetInfo(self.level)
 
-    def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
+    def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """
         Convert geo to tile fractional coordinates for level in use.
         geo  tuple of geo coordinates (xgeo, ygeo)
         Note that we assume the point *is* on the map!
         Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
-        lat_rad = math.radians(ygeo)
+        lat_rad = math.radians(latitude)
         n = 2.0 ** self.level
-        xtile = (xgeo + 180.0) / 360.0 * n
+        xtile = (longitude + 180.0) / 360.0 * n
         ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n
 
         return xtile, ytile
@@ -67,8 +67,8 @@ class CartoDbTiles(Tiles):
         """
 
         n = 2.0 ** self.level
-        xgeo = xtile / n * 360.0 - 180.0
+        longitude = xtile / n * 360.0 - 180.0
         yrad = math.atan(math.sinh(math.pi * (1 - 2 * ytile / n)))
-        ygeo = math.degrees(yrad)
+        latitude = math.degrees(yrad)
 
-        return xgeo, ygeo
+        return longitude, latitude

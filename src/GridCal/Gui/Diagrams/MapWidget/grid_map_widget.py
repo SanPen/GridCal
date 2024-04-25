@@ -165,9 +165,16 @@ class GridMapWidget(MapWidget):
         :param y:
         :return:
         """
+
+        # transform = 180 / np.pi
+        # lat = np.degrees(2 * np.arctan(np.exp(y / (self.devY * transform))) - np.pi / 2)
+        # lon = np.degrees(x / (self.devX * transform))
+
+        # lon, lat = self.view_to_geo(xview=x, yview=y)
+
         lat = - y / self.devY
-        long = x / self.devX
-        return lat, long
+        lon = x / self.devX
+        return lat, lon
 
     def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
         """
@@ -176,8 +183,16 @@ class GridMapWidget(MapWidget):
         :param lon:
         :return:
         """
+        # transform = 180 / np.pi
+        # lat_rad = np.radians(lat)
+        # y = -self.devY * transform * np.log(np.tan(np.pi / 4 + lat_rad / 2))
+        # x = self.devX * transform * np.radians(lon)
+
         x = lon * self.devX
         y = -lat * self.devY
+
+        # x, y = self.geo_to_view(longitude=lon, latitude=lat)
+
         return x, y
 
     def update_diagram_element(self,
