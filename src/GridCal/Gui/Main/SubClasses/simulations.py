@@ -19,7 +19,8 @@ from collections import OrderedDict
 from typing import List, Tuple, Dict, Union
 import os
 import numpy as np
-# GUI importswa
+
+# GUI imports
 from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -36,6 +37,7 @@ from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
@@ -1158,8 +1160,8 @@ class SimulationsMain(TimeEventsMain):
                 threshold = self.ui.atcThresholdSpinBox.value()
                 max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
-                compatible_areas, lst_from, lst_to, lst_br, \
-                    lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
+                (compatible_areas, lst_from, lst_to, lst_br,
+                 lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
 
                 if not compatible_areas:
                     return
@@ -1509,13 +1511,15 @@ class SimulationsMain(TimeEventsMain):
                             # lock the UI
                             self.LOCK()
 
-                            pf_drv.run_at(start_idx)  # TODO: inspect this
+                            nc_start = compile_numerical_circuit_at(circuit=self.circuit, t_idx=start_idx)
+                            nc_end = compile_numerical_circuit_at(circuit=self.circuit, t_idx=start_idx)
+                            pf_drv_start = sim.PowerFlowDriver(grid=self.circuit, options=pf_options)
+                            pf_drv_start.run()
 
                             # get the power Injections array to get the initial and end points
-                            Sprof = self.circuit.get_Sbus_prof()
-                            vc_inputs = sim.ContinuationPowerFlowInput(Sbase=Sprof[start_idx, :],
-                                                                       Vbase=pf_results.voltage,
-                                                                       Starget=Sprof[end_idx, :])
+                            vc_inputs = sim.ContinuationPowerFlowInput(Sbase=nc_start.Sbus,
+                                                                       Vbase=pf_drv_start.results.voltage,
+                                                                       Starget=nc_end.Sbus)
 
                             pf_options = self.get_selected_power_flow_options()
 
