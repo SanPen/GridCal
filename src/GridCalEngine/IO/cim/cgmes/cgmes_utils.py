@@ -1,26 +1,31 @@
 from typing import List, Tuple
 
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_consumer import EnergyConsumer
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator import LinearShuntCompensator
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_consumer import EnergyConsumer
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator import LinearShuntCompensator
+# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 from GridCalEngine.data_logger import DataLogger
 import numpy as np
 
 
-def get_slack_id(machines: List[SynchronousMachine]):
+def get_slack_id(machines):
+    """
+
+    @param machines: List[SynchronousMachine]
+    @return: ID of a Topological Node
+    """
     for m in machines:
         if m.referencePriority == 1:
             if not isinstance(m.Terminals, list):
@@ -31,7 +36,7 @@ def get_slack_id(machines: List[SynchronousMachine]):
 
 
 # region PowerTransformer
-def get_windings_number(power_transformer: PowerTransformer):
+def get_windings_number(power_transformer):
     """
     Get the number of windings
     :return: # number of associated windings
@@ -43,32 +48,32 @@ def get_windings_number(power_transformer: PowerTransformer):
         return 0
 
 
-def get_windings(power_transformer: PowerTransformer) -> List["PowerTransformerEnd"]:
-    """
-    Get list of windings in order of .endNumber
-    :return: list of winding objects
-    """
-    try:
-        windings_init: List[PowerTransformerEnd] = list(power_transformer.references_to_me['PowerTransformerEnd'])
+# def get_windings(power_transformer) -> List["PowerTransformerEnd"]:
+#     """
+#     Get list of windings in order of .endNumber
+#     :return: list of winding objects
+#     """
+#     try:
+#         windings_init: List[PowerTransformerEnd] = list(power_transformer.references_to_me['PowerTransformerEnd'])
+#
+#         # windings: List[PowerTransformerEnd] = list()
+#         # for winding in windings_init:
+#         #     if winding.endNumber == 1:
+#         #         windings.append(winding)
+#         # for winding in windings_init:
+#         #     if winding.endNumber == 2:
+#         #         windings.append(winding)
+#         # if len(windings_init) == 3:
+#         #     for winding in windings_init:
+#         #         if winding.endNumber == 3:
+#         #             windings.append(winding)
+#
+#         return sorted(windings_init, key=lambda x: x.endNumber)
+#     except KeyError:
+#         return list()
 
-        # windings: List[PowerTransformerEnd] = list()
-        # for winding in windings_init:
-        #     if winding.endNumber == 1:
-        #         windings.append(winding)
-        # for winding in windings_init:
-        #     if winding.endNumber == 2:
-        #         windings.append(winding)
-        # if len(windings_init) == 3:
-        #     for winding in windings_init:
-        #         if winding.endNumber == 3:
-        #             windings.append(winding)
 
-        return sorted(windings_init, key=lambda x: x.endNumber)
-    except KeyError:
-        return list()
-
-
-def get_pu_values_power_transformer(power_transformer: PowerTransformer, System_Sbase):
+def get_pu_values_power_transformer(power_transformer, System_Sbase):
     """
     Get the transformer p.u. values
     :return:
@@ -98,7 +103,7 @@ def get_pu_values_power_transformer(power_transformer: PowerTransformer, System_
     return R, X, G, B, R0, X0, G0, B0
 
 
-def get_pu_values_power_transformer3w(power_transformer: PowerTransformer, System_Sbase):
+def get_pu_values_power_transformer3w(power_transformer, System_Sbase):
     """
     Get the transformer p.u. values
     :return:
@@ -127,19 +132,19 @@ def get_pu_values_power_transformer3w(power_transformer: PowerTransformer, Syste
     return r12, r23, r31, x12, x23, x31
 
 
-def get_voltages(power_transformer: PowerTransformer):
+def get_voltages(power_transformer):
     """
 
     :return:
     """
     # todo: is it unnecessary? Referenced only in cimparser
     return [get_voltage_power_transformer_end(x) for x in
-            get_windings(power_transformer)]  # TODO logger?
+            list(power_transformer.PowerTransformerEnd)]  # TODO logger?
 
 
-def get_rate(power_transformer: PowerTransformer):
+def get_rate(power_transformer):
     rating = 0
-    for winding in get_windings(power_transformer):
+    for winding in list(power_transformer.PowerTransformerEnd):
         if winding.ratedS > rating:
             rating = winding.ratedS
 
@@ -149,7 +154,7 @@ def get_rate(power_transformer: PowerTransformer):
 # endregion
 
 # region PowerTransformerEnd
-def get_voltage_power_transformer_end(power_transformer_end: PowerTransformerEnd):
+def get_voltage_power_transformer_end(power_transformer_end):
     if power_transformer_end.ratedU > 0:
         return power_transformer_end.ratedU
     else:
@@ -159,7 +164,7 @@ def get_voltage_power_transformer_end(power_transformer_end: PowerTransformerEnd
             return None
 
 
-def get_pu_values_power_transformer_end(power_transformer_end: PowerTransformerEnd, Sbase_system=100):
+def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100):
     """
     Get the per-unit values of the equivalent PI model
     :return: R, X, Gch, Bch
@@ -207,7 +212,7 @@ def get_pu_values_power_transformer_end(power_transformer_end: PowerTransformerE
 # endregion
 
 # region ACLineSegment
-def get_voltage_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogger):
+def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger):
     if ac_line_segment.BaseVoltage is not None:
         return ac_line_segment.BaseVoltage.nominalVoltage
     else:
@@ -224,7 +229,7 @@ def get_voltage_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogg
             return None
 
 
-def get_pu_values_ac_line_segment(ac_line_segment: ACLineSegment, logger: DataLogger, Sbase: float = 100.0):
+def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: float = 100.0):
     """
     Get the per-unit values of the equivalent PI model
 
@@ -283,7 +288,7 @@ def get_rate_ac_line_segment():
 # endregion
 
 # region Shunt
-def get_voltage_shunt(shunt: LinearShuntCompensator, logger: DataLogger):
+def get_voltage_shunt(shunt, logger: DataLogger):
     if shunt.BaseVoltage is not None:
         return shunt.BaseVoltage.nominalVoltage
     elif shunt.nomU is not None:
@@ -302,7 +307,7 @@ def get_voltage_shunt(shunt: LinearShuntCompensator, logger: DataLogger):
             return None
 
 
-def get_values_shunt(shunt: LinearShuntCompensator,
+def get_values_shunt(shunt,
                      logger: DataLogger,
                      Sbase: float = 100.0):
     """
@@ -362,7 +367,7 @@ def get_values_shunt(shunt: LinearShuntCompensator,
 # endregion
 
 # region Terminal(acdc_terminal.ACDCTerminal)
-def get_voltage_terminal(terminal: Terminal, logger: DataLogger):
+def get_voltage_terminal(terminal, logger: DataLogger):
     """
     Get the voltage of this terminal
     :return: Voltage or None
@@ -376,37 +381,37 @@ def get_voltage_terminal(terminal: Terminal, logger: DataLogger):
 # endregion
 
 # region BusbarSection(IdentifiedObject)
-def get_topological_nodes_bus_bar(busbar_section: BusbarSection):
-    """
-    Get the associated TopologicalNode instances
-    :return: list of TopologicalNode instances
-    """
-    # todo: referenced only from cim16
-    try:
-        terms = busbar_section.references_to_me['Terminal']
-        return [TopologicalNode for term in terms]
-    except KeyError:
-        return list()
+# def get_topological_nodes_bus_bar(busbar_section):
+#     """
+#     Get the associated TopologicalNode instances
+#     :return: list of TopologicalNode instances
+#     """
+#     # todo: referenced only from cim16
+#     try:
+#         terms = busbar_section.references_to_me['Terminal']
+#         return [TopologicalNode for term in terms]
+#     except KeyError:
+#         return list()
 
 
-def get_topological_node_bus_bar(busbar_section: BusbarSection):
-    """
-    Get the first TopologicalNode found
-    :return: first TopologicalNode found
-    """
-    # todo: referenced only from cim16
-    try:
-        terms = busbar_section.references_to_me['Terminal']
-        for term in terms:
-            return TopologicalNode
-    except KeyError:
-        return list()
+# def get_topological_node_bus_bar(busbar_section: BusbarSection):
+#     """
+#     Get the first TopologicalNode found
+#     :return: first TopologicalNode found
+#     """
+#     # todo: referenced only from cim16
+#     try:
+#         terms = busbar_section.references_to_me['Terminal']
+#         for term in terms:
+#             return TopologicalNode
+#     except KeyError:
+#         return list()
 
 
 # endregion
 
 # region Dipole (IdentifiedObject)
-def get_topological_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["TopologicalNode", "TopologicalNode"]:
+def get_topological_nodes_dipole(identified_object) -> Tuple:
     """
     Get the TopologyNodes of this branch
     :return: (TopologyNodes, TopologyNodes) or (None, None)
@@ -426,19 +431,19 @@ def get_topological_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["
         return None, None
 
 
-def get_buses_dipole(identified_object: IdentifiedObject) -> Tuple["BusbarSection", "BusbarSection"]:
-    """
-    Get the associated bus
-    :return: (BusbarSection, BusbarSection) or (None, None)
-    """
-    # todo: not referenced
-    t1, t2 = get_topological_nodes_dipole(identified_object)
-    b1 = get_bus_topological_node(t1) if t1 is not None else None
-    b2 = get_bus_topological_node(t1) if t2 is not None else None
-    return b1, b2
+# def get_buses_dipole(identified_object) -> Tuple:
+#     """
+#     Get the associated bus
+#     :return: (BusbarSection, BusbarSection) or (None, None)
+#     """
+#     # todo: not referenced
+#     t1, t2 = get_topological_nodes_dipole(identified_object)
+#     b1 = get_bus_topological_node(t1) if t1 is not None else None
+#     b2 = get_bus_topological_node(t1) if t2 is not None else None
+#     return b1, b2
 
 
-def get_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["TopologicalNode", "TopologicalNode"]:
+def get_nodes_dipole(identified_object) -> Tuple:
     """
     Get the TopologyNodes of this branch
     :return: two TopologyNodes or nothing
@@ -461,7 +466,7 @@ def get_nodes_dipole(identified_object: IdentifiedObject) -> Tuple["TopologicalN
 # endregion
 
 # region MonoPole(ConductingEquipment)
-def get_topological_node_monopole(conducting_equipment: ConductingEquipment):
+def get_topological_node_monopole(conducting_equipment):
     """
     Get the TopologyNodes of this branch
     :return: two TopologyNodes or nothing
@@ -479,36 +484,36 @@ def get_topological_node_monopole(conducting_equipment: ConductingEquipment):
         return None
 
 
-def get_bus_monopole(conducting_equipment: ConductingEquipment):
-    """
-    Get the associated bus
-    :return:
-    """
-    tp = get_topological_node_monopole(conducting_equipment)
-    if tp is None:
-        return None
-    else:
-        return get_bus_topological_node(tp)  # todo: is it ok?
+# def get_bus_monopole(conducting_equipment):
+#     """
+#     Get the associated bus
+#     :return:
+#     """
+#     tp = get_topological_node_monopole(conducting_equipment)
+#     if tp is None:
+#         return None
+#     else:
+#         return get_bus_topological_node(tp)  # todo: is it ok?
 
 
-def get_dict(conducting_equipment: ConductingEquipment):
-    """
-    Get dictionary with the data
-    :return: Dictionary
-    """
-    tp = get_topological_node_monopole(conducting_equipment)
-    bus = get_bus_topological_node(tp) if tp is not None else None  # todo: is it ok?
-
-    d = conducting_equipment.get_dict()  # todo: check it
-    d['TopologicalNode'] = '' if tp is None else tp.uuid
-    d['BusbarSection'] = '' if bus is None else bus.uuid
-    return d
+# def get_dict(conducting_equipment):
+#     """
+#     Get dictionary with the data
+#     :return: Dictionary
+#     """
+#     tp = get_topological_node_monopole(conducting_equipment)
+#     bus = get_bus_topological_node(tp) if tp is not None else None  # todo: is it ok?
+#
+#     d = conducting_equipment.get_dict()  # todo: check it
+#     d['TopologicalNode'] = '' if tp is None else tp.uuid
+#     d['BusbarSection'] = '' if bus is None else bus.uuid
+#     return d
 
 
 # endregion
 
 # region ConformLoad, NonConformLoad(EnergyConsumer)
-def get_pq(energy_consumer: EnergyConsumer):
+def get_pq(energy_consumer):
     # todo: referenced only from cim16
     return energy_consumer.p, energy_consumer.q
 
@@ -516,7 +521,7 @@ def get_pq(energy_consumer: EnergyConsumer):
 # endregion
 
 # region TopologicalNode(IdentifiedObject):
-def get_nominal_voltage(topological_node: TopologicalNode, logger) -> float:
+def get_nominal_voltage(topological_node, logger) -> float:
     """
 
     :return:
@@ -535,42 +540,42 @@ def get_nominal_voltage(topological_node: TopologicalNode, logger) -> float:
         return 0.0
 
 
-def get_bus_topological_node(topological_node: TopologicalNode):
-    """
-    Get an associated BusBar, if any
-    :return: BusbarSection or None is not fond
-    """
-    try:
-        terms = topological_node.references_to_me['Terminal']
-        for term in terms:
-            if isinstance(ConductingEquipment, BusbarSection):  # TODO check the old code
-                return ConductingEquipment
-
-    except KeyError:
-        return None
+# def get_bus_topological_node(topological_node):
+#     """
+#     Get an associated BusBar, if any
+#     :return: BusbarSection or None is not fond
+#     """
+#     try:
+#         terms = topological_node.references_to_me['Terminal']
+#         for term in terms:
+#             if isinstance(ConductingEquipment, BusbarSection):  # TODO check the old code
+#                 return ConductingEquipment
+#
+#     except KeyError:
+#         return None
 
 
 # endregion
 
 # region Switch(DiPole, ConductingEquipment):
-def get_nodes(switch: Switch):
-    """
-    Get the TopologyNodes of this branch
-    :return: two TopologyNodes or nothing
-    """
-    # todo: not referenced
-    try:
-        terminals = list(switch.references_to_me['Terminal'])
-
-        if len(terminals) == 2:
-            n1 = TopologicalNode
-            n2 = TopologicalNode
-            return n1, n2
-        else:
-            return None, None
-
-    except KeyError:
-        return None, None
+# def get_nodes(switch):
+#     """
+#     Get the TopologyNodes of this branch
+#     :return: two TopologyNodes or nothing
+#     """
+#     # todo: not referenced
+#     try:
+#         terminals = list(switch.references_to_me['Terminal'])
+#
+#         if len(terminals) == 2:
+#             n1 = TopologicalNode
+#             n2 = TopologicalNode
+#             return n1, n2
+#         else:
+#             return None, None
+#
+#     except KeyError:
+#         return None, None
 
 
 # endregion
@@ -585,7 +590,7 @@ def check(logger: DataLogger):
 
 
 # region LoadResponseCharacteristic(IdentifiedObject)
-def check_load_response_characteristic(load_response_characteristic: LoadResponseCharacteristic, logger: DataLogger):
+def check_load_response_characteristic(load_response_characteristic, logger: DataLogger):
     """
     Check OCL rules
     :param load_response_characteristic:
@@ -674,13 +679,13 @@ def check_load_response_characteristic(load_response_characteristic: LoadRespons
 # endregion
 
 # region BaseVoltage(IdentifiedObject)
-def base_voltage_to_str(base_voltage: BaseVoltage):
+def base_voltage_to_str(base_voltage):
     return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
 
 
 # endregion
 
-def get_regulating_control(cgmes_elm: RegulatingCondEq,
+def get_regulating_control(cgmes_elm,
                            cgmes_enums,
                            logger: DataLogger):
 
