@@ -35,13 +35,9 @@ class CimExporter:
     def __init__(self, cgmes_circuit: CgmesCircuit):
         self.cgmes_circuit = cgmes_circuit
 
-
         current_directory = os.path.dirname(__file__)
 
         rdf_serialization = Graph()
-        # rdf_serialization.parse(source=os.path.join(current_directory,
-        #                                             os.path.join("export_docs", "RDFSSerialisation.ttl")),
-        #                         format="ttl")
 
         if cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
             rdf_serialization.parse(data=RDFS_serialization_2_4_15, format="ttl")
@@ -60,6 +56,37 @@ class CimExporter:
                 "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
                 "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
             }
+
+            self.enum_dict = dict()
+            self.about_dict = dict()
+            for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
+                if str(s_i).split("#")[1] == "RdfEnum":
+                    enum_list_dict = dict()
+                    for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
+                        enum_list_dict[str(o).split("#")[-1]] = str(o)
+                    if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
+                        self.enum_dict["EQ"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
+                        self.enum_dict["SV"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
+                        self.enum_dict["SSH"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
+                        self.enum_dict["TP"] = enum_list_dict
+                if str(s_i).split("#")[1] == "RdfAbout":
+                    about_list = list()
+                    for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
+                        about_list.append(str(o).split("#")[-1])
+                    if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
+                        self.about_dict["EQ"] = about_list
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
+                        self.about_dict["SV"] = about_list
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
+                        self.about_dict["SSH"] = about_list
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
+                        self.about_dict["TP"] = about_list
+
+            self.class_filters = {}
+            json_dict = json.loads(RDFS_INFO_2_4_15)
         elif cgmes_circuit.cgmes_version == CGMESVersions.v3_0_0:
             rdf_serialization.parse(data=RDFS_serialization_3_0_0, format="ttl")
 
@@ -77,40 +104,47 @@ class CimExporter:
                 "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
                 "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"]
             }
+            self.enum_dict = dict()
+            self.about_dict = dict()
+            for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
+                if str(s_i).split("#")[1] == "RdfEnum":
+                    enum_list_dict = dict()
+                    for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
+                        enum_list_dict[str(o).split("#")[-1]] = str(o)
+                    if str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0":
+                        self.enum_dict["EQ"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0":
+                        self.enum_dict["SV"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0":
+                        self.enum_dict["SSH"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/Topology-EU/3.0":
+                        self.enum_dict["TP"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0":
+                        self.enum_dict["SC"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/Operation-EU/3.0":
+                        self.enum_dict["OP"] = enum_list_dict
+                if str(s_i).split("#")[1] == "RdfAbout":
+                    about_list = list()
+                    for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
+                        about_list.append(str(o).split("#")[-1])
+                    if str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/CoreEquipment-EU/3.0":
+                        self.about_dict["EQ"] = about_list
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0":
+                        self.about_dict["SV"] = about_list
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0":
+                        self.about_dict["SSH"] = about_list
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/Topology-EU/3.0":
+                        self.about_dict["TP"] = about_list
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0":
+                        self.about_dict["SC"] = about_list
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/Operation-EU/3.0":
+                        self.about_dict["OP"] = about_list
+
+            self.class_filters = {}
+            json_dict = json.loads(RDFS_INFO_3_0_0)
         else:
             raise ValueError(f"CGMES format not supported {cgmes_circuit.cgmes_version}")
 
-        self.enum_dict = dict()
-        self.about_dict = dict()
-        for s_i, p_i, o_i in rdf_serialization.triples((None, RDF.type, RDFS.Class)):
-            if str(s_i).split("#")[1] == "RdfEnum":
-                enum_list_dict = dict()
-                for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
-                    enum_list_dict[str(o).split("#")[-1]] = str(o)
-                if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
-                    self.enum_dict["EQ"] = enum_list_dict
-                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
-                    self.enum_dict["SV"] = enum_list_dict
-                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
-                    self.enum_dict["SSH"] = enum_list_dict
-                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
-                    self.enum_dict["TP"] = enum_list_dict
-            if str(s_i).split("#")[1] == "RdfAbout":
-                about_list = list()
-                for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
-                    about_list.append(str(o).split("#")[-1])
-                if str(s_i).split("#")[0] == "http://entsoe.eu/CIM/EquipmentCore/3/1":
-                    self.about_dict["EQ"] = about_list
-                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/StateVariables/4/1":
-                    self.about_dict["SV"] = about_list
-                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/SteadyStateHypothesis/1/1":
-                    self.about_dict["SSH"] = about_list
-                elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
-                    self.about_dict["TP"] = about_list
-
-        self.class_filters = {}
-        with open(os.path.join(current_directory, "export_docs/rdfs_info_CGMES2415.json"), "r") as json_file:
-            json_dict = json.load(json_file)
         for class_name in self.cgmes_circuit.classes:
             self.class_filters[class_name] = {}
         for i, prop_name in enumerate(json_dict['Property-AttributeAssociation']):
@@ -143,7 +177,7 @@ class CimExporter:
         with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
             for prof in profiles_to_export:
                 self.cgmes_circuit.emit_text(f"Export {prof} profile file")
-                self.cgmes_circuit.emit_progress(i/profiles_to_export.__len__()*100)
+                self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
                 i += 1
                 with StringIO() as buffer:
                     self.serialize(stream=buffer, profile=prof)
