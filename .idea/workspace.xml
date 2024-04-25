@@ -29,7 +29,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Renamed DiagramEditorWidget to SchematicWidget&#10;Moved SimulationTypes from it's own file to enumerations.py">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed TODO in run_continuation_power_flow">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1402,7 +1403,7 @@
       <workItem from="1713941834563" duration="11502000" />
       <workItem from="1713960701890" duration="1217000" />
       <workItem from="1713978926970" duration="2052000" />
-      <workItem from="1714026052822" duration="2057000" />
+      <workItem from="1714026052822" duration="3330000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1747,7 +1748,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="597" />
+    <option name="localTasksCounter" value="598" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1793,7 +1794,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Created expand diagram from the bus context menu" />
     <MESSAGE value="Added draw label status saving to disk" />
     <MESSAGE value="Fixed minimal bug with line locations data being asigned an array instead of a list" />
     <MESSAGE value="Small change to display the object type in the vertical ObjectsModel" />
@@ -1818,7 +1818,8 @@
     <MESSAGE value="More work with diagrams and locations" />
     <MESSAGE value="Fixed synthax errors in some tests" />
     <MESSAGE value="Renamed DiagramEditorWidget to SchematicWidget&#10;Moved SimulationTypes from it's own file to enumerations.py" />
-    <option name="LAST_COMMIT_MESSAGE" value="Renamed DiagramEditorWidget to SchematicWidget&#10;Moved SimulationTypes from it's own file to enumerations.py" />
+    <MESSAGE value="Fixed TODO in run_continuation_power_flow" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed TODO in run_continuation_power_flow" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
