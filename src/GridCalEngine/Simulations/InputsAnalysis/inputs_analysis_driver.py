@@ -19,11 +19,10 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 import pandas as pd
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType, SimulationTypes
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults

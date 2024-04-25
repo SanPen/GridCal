@@ -131,7 +131,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         super().mouseMoveEvent(event)
         if self.hovered:
             self.updatePosition()
-            self.editor.UpdateConnectors()
+            self.editor.update_connectors()
 
     def mousePressEvent(self, event):
         """

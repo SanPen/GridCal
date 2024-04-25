@@ -56,10 +56,9 @@ from GridCalEngine.Simulations.NTC.ntc_ts_driver import (OptimalNetTransferCapac
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
 from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import ResultTypes
+from GridCalEngine.enumerations import ResultTypes, SimulationTypes
 from GridCalEngine.basic_structures import Logger
 
 from GridCal.Session.results_model import ResultsModel
@@ -517,7 +516,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.TimeSeries_run)
+        drv, results = self.get_driver_results(SimulationTypes.PowerFlowTimeSeries_run)
         return results
 
     @property

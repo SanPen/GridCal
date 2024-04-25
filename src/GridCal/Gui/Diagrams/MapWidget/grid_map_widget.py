@@ -19,14 +19,13 @@ import numpy as np
 from PySide6.QtWidgets import QWidget, QGraphicsItem
 from collections.abc import Callable
 
-from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-from GridCalEngine.Devices import GraphicLocation
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
+from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
@@ -66,15 +65,9 @@ class GridMapWidget(MapWidget):
                            zoom_callback=self.zoom_callback,
                            position_callback=self.position_callback)
 
-        # self.Scene = scene
-        # self.Lines = list()
         self.Substations = list()
-        # self.CreateDummySchema()
         self.devX = 48.3
         self.devY = 61.9
-        # self.devX = 1000
-        # self.devY = 1000
-        self.CurrentLine = None
 
         # object to handle the relation between the graphic widgets and the database objects
         self.graphics_manager = GraphicsManager()
@@ -86,10 +79,8 @@ class GridMapWidget(MapWidget):
                                               longitude=longitude,
                                               latitude=latitude) if diagram is None else diagram
 
-        # self.schema_Manager = schemaManager(self.scene, self.devXFact, self.devYFact)
-
-        if self.diagram:
-            self.draw()
+        # draw
+        self.draw()
 
         # add empty polylines layer
         self.polyline_layer_id = self.AddPolylineLayer(data=[],
@@ -221,10 +212,10 @@ class GridMapWidget(MapWidget):
 
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
-    def CreateNode(self,
-                   line_container: MapTemplateLine,
-                   api_object: LineLocation,
-                   lat: float, lon: float) -> NodeGraphicItem:
+    def create_node(self,
+                    line_container: MapTemplateLine,
+                    api_object: LineLocation,
+                    lat: float, lon: float) -> NodeGraphicItem:
         """
 
         :param line_container:
@@ -244,43 +235,68 @@ class GridMapWidget(MapWidget):
 
         return graphic_object
 
-    def create_line(self, api_object: BRANCH_TYPES) -> MapTemplateLine:
+    def create_line(self, api_object: BRANCH_TYPES, diagram: MapDiagram) -> MapTemplateLine:
         """
         Adds a line with the nodes and segments
         :param api_object: Any branch type from the database
+        :param diagram: MapDiagram instance
         :return: MapTemplateLine
         """
         line_container = MapTemplateLine(editor=self, api_object=api_object)
 
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
+        diagram_locations: PointsGroup = diagram.data.get(DeviceType.LineLocation.value, None)
+
         # create the nodes
         for elm in api_object.locations.data:
-            graphic_obj = self.CreateNode(line_container=line_container,
-                                          api_object=elm,
-                                          lat=elm.lat,
-                                          lon=elm.long)
 
-            # draw the node in the scene
-            self.add_to_scene(graphic_object=graphic_obj)
+            if diagram_locations is None:
+                # no locations found, use the data from the api object
+                # lat = elm.lat
+                # lon = elm.long
+                pass
+            else:
 
-            nodSiz = line_container.number_of_nodes()
-            if nodSiz > 1:
-                i1 = nodSiz - 1
-                i2 = nodSiz - 2
-                # Assuming Connector takes (scene, node1, node2) as arguments
-                segment_graphic_object = Segment(first=line_container.nodes_list[i1],
-                                                 second=line_container.nodes_list[i2])
+                # try to get location from the diagram
+                diagram_location = diagram_locations.locations.get(elm.idtag, None)
 
-                # register the segment in the line
-                line_container.add_segment(segment=segment_graphic_object)
+                if diagram_location is None:
+                    # no particular location found, use the data from the api object
+                    # lat = elm.lat
+                    # lon = elm.long
+                    pass
+                else:
+                    # Draw only what's on the diagram
+                    # diagram data found, use it
+                    lat = diagram_location.latitude
+                    lon = diagram_location.longitude
 
-                # draw the segment in the scene
-                self.add_to_scene(graphic_object=segment_graphic_object)
+                    graphic_obj = self.create_node(line_container=line_container,
+                                                   api_object=elm,
+                                                   lat=lat,  # 42.0 ...
+                                                   lon=lon)  # 2.7 ...
+
+                    # draw the node in the scene
+                    self.add_to_scene(graphic_object=graphic_obj)
+
+                    nodSiz = line_container.number_of_nodes()
+                    if nodSiz > 1:
+                        i1 = nodSiz - 1
+                        i2 = nodSiz - 2
+                        # Assuming Connector takes (scene, node1, node2) as arguments
+                        segment_graphic_object = Segment(first=line_container.nodes_list[i1],
+                                                         second=line_container.nodes_list[i2])
+
+                        # register the segment in the line
+                        line_container.add_segment(segment=segment_graphic_object)
+
+                        # draw the segment in the scene
+                        self.add_to_scene(graphic_object=segment_graphic_object)
 
         return line_container
 
-    def UpdateConnectors(self):
+    def update_connectors(self):
         """
 
         :return:
@@ -344,11 +360,18 @@ class GridMapWidget(MapWidget):
 
     def draw(self) -> None:
         """
+        Draw the stored diagram
+        """
+        self.draw_diagram(diagram=self.diagram)
 
+    def draw_diagram(self, diagram: MapDiagram) -> None:
+        """
+        Draw any diagram
+        :param diagram: MapDiagram
         :return:
         """
         # first pass: create substations
-        for category, points_group in self.diagram.data.items():
+        for category, points_group in diagram.data.items():
 
             if category == DeviceType.SubstationDevice.value:
                 for idtag, location in points_group.locations.items():
@@ -358,7 +381,7 @@ class GridMapWidget(MapWidget):
                                            r=0.1)
 
         # second pass: create voltage levels
-        for category, points_group in self.diagram.data.items():
+        for category, points_group in diagram.data.items():
 
             if category == DeviceType.VoltageLevelDevice.value:
                 for idtag, location in points_group.locations.items():
@@ -369,16 +392,16 @@ class GridMapWidget(MapWidget):
                         substation_graphics = self.graphics_manager.query(elm=objectSubs)
 
                         # draw the voltage level
-                        graphic_obj = self.create_voltage_level(substation_graphics=substation_graphics,
-                                                                api_object=location.api_object,
-                                                                lon=objectSubs.longitude,
-                                                                lat=objectSubs.latitude,
-                                                                r=0.01)
+                        self.create_voltage_level(substation_graphics=substation_graphics,
+                                                  api_object=location.api_object,
+                                                  lon=objectSubs.longitude,
+                                                  lat=objectSubs.latitude,
+                                                  r=0.01)
 
             elif category == DeviceType.LineDevice.value:
                 for idtag, location in points_group.locations.items():
                     line: Line = location.api_object
-                    self.create_line(api_object=line)  # no need to add to the scene
+                    self.create_line(api_object=line, diagram=diagram)  # no need to add to the scene
 
             elif category == DeviceType.DCLineDevice.value:
                 pass  # TODO: implementar

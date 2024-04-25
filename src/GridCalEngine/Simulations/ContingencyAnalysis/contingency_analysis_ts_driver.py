@@ -28,7 +28,7 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver i
                                                                                        ContingencyAnalysisDriver)
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_ts_results import (
     ContingencyAnalysisTimeSeriesResults)
-from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_contingencies, translate_contingency_report

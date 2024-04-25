@@ -91,12 +91,20 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.needsUpdateSecond = True
 
     def updateRealPos(self):
+        """
+
+        :return:
+        """
         real_position = self.pos()
         center_point = self.getPos()
         self.x = center_point.x() + real_position.x()
         self.y = center_point.y() + real_position.y()
 
     def updatePosition(self):
+        """
+
+        :return:
+        """
         self.updateRealPos()
         self.needsUpdateFirst = True
         self.needsUpdateSecond = True
@@ -113,6 +121,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
                                            y=center_point.y() + real_position.y())
+
+        # print(f'Updating node position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
@@ -158,6 +168,12 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         QApplication.instance().restoreOverrideCursor()
 
     def setNodeColor(self, inner_color=None, border_color=None):
+        """
+
+        :param inner_color:
+        :param border_color:
+        :return:
+        """
         # Example: color assignment
         brush = QBrush(inner_color)
         self.setBrush(brush)
@@ -168,10 +184,18 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
             self.setPen(pen)
 
     def setDefaultColor(self):
+        """
+
+        :return:
+        """
         # Example: color assignment
         self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self):
+        """
+
+        :return:
+        """
         # Get the bounding rectangle of the ellipse item
         bounding_rect = self.boundingRect()
 
@@ -181,10 +205,14 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         return center_point
 
     def getRealPos(self) -> Tuple[float, float]:
+        """
+
+        :return:
+        """
         self.updateRealPos()
         return self.x, self.y
 
-    def resize(self, new_radius):
+    def resize(self, new_radius: float):
         """
         Resize the node.
         :param new_radius: New radius for the node.
@@ -192,7 +220,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.radius = new_radius
         self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
-    def change_pen_width(self, width):
+    def change_pen_width(self, width: int):
         """
         Change the pen width for the node.
         :param width: New pen width.

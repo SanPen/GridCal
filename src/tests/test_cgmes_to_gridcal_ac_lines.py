@@ -16,13 +16,14 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.operational_limit_set impo
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.data_logger import DataLogger
+from GridCalEngine.enumerations import CGMESVersions
 
 tn_test = TopologicalNode(rdfid="tn1")
 cn_test = ConnectivityNode(rdfid="cn1")
 
 
 def cgmes_object():
-    circuit = CgmesCircuit()
+    circuit = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     circuit.CurrentLimit_list = [CurrentLimit()]
     circuit.CurrentLimit_list[0].OperationalLimitSet = OperationalLimitSet()
     circuit.CurrentLimit_list[0].OperationalLimitSet.Terminal = ACDCTerminal()

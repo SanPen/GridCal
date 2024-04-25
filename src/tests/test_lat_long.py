@@ -1,6 +1,7 @@
 from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
 from GridCalEngine.Devices import MultiCircuit
 
+
 def test_lat_log(diagramEditor, lat, long):
     """
     This function test latitude and longitude conversion to X and Y values in raster image
