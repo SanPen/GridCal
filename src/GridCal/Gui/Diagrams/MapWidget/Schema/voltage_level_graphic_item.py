@@ -19,8 +19,8 @@ import numpy as np
 from typing import Union, TYPE_CHECKING
 from PySide6.QtWidgets import QApplication
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QBrush, QColor
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -55,6 +55,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         :param r:
         """
         super().__init__(parent=parent)
+        parent.register_voltage_level(vl=self)
 
         self.lat = lat
         self.lon = lon
@@ -134,7 +135,6 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         """
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
-        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
     def hoverLeaveEvent(self, event):
         """
@@ -142,7 +142,6 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         """
         self.hovered = False
         self.setDefaultColor()
-        QApplication.instance().restoreOverrideCursor()
 
     def setNodeColor(self, inner_color=None, border_color=None):
         # Example: color assignment

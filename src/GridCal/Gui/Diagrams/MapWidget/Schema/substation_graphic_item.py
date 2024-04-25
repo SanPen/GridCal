@@ -25,6 +25,7 @@ from GridCalEngine.Devices.Substation.substation import Substation
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+    from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
 
 
 class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
@@ -84,6 +85,25 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
+
+        self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+    def register_voltage_level(self, vl: VoltageLevelGraphicItem):
+        """
+
+        :param vl:
+        :return:
+        """
+        self.voltage_level_graphics.append(vl)
+
+    def sort_voltage_levels(self):
+        """
+        Set the Zorder based on the voltage level voltage
+        """
+        # TODO: Check this
+        sorted_objects = sorted(self.voltage_level_graphics, key=lambda x: x.api_object.Vnom)
+        for i, vl_graphics in enumerate(sorted_objects):
+            vl_graphics.setZValue(i)
 
     def updatePosition(self):
         real_position = self.pos()
