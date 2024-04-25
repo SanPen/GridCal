@@ -29,7 +29,6 @@ from GridCalEngine.Simulations.Topology import *
 from GridCalEngine.Simulations.SigmaAnalysis import *
 from GridCalEngine.Simulations.InputsAnalysis import *
 from GridCalEngine.Simulations.NTC import *
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.Clustering import *
 from GridCalEngine.Simulations.InvestmentsEvaluation import *

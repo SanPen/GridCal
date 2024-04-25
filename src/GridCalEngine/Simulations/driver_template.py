@@ -19,9 +19,8 @@ import time
 import numpy as np
 from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.basic_structures import Logger, Mat
-from GridCalEngine.enumerations import EngineType
+from GridCalEngine.enumerations import EngineType, SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Topology.topology as tp
 

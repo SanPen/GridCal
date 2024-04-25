@@ -20,7 +20,6 @@ from typing import Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 import GridCalEngine.Simulations.PowerFlow.power_flow_worker as pf_worker
@@ -28,11 +27,11 @@ from GridCalEngine.Compilers.circuit_to_bentayga import bentayga_pf
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_pf
 from GridCalEngine.Compilers.circuit_to_pgm import pgm_pf
 from GridCalEngine.basic_structures import IntVec
-from GridCalEngine.enumerations import EngineType
+from GridCalEngine.enumerations import EngineType, SimulationTypes
 
 
 class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
-    tpe = SimulationTypes.TimeSeries_run
+    tpe = SimulationTypes.PowerFlowTimeSeries_run
     name = tpe.value
 
     def __init__(self, grid: MultiCircuit,

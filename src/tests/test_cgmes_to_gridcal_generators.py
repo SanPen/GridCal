@@ -16,13 +16,14 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
 from GridCalEngine.data_logger import DataLogger
+from GridCalEngine.enumerations import CGMESVersions
 
 tn_test = TopologicalNode()
 cn_test = ConnectivityNode()
 
 
 def cgmes_object(p):
-    circuit = CgmesCircuit()
+    circuit = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     generator = SynchronousMachine("sm_rdfid", "tpe")
     generator.GeneratingUnit = GeneratingUnit()
     regulating_control = RegulatingControl("regulating_rdfid", "regulating_tpe")

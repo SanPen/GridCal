@@ -974,7 +974,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         for property_name, gc_prop in template_elm.registered_properties.items():
 
             # search for the property in the json
-            property_value = searc_property_into_json(json_entry, gc_prop)
+            property_value = searc_property_into_json(json_entry=json_entry, prop=gc_prop)
 
             if property_value is not None:
 
@@ -1117,7 +1117,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
     return devices, devices_dict
 
 
-def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dict[str, Any]]],
+def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]],
                        text_func: Union[Callable, None] = None,
                        progress_func: Union[Callable, None] = None,
                        logger: Logger = Logger()) -> MultiCircuit:
@@ -1312,12 +1312,16 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
     # create diagrams --------------------------------------------------------------------------------------------------
     if text_func is not None:
         text_func("Parsing diagrams...")
-    if 'diagrams' in data.keys():
 
-        if len(data['diagrams']):
-            obj_dict = circuit.get_all_elements_dict_by_type()
+    # try to get the get the list of diagrams
+    list_of_diagrams: List[Dict[str, Any]] = data.get('diagrams', None)
 
-            for diagram_dict in data['diagrams']:
+    if list_of_diagrams is not None:
+
+        if len(list_of_diagrams):
+            obj_dict = circuit.get_all_elements_dict_by_type(add_locations=True)
+
+            for diagram_dict in list_of_diagrams:
 
                 if diagram_dict['type'] in [DiagramType.Schematic.value, "bus-branch"]:
                     diagram = dev.SchematicDiagram()
