@@ -263,7 +263,7 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
 
     if gen.technology is None:
         # Assume general
-        object_template = cgmes_model.get_class_type("Terminal")
+        object_template = cgmes_model.get_class_type("GeneratingUnit")
         sm = object_template(new_rdf_id)
         cgmes_model.add(sm)
         return sm
@@ -579,6 +579,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
+        ei.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
 
         cgmes_model.add(ei)
 
@@ -605,6 +606,8 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                                target_vnom=mc_elm.get_max_bus_nominal_voltage()
                                                )  # which Vnom we need?
+        line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cgmes_model, logger),
+                          create_cgmes_terminal(mc_elm.bus_to, cgmes_model, logger)]
         vnom = line.BaseVoltage.nominalVoltage
 
         if vnom is not None:
@@ -686,6 +689,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_gen.RotatingMachine = cgmes_syn  # linking them together
         cgmes_syn.maxQ = mc_elm.Qmax
         cgmes_syn.minQ = mc_elm.Qmin
+        cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
         # ...
         cgmes_syn.referencePriority = '0'  # ?
 
