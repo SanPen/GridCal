@@ -15,12 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-import numpy as np
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMenu
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QAction
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QBrush, QColor
+from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCalEngine.Devices.Substation.substation import Substation
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -96,7 +96,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.voltage_level_graphics.append(vl)
 
-    def sort_voltage_levels(self):
+    def sort_voltage_levels(self) -> None:
         """
         Set the Zorder based on the voltage level voltage
         """
@@ -106,6 +106,9 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
             vl_graphics.setZValue(i)
 
     def updatePosition(self):
+        """
+
+        """
         real_position = self.pos()
         center_point = self.getPos()
         self.x = center_point.x() + real_position.x()
@@ -114,6 +117,9 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         self.updateDiagram()
 
     def updateDiagram(self):
+        """
+
+        """
         real_position = self.pos()
         center_point = self.getPos()
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
@@ -142,17 +148,20 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         if event.button() == Qt.RightButton:
             menu = QMenu()
 
-            action1 = QAction("New")
-            action1.triggered.connect(self.NewFunction)
-            menu.addAction(action1)
+            add_menu_entry(menu=menu,
+                           text="New",
+                           icon_path="",
+                           function_ptr=self.NewFunction)
 
-            action2 = QAction("Copy")
-            action2.triggered.connect(self.CopyFunction)
-            menu.addAction(action2)
+            add_menu_entry(menu=menu,
+                           text="Copy",
+                           icon_path="",
+                           function_ptr=self.CopyFunction)
 
-            action3 = QAction("Remove")
-            action3.triggered.connect(self.RemoveFunction)
-            menu.addAction(action3)
+            add_menu_entry(menu=menu,
+                           text="Remove",
+                           icon_path="",
+                           function_ptr=self.RemoveFunction)
 
             menu.exec_(event.screenPos())
 
@@ -184,7 +193,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
 
-    def hoverEnterEvent(self, event):
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
@@ -192,7 +201,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         self.hovered = True
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
-    def hoverLeaveEvent(self, event):
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse leaves the item.
         """
@@ -200,7 +209,13 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
 
-    def setNodeColor(self, inner_color=None, border_color=None):
+    def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+        """
+
+        :param inner_color:
+        :param border_color:
+        :return:
+        """
         # Example: color assignment
         brush = QBrush(inner_color)
         self.setBrush(brush)
@@ -211,10 +226,18 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
             self.setPen(pen)
 
     def setDefaultColor(self):
+        """
+
+        :return:
+        """
         # Example: color assignment
         self.setNodeColor(self.colorInner, self.colorBorder)
 
-    def getPos(self):
+    def getPos(self) -> QPointF:
+        """
+
+        :return:
+        """
         # Get the bounding rectangle of the ellipse item
         bounding_rect = self.boundingRect()
 
@@ -223,11 +246,15 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
 
         return center_point
 
-    def getRealPos(self):
+    def getRealPos(self) -> Tuple[float, float]:
+        """
+
+        :return:
+        """
         self.updatePosition()
         return self.x, self.y
 
-    def resize(self, new_radius):
+    def resize(self, new_radius: float) -> None:
         """
         Resize the node.
         :param new_radius: New radius for the node.
@@ -235,7 +262,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         self.radius = new_radius
         self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
-    def change_pen_width(self, width):
+    def change_pen_width(self, width: float) -> None:
         """
         Change the pen width for the node.
         :param width: New pen width.

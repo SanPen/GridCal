@@ -16,10 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, Tuple
 from PySide6.QtWidgets import QApplication
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 
@@ -88,6 +88,9 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         self.needsUpdate = False
 
     def updatePosition(self):
+        """
+
+        """
         real_position = self.pos()
         center_point = self.getPos()
         self.x = center_point.x() + real_position.x()
@@ -96,6 +99,9 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         self.updateDiagram()
 
     def updateDiagram(self):
+        """
+
+        """
         real_position = self.pos()
         center_point = self.getPos()
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
@@ -129,21 +135,27 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
 
-    def hoverEnterEvent(self, event):
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
 
-    def hoverLeaveEvent(self, event):
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse leaves the item.
         """
         self.hovered = False
         self.setDefaultColor()
 
-    def setNodeColor(self, inner_color=None, border_color=None):
+    def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+        """
+
+        :param inner_color:
+        :param border_color:
+        :return:
+        """
         # Example: color assignment
         brush = QBrush(inner_color)
         self.setBrush(brush)
@@ -153,11 +165,19 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
             pen.setColor(border_color)
             self.setPen(pen)
 
-    def setDefaultColor(self):
+    def setDefaultColor(self) -> None:
+        """
+
+        :return:
+        """
         # Example: color assignment
         self.setNodeColor(self.colorInner, self.colorBorder)
 
-    def getPos(self):
+    def getPos(self) -> QPointF:
+        """
+
+        :return:
+        """
         # Get the bounding rectangle of the ellipse item
         bounding_rect = self.boundingRect()
 
@@ -166,11 +186,15 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
 
         return center_point
 
-    def getRealPos(self):
+    def getRealPos(self) -> Tuple[float, float]:
+        """
+
+        :return:
+        """
         self.updatePosition()
         return self.x, self.y
 
-    def resize(self, new_radius):
+    def resize(self, new_radius: float) -> None:
         """
         Resize the node.
         :param new_radius: New radius for the node.
@@ -178,7 +202,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         self.radius = new_radius
         self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
-    def change_pen_width(self, width):
+    def change_pen_width(self, width: float) -> None:
         """
         Change the pen width for the node.
         :param width: New pen width.
