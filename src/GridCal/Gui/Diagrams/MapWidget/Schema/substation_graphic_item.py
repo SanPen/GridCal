@@ -18,8 +18,9 @@ from __future__ import annotations
 import numpy as np
 from typing import List, TYPE_CHECKING
 from PySide6 import QtWidgets
+from PySide6.QtWidgets import QApplication, QMenu
 from PySide6.QtCore import Qt, QPoint, QRectF, QRect
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor, QAction
 from GridCalEngine.Devices.Substation.substation import Substation
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -118,6 +119,43 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
+        if event.button() == Qt.RightButton:
+            menu = QMenu()
+
+            action1 = QAction("New")
+            action1.triggered.connect(self.NewFunction)
+            menu.addAction(action1)
+
+            action2 = QAction("Copy")
+            action2.triggered.connect(self.CopyFunction)
+            menu.addAction(action2)
+
+            action3 = QAction("Remove")
+            action3.triggered.connect(self.RemoveFunction)
+            menu.addAction(action3)
+
+            menu.exec_(event.screenPos())
+
+    def NewFunction(self):
+        """
+        Function to be called when Action 1 is selected.
+        """
+        # Implement the functionality for Action 1 here
+        pass
+
+    def CopyFunction(self):
+        """
+        Function to be called when Action 1 is selected.
+        """
+        # Implement the functionality for Action 1 here
+        pass
+
+    def RemoveFunction(self):
+        """
+        Function to be called when Action 1 is selected.
+        """
+        # Implement the functionality for Action 1 here
+        pass
 
     def mouseReleaseEvent(self, event):
         """
@@ -132,6 +170,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
+        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
     def hoverLeaveEvent(self, event):
         """
@@ -139,6 +178,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.hovered = False
         self.setDefaultColor()
+        QApplication.instance().restoreOverrideCursor()
 
     def setNodeColor(self, inner_color=None, border_color=None):
         # Example: color assignment

@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
+from PySide6.QtWidgets import QApplication
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor
@@ -146,6 +147,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.hovered = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
+        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
     def hoverLeaveEvent(self, event):
         """
@@ -153,6 +155,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         self.hovered = False
         self.setDefaultColor()
+        QApplication.instance().restoreOverrideCursor()
 
     def setNodeColor(self, inner_color=None, border_color=None):
         # Example: color assignment
