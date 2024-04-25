@@ -170,6 +170,8 @@ class GridMapWidget(MapWidget):
         # lat = np.degrees(2 * np.arctan(np.exp(y / (self.devY * transform))) - np.pi / 2)
         # lon = np.degrees(x / (self.devX * transform))
 
+        # lon, lat = self.view_to_geo(xview=x, yview=y)
+
         lat = - y / self.devY
         lon = x / self.devX
         return lat, lon
@@ -188,6 +190,9 @@ class GridMapWidget(MapWidget):
 
         x = lon * self.devX
         y = -lat * self.devY
+
+        # x, y = self.geo_to_view(longitude=lon, latitude=lat)
+
         return x, y
 
     def update_diagram_element(self,
