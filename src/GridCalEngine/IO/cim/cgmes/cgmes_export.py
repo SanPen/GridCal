@@ -139,8 +139,12 @@ class CimExporter:
         else:
             raise ValueError(f"Unrecognized CGMES version {self.cgmes_circuit.cgmes_version}")
 
+        i = 1
         with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
             for prof in profiles_to_export:
+                self.cgmes_circuit.emit_text(f"Export {prof} profile file")
+                self.cgmes_circuit.emit_progress(i/profiles_to_export.__len__()*100)
+                i += 1
                 with StringIO() as buffer:
                     self.serialize(stream=buffer, profile=prof)
                     f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())

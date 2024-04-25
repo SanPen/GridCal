@@ -426,6 +426,8 @@ class CgmesCircuit(BaseCircuit):
         #                               logger=self.logger)
         # data_parser.load_files(files=files)
         import time
+        self.emit_text("Processing CGMES model")
+        self.emit_progress(20)
         # set the data
         self.set_data(data=data_parser.data,
                       boundary_set=data_parser.boudary_set)
@@ -440,6 +442,7 @@ class CgmesCircuit(BaseCircuit):
                                 association_inverse_dict=self.cgmes_assets.association_inverse_dict,
                                 logger=self.logger)
         start = time.time()
+        self.emit_progress(30)
         # convert the dictionaries to the internal class model,
         # this marks as used only the boundary set objects that are referenced,
         # this allows to delete the excess of boundary set objects later
@@ -454,7 +457,7 @@ class CgmesCircuit(BaseCircuit):
         print("Data to objects time: ", endt - start, "sec")
         # Assign the data from all_objects_dict to the appropriate lists in the circuit
         self.assign_data_to_lists()
-
+        self.emit_progress(50)
         if delete_unused:
             # delete the unused objects from the boundary set
             self.delete_unused()
