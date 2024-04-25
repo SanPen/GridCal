@@ -18,13 +18,12 @@ from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtCore import Qt, QPoint
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import (GenericDBWidget, ACTIVE, DEACTIVATED,
-                                                                   FONT_SCALE, EMERGENCY)
+from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import (GenericDBWidget, ACTIVE, FONT_SCALE)
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
@@ -34,12 +33,10 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.battery_graphics import (Ba
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.shunt_graphics import (ShuntGraphicItem, Shunt)
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.external_grid_graphics import (ExternalGridGraphicItem,
                                                                                     ExternalGrid)
-from GridCal.Gui.Diagrams.SchematicWidget.Injections.current_injection_graphics import (
-    CurrentInjectionGraphicItem,
-    CurrentInjection)
-from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics import (
-    ControllableShuntGraphicItem,
-    ControllableShunt)
+from GridCal.Gui.Diagrams.SchematicWidget.Injections.current_injection_graphics import (CurrentInjectionGraphicItem,
+                                                                                        CurrentInjection)
+from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics import (ControllableShuntGraphicItem,
+                                                                                         ControllableShunt)
 
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
@@ -74,7 +71,7 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param parent:
         :param index:
         :param editor:
-        :param bus:
+        :param node:
         :param h:
         :param w:
         :param x:
@@ -379,7 +376,7 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param event: QGraphicsSceneMouseEvent
         """
 
-        if self.api_object.device_type == DeviceType.BusDevice:
+        if self.api_object.device_type == DeviceType.ConnectivityNodeDevice:
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.get_areas(),
                                    DeviceType.ZoneDevice.value: self.editor.circuit.get_zones(),
                                    DeviceType.SubstationDevice.value: self.editor.circuit.get_substations(),

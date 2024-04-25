@@ -65,7 +65,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  parent=None,
                  index=0,
                  editor: SchematicWidget = None,
-                 node: BusBar = None,
+                 busbar: BusBar = None,
                  h: int = 40,
                  w: int = 80,
                  x: int = 0,
@@ -75,13 +75,13 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param parent:
         :param index:
         :param editor:
-        :param bus:
+        :param busbar:
         :param h:
         :param w:
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=node, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=busbar, editor=editor, draw_labels=True)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
@@ -205,7 +205,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.tile.setBrush(brush)
         self._terminal.setBrush(brush)
 
-    def merge(self, other_bus_graphic: "BusGraphicItem") -> None:
+    def merge(self, other_bus_graphic: "BusBarGraphicItem") -> None:
         """
         Merge another BusGraphicItem into this
         :param other_bus_graphic: BusGraphicItem
@@ -648,7 +648,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param event: QGraphicsSceneMouseEvent
         """
 
-        if self.api_object.device_type == DeviceType.BusDevice:
+        if self.api_object.device_type == DeviceType.BusBarDevice:
             dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.get_areas(),
                                    DeviceType.ZoneDevice.value: self.editor.circuit.get_zones(),
                                    DeviceType.SubstationDevice.value: self.editor.circuit.get_substations(),

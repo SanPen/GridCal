@@ -31,6 +31,8 @@ from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import Fluid
 from GridCal.Gui.messages import yes_no_question
 
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
+from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.winding import Winding
@@ -950,6 +952,34 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         """
         return self.get_to_graphic_object().api_object
 
+    def get_cn_from(self) -> ConnectivityNode:
+        """
+
+        :return:
+        """
+        return self.get_from_graphic_object().api_object
+
+    def get_cn_to(self) -> ConnectivityNode:
+        """
+
+        :return:
+        """
+        return self.get_to_graphic_object().api_object
+
+    def get_busbar_from(self) -> BusBar:
+        """
+
+        :return:
+        """
+        return self.get_from_graphic_object().api_object
+
+    def get_busbar_to(self) -> BusBar:
+        """
+
+        :return:
+        """
+        return self.get_to_graphic_object().api_object
+
     def get_fluid_node_from(self) -> FluidNode:
         """
 
@@ -1034,6 +1064,13 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         """
         return self.is_from_port_a_bus() and self.is_to_port_a_cn()
 
+    def connected_between_cn(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_cn() and self.is_to_port_a_cn()
+
     def connected_between_busbar_and_bus(self):
         """
 
@@ -1047,6 +1084,27 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         :return:
         """
         return self.is_from_port_a_bus() and self.is_to_port_a_busbar()
+
+    def connected_between_busbar(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_busbar() and self.is_to_port_a_busbar()
+
+    def connected_between_busbar_and_cn(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_busbar() and self.is_to_port_a_cn()
+
+    def connected_between_cn_and_busbar(self):
+        """
+
+        :return:
+        """
+        return self.is_from_port_a_cn() and self.is_to_port_a_busbar()
 
     def should_be_a_converter(self) -> bool:
         """

@@ -27,6 +27,8 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
+    from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
+    from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
     from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 
 
@@ -38,7 +40,7 @@ class BarTerminalItem(QGraphicsRectItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
+                 parent: Union[None, BusGraphicItem, BusBarGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
                  h=10.0,
                  w=10.0):
         """
@@ -253,7 +255,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
     def __init__(self,
                  name: str,
                  editor: SchematicWidget,
-                 parent: Union[None, BusGraphicItem, Transformer3WGraphicItem, FluidNodeGraphicItem] = None,
+                 parent: Union[None, CnGraphicItem] = None,
                  h=10.0,
                  w=10.0):
         """
@@ -364,12 +366,13 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         """
         self.process_callbacks(parent_pos=self.parent.pos())
 
-    def process_callbacks(self, parent_pos: QPointF):
+    def process_callbacks(self, parent_pos: QPointF, mul: float = 1.0):
         """
         Send the callbacks, ussually setEndPos or setStartPos functions from the line template
         :param parent_pos: Parent position
+        :param mul: Multiplier
         """
-        scene_pos = parent_pos + self.pos()  # + QPointF(self.w / 2, self.h / 2)
+        scene_pos = parent_pos + self.pos() * mul  # + QPointF(self.w / 2, self.h / 2)
 
         for i, (connection, call_back) in enumerate(self._hosting_connections.items()):
             call_back(scene_pos)
@@ -382,7 +385,7 @@ class RoundTerminalItem(QGraphicsEllipseItem):
         @return:
         """
         if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
-            self.process_callbacks(parent_pos=value)
+            self.process_callbacks(parent_pos=value, mul=0.5)
             return value
         else:
             return super(RoundTerminalItem, self).itemChange(change, value)
