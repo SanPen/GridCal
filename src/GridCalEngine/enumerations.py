@@ -562,7 +562,6 @@ class DiagramType(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-
 class AcOpfMode(Enum):
     """
     AC-OPF problem types
