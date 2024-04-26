@@ -31,12 +31,17 @@ def voltage_control_opf(file_path):
 
     tol = 1e-4
     vm_cost = 1e4
+
+    bus_set = set()
+
     for i, gen in enumerate(grid.generators):
         if gen.bus.is_slack or gen.bus.area.name in disp_areas:
             print(str(i) + ' pass')
+            bus_set.add(i)
         elif gen.bus.area.name in disp_areas:
             # P limits -> restrict them very close to P
             print(i)
+            bus_set.add(i)
             # gen.Pmax = gen.P + tol
             # gen.Pmin = gen.P - tol
             # Tanmax -> set pf close to 0 to get large tanmax
@@ -54,7 +59,10 @@ def voltage_control_opf(file_path):
     Vnom = list()
     Vmin = list()
     Vmax = list()
+    pilot_flag = list()
     for i, bus in enumerate(grid.buses):
+        is_pilot = False
+
         if bus.code in dict_bus_lims.keys():
             # Increase Vm slack cost to enforce limits
             # bus.Vm_cost = vm_cost
@@ -62,12 +70,17 @@ def voltage_control_opf(file_path):
             vm_lims = dict_bus_lims[bus.code]
             # bus.Vmax = vm_lims[0] / bus.Vnom
             # bus.Vmin = vm_lims[1] / bus.Vnom
+            bus_set.add(i)
+            is_pilot = True
+
+        if i in bus_set:
             bus_indices.append(i)
             bus_names.append(bus.name)
             bus_codes.append(bus.code)
             Vnom.append(bus.Vnom)
             Vmin.append(bus.Vmin)
             Vmax.append(bus.Vmax)
+            pilot_flag.append(is_pilot)
 
     Vnom = np.array(Vnom)
     Vmax = np.array(Vmax)
@@ -108,6 +121,7 @@ def voltage_control_opf(file_path):
     # ------------------------------------------------------------------------------------------------------------------
 
     df = pd.DataFrame({'Bus': bus_codes,
+                       'Pilot bus': pilot_flag,
                        'Voltage pre (p.u.)': pf_vm,
                        'Voltage pre (kV)': pf_vm * Vnom,
                        'Vmin (kV)': Vmin * Vnom,
