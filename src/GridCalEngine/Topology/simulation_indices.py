@@ -20,7 +20,7 @@ import numpy as np
 import numba as nb
 from typing import Union, Tuple, List
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType, BusMode
-from GridCalEngine.basic_structures import Vec, IntVec
+from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
 
 @nb.njit(cache=True)
@@ -279,6 +279,595 @@ class SimulationIndices:
 
         # determine the bus indices
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
+
+    def compile_control_indices(self,
+                                control_mode: List[Union[TransformerControlType, ConverterControlType]],
+                                F: IntVec,
+                                T: IntVec) -> None:
+        """
+        This function fills in the lists of indices to control different magnitudes
+
+        VSC Control modes:
+
+        in the paper's scheme:
+        from -> DC
+        to   -> AC
+
+        |   Mode    |   const.1 |   const.2 |   type    |
+        -------------------------------------------------
+        |   1       |   theta   |   Vac     |   I       |
+        |   2       |   Pf      |   Qac     |   I       |
+        |   3       |   Pf      |   Vac     |   I       |
+        -------------------------------------------------
+        |   4       |   Vdc     |   Qac     |   II      |
+        |   5       |   Vdc     |   Vac     |   II      |
+        -------------------------------------------------
+        |   6       | Vdc droop |   Qac     |   III     |
+        |   7       | Vdc droop |   Vac     |   III     |
+        -------------------------------------------------
+
+        Indices where each control goes:
+        mismatch  →  |  ∆Pf	Qf	Qf  Qt	∆Qt
+        variable  →  |  Ɵsh	Beq	m	m	Beq
+        Indices   →  |  Ish	Iqz	Ivf	Ivt	Iqt
+        ------------------------------------
+        VSC 1	     |  -	1	-	1	-   |   AC voltage control (voltage “to”)
+        VSC 2	     |  1	1	-	-	1   |   Active and reactive power control
+        VSC 3	     |  1	1	-	1	-   |   Active power and AC voltage control
+        VSC 4	     |  -	-	1	-	1   |   Dc voltage and Reactive power flow control
+        VSC 5	     |  -	-	-	1	1   |   Ac and Dc voltage control
+        ------------------------------------
+        Transformer 0|	-	-	-	-	-   |   Fixed transformer
+        Transformer 1|	1	-	-	-	-   |   Phase shifter → controls power
+        Transformer 2|	-	-	1	-	-   |   Control the voltage at the “from” side
+        Transformer 3|	-	-	-	1	-   |   Control the voltage at the “to” side
+        Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
+        Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
+        ------------------------------------
+        """
+
+        # indices in the global branch scheme
+        k_pf_tau_lst = list()  # indices of the Branches controlling Pf flow with theta sh
+        k_qf_m_lst = list()  # indices of the Branches controlling Qf with ma
+        k_zero_beq_lst = list()  # indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        k_vf_beq_lst = list()  # indices of the Branches when controlling Vf with Beq
+        k_vt_m_lst = list()  # indices of the Branches when controlling Vt with ma
+        k_qt_m_lst = list()  # indices of the Branches controlling the Qt flow with ma
+        k_pf_dp_lst = list()  # indices of the drop converters controlling the power flow with theta sh
+        k_m_modif_lst = list()  # indices of the transformers with controlled tap module
+        k_tau_modif_lst = list()  # indices of the transformers with controlled tap angle
+        k_mtau_modif_lst = list()  # indices of the transformers with controlled tap angle and module
+        i_m_modif_lst = list()  # indices of the controlled buses with tap module
+        i_tau_modif_lst = list()  # indices of the controlled buses with tap angle
+        i_mtau_modif_lst = list()  # indices of the controlled buses with tap module and angle
+        i_vsc_lst = list()  # indices of the converters
+        iPfdp_va_lst = list()
+
+        self.any_control = False
+
+        for k, tpe in enumerate(control_mode):
+
+            if tpe == TransformerControlType.fixed:
+                pass
+
+            elif tpe == TransformerControlType.Pf:  # TODO: change name .Pt by .Pf
+                k_pf_tau_lst.append(k)
+                k_tau_modif_lst.append(k)
+                i_tau_modif_lst.append(F[k])  # TODO: identify which index is the controlled one
+                self.any_control = True
+
+            elif tpe == TransformerControlType.Qt:
+                k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                i_m_modif_lst.append(T[k])
+                self.any_control = True
+
+            elif tpe == TransformerControlType.PtQt:
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
+                k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(F[k])
+                i_m_modif_lst.append(T[k])
+                self.any_control = True
+
+            elif tpe == TransformerControlType.V:
+                k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                i_m_modif_lst.append(T[k])
+                self.any_control = True
+
+            elif tpe == TransformerControlType.PtV:
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
+                k_m_modif_lst.append(k)
+                k_tau_modif_lst.append(k)
+                k_mtau_modif_lst.append(k)
+                i_tau_modif_lst.append(F[k])
+                i_m_modif_lst.append(T[k])
+                self.any_control = True
+
+            # VSC ------------------------------------------------------------------------------------------------------
+            elif tpe == ConverterControlType.type_0_free:  # 1a:Free
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_I_1:  # 1:Vac
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_I_2:  # 2:Pdc+Qac
+
+                k_pf_tau_lst.append(k)
+                k_qt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
+
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_I_3:  # 3:Pdc+Vac
+                k_pf_tau_lst.append(k)
+                k_vt_m_lst.append(k)
+                k_zero_beq_lst.append(k)
+
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_II_4:  # 4:Vdc+Qac
+                k_vf_beq_lst.append(k)
+                k_qt_m_lst.append(k)
+
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_II_5:  # 5:Vdc+Vac
+                k_vf_beq_lst.append(k)
+                k_vt_m_lst.append(k)
+
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_III_6:  # 6:Droop+Qac
+                k_pf_dp_lst.append(k)
+                k_qt_m_lst.append(k)
+
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_III_7:  # 4a:Droop-slack
+                k_pf_dp_lst.append(k)
+                k_vt_m_lst.append(k)
+
+                i_vsc_lst.append(k)
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_IV_I:  # 8:Vdc
+                k_vf_beq_lst.append(k)
+                i_vsc_lst.append(k)
+
+                self.any_control = True
+
+            elif tpe == ConverterControlType.type_IV_II:  # 9:Pdc
+                k_pf_tau_lst.append(k)
+                k_zero_beq_lst.append(k)
+
+                self.any_control = True
+
+            elif tpe == 0:
+                pass  # required for the no-control case
+
+            else:
+                raise Exception('Unknown control type:' + str(tpe))
+
+        # FUBM- Saves the "from" bus identifier for Vf controlled by Beq
+        #  (Converters type II for Vdc control)
+        self.i_vf_beq = F[k_vf_beq_lst]
+
+        # FUBM- Saves the "to"   bus identifier for Vt controlled by ma
+        #  (Converters and Transformers)
+        self.i_vt_m = T[k_vt_m_lst]
+
+        self.k_pf_tau = np.array(k_pf_tau_lst, dtype=int)
+        self.k_qf_m = np.array(k_qf_m_lst, dtype=int)
+        self.k_zero_beq = np.array(k_zero_beq_lst, dtype=int)
+        self.k_vf_beq = np.array(k_vf_beq_lst, dtype=int)
+        self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
+        self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
+        self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
+        self.k_m = np.array(k_m_modif_lst, dtype=int)
+        self.k_tau = np.array(k_tau_modif_lst, dtype=int)
+        self.k_mtau = np.array(k_mtau_modif_lst, dtype=int)
+        self.i_m = np.array(i_m_modif_lst, dtype=int)
+        self.i_tau = np.array(i_tau_modif_lst, dtype=int)
+        self.i_mtau = np.array(i_mtau_modif_lst, dtype=int)
+        self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
+        self.i_vsc = np.array(i_vsc_lst, dtype=int)
+
+    def get_base_voltage(self, nbus, generator_data, battery_data, hvdc_data, branch_data):
+        """
+        GEt the voltage profile based on the devices control voltage
+        :param nbus:
+        :param generator_data:
+        :param battery_data:
+        :param hvdc_data:
+        :param branch_data:
+        :return:
+        """
+        return compose_generator_voltage_profile(
+            nbus=nbus,
+            gen_bus_indices=generator_data.get_bus_indices(),
+            gen_vset=generator_data.v,
+            gen_status=generator_data.active,
+            gen_is_controlled=generator_data.controllable,
+            bat_bus_indices=battery_data.get_bus_indices(),
+            bat_vset=battery_data.v,
+            bat_status=battery_data.active,
+            bat_is_controlled=battery_data.controllable,
+            hvdc_bus_f=hvdc_data.get_bus_indices_f(),
+            hvdc_bus_t=hvdc_data.get_bus_indices_t(),
+            hvdc_status=hvdc_data.active,
+            hvdc_vf=hvdc_data.Vset_f,
+            hvdc_vt=hvdc_data.Vset_t,
+            k_vf_beq=self.k_vf_beq,
+            k_vt_m=self.k_vt_m,
+            i_vf_beq=self.i_vf_beq,
+            i_vt_m=self.i_vt_m,
+            branch_status=branch_data.active,
+            br_vf=branch_data.vf_set,
+            br_vt=branch_data.vt_set
+        )
+    
+
+class SimulationIndices2:
+    """
+    Class to handle the simulation indices
+    """
+
+    def __init__(self,
+                 bus_types: IntVec,
+                 Pbus: Vec,
+                 control_mode: List[Union[TransformerControlType, ConverterControlType]],
+                 F: IntVec,
+                 T: IntVec,
+                 dc: IntVec,
+                 dc_bus: BoolVec,
+                 gen_data,
+                 vsc_data):
+        """
+
+        :param bus_types: Bus type initial guess array
+        :param Pbus: Active power per bus array
+        :param control_mode: Branch control mode array
+        :param F: Array of bus_from indices
+        :param T: Array of bus_to indices
+        :param dc: Arra of is DC ? per bus
+        """
+
+        print("bus_types")
+        print(bus_types)
+
+        print("Pbus")
+        print(Pbus)
+
+        print("control_mode")
+        print(control_mode)
+
+        print("F")
+        print(F)
+
+        print("T")
+        print(T)
+
+        print("dc")
+        print(dc)
+
+        print("dc_bus")
+        print(dc_bus)
+
+        print("gen_data")
+        print(gen_data)
+
+        print("vsc_data")
+        print(vsc_data)
+
+        # master aray of bus types (nbus)
+        self.bus_types = bus_types
+
+        # master array of branch control types (nbr)
+        self.control_mode = control_mode
+
+        # AC and DC indices
+        self.ac: IntVec = np.where(dc_bus == False)[0]
+        self.dc: IntVec = np.where(dc_bus != False)[0]
+
+        # bus type indices
+        self.pq: IntVec = np.zeros(0, dtype=int)
+        self.pqv: IntVec = np.zeros(0, dtype=int)
+        self.pv: IntVec = np.zeros(0, dtype=int)  # PV-local
+        self.pvr: IntVec = np.zeros(0, dtype=int)  # PV-remote
+        self.vd: IntVec = np.zeros(0, dtype=int)
+        self.no_slack: IntVec = np.zeros(0, dtype=int)
+
+        # branch control indices
+        self.any_control: bool = False
+
+        # (old iPfsh) indices of the Branches controlling Pf flow with theta sh
+        self.k_pf_tau: IntVec = np.zeros(0, dtype=int)
+
+        # (old iQfma) indices of the Branches controlling Qf with ma
+        self.k_qf_m: IntVec = np.zeros(0, dtype=int)
+
+        # (old iBeqz) indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
+        self.k_zero_beq: IntVec = np.zeros(0, dtype=int)
+
+        # (old iBeqv) indices of the Branches when controlling Vf with Beq
+        self.k_vf_beq: IntVec = np.zeros(0, dtype=int)
+
+        # (old iVtma) indices of the Branches when controlling Vt with ma
+        self.k_vt_m: IntVec = np.zeros(0, dtype=int)
+
+        # (old iQtma) indices of the Branches controlling the Qt flow with ma
+        self.k_qt_m: IntVec = np.zeros(0, dtype=int)
+
+        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
+        self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap module
+        self.k_m: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap angle
+        self.k_tau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the transformers with controlled tap angle and module
+        self.k_mtau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap module
+        self.i_m: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle
+        self.i_tau: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the buses with controlled tap angle and module
+        self.i_mtau: IntVec = np.zeros(0, dtype=int)
+
+        # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
+        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
+
+        # indices of the converters
+        self.i_vsc: IntVec = np.zeros(0, dtype=int)
+
+        # (old VfBeqbus) indices of the buses where Vf is controlled by Beq
+        self.i_vf_beq: IntVec = np.zeros(0, dtype=int)
+
+        # (old Vtmabus) indices of the buses where Vt is controlled by ma
+        self.i_vt_m: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the buses where voltage is known (controlled)
+        self.kn_volt_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the buses where angle is known (controlled)
+        self.kn_angle_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the buses where Pzip is known (controlled)
+        self.kn_pzip_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the buses where Qzip is known (controlled)
+        self.kn_qzip_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Pfrom is known (controlled)
+        self.kn_pfrom_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Qfrom is known (controlled)
+        self.kn_qfrom_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Pto is known (controlled)
+        self.kn_pto_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Qto is known (controlled)
+        self.kn_qto_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where tau is known (controlled)
+        self.kn_tau_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where modulation is known (controlled)
+        self.kn_mod_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the passive branches where Pfrom are known (controlled)
+        self.kn_passive_pfrom_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Qfrom are known (controlled)
+        self.kn_passive_qfrom_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Pto are known (controlled)
+        self.kn_passive_pto_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Qto are known (controlled)
+        self.kn_passive_qto_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) setpoints of the buses where voltage is known (controlled)
+        self.kn_volt_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the buses where angle is known (controlled)
+        self.kn_angle_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the buses where Pzip is known (controlled)
+        self.kn_pzip_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the buses where Qzip is known (controlled)
+        self.kn_qzip_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where Pfrom is known (controlled)
+        self.kn_pfrom_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where Qfrom is known (controlled)
+        self.kn_qfrom_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where Pto is known (controlled)
+        self.kn_pto_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where Qto is known (controlled)
+        self.kn_qto_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where tau is known (controlled)
+        self.kn_tau_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where modulation is known (controlled)
+        self.kn_mod_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the passive branches where Pfrom are known (controlled)
+        self.kn_passive_pfrom_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where Qfrom are known (controlled)
+        self.kn_passive_qfrom_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where Pto are known (controlled)
+        self.kn_passive_pto_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) setpoints of the branches where Qto are known (controlled)
+        self.kn_passive_qto_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF) indices of the buses where voltage is unknown
+        self.un_volt_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the buses where angle is unknown
+        self.un_angle_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the buses where Pzip is unknown
+        self.un_pzip_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the buses where Qzip is unknown
+        self.un_qzip_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Pfrom is unknown
+        self.un_pfrom_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Qfrom is unknown
+        self.un_qfrom_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Pto is unknown
+        self.un_pto_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where Qto is unknown
+        self.un_qto_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where tau is unknown
+        self.un_tau_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF) indices of the branches where modulation is unknown
+        self.un_mod_kdx: IntVec = np.zeros(0, dtype=int)
+
+
+        # determine the bus indices
+        self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
+
+        # determine the branch indices
+        self.compile_control_indices(control_mode=control_mode, F=F, T=T)
+
+        # (Generalised PF) determine the indices and setpoints
+        self.compile_control_indices_generalised_pf(gen_data, vsc_data)
+
+    def recompile_types(self,
+                        bus_types: IntVec,
+                        Pbus: Vec):
+        """
+
+        :param bus_types:
+        :param Pbus:
+        :return:
+        """
+        self.bus_types = bus_types
+
+        # determine the bus indices
+        self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
+
+    def compile_control_indices_generalised_pf(self, gen_data, vsc_data):
+        print("we have gen_data")
+        print("nelm")
+        print(gen_data.nelm)
+        print("nbus")
+        print(gen_data.nbus)
+        print("names")
+        print(gen_data.names)
+        print("idtag")
+        print(gen_data.idtag)
+        print("controllable")
+        print(gen_data.controllable)
+        print("installed_p")
+        print(gen_data.installed_p)
+
+        print("isActive")
+        print(gen_data.active)
+        print("p")
+        print(gen_data.p)
+        print("pf")
+        print(gen_data.pf)
+        print("v")
+        print(gen_data.v)
+
+        print("mttf")
+        print(gen_data.mttf)
+        print("mttr")
+        print(gen_data.mttr)
+
+        print("C_bus_elm")
+        print(gen_data.C_bus_elm)
+
+        print("r0")
+        print(gen_data.r0)
+        print("r1")
+        print(gen_data.r1)
+        print("r2")
+        print(gen_data.r2)
+
+        print("x0")
+        print(gen_data.x0)
+        print("x1")
+        print(gen_data.x1)
+        print("x2")
+        print(gen_data.x2)
+
+        print("dispatchable")
+        print(gen_data.dispatchable)
+        print("pmax")
+        print(gen_data.pmax)
+        print("pmin")
+        print(gen_data.pmin)
+
+        print("cost_1")
+        print(gen_data.cost_1)
+        print("cost_0")
+        print(gen_data.cost_0)
+        print("cost_2")
+        print(gen_data.cost_2)
+        print("startup_cost")
+        print(gen_data.startup_cost)
+        print("availability")
+        print(gen_data.availability)
+        print("ramp_up")
+        print(gen_data.ramp_up)
+        print("ramp_down")
+        print(gen_data.ramp_down)
+        print("min_time_up")
+        print(gen_data.min_time_up)
+        print("min_time_down")
+        print(gen_data.min_time_down)
+
+        print("original_idx")
+        print(gen_data.original_idx)
+            
+        print("we have vsc_data")
+        print("vsc_data.nbus",vsc_data.nbus)
+        print("vsc_data.nelm",vsc_data.nelm)
+
+
+        print(vsc_data)
+
+        pass
+
 
     def compile_control_indices(self,
                                 control_mode: List[Union[TransformerControlType, ConverterControlType]],

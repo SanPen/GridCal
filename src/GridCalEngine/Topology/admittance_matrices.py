@@ -538,6 +538,16 @@ class FastDecoupledAdmittanceMatrices:
         self.B2 = B2
 
 
+class GeneralisedACDCAdmittanceMatrices:
+    """
+    Admittance matrices for the generalised AC-DC power flow
+    """
+
+    def __init__(self, Yac: sp.csc_matrix, Ydc: sp.csc_matrix):
+        self.Yac = Yac
+        self.Ydc = Ydc
+
+
 def compute_fast_decoupled_admittances(X: Vec,
                                        B: Vec,
                                        tap_module: Vec,

@@ -27,6 +27,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit_general_pf import compile_numerical_circuit_at as compile_numerical_circuit_at_generalised_pf
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
@@ -735,17 +736,38 @@ def multi_island_pf(multi_circuit: MultiCircuit,
     :return: PowerFlowResults instance
     """
 
-    nc = compile_numerical_circuit_at(
-        circuit=multi_circuit,
-        t_idx=t,
-        apply_temperature=options.apply_temperature_correction,
-        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-        opf_results=opf_results,
-        use_stored_guess=options.use_stored_guess,
-        bus_dict=bus_dict,
-        areas_dict=areas_dict
-    )
+    # Generalised PowerFlow
+    if options.generalised_pf:
+        nc = compile_numerical_circuit_at_generalised_pf(
+            circuit=multi_circuit,
+            t_idx=t,
+            apply_temperature=options.apply_temperature_correction,
+            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=options.use_stored_guess,
+            bus_dict=bus_dict,
+            areas_dict=areas_dict
+        )
+        print("Generalised PowerFlow")
 
-    res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
+        res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
 
-    return res
+        return res
+    
+
+    # Normal PowerFlow
+    else:
+        nc = compile_numerical_circuit_at(
+            circuit=multi_circuit,
+            t_idx=t,
+            apply_temperature=options.apply_temperature_correction,
+            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+            opf_results=opf_results,
+            use_stored_guess=options.use_stored_guess,
+            bus_dict=bus_dict,
+            areas_dict=areas_dict
+        )
+        print("Normal PowerFlow")
+        res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
+
+        return res

@@ -1100,6 +1100,13 @@ class MultiCircuit:
         :return:
         """
         return len(self.hvdc_lines)
+    
+    def get_vsc_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.vsc_devices)
 
     def get_hvdc_names(self) -> StrVec:
         """
