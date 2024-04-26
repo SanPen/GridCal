@@ -285,7 +285,7 @@ class CimExporter:
                         continue
                     attr_type = attr_filters["Type"]
                     prop_split = str(attr_filters["Property-AttributeAssociationFull"]).split('#')
-                    if prop_split[0] == "http://entsoe.eu/CIM/SchemaExtension/3/1":
+                    if prop_split[0] == "http://entsoe.eu/CIM/SchemaExtension/3/1": # TODO do eu for 3.0
                         prop_text = "entsoe:" + prop_split[-1]
                     else:
                         prop_text = "cim:" + prop_split[-1]

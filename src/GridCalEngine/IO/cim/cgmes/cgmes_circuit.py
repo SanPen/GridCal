@@ -65,6 +65,8 @@ def find_references(elements_by_type: Dict[str, List[Base]],
     :param logger: DataLogger
     :param mark_used: mark objects as used?
     :return: Nothing, it is done in place
+    :param class_dict: Dictionary containing the class name in key and type of the objects in value.
+    :param association_inverse_dict: Containing the name of the attributes which associate with each other.
     """
     added_from_the_boundary_set = list()
 

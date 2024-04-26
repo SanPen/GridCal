@@ -122,7 +122,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
 
     for fm in fm_list:
         fm.scenarioTime = scenariotime
-        if modelingauthorityset != "":
+        if modelingauthorityset != "":  # TODO if 2.4 than no need in SV in 3.0 we need all
             fm.modelingAuthoritySet = modelingauthorityset
         current_time = datetime.utcnow()
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -198,6 +198,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
 
 
 def create_cgmes_terminal(bus: Bus,
+                          cond_eq: Union[None, Base],
                           cgmes_model: CgmesCircuit,
                           logger: DataLogger):
     """ Creates a new Terminal in CGMES model,
@@ -208,7 +209,9 @@ def create_cgmes_terminal(bus: Bus,
     term = terminal_template(new_rdf_id)
     term.name = bus.name
     # term.phases =
-    # term.ConductingEquipment = BusBarSection
+    cond_eq_type = cgmes_model.get_class_type("ConductingEquipment")
+    if cond_eq and isinstance(cond_eq, cond_eq_type):
+        term.ConductingEquipment = cond_eq
     term.connected = True
     tn = find_object_by_uuid(
         cgmes_model=cgmes_model,
@@ -533,7 +536,7 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
     for mc_elm in multicircuit_model.loads:
         object_template = cgmes_model.get_class_type("ConformLoad")
         cl = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        cl.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
+        cl.Terminals = create_cgmes_terminal(mc_elm.bus, cl, cgmes_model, logger)
         cl.name = mc_elm.name
 
         # vl = find_object_by_tn_uuid(
@@ -546,7 +549,7 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
         #     print("hello")
 
         # cl.BaseVoltage = BaseVoltage
-        cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm,cgmes_model=cgmes_model, logger=logger)
+        cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm, cgmes_model=cgmes_model, logger=logger)
         # cl.LoadGroup = ConformLoadGroup ..?
         cl.p = mc_elm.P / cl.LoadResponse.pConstantPower
         cl.q = mc_elm.Q / cl.LoadResponse.qConstantPower
@@ -579,7 +582,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
-        ei.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
+        ei.Terminals = create_cgmes_terminal(mc_elm.bus, ei, cgmes_model, logger)
 
         cgmes_model.add(ei)
 
@@ -606,8 +609,8 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                                target_vnom=mc_elm.get_max_bus_nominal_voltage()
                                                )  # which Vnom we need?
-        line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cgmes_model, logger),
-                          create_cgmes_terminal(mc_elm.bus_to, cgmes_model, logger)]
+        line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, line, cgmes_model, logger),
+                          create_cgmes_terminal(mc_elm.bus_to, line, cgmes_model, logger)]
         vnom = line.BaseVoltage.nominalVoltage
 
         if vnom is not None:
@@ -689,9 +692,9 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_gen.RotatingMachine = cgmes_syn  # linking them together
         cgmes_syn.maxQ = mc_elm.Qmax
         cgmes_syn.minQ = mc_elm.Qmin
-        cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
+        cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
         # ...
-        cgmes_syn.referencePriority = '0'  # ?
+        cgmes_syn.referencePriority = '0'  # TODO If slack is true, than it is 1
 
         cgmes_model.add(cgmes_syn)
 
@@ -705,8 +708,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
-        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus_to, cgmes_model, logger)]
+        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cm_transformer, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus_to, cm_transformer, cgmes_model, logger)]
         cm_transformer.aggregate = False  # what is this?
         # cm_transformer.EquipmentContainer: can be obtained only if the data is stored in MultiCircuit as well
 
@@ -758,9 +761,9 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
-        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus1, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus2, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus3, cgmes_model, logger)]
+        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus1, cm_transformer, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus2, cm_transformer, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus3, cm_transformer, cgmes_model, logger)]
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
@@ -863,7 +866,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         # lsc.sections = ?
         # lsc.normalSections = ?
 
-        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_model, logger)
+        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, lsc, cgmes_model, logger)
 
         cgmes_model.add(lsc)
 
