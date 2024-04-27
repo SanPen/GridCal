@@ -31,11 +31,12 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.enumerations import SimulationTypes
 
-from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import (DiagramEditorWidget,
-                                                                            BusGraphicItem,
-                                                                            generate_bus_branch_diagram,
-                                                                            make_vecinity_diagram)
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
+                                                                   BusGraphicItem,
+                                                                   generate_bus_branch_diagram,
+                                                                   make_vecinity_diagram)
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget, generate_map_diagram
 from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
@@ -44,8 +45,8 @@ from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.TileProviders.cartodb import CartoDbTiles
 
-ALL_EDITORS = Union[DiagramEditorWidget, GridMapWidget]
-ALL_EDITORS_NONE = Union[None, DiagramEditorWidget, GridMapWidget]
+ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
+ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
 
 
 class DiagramsMain(CompiledArraysMain):
@@ -177,7 +178,7 @@ class DiagramsMain(CompiledArraysMain):
         diagram_widget = self.get_selected_diagram_widget()
 
         if diagram_widget:
-            if isinstance(diagram_widget, DiagramEditorWidget):
+            if isinstance(diagram_widget, SchematicWidget):
 
                 # guilty assumption
                 do_it = True
@@ -208,7 +209,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.expand_node_distances()
                 diagram.center_nodes()
 
@@ -218,7 +219,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.shrink_node_distances()
                 diagram.center_nodes()
 
@@ -229,7 +230,7 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 selected = self.get_selected_buses()
 
                 if len(selected) == 0:
@@ -245,7 +246,7 @@ class DiagramsMain(CompiledArraysMain):
         :return: list of (bus position, bus object, bus_graphics object)
         """
         diagram_widget = self.get_selected_diagram_widget()
-        if isinstance(diagram_widget, DiagramEditorWidget):
+        if isinstance(diagram_widget, SchematicWidget):
             return diagram_widget.get_selected_buses()
         else:
             return list()
@@ -256,7 +257,7 @@ class DiagramsMain(CompiledArraysMain):
         :return: list of (bus position, bus object, bus_graphics object)
         """
         diagram_widget = self.get_selected_diagram_widget()
-        if isinstance(diagram_widget, DiagramEditorWidget):
+        if isinstance(diagram_widget, SchematicWidget):
             return diagram_widget.get_buses()
         else:
             return list()
@@ -266,7 +267,7 @@ class DiagramsMain(CompiledArraysMain):
         Change the node explosion factor
         """
         for diagram in self.diagram_widgets_list:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.expand_factor = self.ui.explosion_factor_doubleSpinBox.value()
 
     def zoom_in(self):
@@ -275,7 +276,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.editor_graphics_view.zoom_in()
             elif isinstance(diagram, GridMapWidget):
                 # TODO implement this
@@ -287,7 +288,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.editor_graphics_view.zoom_out()
             elif isinstance(diagram, GridMapWidget):
                 # TODO implement this
@@ -334,7 +335,7 @@ class DiagramsMain(CompiledArraysMain):
 
         if current_study == sim.PowerFlowDriver.tpe.value:
             if t_idx is None:
-                results: sim.PowerFlowResults = self.session.get_results(sim.SimulationTypes.PowerFlow_run)
+                results: sim.PowerFlowResults = self.session.get_results(SimulationTypes.PowerFlow_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -370,7 +371,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
-                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(sim.SimulationTypes.TimeSeries_run)
+                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(SimulationTypes.PowerFlowTimeSeries_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -404,7 +405,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             if t_idx is None:
                 results: sim.ContinuationPowerFlowResults = self.session.get_results(
-                    sim.SimulationTypes.ContinuationPowerFlow_run
+                    SimulationTypes.ContinuationPowerFlow_run
                 )
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
@@ -437,7 +438,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
             if t_idx is None:
                 results: sim.StochasticPowerFlowResults = self.session.get_results(
-                    sim.SimulationTypes.StochasticPowerFlow)
+                    SimulationTypes.StochasticPowerFlow)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -469,7 +470,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             if t_idx is None:
-                results: sim.ShortCircuitResults = self.session.get_results(sim.SimulationTypes.ShortCircuit_run)
+                results: sim.ShortCircuitResults = self.session.get_results(SimulationTypes.ShortCircuit_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
@@ -500,7 +501,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             if t_idx is None:
-                results: sim.OptimalPowerFlowResults = self.session.get_results(sim.SimulationTypes.OPF_run)
+                results: sim.OptimalPowerFlowResults = self.session.get_results(SimulationTypes.OPF_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -533,7 +534,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if t_idx is not None:
                 results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
-                    sim.SimulationTypes.OPFTimeSeries_run
+                    SimulationTypes.OPFTimeSeries_run
                 )
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
@@ -565,7 +566,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.LinearAnalysisDriver.tpe.value:
             if t_idx is None:
-                results: sim.LinearAnalysisResults = self.session.get_results(sim.SimulationTypes.LinearAnalysis_run)
+                results: sim.LinearAnalysisResults = self.session.get_results(SimulationTypes.LinearAnalysis_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -595,7 +596,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
-                    sim.SimulationTypes.LinearAnalysis_TS_run)
+                    SimulationTypes.LinearAnalysis_TS_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -624,7 +625,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if t_idx is None:
                 results: sim.ContingencyAnalysisResults = self.session.get_results(
-                    sim.SimulationTypes.ContingencyAnalysis_run)
+                    SimulationTypes.ContingencyAnalysis_run)
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
@@ -652,7 +653,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
-                    sim.SimulationTypes.ContingencyAnalysisTS_run)
+                    SimulationTypes.ContingencyAnalysisTS_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -680,7 +681,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
             if t_idx is None:
-                results = self.session.get_results(sim.SimulationTypes.InputsAnalysis_run)
+                results = self.session.get_results(SimulationTypes.InputsAnalysis_run)
                 nbus = self.circuit.get_bus_number()
                 nbr = self.circuit.get_branch_number()
                 bus_active = [bus.active for bus in self.circuit.buses]
@@ -730,7 +731,7 @@ class DiagramsMain(CompiledArraysMain):
 
             for diagram in self.diagram_widgets_list:
 
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     self.grid_colour_function(plot_function=diagram.colour_results,
                                               current_study=current_study,
                                               t_idx=t_idx)
@@ -768,7 +769,7 @@ class DiagramsMain(CompiledArraysMain):
 
         if diagram_widget:
 
-            if isinstance(diagram_widget, DiagramEditorWidget):
+            if isinstance(diagram_widget, SchematicWidget):
                 # set pointer to the circuit
                 diagram = generate_bus_branch_diagram(buses=self.circuit.get_buses(),
                                                       lines=self.circuit.get_lines(),
@@ -798,7 +799,7 @@ class DiagramsMain(CompiledArraysMain):
         if diagram:
             self.set_diagram_widget(diagram)
 
-    def add_complete_bus_branch_diagram_now(self, name='All bus branches') -> DiagramEditorWidget:
+    def add_complete_bus_branch_diagram_now(self, name='All bus branches') -> SchematicWidget:
         """
         Add ageneral bus-branch diagram
         :return DiagramEditorWidget
@@ -820,10 +821,10 @@ class DiagramsMain(CompiledArraysMain):
                                               text_func=None,
                                               name=name)
 
-        diagram_widget = DiagramEditorWidget(circuit=self.circuit,
-                                             diagram=diagram,
-                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                             time_index=self.get_diagram_slider_index())
+        diagram_widget = SchematicWidget(circuit=self.circuit,
+                                         diagram=diagram,
+                                         default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                         time_index=self.get_diagram_slider_index())
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -847,13 +848,13 @@ class DiagramsMain(CompiledArraysMain):
 
         if diagram_widget:
 
-            if isinstance(diagram_widget, DiagramEditorWidget):
+            if isinstance(diagram_widget, SchematicWidget):
                 diagram = diagram_widget.get_selection_diagram()
 
-                diagram_widget = DiagramEditorWidget(self.circuit,
-                                                     diagram=diagram,
-                                                     default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                     time_index=self.get_diagram_slider_index())
+                diagram_widget = SchematicWidget(self.circuit,
+                                                 diagram=diagram,
+                                                 default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                 time_index=self.get_diagram_slider_index())
 
                 self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
                 self.set_diagrams_list_view()
@@ -922,10 +923,10 @@ class DiagramsMain(CompiledArraysMain):
                                                             root_bus=root_bus,
                                                             max_level=dlg.value)
 
-                            diagram_widget = DiagramEditorWidget(self.circuit,
-                                                                 diagram=diagram,
-                                                                 default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                                 time_index=self.get_diagram_slider_index())
+                            diagram_widget = SchematicWidget(self.circuit,
+                                                             diagram=diagram,
+                                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                             time_index=self.get_diagram_slider_index())
 
                             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
                                                                 diagram=diagram)
@@ -942,17 +943,18 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.circuit.diagrams:
 
             if isinstance(diagram, dev.SchematicDiagram):
-                diagram_widget = DiagramEditorWidget(self.circuit,
-                                                     diagram=diagram,
-                                                     default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                     time_index=self.get_diagram_slider_index())
+                diagram_widget = SchematicWidget(self.circuit,
+                                                 diagram=diagram,
+                                                 default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                                 time_index=self.get_diagram_slider_index())
                 diagram_widget.setStretchFactor(1, 10)
                 diagram_widget.center_nodes()
                 self.diagram_widgets_list.append(diagram_widget)
 
             elif isinstance(diagram, dev.MapDiagram):
-                # select the tile source
-                tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+                # select the tile source from the diagram, if not fund pick the one from the GUI
+                defualt_tile_source = self.tile_sources[self.ui.tile_provider_comboBox.currentText()]
+                tile_source = self.tile_sources.get(diagram.tile_source, defualt_tile_source)
 
                 # create the map widget
                 map_widget = GridMapWidget(parent=None,
@@ -989,13 +991,19 @@ class DiagramsMain(CompiledArraysMain):
                                        text_func=None,
                                        name='Map diagram')
 
+        # set other default properties of the diagram
+        diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
+        diagram.start_level = 5
+        diagram.longitude = -15.41
+        diagram.latitude = 40.11
+
         # create the map widget
         map_widget = GridMapWidget(parent=None,
                                    tile_src=tile_source,
-                                   start_level=5,
-                                   longitude=-15.41,
-                                   latitude=40.11,
-                                   name='Map diagram',
+                                   start_level=diagram.start_level,
+                                   longitude=diagram.longitude,
+                                   latitude=diagram.latitude,
+                                   name=diagram.name,
                                    diagram=diagram)
 
         self.add_diagram_widget_and_diagram(diagram_widget=map_widget, diagram=diagram)
@@ -1100,7 +1108,7 @@ class DiagramsMain(CompiledArraysMain):
 
         # modify the time index in all the bus-branch diagrams
         for diagram in self.diagram_widgets_list:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.set_time_index(time_index=idx2)
 
                 # TODO: consider other diagrams
@@ -1154,7 +1162,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
 
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
@@ -1182,7 +1190,7 @@ class DiagramsMain(CompiledArraysMain):
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
 
                     if yes_no_question("All nodes in the current diagram will be positioned to a 2D plane projection "
                                        "of their latitude and longitude. "
@@ -1199,7 +1207,7 @@ class DiagramsMain(CompiledArraysMain):
 
         for diagram in self.diagram_widgets_list:
 
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.set_big_bus_marker(buses=buses, color=color)
 
     def set_big_bus_marker_colours(self,
@@ -1215,7 +1223,7 @@ class DiagramsMain(CompiledArraysMain):
 
         for diagram in self.diagram_widgets_list:
 
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.set_big_bus_marker_colours(buses=buses,
                                                    colors=colors,
                                                    tool_tips=tool_tips)
@@ -1227,7 +1235,7 @@ class DiagramsMain(CompiledArraysMain):
 
         for diagram in self.diagram_widgets_list:
 
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.clear_big_bus_markers()
 
     def delete_selected_from_the_schematic(self):
@@ -1236,7 +1244,7 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         diagram_widget = self.get_selected_diagram_widget()
-        if isinstance(diagram_widget, DiagramEditorWidget):
+        if isinstance(diagram_widget, SchematicWidget):
             diagram_widget.delete_Selected()
         else:
             pass
@@ -1246,7 +1254,7 @@ class DiagramsMain(CompiledArraysMain):
         Try to fix the location of the buses
         """
         diagram_widget = self.get_selected_diagram_widget()
-        if isinstance(diagram_widget, DiagramEditorWidget):
+        if isinstance(diagram_widget, SchematicWidget):
             selected_buses = diagram_widget.get_selected_buses()
             if len(selected_buses) > 0:
                 diagram_widget.try_to_fix_buses_location(buses_selection=selected_buses)
@@ -1261,7 +1269,7 @@ class DiagramsMain(CompiledArraysMain):
 
         diagram = self.get_selected_diagram_widget()
 
-        if isinstance(diagram, DiagramEditorWidget):
+        if isinstance(diagram, SchematicWidget):
             lst = diagram.get_selection_api_objects()
         elif isinstance(diagram, GridMapWidget):
             lst = list()
@@ -1440,7 +1448,7 @@ class DiagramsMain(CompiledArraysMain):
 
         for diagram in self.diagram_widgets_list:
 
-            if isinstance(diagram, DiagramEditorWidget):
+            if isinstance(diagram, SchematicWidget):
                 diagram.default_bus_voltage = val
 
             elif isinstance(diagram, GridMapWidget):
@@ -1453,7 +1461,7 @@ class DiagramsMain(CompiledArraysMain):
         :return:
         """
         for diagram_widget in self.diagram_widgets_list:
-            if isinstance(diagram_widget, DiagramEditorWidget):
+            if isinstance(diagram_widget, SchematicWidget):
                 diagram_widget.delete_diagram_elements(elements)
 
             elif isinstance(diagram_widget, GridMapWidget):
@@ -1473,7 +1481,7 @@ class DiagramsMain(CompiledArraysMain):
                 diagram = self.get_selected_diagram_widget()
 
                 if diagram is not None:
-                    if isinstance(diagram, DiagramEditorWidget):
+                    if isinstance(diagram, SchematicWidget):
                         diagram.graphical_search(search_text=dlg.searchText.lower())
 
     def show_diagrams_context_menu(self, pos: QtCore.QPoint):
@@ -1514,7 +1522,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
 
-        if isinstance(diagram, DiagramEditorWidget):
+        if isinstance(diagram, SchematicWidget):
             diagram.disable_all_results_tags()
 
     def enable_all_results_tags(self):
@@ -1523,5 +1531,5 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
 
-        if isinstance(diagram, DiagramEditorWidget):
+        if isinstance(diagram, SchematicWidget):
             diagram.enable_all_results_tags()

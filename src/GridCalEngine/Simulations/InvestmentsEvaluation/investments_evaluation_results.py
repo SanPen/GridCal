@@ -54,6 +54,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses: Vec = np.zeros(max_eval, dtype=float)
         self._overload_score: Vec = np.zeros(max_eval, dtype=float)
         self._voltage_score: Vec = np.zeros(max_eval, dtype=float)
+        self._electrical: Vec = np.zeros(max_eval, dtype=float)
+        self._financial: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
 
@@ -64,6 +66,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='_losses', tpe=Vec)
         self.register(name='_overload_score', tpe=Vec)
         self.register(name='_voltage_score', tpe=Vec)
+        self.register(name='_electrical', tpe=Vec)
+        self.register(name='_financial', tpe=Vec)
         self.register(name='_f_obj', tpe=Vec)
         self.register(name='_index_names', tpe=Vec)
 
@@ -89,8 +93,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         """
         return self._index_names
 
-    def set_at(self, eval_idx, capex, opex, losses, overload_score, voltage_score, objective_function,
-               combination: IntVec, index_name: str) -> None:
+    def set_at(self, eval_idx,
+               capex: float,
+               opex: float,
+               losses: float,
+               overload_score: float,
+               voltage_score: float,
+               electrical: float,
+               financial: float,
+               objective_function_sum: float,
+               combination: IntVec,
+               index_name: str) -> None:
         """
         Set the results at an investment group
         :param eval_idx: evaluation index
@@ -99,7 +112,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param losses:
         :param overload_score:
         :param voltage_score:
-        :param objective_function:
+        :param electrical:
+        :param financial:
+        :param objective_function_sum:
         :param combination: vector of size (n_investment_groups) with ones in those investments used
         :param index_name: Name of the evaluation
         """
@@ -108,7 +123,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses[eval_idx] = losses
         self._overload_score[eval_idx] = overload_score
         self._voltage_score[eval_idx] = voltage_score
-        self._f_obj[eval_idx] = objective_function
+        self._electrical[eval_idx] = electrical
+        self._financial[eval_idx] = financial
+        self._f_obj[eval_idx] = objective_function_sum
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
 
@@ -122,18 +139,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         if result_type == ResultTypes.InvestmentsReportResults:
             labels = self._index_names
-            columns = ["CAPEX (M€)",
-                       "OPEX (M€/yr)",
-                       "Losses (MW)",
+            columns = ["Losses (MW)",
                        "Overload cost (€)",
-                       "Voltage deviations cost (€)",
                        "Objective function"] + list(self.investment_groups_names)
             data = np.c_[
-                self._capex,
-                self._opex,
-                self._losses,
-                self._overload_score,
-                self._voltage_score,
+                # self._capex,
+                # self._opex,
+                # self._losses,
+                # self._overload_score,
+                # self._voltage_score,
+                self._electrical,
+                self._financial,
                 self._f_obj,
                 self._combinations
             ]
@@ -152,9 +168,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         elif result_type == ResultTypes.InvestmentsParetoPlot:
             labels = self._index_names
-            columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
-            x = self._capex + self._opex
-            y = self._losses
+            columns = ["Investment cost (M€)", "Technical cost (M€)"]
+            x = self._financial
+            y = self._electrical
             data = np.c_[x, y]
             y_label = ''
             title = ''

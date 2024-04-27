@@ -27,7 +27,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
                                                     get_values_shunt,
                                                     get_pu_values_power_transformer, get_pu_values_power_transformer3w,
-                                                    get_windings,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
                                                     get_slack_id)
 from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes  # TODO move them here
@@ -1157,7 +1156,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     """
     gc_model = MultiCircuit()  # roseta
     Sbase = gc_model.Sbase
-
+    cgmes_model.emit_progress(70)
+    cgmes_model.emit_text("Converting CGMES to Gridcal")
     # busbar_dict = parse_bus_bars(cgmes_model, circuit, logger)
     # parse_ac_line_segment(cgmes_model, circuit, busbar_dict, logger)
     # parse_power_transformer(cgmes_model, circuit, busbar_dict, logger)
@@ -1190,7 +1190,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
     print('debug')
-
+    cgmes_model.emit_progress(100)
+    cgmes_model.emit_text("Cgmes import done!")
     # Gridcal to cgmes
     # cgmes_circuit = CgmesCircuit(cgmes_version='2.4.15')
     # cgmes_circuit = CgmesCircuit(

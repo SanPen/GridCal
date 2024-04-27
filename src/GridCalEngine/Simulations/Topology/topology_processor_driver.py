@@ -23,8 +23,7 @@ from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
 from GridCalEngine.basic_structures import IntVec, Logger
-from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.enumerations import DeviceType, SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 

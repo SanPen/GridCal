@@ -65,6 +65,8 @@ def find_references(elements_by_type: Dict[str, List[Base]],
     :param logger: DataLogger
     :param mark_used: mark objects as used?
     :return: Nothing, it is done in place
+    :param class_dict: Dictionary containing the class name in key and type of the objects in value.
+    :param association_inverse_dict: Containing the name of the attributes which associate with each other.
     """
     added_from_the_boundary_set = list()
 
@@ -354,13 +356,27 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
     print("find references: ", endt - start, "sec")
 
 
+def is_valid_cgmes(cgmes_version) -> bool:
+    """
+    Check if the version is CGMES
+    :param cgmes_version:
+    :return:
+    """
+    if cgmes_version == CGMESVersions.v2_4_15:
+        return True
+    elif cgmes_version == CGMESVersions.v3_0_0:
+        return True
+    else:
+        return False
+
+
 class CgmesCircuit(BaseCircuit):
     """
     CgmesCircuit
     """
 
     def __init__(self,
-                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
+                 cgmes_version: Union[None, CGMESVersions] = None,
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
@@ -369,19 +385,19 @@ class CgmesCircuit(BaseCircuit):
         """
         BaseCircuit.__init__(self)
 
-        self.cgmes_version = cgmes_version
+        self.cgmes_version: CGMESVersions = cgmes_version
         self.logger: DataLogger = logger
 
         self.text_func = text_func
         self.progress_func = progress_func
 
-        # if cgmes_version == CGMESVersions.v2_4_15:
-        if cgmes_version == '2.4.15':
+        if cgmes_version == CGMESVersions.v2_4_15:
             self.cgmes_assets = Cgmes_2_4_15_Assets()
         elif cgmes_version == CGMESVersions.v3_0_0:
             self.cgmes_assets = Cgmes_3_0_0_Assets()
         else:
-            raise Exception(f"Unrecognized CGMES version {cgmes_version}")
+            logger.add_error(msg=f"Unrecognized CGMES version {cgmes_version}")
+            raise ValueError(f"Unrecognized CGMES version {cgmes_version}")
 
             # classes to read, theo others are ignored
         self.classes = [key for key, va in self.cgmes_assets.class_dict.items()]
@@ -412,6 +428,8 @@ class CgmesCircuit(BaseCircuit):
         #                               logger=self.logger)
         # data_parser.load_files(files=files)
         import time
+        self.emit_text("Processing CGMES model")
+        self.emit_progress(20)
         # set the data
         self.set_data(data=data_parser.data,
                       boundary_set=data_parser.boudary_set)
@@ -426,6 +444,7 @@ class CgmesCircuit(BaseCircuit):
                                 association_inverse_dict=self.cgmes_assets.association_inverse_dict,
                                 logger=self.logger)
         start = time.time()
+        self.emit_progress(30)
         # convert the dictionaries to the internal class model,
         # this marks as used only the boundary set objects that are referenced,
         # this allows to delete the excess of boundary set objects later
@@ -440,7 +459,7 @@ class CgmesCircuit(BaseCircuit):
         print("Data to objects time: ", endt - start, "sec")
         # Assign the data from all_objects_dict to the appropriate lists in the circuit
         self.assign_data_to_lists()
-
+        self.emit_progress(50)
         if delete_unused:
             # delete the unused objects from the boundary set
             self.delete_unused()

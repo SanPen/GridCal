@@ -25,25 +25,23 @@ class InvestmentsEvaluationOptions:
 
     def __init__(self, max_eval: int,
                  pf_options: PowerFlowOptions,
-                 solver: InvestmentEvaluationMethod = InvestmentEvaluationMethod.MVRSM,
-                 w_overload: float = 1.0,
-                 w_voltage_module: float = 1.0,
-                 w_voltage_angle: float = 1.0,
-                 w_losses: float = 1.0,
-                 w_capex: float = 1.0,
-                 w_opex: float = 1.0,
+                 solver: InvestmentEvaluationMethod = InvestmentEvaluationMethod.NSGA3,
+                 # w_overload: float = 1.0,
+                 # w_voltage_module: float = 1.0,
+                 # w_voltage_angle: float = 1.0,
+                 # w_losses: float = 1.0,
+                 # w_capex: float = 1.0,
+                 # w_opex: float = 1.0,
+                 w_electrical: float = 1.0,
+                 w_financial: float = 1.0,
                  objf_tpe: InvestmentsEvaluationObjectives = InvestmentsEvaluationObjectives.PowerFlow):
         """
 
         :param max_eval:
         :param pf_options:
         :param solver:
-        :param w_overload:
-        :param w_voltage_module:
-        :param w_voltage_angle:
-        :param w_losses:
-        :param w_capex:
-        :param w_opex:
+        :param w_electrical:
+        :param w_financial:
         :param objf_tpe:
         """
         self.max_eval = max_eval
@@ -52,16 +50,20 @@ class InvestmentsEvaluationOptions:
 
         self.solver = solver
 
-        self.w_overload = w_overload
+        # self.w_overload = w_overload
+        #
+        # self.w_voltage_module = w_voltage_module
+        #
+        # self.w_voltage_angle = w_voltage_angle
+        #
+        # self.w_losses = w_losses
+        #
+        # self.w_capex = w_capex
+        #
+        # self.w_opex = w_opex
 
-        self.w_voltage_module = w_voltage_module
+        self.w_electrical = w_electrical
 
-        self.w_voltage_angle = w_voltage_angle
-
-        self.w_losses = w_losses
-
-        self.w_capex = w_capex
-
-        self.w_opex = w_opex
+        self.w_financial = w_financial
 
         self.objf_tpe = objf_tpe

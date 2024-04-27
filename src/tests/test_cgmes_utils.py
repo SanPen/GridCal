@@ -1,9 +1,9 @@
 import pytest
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_windings_number, get_windings, get_voltages, get_rate, \
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_windings_number, get_voltages, get_rate, \
     get_voltage_power_transformer_end, get_pu_values_power_transformer_end, get_voltage_ac_line_segment, \
-    get_pu_values_ac_line_segment, get_rate_ac_line_segment, get_voltage_terminal, get_topological_nodes_bus_bar, \
-    get_topological_node_bus_bar, get_topological_nodes_dipole, get_buses_dipole, get_nodes_dipole, \
-    get_topological_node_monopole, get_pq, get_nominal_voltage, get_nodes, base_voltage_to_str, check
+    get_pu_values_ac_line_segment, get_rate_ac_line_segment, get_voltage_terminal, \
+    get_topological_nodes_dipole, get_nodes_dipole, \
+    get_topological_node_monopole, get_pq, get_nominal_voltage, base_voltage_to_str, check
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
@@ -38,14 +38,14 @@ def test_get_windings_number_multiple_winding_returns_correct_amount():
 def test_get_windings_no_windings_returns_no_element():
     # Create a PowerTransformer instance with no references to PowerTransformerEnd
     power_transformer = PowerTransformer("a", "b")
-    assert len(get_windings(power_transformer)) == 0
+    assert len(power_transformer.PowerTransformerEnd) == 0
 
 
 def test_get_windings_add_windings_returns_correct_element():
     # Create a PowerTransformer instance with no references to PowerTransformerEnd
     power_transformer = PowerTransformer("a", "b")
     power_transformer.references_to_me["PowerTransformerEnd"] = [1]
-    assert get_windings(power_transformer)[0] == 1
+    assert power_transformer.PowerTransformerEnd[0] == 1
 
 
 def test_get_pu_values_power_transformer_no_power_transformer():
@@ -266,32 +266,32 @@ def test_get_voltage_terminal_no_topologicalnode_retuns_None():
     assert get_voltage_terminal(t, None) is None
 
 
-def test_get_topological_nodes_bus_bar_setup_terminals_return_topologicalnodelist():
-    bbs = BusbarSection()
-    bbs.references_to_me["Terminal"] = [Terminal()]
-    result = get_topological_nodes_bus_bar(bbs)
-    assert len(result) == 1  # TODO
-
-
-def test_get_topological_nodes_bus_bar_setup_missing_key_returns_empty_list():
-    bbs = BusbarSection()
-    bbs.references_to_me["aaa"] = [Terminal()]
-    result = get_topological_nodes_bus_bar(bbs)
-    assert result == []
-
-
-def test_get_topological_node_bus_bar_setup_terminals_return_first_topologicalnode():
-    bbs = BusbarSection()
-    bbs.references_to_me["Terminal"] = [Terminal()]
-    result = get_topological_node_bus_bar(bbs)
-    assert result is not None  # TODO
-
-
-def test_get_topological_node_bus_bar_setup_terminals_with_wrong_key_returns_empty_array():
-    bbs = BusbarSection()
-    bbs.references_to_me["aaaa"] = [Terminal()]
-    result = get_topological_node_bus_bar(bbs)
-    assert result == []
+# def test_get_topological_nodes_bus_bar_setup_terminals_return_topologicalnodelist():
+#     bbs = BusbarSection()
+#     bbs.references_to_me["Terminal"] = [Terminal()]
+#     result = get_topological_nodes_bus_bar(bbs)
+#     assert len(result) == 1  # TODO
+#
+#
+# def test_get_topological_nodes_bus_bar_setup_missing_key_returns_empty_list():
+#     bbs = BusbarSection()
+#     bbs.references_to_me["aaa"] = [Terminal()]
+#     result = get_topological_nodes_bus_bar(bbs)
+#     assert result == []
+#
+#
+# def test_get_topological_node_bus_bar_setup_terminals_return_first_topologicalnode():
+#     bbs = BusbarSection()
+#     bbs.references_to_me["Terminal"] = [Terminal()]
+#     result = get_topological_node_bus_bar(bbs)
+#     assert result is not None  # TODO
+#
+#
+# def test_get_topological_node_bus_bar_setup_terminals_with_wrong_key_returns_empty_array():
+#     bbs = BusbarSection()
+#     bbs.references_to_me["aaaa"] = [Terminal()]
+#     result = get_topological_node_bus_bar(bbs)
+#     assert result == []
 
 
 def test_get_topological_nodes_dipole_with_valid_terminals():
@@ -328,20 +328,20 @@ def test_get_topological_nodes_dipole_with_only_one_terminal_returns_None():
     assert node2 is None
 
 
-def test_get_buses_dipole_setup_identified_object_returns_correct_values():
-    i = IdentifiedObject("a", "b")
-    t1 = Terminal()
-    t2 = Terminal()
-    t3 = BusbarSection()
-    t4 = BusbarSection()
-    t1.TopologicalNode = TopologicalNode()
-    t1.TopologicalNode.references_to_me["Terminal"] = [t3]
-    t2.TopologicalNode = TopologicalNode()
-    t2.TopologicalNode.references_to_me["Terminal"] = [t4]
-    i.references_to_me["Terminal"] = [t1, t2]
-    b1, b2 = get_buses_dipole(i)
-    assert b1 is not None
-    assert b2 is not None
+# def test_get_buses_dipole_setup_identified_object_returns_correct_values():
+#     i = IdentifiedObject("a", "b")
+#     t1 = Terminal()
+#     t2 = Terminal()
+#     t3 = BusbarSection()
+#     t4 = BusbarSection()
+#     t1.TopologicalNode = TopologicalNode()
+#     t1.TopologicalNode.references_to_me["Terminal"] = [t3]
+#     t2.TopologicalNode = TopologicalNode()
+#     t2.TopologicalNode.references_to_me["Terminal"] = [t4]
+#     i.references_to_me["Terminal"] = [t1, t2]
+#     b1, b2 = get_buses_dipole(i)
+#     assert b1 is not None
+#     assert b2 is not None
 
 
 def test_get_nodes_dipole_setup_identified_object_returns_correct_values():
@@ -449,48 +449,48 @@ def test_get_nominal_voltage_basevoltage_is_string_log_error():
     assert logger.entries[0].msg == "Missing refference"
 
 
-def test_get_nodes_returns_2_topological_node_type_class():
-    s = Switch()
-    t1 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    t2 = Terminal()
-    t2.TopologicalNode = TopologicalNode()
-    s.references_to_me["Terminal"] = [t1, t2]
-    n1, n2 = get_nodes(s)
-
-    assert isinstance(n1(), TopologicalNode)
-    assert isinstance(n2(), TopologicalNode)
-
-
-def test_get_nodes_returns_2_topological_node_type_class():
-    s = Switch()
-    t1 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    t2 = Terminal()
-    t2.TopologicalNode = TopologicalNode()
-    s.references_to_me["Terminal"] = [t1, t2]
-    n1, n2 = get_nodes(s)
-
-    assert isinstance(n1(), TopologicalNode)
-    assert isinstance(n2(), TopologicalNode)
-
-
-def test_get_nodes_1_terminal_returns_none():
-    s = Switch()
-    t1 = Terminal()
-    s.references_to_me["Terminal"] = [t1]
-    n1, n2 = get_nodes(s)
-    assert n1 is None
-    assert n2 is None
-
-
-def test_get_nodes_no_terminal_returns_none():
-    s = Switch()
-    t1 = Terminal()
-    s.references_to_me["aaaa"] = [t1]
-    n1, n2 = get_nodes(s)
-    assert n1 is None
-    assert n2 is None
+# def test_get_nodes_returns_2_topological_node_type_class():
+#     s = Switch()
+#     t1 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     t2 = Terminal()
+#     t2.TopologicalNode = TopologicalNode()
+#     s.references_to_me["Terminal"] = [t1, t2]
+#     n1, n2 = get_nodes(s)
+#
+#     assert isinstance(n1(), TopologicalNode)
+#     assert isinstance(n2(), TopologicalNode)
+#
+#
+# def test_get_nodes_returns_2_topological_node_type_class():
+#     s = Switch()
+#     t1 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     t2 = Terminal()
+#     t2.TopologicalNode = TopologicalNode()
+#     s.references_to_me["Terminal"] = [t1, t2]
+#     n1, n2 = get_nodes(s)
+#
+#     assert isinstance(n1(), TopologicalNode)
+#     assert isinstance(n2(), TopologicalNode)
+#
+#
+# def test_get_nodes_1_terminal_returns_none():
+#     s = Switch()
+#     t1 = Terminal()
+#     s.references_to_me["Terminal"] = [t1]
+#     n1, n2 = get_nodes(s)
+#     assert n1 is None
+#     assert n2 is None
+#
+#
+# def test_get_nodes_no_terminal_returns_none():
+#     s = Switch()
+#     t1 = Terminal()
+#     s.references_to_me["aaaa"] = [t1]
+#     n1, n2 = get_nodes(s)
+#     assert n1 is None
+#     assert n2 is None
 
 
 def test_base_voltage_to_str_returns_formatted_str():

@@ -1887,6 +1887,14 @@ class MultiCircuit:
         elif device_type == DeviceType.LineDevice:
             return self.lines
 
+        elif device_type == DeviceType.LineLocation:
+            locations = list()
+            branches_w_locations = [self.lines, self.dc_lines, self.hvdc_lines, self.fluid_paths]
+            for lst in branches_w_locations:
+                for line in lst:
+                    locations += line.locations.data
+            return locations
+
         elif device_type == DeviceType.Transformer2WDevice:
             return self.transformers2w
 
@@ -2437,7 +2445,7 @@ class MultiCircuit:
 
         return data
 
-    def get_all_elements_dict_by_type(self) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -2445,7 +2453,13 @@ class MultiCircuit:
 
         data = dict()
         for key, tpe in self.device_type_name_dict.items():
-            data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe, use_secondary_key=False)
+            data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe,
+                                                             use_secondary_key=False)
+
+        # add locations
+        if add_locations:
+            data[DeviceType.LineLocation.value] = self.get_elements_dict_by_type(element_type=DeviceType.LineLocation,
+                                                                                 use_secondary_key=False)
 
         return data
 

@@ -101,7 +101,6 @@ class PointsGroup:
 
             if api_object is None:
                 # locations with no API object are not created
-                print()
                 logger.add_error("Diagram location could not find API object",
                                  device_class=category,
                                  device=idtag,)

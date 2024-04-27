@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
-from warnings import warn
 from typing import Union
 import pandas as pd
 from PySide6 import QtWidgets
@@ -27,7 +26,7 @@ import GridCal.Session.file_handler as filedrv
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
-from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
@@ -371,12 +370,16 @@ class IoMain(ConfigurationMain):
                         dlg.exec_()
 
             else:
-                warn('The file was not valid')
+                warning_msg(text='Error while loading the file(s)')
+                # else, show the logger if it is necessary
+                if len(self.open_file_thread_object.logger) > 0:
+                    dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                    dlg.exec_()
         else:
             # center nodes
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.center_nodes()
 
         self.collect_memory()
@@ -428,7 +431,7 @@ class IoMain(ConfigurationMain):
 
                     # add to schematic
                     if diagram_widget is not None:
-                        if isinstance(diagram_widget, DiagramEditorWidget):
+                        if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
@@ -464,6 +467,7 @@ class IoMain(ConfigurationMain):
         files_types = ("GridCal zip (*.gridcal);;"
                        "GridCal HDF5 (*.gch5);;"
                        "Excel (*.xlsx);;"
+                       "CGMES (*.zip);;"
                        "CIM (*.xml);;"
                        "Electrical Json V3 (*.ejson3);;"
                        "Rawx (*.rawx);;"
@@ -496,6 +500,7 @@ class IoMain(ConfigurationMain):
                 extension = dict()
                 extension['Excel (*.xlsx)'] = '.xlsx'
                 extension['CIM (*.xml)'] = '.xml'
+                extension['CGMES (*.zip)'] = '.zip'
                 extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
                 extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
                 extension['GridCal zip (*.gridcal)'] = '.gridcal'
@@ -510,7 +515,7 @@ class IoMain(ConfigurationMain):
 
                 # we were able to compose the file correctly, now save it
                 self.file_name = filename
-                self.save_file_now(self.file_name)
+                self.save_file_now(self.file_name, type_selected=type_selected)
         else:
             # save directly
             self.save_file_now(self.file_name)
@@ -539,10 +544,12 @@ class IoMain(ConfigurationMain):
 
         return options
 
-    def save_file_now(self, filename):
+    def save_file_now(self, filename: str, type_selected: str = ""):
         """
         Save the file right now, without questions
         :param filename: filename to save to
+        :param type_selected: File type description as it appears
+                              in the file saving dialogue i.e. GridCal zip (*.gridcal)
         """
 
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
@@ -556,9 +563,12 @@ class IoMain(ConfigurationMain):
                     if ok:
                         self.save_file_thread_object.quit()
 
+            options = self.get_file_save_options()
+            options.type_selected = type_selected
+
             self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
                                                                   file_name=filename,
-                                                                  options=self.get_file_save_options())
+                                                                  options=options)
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -626,7 +636,7 @@ class IoMain(ConfigurationMain):
             # set circuit name
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.name.setText(f"Random grid {self.circuit.get_bus_number()} buses")
 
             # set base magnitudes

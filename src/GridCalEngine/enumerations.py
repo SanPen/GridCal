@@ -100,6 +100,7 @@ class InvestmentEvaluationMethod(Enum):
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
     MVRSM_multi = "MVRSM_multi"
+    NSGA3 = "NSGA3"
 
     def __str__(self):
         return self.value
@@ -1583,5 +1584,60 @@ class ResultTypes(Enum):
         """
         try:
             return ResultTypes[s]
+        except KeyError:
+            return s
+
+
+class SimulationTypes(Enum):
+    """
+    Enumeration of simulation types
+    """
+    TemplateDriver = 'Template'
+    PowerFlow_run = 'Power flow'
+    ShortCircuit_run = 'Short circuit'
+    MonteCarlo_run = 'Monte Carlo'
+    PowerFlowTimeSeries_run = 'Power flow time series'
+    ClusteringAnalysis_run = 'Clustering Analysis'
+    ContinuationPowerFlow_run = 'Voltage collapse'
+    LatinHypercube_run = 'Latin Hypercube'
+    StochasticPowerFlow = 'Stochastic Power Flow'
+    Cascade_run = 'Cascade'
+    OPF_run = 'Optimal power flow'
+    OPF_NTC_run = 'Optimal net transfer capacity'
+    OPF_NTC_TS_run = 'Optimal net transfer capacity time series'
+    OPFTimeSeries_run = 'Optimal power flow time series'
+    TransientStability_run = 'Transient stability'
+    TopologyReduction_run = 'Topology reduction'
+    LinearAnalysis_run = 'Linear analysis'
+    LinearAnalysis_TS_run = 'Linear analysis time series'
+    NonLinearAnalysis_run = 'Nonlinear analysis'
+    NonLinearAnalysis_TS_run = 'Nonlinear analysis time series'
+    ContingencyAnalysis_run = 'Contingency analysis'
+    ContingencyAnalysisTS_run = 'Contingency analysis time series'
+    Delete_and_reduce_run = 'Delete and reduce'
+    NetTransferCapacity_run = 'Available transfer capacity'
+    NetTransferCapacityTS_run = 'Available transfer capacity time series'
+    SigmaAnalysis_run = "Sigma Analysis"
+    NodeGrouping_run = "Node groups"
+    InputsAnalysis_run = 'Inputs Analysis'
+    OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
+    InvestmestsEvaluation_run = 'Investments evaluation'
+    TopologyProcessor_run = 'Topology Processor'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return SimulationTypes[s]
         except KeyError:
             return s

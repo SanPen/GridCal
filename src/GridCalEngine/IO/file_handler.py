@@ -39,8 +39,8 @@ from GridCalEngine.IO.raw.raw_parser_writer import read_raw, write_raw
 from GridCalEngine.IO.raw.raw_to_gridcal import psse_to_gridcal
 from GridCalEngine.IO.raw.gridcal_to_raw import gridcal_to_raw
 from GridCalEngine.IO.epc.epc_parser import PowerWorldParser
-# from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cim16.cim_parser import CIMImport, CIMExport
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, is_valid_cgmes
 from GridCalEngine.IO.cim.cgmes.cgmes_to_gridcal import cgmes_to_gridcal
 from GridCalEngine.IO.gridcal.zip_interface import save_gridcal_data_to_zip, get_frames_from_zip
 from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite, open_data_frames_from_sqlite
@@ -49,9 +49,8 @@ from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 
 
 class FileSavingOptions:
@@ -84,7 +83,14 @@ class FileSavingOptions:
 
         self.dictionary_of_json_files = dictionary_of_json_files if dictionary_of_json_files else dict()
 
+        # File type description as it appears in the file saving dialogue i.e. GridCal zip (*.gridcal)
+        self.type_selected: str = ""
+
     def get_power_flow_results(self) -> Union[None, PowerFlowResults]:
+        """
+        Try to extract the power flow results
+        :return: None or PowerFlowResults
+        """
         for data in self.sessions_data:
             if data.tpe == SimulationTypes.PowerFlow_run:
                 return data.results
@@ -139,7 +145,7 @@ class FileOpen:
             for f in self.file_name:
                 _, file_extension = os.path.splitext(f)
                 if file_extension.lower() not in ['.xml', '.zip']:
-                    raise Exception('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
+                    raise ValueError('Loading multiple files that are not XML/Zip (xml or zip is for CIM or CGMES)')
 
             data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
             data_parser.load_files(files=self.file_name)
@@ -280,10 +286,17 @@ class FileOpen:
                     data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func,
                                                   logger=self.cgmes_logger)
                     data_parser.load_files(files=[self.file_name])
-                    self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
-                                                      progress_func=progress_func, logger=self.cgmes_logger)
-                    self.cgmes_circuit.parse_files(data_parser=data_parser)
-                    self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
+
+                    if is_valid_cgmes(data_parser.cgmes_version):
+                        self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                          progress_func=progress_func, logger=self.cgmes_logger)
+                        self.cgmes_circuit.parse_files(data_parser=data_parser)
+                        self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
+                    else:
+                        # try CIM
+                        parser = CIMImport(text_func=text_func, progress_func=progress_func)
+                        self.circuit = parser.load_cim_file(self.file_name)
+                        self.logger += parser.logger
 
                 elif file_extension.lower() == '.hdf5':
                     self.circuit = parse_hdf5(self.file_name, self.logger)
@@ -363,8 +376,11 @@ class FileSave:
         elif self.file_name.endswith('.ejson3'):
             logger = self.save_json_v3()
 
-        elif self.file_name.endswith('.xml'):
+        elif self.file_name.endswith('.zip') and "CGMES" in self.options.type_selected:
             logger = self.save_cgmes()
+
+        elif self.file_name.endswith('.xml') and "CIM" in self.options.type_selected:
+            logger = self.save_cim()
 
         elif self.file_name.endswith('.gch5'):
             logger = self.save_h5()
@@ -387,7 +403,7 @@ class FileSave:
 
         return logger
 
-    def save_excel(self):
+    def save_excel(self) -> Logger:
         """
         Save the circuit information in excel format
         :return: logger with information
@@ -422,7 +438,7 @@ class FileSave:
 
         return logger
 
-    def save_sqlite(self):
+    def save_sqlite(self) -> Logger:
         """
         Save the circuit information in sqlite
         :return: logger with information
@@ -450,14 +466,25 @@ class FileSave:
                                    self.options.simulation_drivers)
         return logger
 
-    def save_cgmes(self):
+    def save_cim(self) -> Logger:
+        """
+        Save the circuit information in CIM format
+        :return: logger with information
+        """
+
+        cim = CIMExport(self.circuit)
+        cim.save(file_name=self.file_name)
+
+        return cim.logger
+
+    def save_cgmes(self) -> Logger:
         """
         Save the circuit information in CGMES format
         :return: logger with information
         """
         logger = Logger()
         # CGMES version should be given in the settings
-        cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version.__str__(),
+        cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version,
                                      text_func=self.text_func,
                                      progress_func=self.progress_func, logger=logger)
         if self.options.cgmes_boundary_set != "":
@@ -481,7 +508,7 @@ class FileSave:
 
         return logger
 
-    def save_h5(self):
+    def save_h5(self) -> Logger:
         """
         Save the circuit information in CIM format
         :return: logger with information
@@ -493,7 +520,7 @@ class FileSave:
 
         return logger
 
-    def save_raw(self):
+    def save_raw(self) -> Logger:
         """
         Save the circuit information in json format
         :return:logger with information
@@ -502,7 +529,7 @@ class FileSave:
         logger = write_raw(self.file_name, raw_circuit)
         return logger
 
-    def save_rawx(self):
+    def save_rawx(self) -> Logger:
         """
         Save the circuit information in json format
         :return:logger with information
@@ -511,7 +538,7 @@ class FileSave:
         logger = write_rawx(self.file_name, raw_circuit)
         return logger
 
-    def save_newton(self):
+    def save_newton(self) -> Logger:
         """
         Save the circuit information in sqlite
         :return: logger with information
@@ -532,7 +559,7 @@ class FileSave:
 
         return logger
 
-    def save_pgm(self):
+    def save_pgm(self) -> Logger:
         """
         Save to Power Grid Model format
         :return: logger with information
