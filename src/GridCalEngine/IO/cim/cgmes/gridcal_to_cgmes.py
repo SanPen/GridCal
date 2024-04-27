@@ -827,6 +827,9 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
     """
     print('hello')
+    # SvVoltage: v, (a?) -> TopologicalNode
+    # SVPowerFlow: p, q -> Terminals
+
     # for uuid, (v, angle) in v_dict.items():
     #     # Create an SvVoltage instance for each entry in v_dict
     #     sv_voltage = cgmes.SvVoltage(
