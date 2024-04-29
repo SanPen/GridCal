@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.util.ref_dirs import get_reference_directions
 from pymoo.optimize import minimize
@@ -7,9 +8,20 @@ from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 from pymoo.operators.repair.rounding import RoundingRepair
 from pymoo.operators.sampling.rnd import IntegerRandomSampling
+from pymoo.operators.sampling.rnd import FloatRandomSampling
+from pymoo.operators.sampling.rnd import BinaryRandomSampling
+from pymoo.operators.crossover.pntx import PointCrossover
+from pymoo.operators.crossover.expx import ExponentialCrossover
+from pymoo.operators.crossover.ux import UniformCrossover
+from pymoo.operators.crossover.hux import HalfUniformCrossover
+from pymoo.operators.sampling.lhs import LHS
 from pymoo.visualization.scatter import Scatter
 from pymoo.algorithms.moo.unsga3 import UNSGA3
+from pymoo.operators.mutation.bitflip import BitflipMutation
 import matplotlib.pyplot as plt
+from pymoo.operators.selection.rnd import RandomSelection
+from pymoo.operators.selection.tournament import TournamentSelection
+import scipy
 from inspect import signature
 
 
@@ -51,6 +63,7 @@ def NSGA_3(obj_func,
            n_obj=2,
            max_evals: int = 30,
            pop_size: int = 1,
+           prob: float = 1.0,
            crossover_prob: float = 0.05,
            mutation_probability=0.01,
            eta: float = 3.0):
@@ -69,14 +82,25 @@ def NSGA_3(obj_func,
     """
     problem = GridNsga(obj_func, n_var, n_obj)
 
-    ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
+    # ref_dirs = get_reference_directions(
+    #     "multi-layer",
+    #     get_reference_directions("uniform", n_obj, n_partitions=12, scaling=1.0))
+    # ref_dirs = get_reference_directions(
+    #     "multi-layer",
+    ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
+    # ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
 
-    algorithm = UNSGA3(pop_size=pop_size,
-                       sampling=IntegerRandomSampling(),
-                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                       mutation=PM(prob=mutation_probability, eta=eta, vtype=float, repair=RoundingRepair()),
-                       eliminate_duplicates=True,
-                       ref_dirs=ref_dirs)
+    algorithm = NSGA3(pop_size=pop_size,
+                      sampling=LHS(),
+                      # crossover=ExponentialCrossover(prob=1.0, prob_exp=0.9),
+                      # crossover=HalfUniformCrossover(prob=1.0),
+                      # crossover=UniformCrossover(prob=1.0),
+                      crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
+                      # mutation=PM(prob=mutation_probability, eta=eta, vtype=float, repair=RoundingRepair()),
+                      mutation=BitflipMutation(prob=0.5, prob_var=0.3),
+                      # selection=TournamentSelection(pressure=2),
+                      eliminate_duplicates=True,
+                      ref_dirs=ref_dirs)
 
     res = minimize(problem=problem,
                    algorithm=algorithm,
@@ -84,6 +108,54 @@ def NSGA_3(obj_func,
                    seed=1,
                    verbose=True,
                    save_history=False)
+
+    # X_swapped = res.F[:, 1]
+    # Y_swapped = res.F[:, 0]
+    #
+    # # Now, create the scatter plot with swapped axes
+    # plt.scatter(X_swapped, Y_swapped, color="red", label='NSGA3')
+    #
+    # # csv_data = np.loadtxt('src/GridCalEngine/Simulations/InvestmentsEvaluation/table.csv', delimiter=',')
+    # data = pd.read_csv("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations"
+    #                    "/InvestmentsEvaluation/table.csv")
+    #
+    # # Extract the investment cost and technical cost columns
+    # investment_cost = data["Investment cost (M€)"]
+    # technical_cost = data["Technical cost (M€)"]
+    #
+    # # Plot the data
+    # plt.scatter(investment_cost, technical_cost, color="blue", label="MVRSM")
+    # plt.xlabel("Investment cost (M€)")
+    # plt.ylabel("Technical cost (M€)")
+    # plt.title("Pareto Front")
+    # plt.show()
+
+    # Your existing code to generate the first scatter plot
+    X_swapped = res.F[:, 1]
+    Y_swapped = res.F[:, 0]
+    combined_cost_nsga3 = X_swapped + Y_swapped  # Calculate combined cost for NSGA3
+
+    # Plot the first scatter plot with color based on combined cost
+
+
+    # data = pd.read_csv("/Users/CristinaFray/PycharmProjects/GridCal/src/GridCalEngine/Simulations"
+    #                    "/InvestmentsEvaluation/10_gen.csv")
+    #
+    # investment_cost = data["Investment cost (M€)"]
+    # technical_cost = data["Technical cost (M€)"]
+    #
+    # combined_cost_mvrsm = investment_cost + technical_cost
+
+    # plt.scatter(investment_cost, technical_cost, c=combined_cost_mvrsm, cmap='viridis', label="MVRSM")
+    # plt.colorbar(label='Objective function (MVRSM)')
+    # plt.scatter(X_swapped, Y_swapped, c=combined_cost_nsga3, cmap='cividis', label='NSGA3')
+    # plt.colorbar(label='Objective function (NSGA3)')
+    #
+    # plt.xlabel("Investment cost (M€)")
+    # plt.ylabel("Technical cost (M€)")
+    # plt.title("Pareto Front")
+    # plt.legend()
+    # plt.show()
 
     return res.X, res.F
 
@@ -117,7 +189,7 @@ def NSGA_3_debug(obj_func,
     #                   mutation=PM(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
     #                   eliminate_duplicates=True,
     #                   ref_dirs=ref_dirs)
-    algorithm = UNSGA3(pop_size=pop_size,
+    algorithm = NSGA3(pop_size=pop_size,
                        sampling=IntegerRandomSampling(),
                        crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
                        mutation=PM(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
