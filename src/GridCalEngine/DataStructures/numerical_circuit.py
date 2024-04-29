@@ -70,7 +70,7 @@ def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logg
     """
     if arr.shape != arr_expected.shape:
         logger.add_error(msg="Different shape",
-                         device=test,
+                         device=name,
                          device_property=test,
                          value=str(arr.shape),
                          expected_value=str(arr_expected.shape))
@@ -81,7 +81,7 @@ def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logg
     else:
         diff = arr - arr_expected
         logger.add_error(msg="Numeric differences",
-                         device=test,
+                         device=name,
                          device_property=test,
                          value=f"min diff: {diff.min()}, max diff: {diff.max()}",
                          expected_value=tol)
@@ -283,7 +283,7 @@ class NumericalCircuit:
         # Dict[idtag] -> (structure, index)
         self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
 
-    def reset_calculations(self):
+    def reset_calculations(self) -> None:
         """
         This resets the lazy evaluation of the calculations like Ybus, Sbus, etc...
         If you want to use the NumericalCircuit as structure to modify stuff,
