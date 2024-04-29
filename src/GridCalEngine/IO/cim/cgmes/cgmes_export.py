@@ -262,6 +262,19 @@ class CimExporter:
                 return True
         return False
 
+    def attr_in_profile(self, attr_filters: dict, profile):
+        if profile in attr_filters["Profile"]:
+            return True
+        else:
+            if self.cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15 and profile == "EQ":
+                if True:  # There will be a boolean for operation profile
+                    if "OP" in attr_filters["Profile"]:
+                        return True
+                if True:  # There will be a boolean for short circuit profile
+                    if "SC" in attr_filters["Profile"]:
+                        return True
+        return False
+
     def generate_other_elements(self, profile):
         other_elements = []
         for class_name, filters in self.class_filters.items():
@@ -281,12 +294,14 @@ class CimExporter:
                     if attr_name not in filters:
                         continue
                     attr_filters = filters[attr_name]
-                    if profile not in attr_filters["Profile"]:
+                    if not self.attr_in_profile(attr_filters, profile):
                         continue
                     attr_type = attr_filters["Type"]
                     prop_split = str(attr_filters["Property-AttributeAssociationFull"]).split('#')
-                    if prop_split[0] == "http://entsoe.eu/CIM/SchemaExtension/3/1": # TODO do eu for 3.0
+                    if prop_split[0] == "http://entsoe.eu/CIM/SchemaExtension/3/1":
                         prop_text = "entsoe:" + prop_split[-1]
+                    elif prop_split[0] == "http://iec.ch/TC57/CIM100-European":
+                        prop_text = "eu:" + prop_split[-1]
                     else:
                         prop_text = "cim:" + prop_split[-1]
                     child = Et.Element(prop_text)
