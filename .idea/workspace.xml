@@ -177,7 +177,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.cgmes_import_check">
+  <component name="RunManager" selected="Python.update_gui_file">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -624,9 +624,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.cgmes_import_check" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.Python tests in test_cgmes_to_gridcal_generators.py" />
         <item itemvalue="Python tests.Python tests in test_cgmes_to_gridcal_ac_transformers.py" />
       </list>
