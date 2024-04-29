@@ -583,6 +583,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
         ei.Terminals = create_cgmes_terminal(mc_elm.bus, ei, cgmes_model, logger)
+        ei.regulationCapability = False
 
         cgmes_model.add(ei)
 
@@ -885,7 +886,7 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
     Returns:
         CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
     """
-    print('hello')
+    print('CGEMS sv voltages')
     # SvVoltage: v, (a?) -> TopologicalNode
     # SVPowerFlow: p, q -> Terminals
 
