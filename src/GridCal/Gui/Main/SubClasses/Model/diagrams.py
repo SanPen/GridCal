@@ -277,7 +277,7 @@ class DiagramsMain(CompiledArraysMain):
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, SchematicWidget):
-                diagram.editor_graphics_view.zoom_in()
+                diagram.zoom_in()
             elif isinstance(diagram, GridMapWidget):
                 # TODO implement this
                 pass
@@ -289,7 +289,7 @@ class DiagramsMain(CompiledArraysMain):
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
             if isinstance(diagram, SchematicWidget):
-                diagram.editor_graphics_view.zoom_out()
+                diagram.zoom_out()
             elif isinstance(diagram, GridMapWidget):
                 # TODO implement this
                 pass
