@@ -69,7 +69,8 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  h: int = 40,
                  w: int = 80,
                  x: int = 0,
-                 y: int = 0):
+                 y: int = 0,
+                 draw_labels: bool = True):
         """
 
         :param parent:
@@ -81,7 +82,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=busbar, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=busbar, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
