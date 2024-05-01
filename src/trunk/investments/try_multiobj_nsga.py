@@ -19,7 +19,7 @@ if __name__ == "__main__":
     pf_options = sim.PowerFlowOptions()
 
     options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
-                                               max_eval=4 * len(grid.investments),
+                                               max_eval=50 * len(grid.investments),
                                                pf_options=pf_options)
 
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
