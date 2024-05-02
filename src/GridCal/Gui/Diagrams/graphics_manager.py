@@ -21,6 +21,8 @@ from warnings import warn
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
+from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_node_graphics import FluidNodeGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_path_graphics import FluidPathGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics import LineGraphicItem
@@ -54,7 +56,9 @@ ALL_BUS_BRACH_GRAPHICS = Union[
     SeriesReactanceGraphicItem,
     LineGraphicTemplateItem,
     Transformer3WGraphicItem,
-    GeneratorGraphicItem
+    GeneratorGraphicItem,
+    CnGraphicItem,
+    BusBarGraphicItem,
 ]
 
 ALL_MAP_GRAPHICS = Union[

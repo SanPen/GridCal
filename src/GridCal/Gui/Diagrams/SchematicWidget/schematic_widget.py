@@ -611,6 +611,68 @@ class SchematicWidget(QSplitter):
 
         self.object_editor_table.setModel(mdl)
 
+    def find_ports(self, branch: BRANCH_TYPES) -> Tuple[Union[BarTerminalItem, RoundTerminalItem],
+                                                        Union[BarTerminalItem, RoundTerminalItem]]:
+        """
+        Find the preferred set of ports for drawing
+        :param branch: some API branch
+        :return: Union[BarTerminalItem, RoundTerminalItem], Union[BarTerminalItem, RoundTerminalItem]
+        """
+
+        if branch.cn_from is not None:
+            cn_f_graphic_obj = self.graphics_manager.query(branch.cn_from)
+
+            if cn_f_graphic_obj is not None:
+                from_port = cn_f_graphic_obj.get_terminal()
+            else:
+                # try the bus
+                bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+
+                if bus_f_graphic_obj is not None:
+                    from_port = bus_f_graphic_obj.get_terminal()
+                else:
+                    from_port = None
+
+        elif branch.bus_from is not None:
+            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
+
+            if bus_f_graphic_obj is not None:
+                from_port = bus_f_graphic_obj.get_terminal()
+            else:
+                from_port = None
+
+        else:
+            from_port = None
+
+        if branch.cn_to is not None:
+            cn_t_graphic_obj = self.graphics_manager.query(branch.cn_to)
+
+            if cn_t_graphic_obj is not None:
+                to_port = cn_t_graphic_obj.get_terminal()
+            else:
+                # try the bus
+                bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+                if bus_t_graphic_obj is not None:
+                    to_port = bus_t_graphic_obj.get_terminal()
+                else:
+                    to_port = None
+
+        elif branch.bus_to is not None:
+            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+
+            if bus_t_graphic_obj is not None:
+                to_port = bus_t_graphic_obj.get_terminal()
+            else:
+                to_port = None
+
+        else:
+            to_port = None
+
+        return from_port, to_port
+
+
+
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
 
@@ -777,8 +839,9 @@ class SchematicWidget(QSplitter):
                                               draw_labels=draw_labels)
         return graphic_object
 
-    def create_connectivity_node_graphics(self, node: ConnectivityNode, x: int, y: int, h: int,
-                                          w: int) -> CnGraphicItem:
+    def create_connectivity_node_graphics(self, node: ConnectivityNode,
+                                          x: int, y: int, h: int,  w: int,
+                                          draw_labels: bool = True) -> CnGraphicItem:
         """
         Add connectivity node to graphics
         :param node: GridCal connectivity node object
@@ -786,13 +849,17 @@ class SchematicWidget(QSplitter):
         :param y: y coordinate
         :param h: height (px)
         :param w: width (px)
+        :param draw_labels: Draw labels?
         :return: CnGraphicItem
         """
 
-        graphic_object = CnGraphicItem(editor=self, node=node, x=x, y=y, h=h, w=w)
+        graphic_object = CnGraphicItem(editor=self, node=node, x=x, y=y, h=h, w=w,
+                                       draw_labels=draw_labels)
         return graphic_object
 
-    def create_bus_bar_graphics(self, node: BusBar, x: int, y: int, h: int, w: int) -> BusBarGraphicItem:
+    def create_bus_bar_graphics(self, node: BusBar,
+                                x: int, y: int, h: int, w: int,
+                                draw_labels: bool = True) -> BusBarGraphicItem:
         """
         Add bus bar node to graphics
         :param node: GridCal BusBar object
@@ -800,10 +867,12 @@ class SchematicWidget(QSplitter):
         :param y: y coordinate
         :param h: height (px)
         :param w: width (px)
+        :param draw_labels: Draw labels?
         :return: BusBarGraphicItem
         """
 
-        graphic_object = BusBarGraphicItem(editor=self, busbar=node, x=x, y=y, h=h, w=w)
+        graphic_object = BusBarGraphicItem(editor=self, busbar=node, x=x, y=y, h=h, w=w,
+                                           draw_labels=draw_labels)
         return graphic_object
 
     def set_data(self, circuit: MultiCircuit, diagram: SchematicDiagram):
@@ -825,7 +894,7 @@ class SchematicWidget(QSplitter):
         inj_dev_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
         inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
 
-        # add buses first
+        # add node-like elements first
         for category, points_group in diagram.data.items():
 
             if category == DeviceType.BusDevice.value:
@@ -943,6 +1012,59 @@ class SchematicWidget(QSplitter):
                         # if location.api_object.bus is not None:
                         #     bus_dict[location.api_object.bus.idtag] = graphic_object
 
+            elif category == DeviceType.ConnectivityNodeDevice.value:
+
+                for idtag, location in points_group.locations.items():
+
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+
+                    if graphic_object is None:
+                        # add the graphic object to the diagram view
+                        graphic_object = self.create_connectivity_node_graphics(node=location.api_object,
+                                                                                x=location.x,
+                                                                                y=location.y,
+                                                                                h=location.h,
+                                                                                w=location.w,
+                                                                                draw_labels=location.draw_labels)
+                        self.add_to_scene(graphic_object=graphic_object)
+
+                        # create the bus children
+                        graphic_object.create_children_widgets(
+                            injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
+                        )
+
+                        # graphic_object.change_size(w=location.w)
+
+                        # add buses reference for later
+                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+
+            elif category == DeviceType.BusBarDevice.value:
+
+                for idtag, location in points_group.locations.items():
+
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+
+                    if graphic_object is None:
+                        # add the graphic object to the diagram view
+                        graphic_object = self.create_bus_bar_graphics(node=location.api_object,
+                                                                      x=location.x,
+                                                                      y=location.y,
+                                                                      h=location.h,
+                                                                      w=location.w,
+                                                                      draw_labels=location.draw_labels)
+                        self.add_to_scene(graphic_object=graphic_object)
+
+                        # create the bus children
+                        graphic_object.create_children_widgets(
+                            injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
+                        )
+
+                        graphic_object.change_size(w=location.w)
+
+                        # add buses reference for later
+                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
             else:
                 # pass for now...
                 pass
@@ -959,21 +1081,18 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: Line = location.api_object
-                        if branch.bus_from is not None and branch.bus_to is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = LineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                 to_port=bus_t_graphic_obj.get_terminal(),
-                                                                 editor=self,
-                                                                 api_object=branch,
-                                                                 draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
+                            graphic_object = LineGraphicItem(from_port=from_port,
+                                                             to_port=to_port,
+                                                             editor=self,
+                                                             api_object=location.api_object,
+                                                             draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.DCLineDevice.value:
 
@@ -984,21 +1103,17 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: DcLine = location.api_object
-                        if branch.bus_from is not None and branch.bus_to is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = DcLineGraphicItem(from_port=from_port,
+                                                               to_port=to_port,
+                                                               editor=self,
+                                                               api_object=location.api_object,
+                                                               draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = DcLineGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                   to_port=bus_t_graphic_obj.get_terminal(),
-                                                                   editor=self,
-                                                                   api_object=branch,
-                                                                   draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
-
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.HVDCLineDevice.value:
 
@@ -1009,21 +1124,17 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: HvdcLine = location.api_object
-                        if branch.bus_from is not None and branch.bus_to is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = HvdcGraphicItem(from_port=from_port,
+                                                             to_port=to_port,
+                                                             editor=self,
+                                                             api_object=location.api_object,
+                                                             draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = HvdcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                 to_port=bus_t_graphic_obj.get_terminal(),
-                                                                 editor=self,
-                                                                 api_object=branch,
-                                                                 draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
-
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.VscDevice.value:
 
@@ -1034,21 +1145,17 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: VSC = location.api_object
-                        if branch.bus_from is not None and branch.bus_to is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = VscGraphicItem(from_port=from_port,
+                                                            to_port=to_port,
+                                                            editor=self,
+                                                            api_object=location.api_object,
+                                                            draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = VscGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                to_port=bus_t_graphic_obj.get_terminal(),
-                                                                editor=self,
-                                                                api_object=branch,
-                                                                draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
-
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.UpfcDevice.value:
 
@@ -1059,21 +1166,17 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: UPFC = location.api_object
-                        if branch.bus_from is not None and branch.bus_to is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = UpfcGraphicItem(from_port=from_port,
+                                                             to_port=to_port,
+                                                             editor=self,
+                                                             api_object=location.api_object,
+                                                             draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = UpfcGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                 to_port=bus_t_graphic_obj.get_terminal(),
-                                                                 editor=self,
-                                                                 api_object=branch,
-                                                                 draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
-
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.Transformer2WDevice.value:
 
@@ -1084,21 +1187,17 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: Transformer2W = location.api_object
-                        if branch.bus_from is not None and branch.bus_to is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = TransformerGraphicItem(from_port=from_port,
+                                                                    to_port=to_port,
+                                                                    editor=self,
+                                                                    api_object=location.api_object,
+                                                                    draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = TransformerGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                        to_port=bus_t_graphic_obj.get_terminal(),
-                                                                        editor=self,
-                                                                        api_object=branch,
-                                                                        draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
-
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.SeriesReactanceDevice.value:
 
@@ -1109,21 +1208,17 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: SeriesReactance = location.api_object
-                        if branch.bus_from is not None and branch.bus_to is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.bus_from)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.bus_to)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = SeriesReactanceGraphicItem(from_port=from_port,
+                                                                        to_port=to_port,
+                                                                        editor=self,
+                                                                        api_object=location.api_object,
+                                                                        draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = SeriesReactanceGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                            to_port=bus_t_graphic_obj.get_terminal(),
-                                                                            editor=self,
-                                                                            api_object=branch,
-                                                                            draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
-
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.WindingDevice.value:
 
@@ -1145,27 +1240,23 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        branch: FluidPath = location.api_object
-                        if branch.source is not None and branch.target is not None:
-                            bus_f_graphic_obj = self.graphics_manager.query(branch.source)
-                            bus_t_graphic_obj = self.graphics_manager.query(branch.target)
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = FluidPathGraphicItem(from_port=from_port,
+                                                                  to_port=to_port,
+                                                                  editor=self,
+                                                                  api_object=location.api_object,
+                                                                  draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                            if bus_f_graphic_obj and bus_t_graphic_obj:
-                                graphic_object = FluidPathGraphicItem(from_port=bus_f_graphic_obj.get_terminal(),
-                                                                      to_port=bus_t_graphic_obj.get_terminal(),
-                                                                      editor=self,
-                                                                      api_object=branch,
-                                                                      draw_labels=location.draw_labels)
-                                self.add_to_scene(graphic_object=graphic_object)
-
-                                graphic_object.redraw()
-                                self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             else:
                 pass
                 # print('draw: Unrecognized category: {}'.format(category))
 
-        # last pass: arange children
+        # last pass: arrange children
         for category in [DeviceType.BusDevice, DeviceType.FluidNodeDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=category)
             for idtag, graphic in graphics_dict.items():

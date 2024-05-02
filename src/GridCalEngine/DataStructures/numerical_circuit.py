@@ -57,6 +57,37 @@ ALL_STRUCTS = Union[
 ]
 
 
+def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logger: Logger) -> int:
+    """
+
+    :param arr:
+    :param arr_expected:
+    :param tol:
+    :param name:
+    :param test:
+    :param logger:
+    :return:
+    """
+    if arr.shape != arr_expected.shape:
+        logger.add_error(msg="Different shape",
+                         device=name,
+                         device_property=test,
+                         value=str(arr.shape),
+                         expected_value=str(arr_expected.shape))
+        return 1
+
+    if np.allclose(arr, arr_expected, atol=tol):
+        return 0
+    else:
+        diff = arr - arr_expected
+        logger.add_error(msg="Numeric differences",
+                         device=name,
+                         device_property=test,
+                         value=f"min diff: {diff.min()}, max diff: {diff.max()}",
+                         expected_value=tol)
+        return 1
+
+
 def get_inter_areas_branch(F: np.ndarray,
                            T: np.ndarray,
                            buses_in_a1: np.ndarray,
@@ -252,7 +283,7 @@ class NumericalCircuit:
         # Dict[idtag] -> (structure, index)
         self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
 
-    def reset_calculations(self):
+    def reset_calculations(self) -> None:
         """
         This resets the lazy evaluation of the calculations like Ybus, Sbus, etc...
         If you want to use the NumericalCircuit as structure to modify stuff,
@@ -1878,6 +1909,119 @@ class NumericalCircuit:
                 circuit_islands.append(island)
 
         return circuit_islands
+
+    def compare(self, nc_2: "NumericalCircuit", tol=1e-6) -> Logger:
+        """
+        Compare this numerical circuit with another numerical circuit
+        :param nc_2: NumericalCircuit
+        :param tol: NumericalCircuit
+        :return: Logger with the errors and warning events
+        """
+
+        logger = Logger()
+
+        # ------------------------------------------------------------------------------------------------------------------
+        #  Compare data
+        # ------------------------------------------------------------------------------------------------------------------
+
+        CheckArr(self.branch_data.F, nc_2.branch_data.F, tol, 'BranchData', 'F', logger)
+        CheckArr(self.branch_data.T, nc_2.branch_data.T, tol, 'BranchData', 'T', logger)
+        CheckArr(self.branch_data.active, nc_2.branch_data.active, tol,
+                 'BranchData', 'active', logger)
+        CheckArr(self.branch_data.R, nc_2.branch_data.R, tol, 'BranchData', 'r', logger)
+        CheckArr(self.branch_data.X, nc_2.branch_data.X, tol, 'BranchData', 'x', logger)
+        CheckArr(self.branch_data.G, nc_2.branch_data.G, tol, 'BranchData', 'g', logger)
+        CheckArr(self.branch_data.B, nc_2.branch_data.B, tol, 'BranchData', 'b', logger)
+        CheckArr(self.branch_data.rates, nc_2.branch_data.rates, tol, 'BranchData',
+                 'rates', logger)
+        CheckArr(self.branch_data.tap_module, nc_2.branch_data.tap_module, tol,
+                 'BranchData', 'tap_module', logger)
+        CheckArr(self.branch_data.tap_angle, nc_2.branch_data.tap_angle, tol,
+                 'BranchData', 'tap_angle', logger)
+
+        CheckArr(self.branch_data.G0, nc_2.branch_data.G0, tol, 'BranchData', 'g0', logger)
+
+        CheckArr(self.branch_data.virtual_tap_f, nc_2.branch_data.virtual_tap_f,
+                 tol, 'BranchData', 'vtap_f', logger)
+        CheckArr(self.branch_data.virtual_tap_t, nc_2.branch_data.virtual_tap_t,
+                 tol, 'BranchData', 'vtap_t', logger)
+
+        # bus data
+        CheckArr(self.bus_data.active, nc_2.bus_data.active, tol, 'BusData',
+                 'active', logger)
+        CheckArr(self.bus_data.Vbus.real, nc_2.bus_data.Vbus.real, tol, 'BusData',
+                 'V0', logger)
+        CheckArr(self.bus_data.installed_power, nc_2.bus_data.installed_power, tol,
+                 'BusData', 'installed power', logger)
+        CheckArr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData',
+                 'types', logger)
+
+        # generator data
+        CheckArr(self.generator_data.active, nc_2.generator_data.active, tol,
+                 'GenData', 'active', logger)
+        CheckArr(self.generator_data.p, nc_2.generator_data.p, tol, 'GenData', 'P', logger)
+        # CheckArr(nc_newton.generator_data.generator_pf, nc_gc.generator_data.generator_pf, tol, 'GenData', 'Pf')
+        CheckArr(self.generator_data.v, nc_2.generator_data.v, tol, 'GenData',
+                 'Vset', logger)
+        CheckArr(self.generator_data.qmin, nc_2.generator_data.qmin, tol,
+                 'GenData', 'Qmin', logger)
+        CheckArr(self.generator_data.qmax, nc_2.generator_data.qmax, tol,
+                 'GenData', 'Qmax', logger)
+
+        # load data
+        CheckArr(self.load_data.active, nc_2.load_data.active, tol, 'LoadData',
+                 'active', logger)
+        CheckArr(self.load_data.S, nc_2.load_data.S, tol, 'LoadData', 'S', logger)
+        CheckArr(self.load_data.I, nc_2.load_data.I, tol, 'LoadData', 'I', logger)
+        CheckArr(self.load_data.Y, nc_2.load_data.Y, tol, 'LoadData', 'Y', logger)
+
+        # shunt
+        CheckArr(self.shunt_data.active, nc_2.shunt_data.active, tol, 'ShuntData',
+                 'active', logger)
+        CheckArr(self.shunt_data.admittance, nc_2.shunt_data.admittance, tol,
+                 'ShuntData', 'S', logger)
+        CheckArr(self.shunt_data.get_injections_per_bus(),
+                 nc_2.shunt_data.get_injections_per_bus(), tol, 'ShuntData',
+                 'Injections per bus', logger)
+
+        # ------------------------------------------------------------------------------------------------------------------
+        #  Compare arrays and data
+        # ------------------------------------------------------------------------------------------------------------------
+
+        CheckArr(self.Sbus.real, nc_2.Sbus.real, tol, 'Pbus', 'P', logger)
+        CheckArr(self.Sbus.imag, nc_2.Sbus.imag, tol, 'Qbus', 'Q', logger)
+
+        CheckArr(self.pq, nc_2.pq, tol, 'Types', 'pq', logger)
+        CheckArr(self.pv, nc_2.pv, tol, 'Types', 'pv', logger)
+        CheckArr(self.vd, nc_2.vd, tol, 'Types', 'vd', logger)
+
+        CheckArr(self.Cf.toarray(), nc_2.Cf.toarray(), tol, 'Connectivity',
+                 'Cf (dense)', logger)
+        CheckArr(self.Ct.toarray(), nc_2.Ct.toarray(), tol, 'Connectivity',
+                 'Ct (dense)', logger)
+        CheckArr(self.Cf.tocsc().data, nc_2.Cf.tocsc().data, tol, 'Connectivity',
+                 'Cf', logger)
+        CheckArr(self.Ct.tocsc().data, nc_2.Ct.tocsc().data, tol, 'Connectivity',
+                 'Ct', logger)
+
+        CheckArr(self.Ybus.toarray(), nc_2.Ybus.toarray(), tol, 'Admittances',
+                 'Ybus (dense)', logger)
+        CheckArr(self.Ybus.tocsc().data.real, nc_2.Ybus.tocsc().data.real, tol,
+                 'Admittances', 'Ybus (real)', logger)
+        CheckArr(self.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
+                 'Admittances', 'Ybus (imag)', logger)
+        CheckArr(self.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.realdata.real,
+                 tol, 'Admittances', 'Yf (real)', logger)
+        CheckArr(self.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
+                 'Admittances', 'Yf (imag)', logger)
+        CheckArr(self.Yt.tocsc().data.real, nc_2.Yt.tocsc().data.real, tol,
+                 'Admittances', 'Yt (real)', logger)
+        CheckArr(self.Yt.tocsc().data.imag, nc_2.Yt.tocsc().data.imag, tol,
+                 'Admittances', 'Yt (imag)', logger)
+
+        CheckArr(self.Vbus, nc_2.Vbus, tol, 'NumericCircuit', 'V0', logger)
+
+        return logger
 
 
 def compile_numerical_circuit_at(circuit: MultiCircuit,

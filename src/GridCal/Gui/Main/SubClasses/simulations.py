@@ -2485,28 +2485,25 @@ class SimulationsMain(TimeEventsMain):
         """
         Run the topology processor on the grid completelly
         """
-        if self.circuit.get_bus_number():
 
-            if not self.session.is_this_running(SimulationTypes.PowerFlow_run):
+        if not self.session.is_this_running(SimulationTypes.TopologyProcessor_run):
 
-                self.LOCK()
+            self.LOCK()
 
-                self.add_simulation(SimulationTypes.TopologyProcessor_run)
+            self.add_simulation(SimulationTypes.TopologyProcessor_run)
 
-                self.ui.progress_label.setText('Running topology processing...')
-                QtGui.QGuiApplication.processEvents()
-                # set power flow object instance
-                drv = sim.TopologyProcessorDriver(self.circuit)
+            self.ui.progress_label.setText('Running topology processing...')
+            QtGui.QGuiApplication.processEvents()
 
-                self.session.run(drv,
-                                 post_func=self.post_topology_processor,
-                                 prog_func=self.ui.progressBar.setValue,
-                                 text_func=self.ui.progress_label.setText)
+            drv = sim.TopologyProcessorDriver(self.circuit)
 
-            else:
-                warning_msg('Another simulation of the same type is running...')
+            self.session.run(drv,
+                             post_func=self.post_topology_processor,
+                             prog_func=self.ui.progressBar.setValue,
+                             text_func=self.ui.progress_label.setText)
+
         else:
-            pass
+            warning_msg('Another simulation of the same type is running...')
 
     def post_topology_processor(self):
         """

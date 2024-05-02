@@ -145,6 +145,7 @@ def create_topology_process_info(grid: MultiCircuit) -> TopologyProcessorInfo:
             # create a new candidate
             candidate_bus = dev.Bus(f"Candidate from {cn.name}")
             candidate_bus.code = cn.code  # for soft checking
+            cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
             info.add_new_candidate(candidate_bus)
         else:
             # pick the default candidate
