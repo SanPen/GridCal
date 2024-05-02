@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import zipfile
-from io import StringIO
+from io import StringIO, BytesIO
 from rdflib import OWL
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS
@@ -179,7 +179,7 @@ class CimExporter:
                 self.cgmes_circuit.emit_text(f"Export {prof} profile file")
                 self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
                 i += 1
-                with StringIO() as buffer:
+                with BytesIO() as buffer:
                     self.serialize(stream=buffer, profile=prof)
                     f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
 
@@ -199,9 +199,22 @@ class CimExporter:
         other_elements = self.generate_other_elements(profile)
         root.extend(other_elements)
 
-        xmlstr = xml.dom.minidom.parseString(Et.tostring(root)).toprettyxml(indent="   ")
-        # stream.write(xmlstr.encode('utf-8'))
-        stream.write(xmlstr)
+        # Convert ElementTree to string
+        xml_str = Et.tostring(root, encoding="utf-8", method="xml")
+
+        # Write the XML declaration manually
+        xml_declaration = b'<?xml version="1.0" encoding="utf-8"?>\n'
+        stream.write(xml_declaration)
+
+        # Parse the XML string and prettify it
+        dom = xml.dom.minidom.parseString(xml_str)
+        xml_str_pretty = dom.toprettyxml(indent="  ", encoding="utf-8")
+
+        # Write the prettified XML content (excluding the XML declaration) to the stream
+        xml_content = xml_str_pretty.decode("utf-8").split("\n")[1:]  # Exclude the XML declaration
+        stream.write("\n".join(xml_content).encode("utf-8"))
+
+        stream.seek(0)
 
     def is_in_profile(self, instance_profiles, model_profile):
         if isinstance(instance_profiles, list):
@@ -287,7 +300,7 @@ class CimExporter:
                     element = Et.Element("cim:" + class_name, {"rdf:about": "_" + obj.rdfid})
                 else:
                     element = Et.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
-
+                has_child = False
                 for attr_name, attr_value in obj_dict.items():
                     if attr_value is None:
                         continue
@@ -311,6 +324,7 @@ class CimExporter:
                                 child = Et.Element(prop_text)
                                 child.attrib = {"rdf:resource": "#_" + v.rdfid}
                                 element.append(child)
+                                has_child = True
                             continue
                         else:
                             child.attrib = {"rdf:resource": "#_" + attr_value.rdfid}
@@ -327,9 +341,12 @@ class CimExporter:
                                 child = Et.Element(prop_text)
                                 child.text = str(v)
                                 element.append(child)
+                                has_child = True
                             continue
                         else:
                             child.text = str(attr_value)
                     element.append(child)
-                other_elements.append(element)
+                    has_child = True
+                if has_child:
+                    other_elements.append(element)
         return other_elements
