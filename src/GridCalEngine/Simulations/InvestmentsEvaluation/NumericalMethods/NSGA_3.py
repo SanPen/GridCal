@@ -9,7 +9,8 @@ from pymoo.operators.mutation.pm import PM
 from pymoo.operators.repair.rounding import RoundingRepair
 from pymoo.operators.sampling.rnd import IntegerRandomSampling
 from pymoo.operators.sampling.rnd import FloatRandomSampling
-from pymoo.operators.sampling.rnd import BinaryRandomSampling, BinaryUniformSampling
+from pymoo.operators.sampling.rnd import BinaryRandomSampling
+# from pymoo.operators.sampling.rnd import UniformBinarySampling
 from pymoo.operators.crossover.pntx import PointCrossover
 from pymoo.operators.crossover.expx import ExponentialCrossover
 from pymoo.operators.crossover.ux import UniformCrossover
@@ -23,6 +24,37 @@ from pymoo.operators.selection.rnd import RandomSelection
 from pymoo.operators.selection.tournament import TournamentSelection
 import scipy
 from inspect import signature
+from pymoo.core.sampling import Sampling
+
+
+class UniformBinarySampling(Sampling):
+    def __init__(self, num_ones):
+        super().__init__()
+        self.num_ones = num_ones
+
+    def _do(self, problem, n_samples, **kwargs):
+        num_ones = np.linspace(self.num_ones, problem.n_var, n_samples, dtype=int)
+        ones_into_array = np.zeros((n_samples + 1, problem.n_var), dtype=int)
+
+        # Fill ones into array randomly
+        for i, num in enumerate(num_ones):
+            ones_into_array[i, :num] = 1
+            np.random.shuffle(ones_into_array[i])
+
+        return ones_into_array
+
+
+# class UniformBinarySampling(Sampling):
+#     def _do(self, problem, n_samples, **kwargs):
+#         num_ones = np.linspace(20, problem.n_var, n_samples, dtype=int)
+#         ones_into_array = np.zeros((n_samples + 1, problem.n_var), dtype=int)
+#
+#         # Fill ones into array randomly
+#         for i, num in enumerate(num_ones):
+#             ones_into_array[i, :num] = 1
+#             np.random.shuffle(ones_into_array[i])
+#
+#         return ones_into_array
 
 
 class GridNsga(ElementwiseProblem):
@@ -87,25 +119,26 @@ def NSGA_3(obj_func,
     #     get_reference_directions("uniform", n_obj, n_partitions=12, scaling=1.0))
     # ref_dirs = get_reference_directions(
     #     "multi-layer",
-    # ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
-    ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
+    # ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
+    ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
+    # ref_dirs = get_reference_directions("energy", n_obj, n_partitions, seed=1)
+    # ref_dirs = get_reference_directions("das-dennis", n_obj,
+    #                                     n_partitions=n_partitions)  # Try different methods or adjust n_partitions
 
-    algorithm = NSGA3(# pop_size=pop_size,
-                      pop_size=pop_size,
-                      # sampling=LHS(),
-                      # sampling=BinaryRandomSampling(),
-                      sampling=BinaryUniformSampling(),
-                      # sampling=FloatRandomSampling(),
-                      # crossover=ExponentialCrossover(prob=1.0, prob_exp=0.9),
+    num_ones = 20
+    algorithm = NSGA3(pop_size=pop_size,
+                      sampling=UniformBinarySampling(num_ones=num_ones),
+                      # crossover=ExponentialCrossover(prob=0.5, prob_exp=0.4),
                       # crossover=HalfUniformCrossover(prob=1.0),
                       # crossover=UniformCrossover(prob=1.0, repair=RoundingRepair()),
                       crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
                       # mutation=PM(prob=mutation_probability, eta=eta, vtype=float, repair=RoundingRepair()),
-                      mutation=BitflipMutation(prob=0.2, prob_var=0.2, repair=RoundingRepair()),
+                      # mutation=BitflipMutation(prob=0.2, prob_var=0.2, repair=RoundingRepair()),
                       # sampling=IntegerRandomSampling(),
                       # crossover=SBX(prob=0.1, eta=1.0, vtype=float, repair=RoundingRepair()),
                       # mutation=PM(prob=0.5, eta=1.0, vtype=float, repair=RoundingRepair()),
                       # mutation=PM(prob=0.5, eta=5, repair=RoundingRepair()),
+                      mutation=BitflipMutation(prob=0.5, prob_var=0.4),
                       # selection=TournamentSelection(pressure=2),
                       eliminate_duplicates=True,
                       ref_dirs=ref_dirs)
@@ -200,11 +233,11 @@ def NSGA_3_debug(obj_func,
     #                   eliminate_duplicates=True,
     #                   ref_dirs=ref_dirs)
     algorithm = NSGA3(pop_size=pop_size,
-                       sampling=IntegerRandomSampling(),
-                       crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                       mutation=PM(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                       eliminate_duplicates=True,
-                       ref_dirs=ref_dirs)
+                      sampling=IntegerRandomSampling(),
+                      crossover=SBX(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
+                      mutation=PM(prob=prob, eta=eta, vtype=float, repair=RoundingRepair()),
+                      eliminate_duplicates=True,
+                      ref_dirs=ref_dirs)
 
     res = minimize(problem,
                    algorithm,
