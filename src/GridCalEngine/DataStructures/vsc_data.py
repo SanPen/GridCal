@@ -21,6 +21,7 @@ class VscData:
         # Basic data
         self.names: StrVec = np.zeros(nelm, dtype=object)
         self.idtag: StrVec = np.zeros(nelm, dtype=object)
+        self.branch_index: IntVec = np.zeros(nelm, dtype=int)
         self.F: IntVec = np.zeros(nelm, dtype=int)  # 'from' bus indices
         self.T: IntVec = np.zeros(nelm, dtype=int)  # 'to' bus indices
         self.active: BoolVec = np.zeros(nelm, dtype=bool)

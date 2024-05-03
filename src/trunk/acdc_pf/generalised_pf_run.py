@@ -213,6 +213,62 @@ def linn5bus_example2():
     print(results.get_branch_df())
     print("Error:", results.error)
 
+def pegase_example():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/case89pegase.m'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+
+def case14_example():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/14bus_shunt.gridcal'
+    file_path = 'Grids_and_profiles/grids/case14.m'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def case14_example_noshunt_notrafo():
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/14bus_no_shunt_notrafo.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def case14_example_noshunt():
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/14bus_no_shunt.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
 
 def acdc2bus_example():
     file_path = 'C:/Users/raiya/Desktop/gridcal_models/2busACDC.gridcal'
@@ -242,6 +298,20 @@ def acdc3bus_example():
 
 def acdc4bus_example():
     file_path = 'C:/Users/raiya/Desktop/gridcal_models/4busACDC.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)              
+
+
+def acdc10bus_example():
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/10busACDC.gridcal'
     grid = gce.FileOpen(file_path).open()
     assert grid is not None
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
@@ -535,10 +605,15 @@ if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example()
-    # linn5bus_example2()
+    # linn5bus_example2() #converges True and accurate to normal Ac pf
+    # pegase_example() #does not converge
+    # case14_example_noshunt()
+    case14_example()
+    # case14_example_noshunt_notrafo()
     # acdc2bus_example()
     # acdc3bus_example()
-    acdc4bus_example()
+    # acdc4bus_example()
+    # acdc10bus_example()
     # two_grids_of_3bus()
     # case9()
     # case14()

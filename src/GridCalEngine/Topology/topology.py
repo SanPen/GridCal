@@ -337,3 +337,37 @@ def compute_connectivity_with_hvdc(branch_active: IntVec,
     Ct = sp.vstack([br_states_diag * Ct_, hvdc_states_diag * Ct_hvdc])
 
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
+
+
+
+
+from scipy.sparse import csr_matrix, lil_matrix
+
+def compute_connectivity_acdc_isolated(branch_active: IntVec,
+                                       Cf_: csc_matrix,
+                                       Ct_: csc_matrix,
+                                       vsc_active: Union[None, IntVec] = None,
+                                       Cf_vsc: Union[None, csc_matrix] = None,
+                                       Ct_vsc: Union[None, csc_matrix] = None,
+                                       vsc_branch_idx: Union[None, IntVec] = None) -> ConnectivityMatrices:
+    """
+    Remove the VSC branches from the connectivity matrices by setting rows indexed by vsc_branch_idx to zero.
+    """
+
+    # Convert matrices to LIL format for efficient row manipulation
+    Cf = Cf_.tolil()
+    Ct = Ct_.tolil()
+
+    # Set rows corresponding to VSC branches to zero
+    for idx in vsc_branch_idx:
+        Cf[idx, :] = 0
+        Ct[idx, :] = 0
+
+    # print("(topology.py) Modified Cf:")
+    # print(Cf)
+    # print("(topology.py) Modified Ct:")
+    # print(Ct)
+
+    # Convert back to CSC format for efficient matrix operations
+    return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
+

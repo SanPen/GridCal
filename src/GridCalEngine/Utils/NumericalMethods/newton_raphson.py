@@ -86,7 +86,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     else:
 
         while not converged and iteration < max_iter:
-
+            print("(newton_raphson.py) Iteration: ", iteration)
             # compute update step
             try:
 
@@ -95,6 +95,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
 
                 if np.isnan(dx).any():
                     logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
+                    print("(newton_raphson.py) Singular Jacobian")
                     return ConvexMethodResult(x=x,
                                               error=error,
                                               converged=converged,
@@ -103,6 +104,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                                               error_evolution=error_evolution)
             except RuntimeError:
                 logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
+                print("(newton_raphson.py) Singular Jacobian")
                 return ConvexMethodResult(x=x,
                                           error=error,
                                           converged=converged,

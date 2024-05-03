@@ -24,7 +24,6 @@ from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGr
                                         TransformerControlType, HvdcControlType)
 from GridCalEngine.basic_structures import CxVec
 import GridCalEngine.DataStructures as ds
-
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
@@ -332,6 +331,7 @@ def get_generator_data(circuit: MultiCircuit,
         gen_index_dict[elm.idtag] = k  # associate the idtag to the index
 
         i = bus_dict[elm.bus]
+        data.bus_idx[k] = i
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
@@ -603,6 +603,7 @@ def get_branch_data(circuit: MultiCircuit,
 
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
+
         # generic stuff
         data.names[i] = elm.name
         data.idtag[i] = elm.idtag
@@ -1109,7 +1110,8 @@ def get_vsc_data(circuit: MultiCircuit,
                     bus_types: CxVec,
                     t_idx: int = -1,
                     time_series: bool = False,
-                    opf_results: Union[OptimalPowerFlowResults, None] = None):
+                    opf_results: Union[OptimalPowerFlowResults, None] = None,
+                    branch_data: ds.BranchData = None) -> ds.VscData:
     """
     :param circuit:
     :param bus_dict:
@@ -1122,6 +1124,13 @@ def get_vsc_data(circuit: MultiCircuit,
     data = ds.VscData(nelm=circuit.get_vsc_number(), nbus=circuit.get_bus_number())
 
     for i, elm in enumerate(circuit.vsc_devices):
+
+        # find the index of the same idtag in the branch data
+        idtag_index = None
+        for index, value in enumerate(branch_data.idtag):
+            if value == elm.idtag:
+                idtag_index = index
+        data.branch_index[i] = idtag_index
 
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]

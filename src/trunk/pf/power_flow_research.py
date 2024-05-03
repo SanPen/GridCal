@@ -1528,6 +1528,305 @@ class HelperFunctions:
         #return the grid
         return grid
 
+    @staticmethod
+    def acdc_10buswoTrafo():
+        # declare a circuit object
+        grid = MultiCircuitRaiyan()
+        grid.change_base(1000)
+
+        # Add the buses and the generators and loads attached
+        bus1 = gce.Bus('Bus 1', vnom=20)
+        grid.add_bus(bus1)
+
+        # add bus 2 with a load attached
+        bus2 = gce.Bus('Bus 2', vnom=20)
+        grid.add_bus(bus2)
+        grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
+
+        # add bus 3 with a load attached
+        bus3 = gce.Bus('Bus 3', vnom=20)
+        grid.add_bus(bus3)
+        grid.add_load(bus3, gce.Load('load 3', P=200, Q=50))
+
+        # add bus 4 with a load attached
+        bus4 = gce.Bus('Bus 4', vnom=20)
+        bus4.is_dc = True
+        grid.add_bus(bus4)
+        grid.add_load(bus4, gce.Load('load 4', P=200))
+
+        # add bus 5 with a load attached
+        bus5 = gce.Bus('Bus 5', vnom=20)
+        bus5.is_dc = True
+        grid.add_bus(bus5)
+        grid.add_load(bus5, gce.Load('load 5', P=100))
+
+        # add bus 6
+        bus6 = gce.Bus('Bus 6', vnom=150)
+        bus6.is_dc = True
+        grid.add_bus(bus6)
+        grid.add_load(bus6, gce.Load('load 6', P=150))
+
+        #add bus 7 with a load attached
+        bus7 = gce.Bus('Bus 7', vnom=20)
+        grid.add_bus(bus7)
+        grid.add_load(bus7, gce.Load('load 7', P=100, Q=100))
+
+
+        #add bus 8 with a load attached
+        bus8 = gce.Bus('Bus 8', vnom=20)
+        grid.add_bus(bus8)
+        #add load 0.2 + 0.05 * 1j pu
+        grid.add_load(bus8, gce.Load('load 8', P=200, Q=50))
+
+
+        #add bus 9 with a load attached
+        bus9 = gce.Bus('Bus 9', vnom=20)
+        grid.add_bus(bus9)
+        grid.add_load(bus9, gce.Load('load 9', P=300, Q=100))
+
+
+        #add bus 10 as a slack bus
+        bus10 = gce.Bus('Bus 10', vnom=20) 
+        grid.add_bus(bus10)
+
+
+        #add lines
+        line12 = gce.Line(bus1, bus2, 'line 1-2', r=0.1, x=0.3, b=0.0)
+        line13 = gce.Line(bus1, bus3, 'line 1-3', r=0.1, x=0.3, b=0.0)
+        line23 = gce.Line(bus2, bus3, 'line 2-3', r=0.1, x=0.3, b=0.0)
+        line45 = gce.DcLine(bus4, bus5, 'DC line 4-5', r=0.1)
+        line56 = gce.DcLine(bus5, bus6, 'DC line 5-6', r=0.1)
+        line46 = gce.DcLine(bus4, bus6, 'DC line 4-6', r=0.1)
+        line78 = gce.Line(bus7, bus8, 'line 7-8', r=0.1, x=0.3, b=0.0)
+        line89 = gce.Line(bus8, bus9, 'line 8-9', r=0.1, x=0.3, b=0.0)
+        line810 = gce.Line(bus8, bus10, 'line 9-10', r=0.1, x=0.3, b=0.0)
+        line910 = gce.Line(bus9, bus10, 'line 9-10', r=0.1, x=0.3, b=0.0)
+        grid.add_line(line12)
+        grid.add_line(line13)
+        grid.add_line(line23)
+        grid.add_dc_line(line45)
+        grid.add_dc_line(line56)
+        grid.add_dc_line(line46)
+        grid.add_line(line78)
+        grid.add_line(line89)
+        grid.add_line(line810)
+        grid.add_line(line910)    
+
+        #use gen 1 control to set bus 1 as slack
+        gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.0)
+        gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
+        gen1 = GeneratorRaiyan('Some random generator 1', gen1_control1, gen1_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        grid.add_generator(bus1, gen1)
+
+        
+        #use gen 10 control to set bus 10 as slack, same as gen1
+        gen10_control1 = ControlRaiyan(grid, bus10, "Voltage", 1.0)
+        gen10_control2 = ControlRaiyan(grid, bus10, "Angle", 0.0)
+        gen10 = GeneratorRaiyan('Some random generator 2', gen10_control1, gen10_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        grid.add_generator(bus10, gen10)
+
+        #add vsc
+        VSC1_control1 = ControlRaiyan(grid, bus4, "Pfrom", 0.5, bus3)
+        VSC1_control2 = ControlRaiyan(grid, bus4, "Qto", 0.1, bus3)
+        # VSC2_control1 = ControlRaiyan(grid, bus6, "Qto", 0.1, bus7)
+        VSC2_control1 = ControlRaiyan(grid, bus6, "Qto", 0.1, bus7)
+        VSC2_control2 = ControlRaiyan(grid, bus6, "Voltage", 1.0)
+        vsc1 = VSC_Series(bus3, bus4, 'VSC 3-4', 0.1, {'Qt': 0.05, 'Vmf': 1.00}, VSC1_control1, VSC1_control2)
+        vsc2 = VSC_Series(bus6, bus7, 'VSC 6-7', 0.1, {'Pf': 0.12, 'Vmt': 0.99}, VSC2_control1, VSC2_control2)
+        grid.add_vsc(vsc1)
+        grid.add_vsc(vsc2)
+
+
+
+        #return the grid
+        return grid
+
+    def linn5bus_example2():
+        """
+        Grid from Lynn Powel's book
+        """
+        # declare a circuit object
+        grid = MultiCircuitRaiyan()
+
+        # Add the buses and the generators and loads attached
+        bus1 = gce.Bus('Bus 1', vnom=20)
+        # bus1.is_slack = True  # we may mark the bus a slack
+        grid.add_bus(bus1)
+
+        gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.0)
+        gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
+
+        gen1 = GeneratorRaiyan('Some random generator 1', gen1_control1, gen1_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        
+        grid.add_generator(bus1, gen1)
+
+
+        # add bus 2 with a load attached
+        bus2 = gce.Bus('Bus 2', vnom=20)
+        grid.add_bus(bus2)
+        grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
+
+        # add bus 3 with a load attached
+        bus3 = gce.Bus('Bus 3', vnom=20)
+        grid.add_bus(bus3)
+        grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
+
+        # add bus 4 with a load attached
+        bus4 = gce.Bus('Bus 4', vnom=20)
+        grid.add_bus(bus4)
+        grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
+
+        # add bus 5 with a load attached
+        bus5 = gce.Bus('Bus 5', vnom=20)
+        grid.add_bus(bus5)
+        grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
+
+        # add Lines connecting the buses
+        grid.add_line(gce.Line(bus1, bus2, name='line 1-2', r=0.05, x=0.11, b=0.02, rate=1000))
+        grid.add_line(gce.Line(bus1, bus3, name='line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
+        grid.add_line(gce.Line(bus1, bus5, name='line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
+        grid.add_line(gce.Line(bus2, bus3, name='line 2-3', r=0.04, x=0.09, b=0.02, rate=1000))
+        grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.04, x=0.09, b=0.02, rate=1000))
+        grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06, x=0.13, b=0.03, rate=1000))
+        grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.04, x=0.09, b=0.02, rate=1000))
+
+        return grid
+
+
+
+    def bus14_example():
+        """
+        Grid from Lynn Powel's book
+        """
+        # declare a circuit object
+        grid = MultiCircuitRaiyan()
+        grid.change_base(1000)
+
+        # Add the buses and the generators and loads attached
+        bus1 = gce.Bus('Bus 1', vnom=20)
+        # bus1.is_slack = True  # we may mark the bus a slack
+        grid.add_bus(bus1)
+
+        bus2 = gce.Bus('Bus 2', vnom=20)
+        grid.add_bus(bus2)
+
+        bus3 = gce.Bus('Bus 3', vnom=20)
+        grid.add_bus(bus3)
+
+        bus4 = gce.Bus('Bus 4', vnom=20)
+        grid.add_bus(bus4)
+
+        bus5 = gce.Bus('Bus 5', vnom=20)
+        grid.add_bus(bus5)
+
+        bus6 = gce.Bus('Bus 6', vnom=20)
+        grid.add_bus(bus6)
+
+        bus7 = gce.Bus('Bus 7', vnom=20)
+        grid.add_bus(bus7)
+
+        bus8 = gce.Bus('Bus 8', vnom=20)
+        grid.add_bus(bus8)
+
+        bus9 = gce.Bus('Bus 9', vnom=20)
+        grid.add_bus(bus9)
+
+        bus10 = gce.Bus('Bus 10', vnom=20)
+        grid.add_bus(bus10)
+
+        bus11 = gce.Bus('Bus 11', vnom=20)
+        grid.add_bus(bus11)
+
+        bus12 = gce.Bus('Bus 12', vnom=20)
+        grid.add_bus(bus12)
+
+        bus13 = gce.Bus('Bus 13', vnom=20)
+        grid.add_bus(bus13)
+
+        bus14 = gce.Bus('Bus 14', vnom=20)
+        grid.add_bus(bus14)
+
+        gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.06)
+        gen1_control2 = ControlRaiyan(grid, bus1, "Pzip", 232.4/1000)
+
+        gen1 = GeneratorRaiyan('Some random generator 1', gen1_control1, gen1_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        
+        grid.add_generator(bus1, gen1)
+
+        gen2_control1 = ControlRaiyan(grid, bus2, "Pzip", 40.00/1000)
+        gen2_control2 = ControlRaiyan(grid, bus2, "Voltage", 1.045)
+
+        gen2 = GeneratorRaiyan('Some random generator 2', gen2_control1, gen2_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        
+        grid.add_generator(bus2, gen2)
+
+        gen3_control1 = ControlRaiyan(grid, bus3, "Pzip", 0.00/1000)
+        gen3_control2 = ControlRaiyan(grid, bus3, "Voltage", 1.01)
+
+        gen3 = GeneratorRaiyan('Some random generator 3', gen3_control1, gen3_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        
+        grid.add_generator(bus3, gen3)
+
+        gen4_control1 = ControlRaiyan(grid, bus4, "Pzip", 0.00/1000)
+        gen4_control2 = ControlRaiyan(grid, bus4, "Voltage", 1.07)
+
+        gen4 = GeneratorRaiyan('Some random generator 4', gen4_control1, gen4_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        
+        grid.add_generator(bus6, gen4)
+
+        gen5_control1 = ControlRaiyan(grid, bus5, "Pzip", 0.00/1000)
+        gen5_control2 = ControlRaiyan(grid, bus5, "Voltage", 1.09)
+
+        gen5 = GeneratorRaiyan('Some random generator 5', gen5_control1, gen5_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        
+        grid.add_generator(bus8, gen5)
+
+        #load
+        grid.add_load(bus2, gce.Load('load 2', P=21.7, Q=12.7))
+        grid.add_load(bus3, gce.Load('load 3', P=94.2, Q=19.0))
+        grid.add_load(bus4, gce.Load('load 4', P=47.8, Q=-3.9))
+        grid.add_load(bus5, gce.Load('load 5', P=7.6, Q=1.6))
+        grid.add_load(bus6, gce.Load('load 6', P=11.2, Q=7.5))
+        grid.add_load(bus9, gce.Load('load 9', P=29.5, Q=16.6))
+        grid.add_load(bus10, gce.Load('load 10', P=9.0, Q=5.8))
+        grid.add_load(bus11, gce.Load('load 11', P=3.5, Q=1.8))
+        grid.add_load(bus12, gce.Load('load 12', P=6.1, Q=1.6))
+        grid.add_load(bus13, gce.Load('load 13', P=13.5, Q=5.8))
+        grid.add_load(bus14, gce.Load('load 14', P=14.9, Q=5.0))
+
+
+
+        # add Lines connecting the buses
+        # Assuming gce.Line is correctly defined elsewhere in your code and grid is your grid object.
+        grid.add_line(gce.Line(bus1, bus2, name='line 1-2', r=0.01938, x=0.05917, b=0.0528, rate=10000))
+        grid.add_line(gce.Line(bus1, bus5, name='line 1-5', r=0.05403, x=0.22304, b=0.0492, rate=10000))
+        grid.add_line(gce.Line(bus2, bus3, name='line 2-3', r=0.04699, x=0.19797, b=0.0438, rate=10000))
+        grid.add_line(gce.Line(bus2, bus4, name='line 2-4', r=0.05811, x=0.17632, b=0.034, rate=10000))
+        grid.add_line(gce.Line(bus2, bus5, name='line 2-5', r=0.05695, x=0.17388, b=0.0346, rate=10000))
+        grid.add_line(gce.Line(bus3, bus4, name='line 3-4', r=0.06701, x=0.17103, b=0.0128, rate=10000))
+        grid.add_line(gce.Line(bus4, bus5, name='line 4-5', r=0.01335, x=0.04211, b=0, rate=10000))
+        grid.add_line(gce.Line(bus6, bus11, name='line 6-11', r=0.09498, x=0.1989, b=0, rate=10000))
+        grid.add_line(gce.Line(bus6, bus12, name='line 6-12', r=0.12291, x=0.25581, b=0, rate=10000))
+        grid.add_line(gce.Line(bus6, bus13, name='line 6-13', r=0.06615, x=0.13027, b=0, rate=10000))
+        grid.add_line(gce.Line(bus7, bus8, name='line 7-8', r=0, x=0.17615, b=0, rate=10000))
+        grid.add_line(gce.Line(bus7, bus9, name='line 7-9', r=0, x=0.11001, b=0, rate=10000))
+        grid.add_line(gce.Line(bus9, bus10, name='line 9-10', r=0.03181, x=0.0845, b=0, rate=10000))
+        grid.add_line(gce.Line(bus9, bus14, name='line 9-14', r=0.12711, x=0.27038, b=0, rate=10000))
+        grid.add_line(gce.Line(bus10, bus11, name='line 10-11', r=0.08205, x=0.19207, b=0, rate=10000))
+        grid.add_line(gce.Line(bus12, bus13, name='line 12-13', r=0.22092, x=0.19988, b=0, rate=10000))
+        grid.add_line(gce.Line(bus13, bus14, name='line 13-14', r=0.17093, x=0.34802, b=0, rate=10000))
+
+
+        return grid
+
 
     @staticmethod
     def acdc_10bus():
@@ -2548,7 +2847,9 @@ def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zi
         fx_altered = compute_fx_raiyan(Scalc, Sbus, p_to_after, p_from_after, q_to_after, q_from_after, p_zip_after, q_zip_after, modulations_after, taus_after, dc_buses, ac_buses, vsc_frombus, vsc_tobus, controllable_trafo_frombus, controllable_trafo_tobus, controllable_trafo_yshunt, controllable_trafo_yseries, V, passive_branch_dict, known_dict, Ybus)
         diff = (fx_altered - fx) / delta
         J[:, i] = diff
-
+    
+    print("Jacobian")
+    print(J)
 
     #make a df of J
     # import pandas as pd
@@ -2693,6 +2994,8 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
     Split the AC and DC subsystems
     '''
     Ybus = isolate_AC_DC(grid, Ybus)
+    print("Ybus")
+    print(Ybus.todense())
 
 
     '''
@@ -2741,12 +3044,15 @@ if __name__ == '__main__':
     import os
     # grid_ = HelperFunctions.linn5bus_example()    #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.linn5bus_example2()   #converges true
-    # grid_ = HelperFunctions.ieee14_example()      #converges true, and same as traditional powerflow
+    grid_ = HelperFunctions.ieee14_example()      #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.pure_dc_3bus()        #converges true
     # grid_ = HelperFunctions.pure_ac_2bus()        #converges true
     # grid_ = HelperFunctions.pure_ac_3bus_trafo()  #converges true, your trafo is not broken maybe?
     # grid_ = HelperFunctions.acdc_5bus()           #converges true 
-    grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
+    # grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
+    # grid_ = HelperFunctions.acdc_10buswoTrafo()
+    # grid_ = HelperFunctions.linn5bus_example2()
+    # grid_ = HelperFunctions.bus14_example()
 
     # grid_ = HelperFunctions.acdc_10bus_branchcontrol() #converges true, but not every remote branch control will converge so
 

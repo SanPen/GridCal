@@ -21,6 +21,7 @@ import numba as nb
 from typing import Union, Tuple, List
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType, BusMode
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
+from GridCalEngine.exceptions import ControlLengthError, ControlNotImplementedError
 
 
 @nb.njit(cache=True)
@@ -536,7 +537,10 @@ class SimulationIndices2:
                  dc: IntVec,
                  dc_bus: BoolVec,
                  gen_data,
-                 vsc_data):
+                 vsc_data,
+                 bus_data,
+                 adj,
+                 idx_islands):
         """
 
         :param bus_types: Bus type initial guess array
@@ -546,34 +550,6 @@ class SimulationIndices2:
         :param T: Array of bus_to indices
         :param dc: Arra of is DC ? per bus
         """
-
-        print("bus_types")
-        print(bus_types)
-
-        print("Pbus")
-        print(Pbus)
-
-        print("control_mode")
-        print(control_mode)
-
-        print("F")
-        print(F)
-
-        print("T")
-        print(T)
-
-        print("dc")
-        print(dc)
-
-        print("dc_bus")
-        print(dc_bus)
-
-        print("gen_data")
-        print(gen_data)
-
-        print("vsc_data")
-        print(vsc_data)
-
         # master aray of bus types (nbus)
         self.bus_types = bus_types
 
@@ -768,7 +744,7 @@ class SimulationIndices2:
         self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
         # (Generalised PF) determine the indices and setpoints
-        self.compile_control_indices_generalised_pf(gen_data, vsc_data)
+        self.compile_control_indices_generalised_pf(gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 1)
 
     def recompile_types(self,
                         bus_types: IntVec,
@@ -784,91 +760,392 @@ class SimulationIndices2:
         # determine the bus indices
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
-    def compile_control_indices_generalised_pf(self, gen_data, vsc_data):
-        print("we have gen_data")
-        print("nelm")
-        print(gen_data.nelm)
-        print("nbus")
-        print(gen_data.nbus)
-        print("names")
-        print(gen_data.names)
-        print("idtag")
-        print(gen_data.idtag)
-        print("controllable")
-        print(gen_data.controllable)
-        print("installed_p")
-        print(gen_data.installed_p)
+    def compile_control_indices_generalised_pf(self, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0):
+        # print("we have gen_data")
+        # print("nelm")
+        # print(gen_data.nelm)
+        # print("nbus")
+        # print(gen_data.nbus)
+        # print("names")
+        # print(gen_data.names)
+        # print("idtag")
+        # print(gen_data.idtag)
+        # print("controllable")
+        # print(gen_data.controllable)
+        # print("installed_p")
+        # print(gen_data.installed_p)
 
-        print("isActive")
-        print(gen_data.active)
-        print("p")
-        print(gen_data.p)
-        print("pf")
-        print(gen_data.pf)
-        print("v")
-        print(gen_data.v)
+        # print("isActive")
+        # print(gen_data.active)
+        # print("p")
+        # print(gen_data.p)
+        # print("pf")
+        # print(gen_data.pf)
+        # print("v")
+        # print(gen_data.v)
 
-        print("mttf")
-        print(gen_data.mttf)
-        print("mttr")
-        print(gen_data.mttr)
+        # print("mttf")
+        # print(gen_data.mttf)
+        # print("mttr")
+        # print(gen_data.mttr)
 
-        print("C_bus_elm")
-        print(gen_data.C_bus_elm)
+        # print("C_bus_elm")
+        # print(gen_data.C_bus_elm)
 
-        print("r0")
-        print(gen_data.r0)
-        print("r1")
-        print(gen_data.r1)
-        print("r2")
-        print(gen_data.r2)
+        # print("r0")
+        # print(gen_data.r0)
+        # print("r1")
+        # print(gen_data.r1)
+        # print("r2")
+        # print(gen_data.r2)
 
-        print("x0")
-        print(gen_data.x0)
-        print("x1")
-        print(gen_data.x1)
-        print("x2")
-        print(gen_data.x2)
+        # print("x0")
+        # print(gen_data.x0)
+        # print("x1")
+        # print(gen_data.x1)
+        # print("x2")
+        # print(gen_data.x2)
 
-        print("dispatchable")
-        print(gen_data.dispatchable)
-        print("pmax")
-        print(gen_data.pmax)
-        print("pmin")
-        print(gen_data.pmin)
+        # print("dispatchable")
+        # print(gen_data.dispatchable)
+        # print("pmax")
+        # print(gen_data.pmax)
+        # print("pmin")
+        # print(gen_data.pmin)
 
-        print("cost_1")
-        print(gen_data.cost_1)
-        print("cost_0")
-        print(gen_data.cost_0)
-        print("cost_2")
-        print(gen_data.cost_2)
-        print("startup_cost")
-        print(gen_data.startup_cost)
-        print("availability")
-        print(gen_data.availability)
-        print("ramp_up")
-        print(gen_data.ramp_up)
-        print("ramp_down")
-        print(gen_data.ramp_down)
-        print("min_time_up")
-        print(gen_data.min_time_up)
-        print("min_time_down")
-        print(gen_data.min_time_down)
+        # print("cost_1")
+        # print(gen_data.cost_1)
+        # print("cost_0")
+        # print(gen_data.cost_0)
+        # print("cost_2")
+        # print(gen_data.cost_2)
+        # print("startup_cost")
+        # print(gen_data.startup_cost)
+        # print("availability")
+        # print(gen_data.availability)
+        # print("ramp_up")
+        # print(gen_data.ramp_up)
+        # print("ramp_down")
+        # print(gen_data.ramp_down)
+        # print("min_time_up")
+        # print(gen_data.min_time_up)
+        # print("min_time_down")
+        # print(gen_data.min_time_down)
 
-        print("original_idx")
-        print(gen_data.original_idx)
+        # print("original_idx")
+        # print(gen_data.original_idx)
             
-        print("we have vsc_data")
-        print("vsc_data.nbus",vsc_data.nbus)
-        print("vsc_data.nelm",vsc_data.nelm)
+        # print("we have vsc_data")
+        # print("vsc_data.nbus",vsc_data.nbus)
+        # print("vsc_data.nelm",vsc_data.nelm)
+
+        #get the number of ac buses
+        ac_buses = self.ac
+        num_ac_buses = len(ac_buses)
+
+        #get the number of dc buses
+        dc_buses = self.dc
+        num_dc_buses = len(dc_buses)
+
+        #get the number of vscs
+        num_vsc = vsc_data.nelm
+
+        #get the number of transformers
+        num_trafo = 0
+
+        total = num_ac_buses*2 + num_dc_buses + num_vsc + num_trafo*4
+
+        if verbose:
+            import prettytable as pt
+            table = pt.PrettyTable()
+            table.field_names = ["Type", "Number of Instances", "Number of Equations"]
+            table.add_row(["AC Bus", num_ac_buses, num_ac_buses*2])
+            table.add_row(["DC Bus", num_dc_buses, num_dc_buses])
+            table.add_row(["VSC", num_vsc, num_vsc])
+            table.add_row(["Controllable Trafo", num_trafo, num_trafo*4])
+            table.add_row(["Total", "", total])
+            print(table)
 
 
-        print(vsc_data)
+        dict_known_idx =  {
+            "Voltage": self.kn_volt_idx,
+            "Angle": self.kn_angle_idx,
+            "Pzip": self.kn_pzip_idx,
+            "Qzip": self.kn_qzip_idx,
+            "Pfrom": self.kn_pfrom_kdx,
+            "Pto": self.kn_pto_kdx,
+            "Qfrom": self.kn_qfrom_kdx,
+            "Qto": self.kn_qto_kdx,
+            "Modulation": self.kn_mod_kdx,
+            "Tau": self.kn_tau_kdx
+        }
 
-        pass
+        dict_known_setpoints = {
+            "Voltage": self.kn_volt_setpoints,
+            "Angle": self.kn_angle_setpoints,
+            "Pzip": self.kn_pzip_setpoints,
+            "Qzip": self.kn_qzip_setpoints,
+            "Pfrom": self.kn_pfrom_setpoints,
+            "Pto": self.kn_pto_setpoints,
+            "Qfrom": self.kn_qfrom_setpoints,
+            "Qto": self.kn_qto_setpoints,
+            "Modulation": self.kn_mod_setpoints,
+            "Tau": self.kn_tau_setpoints
+        }
+
+        dict_unknown_idx =  {
+            "Voltage": self.un_volt_idx,
+            "Angle": self.un_angle_idx,
+            "Pzip": self.un_pzip_idx,
+            "Qzip": self.un_qzip_idx,
+            "Pfrom": self.un_pfrom_kdx,
+            "Pto": self.un_pto_kdx,
+            "Qfrom": self.un_qfrom_kdx,
+            "Qto": self.un_qto_kdx,
+            "Modulation": self.un_mod_kdx,
+            "Tau": self.un_tau_kdx
+        }
+
+        for bus in self.ac:
+            dict_unknown_idx["Voltage"] = np.append(dict_unknown_idx["Voltage"], bus)
+            dict_unknown_idx["Angle"] = np.append(dict_unknown_idx["Angle"], bus)
+            dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
+            dict_known_idx["Qzip"] = np.append(dict_known_idx["Qzip"], bus)
+            dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], 0)
+            dict_known_setpoints["Qzip"] = np.append(dict_known_setpoints["Qzip"], 0)
+
+        for bus in self.dc:
+            dict_unknown_idx["Voltage"] = np.append(dict_unknown_idx["Voltage"], bus)
+            dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
+            dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], 0)
+
+        for bus in gen_data.bus_idx:
+            if bus in self.ac:
+                dict_unknown_idx["Pzip"] = np.append(dict_unknown_idx["Pzip"], bus)
+                dict_unknown_idx["Qzip"] = np.append(dict_unknown_idx["Qzip"], bus)
+                _popIdx = np.where(dict_known_idx["Pzip"] == bus)
+                dict_known_setpoints["Pzip"] = np.delete(dict_known_setpoints["Pzip"], _popIdx)
+                dict_known_setpoints["Qzip"] = np.delete(dict_known_setpoints["Qzip"], _popIdx)
+                dict_known_idx["Pzip"] = np.delete(dict_known_idx["Pzip"], _popIdx)
+                dict_known_idx["Qzip"] = np.delete(dict_known_idx["Qzip"], _popIdx)
+
+            else:
+                dict_unknown_idx["Pzip"] = np.append(dict_unknown_idx["Pzip"], bus)
+                _popIdx = np.where(dict_known_idx["Pzip"] == bus)
+                dict_known_setpoints["Pzip"] = np.delete(dict_known_setpoints["Pzip"], _popIdx)
+                dict_known_idx["Pzip"] = np.delete(dict_known_idx["Pzip"], _popIdx)
+
+        for vsc_idx in range(num_vsc):
+            assert vsc_data.F[vsc_idx] in self.dc
+            assert vsc_data.T[vsc_idx] in self.ac
+            dict_unknown_idx["Pfrom"] = np.append(dict_unknown_idx["Pfrom"], vsc_data.branch_index[vsc_idx])
+            dict_unknown_idx["Pto"] = np.append(dict_unknown_idx["Pto"], vsc_data.branch_index[vsc_idx])
+            dict_unknown_idx["Qto"] = np.append(dict_unknown_idx["Qto"], vsc_data.branch_index[vsc_idx])
+
+        for trafo_idx in range(num_trafo):
+            #controllable Trafo not supported yet
+            pass
+
+        #Set the "control modes" for generators 
+        for bus in gen_data.bus_idx:
+            #grab the voltage setpoint
+            _setpoint = gen_data.v[gen_data.bus_idx == bus]
+            print("bus here has a generator", bus)
+            print("its voltage setpoint is", _setpoint)
+            print("its active power setpoint is", gen_data.p[gen_data.bus_idx == bus])
+            print("power factor is at", gen_data.pf[gen_data.bus_idx == bus])
+
+            # We assume for the time being that all generators set the voltage
+            _popIdx = np.where(dict_unknown_idx["Voltage"] == bus)
+            dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+            dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], bus)
+            dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
+
+            # We are going to use the slack array to determine the control mode (which means that you must set slack yourself)
+            if bus_data.bus_types[bus] == BusMode.Slack.value: #Slack bus
+                # We set the angle
+                _popIdx = np.where(dict_unknown_idx["Angle"] == bus)
+                dict_unknown_idx["Angle"] = np.delete(dict_unknown_idx["Angle"], _popIdx)
+                dict_known_idx["Angle"] = np.append(dict_known_idx["Angle"], bus)
+                dict_known_setpoints["Angle"] = np.append(dict_known_setpoints["Angle"], 0)
+
+            else:
+                # We set the active power
+                _popIdx = np.where(dict_unknown_idx["Pzip"] == bus)
+                dict_unknown_idx["Pzip"] = np.delete(dict_unknown_idx["Pzip"], _popIdx)
+                dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
+                dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], gen_data.p[gen_data.bus_idx == bus])
+
+        #Set the "control modes" for VSCs (we do it one by one because I dont know the order of the control_modes array)
+        for vsc_idx in range(num_vsc):
+            # print("vsc number", vsc_idx)
+            # print("from bus", vsc_data.F[vsc_idx])
+            # print("to bus", vsc_data.T[vsc_idx])
+            # print("branch number", vsc_data.branch_index[vsc_idx])
+            # print("control mode", vsc_data.control_mode[vsc_idx])
+
+            # Check if the control mode is valid
+            control_mode = vsc_data.control_mode[vsc_idx]
+            self.check_control_modes(control_mode)
+
+            # We set the controls for the acceptable control modes
+            if control_mode == ConverterControlType.type_I_2:  # 2:Pdc+Qac
+                self.any_control = True
+
+                _popIdx = np.where(dict_unknown_idx["Pfrom"] == vsc_data.branch_index[vsc_idx])
+                dict_unknown_idx["Pfrom"] = np.delete(dict_unknown_idx["Pfrom"], _popIdx)
+                dict_known_idx["Pfrom"] = np.append(dict_known_idx["Pfrom"], vsc_data.branch_index[vsc_idx])
+                dict_known_setpoints["Pfrom"] = np.append(dict_known_setpoints["Pfrom"], vsc_data.Pdc_set[vsc_idx])
+
+                _popIdx = np.where(dict_unknown_idx["Qto"] == vsc_data.branch_index[vsc_idx])
+                dict_unknown_idx["Qto"] = np.delete(dict_unknown_idx["Qto"], _popIdx)
+                dict_known_idx["Qto"] = np.append(dict_known_idx["Qto"], vsc_data.branch_index[vsc_idx])
+                dict_known_setpoints["Qto"] = np.append(dict_known_setpoints["Qto"], vsc_data.Qac_set[vsc_idx])
+
+            elif control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
+                self.any_control = True
+
+                _popIdx = np.where(dict_unknown_idx["Pfrom"] == vsc_data.branch_index[vsc_idx])
+                dict_unknown_idx["Pfrom"] = np.delete(dict_unknown_idx["Pfrom"], _popIdx)
+                dict_known_idx["Pfrom"] = np.append(dict_known_idx["Pfrom"], vsc_data.branch_index[vsc_idx])
+                dict_known_setpoints["Pfrom"] = np.append(dict_known_setpoints["Pfrom"], vsc_data.Pdc_set[vsc_idx])
+
+                _popIdx = np.where(dict_unknown_idx["Voltage"] == vsc_data.T[vsc_idx])
+                dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+                dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], vsc_data.T[vsc_idx])
+                dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], vsc_data.Vac_set[vsc_idx])
+
+            elif control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
+                self.any_control = True
+
+                _popIdx = np.where(dict_unknown_idx["Voltage"] == vsc_data.F[vsc_idx])
+                dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+                dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], vsc_data.F[vsc_idx])
+                dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], vsc_data.Vdc_set[vsc_idx])
+
+                _popIdx = np.where(dict_unknown_idx["Qto"] == vsc_data.branch_index[vsc_idx])
+                dict_unknown_idx["Qto"] = np.delete(dict_unknown_idx["Qto"], _popIdx)
+                dict_known_idx["Qto"] = np.append(dict_known_idx["Qto"], vsc_data.branch_index[vsc_idx])
+                dict_known_setpoints["Qto"] = np.append(dict_known_setpoints["Qto"], vsc_data.Qac_set[vsc_idx])
+
+            elif control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
+                self.any_control = True
+
+                _popIdx = np.where(dict_unknown_idx["Voltage"] == vsc_data.F[vsc_idx])
+                dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+                dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], vsc_data.F[vsc_idx])
+                dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], vsc_data.Vdc_set[vsc_idx])
+
+                _popIdx = np.where(dict_unknown_idx["Voltage"] == vsc_data.T[vsc_idx])
+                dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+                dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], vsc_data.T[vsc_idx])
+                dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], vsc_data.Vac_set[vsc_idx])
+
+        #use pretty table to print the above information
+        if verbose == 1:
+            table = pt.PrettyTable()
+            table.field_names = ["Type", "Number of Unknowns"]
+            table.add_row(["Voltage", len(dict_unknown_idx["Voltage"])])
+            table.add_row(["Angle", len(dict_unknown_idx["Angle"])])
+            table.add_row(["Pzip", len(dict_unknown_idx["Pzip"])])
+            table.add_row(["Qzip", len(dict_unknown_idx["Qzip"])])
+            table.add_row(["Pfrom", len(dict_unknown_idx["Pfrom"])])
+            table.add_row(["Pto", len(dict_unknown_idx["Pto"])])
+            table.add_row(["Qfrom", len(dict_unknown_idx["Qfrom"])])
+            table.add_row(["Qto", len(dict_unknown_idx["Qto"])])
+            table.add_row(["Modulation", len(dict_unknown_idx["Modulation"])])
+            table.add_row(["Tau", len(dict_unknown_idx["Tau"])])
+            table.add_row(["Total", len(dict_unknown_idx["Voltage"]) + len(dict_unknown_idx["Angle"]) + len(dict_unknown_idx["Pzip"]) + len(dict_unknown_idx["Qzip"]) + len(dict_unknown_idx["Pfrom"]) + len(dict_unknown_idx["Pto"]) + len(dict_unknown_idx["Qfrom"]) + len(dict_unknown_idx["Qto"]) + len(dict_unknown_idx["Modulation"]) + len(dict_unknown_idx["Tau"])])
+            print(table)
+        
+        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 1)
+
+        self.kn_volt_idx = dict_known_idx["Voltage"]
+        self.kn_angle_idx = dict_known_idx["Angle"]
+        self.kn_pzip_idx = dict_known_idx["Pzip"]
+        self.kn_qzip_idx = dict_known_idx["Qzip"]
+        self.kn_pfrom_kdx = dict_known_idx["Pfrom"]
+        self.kn_pto_kdx = dict_known_idx["Pto"]
+        self.kn_qfrom_kdx = dict_known_idx["Qfrom"]
+        self.kn_qto_kdx = dict_known_idx["Qto"]
+        self.kn_mod_kdx = dict_known_idx["Modulation"]
+        self.kn_tau_kdx = dict_known_idx["Tau"]
+
+        self.kn_volt_setpoints = dict_known_setpoints["Voltage"]
+        self.kn_angle_setpoints = dict_known_setpoints["Angle"]
+        self.kn_pzip_setpoints = dict_known_setpoints["Pzip"]
+        self.kn_qzip_setpoints = dict_known_setpoints["Qzip"]
+        self.kn_pfrom_setpoints = dict_known_setpoints["Pfrom"]
+        self.kn_pto_setpoints = dict_known_setpoints["Pto"]
+        self.kn_qfrom_setpoints = dict_known_setpoints["Qfrom"]
+        self.kn_qto_setpoints = dict_known_setpoints["Qto"]
+        self.kn_mod_setpoints = dict_known_setpoints["Modulation"]
+        self.kn_tau_setpoints = dict_known_setpoints["Tau"]
+
+        self.un_volt_idx = dict_unknown_idx["Voltage"]
+        self.un_angle_idx = dict_unknown_idx["Angle"]
+        self.un_pzip_idx = dict_unknown_idx["Pzip"]
+        self.un_qzip_idx = dict_unknown_idx["Qzip"]
+        self.un_pfrom_kdx = dict_unknown_idx["Pfrom"]
+        self.un_pto_kdx = dict_unknown_idx["Pto"]
+        self.un_qfrom_kdx = dict_unknown_idx["Qfrom"]
+        self.un_qto_kdx = dict_unknown_idx["Qto"]
+        self.un_mod_kdx = dict_unknown_idx["Modulation"]
+        self.un_tau_kdx = dict_unknown_idx["Tau"]
+
+        return
+
+    def check_subsystem_slacks(self, systems, dict_known_idx, bus_data, verbose = 0, strict = 0):
+        subSystemSlacks = np.zeros(len(systems), dtype=bool)
+        #initialise pretty table
+        import prettytable as pt
+        table = pt.PrettyTable()
+        #add some headers
+        table.field_names = ["System", "Slack Buses", "Remarks"]
+
+        for i, system in enumerate(systems):
+            isSlack = []
+            isDC = False
+            for busIndex in system:
+                #get bus object from index using grid object
+                if bus_data.is_dc[busIndex] == True:
+                    if busIndex in dict_known_idx["Voltage"]:
+                        isSlack.append(busIndex)
+                else:
+                    if busIndex in dict_known_idx["Voltage"] and busIndex in dict_known_idx["Angle"]:
+                        isSlack.append(busIndex)
 
 
+            #add the system to the table
+            table.add_row([f"Subsystem {i+1}", isSlack, "All good" if len(isSlack)  == 1 else "No good"])
+            #true is there is exactly one slack, false otherwise
+            subSystemSlacks[i] = len(isSlack) == 1
+
+        if verbose:
+            print(table)
+
+        if strict:
+            #if adding up lengthwise does not equal the length of the buses, then assert an error
+            assert sum(subSystemSlacks) == len(systems), "You do not have exactly one slack bus for each subsystem"
+
+        return
+
+    def check_control_modes(self, control_mode: List[Union[TransformerControlType, ConverterControlType]]):
+        """
+        Check if the control modes are valid
+        :param control_mode:
+        :return:
+        """
+        if control_mode is not None:
+            if control_mode == ConverterControlType.type_0_free:
+                raise ControlLengthError(controlmode=control_mode, length = 0)
+            
+            if control_mode in [ConverterControlType.type_I_1, ConverterControlType.type_IV_I, ConverterControlType.type_IV_II]:
+                raise ControlLengthError(controlmode=control_mode, length = 1)
+            
+            if control_mode in [ConverterControlType.type_III_6, ConverterControlType.type_III_7]:
+                raise ControlNotImplementedError(controlmode=control_mode)
+            
     def compile_control_indices(self,
                                 control_mode: List[Union[TransformerControlType, ConverterControlType]],
                                 F: IntVec,

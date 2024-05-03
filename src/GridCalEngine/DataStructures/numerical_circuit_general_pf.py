@@ -837,26 +837,9 @@ class NumericalCircuit:
         Get the simulation indices
         :return: SimulationIndices
         """
-        # print("get simulation indices")
-        # print("vsc_data.nbus",self.vsc_data.nbus)
-        # print("vsc_data.nelm",self.vsc_data.nelm)
-
-        # print("vsc_data.names",self.vsc_data.names)
-        # print("vsc_data.idtag",self.vsc_data.idtag)
-        # print("vsc_data.active",self.vsc_data.active)
-        # print("vsc_data.dispatchable",self.vsc_data.dispatchable)
-        # print("vsc_data.F",self.vsc_data.F)
-        # print("vsc_data.T",self.vsc_data.T)
-
-        # print("vsc_data.Pmax",self.vsc_data.Pmax)
-        # print("vsc_data.Pmin",self.vsc_data.Pmin)
-        # print("vsc_data.Qmax",self.vsc_data.Qmax)
-        # print("vsc_data.Qmin",self.vsc_data.Qmin)
-
-        # print("vsc_data.C_vsc_bus_f",self.vsc_data.C_vsc_bus_f)
-        # print("vsc_data.C_vsc_bus_t",self.vsc_data.C_vsc_bus_t)
-
-        # print("vsc_data.control_mode",self.vsc_data.control_mode)
+        # find the matching islands
+        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=False, isolateACDC = True)
+        idx_islands = tp.find_islands(adj=adj, active=self.bus_data.active)
 
         return si.SimulationIndices2(bus_types=self.bus_data.bus_types,
                                     Pbus=self.Sbus.real,
@@ -866,7 +849,10 @@ class NumericalCircuit:
                                     dc=self.branch_data.dc,
                                     dc_bus = self.bus_data.is_dc,
                                     gen_data=self.generator_data,
-                                    vsc_data=self.vsc_data)
+                                    vsc_data=self.vsc_data,
+                                    bus_data = self.bus_data,
+                                    adj = adj,
+                                    idx_islands=idx_islands)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """
@@ -1519,6 +1505,16 @@ class NumericalCircuit:
         return self.simulation_indices_.kn_qzip_setpoints
     
     @property
+    def kn_pfrom_setpoints(self):
+        """
+        (Generalised PF) Setpoints of known (controlled) P from branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.kn_pfrom_setpoints
+    
+    @property
     def kn_qfrom_setpoints(self):
         """
         (Generalised PF) Setpoints of known (controlled) Q from branches 
@@ -1818,12 +1814,30 @@ class NumericalCircuit:
 
         return get_devices_per_areas(Cgen, buses_in_a1, buses_in_a2)
 
-    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False) -> sp.csc_matrix:
+    def compute_adjacency_matrix(self, consider_hvdc_as_island_links: bool = False, isolateACDC: bool = False) -> sp.csc_matrix:
         """
         Compute the adjacency matrix
-        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?l
         :return: csc_matrix
         """
+
+        if isolateACDC: # (Generalised PF) we take for granted that the HVDC lines are isolated from the AC grid, so no need for truth table
+            conn_matrices = tp.compute_connectivity_acdc_isolated(
+                branch_active=self.branch_data.active,
+                Cf_=self.branch_data.C_branch_bus_f.tocsc(),
+                Ct_=self.branch_data.C_branch_bus_t.tocsc(),
+                vsc_active = self.vsc_data.active,
+                Cf_vsc=self.vsc_data.C_vsc_bus_f.tocsc(),
+                Ct_vsc=self.vsc_data.C_vsc_bus_t.tocsc(),
+                vsc_branch_idx = self.vsc_data.branch_index
+            )
+
+            return tp.get_adjacency_matrix(
+                C_branch_bus_f=conn_matrices.Cf,
+                C_branch_bus_t=conn_matrices.Ct,
+                branch_active=self.branch_data.active,
+                bus_active=self.bus_data.active)
+
 
         if consider_hvdc_as_island_links:
             conn_matrices = tp.compute_connectivity_with_hvdc(
@@ -2264,13 +2278,18 @@ class NumericalCircuit:
 
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,
-                           consider_hvdc_as_island_links: bool = False) -> List["NumericalCircuit"]:
+                           consider_hvdc_as_island_links: bool = False,
+                           generalised_pf: Union[bool, None] = False) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
         :return: List[NumericCircuit]
         """
+        if generalised_pf:
+            circuit_islands = list()    
+            circuit_islands.append(self)
+            return circuit_islands
 
         # find the matching islands
         adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
@@ -2391,7 +2410,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                   branch_tolerance_mode=branch_tolerance_mode,
                                                   opf_results=opf_results,
                                                   use_stored_guess=use_stored_guess)
-
+    
     nc.hvdc_data = gc_compiler2.get_hvdc_data(circuit=circuit,
                                               t_idx=t_idx,
                                               time_series=time_series,
@@ -2404,7 +2423,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                             time_series=time_series,
                                             bus_dict=bus_dict,
                                             bus_types=nc.bus_data.bus_types,
-                                            opf_results=opf_results)
+                                            opf_results=opf_results,
+                                            branch_data = nc.branch_data)
     
 
     if len(circuit.fluid_nodes) > 0:
@@ -2433,18 +2453,100 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     nc.consolidate_information(use_stored_guess=use_stored_guess)
     
-    print("after compile information")
-    print("nc.ac_indices", nc.ac_indices)
-    print("nc.dc_indices", nc.dc_indices)
+    print("(numerical_circuit_general_pf.py) after compile information")
+    print("(numerical_circuit_general_pf.py) nc.ac_indices", nc.ac_indices)
+    print("(numerical_circuit_general_pf.py) nc.dc_indices", nc.dc_indices)
 
-    print("vsc data print")
-    print("nc.vsc_data.F", nc.vsc_data.F)
-    print("nc.vsc_data.T", nc.vsc_data.T)
+    print("(numerical_circuit_general_pf.py) vsc data print")
+    print("(numerical_circuit_general_pf.py) nc.vsc_data.F", nc.vsc_data.F)
+    print("(numerical_circuit_general_pf.py) nc.vsc_data.T", nc.vsc_data.T)
 
-    print("nc.i_vsc")
-    print(nc.i_vsc)
+    print("(numerical_circuit_general_pf.py) nc.vsc_data.branch_index", nc.vsc_data.branch_index)
 
-    print("nc.kn_volt_idx")
+    print("(numerical_circuit_general_pf.py) nc.kn_volt_idx")
     print(nc.kn_volt_idx)
+    print(nc.kn_volt_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_angle_idx")
+    print(nc.kn_angle_idx)
+    print(nc.kn_angle_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_pzip_idx")
+    print(nc.kn_pzip_idx)
+    print(nc.kn_pzip_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_qzip_idx")
+    print(nc.kn_qzip_idx)
+    print(nc.kn_qzip_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_pfrom_kdx")
+    print(nc.kn_pfrom_kdx)
+    print(nc.kn_pfrom_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_qfrom_kdx")
+    print(nc.kn_qfrom_kdx)
+    print(nc.kn_qfrom_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_pto_kdx")
+    print(nc.kn_pto_kdx)
+    print(nc.kn_pto_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_qto_kdx")
+    print(nc.kn_qto_kdx)
+    print(nc.kn_qto_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_tau_kdx")
+    print(nc.kn_tau_kdx)
+    print(nc.kn_tau_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_mod_kdx")
+    print(nc.kn_mod_kdx)
+    print(nc.kn_mod_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_passive_pfrom_kdx")
+    print(nc.kn_passive_pfrom_kdx)
+    print(nc.kn_passive_pfrom_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_passive_qfrom_kdx")
+    print(nc.kn_passive_qfrom_kdx)
+    print(nc.kn_passive_qfrom_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_passive_pto_kdx")
+    print(nc.kn_passive_pto_kdx)
+    print(nc.kn_passive_pto_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.kn_passive_qto_kdx")
+    print(nc.kn_passive_qto_kdx)
+    print(nc.kn_passive_qto_setpoints)
+
+    print("(numerical_circuit_general_pf.py) nc.un_volt_idx")
+    print(nc.un_volt_idx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_angle_idx")
+    print(nc.un_angle_idx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_pzip_idx")
+    print(nc.un_pzip_idx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_qzip_idx")
+    print(nc.un_qzip_idx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_pfrom_kdx")
+    print(nc.un_pfrom_kdx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_qfrom_kdx")
+    print(nc.un_qfrom_kdx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_pto_kdx")
+    print(nc.un_pto_kdx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_qto_kdx")
+    print(nc.un_qto_kdx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_tau_kdx")
+    print(nc.un_tau_kdx)
+
+    print("(numerical_circuit_general_pf.py) nc.un_mod_kdx")
+    print(nc.un_mod_kdx)
 
     return nc

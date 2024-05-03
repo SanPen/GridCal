@@ -77,6 +77,7 @@ class GeneratorData:
         self.min_time_down: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx = np.zeros(nelm, dtype=int)
+        self.bus_idx = np.zeros(nelm, dtype=int)
 
     def slice(self, elm_idx: IntVec, bus_idx: IntVec):
         """
