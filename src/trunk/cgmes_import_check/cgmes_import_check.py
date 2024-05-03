@@ -150,10 +150,8 @@ cgmes_path = [
 # one or list of files
 
 # IEEE 14
-# raw_path = r'C:\Work\git_local\GridCal\Grids_and_profiles\grids\IEEE 14 bus.raw'
-# # cgmes_path = [r'C:\Work\git_local\GridCal\Grids_and_profiles\grids\IEEE14_topology.xml',
-# #               r'C:\Work\git_local\GridCal\Grids_and_profiles\grids\IEEE14_equipment_v16.xml']
-# cgmes_path = "C:\Work\gridDigIt Kft\External projects - Documents\REE\RAW_test_models\IEEE14_from_PF.zip"
+raw_path = r'C:\Work\git_local\GridCal\Grids_and_profiles\grids\IEEE 14 bus.raw'
+cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\RAW_test_models\IEEE14_from_PF.zip"
 
 circuit_1 = gc.open_file(raw_path)
 circuit_1.buses.sort(key=lambda obj: obj.name)
@@ -162,7 +160,7 @@ circuit_2.buses.sort(key=lambda obj: obj.name)
 
 err, logger = circuit_1.compare_circuits(circuit_2, detailed_profile_comparison=False)
 print(logger.to_df())
-logger.to_df().to_csv('logger_comparison.csv')
+#logger.to_df().to_csv('logger_comparison.csv')
 compare_inputs(circuit_1, circuit_2)
 
 # nc_1 = gc.compile_numerical_circuit_at(circuit_1)
