@@ -69,7 +69,8 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  h: int = 40,
                  w: int = 80,
                  x: int = 0,
-                 y: int = 0):
+                 y: int = 0,
+                 draw_labels: bool = True):
         """
 
         :param parent:
@@ -81,7 +82,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=busbar, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=busbar, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
@@ -333,12 +334,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         menu = QMenu()
-        menu.addSection("Bus")
-
-        pe = menu.addAction('Active')
-        pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
-        pe.triggered.connect(self.enable_disable_toggle)
+        menu.addSection("Bus bar")
 
         sc = menu.addMenu('Short circuit')
         sc_icon = QIcon()
@@ -394,12 +390,12 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         # LL = 'LL'
         # LLG = 'LLG'
 
-        dc = menu.addAction('Is a DC bus')
+        dc = menu.addAction('Is a DC busbar')
         dc_icon = QIcon()
         dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
         dc.setIcon(dc_icon)
         dc.setCheckable(True)
-        dc.setChecked(self.api_object.is_dc)
+        dc.setChecked(self.api_object.cn.dc)
         dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
@@ -431,12 +427,6 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
         da.setIcon(del_icon)
         da.triggered.connect(self.remove)
-
-        re = menu.addAction('Reduce')
-        re_icon = QIcon()
-        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_reduction.svg"))
-        re.setIcon(re_icon)
-        re.triggered.connect(self.reduce)
 
         menu.addSection("Add")
 
@@ -502,16 +492,6 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         self._terminal.remove_all_connections()
 
-    def reduce(self):
-        """
-        Reduce this bus
-        :return:
-        """
-        ok = yes_no_question('Are you sure that you want to reduce this bus', 'Reduce bus')
-        if ok:
-            reduce_buses(self.editor.circuit, [self.api_object])
-            self.remove()
-
     def remove(self, ask: bool = True) -> None:
         """
         Remove this element
@@ -538,36 +518,6 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
             self.set_tile_color(QBrush(ACTIVE['color']))
         else:
             self.set_tile_color(QBrush(DEACTIVATED['color']))
-
-    def enable_disable_toggle(self):
-        """
-        Toggle bus element state
-        @return:
-        """
-        if self.api_object is not None:
-
-            # change the bus state (snapshot)
-            self.api_object.active = not self.api_object.active
-
-            # change the Branches state (snapshot)
-            for host in self._terminal._hosting_connections:
-                if host.api_object is not None:
-                    host.set_enable(val=self.api_object.active)
-
-            self.update_color()
-
-            if self.editor.circuit.has_time_series:
-                ok = yes_no_question('Do you want to update the time series active status accordingly?',
-                                     'Update time series active status')
-
-                if ok:
-                    # change the bus state (time series)
-                    self.editor.set_active_status_to_profile(self.api_object, override_question=True)
-
-                    # change the Branches state (time series)
-                    for host in self._terminal._hosting_connections:
-                        if host.api_object is not None:
-                            self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
     def any_short_circuit(self) -> bool:
         """
@@ -629,18 +579,19 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         Activates or deactivates the bus as a DC bus
         """
-        if self.api_object.is_dc:
-            self.api_object.is_dc = False
+        if self.api_object.cn.dc:
+            self.api_object.cn.dc = False
         else:
-            self.api_object.is_dc = True
+            self.api_object.cn.dc = True
 
     def plot_profiles(self) -> None:
         """
         Plot profiles
         """
         # get the index of this object
-        i = self.editor.circuit.get_buses().index(self.api_object)
-        self.editor.plot_bus(i, self.api_object)
+        # i = self.editor.circuit.get_buses().index(self.api_object)
+        # self.editor.plot_bus(i, self.api_object)
+        pass
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """
@@ -710,54 +661,54 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
-    def add_load(self, api_obj: Union[Load, None] = None):
+    def add_load(self, api_obj: Union[Load, None] = None) -> LoadGraphicItem:
         """
         Add load object to bus
         :param api_obj:
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_load(bus=self.api_object)
+            api_obj = self.editor.circuit.add_load(cn=self.api_object.cn)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
 
-    def add_shunt(self, api_obj: Union[Shunt, None] = None):
+    def add_shunt(self, api_obj: Union[Shunt, None] = None) -> ShuntGraphicItem:
         """
         Add shunt device
         :param api_obj: If None, a new shunt is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_shunt(bus=self.api_object)
+            api_obj = self.editor.circuit.add_shunt(cn=self.api_object.cn)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
 
-    def add_generator(self, api_obj: Union[Generator, None] = None):
+    def add_generator(self, api_obj: Union[Generator, None] = None) -> GeneratorGraphicItem:
         """
         Add generator
         :param api_obj: if None, a new generator is created
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_generator(cn=self.api_object.cn)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
 
-    def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None):
+    def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None) -> StaticGeneratorGraphicItem:
         """
         Add static generator
         :param api_obj: If none, a new static generator is created
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_static_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_static_generator(cn=self.api_object.cn)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -765,14 +716,14 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_battery(self, api_obj: Union[Battery, None] = None):
+    def add_battery(self, api_obj: Union[Battery, None] = None) -> BatteryGraphicItem:
         """
 
         :param api_obj:
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_battery(bus=self.api_object)
+            api_obj = self.editor.circuit.add_battery(cn=self.api_object.cn)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -780,14 +731,14 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_external_grid(self, api_obj: Union[ExternalGrid, None] = None):
+    def add_external_grid(self, api_obj: Union[ExternalGrid, None] = None) -> ExternalGridGraphicItem:
         """
 
         :param api_obj:
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
+            api_obj = self.editor.circuit.add_external_grid(cn=self.api_object.cn)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -795,14 +746,14 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None):
+    def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None) -> CurrentInjectionGraphicItem:
         """
 
         :param api_obj:
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_current_injection(bus=self.api_object)
+            api_obj = self.editor.circuit.add_current_injection(cn=self.api_object.cn)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -810,14 +761,14 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None):
+    def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None) -> ControllableShuntGraphicItem:
         """
 
         :param api_obj:
         :return:
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_controllable_shunt(bus=self.api_object)
+            api_obj = self.editor.circuit.add_controllable_shunt(cn=self.api_object.cn)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -860,7 +811,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     def __str__(self):
 
         if self.api_object is None:
-            return f"Bus graphics {hex(id(self))}"
+            return f"BusBar graphics {hex(id(self))}"
         else:
             return f"Graphics of {self.api_object.name} [{hex(id(self))}]"
 

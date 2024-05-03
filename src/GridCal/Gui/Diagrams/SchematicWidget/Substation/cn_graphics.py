@@ -65,7 +65,8 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                  h: int = 40,
                  w: int = 40,
                  x: int = 0,
-                 y: int = 0):
+                 y: int = 0,
+                 draw_labels: bool = True):
         """
 
         :param parent:
@@ -77,7 +78,7 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=node, editor=editor, draw_labels=True)
+        GenericDBWidget.__init__(self, parent=parent, api_object=node, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 5.0
@@ -245,13 +246,13 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         menu = QMenu()
         menu.addSection("Connectivity node")
 
-        # dc = menu.addAction('Is a DC cn')
-        # dc_icon = QIcon()
-        # dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
-        # dc.setIcon(dc_icon)
-        # dc.setCheckable(True)
-        # dc.setChecked(self.api_object.is_dc)
-        # dc.triggered.connect(self.enable_disable_dc)
+        dc = menu.addAction('Is a DC cn')
+        dc_icon = QIcon()
+        dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
+        dc.setIcon(dc_icon)
+        dc.setCheckable(True)
+        dc.setChecked(self.api_object.dc)
+        dc.triggered.connect(self.enable_disable_dc)
 
         pl = menu.addAction('Plot profiles')
         plot_icon = QIcon()
@@ -341,7 +342,8 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+            ok = yes_no_question('Are you sure that you want to remove this bus',
+                                 'Remove connectivity node')
         else:
             ok = True
 
@@ -355,12 +357,12 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
     def enable_disable_dc(self):
         """
-        Activates or deactivates the bus as a DC bus
+        Activates or deactivates the cn as a DC connectivity node
         """
-        if self.api_object.is_dc:
-            self.api_object.is_dc = False
+        if self.api_object.dc:
+            self.api_object.dc = False
         else:
-            self.api_object.is_dc = True
+            self.api_object.dc = True
 
     def plot_profiles(self) -> None:
         """
@@ -438,54 +440,56 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         else:
             raise Exception("Cannot add device of type {}".format(api_obj.device_type.value))
 
-    def add_load(self, api_obj: Union[Load, None] = None):
+    def add_load(self, api_obj: Union[Load, None] = None) -> LoadGraphicItem:
         """
         Add load object to bus
         :param api_obj:
-        :return:
+        :return: LoadGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_load(bus=self.api_object)
+            api_obj = self.editor.circuit.add_load(cn=self.api_object)
 
         _grph = LoadGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
 
-    def add_shunt(self, api_obj: Union[Shunt, None] = None):
+    def add_shunt(self, api_obj: Union[Shunt, None] = None) -> ShuntGraphicItem:
         """
         Add shunt device
         :param api_obj: If None, a new shunt is created
+        :return: ShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_shunt(bus=self.api_object)
+            api_obj = self.editor.circuit.add_shunt(cn=self.api_object)
 
         _grph = ShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
 
-    def add_generator(self, api_obj: Union[Generator, None] = None):
+    def add_generator(self, api_obj: Union[Generator, None] = None) -> GeneratorGraphicItem:
         """
         Add generator
         :param api_obj: if None, a new generator is created
+        :return: GeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_generator(cn=self.api_object)
 
         _grph = GeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
         self.arrange_children()
         return _grph
 
-    def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None):
+    def add_static_generator(self, api_obj: Union[StaticGenerator, None] = None) -> StaticGeneratorGraphicItem:
         """
         Add static generator
         :param api_obj: If none, a new static generator is created
-        :return:
+        :return: StaticGeneratorGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_static_generator(bus=self.api_object)
+            api_obj = self.editor.circuit.add_static_generator(cn=self.api_object)
 
         _grph = StaticGeneratorGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -493,14 +497,14 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_battery(self, api_obj: Union[Battery, None] = None):
+    def add_battery(self, api_obj: Union[Battery, None] = None) -> BatteryGraphicItem:
         """
-
+        Add a battery
         :param api_obj:
-        :return:
+        :return: BatteryGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_battery(bus=self.api_object)
+            api_obj = self.editor.circuit.add_battery(cn=self.api_object)
 
         _grph = BatteryGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -508,14 +512,14 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_external_grid(self, api_obj: Union[ExternalGrid, None] = None):
+    def add_external_grid(self, api_obj: Union[ExternalGrid, None] = None) -> ExternalGridGraphicItem:
         """
-
+        Add an external grid
         :param api_obj:
-        :return:
+        :return: ExternalGridGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_external_grid(bus=self.api_object)
+            api_obj = self.editor.circuit.add_external_grid(cn=self.api_object)
 
         _grph = ExternalGridGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -523,14 +527,14 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None):
+    def add_current_injection(self, api_obj: Union[CurrentInjection, None] = None) -> CurrentInjectionGraphicItem:
         """
-
+        Add a current injection
         :param api_obj:
-        :return:
+        :return: CurrentInjectionGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_current_injection(bus=self.api_object)
+            api_obj = self.editor.circuit.add_current_injection(cn=self.api_object)
 
         _grph = CurrentInjectionGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)
@@ -538,14 +542,14 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
 
         return _grph
 
-    def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None):
+    def add_controllable_shunt(self, api_obj: Union[ControllableShunt, None] = None) -> ControllableShuntGraphicItem:
         """
-
+        Add a controllable shunt
         :param api_obj:
-        :return:
+        :return: ControllableShuntGraphicItem
         """
         if api_obj is None or type(api_obj) is bool:
-            api_obj = self.editor.circuit.add_controllable_shunt(bus=self.api_object)
+            api_obj = self.editor.circuit.add_controllable_shunt(cn=self.api_object)
 
         _grph = ControllableShuntGraphicItem(parent=self, api_obj=api_obj, editor=self.editor)
         self.shunt_children.append(_grph)

@@ -114,7 +114,7 @@ def compare_inputs(circuit_1, circuit_2, tol=1e-6):
     print("done!")
 
 
-def CheckArr(arr, arr_expected, tol, name, test):
+def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logger: Logger) -> None:
     """
 
     :param arr:
@@ -128,7 +128,7 @@ def CheckArr(arr, arr_expected, tol, name, test):
         print('failed (shape):', name, test)
         return 1
 
-    if (np.abs(arr - arr_expected) < tol).all():
+    if np.allclose(arr, arr_expected, atol=tol):
         print('ok:', name, test)
         return 0
     else:

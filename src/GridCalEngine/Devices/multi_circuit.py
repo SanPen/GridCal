@@ -1300,17 +1300,21 @@ class MultiCircuit:
         return np.array([e.name for e in self.current_injections])
 
     def add_current_injection(self,
-                              bus: dev.Bus,
+                              bus: Union[None, dev.Bus] = None,
+                              cn: Union[None, dev.ConnectivityNode] = None,
                               api_obj: Union[None, dev.CurrentInjection] = None) -> dev.CurrentInjection:
         """
         Add a CurrentInjection object
         :param bus: Bus
+        :param cn: Connectivity node
         :param api_obj: CurrentInjection instance
         """
 
         if api_obj is None:
             api_obj = dev.CurrentInjection()
+
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
@@ -1364,23 +1368,30 @@ class MultiCircuit:
         return np.array([e.name for e in self.controllable_shunts])
 
     def add_controllable_shunt(self,
-                               bus: dev.Bus,
+                               bus: Union[None, dev.Bus] = None,
+                               cn: Union[None, dev.ConnectivityNode] = None,
                                api_obj: Union[None, dev.ControllableShunt] = None) -> dev.ControllableShunt:
         """
         Add a ControllableShunt object
-        :param bus: Bus
+        :param bus: Main bus (optional)
+        :param cn:  Main connectivity node (Optional)
         :param api_obj: ControllableShunt instance
+        :return: ControllableShunt
         """
 
         if api_obj is None:
             api_obj = dev.ControllableShunt()
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
 
         if api_obj.name == 'CShutn':
-            api_obj.name += '@' + bus.name
+            if bus is not None:
+                api_obj.name += '@' + bus.name
+            elif cn is not None:
+                api_obj.name += '@' + cn.name
 
         self.controllable_shunts.append(api_obj)
 
@@ -2445,7 +2456,8 @@ class MultiCircuit:
 
         return data
 
-    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[
+        Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -3123,44 +3135,60 @@ class MultiCircuit:
         """
         self.upfc_devices.remove(obj)
 
-    def add_load(self, bus: dev.Bus, api_obj=None):
+    def add_load(self,
+                 bus: Union[None, dev.Bus] = None,
+                 cn: Union[None, dev.ConnectivityNode] = None,
+                 api_obj: Union[None, dev.Load] = None) -> dev.Load:
         """
-        Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
+        Add a load device
+        :param bus: Main bus (optional)
+        :param cn:  Main connectivity node (Optional)
+        :param api_obj: Device to add (optional)
+        :return: Load device passed or created
         """
         if api_obj is None:
             api_obj = dev.Load()
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
 
         if api_obj.name == 'Load':
-            api_obj.name += '@' + bus.name
+            if bus is not None:
+                api_obj.name += '@' + bus.name
+            elif cn is not None:
+                api_obj.name += '@' + cn.name
 
         self.loads.append(api_obj)
 
         return api_obj
 
-    def add_generator(self, bus: dev.Bus, api_obj: Union[dev.Generator, None] = None):
+    def add_generator(self,
+                      bus: Union[None, dev.Bus] = None,
+                      cn: Union[None, dev.ConnectivityNode] = None,
+                      api_obj: Union[None, dev.Generator] = None) -> dev.Generator:
         """
         Add a generator
-        :param bus: Bus object
-        :param api_obj: Generator object
+        :param bus: Main bus (optional)
+        :param cn:  Main connectivity node (Optional)
+        :param api_obj: Generator object (optional)
         :return: Generator object (created if api_obj is None)
         """
 
         if api_obj is None:
             api_obj = dev.Generator()
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'gen':
+            if bus is not None:
+                api_obj.name += '@' + bus.name
+            elif cn is not None:
+                api_obj.name += '@' + cn.name
 
         self.generators.append(api_obj)
 
@@ -3174,10 +3202,14 @@ class MultiCircuit:
         """
         self.generators.remove(obj)
 
-    def add_static_generator(self, bus: dev.Bus, api_obj: Union[dev.StaticGenerator, None] = None):
+    def add_static_generator(self,
+                             bus: Union[None, dev.Bus] = None,
+                             cn: Union[None, dev.ConnectivityNode] = None,
+                             api_obj: Union[None, dev.StaticGenerator] = None) -> dev.StaticGenerator:
         """
-        Add a generator
+        Add a static generator
         :param bus: Bus object
+        :param cn:  Main connectivity node (Optional)
         :param api_obj: StaticGenerator object
         :return: StaticGenerator object (created if api_obj is None)
         """
@@ -3185,15 +3217,25 @@ class MultiCircuit:
         if api_obj is None:
             api_obj = dev.StaticGenerator()
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'StaticGen':
+            if bus is not None:
+                api_obj.name += '@' + bus.name
+            elif cn is not None:
+                api_obj.name += '@' + cn.name
 
         self.static_generators.append(api_obj)
 
         return api_obj
 
-    def add_external_grid(self, bus: dev.Bus, api_obj: Union[None, dev.ExternalGrid] = None):
+    def add_external_grid(self,
+                          bus: Union[None, dev.Bus] = None,
+                          cn: Union[None, dev.ConnectivityNode] = None,
+                          api_obj: Union[None, dev.ExternalGrid] = None) -> dev.ExternalGrid:
         """
         Add an external grid
         :param bus: Bus object
@@ -3204,39 +3246,54 @@ class MultiCircuit:
         if api_obj is None:
             api_obj = dev.ExternalGrid()
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
 
         if api_obj.name == 'External grid':
-            api_obj.name += '@' + bus.name
+            if bus is not None:
+                api_obj.name += '@' + bus.name
+            elif cn is not None:
+                api_obj.name += '@' + cn.name
 
         self.external_grids.append(api_obj)
 
         return api_obj
 
-    def add_battery(self, bus: dev.Bus, api_obj=None):
+    def add_battery(self,
+                    bus: Union[None, dev.Bus] = None,
+                    cn: Union[None, dev.ConnectivityNode] = None,
+                    api_obj: Union[None, dev.Battery] = None) -> dev.Battery:
         """
-        Add a :ref:`Battery<battery>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Battery<battery>`): :ref:`Battery<battery>` object
+        Add battery
+        :param bus:
+        :param cn:
+        :param api_obj:
+        :return:
         """
         if api_obj is None:
             api_obj = dev.Battery()
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'batt':
+            if bus is not None:
+                api_obj.name += '@' + bus.name
+            elif cn is not None:
+                api_obj.name += '@' + cn.name
 
         self.batteries.append(api_obj)
 
         return api_obj
 
-    def add_shunt(self, bus: dev.Bus, api_obj=None):
+    def add_shunt(self,
+                  bus: Union[None, dev.Bus] = None,
+                  cn: Union[None, dev.ConnectivityNode] = None,
+                  api_obj: Union[None, dev.Shunt] = None) -> dev.Shunt:
         """
         Add a :ref:`Shunt<shunt>` object to a :ref:`Bus<bus>`.
 
@@ -3249,9 +3306,16 @@ class MultiCircuit:
         if api_obj is None:
             api_obj = dev.Shunt()
         api_obj.bus = bus
+        api_obj.cn = cn
 
         if self.time_profile is not None:
             api_obj.create_profiles(self.time_profile)
+
+        if api_obj.name == 'shunt':
+            if bus is not None:
+                api_obj.name += '@' + bus.name
+            elif cn is not None:
+                api_obj.name += '@' + cn.name
 
         self.shunts.append(api_obj)
 

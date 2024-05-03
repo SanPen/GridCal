@@ -33,13 +33,14 @@ from ortools.init.python import init
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
+init.CppBridge.init_logging("")  # this avoids displaying all the solver logger information, should only be called once
+
 
 def get_available_mip_solvers() -> List[str]:
     """
     Get a list of candidate solvers
     :return:
     """
-    init.CppBridge.init_logging("")  # this avoids displaying all the solver logger information
     candidates = ['SCIP', 'CBC', 'CPLEX', 'GUROBI', 'XPRESS', 'HIGHS', 'GLOP']
     res = list()
     for c in candidates:
