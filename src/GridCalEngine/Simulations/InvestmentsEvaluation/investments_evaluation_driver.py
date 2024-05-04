@@ -18,13 +18,11 @@ import numpy as np
 import hyperopt
 import functools
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
-from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
@@ -37,14 +35,13 @@ from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTyp
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec
 
 
-def get_overload_score(loading: CxVec, branches: List[BRANCH_TYPES]) -> float:
+def get_overload_score(loading: CxVec, branches_cost: Vec) -> float:
     """
     Compute overload score by multiplying the loadings above 100% by the associated branch cost.
     :param loading: load results
-    :param branches: all branch elements from studied grid
+    :param branches_cost: all branch elements from studied grid
     :return: sum of all costs associated to branch overloads
     """
-    branches_cost = np.array([e.Cost for e in branches], dtype=float)
     branches_loading = np.abs(loading)
 
     # get lines where loading is above 1 -- why not 0.9 ?
@@ -56,40 +53,113 @@ def get_overload_score(loading: CxVec, branches: List[BRANCH_TYPES]) -> float:
     return np.sum(cost)
 
 
-def get_voltage_module_score(voltage: CxVec, buses: List[Bus]) -> float:
+def get_voltage_module_score(voltage: CxVec, vm_cost: Vec, vm_max: Vec, vm_min: Vec) -> float:
     """
     Compute voltage module score by multiplying the voltages outside limits by the associated bus costs.
     :param voltage: voltage results
-    :param buses: all bus elements from studied grid
+    :param vm_cost: Vm cost array
+    :param vm_max: maximum voltage
+    :param vm_min: minimum voltage
     :return: sum of all costs associated to voltage module deviation
     """
-    bus_cost = np.array([e.Vm_cost for e in buses], dtype=float)
-    vmax = np.array([e.Vmax for e in buses], dtype=float)
-    vmin = np.array([e.Vmin for e in buses], dtype=float)
+
     vm = np.abs(voltage)
-    vmax_diffs = np.array(vm - vmax).clip(min=0)
-    vmin_diffs = np.array(vmin - vm).clip(min=0)
-    cost = (vmax_diffs + vmin_diffs) * bus_cost
+    vmax_diffs = np.array(vm - vm_max).clip(min=0)
+    vmin_diffs = np.array(vm_min - vm).clip(min=0)
+    cost = (vmax_diffs + vmin_diffs) * vm_cost
 
-    return np.sum(cost)
+    return cost.sum()
 
 
-def get_voltage_phase_score(voltage: CxVec, buses: List[Bus]) -> float:
+def get_voltage_phase_score(voltage: CxVec, va_cost: Vec, va_max: Vec, va_min: Vec) -> float:
     """
     Compute voltage phase score by multiplying the phases outside limits by the associated bus costs.
     :param voltage: voltage results
-    :param buses: all bus elements from studied grid
+    :param va_cost: array of bus angles costs
+    :param va_max: maximum voltage angles
+    :param va_min: minimum voltage angles
     :return: sum of all costs associated to voltage module deviation
     """
-    bus_cost = np.array([e.angle_cost for e in buses], dtype=float)
-    vpmax = np.array([e.angle_max for e in buses], dtype=float)
-    vpmin = np.array([e.angle_min for e in buses], dtype=float)
     vp = np.angle(voltage)
-    vpmax_diffs = np.array(vp - vpmax).clip(min=0)
-    vpmin_diffs = np.array(vpmin - vp).clip(min=0)
-    cost = (vpmax_diffs + vpmin_diffs) * bus_cost
+    vpmax_diffs = np.array(vp - va_max).clip(min=0)
+    vpmin_diffs = np.array(va_min - vp).clip(min=0)
+    cost = (vpmax_diffs + vpmin_diffs) * va_cost
 
-    return np.sum(cost)
+    return cost.sum()
+
+
+class PowerFlowScores:
+
+    def __init__(self):
+        self.capex_score: float = 0
+        self.opex_score: float = 0.0
+        self.losses_score: float = 0.0
+        self.overload_score: float = 0.0
+        self.voltage_module_score: float = 0.0
+        self.electrical_score: float = 0.0
+        self.financial_score: float = 0.0
+        self.financial_score: float = 0.0
+        self.electrical_score: float = 0.0
+
+
+def power_flow_function(inv_list: List[Investment],
+                        grid: MultiCircuit,
+                        pf_options: PowerFlowOptions,
+                        branches_cost,
+                        vm_cost: Vec,
+                        vm_max: Vec,
+                        vm_min: Vec,
+                        va_cost: Vec,
+                        va_max: Vec,
+                        va_min: Vec,) -> Tuple[CxVec, PowerFlowScores]:
+    """
+
+    :param inv_list:
+    :param grid:
+    :param pf_options:
+    :param branches_cost:
+    :param vm_cost:
+    :param vm_max:
+    :param vm_min:
+    :param va_cost:
+    :param va_max:
+    :param va_min:
+    :return:
+    """
+    driver = PowerFlowDriver(grid=grid, options=pf_options)
+    driver.run()
+    res = driver.results
+
+    scores = PowerFlowScores()
+
+    # compute scores
+    scores.losses_score = np.sum(res.losses.real)
+    scores.overload_score = get_overload_score(loading=res.loading,
+                                               branches_cost=branches_cost)
+
+    scores.voltage_module_score = get_voltage_module_score(voltage=res.voltage,
+                                                           vm_cost=vm_cost,
+                                                           vm_max=vm_max,
+                                                           vm_min=vm_min)
+
+    scores.voltage_angle_score = get_voltage_phase_score(voltage=res.voltage,
+                                                         va_cost=va_cost,
+                                                         va_max=va_max,
+                                                         va_min=va_min)
+
+    scores.electrical_score = (scores.losses_score + scores.overload_score +
+                               scores.voltage_module_score + scores.voltage_angle_score)
+
+    capex_array = np.array([inv.CAPEX for inv in inv_list])
+    opex_array = np.array([inv.OPEX for inv in inv_list])
+
+    scores.capex_score = np.sum(capex_array)
+    scores.opex_score = np.sum(opex_array)
+    scores.financial_score = np.sum(scores.capex_score + scores.opex_score)
+
+    all_scores = np.array([scores.electrical_score, scores.financial_score])
+
+    return all_scores, scores
 
 
 class InvestmentsEvaluationDriver(DriverTemplate):
@@ -128,6 +198,17 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # gather a dictionary of all the elements, this serves for the investments generation
         self.get_all_elements_dict = self.grid.get_all_elements_dict()
 
+        # compose useful arrays
+        self.vm_cost = np.array([e.Vm_cost for e in grid.get_buses()], dtype=float)
+        self.vm_max = np.array([e.Vmax for e in grid.get_buses()], dtype=float)
+        self.vm_min = np.array([e.Vmin for e in grid.get_buses()], dtype=float)
+
+        self.va_cost = np.array([e.angle_cost for e in grid.get_buses()], dtype=float)
+        self.va_max = np.array([e.angle_max for e in grid.get_buses()], dtype=float)
+        self.va_min = np.array([e.angle_min for e in grid.get_buses()], dtype=float)
+
+        self.branches_cost = np.array([e.Cost for e in grid.get_branches_wo_hvdc()], dtype=float)
+
     def get_steps(self):
         """
 
@@ -135,23 +216,14 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         return self.results.get_index()
 
-    def objective_function(self, combination: IntVec) -> Vec:
+    def get_investments_for_combination(self, combination: IntVec) -> List[Investment]:
         """
-        Function to evaluate a combination of investments
-        :param combination: vector of investments (yes/no). Length = number of investment groups
-        :return: objective function criteria values
+        Get the list of the investments that belong to a certain combination
+        :param combination: array of 0/1
+        :return: list of investments objects
         """
-
         # add all the investments of the investment groups reflected in the combination
-        inv_list = list()
-        # max_c = max(combination)
-        # min_c = min(combination)
-        # if max_c == min_c:
-        #     combination = np.random.rand(len(combination))
-        # else:
-        #     combination = [(x - min_c) / (max_c - min_c + 1e-15) for x in combination]
-        # combination = [0 if x < 0.5 else 1 for x in combination]
-        # combination = np.round(combination).astype(int)  # make them go to 0 or 1
+        inv_list: List[Investment] = list()
         for i, active in enumerate(combination):
             if active == 1:
                 inv_list += self.investments_by_group[i]
@@ -161,55 +233,49 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                 # raise Exception('Value different from 0 and 1!')
                 # print('Value different from 0 and 1!', active)
                 pass
+        return inv_list
+
+    def objective_function(self, combination: IntVec) -> Vec:
+        """
+        Function to evaluate a combination of investments
+        :param combination: vector of investments (yes/no). Length = number of investment groups
+        :return: objective function criteria values
+        """
+
+        inv_list: List[Investment] = self.get_investments_for_combination(combination)
 
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=True,
                                          all_elemnts_dict=self.get_all_elements_dict)
 
-        branches = self.grid.get_branches_wo_hvdc()
-        buses = self.grid.get_buses()
-
         # do something
-        driver = PowerFlowDriver(grid=self.grid, options=self.options.pf_options)
-        driver.run()
-        res = driver.results
+        all_scores, scores = power_flow_function(inv_list=inv_list,
+                                                 grid=self.grid,
+                                                 pf_options=self.options.pf_options,
+                                                 branches_cost=self.branches_cost,
+                                                 vm_cost=self.vm_cost,
+                                                 vm_max=self.vm_max,
+                                                 vm_min=self.vm_min,
+                                                 va_cost=self.va_cost,
+                                                 va_max=self.va_max,
+                                                 va_min=self.va_min)
 
-        # compute scores
-        losses_score = np.sum(res.losses.real)
-        overload_score = get_overload_score(res.loading, branches)
-        voltage_module_score = get_voltage_module_score(res.voltage, buses)
-        voltage_angle_score = get_voltage_phase_score(res.voltage, buses)
-        electrical_score = losses_score + overload_score + voltage_module_score + voltage_angle_score
-        capex_array = np.array([inv.CAPEX for inv in inv_list])
-        opex_array = np.array([inv.OPEX for inv in inv_list])
-
-        # get arrays for first iteration
-        if self.__eval_index == 0:
-            capex_array = np.array([0])
-            opex_array = np.array([0])
-
-        capex_score = np.sum(capex_array)
-        opex_score = np.sum(opex_array)
-        financial_score = np.sum(capex_score + opex_score)
-
-        all_scores = np.array([electrical_score, financial_score])
-
-        # revert to disabled
+        # revert to the initial state
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=False,
                                          all_elemnts_dict=self.get_all_elements_dict)
 
         # record the evaluation
         self.results.set_at(eval_idx=self.__eval_index,
-                            capex=capex_score,
-                            opex=opex_score,
-                            losses=losses_score,
-                            overload_score=overload_score,
-                            voltage_score=voltage_module_score,
-                            electrical=electrical_score,
-                            financial=financial_score,
-                            objective_function_sum=financial_score + electrical_score,
+                            capex=scores.capex_score,
+                            opex=scores.opex_score,
+                            losses=scores.losses_score,
+                            overload_score=scores.overload_score,
+                            voltage_score=scores.voltage_module_score,
+                            electrical=scores.electrical_score,
+                            financial=scores.financial_score,
+                            objective_function_sum=scores.financial_score + scores.electrical_score,
                             combination=combination,
                             index_name=f'Solution {self.__eval_index}')
 
@@ -460,6 +526,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
 
         self.tic()
+
+        self.logger.add_info(msg="Solver", value=f"{self.options.solver.value}")
+        self.logger.add_info(msg="Max evaluations", value=f"{self.options.max_eval}")
 
         if self.options.solver == InvestmentEvaluationMethod.Independent:
             self.independent_evaluation()
