@@ -429,7 +429,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval + 1)
+                                                    max_eval=self.options.max_eval + 2)
         # disable all status
         self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
 
@@ -447,7 +447,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
-            prob=0.5,
             crossover_prob=0.5,
             mutation_probability=0.5,
             eta=30,
