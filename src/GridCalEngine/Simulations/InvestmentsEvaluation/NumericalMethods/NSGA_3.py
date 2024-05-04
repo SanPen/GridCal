@@ -21,8 +21,25 @@ from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.repair.rounding import RoundingRepair
-from pymoo.operators.sampling.lhs import LHS
 from pymoo.operators.mutation.bitflip import BitflipMutation
+from pymoo.core.sampling import Sampling
+
+
+class UniformBinarySampling(Sampling):
+    def __init__(self, num_ones):
+        super().__init__()
+        self.num_ones = num_ones
+
+    def _do(self, problem, n_samples, **kwargs):
+        num_ones = np.linspace(self.num_ones, problem.n_var, n_samples, dtype=int)
+        ones_into_array = np.zeros((n_samples + 1, problem.n_var), dtype=int)
+
+        # Fill ones into array randomly
+        for i, num in enumerate(num_ones):
+            ones_into_array[i, :num] = 1
+            np.random.shuffle(ones_into_array[i])
+
+        return ones_into_array
 
 
 class GridNsga(ElementwiseProblem):
@@ -83,10 +100,11 @@ def NSGA_3(obj_func,
 
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
+    num_ones = 20
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=LHS(),
+                      sampling=UniformBinarySampling(num_ones=num_ones),
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                      mutation=BitflipMutation(prob=mutation_probability, prob_var=0.3),
+                      mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4),
                       # selection=TournamentSelection(pressure=2),
                       eliminate_duplicates=True,
                       ref_dirs=ref_dirs)

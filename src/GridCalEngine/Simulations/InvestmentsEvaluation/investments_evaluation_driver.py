@@ -144,9 +144,23 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # add all the investments of the investment groups reflected in the combination
         inv_list = list()
+        # max_c = max(combination)
+        # min_c = min(combination)
+        # if max_c == min_c:
+        #     combination = np.random.rand(len(combination))
+        # else:
+        #     combination = [(x - min_c) / (max_c - min_c + 1e-15) for x in combination]
+        # combination = [0 if x < 0.5 else 1 for x in combination]
+        # combination = np.round(combination).astype(int)  # make them go to 0 or 1
         for i, active in enumerate(combination):
             if active == 1:
                 inv_list += self.investments_by_group[i]
+            if active == 0:
+                pass
+            else:
+                # raise Exception('Value different from 0 and 1!')
+                # print('Value different from 0 and 1!', active)
+                pass
 
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
@@ -433,9 +447,10 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
-            crossover_prob=0.2,
-            mutation_probability=0.1,
-            eta=3
+            prob=0.5,
+            crossover_prob=0.5,
+            mutation_probability=0.5,
+            eta=30,
         )
 
         self.report_done()

@@ -172,6 +172,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             x = self._financial
             y = self._electrical
             data = np.c_[x, y]
+            # np.savetxt("results.txt", data)
             y_label = ''
             title = ''
 
