@@ -86,7 +86,7 @@ def get_voltage_phase_score(voltage: CxVec, va_cost: Vec, va_max: Vec, va_min: V
     return cost.sum()
 
 
-class PowerFlowScores:
+class InvestmentScores:
 
     def __init__(self):
         self.capex_score: float = 0
@@ -94,15 +94,20 @@ class PowerFlowScores:
         self.losses_score: float = 0.0
         self.overload_score: float = 0.0
         self.voltage_module_score: float = 0.0
-        self.electrical_score: float = 0.0
-        self.financial_score: float = 0.0
-        self.financial_score: float = 0.0
-        self.electrical_score: float = 0.0
+        self.voltage_angle_score: float = 0.0
+
+    @property
+    def electrical_score(self) -> float:
+        return self.losses_score + self.overload_score + self.voltage_module_score + self.voltage_angle_score
+
+    @property
+    def financial_score(self) -> float:
+        return self.capex_score + self.opex_score
 
     def arr(self) -> Vec:
         """
         Return multidimensional metrics for the optimization
-        :return:
+        :return: array of 2 values
         """
         return np.array([self.electrical_score, self.financial_score])
 
@@ -116,51 +121,43 @@ def power_flow_function(inv_list: List[Investment],
                         vm_min: Vec,
                         va_cost: Vec,
                         va_max: Vec,
-                        va_min: Vec, ) -> PowerFlowScores:
+                        va_min: Vec) -> InvestmentScores:
     """
-
-    :param inv_list:
-    :param grid:
-    :param pf_options:
-    :param branches_cost:
-    :param vm_cost:
-    :param vm_max:
-    :param vm_min:
-    :param va_cost:
-    :param va_max:
-    :param va_min:
-    :return:
+    Compute the power flow of the grid given an investments group
+    :param inv_list: list of Investments
+    :param grid: MultiCircuit grid
+    :param pf_options: Power flow options
+    :param branches_cost: Array with all overloading cost for the branches
+    :param vm_cost: Array with all the bus voltage module violation costs
+    :param vm_max: Array with the Vm min values
+    :param vm_min: Array with the Vm max values
+    :param va_cost: Array with all the bus voltage angles violation costs
+    :param va_max: Array with the Va max values
+    :param va_min: Array with the Va min values
+    :return: InvestmentScores
     """
     driver = PowerFlowDriver(grid=grid, options=pf_options)
     driver.run()
-    res = driver.results
 
-    scores = PowerFlowScores()
+    scores = InvestmentScores()
 
     # compute scores
-    scores.losses_score = np.sum(res.losses.real)
-    scores.overload_score = get_overload_score(loading=res.loading,
+    scores.losses_score = np.sum(driver.results.losses.real)
+    scores.overload_score = get_overload_score(loading=driver.results.loading,
                                                branches_cost=branches_cost)
 
-    scores.voltage_module_score = get_voltage_module_score(voltage=res.voltage,
+    scores.voltage_module_score = get_voltage_module_score(voltage=driver.results.voltage,
                                                            vm_cost=vm_cost,
                                                            vm_max=vm_max,
                                                            vm_min=vm_min)
 
-    scores.voltage_angle_score = get_voltage_phase_score(voltage=res.voltage,
+    scores.voltage_angle_score = get_voltage_phase_score(voltage=driver.results.voltage,
                                                          va_cost=va_cost,
                                                          va_max=va_max,
                                                          va_min=va_min)
 
-    scores.electrical_score = (scores.losses_score + scores.overload_score +
-                               scores.voltage_module_score + scores.voltage_angle_score)
-
-    capex_array = np.array([inv.CAPEX for inv in inv_list])
-    opex_array = np.array([inv.OPEX for inv in inv_list])
-
-    scores.capex_score = np.sum(capex_array)
-    scores.opex_score = np.sum(opex_array)
-    scores.financial_score = np.sum(scores.capex_score + scores.opex_score)
+    scores.capex_score = sum([inv.CAPEX for inv in inv_list])
+    scores.opex_score = sum([inv.OPEX for inv in inv_list])
 
     return scores
 
@@ -421,7 +418,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.report_done()
 
-    def optimized_evaluation_nsga_iii(self) -> None:
+    def optimized_evaluation_nsga3(self) -> None:
         """
         Run an optimized investment evaluation with NSGA3
         """
@@ -450,7 +447,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             eta=30,
         )
 
-        self.results.set_best_combination(combination=X)
+        self.results.set_best_combination(combination=X[:, 0])
 
         self.report_done()
 
@@ -474,9 +471,14 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             self.optimized_evaluation_mvrsm_pareto()
 
         elif self.options.solver == InvestmentEvaluationMethod.NSGA3:
-            self.optimized_evaluation_nsga_iii()
+            self.optimized_evaluation_nsga3()
 
         else:
             raise Exception('Unsupported method')
+
+        # report the combination
+        inv_list = self.get_investments_for_combination(combination=self.results.best_combination)
+        for inv in inv_list:
+            self.logger.add_info(msg=f"Best combination", device=inv.idtag, value=inv.name)
 
         self.toc()

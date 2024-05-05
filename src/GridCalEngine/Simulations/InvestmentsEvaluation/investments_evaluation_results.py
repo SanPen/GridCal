@@ -184,6 +184,10 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         """
         self._best_combination = combination
 
+    @property
+    def best_combination(self) -> IntVec:
+        return self._best_combination
+
     def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
