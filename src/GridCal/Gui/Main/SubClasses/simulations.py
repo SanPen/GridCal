@@ -164,9 +164,7 @@ class SimulationsMain(TimeEventsMain):
         investment_methods = [
             InvestmentEvaluationMethod.Independent,
             InvestmentEvaluationMethod.NSGA3,
-            InvestmentEvaluationMethod.Hyperopt,
             InvestmentEvaluationMethod.MVRSM,
-            InvestmentEvaluationMethod.MVRSM_multi
         ]
         self.investment_evaluation_method_dict = OrderedDict()
         lst = list()

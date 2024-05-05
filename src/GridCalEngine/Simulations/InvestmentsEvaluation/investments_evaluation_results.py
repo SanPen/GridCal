@@ -58,6 +58,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._financial: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
+        self._best_combination: IntVec = np.zeros(max_eval, dtype=int)
 
         self.register(name='investment_groups_names', tpe=StrVec)
         self.register(name='_combinations', tpe=Vec)
@@ -70,6 +71,13 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='_financial', tpe=Vec)
         self.register(name='_f_obj', tpe=Vec)
         self.register(name='_index_names', tpe=Vec)
+        self.register(name='_best_combination', tpe=IntVec)
+
+        self.__eval_index: int = 0
+
+    @property
+    def current_evaluation(self) -> int:
+        return self.__eval_index
 
     @property
     def n_groups(self) -> int:
@@ -129,6 +137,53 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
 
+    def add(self,
+            capex: float,
+            opex: float,
+            losses: float,
+            overload_score: float,
+            voltage_score: float,
+            electrical: float,
+            financial: float,
+            objective_function_sum: float,
+            combination: IntVec) -> None:
+        """
+
+        :param capex:
+        :param opex:
+        :param losses:
+        :param overload_score:
+        :param voltage_score:
+        :param electrical:
+        :param financial:
+        :param objective_function_sum:
+        :param combination:
+        :return:
+        """
+        if self.__eval_index < self.max_eval:
+            self.set_at(eval_idx=self.__eval_index,
+                        capex=capex,
+                        opex=opex,
+                        losses=losses,
+                        overload_score=overload_score,
+                        voltage_score=voltage_score,
+                        electrical=electrical,
+                        financial=financial,
+                        objective_function_sum=objective_function_sum,
+                        combination=combination,
+                        index_name=f'Solution {self.__eval_index}')
+
+            self.__eval_index += 1
+        else:
+            print('Evaluation index out of range')
+
+    def set_best_combination(self, combination: IntVec) -> None:
+        """
+        Set the best combination of investment groups
+        :param combination: Vector of integers (0/1)
+        """
+        self._best_combination = combination
+
     def mdl(self, result_type) -> "ResultsTable":
         """
         Plot the results
@@ -139,15 +194,20 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         if result_type == ResultTypes.InvestmentsReportResults:
             labels = self._index_names
-            columns = ["Losses (MW)",
-                       "Overload cost (€)",
+            columns = ["CAPEX (M€)",
+                       "OPEX (M€)",
+                       "Losses (MW)",
+                       "Overload cost (M€)",
+                       "Voltage cost (M€)",
+                       "Total technical score (M€)",
+                       "Total financial score (M€)",
                        "Objective function"] + list(self.investment_groups_names)
             data = np.c_[
-                # self._capex,
-                # self._opex,
-                # self._losses,
-                # self._overload_score,
-                # self._voltage_score,
+                self._capex,
+                self._opex,
+                self._losses,
+                self._overload_score / 1e6,
+                self._voltage_score / 1e6,
                 self._electrical,
                 self._financial,
                 self._f_obj,
@@ -169,10 +229,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         elif result_type == ResultTypes.InvestmentsParetoPlot:
             labels = self._index_names
             columns = ["Investment cost (M€)", "Technical cost (M€)"]
-            x = self._financial
-            y = self._electrical
-            data = np.c_[x, y]
-            # np.savetxt("results.txt", data)
+            data = np.c_[self._financial, self._electrical]
             y_label = ''
             title = ''
 
@@ -180,7 +237,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             color_norm = plt_colors.Normalize()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=self._f_obj, norm=color_norm)
+            sc3 = ax3.scatter(self._financial, self._electrical, c=self._f_obj, norm=color_norm)
             ax3.set_xlabel('Investment cost (M€)')
             ax3.set_ylabel('Technical cost (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
@@ -211,7 +268,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
             ax3.plot(x, y, '.')
-            # plt.plot(iters, self.best_y[0:self.iter], 'r')
             ax3.set_xlabel('Iteration')
             ax3.set_ylabel('Objective')
             fig.suptitle(result_type.value)
