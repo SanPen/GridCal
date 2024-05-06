@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.regulating_cond_eq import RegulatingCondEq
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, SVCControlMode
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, SVCControlMode, UnitSymbol
 
 
 class StaticVarCompensator(RegulatingCondEq):

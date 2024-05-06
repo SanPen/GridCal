@@ -19,6 +19,8 @@ elif version == 3:
                   "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SV.rdf",
                   "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_TP.rdf",
                   "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_GL.rdf",
+                  "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_OP.rdf",
+                  "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SC.rdf",
                   "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SSH.rdf", ]
 else:
     files_list = []

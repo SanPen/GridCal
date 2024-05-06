@@ -15,21 +15,30 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
-from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.connector import Connector
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.control import Control
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
-class BusbarSection(Connector):
-	def __init__(self, rdfid='', tpe='BusbarSection'):
-		Connector.__init__(self, rdfid, tpe)
+class AnalogControl(Control):
+	def __init__(self, rdfid='', tpe='AnalogControl'):
+		Control.__init__(self, rdfid, tpe)
 
-		self.ipMax: float = None
+		self.maxValue: float = None
+		self.minValue: float = None
 
 		self.register_property(
-			name='ipMax',
+			name='maxValue',
 			class_type=float,
 			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.A,
-			description='''Electrical current with sign convention: positive flow is out of the conducting equipment into the connectivity node. Can be both AC and DC.''',
+			unit=UnitSymbol.none,
+			description='''Normal value range maximum for any of the Control.value. Used for scaling, e.g. in bar graphs.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='minValue',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Normal value range minimum for any of the Control.value. Used for scaling, e.g. in bar graphs.''',
 			profiles=[]
 		)
