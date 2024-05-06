@@ -21,6 +21,8 @@ import numba as nb
 import scipy.sparse as sp
 from scipy.sparse import csc_matrix, csr_matrix, diags
 from GridCalEngine.basic_structures import IntVec, Vec
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 @nb.njit(cache=True)
@@ -337,3 +339,106 @@ def compute_connectivity_with_hvdc(branch_active: IntVec,
     Ct = sp.vstack([br_states_diag * Ct_, hvdc_states_diag * Ct_hvdc])
 
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
+
+
+class TopologyProcessorInfo:
+    """
+    CandidatesInfo
+    """
+
+    def __init__(self) -> None:
+
+        # list of buses that appear because of connectivity nodes
+        self.new_candidates: List[Bus] = list()
+
+        # list of final candidate buses for reduction
+        self.candidates: List[Bus] = list()
+
+        # map of ConnectivityNodes to candidate Buses
+        self.cn_to_candidate: dict[ConnectivityNode, Bus] = dict()
+
+        # map of BusBars to candidate Buses
+        # self.busbar_to_candidate: dict[dev.BusBar, dev.Bus] = dict()
+
+        # integer position of the candidate bus matching a connectivity node
+        self.candidate_to_int_dict = dict()
+
+        # map of ConnectivityNodes to final Buses
+        self.cn_to_final_bus: dict[ConnectivityNode, Bus] = dict()
+
+    def add_new_candidate(self, new_candidate: Bus):
+        """
+
+        :param new_candidate:
+        :return:
+        """
+        self.new_candidates.append(new_candidate)
+
+    def add_candidate(self, new_candidate: Bus):
+        """
+
+        :param new_candidate:
+        :return:
+        """
+        self.candidate_to_int_dict[new_candidate] = len(self.candidates)
+        self.candidates.append(new_candidate)
+
+    def candidate_number(self) -> int:
+        """
+        Number of candidated
+        :return:
+        """
+        return len(self.candidates)
+
+    def get_candidate_pos_from_cn(self, cn: ConnectivityNode) -> int:
+        """
+        Get the integer position of the candidate bus matching a connectivity node
+        :param cn:
+        :return:
+        """
+        candidate = self.cn_to_candidate[cn]
+        return self.candidate_to_int_dict[candidate]
+
+    def get_candidate_active(self, t_idx: Union[None, int]) -> IntVec:
+        """
+
+        :param t_idx:
+        :return:
+        """
+        bus_active = np.ones(self.candidate_number(), dtype=int)
+
+        for i, elm in enumerate(self.candidates):
+            bus_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
+
+        return bus_active
+
+    def apply_results(self, islands: List[List[int]]) -> List[Bus]:
+        """
+        Apply the topology results
+        :param islands: rsults from the topology search
+        :return: list of final buses
+        """
+        final_buses = list()
+        print("Islands:")
+        for island in islands:
+            print(",".join([self.candidates[i].name for i in island]))
+
+            island_bus = self.candidates[island[0]]
+
+            # pick the first bus from each island
+            final_buses.append(island_bus)
+
+            for cn, candidate_bus in self.cn_to_candidate.items():
+                for i in island:
+                    if candidate_bus == self.candidates[i]:
+                        self.cn_to_final_bus[cn] = island_bus
+
+        return final_buses
+
+    def get_final_bus(self, cn: ConnectivityNode) -> Bus:
+        """
+        Get the final Bus that should map to a connectivity node
+        :param cn: ConnectivityNode
+        :return: Final calculation Bus
+        """
+        return self.cn_to_final_bus[cn]
