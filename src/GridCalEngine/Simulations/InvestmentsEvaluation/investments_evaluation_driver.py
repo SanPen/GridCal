@@ -18,15 +18,11 @@ import numpy as np
 import hyperopt
 import functools
 
-from typing import List, Dict, Union
+from typing import List, Dict
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
-from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.types import BRANCH_TYPES
-from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import MVRSM_mo_pareto
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
@@ -37,14 +33,13 @@ from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTyp
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec
 
 
-def get_overload_score(loading: CxVec, branches: List[BRANCH_TYPES]) -> float:
+def get_overload_score(loading: CxVec, branches_cost: Vec) -> float:
     """
     Compute overload score by multiplying the loadings above 100% by the associated branch cost.
     :param loading: load results
-    :param branches: all branch elements from studied grid
+    :param branches_cost: all branch elements from studied grid
     :return: sum of all costs associated to branch overloads
     """
-    branches_cost = np.array([e.Cost for e in branches], dtype=float)
     branches_loading = np.abs(loading)
 
     # get lines where loading is above 1 -- why not 0.9 ?
@@ -56,40 +51,115 @@ def get_overload_score(loading: CxVec, branches: List[BRANCH_TYPES]) -> float:
     return np.sum(cost)
 
 
-def get_voltage_module_score(voltage: CxVec, buses: List[Bus]) -> float:
+def get_voltage_module_score(voltage: CxVec, vm_cost: Vec, vm_max: Vec, vm_min: Vec) -> float:
     """
     Compute voltage module score by multiplying the voltages outside limits by the associated bus costs.
     :param voltage: voltage results
-    :param buses: all bus elements from studied grid
+    :param vm_cost: Vm cost array
+    :param vm_max: maximum voltage
+    :param vm_min: minimum voltage
     :return: sum of all costs associated to voltage module deviation
     """
-    bus_cost = np.array([e.Vm_cost for e in buses], dtype=float)
-    vmax = np.array([e.Vmax for e in buses], dtype=float)
-    vmin = np.array([e.Vmin for e in buses], dtype=float)
+
     vm = np.abs(voltage)
-    vmax_diffs = np.array(vm - vmax).clip(min=0)
-    vmin_diffs = np.array(vmin - vm).clip(min=0)
-    cost = (vmax_diffs + vmin_diffs) * bus_cost
+    vmax_diffs = np.array(vm - vm_max).clip(min=0)
+    vmin_diffs = np.array(vm_min - vm).clip(min=0)
+    cost = (vmax_diffs + vmin_diffs) * vm_cost
 
-    return np.sum(cost)
+    return cost.sum()
 
 
-def get_voltage_phase_score(voltage: CxVec, buses: List[Bus]) -> float:
+def get_voltage_phase_score(voltage: CxVec, va_cost: Vec, va_max: Vec, va_min: Vec) -> float:
     """
     Compute voltage phase score by multiplying the phases outside limits by the associated bus costs.
     :param voltage: voltage results
-    :param buses: all bus elements from studied grid
+    :param va_cost: array of bus angles costs
+    :param va_max: maximum voltage angles
+    :param va_min: minimum voltage angles
     :return: sum of all costs associated to voltage module deviation
     """
-    bus_cost = np.array([e.angle_cost for e in buses], dtype=float)
-    vpmax = np.array([e.angle_max for e in buses], dtype=float)
-    vpmin = np.array([e.angle_min for e in buses], dtype=float)
     vp = np.angle(voltage)
-    vpmax_diffs = np.array(vp - vpmax).clip(min=0)
-    vpmin_diffs = np.array(vpmin - vp).clip(min=0)
-    cost = (vpmax_diffs + vpmin_diffs) * bus_cost
+    va_max_diffs = np.array(vp - va_max).clip(min=0)
+    va_min_diffs = np.array(va_min - vp).clip(min=0)
+    cost = (va_max_diffs + va_min_diffs) * va_cost
 
-    return np.sum(cost)
+    return cost.sum()
+
+
+class InvestmentScores:
+
+    def __init__(self):
+        self.capex_score: float = 0
+        self.opex_score: float = 0.0
+        self.losses_score: float = 0.0
+        self.overload_score: float = 0.0
+        self.voltage_module_score: float = 0.0
+        self.voltage_angle_score: float = 0.0
+
+    @property
+    def electrical_score(self) -> float:
+        return self.losses_score + self.overload_score + self.voltage_module_score + self.voltage_angle_score
+
+    @property
+    def financial_score(self) -> float:
+        return self.capex_score + self.opex_score
+
+    def arr(self) -> Vec:
+        """
+        Return multidimensional metrics for the optimization
+        :return: array of 2 values
+        """
+        return np.array([self.electrical_score, self.financial_score])
+
+
+def power_flow_function(inv_list: List[Investment],
+                        grid: MultiCircuit,
+                        pf_options: PowerFlowOptions,
+                        branches_cost,
+                        vm_cost: Vec,
+                        vm_max: Vec,
+                        vm_min: Vec,
+                        va_cost: Vec,
+                        va_max: Vec,
+                        va_min: Vec) -> InvestmentScores:
+    """
+    Compute the power flow of the grid given an investments group
+    :param inv_list: list of Investments
+    :param grid: MultiCircuit grid
+    :param pf_options: Power flow options
+    :param branches_cost: Array with all overloading cost for the branches
+    :param vm_cost: Array with all the bus voltage module violation costs
+    :param vm_max: Array with the Vm min values
+    :param vm_min: Array with the Vm max values
+    :param va_cost: Array with all the bus voltage angles violation costs
+    :param va_max: Array with the Va max values
+    :param va_min: Array with the Va min values
+    :return: InvestmentScores
+    """
+    driver = PowerFlowDriver(grid=grid, options=pf_options)
+    driver.run()
+
+    scores = InvestmentScores()
+
+    # compute scores
+    scores.losses_score = np.sum(driver.results.losses.real)
+    scores.overload_score = get_overload_score(loading=driver.results.loading,
+                                               branches_cost=branches_cost)
+
+    scores.voltage_module_score = get_voltage_module_score(voltage=driver.results.voltage,
+                                                           vm_cost=vm_cost,
+                                                           vm_max=vm_max,
+                                                           vm_min=vm_min)
+
+    scores.voltage_angle_score = get_voltage_phase_score(voltage=driver.results.voltage,
+                                                         va_cost=va_cost,
+                                                         va_max=va_max,
+                                                         va_min=va_min)
+
+    scores.capex_score = sum([inv.CAPEX for inv in inv_list])
+    scores.opex_score = sum([inv.OPEX for inv in inv_list])
+
+    return scores
 
 
 class InvestmentsEvaluationDriver(DriverTemplate):
@@ -113,20 +183,25 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.results = InvestmentsEvaluationResults(investment_groups_names=grid.get_investment_groups_names(),
                                                     max_eval=0)
 
-        # objective evaluation number
-        self.__eval_index = 0
-
         # dictionary of investment groups
         self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investmenst_by_groups_index_dict()
 
         # dimensions
         self.dim = len(self.grid.investments_groups)
 
-        # numerical circuit
-        self.nc: Union[NumericalCircuit, None] = None
-
         # gather a dictionary of all the elements, this serves for the investments generation
         self.get_all_elements_dict = self.grid.get_all_elements_dict()
+
+        # compose useful arrays
+        self.vm_cost = np.array([e.Vm_cost for e in grid.get_buses()], dtype=float)
+        self.vm_max = np.array([e.Vmax for e in grid.get_buses()], dtype=float)
+        self.vm_min = np.array([e.Vmin for e in grid.get_buses()], dtype=float)
+
+        self.va_cost = np.array([e.angle_cost for e in grid.get_buses()], dtype=float)
+        self.va_max = np.array([e.angle_max for e in grid.get_buses()], dtype=float)
+        self.va_min = np.array([e.angle_min for e in grid.get_buses()], dtype=float)
+
+        self.branches_cost = np.array([e.Cost for e in grid.get_branches_wo_hvdc()], dtype=float)
 
     def get_steps(self):
         """
@@ -135,81 +210,75 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         return self.results.get_index()
 
+    def get_investments_for_combination(self, combination: IntVec) -> List[Investment]:
+        """
+        Get the list of the investments that belong to a certain combination
+        :param combination: array of 0/1
+        :return: list of investments objects
+        """
+        # add all the investments of the investment groups reflected in the combination
+        inv_list: List[Investment] = list()
+        for i, active in enumerate(combination):
+            if active == 1:
+                inv_list += self.investments_by_group[i]
+            if active == 0:
+                pass
+            else:
+                # raise Exception('Value different from 0 and 1!')
+                # print('Value different from 0 and 1!', active)
+                pass
+        return inv_list
+
     def objective_function(self, combination: IntVec) -> Vec:
         """
         Function to evaluate a combination of investments
         :param combination: vector of investments (yes/no). Length = number of investment groups
-        :return: objective function criteria values
+        :return: multi-objective function criteria values
         """
 
-        # add all the investments of the investment groups reflected in the combination
-        inv_list = list()
-        for i, active in enumerate(combination):
-            if active == 1:
-                inv_list += self.investments_by_group[i]
+        inv_list: List[Investment] = self.get_investments_for_combination(combination)
 
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=True,
                                          all_elemnts_dict=self.get_all_elements_dict)
 
-        branches = self.grid.get_branches_wo_hvdc()
-        buses = self.grid.get_buses()
-
         # do something
-        driver = PowerFlowDriver(grid=self.grid, options=self.options.pf_options)
-        driver.run()
-        res = driver.results
+        scores = power_flow_function(inv_list=inv_list,
+                                     grid=self.grid,
+                                     pf_options=self.options.pf_options,
+                                     branches_cost=self.branches_cost,
+                                     vm_cost=self.vm_cost,
+                                     vm_max=self.vm_max,
+                                     vm_min=self.vm_min,
+                                     va_cost=self.va_cost,
+                                     va_max=self.va_max,
+                                     va_min=self.va_min)
 
-        # compute scores
-        losses_score = np.sum(res.losses.real)
-        overload_score = get_overload_score(res.loading, branches)
-        voltage_module_score = get_voltage_module_score(res.voltage, buses)
-        voltage_angle_score = get_voltage_phase_score(res.voltage, buses)
-        electrical_score = losses_score + overload_score + voltage_module_score + voltage_angle_score
-        capex_array = np.array([inv.CAPEX for inv in inv_list])
-        opex_array = np.array([inv.OPEX for inv in inv_list])
-
-        # get arrays for first iteration
-        if self.__eval_index == 0:
-            capex_array = np.array([0])
-            opex_array = np.array([0])
-
-        capex_score = np.sum(capex_array)
-        opex_score = np.sum(opex_array)
-        financial_score = np.sum(capex_score + opex_score)
-
-        all_scores = np.array([electrical_score, financial_score])
-
-        # revert to disabled
+        # revert to the initial state
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=False,
                                          all_elemnts_dict=self.get_all_elements_dict)
 
         # record the evaluation
-        self.results.set_at(eval_idx=self.__eval_index,
-                            capex=capex_score,
-                            opex=opex_score,
-                            losses=losses_score,
-                            overload_score=overload_score,
-                            voltage_score=voltage_module_score,
-                            electrical=electrical_score,
-                            financial=financial_score,
-                            objective_function_sum=financial_score + electrical_score,
-                            combination=combination,
-                            index_name=f'Solution {self.__eval_index}')
+        self.results.add(capex=scores.capex_score,
+                         opex=scores.opex_score,
+                         losses=scores.losses_score,
+                         overload_score=scores.overload_score,
+                         voltage_score=scores.voltage_module_score,
+                         electrical=scores.electrical_score,
+                         financial=scores.financial_score,
+                         objective_function_sum=scores.arr().sum(),
+                         combination=combination)
 
         # Report the progress
-        self.report_progress2(self.__eval_index, self.options.max_eval)
+        self.report_progress2(self.results.current_evaluation, self.options.max_eval)
 
-        # increase evaluations
-        self.__eval_index += 1
+        return scores.arr()
 
-        return all_scores
-
-    def objective_function_so(self, combination: IntVec):
+    def objective_function_so(self, combination: IntVec) -> float:
         """
-
+        Single objective version of the objective function
         :param combination:
         :return:
         """
@@ -222,14 +291,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
         """
         # compile the snapshot
-        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=len(self.grid.investments_groups) + 1)
-        # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # evaluate the investments
-        self.__eval_index = 0
 
         # add baseline
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
@@ -251,7 +314,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         Run an optimized investment evaluation without considering multiple evaluation groups at a time
         """
 
-        # configure hyperopt:
+        self.report_text("Evaluating investments with Hyperopt")
 
         # number of random evaluations at the beginning
         rand_evals = round(self.dim * 1.5)
@@ -265,54 +328,14 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             algo = functools.partial(hyperopt.tpe.suggest, n_startup_jobs=rand_evals)
 
         # compile the snapshot
-        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.options.max_eval + 1)
-        # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # evaluate the investments
-        self.__eval_index = 0
 
         # add baseline
         self.objective_function_so(combination=np.zeros(self.results.n_groups, dtype=int))
 
-        hyperopt.fmin(self.objective_function_so, space, algo, self.options.max_eval)
-
-        self.report_done()
-
-    def optimized_evaluation_bayesian(self) -> None:
-        """
-        Run an optimized investment evaluation without considering multiple evaluation groups at a time
-        """
-
-        # configure hyperopt:
-
-        # number of random evaluations at the beginning
-        rand_evals = round(self.dim * 1.5)
-
-        # binary search space
-        space = [hyperopt.hp.randint(f'x_{i}', 2) for i in range(self.dim)]
-
-        if self.options.max_eval == rand_evals:
-            algo = hyperopt.rand.suggest
-        else:
-            algo = functools.partial(hyperopt.tpe.suggest, n_startup_jobs=rand_evals)
-
-        # compile the snapshot
-        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
-        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval + 1)
-        # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # evaluate the investments
-        self.__eval_index = 0
-
-        # add baseline
-        self.objective_function_so(combination=np.zeros(self.results.n_groups, dtype=int))
-
-        hyperopt.fmin(self.objective_function_so, space, algo, self.options.max_eval)
+        # run
+        results = hyperopt.fmin(self.objective_function_so, space, algo, self.options.max_eval)
 
         self.report_done()
 
@@ -334,14 +357,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
 
         # compile the snapshot
-        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.options.max_eval + 1)
-        # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # evaluate the investments
-        self.__eval_index = 0
 
         # add baseline
         ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
@@ -360,6 +377,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             n_objectives=len(ret)
         )
 
+        self.results.set_best_combination(combination=sorted_x_[0, :])
+
         self.report_done()
 
     def optimized_evaluation_mvrsm_pareto(self) -> None:
@@ -377,14 +396,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         x0 = np.random.binomial(1, rand_search_active_prob, self.dim)
 
         # compile the snapshot
-        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.options.max_eval + 2)
-        # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # evaluate the investments
-        self.__eval_index = 0
 
         # add baseline
         ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
@@ -401,9 +414,11 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             args=()
         )
 
+        self.results.set_best_combination(combination=sorted_x_[0, :])
+
         self.report_done()
 
-    def optimized_evaluation_nsga_iii(self) -> None:
+    def optimized_evaluation_nsga3(self) -> None:
         """
         Run an optimized investment evaluation with NSGA3
         """
@@ -413,14 +428,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         n_partitions = int(round(pop_size / 3))
 
         # compile the snapshot
-        self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval + 1)
-        # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
-
-        # evaluate the investments
-        self.__eval_index = 0
+                                                    max_eval=self.options.max_eval + 2)
 
         # add baseline
         ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
@@ -433,10 +442,12 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
-            crossover_prob=0.2,
-            mutation_probability=0.1,
-            eta=3
+            crossover_prob=0.5,
+            mutation_probability=0.5,
+            eta=30,
         )
+
+        self.results.set_best_combination(combination=X[:, 0])
 
         self.report_done()
 
@@ -447,6 +458,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.tic()
 
+        self.logger.add_info(msg="Solver", value=f"{self.options.solver.value}")
+        self.logger.add_info(msg="Max evaluations", value=f"{self.options.max_eval}")
+
         if self.options.solver == InvestmentEvaluationMethod.Independent:
             self.independent_evaluation()
 
@@ -454,15 +468,17 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             self.optimized_evaluation_hyperopt()
 
         elif self.options.solver == InvestmentEvaluationMethod.MVRSM:
-            self.optimized_evaluation_mvrsm()
-
-        elif self.options.solver == InvestmentEvaluationMethod.MVRSM_multi:
             self.optimized_evaluation_mvrsm_pareto()
 
         elif self.options.solver == InvestmentEvaluationMethod.NSGA3:
-            self.optimized_evaluation_nsga_iii()
+            self.optimized_evaluation_nsga3()
 
         else:
             raise Exception('Unsupported method')
+
+        # report the combination
+        inv_list = self.get_investments_for_combination(combination=self.results.best_combination)
+        for inv in inv_list:
+            self.logger.add_info(msg=f"Best combination", device=inv.idtag, value=inv.name)
 
         self.toc()

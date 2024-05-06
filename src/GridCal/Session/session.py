@@ -437,8 +437,10 @@ class SimulationSession:
                                             options=None)
 
         elif study_name == ClusteringDriver.tpe.value:
-            drv = ClusteringDriver(grid=grid,
-                                   options=None)
+            drv = ClusteringDriver(grid=grid, options=None)
+
+        elif study_name == InvestmentsEvaluationDriver.tpe.value:
+            drv = InvestmentsEvaluationDriver(grid=grid, options=None)
 
         else:
             warn(f"Session {study_name} not implemented for disk retrieval :/")

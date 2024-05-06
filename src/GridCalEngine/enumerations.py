@@ -99,7 +99,6 @@ class InvestmentEvaluationMethod(Enum):
     Independent = "Independent"
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
-    MVRSM_multi = "MVRSM_multi"
     NSGA3 = "NSGA3"
 
     def __str__(self):
