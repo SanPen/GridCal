@@ -5929,6 +5929,25 @@ class MultiCircuit:
 
     def convert_to_node_breaker(self) -> None:
         """
+        Convert this MultiCircuit in-place from bus/branch to node/breaker network model
+        """
+
+        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
+        for bus in self.buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
+            self.add_bus_bar(bus_bar)
+            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
+            bus_bar.cn.code = bus.code  # for soft checking later
+            if bus_bar.cn.default_bus:
+                bus_bar.cn.default_bus.code = bus.code  # for soft checking later
+
+        # branches
+        for elm in self.get_branches():
+            elm.cn_from = bus_to_busbar_cn.get(elm.bus_from.idtag, None)
+            elm.cn_to = bus_to_busbar_cn.get(elm.bus_to.idtag, None)
+
+    def convert_to_node_breaker_adding_switches(self) -> None:
+        """
         Convert this MultiCircuit in-place from bus/branch to node/breaker network model,
         adding switches at the extremes of every branch
         """
@@ -5975,12 +5994,12 @@ class MultiCircuit:
             self.delete_bus(b)
 
     def process_topology_at(self,
-                            t_idx: Union[int, None],
+                            t_idx: Union[int, None] = None,
                             logger: Union[Logger, None] = None) -> tp.TopologyProcessorInfo:
         """
         Topology processor finding the Buses that calculate a certain node-breaker topology
         This function fill the bus pointers into the grid object, and adds any new bus required for simulation
-        :param t_idx: Time index
+        :param t_idx: Time index, None for the Snapshot
         :param logger: Logger object
         :return: TopologyProcessorInfo
         """

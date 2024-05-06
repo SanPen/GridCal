@@ -2491,6 +2491,7 @@ class SchematicWidget(QSplitter):
         add API branch to the Scene
         :param branch: Branch instance
         """
+
         bus_f_graphics = self.graphics_manager.query(branch.bus_from)
         bus_t_graphics = self.graphics_manager.query(branch.bus_to)
 

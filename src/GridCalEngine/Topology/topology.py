@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Union
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
@@ -343,7 +343,7 @@ def compute_connectivity_with_hvdc(branch_active: IntVec,
 
 class TopologyProcessorInfo:
     """
-    CandidatesInfo
+    TopologyProcessorInfo
     """
 
     def __init__(self) -> None:
@@ -356,9 +356,6 @@ class TopologyProcessorInfo:
 
         # map of ConnectivityNodes to candidate Buses
         self.cn_to_candidate: dict[ConnectivityNode, Bus] = dict()
-
-        # map of BusBars to candidate Buses
-        # self.busbar_to_candidate: dict[dev.BusBar, dev.Bus] = dict()
 
         # integer position of the candidate bus matching a connectivity node
         self.candidate_to_int_dict = dict()
@@ -385,25 +382,25 @@ class TopologyProcessorInfo:
 
     def candidate_number(self) -> int:
         """
-        Number of candidated
-        :return:
+        Number of candidates
+        :return: integer
         """
         return len(self.candidates)
 
     def get_candidate_pos_from_cn(self, cn: ConnectivityNode) -> int:
         """
         Get the integer position of the candidate bus matching a connectivity node
-        :param cn:
-        :return:
+        :param cn: ConnectivityNode
+        :return: integer
         """
         candidate = self.cn_to_candidate[cn]
         return self.candidate_to_int_dict[candidate]
 
     def get_candidate_active(self, t_idx: Union[None, int]) -> IntVec:
         """
-
-        :param t_idx:
-        :return:
+        Get the active array of candidate buses at a time index
+        :param t_idx: time index
+        :return: Array of bus active
         """
         bus_active = np.ones(self.candidate_number(), dtype=int)
 
@@ -419,9 +416,9 @@ class TopologyProcessorInfo:
         :return: list of final buses
         """
         final_buses = list()
-        print("Islands:")
+        # print("Islands:")
         for island in islands:
-            print(",".join([self.candidates[i].name for i in island]))
+            # print(",".join([self.candidates[i].name for i in island]))
 
             island_bus = self.candidates[island[0]]
 

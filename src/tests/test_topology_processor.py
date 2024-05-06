@@ -219,7 +219,7 @@ def test_topology_rts() -> None:
         # Original grid to compare its topology with reduced topology after creating a Node/Breaker model from it
         original_grid = grid.copy()
 
-        grid.convert_to_node_breaker()  # Converting to Node/Breaker model
+        grid.convert_to_node_breaker_adding_switches()  # Converting to Node/Breaker model
         processor_info = grid.process_topology_at(t_idx=None)  # Processing topology from new grid
 
         # Comparing bus considering bus number assigned

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1292</width>
+    <width>1187</width>
     <height>746</height>
    </rect>
   </property>
@@ -7638,36 +7638,6 @@
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_5">
-               <item row="6" column="0" colspan="2">
-                <widget class="QLabel" name="cgmes_boundary_set_label">
-                 <property name="toolTip">
-                  <string>Path of the CGMES default boundary set (single zip file)</string>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="1">
-                <spacer name="verticalSpacer_25">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>436</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="5" column="0" colspan="3">
-                <widget class="QLabel" name="label_90">
-                 <property name="text">
-                  <string>Boundary set</string>
-                 </property>
-                </widget>
-               </item>
                <item row="0" column="1" colspan="2">
                 <widget class="QLabel" name="label_134">
                  <property name="palette">
@@ -7717,19 +7687,62 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="2">
-                <widget class="QPushButton" name="selectCGMESBoundarySetButton">
-                 <property name="maximumSize">
+               <item row="2" column="0" colspan="3">
+                <widget class="QLabel" name="label_135">
+                 <property name="text">
+                  <string>Export version</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0" colspan="3">
+                <widget class="QListView" name="cgmes_profiles_listView"/>
+               </item>
+               <item row="8" column="0" colspan="3">
+                <widget class="QLabel" name="label_90">
+                 <property name="text">
+                  <string>Boundary set</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="3">
+                <widget class="QComboBox" name="cgmes_version_comboBox"/>
+               </item>
+               <item row="11" column="0" colspan="3">
+                <widget class="QLabel" name="label_139">
+                 <property name="text">
+                  <string>Profiles to export</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0" colspan="3">
+                <widget class="QCheckBox" name="cgmes_single_profile_per_file_checkBox">
+                 <property name="text">
+                  <string>One file per profile</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_137">
+                 <property name="minimumSize">
                   <size>
-                   <width>80</width>
-                   <height>16777215</height>
+                   <width>24</width>
+                   <height>24</height>
                   </size>
                  </property>
-                 <property name="toolTip">
-                  <string>Select the CGMES boundary set (single zip file)</string>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
                  </property>
                  <property name="text">
-                  <string>Select</string>
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/new2.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -7783,45 +7796,36 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_137">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
+               <item row="9" column="2">
+                <widget class="QPushButton" name="selectCGMESBoundarySetButton">
                  <property name="maximumSize">
                   <size>
-                   <width>24</width>
-                   <height>24</height>
+                   <width>80</width>
+                   <height>16777215</height>
                   </size>
                  </property>
+                 <property name="toolTip">
+                  <string>Select the CGMES boundary set (single zip file)</string>
+                 </property>
                  <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/new2.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
+                  <string>Select</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0" colspan="2">
+               <item row="9" column="0" colspan="2">
+                <widget class="QLabel" name="cgmes_boundary_set_label">
+                 <property name="toolTip">
+                  <string>Path of the CGMES default boundary set (single zip file)</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
                 <widget class="QLabel" name="label_102">
                  <property name="text">
                   <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="3">
-                <widget class="QComboBox" name="cgmes_version_comboBox"/>
-               </item>
-               <item row="2" column="0" colspan="3">
-                <widget class="QLabel" name="label_135">
-                 <property name="text">
-                  <string>Export version</string>
                  </property>
                 </widget>
                </item>
@@ -8239,7 +8243,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1292</width>
+     <width>1187</width>
      <height>22</height>
     </rect>
    </property>
