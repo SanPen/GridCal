@@ -28,10 +28,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Removed duplicate graph plot and refined parameter values">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Optimal parameters set">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/10mins.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/4.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/binary.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/dirs.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/integer.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/lhs.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/normal.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/partitioned.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/ref.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/uniform.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation_nsga3.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,12 +88,12 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RESET_MODE" value="HARD" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "cristinafray"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;cristinafray&quot;
   }
-}]]></component>
+}</component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>
       <filtered-out-file-type name="LOCAL_BRANCH" />
@@ -92,12 +102,12 @@
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
   </component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/SanPen/GridCal.git",
-    "accountId": "bb8a0cb4-ce27-4273-8eda-1b1adc2d4312"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/SanPen/GridCal.git&quot;,
+    &quot;accountId&quot;: &quot;bb8a0cb4-ce27-4273-8eda-1b1adc2d4312&quot;
   }
-}]]></component>
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" root0="FORCE_HIGHLIGHTING" />
@@ -138,6 +148,7 @@
     "ASKED_ADD_EXTERNAL_FILES": "true",
     "Git.Branch.Popup.ShowAllRemotes": "true",
     "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python docs.Docutils Task in investments_evaluation_nsga3.rst.executor": "Run",
     "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
     "Python tests.Nosetests for tests.test_hydro.executor": "Run",
     "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
@@ -158,7 +169,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "204__investments__evaluation",
-    "last_opened_file_path": "C:/Work/git_local/GridCal/doc",
+    "last_opened_file_path": "/Users/CristinaFray/PycharmProjects/GridCal/doc/rst_source/figures/nsga",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -176,11 +187,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/doc/rst_source/figures/nsga" />
+      <recent name="$PROJECT_DIR$/doc/rst_source/theory" />
       <recent name="C:\Work\git_local\GridCal\doc" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
@@ -190,7 +201,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes_v2_4_15\devices" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -675,8 +686,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-74d2a5396914-JavaScript-PY-241.14494.241" />
-        <option value="bundled-python-sdk-0509580d9d50-28c9f5db9ffe-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.14494.241" />
+        <option value="bundled-python-sdk-0509580d9d50-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.14494.241" />
       </set>
     </attachedChunks>
   </component>
@@ -1697,7 +1707,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="504" />
+    <option name="localTasksCounter" value="505" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1731,7 +1741,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added voltage level to bus, enhanced class list in pack_unpack.py" />
     <MESSAGE value="cgmes alias for class import, create LoadResponseChar" />
     <MESSAGE value="export CGMES generators" />
     <MESSAGE value="export CGMES: load response char, reg control, get connectivity nodes" />
@@ -1756,7 +1765,8 @@
     <MESSAGE value="refactoring of the investments class and functions" />
     <MESSAGE value="refactoring of the investments module" />
     <MESSAGE value="Removed duplicate graph plot and refined parameter values" />
-    <option name="LAST_COMMIT_MESSAGE" value="Removed duplicate graph plot and refined parameter values" />
+    <MESSAGE value="Optimal parameters set" />
+    <option name="LAST_COMMIT_MESSAGE" value="Optimal parameters set" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
