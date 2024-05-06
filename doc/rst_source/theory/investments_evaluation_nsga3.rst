@@ -44,12 +44,7 @@ first. If a reference direction does not have any solution assigned to it, NSGA-
 assigned randomly to maintain diversity.
 
 .. figure:: ../figures/nsga/dirs.png
-    :alt: ref
-    :align: center
-    :scale: 20 %
-
-.. figure:: ../figures/nsga/ref.png
-    :alt: dirs
+    :alt: refdirs
     :align: center
     :scale: 20 %
 
@@ -117,6 +112,7 @@ the maximum number of partitions is the population’s dimension.
     :scale: 40 %
 
      (b) No. partitions = population size
+
 
 There are also different types of reference direction sources: The uniform and das-
 dennis methods generate an even distribution of points across the objective space,
@@ -216,6 +212,7 @@ performances.
 
     Figure 6: 130-bus grid for evaluating investments
 
+
 After testing for an equal amount of time, the plots in Figure 7 proves the NSGA-
 III outperforms MVRSM and fully explores the Pareto frontier, passing through the
 concentrated MVRSM area as predicted.
@@ -227,12 +224,13 @@ concentrated MVRSM area as predicted.
 
     Figure 7: Pareto front comparison after 10 minutes of simulation
 
+
 In addition to this, NSGA-III is approximately 25 times faster, computationally, which
 is a promising result for future evaluation on larger grids. Though it still takes a
 significant amount of time to generate a very smooth and complete curve, a plot
 more optimal than MVRSM’s can still be produced with few iterations.
 
-.. table:: Optimum Parameter Configuration
+.. table:: Optimum Parameter Configuration:
 
    +------------------+-------------------+
    | Parameter name   | Setting           |

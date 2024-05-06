@@ -28,7 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="NSGA documentation editted" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="NSGA documentation editted2">
+      <change afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/refdirs.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/figures/nsga/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/figures/nsga/2.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation_nsga3.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/theory/investments_evaluation_nsga3.rst" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -1693,7 +1697,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="507" />
+    <option name="localTasksCounter" value="508" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1727,7 +1731,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="export CGMES: load response char, reg control, get connectivity nodes" />
     <MESSAGE value="buse" />
     <MESSAGE value="bus idtag for new TopologicalNodes" />
     <MESSAGE value="new CGMES export functions" />
@@ -1752,7 +1755,8 @@
     <MESSAGE value="Optimal parameters set" />
     <MESSAGE value="NSGA documentation uploaded" />
     <MESSAGE value="NSGA documentation editted" />
-    <option name="LAST_COMMIT_MESSAGE" value="NSGA documentation editted" />
+    <MESSAGE value="NSGA documentation editted2" />
+    <option name="LAST_COMMIT_MESSAGE" value="NSGA documentation editted2" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
