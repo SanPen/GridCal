@@ -43,7 +43,7 @@ NSGA-III [3] starts by performing non-dominated sorting for its survival stage. 
 first. If a reference direction does not have any solution assigned to it, NSGA-III selects the solution with the smallest perpendicular distance in the normalised objective space to survive. If a second solution is added to a reference direction, it is
 assigned randomly to maintain diversity.
 
-.. figure:: ../figures/nsga/dirs.png
+.. figure:: ../figures/nsga/refdirs.png
     :alt: refdirs
     :align: center
     :scale: 20 %
