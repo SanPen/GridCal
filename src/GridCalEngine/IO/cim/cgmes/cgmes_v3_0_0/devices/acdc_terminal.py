@@ -28,6 +28,8 @@ class ACDCTerminal(IdentifiedObject):
 		self.OperationalLimitSet: OperationalLimitSet | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.bus_name_marker import BusNameMarker
 		self.BusNameMarker: BusNameMarker | None = None
+		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.measurement import Measurement
+		self.Measurements: Measurement | None = None
 		self.connected: bool = None
 
 		self.register_property(
@@ -52,6 +54,14 @@ class ACDCTerminal(IdentifiedObject):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''The bus name marker used to name the bus (topological node).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='Measurements',
+			class_type=Measurement,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Measurements associated with this terminal defining  where the measurement is placed in the network topology.  It may be used, for instance, to capture the sensor position, such as a voltage transformer (PT) at a busbar or a current transformer (CT) at the bar between a breaker and an isolator.''',
 			profiles=[]
 		)
 		self.register_property(

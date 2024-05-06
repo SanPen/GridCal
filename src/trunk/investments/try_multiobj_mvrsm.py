@@ -10,6 +10,7 @@ import cProfile
 import cProfile
 import pstats
 
+
 if __name__ == "__main__":
     fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
     grid = FileOpen(fname).open()
@@ -26,21 +27,29 @@ if __name__ == "__main__":
     inv_results = []
 
     for i, solver in enumerate(solvers):
-        options = invsim.InvestmentsEvaluationOptions(solver=solver, max_eval=4 * len(grid.investments),
-                                                      pf_options=pf_options)
+        options = sim.InvestmentsEvaluationOptions(solver=solver, max_eval=2*len(grid.investments),
+                                                   pf_options=pf_options)
 
-        inv = invsim.InvestmentsEvaluationDriver(grid, options=options)
+        inv = sim.InvestmentsEvaluationDriver(grid, options=options)
         st_time = time.time()
         inv.run()
         e_time = time.time()
-        print(e_time-st_time)
+        print(e_time - st_time)
         inv_results.append(inv.results)
 
     results1 = inv_results[0]
     results2 = inv_results[1]
 
-    mdl1 = results1.mdl(results_tpe_plot)
-    mdl2 = results2.mdl(results_tpe_plot)
+    results_table = results1.mdl(results_tpe_plot)
+
+    # Extract data for plotting
+    x = results_table.data_c[:, 0]  # Investment cost
+    y = results_table.data_c[:, 1]  # Technical cost
+
+    # Plot the Pareto curve
+    plt.scatter(x, y, facecolor="none", edgecolor="red")
+    plt.xlabel("Investment cost (M€)")
+    plt.ylabel("Technical cost (M€)")
     plt.show()
 
     '''# Profile 
@@ -52,3 +61,5 @@ if __name__ == "__main__":
     # Print profiling statistics to the console
     stats = pstats.Stats(profiler)
     stats.print_stats()'''
+
+

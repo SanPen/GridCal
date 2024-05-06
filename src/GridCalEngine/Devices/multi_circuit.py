@@ -1301,8 +1301,8 @@ class MultiCircuit:
 
     def add_current_injection(self,
                               bus: Union[None, dev.Bus] = None,
-                              cn: Union[None, dev.ConnectivityNode] = None,
-                              api_obj: Union[None, dev.CurrentInjection] = None) -> dev.CurrentInjection:
+                              api_obj: Union[None, dev.CurrentInjection] = None,
+                              cn: Union[None, dev.ConnectivityNode] = None) -> dev.CurrentInjection:
         """
         Add a CurrentInjection object
         :param bus: Bus
@@ -1369,8 +1369,8 @@ class MultiCircuit:
 
     def add_controllable_shunt(self,
                                bus: Union[None, dev.Bus] = None,
-                               cn: Union[None, dev.ConnectivityNode] = None,
-                               api_obj: Union[None, dev.ControllableShunt] = None) -> dev.ControllableShunt:
+                               api_obj: Union[None, dev.ControllableShunt] = None,
+                               cn: Union[None, dev.ConnectivityNode] = None) -> dev.ControllableShunt:
         """
         Add a ControllableShunt object
         :param bus: Main bus (optional)
@@ -3137,8 +3137,8 @@ class MultiCircuit:
 
     def add_load(self,
                  bus: Union[None, dev.Bus] = None,
-                 cn: Union[None, dev.ConnectivityNode] = None,
-                 api_obj: Union[None, dev.Load] = None) -> dev.Load:
+                 api_obj: Union[None, dev.Load] = None,
+                 cn: Union[None, dev.ConnectivityNode] = None) -> dev.Load:
         """
         Add a load device
         :param bus: Main bus (optional)
@@ -3166,8 +3166,8 @@ class MultiCircuit:
 
     def add_generator(self,
                       bus: Union[None, dev.Bus] = None,
-                      cn: Union[None, dev.ConnectivityNode] = None,
-                      api_obj: Union[None, dev.Generator] = None) -> dev.Generator:
+                      api_obj: Union[None, dev.Generator] = None,
+                      cn: Union[None, dev.ConnectivityNode] = None) -> dev.Generator:
         """
         Add a generator
         :param bus: Main bus (optional)
@@ -3204,8 +3204,8 @@ class MultiCircuit:
 
     def add_static_generator(self,
                              bus: Union[None, dev.Bus] = None,
-                             cn: Union[None, dev.ConnectivityNode] = None,
-                             api_obj: Union[None, dev.StaticGenerator] = None) -> dev.StaticGenerator:
+                             api_obj: Union[None, dev.StaticGenerator] = None,
+                             cn: Union[None, dev.ConnectivityNode] = None) -> dev.StaticGenerator:
         """
         Add a static generator
         :param bus: Bus object
@@ -3234,13 +3234,14 @@ class MultiCircuit:
 
     def add_external_grid(self,
                           bus: Union[None, dev.Bus] = None,
-                          cn: Union[None, dev.ConnectivityNode] = None,
-                          api_obj: Union[None, dev.ExternalGrid] = None) -> dev.ExternalGrid:
+                          api_obj: Union[None, dev.ExternalGrid] = None,
+                          cn: Union[None, dev.ConnectivityNode] = None) -> dev.ExternalGrid:
         """
         Add an external grid
         :param bus: Bus object
         :param api_obj: api_obj, if None, create a new one
-        :return:
+        :param cn: ConnectivityNode
+        :return: ExternalGrid
         """
 
         if api_obj is None:
@@ -3263,8 +3264,8 @@ class MultiCircuit:
 
     def add_battery(self,
                     bus: Union[None, dev.Bus] = None,
-                    cn: Union[None, dev.ConnectivityNode] = None,
-                    api_obj: Union[None, dev.Battery] = None) -> dev.Battery:
+                    api_obj: Union[None, dev.Battery] = None,
+                    cn: Union[None, dev.ConnectivityNode] = None) -> dev.Battery:
         """
         Add battery
         :param bus:
@@ -3292,8 +3293,8 @@ class MultiCircuit:
 
     def add_shunt(self,
                   bus: Union[None, dev.Bus] = None,
-                  cn: Union[None, dev.ConnectivityNode] = None,
-                  api_obj: Union[None, dev.Shunt] = None) -> dev.Shunt:
+                  api_obj: Union[None, dev.Shunt] = None,
+                  cn: Union[None, dev.ConnectivityNode] = None) -> dev.Shunt:
         """
         Add a :ref:`Shunt<shunt>` object to a :ref:`Bus<bus>`.
 
