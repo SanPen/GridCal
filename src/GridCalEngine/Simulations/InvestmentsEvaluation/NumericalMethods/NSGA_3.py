@@ -26,13 +26,10 @@ from pymoo.core.sampling import Sampling
 
 
 class UniformBinarySampling(Sampling):
-    def __init__(self, num_ones):
-        super().__init__()
-        self.num_ones = num_ones
-
     def _do(self, problem, n_samples, **kwargs):
-        num_ones = np.linspace(self.num_ones, problem.n_var, n_samples, dtype=int)
-        ones_into_array = np.zeros((n_samples + 1, problem.n_var), dtype=int)
+        num_ones = np.linspace(0, problem.n_var, n_samples, dtype=int)
+        num_ones[-1] = problem.n_var
+        ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
 
         # Fill ones into array randomly
         for i, num in enumerate(num_ones):
@@ -100,9 +97,8 @@ def NSGA_3(obj_func,
 
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
-    num_ones = 20
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=UniformBinarySampling(num_ones=num_ones),
+                      sampling=UniformBinarySampling(),
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                       mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4),
                       # selection=TournamentSelection(pressure=2),
