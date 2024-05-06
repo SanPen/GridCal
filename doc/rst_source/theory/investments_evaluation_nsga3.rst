@@ -12,8 +12,9 @@ This multi-objective optimisation problem is currently defined by two objective 
 + OPEX, while simultaneously minimising the technical cost, which is the sum ofmonetary penalties applied to technical violations within the grid and power losses.
 
 .. math::
-    f_1(x) = \sum_{i=1}^{n} (CAPEX_i(x) + OPEX_i(x))
+    f_1(x) = \sum (CAPEX(x)_i + \sum OPEX(x)_i)
 
+.. math::
     f_2(x) = \sum C_l(x)_{br} + \sum C_o(x)_{br} + \sum C_{vm}(x)_b + \sum C_{va}(x)_b
 
 Please see the investment evaluation documentation on GridCal’s GitHub for their
@@ -29,7 +30,7 @@ algorithm.
 .. figure:: ../figures/investments/single_pareto_iterations_2.png
     :alt: single_pareto_iterations_2
     :align: center
-    :scale: 50 %
+    :scale: 40 %
 
     Figure 1: MVRSM results with hypothetical improved Pareto front
 
@@ -45,12 +46,12 @@ assigned randomly to maintain diversity.
 .. figure:: ../figures/nsga/dirs.png
     :alt: ref
     :align: center
-    :scale: 50 %
+    :scale: 20 %
 
 .. figure:: ../figures/nsga/ref.png
     :alt: dirs
     :align: center
-    :scale: 50 %
+    :scale: 20 %
 
     Figure 2: (a) Non-dominated sorting (b) Points assigned to reference lines
 
@@ -80,14 +81,16 @@ however, as the algorithm may struggle to adequately explore the solution space.
 .. figure:: ../figures/nsga/2.png
     :alt: pop_size
     :align: center
-    :scale: 50 %
+    :scale: 20 %
+
+    Figure 3: (a) Dimension scaled by 2 has shallow curvature
 
 .. figure:: ../figures/nsga/4.png
     :alt: pop_size
     :align: center
-    :scale: 50 %
+    :scale: 20 %
 
-    Figure 3: (a) Dimension scaled by 2 has shallow curvature (b) Dimension scaled by 0.2 provides finds more optimal solutions due to its deeper curve
+     (b) Dimension scaled by 0.2 provides finds more optimal solutions due to its deeper curve
 
 
 Reference Directions
@@ -104,14 +107,16 @@ the maximum number of partitions is the population’s dimension.
 .. figure:: ../figures/nsga/partitioned.png
     :alt: partitioned
     :align: center
-    :scale: 50 %
+    :scale: 40 %
+
+    Figure 4: (a) No. partitions = population size / 10
 
 .. figure:: ../figures/nsga/normal.png
     :alt: normal
     :align: center
-    :scale: 50 %
+    :scale: 40 %
 
-    Figure 4: (a) No. partitions = population size / 10 (b) No. partitions = population size
+     (b) No. partitions = population size
 
 There are also different types of reference direction sources: The uniform and das-
 dennis methods generate an even distribution of points across the objective space,
@@ -140,24 +145,30 @@ of sampling, the first three are unable to explore points past an investment cos
 .. figure:: ../figures/nsga/lhs.png
     :alt: lhs
     :align: center
-    :scale: 50 %
+    :scale: 40 %
+
+    Figure 5: (a) latin hypercube sampling
 
 .. figure:: ../figures/nsga/integer.png
     :alt: integer
     :align: center
-    :scale: 50 %
+    :scale: 40 %
+
+    (b) integer random
 
 .. figure:: ../figures/nsga/binary.png
     :alt: binary
     :align: center
-    :scale: 50 %
+    :scale: 40 %
+
+    (c) binary random
 
 .. figure:: ../figures/nsga/uniform.png
     :alt: uniform
     :align: center
-    :scale: 50 %
+    :scale: 40 %
 
-    Figure 5: (a) latin hypercube (b) integer random (c) binary random (d) binary uniform
+    (d) binary uniform
 
 Selection
 ~~~~~~~~~~~~~~~~~~~~~
@@ -201,7 +212,7 @@ performances.
 .. figure:: ../figures/investments/130bus_grid_diagram.png
     :alt: 130bus-grid diagram
     :align: center
-    :scale: 50 %
+    :scale: 20 %
 
     Figure 6: 130-bus grid for evaluating investments
 
