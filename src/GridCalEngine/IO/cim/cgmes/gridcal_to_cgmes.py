@@ -199,6 +199,21 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
     return cgmes_model
 
 
+# def create_multic_cn_nodes_from_buses(multi_circuit_model: MultiCircuit,
+#                                       logger: DataLogger) -> None:
+#
+#     for cgmes_elm in multi_circuit_model.buses:
+#         gcdev_elm = gcdev.ConnectivityNode(
+#             idtag=cgmes_elm.uuid,
+#             code=cgmes_elm.description,
+#             name=cgmes_elm.name,
+#             dc=False,
+#             default_bus=bus
+#         )
+#
+#         multi_circuit_model.connectivity_nodes.append(gcdev_elm)
+#
+#
 def create_cgmes_terminal(bus: Bus,
                           cond_eq: Union[None, Base],
                           cgmes_model: CgmesCircuit,
@@ -227,6 +242,7 @@ def create_cgmes_terminal(bus: Bus,
         logger.add_error(msg='No found TopologinalNode',
                          device=bus,
                          device_class=gcdev.Bus)
+    # TODO link CN as
 
     cgmes_model.add(term)
 
@@ -455,7 +471,8 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                 if substation.VoltageLevels is None:
                     substation.VoltageLevels = list()
                 substation.VoltageLevels.append(vl)
-
+            else:
+                print(f'Substation not found for VoltageLevel {vl.name}')
         cgmes_model.add(vl)
 
 
@@ -466,6 +483,8 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
         object_template = cgmes_model.get_class_type("TopologicalNode")
         tn = object_template(rdfid=bus.idtag)
         tn.name = bus.name
+        tn.shortName = bus.name
+        tn.description = bus.code
         tn.BaseVoltage = find_object_by_vnom(
             cgmes_model=cgmes_model,
             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
@@ -483,44 +502,76 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
             vl.TopologicalNode = tn
         else:
             print(f'Bus.voltage_level.idtag is None for {bus.name}')
-        # TODO bus should have association for VoltageLevel first
-        # and the voltagelevel to the substation
 
         cgmes_model.add(tn)
 
     return
 
 
-def get_cgmes_cn_nodes(multi_circuit_model: MultiCircuit,
-                       cgmes_model: CgmesCircuit,
-                       logger: DataLogger) -> None:
-    for mc_elm in multi_circuit_model.connectivity_nodes:
+def get_cgmes_cn_nodes_from_buses(multi_circuit_model: MultiCircuit,
+                                  cgmes_model: CgmesCircuit,
+                                  logger: DataLogger) -> None:
+    for bus in multi_circuit_model.buses:
         object_template = cgmes_model.get_class_type("ConnectivityNode")
-        cn = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        cn.name = mc_elm.name
-        if mc_elm.default_bus is not None:
-            tn = find_object_by_uuid(
+        cn = object_template(rdfid=bus.idtag)
+        cn.name = bus.name
+        cn.shortName = bus.name
+        cn.description = bus.code
+        cn.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=bus.Vnom
+        )
+
+        if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
+            vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
-                target_uuid=mc_elm.default_bus.idtag
+                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                target_uuid=bus.voltage_level.idtag
             )
-            if tn is not None:
-                cn.TopologicalNode = tn
-                cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
-                tn.ConnectivityNodes = cn  # link back
-            else:
-                logger.add_error(msg='No TopologinalNode found',
-                                 device=cn.name,
-                                 device_class=cn.tpe)
+            cn.ConnectivityNodeContainer = vl
+            # link back
+            vl.TopologicalNode = cn
         else:
-            logger.add_error(msg='Connectivity Node has no default bus',
-                             device=mc_elm.name,
-                             device_class=mc_elm.device_type)
-            # print(f'Topological node not found for cn: {cn.name}')
+            print(f'Bus.voltage_level.idtag is None for {bus.name}')
 
         cgmes_model.add(cn)
 
-    return
+
+# def get_cgmes_cn_nodes_from_cns(multi_circuit_model: MultiCircuit,
+#                                 cgmes_model: CgmesCircuit,
+#                                 logger: DataLogger) -> None:
+#     if not multi_circuit_model.connectivity_nodes:
+#         get_cgmes_cn_nodes_from_buses(multi_circuit_model, cgmes_model, logger)
+#         return
+#
+#     for mc_elm in multi_circuit_model.connectivity_nodes:
+#         object_template = cgmes_model.get_class_type("ConnectivityNode")
+#         cn = object_template(rdfid=form_rdfid(mc_elm.idtag))
+#         cn.name = mc_elm.name
+#         if mc_elm.default_bus is not None:
+#             tn = find_object_by_uuid(
+#                 cgmes_model=cgmes_model,
+#                 object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+#                 target_uuid=mc_elm.default_bus.idtag
+#             )
+#             if tn is not None:
+#                 cn.TopologicalNode = tn
+#                 cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
+#                 tn.ConnectivityNodes = cn  # link back
+#             else:
+#                 logger.add_error(msg='No TopologinalNode found',
+#                                  device=cn.name,
+#                                  device_class=cn.tpe)
+#         else:
+#             logger.add_error(msg='Connectivity Node has no default bus',
+#                              device=mc_elm.name,
+#                              device_class=mc_elm.device_type)
+#             # print(f'Topological node not found for cn: {cn.name}')
+#
+#         cgmes_model.add(cn)
+#
+#     return
 
 
 def get_cgmes_loads(multicircuit_model: MultiCircuit,
@@ -679,7 +730,11 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_syn = object_template(rdfid=form_rdfid(mc_elm.idtag))
         cgmes_syn.description = mc_elm.code
         cgmes_syn.name = mc_elm.name
-        # cgmes_syn.aggregate is optional, not exported
+        # cgmes_syn.aggregate is optional, not exported\
+        if mc_elm.bus.is_slack:
+            cgmes_syn.referencePriority = 1
+        else:
+            cgmes_syn.referencePriority = 0
         # cgmes_syn.EquipmentContainer: VoltageLevel
         # TODO implement control_node in MultiCircuit
         # has_control: do we have control
@@ -697,7 +752,6 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_syn.minQ = mc_elm.Qmin
         cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
         # ...
-        cgmes_syn.referencePriority = '0'  # TODO If slack is true, than it is 1
 
         cgmes_model.add(cgmes_syn)
 
@@ -962,8 +1016,9 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_substations(gc_model, cgmes_model, logger)
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
 
-    get_cgmes_tn_nodes(gc_model, cgmes_model, logger)
-    get_cgmes_cn_nodes(gc_model, cgmes_model, logger)
+    get_cgmes_cn_nodes_from_buses(gc_model, cgmes_model, logger)
+    get_cgmes_cn_nodes_from_buses(gc_model, cgmes_model, logger)
+    # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)
     get_cgmes_equivalent_injections(gc_model, cgmes_model, logger)

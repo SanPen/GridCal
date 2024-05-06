@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.rotating_machine import RotatingMachine
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol, AsynchronousMachineKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, AsynchronousMachineKind, UnitSymbol
 
 
 class AsynchronousMachine(RotatingMachine):
@@ -25,6 +25,13 @@ class AsynchronousMachine(RotatingMachine):
 
 		self.nominalFrequency: float = None
 		self.nominalSpeed: float = None
+		self.converterFedDrive: bool = None
+		self.efficiency: float = None
+		self.iaIrRatio: float = None
+		self.polePairNumber: int = None
+		self.ratedMechanicalPower: float = None
+		self.reversible: bool = None
+		self.rxLockedRotorRatio: float = None
 		self.asynchronousMachineType: AsynchronousMachineKind = None
 
 		self.register_property(
@@ -41,6 +48,62 @@ class AsynchronousMachine(RotatingMachine):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.Hz,
 			description='''Number of revolutions per second.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='converterFedDrive',
+			class_type=bool,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Indicates whether the machine is a converter fed drive. Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='efficiency',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Percentage on a defined base.   For example, specify as 100 to indicate at the defined base.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='iaIrRatio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Ratio of locked-rotor current to the rated current of the motor (Ia/Ir). Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='polePairNumber',
+			class_type=int,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Number of pole pairs of stator. Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='ratedMechanicalPower',
+			class_type=float,
+			multiplier=UnitMultiplier.M,
+			unit=UnitSymbol.W,
+			description='''Product of RMS value of the voltage and the RMS value of the in-phase component of the current.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='reversible',
+			class_type=bool,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Indicates for converter drive motors if the power can be reversible. Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='rxLockedRotorRatio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Locked rotor ratio (R/X). Used for short circuit data exchange according to IEC 60909.''',
 			profiles=[]
 		)
 		self.register_property(

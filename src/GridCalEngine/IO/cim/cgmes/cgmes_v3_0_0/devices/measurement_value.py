@@ -15,21 +15,31 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
-from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.connector import Connector
+from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.io_point import IOPoint
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol
 
 
-class BusbarSection(Connector):
-	def __init__(self, rdfid='', tpe='BusbarSection'):
-		Connector.__init__(self, rdfid, tpe)
+class MeasurementValue(IOPoint):
+	def __init__(self, rdfid='', tpe='MeasurementValue'):
+		IOPoint.__init__(self, rdfid, tpe)
 
-		self.ipMax: float = None
+		import datetime
+		self.timeStamp: datetime.datetime | None = None
+		self.sensorAccuracy: float = None
 
 		self.register_property(
-			name='ipMax',
+			name='timeStamp',
+			class_type=datetime.datetime,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''The time when the value was last updated.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='sensorAccuracy',
 			class_type=float,
 			multiplier=UnitMultiplier.none,
-			unit=UnitSymbol.A,
-			description='''Electrical current with sign convention: positive flow is out of the conducting equipment into the connectivity node. Can be both AC and DC.''',
+			unit=UnitSymbol.none,
+			description='''Percentage on a defined base.   For example, specify as 100 to indicate at the defined base.''',
 			profiles=[]
 		)

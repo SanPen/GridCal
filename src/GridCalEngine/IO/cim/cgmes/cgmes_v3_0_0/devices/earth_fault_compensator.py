@@ -16,11 +16,20 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.conducting_equipment import ConductingEquipment
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class EarthFaultCompensator(ConductingEquipment):
 	def __init__(self, rdfid='', tpe='EarthFaultCompensator'):
 		ConductingEquipment.__init__(self, rdfid, tpe)
 
+		self.r: float = None
 
+		self.register_property(
+			name='r',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)

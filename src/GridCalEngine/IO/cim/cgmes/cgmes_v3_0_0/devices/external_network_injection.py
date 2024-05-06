@@ -28,6 +28,16 @@ class ExternalNetworkInjection(RegulatingCondEq):
 		self.maxQ: float = None
 		self.minP: float = None
 		self.minQ: float = None
+		self.ikSecond: bool = None
+		self.maxInitialSymShCCurrent: float = None
+		self.maxR0ToX0Ratio: float = None
+		self.maxR1ToX1Ratio: float = None
+		self.maxZ0ToZ1Ratio: float = None
+		self.minInitialSymShCCurrent: float = None
+		self.minR0ToX0Ratio: float = None
+		self.minR1ToX1Ratio: float = None
+		self.minZ0ToZ1Ratio: float = None
+		self.voltageFactor: float = None
 		self.referencePriority: int = None
 		self.p: float = None
 		self.q: float = None
@@ -70,6 +80,86 @@ class ExternalNetworkInjection(RegulatingCondEq):
 			multiplier=UnitMultiplier.M,
 			unit=UnitSymbol.VAr,
 			description='''Product of RMS value of the voltage and the RMS value of the quadrature component of the current.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='ikSecond',
+			class_type=bool,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Indicates whether initial symmetrical short-circuit current and power have been calculated according to IEC (Ik").  Used only if short circuit calculations are done according to superposition method.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='maxInitialSymShCCurrent',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.A,
+			description='''Electrical current with sign convention: positive flow is out of the conducting equipment into the connectivity node. Can be both AC and DC.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='maxR0ToX0Ratio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Maximum ratio of zero sequence resistance of Network Feeder to its zero sequence reactance (R(0)/X(0) max). Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='maxR1ToX1Ratio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Maximum ratio of positive sequence resistance of Network Feeder to its positive sequence reactance (R(1)/X(1) max). Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='maxZ0ToZ1Ratio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Maximum ratio of zero sequence impedance to its positive sequence impedance (Z(0)/Z(1) max). Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='minInitialSymShCCurrent',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.A,
+			description='''Electrical current with sign convention: positive flow is out of the conducting equipment into the connectivity node. Can be both AC and DC.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='minR0ToX0Ratio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Indicates whether initial symmetrical short-circuit current and power have been calculated according to IEC (Ik"). Used for short circuit data exchange according to IEC 6090.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='minR1ToX1Ratio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Minimum ratio of positive sequence resistance of Network Feeder to its positive sequence reactance (R(1)/X(1) min). Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='minZ0ToZ1Ratio',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Minimum ratio of zero sequence impedance to its positive sequence impedance (Z(0)/Z(1) min). Used for short circuit data exchange according to IEC 60909.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='voltageFactor',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Per Unit - a positive or negative value referred to a defined base. Values typically range from -10 to +10.''',
 			profiles=[]
 		)
 		self.register_property(
