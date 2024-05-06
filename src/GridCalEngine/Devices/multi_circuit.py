@@ -5941,10 +5941,19 @@ class MultiCircuit:
             if bus_bar.cn.default_bus:
                 bus_bar.cn.default_bus.code = bus.code  # for soft checking later
 
-        # branches
-        for elm in self.get_branches():
-            elm.cn_from = bus_to_busbar_cn.get(elm.bus_from.idtag, None)
-            elm.cn_to = bus_to_busbar_cn.get(elm.bus_to.idtag, None)
+        # add the cn's at the branches
+        for lst in [self.get_branches(), self.get_switches()]:
+            for elm in lst:
+                if elm.bus_from:
+                    elm.cn_from = bus_to_busbar_cn.get(elm.bus_from.idtag, None)
+                if elm.bus_to:
+                    elm.cn_to = bus_to_busbar_cn.get(elm.bus_to.idtag, None)
+
+        # add the cn's at the branches
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
+                if elm.bus:
+                    elm.cn = bus_to_busbar_cn.get(elm.bus.idtag, None)
 
     def convert_to_node_breaker_adding_switches(self) -> None:
         """
@@ -6101,7 +6110,8 @@ class MultiCircuit:
 
         for dev_lst in self.get_injection_devices_lists():
             for elm in dev_lst:
-                elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
+                if elm.cn is not None:
+                    elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
 
         # return the TopologyProcessorInfo
         return process_info
