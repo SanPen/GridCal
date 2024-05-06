@@ -1155,6 +1155,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     :return: MultiCircuit
     """
     gc_model = MultiCircuit()  # roseta
+    gc_model.comments = 'Converted from a CGMES file'
     Sbase = gc_model.Sbase
     cgmes_model.emit_progress(70)
     cgmes_model.emit_text("Converting CGMES to Gridcal")
@@ -1192,13 +1193,13 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     print('debug')
     cgmes_model.emit_progress(100)
     cgmes_model.emit_text("Cgmes import done!")
+
     # Gridcal to cgmes
-    # cgmes_circuit = CgmesCircuit(cgmes_version='2.4.15')
-    # cgmes_circuit = CgmesCircuit(
-    #     cgmes_version=self.options.cgmes_version.__str__(),
-    #     text_func=self.text_func,
-    #     progress_func=self.progress_func, logger=logger)
-    # cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_circuit, None, logger)
+    # cgmes_model_export = CgmesCircuit(
+    #     cgmes_version=cgmes_model.options.cgmes_version.__str__(),
+    #     text_func=cgmes_model.text_func,
+    #     progress_func=cgmes_model.progress_func, logger=logger)
+    # cgmes_model_export = gridcal_to_cgmes(gc_model, cgmes_model_export, None, logger)
 
     # Export test for the imported data
     # start = time.time()

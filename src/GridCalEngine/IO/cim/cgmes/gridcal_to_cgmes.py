@@ -1,3 +1,5 @@
+import numpy as np
+
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
@@ -876,7 +878,8 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
                           logger: DataLogger):
     """
-    Creates a CgmesCircuit SvVoltage_list.
+    Creates a CgmesCircuit SvVoltage_list
+    from PowerFlow results of the numerical circuit.
 
     Args:
         cgmes_model: CgmesCircuit
@@ -886,20 +889,52 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
     Returns:
         CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
     """
-    print('CGEMS sv voltages')
     # SvVoltage: v, (a?) -> TopologicalNode
+
+    for i, voltage in enumerate(pf_results.voltage):
+        object_template = cgmes_model.get_class_type("SvVoltage")
+        new_rdf_id = get_new_rdfid()
+        sv_voltage = object_template(rdfid=new_rdf_id,
+                                     tpe='SvVoltage')
+
+        sv_voltage.TopologicalNode = cgmes_model.cgmes_assets.TopologicalNode_list[i]
+        # as the order of the results is the same as the order of buses (=tn)
+        bv = cgmes_model.cgmes_assets.TopologicalNode_list[i].BaseVoltage
+        sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
+        sv_voltage.a = np.angle(voltage, deg=True)
+
+        # Add the SvVoltage instance to the SvVoltage_list
+        cgmes_model.add(sv_voltage)
+
+
+def get_cgmes_sv_power_flow(cgmes_model: CgmesCircuit,
+                            pf_results: PowerFlowResults,
+                            logger: DataLogger):
+    """
+    Creates a CgmesCircuit SvPowerFlow_list
+    from PowerFlow results of the numerical circuit.
+
+    Args:
+        cgmes_model: CgmesCircuit
+        pf_results: PowerFlowResults
+        logger (DataLogger): The data logger for error handling.
+
+    Returns:
+        CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
+    """
     # SVPowerFlow: p, q -> Terminals
 
-    # for uuid, (v, angle) in v_dict.items():
-    #     # Create an SvVoltage instance for each entry in v_dict
-    #     sv_voltage = cgmes.SvVoltage(
-    #         rdfid=uuid, tpe='SvVoltage'
-    #     )
-    #     sv_voltage.v = v
-    #     sv_voltage.angle = angle
-    #
-    #     # Add the SvVoltage instance to the SvVoltage_list
-    #     cgmes_model.add(sv_voltage)
+    for voltage in pf_results.loading:   # TODO loading?
+
+        object_template = cgmes_model.get_class_type("SvPowerFlow")
+        new_rdf_id = get_new_rdfid()
+        sv_pf = object_template(rdfid=new_rdf_id)
+
+        cgmes_model.add(sv_pf)
+
+
+def get_cgmes_topological_island():
+    pass
 
 
 # endregion
@@ -943,6 +978,13 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     # results: sv classes
     if pf_results:
+        # if converged == True...
         get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
+        # get_cgmes_sv_power_flow()
 
+    else:
+        # abort export on gui ?
+        # strategy?: option to export it with default data
+        print("No PowerFlow result for CGMES export.")
+    print('cgmes export end')
     return cgmes_model
