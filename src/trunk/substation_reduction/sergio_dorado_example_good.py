@@ -122,13 +122,13 @@ def get_grid_node_breaker() -> gce.MultiCircuit:
 
     # add switches
     grid2.add_switch(gce.Switch(name="CB1", cn_from=cn3_1, cn_to=b3_1.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB2", cn_from=cn3_2, cn_to=b3_1.cn, active=False))
-    grid2.add_switch(gce.Switch(name="CB3", cn_from=cn3_3, cn_to=b3_1.cn, active=False))
+    grid2.add_switch(gce.Switch(name="CB2", cn_from=cn3_2, cn_to=b3_1.cn, active=True))
+    grid2.add_switch(gce.Switch(name="CB3", cn_from=cn3_3, cn_to=b3_1.cn, active=True))
     grid2.add_switch(gce.Switch(name="CB4", cn_from=cn3_4, cn_to=b3_1.cn, active=True))
 
     grid2.add_switch(gce.Switch(name="CB5", cn_from=cn3_1, cn_to=b3_2.cn, active=True))
-    grid2.add_switch(gce.Switch(name="CB6", cn_from=cn3_2, cn_to=b3_2.cn, active=False))
-    grid2.add_switch(gce.Switch(name="CB7", cn_from=cn3_3, cn_to=b3_2.cn, active=False))
+    grid2.add_switch(gce.Switch(name="CB6", cn_from=cn3_2, cn_to=b3_2.cn, active=True))
+    grid2.add_switch(gce.Switch(name="CB7", cn_from=cn3_3, cn_to=b3_2.cn, active=True))
     grid2.add_switch(gce.Switch(name="CB8", cn_from=cn3_4, cn_to=b3_2.cn, active=True))
 
     # Note: As you may observe, objects can be independently connected to buses or connectivity nodes
@@ -145,7 +145,7 @@ def get_grid_node_breaker() -> gce.MultiCircuit:
 if __name__ == "__main__":
 
     for grid_ in [
-        # get_grid_bus_branch(),
+        get_grid_bus_branch(),
         get_grid_node_breaker()
     ]:
         options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=True, control_q=False)
