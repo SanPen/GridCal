@@ -424,12 +424,12 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = int(round(self.dim))
-        n_partitions = int(round(pop_size / 3))
+        pop_size = int(round(self.dim/5))
+        n_partitions = int(round(pop_size))
 
         # compile the snapshot
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval + 2)
+                                                    max_eval=self.options.max_eval * 2)
 
         # add baseline
         ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
@@ -442,7 +442,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
-            crossover_prob=0.5,
+            crossover_prob=0.8,
             mutation_probability=0.5,
             eta=30,
         )
