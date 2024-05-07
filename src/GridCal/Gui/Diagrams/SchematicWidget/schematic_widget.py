@@ -99,6 +99,8 @@ BRANCH_GRAPHICS = Union[
     SwitchGraphicItem
 ]
 
+OPTIONAL_PORT = Union[BarTerminalItem, RoundTerminalItem, None]
+
 '''
 Structure:
 
@@ -612,7 +614,7 @@ class SchematicWidget(QSplitter):
         self.object_editor_table.setModel(mdl)
 
     def find_ports(self, branch: BRANCH_TYPES) -> Tuple[Union[BarTerminalItem, RoundTerminalItem],
-                                                        Union[BarTerminalItem, RoundTerminalItem]]:
+    Union[BarTerminalItem, RoundTerminalItem]]:
         """
         Find the preferred set of ports for drawing
         :param branch: some API branch
@@ -670,8 +672,6 @@ class SchematicWidget(QSplitter):
             to_port = None
 
         return from_port, to_port
-
-
 
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
@@ -840,7 +840,7 @@ class SchematicWidget(QSplitter):
         return graphic_object
 
     def create_connectivity_node_graphics(self, node: ConnectivityNode,
-                                          x: int, y: int, h: int,  w: int,
+                                          x: int, y: int, h: int, w: int,
                                           draw_labels: bool = True) -> CnGraphicItem:
         """
         Add connectivity node to graphics
@@ -1083,7 +1083,6 @@ class SchematicWidget(QSplitter):
 
                         from_port, to_port = self.find_ports(branch=location.api_object)
                         if from_port is not None and to_port is not None:
-
                             graphic_object = LineGraphicItem(from_port=from_port,
                                                              to_port=to_port,
                                                              editor=self,
@@ -2036,14 +2035,14 @@ class SchematicWidget(QSplitter):
         :param elements:
         :return:
         """
-
+        tpes = [BusGraphicItem, FluidNodeGraphicItem, CnGraphicItem, BusBarGraphicItem, Transformer3WGraphicItem]
         min_x = sys.maxsize
         min_y = sys.maxsize
         max_x = -sys.maxsize
         max_y = -sys.maxsize
         if elements is None:
             for item in self.diagram_scene.items():
-                if type(item) in [BusGraphicItem, FluidNodeGraphicItem]:
+                if type(item) in tpes:
                     x = item.pos().x()
                     y = item.pos().y()
 
@@ -2053,7 +2052,7 @@ class SchematicWidget(QSplitter):
                     min_y = min(min_y, y)
         else:
             for item in self.diagram_scene.items():
-                if type(item) in [BusGraphicItem, FluidNodeGraphicItem]:
+                if type(item) in tpes:
 
                     if item.api_object in elements:
                         x = item.pos().x()
@@ -2312,72 +2311,130 @@ class SchematicWidget(QSplitter):
 
         return graphic_object
 
+    def find_terminal(self,
+                      port: OPTIONAL_PORT = None,
+                      bus: Union[None, Bus] = None,
+                      cn: Union[None, ConnectivityNode] = None) -> OPTIONAL_PORT:
+        """
+        Try to find the connection graphics from the API connection
+        :param port: Conection port (optional)
+        :param bus: Api Bus (optional)
+        :param cn: API connectivity node (optional)
+        :return: OPTIONAL_PORT
+        """
+        if port is None:
+
+            if bus is not None:
+
+                # Bus provided, search its graphics
+                bus_graphic0 = self.graphics_manager.query(bus)
+
+                if bus_graphic0 is None:
+                    # No bus found, search for the CN
+
+                    cn_graphic0 = self.graphics_manager.query(cn)
+
+                    if cn_graphic0 is None:
+                        # could not find any graphics :(
+                        return None
+                    else:
+                        # found the CN graphics
+                        return cn_graphic0.get_terminal()
+
+                else:
+                    # the from bu is found, return its terminal
+                    return bus_graphic0.get_terminal()
+
+            elif cn is not None:  # No bus provided
+
+                cn_graphic0 = self.graphics_manager.query(cn)
+
+                if cn_graphic0 is None:
+                    # could not find any graphics :(
+                    return None
+                else:
+                    # found the CN graphics
+                    return cn_graphic0.get_terminal()
+
+            else:
+                # nothing was provided...
+                return None
+        else:
+            return port
+
     def add_api_line(self, branch: Line,
-                     bus_f_graphic0: Union[None, BusGraphicItem] = None,
-                     bus_t_graphic0: Union[None, BusGraphicItem] = None) -> Union[None, LineGraphicItem]:
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None) -> Union[None, LineGraphicItem]:
         """
         add API branch to the Scene
         :param branch: Branch instance
-        :param bus_f_graphic0:
-        :param bus_t_graphic0:
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :return LineGraphicItem or None
         """
-        if bus_f_graphic0 is None:
-            bus_f_graphic0 = self.graphics_manager.query(branch.bus_from)
-            if bus_f_graphic0 is None:
-                print(f"buse {branch.bus_from} were not found in the diagram :(")
-                return None
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        if bus_t_graphic0 is None:
-            bus_t_graphic0 = self.graphics_manager.query(branch.bus_to)
-            if bus_t_graphic0 is None:
-                print(f"buse {branch.bus_to} were not found in the diagram :(")
-                return None
+        if from_port and to_port:
+            graphic_object = LineGraphicItem(from_port=from_port,
+                                             to_port=to_port,
+                                             editor=self,
+                                             api_object=branch)
 
-        graphic_object = LineGraphicItem(from_port=bus_f_graphic0.get_terminal(),
-                                         to_port=bus_t_graphic0.get_terminal(),
-                                         editor=self,
-                                         api_object=branch)
-
-        graphic_object.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                    draw_labels=graphic_object.draw_labels,
-                                    graphic_object=graphic_object)
-        return graphic_object
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
+            return graphic_object
+        else:
+            print(f"Branch's {branch.name} buses were not found in the diagram :(")
+            return None
 
     def add_api_line_between_fluid_graphics(self, branch: Line,
-                                            bus_f_graphic: FluidNodeGraphicItem,
-                                            bus_t_graphic: FluidNodeGraphicItem):
+                                            from_port: OPTIONAL_PORT = None,
+                                            to_port: OPTIONAL_PORT = None) -> Union[LineGraphicItem, None]:
         """
         add API branch to the Scene
 
         :param branch: Branch instance
-        :param bus_f_graphic
-        :param bus_t_graphic
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
         """
 
-        graphic_object = LineGraphicItem(from_port=bus_f_graphic.get_terminal(),
-                                         to_port=bus_t_graphic.get_terminal(),
-                                         editor=self,
-                                         api_object=branch)
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        graphic_object.redraw()
-        self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                    draw_labels=graphic_object.draw_labels,
-                                    graphic_object=graphic_object)
-        return graphic_object
+        if from_port and to_port:
+            graphic_object = LineGraphicItem(from_port=from_port,
+                                             to_port=to_port,
+                                             editor=self,
+                                             api_object=branch)
 
-    def add_api_dc_line(self, branch: DcLine):
+            graphic_object.redraw()
+            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                        draw_labels=graphic_object.draw_labels,
+                                        graphic_object=graphic_object)
+            return graphic_object
+        else:
+            print(f"Branch's {branch.name} buses were not found in the diagram :(")
+            return None
+
+    def add_api_dc_line(self, branch: DcLine,
+                        from_port: OPTIONAL_PORT = None,
+                        to_port: OPTIONAL_PORT = None) -> Union[DcLineGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
         """
-        bus_f_graphics = self.graphics_manager.query(branch.bus_from)
-        bus_t_graphics = self.graphics_manager.query(branch.bus_to)
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        if bus_f_graphics and bus_t_graphics:
+        if from_port and to_port:
 
-            graphic_object = DcLineGraphicItem(from_port=bus_f_graphics.get_terminal(),
-                                               to_port=bus_t_graphics.get_terminal(),
+            graphic_object = DcLineGraphicItem(from_port=from_port,
+                                               to_port=to_port,
                                                editor=self,
                                                api_object=branch)
 
@@ -2390,18 +2447,22 @@ class SchematicWidget(QSplitter):
             print("Branch's buses were not found in the diagram :(")
             return None
 
-    def add_api_hvdc(self, branch: HvdcLine):
+    def add_api_hvdc(self, branch: HvdcLine,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None) -> Union[HvdcGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
         """
-        bus_f_graphics = self.graphics_manager.query(branch.bus_from)
-        bus_t_graphics = self.graphics_manager.query(branch.bus_to)
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        if bus_f_graphics and bus_t_graphics:
+        if from_port and to_port:
 
-            graphic_object = HvdcGraphicItem(from_port=bus_f_graphics.get_terminal(),
-                                             to_port=bus_t_graphics.get_terminal(),
+            graphic_object = HvdcGraphicItem(from_port=from_port,
+                                             to_port=to_port,
                                              editor=self,
                                              api_object=branch)
 
@@ -2414,18 +2475,22 @@ class SchematicWidget(QSplitter):
             print("Branch's buses were not found in the diagram :(")
             return None
 
-    def add_api_vsc(self, branch: VSC):
+    def add_api_vsc(self, branch: VSC,
+                    from_port: OPTIONAL_PORT = None,
+                    to_port: OPTIONAL_PORT = None) -> Union[VscGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
         """
-        bus_f_graphics = self.graphics_manager.query(branch.bus_from)
-        bus_t_graphics = self.graphics_manager.query(branch.bus_to)
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        if bus_f_graphics and bus_t_graphics:
+        if from_port and to_port:
 
-            graphic_object = VscGraphicItem(from_port=bus_f_graphics.get_terminal(),
-                                            to_port=bus_t_graphics.get_terminal(),
+            graphic_object = VscGraphicItem(from_port=from_port,
+                                            to_port=to_port,
                                             editor=self,
                                             api_object=branch)
 
@@ -2438,18 +2503,22 @@ class SchematicWidget(QSplitter):
             print("Branch's buses were not found in the diagram :(")
             return None
 
-    def add_api_upfc(self, branch: UPFC):
+    def add_api_upfc(self, branch: UPFC,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None) -> Union[UpfcGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
         """
-        bus_f_graphics = self.graphics_manager.query(branch.bus_from)
-        bus_t_graphics = self.graphics_manager.query(branch.bus_to)
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        if bus_f_graphics and bus_t_graphics:
+        if from_port and to_port:
 
-            graphic_object = UpfcGraphicItem(from_port=bus_f_graphics.get_terminal(),
-                                             to_port=bus_t_graphics.get_terminal(),
+            graphic_object = UpfcGraphicItem(from_port=from_port,
+                                             to_port=to_port,
                                              editor=self,
                                              api_object=branch)
 
@@ -2462,18 +2531,22 @@ class SchematicWidget(QSplitter):
             print("Branch's buses were not found in the diagram :(")
             return None
 
-    def add_api_series_reactance(self, branch: SeriesReactance):
+    def add_api_series_reactance(self, branch: SeriesReactance,
+                                 from_port: OPTIONAL_PORT = None,
+                                 to_port: OPTIONAL_PORT = None) -> Union[SeriesReactanceGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
         """
-        bus_f_graphics = self.graphics_manager.query(branch.bus_from)
-        bus_t_graphics = self.graphics_manager.query(branch.bus_to)
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        if bus_f_graphics and bus_t_graphics:
+        if from_port and to_port:
 
-            graphic_object = SeriesReactanceGraphicItem(from_port=bus_f_graphics.get_terminal(),
-                                                        to_port=bus_t_graphics.get_terminal(),
+            graphic_object = SeriesReactanceGraphicItem(from_port=from_port,
+                                                        to_port=to_port,
                                                         editor=self,
                                                         api_object=branch)
 
@@ -2486,19 +2559,23 @@ class SchematicWidget(QSplitter):
             print("Branch's buses were not found in the diagram :(")
             return None
 
-    def add_api_transformer(self, branch: Transformer2W):
+    def add_api_transformer(self, branch: Transformer2W,
+                            from_port: OPTIONAL_PORT = None,
+                            to_port: OPTIONAL_PORT = None) -> Union[TransformerGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
         """
 
-        bus_f_graphics = self.graphics_manager.query(branch.bus_from)
-        bus_t_graphics = self.graphics_manager.query(branch.bus_to)
+        from_port = self.find_terminal(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
+        to_port = self.find_terminal(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
 
-        if bus_f_graphics and bus_t_graphics:
+        if from_port and to_port:
 
-            graphic_object = TransformerGraphicItem(from_port=bus_f_graphics.get_terminal(),
-                                                    to_port=bus_t_graphics.get_terminal(),
+            graphic_object = TransformerGraphicItem(from_port=from_port,
+                                                    to_port=to_port,
                                                     editor=self,
                                                     api_object=branch)
 
@@ -2519,22 +2596,22 @@ class SchematicWidget(QSplitter):
 
         tr3_graphic_object = self.create_transformer_3w_graphics(elm=elm, x=elm.x, y=elm.y)
 
-        bus1_graphics: BusGraphicItem = self.graphics_manager.query(elm.bus1)
-        bus2_graphics: BusGraphicItem = self.graphics_manager.query(elm.bus2)
-        bus3_graphics: BusGraphicItem = self.graphics_manager.query(elm.bus3)
+        port1 = self.find_terminal(bus=elm.bus1)
+        port2 = self.find_terminal(bus=elm.bus2)
+        port3 = self.find_terminal(bus=elm.bus3)
 
         conn1 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[0],
-                                   to_port=bus1_graphics.get_terminal(),
+                                   to_port=port1,
                                    editor=self)
         tr3_graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
 
         conn2 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[1],
-                                   to_port=bus2_graphics.get_terminal(),
+                                   to_port=port2,
                                    editor=self)
         tr3_graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
 
         conn3 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[2],
-                                   to_port=bus3_graphics.get_terminal(),
+                                   to_port=port3,
                                    editor=self)
         tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
 
@@ -2619,7 +2696,9 @@ class SchematicWidget(QSplitter):
         hvdc = self.circuit.convert_line_to_hvdc(line)
 
         # add device to the schematic
-        graphic_object = self.add_api_hvdc(hvdc)
+        graphic_object = self.add_api_hvdc(branch=hvdc,
+                                           from_port=line_graphic.get_terminal_from(),
+                                           to_port=line_graphic.get_terminal_to())
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2642,7 +2721,9 @@ class SchematicWidget(QSplitter):
         transformer = self.circuit.convert_line_to_transformer(line)
 
         # add device to the schematic
-        graphic_object = self.add_api_transformer(transformer)
+        graphic_object = self.add_api_transformer(branch=transformer,
+                                                  from_port=line_graphic.get_terminal_from(),
+                                                  to_port=line_graphic.get_terminal_to())
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2666,7 +2747,9 @@ class SchematicWidget(QSplitter):
         vsc = self.circuit.convert_line_to_vsc(line)
 
         # add device to the schematic
-        graphic_object = self.add_api_vsc(vsc)
+        graphic_object = self.add_api_vsc(branch=vsc,
+                                          from_port=line_graphic.get_terminal_from(),
+                                          to_port=line_graphic.get_terminal_to())
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2689,7 +2772,9 @@ class SchematicWidget(QSplitter):
         upfc = self.circuit.convert_line_to_upfc(line)
 
         # add device to the schematic
-        graphic_object = self.add_api_upfc(upfc)
+        graphic_object = self.add_api_upfc(branch=upfc,
+                                           from_port=line_graphic.get_terminal_from(),
+                                           to_port=line_graphic.get_terminal_to())
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2712,7 +2797,9 @@ class SchematicWidget(QSplitter):
         series_reactance = self.circuit.convert_line_to_series_reactance(line)
 
         # add device to the schematic
-        graphic_object = self.add_api_series_reactance(series_reactance)
+        graphic_object = self.add_api_series_reactance(branch=series_reactance,
+                                                       from_port=line_graphic.get_terminal_from(),
+                                                       to_port=line_graphic.get_terminal_to())
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2742,9 +2829,9 @@ class SchematicWidget(QSplitter):
         line = self.circuit.convert_fluid_path_to_line(element)
 
         # add device to the schematic
-        graphic_object = self.add_api_line_between_fluid_graphics(line,
-                                                                  bus_f_graphic=fl_from,
-                                                                  bus_t_graphic=fl_to)
+        graphic_object = self.add_api_line_between_fluid_graphics(branch=line,
+                                                                  from_port=fl_from.get_terminal(),
+                                                                  to_port=fl_to.get_terminal())
         self.add_to_scene(graphic_object)
 
         # update position
@@ -3997,6 +4084,7 @@ class SchematicWidget(QSplitter):
             self.circuit.add_investment(Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
             self.circuit.add_investment(Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
             self.circuit.add_investment(Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+
             # include the deactivation of the original line
             self.circuit.add_investment(Investment(name=line_graphics.api_object.name,
                                                    device_idtag=line_graphics.api_object.idtag,
@@ -4008,11 +4096,11 @@ class SchematicWidget(QSplitter):
                                                    x0=middle_bus_x,
                                                    y0=middle_bus_y)
             br1_graphics = self.add_api_line(branch=br1,
-                                             bus_f_graphic0=bus_f_graphic_obj,
-                                             bus_t_graphic0=middle_bus_graphics)
+                                             from_port=bus_f_graphic_obj.get_terminal(),
+                                             to_port=middle_bus_graphics.get_terminal())
             br2_graphics = self.add_api_line(branch=br2,
-                                             bus_f_graphic0=middle_bus_graphics,
-                                             bus_t_graphic0=bus_t_graphic_obj)
+                                             from_port=middle_bus_graphics.get_terminal(),
+                                             to_port=bus_t_graphic_obj.get_terminal())
 
             self.add_to_scene(middle_bus_graphics)
             self.add_to_scene(br1_graphics)
@@ -4277,20 +4365,20 @@ class SchematicWidget(QSplitter):
                                                                y0=mid_y)
 
                                 br1_graphics = self.add_api_line(branch=br1,
-                                                                 bus_f_graphic0=bus_f_graphic_obj,
-                                                                 bus_t_graphic0=B1_graphics)
+                                                                 from_port=bus_f_graphic_obj.get_terminal(),
+                                                                 to_port=B1_graphics.get_terminal())
 
                                 br2_graphics = self.add_api_line(branch=br2,
-                                                                 bus_f_graphic0=B2_graphics,
-                                                                 bus_t_graphic0=bus_t_graphic_obj)
+                                                                 from_port=B2_graphics.get_terminal(),
+                                                                 to_port=bus_t_graphic_obj.get_terminal())
 
                                 br3_graphics = self.add_api_line(branch=br3,
-                                                                 bus_f_graphic0=B1_graphics,
-                                                                 bus_t_graphic0=B3_graphics)
+                                                                 from_port=B1_graphics.get_terminal(),
+                                                                 to_port=B3_graphics.get_terminal())
 
                                 br4_graphics = self.add_api_line(branch=br4,
-                                                                 bus_f_graphic0=B3_graphics,
-                                                                 bus_t_graphic0=B2_graphics)
+                                                                 from_port=B3_graphics.get_terminal(),
+                                                                 to_port=B2_graphics.get_terminal())
 
                                 self.add_to_scene(B1_graphics)
                                 self.add_to_scene(B2_graphics)
