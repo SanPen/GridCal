@@ -61,8 +61,8 @@ def get_grid_node_breaker() -> gce.MultiCircuit:
 
     # add buses: Buses can be thought as calculation nodes.
     # they are not necessarily substation busbars
-    b1 = gce.Bus(name="B1")
-    b2 = gce.Bus(name="B2")
+    b1 = gce.Bus(name="B1", Vnom=200)
+    b2 = gce.Bus(name="B2", Vnom=200)
 
     grid2.add_bus(b1)
     grid2.add_bus(b2)
@@ -72,8 +72,8 @@ def get_grid_node_breaker() -> gce.MultiCircuit:
     grid2.add_substation(se3)
 
     # add the substation voltage levels
-    vl3_1 = gce.VoltageLevel(name="VL3-1", substation=se3)
-    vl3_2 = gce.VoltageLevel(name="VL3-2", substation=se3)
+    vl3_1 = gce.VoltageLevel(name="VL3-1", substation=se3, Vnom=200)
+    vl3_2 = gce.VoltageLevel(name="VL3-2", substation=se3, Vnom=200)
     grid2.add_voltage_level(vl3_1)
     grid2.add_voltage_level(vl3_2)
 

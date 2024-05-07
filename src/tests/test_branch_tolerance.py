@@ -34,8 +34,8 @@ def test_tolerance_lf_higher():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
 
     grid.add_bus(Bus0)
     grid.add_bus(Bus1)
@@ -126,8 +126,8 @@ def test_tolerance_lf_lower():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
 
     grid.add_bus(Bus0)
     grid.add_bus(Bus1)

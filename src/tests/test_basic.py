@@ -56,20 +56,20 @@ def test_basic():
 
     # Create buses
     POI = Bus(name="POI",
-              vnom=100.0,  # kV
+              Vnom=100.0,  # kV
               is_slack=True)
     grid.add_bus(POI)
 
     B_C3 = Bus(name="B_C3",
-               vnom=10.0)  # kV
+               Vnom=10.0)  # kV
     grid.add_bus(B_C3)
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10)  # kV
+                   Vnom=10)  # kV
     grid.add_bus(B_MV_M32)
 
     B_LV_M32 = Bus(name="B_LV_M32",
-                   vnom=0.6)  # kV
+                   Vnom=0.6)  # kV
     grid.add_bus(B_LV_M32)
 
     # Create voltage controlled generators (or slack, a.k.a. swing)
@@ -207,20 +207,20 @@ def test_gridcal_basic_pi():
 
     # Create buses
     POI = Bus(name="POI",
-              vnom=100,  # kV
+              Vnom=100,  # kV
               is_slack=True)
     grid.add_bus(POI)
 
     B_C3 = Bus(name="B_C3",
-               vnom=10)  # kV
+               Vnom=10)  # kV
     grid.add_bus(B_C3)
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10)  # kV
+                   Vnom=10)  # kV
     grid.add_bus(B_MV_M32)
 
     B_LV_M32 = Bus(name="B_LV_M32",
-                   vnom=0.6)  # kV
+                   Vnom=0.6)  # kV
     grid.add_bus(B_LV_M32)
 
     # Create voltage controlled generators (or slack, a.k.a. swing)

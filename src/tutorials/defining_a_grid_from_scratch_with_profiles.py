@@ -51,7 +51,7 @@ def main():
     ####################################################################################################################
     # I will define this bus with all the properties so you see
     bus1 = Bus(name='Bus1',
-               vnom=10,  # Nominal voltage in kV
+               Vnom=10,  # Nominal voltage in kV
                vmin=0.9,  # Bus minimum voltage in per unit
                vmax=1.1,  # Bus maximum voltage in per unit
                xpos=0,  # Bus x position in pixels

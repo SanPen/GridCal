@@ -300,7 +300,7 @@ class PSSeBus(PSSeObject):
             # create bus
             name = self.NAME.replace("'", "")
             self.bus = dev.Bus(name=name,
-                               vnom=self.BASKV, code=str(self.I), vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0,
+                               Vnom=self.BASKV, code=str(self.I), vmin=self.EVLO, vmax=self.EVHI, xpos=0, ypos=0,
                                active=True,
                                area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
@@ -310,7 +310,7 @@ class PSSeBus(PSSeObject):
 
             # create bus
             name = self.NAME
-            self.bus = dev.Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=self.NVLO, vmax=self.NVHI, xpos=0,
+            self.bus = dev.Bus(name=name, code=str(self.I), Vnom=self.BASKV, vmin=self.NVLO, vmax=self.NVHI, xpos=0,
                                ypos=0,
                                active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
@@ -321,7 +321,7 @@ class PSSeBus(PSSeObject):
 
             # create bus
             name = self.NAME
-            self.bus = dev.Bus(name=name, code=str(self.I), vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
+            self.bus = dev.Bus(name=name, code=str(self.I), Vnom=self.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                                active=True, area=self.AREA, zone=self.ZONE, Vm0=self.VM, Va0=np.deg2rad(self.VA))
 
             if self.GL > 0 or self.BL > 0:

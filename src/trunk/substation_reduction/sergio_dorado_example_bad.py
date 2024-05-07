@@ -7,11 +7,11 @@ s3 = gce.Substation(name="bus_3")
 grid.add_substation(s3)
 
 # SADR: substations modeled as bus-branch.
-bus_1 = gce.Bus("bus_1", vnom=240, vmax=1.10, vmin=0.90)
+bus_1 = gce.Bus("bus_1", Vnom=240, vmax=1.10, vmin=0.90)
 bus_1.is_slack = True
 grid.add_bus(bus_1)
 
-bus_2 = gce.Bus("bus_2", vnom=240, vmax=1.10, vmin=0.90)
+bus_2 = gce.Bus("bus_2", Vnom=240, vmax=1.10, vmin=0.90)
 grid.add_bus(bus_2)
 
 # SADR: substation modeled as a node-breaker model.
@@ -22,16 +22,16 @@ busbar_2 = gce.BusBar('busbar_2')
 grid.add_bus_bar(busbar_2)
 
 # SADR: connectivity nodes for the elements connected to the original substation.
-bus3_g3 = gce.Bus('bus3_g3', vnom=240, vmax=1.10, vmin=0.90)
+bus3_g3 = gce.Bus('bus3_g3', Vnom=240, vmax=1.10, vmin=0.90)
 grid.add_bus(bus3_g3)
 
-bus3_l3 = gce.Bus('bus3_l3', vnom=240, vmax=1.10, vmin=0.90)
+bus3_l3 = gce.Bus('bus3_l3', Vnom=240, vmax=1.10, vmin=0.90)
 grid.add_bus(bus3_l3)
 
-bus3_l13 = gce.Bus('bus3_l13', vnom=240, vmax=1.10, vmin=0.90)
+bus3_l13 = gce.Bus('bus3_l13', Vnom=240, vmax=1.10, vmin=0.90)
 grid.add_bus(bus3_l13)
 
-bus3_l32 = gce.Bus('bus3_l32', vnom=240, vmax=1.10, vmin=0.90)
+bus3_l32 = gce.Bus('bus3_l32', Vnom=240, vmax=1.10, vmin=0.90)
 grid.add_bus(bus3_l32)
 
 # SADR: generator at bus 1.

@@ -856,7 +856,7 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
     # add the buses and the loads (in plexos there is only one load per bus)
     bus_dict = dict()
     for name, elm in mdl.nodes.items():
-        bus = Bus(name=name, vnom=elm.voltage,
+        bus = Bus(name=name, Vnom=elm.voltage,
                   latitude=elm.longitude,
                   longitude=-elm.latitude,
                   area=elm.region.name,
