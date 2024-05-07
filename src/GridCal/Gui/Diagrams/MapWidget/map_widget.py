@@ -366,6 +366,24 @@ class MapWidget(QWidget):
 
         return qMouseEvent
 
+    def convertToQMouseEvent_wheel(self, sceneMouseEvent):
+        # Get relevant information from QGraphicsSceneMouseEvent
+        pos = sceneMouseEvent.screenPos()
+        button = Qt.MouseButton.NoButton
+        buttons = sceneMouseEvent.buttons()
+        modifiers = sceneMouseEvent.modifiers()
+
+        # Create a new QMouseEvent using the extracted information
+        qMouseEvent = QMouseEvent(
+            QEvent.MouseMove,  # Event type (assuming MouseMove for this example)
+            pos,  # Position in screen coordinates
+            button,  # Pressed button
+            buttons,  # Buttons currently pressed
+            modifiers  # Keyboard modifiers
+        )
+
+        return qMouseEvent
+
     def eventFilter(self, obj, event):
 
         val = event.type()
@@ -386,6 +404,10 @@ class MapWidget(QWidget):
             view_center = self.view.mapToScene(self.view.viewport().rect().center())
 
             zoomInitial = self.level
+
+            mouse_event = self.convertToQMouseEvent_wheel(event)
+            self.mouse_x = mouse_event.x() / 1.5
+            self.mouse_y = mouse_event.y() / 1.5
 
             if event.delta() > 0:
                 new_level = self.level + 1
@@ -1963,10 +1985,10 @@ class MapWidget(QWidget):
 
         # if not given cursor coords, assume view centre
         if view_x is None:
-            view_x = self.view_width // 2
+            view_x = self.view_width // 4
 
         if view_y is None:
-            view_y = self.view_height // 2
+            view_y = self.view_height // 4
 
         # get geo coords of view point
         longitude, latitude = self.view_to_geo(view_x, view_y)

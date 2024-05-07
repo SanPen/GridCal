@@ -366,3 +366,42 @@ class Line(BranchParent):
         self.B = np.round(B / Ybase, 6)
         self.rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
         self.length = length
+
+    def copyData(self, second_Line):
+        self.busfrom = second_Line.bus_from if second_Line.bus_from is not None else None
+        self.busto = second_Line.bus_to if second_Line.bus_to is not None else None
+        self.cnfrom = second_Line.cn_from
+        self.cnto = second_Line.cn_to
+        self.name = second_Line.name
+        self.idtag = second_Line.idtag
+        self.code = second_Line.code
+        self.R = second_Line.R
+        self.X = second_Line.X
+        self.B = second_Line.B
+        self.rate = second_Line.rate
+        self.active = second_Line.active
+        self.tolerance = second_Line.tolerance
+        self.Cost = second_Line.Cost
+        self.mttf = second_Line.mttf
+        self.mttr = second_Line.mttr
+        self.r_fault = second_Line.r_fault
+        self.x_fault = second_Line.x_fault
+        self.fault_pos = second_Line.fault_pos
+        self.length = second_Line.length
+        self.temp_base = second_Line.temp_base
+        self.temp_oper = second_Line.temp_oper
+        self.alpha = second_Line.alpha
+        self.template = second_Line.template
+        self.contingency_factor = second_Line.contingency_factor
+        self.protection_rating_factor = second_Line.protection_rating_factor
+        self.contingency_enabled = second_Line.contingency_enabled
+        self.monitor_loading = second_Line.monitor_loading
+        self.R0 = second_Line.R0
+        self.X0 = second_Line.X0
+        self.B0 = second_Line.B0
+        self.R2 = second_Line.R2
+        self.X2 = second_Line.X2
+        self.B2 = second_Line.B2
+        self.capex = second_Line.capex
+        self.opex = second_Line.opex
+        self.build_status = second_Line.build_status
