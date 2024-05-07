@@ -236,7 +236,7 @@ class DiagramsMain(CompiledArraysMain):
                 if len(selected) == 0:
                     diagram.center_nodes(elements=None)
                 else:
-                    buses = [b for i, b, graphic in selected]
+                    buses = [bus for i, bus, graphic in selected]
                     diagram.center_nodes(elements=buses)
 
     def get_selected_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:

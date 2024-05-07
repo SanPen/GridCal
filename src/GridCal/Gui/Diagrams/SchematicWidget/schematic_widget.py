@@ -2032,8 +2032,7 @@ class SchematicWidget(QSplitter):
         """
         Center the view in the nodes
         :param margin_factor:
-        :param elements:
-        :return:
+        :param elements: list of API
         """
         tpes = [BusGraphicItem, FluidNodeGraphicItem, CnGraphicItem, BusBarGraphicItem, Transformer3WGraphicItem]
         min_x = sys.maxsize

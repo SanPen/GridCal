@@ -2047,7 +2047,11 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     logger = Logger()
 
-    # if any valis time index is specified, then the data is compiled from the time series
+    if circuit.get_connectivity_nodes_number() + circuit.get_switches_number():
+        # process topology, this
+        circuit.process_topology_at(t_idx=t_idx, logger=logger)
+
+    # if any valid time index is specified, then the data is compiled from the time series
     time_series = t_idx is not None
 
     # declare the numerical circuit

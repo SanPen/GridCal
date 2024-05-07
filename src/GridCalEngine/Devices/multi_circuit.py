@@ -1087,6 +1087,13 @@ class MultiCircuit:
         """
         return self.switch_devices
 
+    def get_switches_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.switch_devices)
+
     def get_hvdc(self) -> List[dev.HvdcLine]:
         """
 
@@ -3515,6 +3522,12 @@ class MultiCircuit:
         Get all connectivity nodes
         """
         return self.connectivity_nodes
+
+    def get_connectivity_nodes_number(self) -> int:
+        """
+        Get all connectivity nodes
+        """
+        return len(self.connectivity_nodes)
 
     def add_connectivity_node(self, obj: dev.ConnectivityNode):
         """
