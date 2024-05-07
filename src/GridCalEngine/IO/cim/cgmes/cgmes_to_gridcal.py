@@ -222,7 +222,10 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
         )
         if volt_lev is None:
-            print(f'No volt lev found for {cgmes_elm.name}')
+            logger.add_warning(msg='No voltage level found',
+                               device=cgmes_elm.name,
+                               device_class=cgmes_elm.tpe,
+                               device_property="ConnectivityNodeContainer")
 
         gcdev_elm = gcdev.Bus(name=cgmes_elm.name,
                               idtag=cgmes_elm.uuid,
@@ -1190,7 +1193,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # get_gcdev_controllable_shunts()  TODO controllable shunts
     get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
-    print('debug')
     cgmes_model.emit_progress(100)
     cgmes_model.emit_text("Cgmes import done!")
 

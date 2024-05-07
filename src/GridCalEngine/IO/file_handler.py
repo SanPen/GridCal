@@ -483,16 +483,19 @@ class FileSave:
         :return: logger with information
         """
         logger = Logger()
+        if self.options.cgmes_boundary_set == "":
+            logger.add_error(msg="Missing Boundary set path.")
+            return logger
         # CGMES version should be given in the settings
         cgmes_circuit = CgmesCircuit(cgmes_version=self.options.cgmes_version,
                                      text_func=self.text_func,
                                      progress_func=self.progress_func, logger=logger)
-        if self.options.cgmes_boundary_set != "":
-            data_parser = CgmesDataParser(text_func=self.text_func,
-                                          progress_func=self.progress_func,
-                                          logger=logger)
-            data_parser.load_files(files=[self.options.cgmes_boundary_set])
-            cgmes_circuit.parse_files(data_parser=data_parser)
+
+        data_parser = CgmesDataParser(text_func=self.text_func,
+                                      progress_func=self.progress_func,
+                                      logger=logger)
+        data_parser.load_files(files=[self.options.cgmes_boundary_set])
+        cgmes_circuit.parse_files(data_parser=data_parser)
 
         pf_results = self.options.get_power_flow_results()
         cgmes_circuit = gridcal_to_cgmes(gc_model=self.circuit,
