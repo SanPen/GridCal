@@ -31,7 +31,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1292, 746)
+        mainWindow.resize(1187, 746)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -3676,20 +3676,6 @@ class Ui_mainWindow(object):
         self.frame_79.setFrameShadow(QFrame.Raised)
         self.gridLayout_5 = QGridLayout(self.frame_79)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
-        self.cgmes_boundary_set_label = QLabel(self.frame_79)
-        self.cgmes_boundary_set_label.setObjectName(u"cgmes_boundary_set_label")
-
-        self.gridLayout_5.addWidget(self.cgmes_boundary_set_label, 6, 0, 1, 2)
-
-        self.verticalSpacer_25 = QSpacerItem(20, 436, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_5.addItem(self.verticalSpacer_25, 10, 1, 1, 1)
-
-        self.label_90 = QLabel(self.frame_79)
-        self.label_90.setObjectName(u"label_90")
-
-        self.gridLayout_5.addWidget(self.label_90, 5, 0, 1, 3)
-
         self.label_134 = QLabel(self.frame_79)
         self.label_134.setObjectName(u"label_134")
         palette43 = QPalette()
@@ -3701,11 +3687,44 @@ class Ui_mainWindow(object):
 
         self.gridLayout_5.addWidget(self.label_134, 0, 1, 1, 2)
 
-        self.selectCGMESBoundarySetButton = QPushButton(self.frame_79)
-        self.selectCGMESBoundarySetButton.setObjectName(u"selectCGMESBoundarySetButton")
-        self.selectCGMESBoundarySetButton.setMaximumSize(QSize(80, 16777215))
+        self.label_135 = QLabel(self.frame_79)
+        self.label_135.setObjectName(u"label_135")
 
-        self.gridLayout_5.addWidget(self.selectCGMESBoundarySetButton, 6, 2, 1, 1)
+        self.gridLayout_5.addWidget(self.label_135, 2, 0, 1, 3)
+
+        self.cgmes_profiles_listView = QListView(self.frame_79)
+        self.cgmes_profiles_listView.setObjectName(u"cgmes_profiles_listView")
+
+        self.gridLayout_5.addWidget(self.cgmes_profiles_listView, 12, 0, 1, 3)
+
+        self.label_90 = QLabel(self.frame_79)
+        self.label_90.setObjectName(u"label_90")
+
+        self.gridLayout_5.addWidget(self.label_90, 8, 0, 1, 3)
+
+        self.cgmes_version_comboBox = QComboBox(self.frame_79)
+        self.cgmes_version_comboBox.setObjectName(u"cgmes_version_comboBox")
+
+        self.gridLayout_5.addWidget(self.cgmes_version_comboBox, 3, 0, 1, 3)
+
+        self.label_139 = QLabel(self.frame_79)
+        self.label_139.setObjectName(u"label_139")
+
+        self.gridLayout_5.addWidget(self.label_139, 11, 0, 1, 3)
+
+        self.cgmes_single_profile_per_file_checkBox = QCheckBox(self.frame_79)
+        self.cgmes_single_profile_per_file_checkBox.setObjectName(u"cgmes_single_profile_per_file_checkBox")
+
+        self.gridLayout_5.addWidget(self.cgmes_single_profile_per_file_checkBox, 13, 0, 1, 3)
+
+        self.label_137 = QLabel(self.frame_79)
+        self.label_137.setObjectName(u"label_137")
+        self.label_137.setMinimumSize(QSize(24, 24))
+        self.label_137.setMaximumSize(QSize(24, 24))
+        self.label_137.setPixmap(QPixmap(u":/Icons/icons/new2.svg"))
+        self.label_137.setScaledContents(True)
+
+        self.gridLayout_5.addWidget(self.label_137, 0, 0, 1, 1)
 
         self.line_31 = QFrame(self.frame_79)
         self.line_31.setObjectName(u"line_31")
@@ -3720,29 +3739,21 @@ class Ui_mainWindow(object):
 
         self.gridLayout_5.addWidget(self.line_31, 1, 0, 1, 3)
 
-        self.label_137 = QLabel(self.frame_79)
-        self.label_137.setObjectName(u"label_137")
-        self.label_137.setMinimumSize(QSize(24, 24))
-        self.label_137.setMaximumSize(QSize(24, 24))
-        self.label_137.setPixmap(QPixmap(u":/Icons/icons/new2.svg"))
-        self.label_137.setScaledContents(True)
+        self.selectCGMESBoundarySetButton = QPushButton(self.frame_79)
+        self.selectCGMESBoundarySetButton.setObjectName(u"selectCGMESBoundarySetButton")
+        self.selectCGMESBoundarySetButton.setMaximumSize(QSize(80, 16777215))
 
-        self.gridLayout_5.addWidget(self.label_137, 0, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.selectCGMESBoundarySetButton, 9, 2, 1, 1)
+
+        self.cgmes_boundary_set_label = QLabel(self.frame_79)
+        self.cgmes_boundary_set_label.setObjectName(u"cgmes_boundary_set_label")
+
+        self.gridLayout_5.addWidget(self.cgmes_boundary_set_label, 9, 0, 1, 2)
 
         self.label_102 = QLabel(self.frame_79)
         self.label_102.setObjectName(u"label_102")
 
-        self.gridLayout_5.addWidget(self.label_102, 4, 0, 1, 2)
-
-        self.cgmes_version_comboBox = QComboBox(self.frame_79)
-        self.cgmes_version_comboBox.setObjectName(u"cgmes_version_comboBox")
-
-        self.gridLayout_5.addWidget(self.cgmes_version_comboBox, 3, 0, 1, 3)
-
-        self.label_135 = QLabel(self.frame_79)
-        self.label_135.setObjectName(u"label_135")
-
-        self.gridLayout_5.addWidget(self.label_135, 2, 0, 1, 3)
+        self.gridLayout_5.addWidget(self.label_102, 10, 0, 1, 1)
 
 
         self.horizontalLayout_40.addWidget(self.frame_79)
@@ -3938,7 +3949,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1292, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1187, 22))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuExport = QMenu(self.menuProject)
@@ -5031,19 +5042,21 @@ class Ui_mainWindow(object):
         self.user_name_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.model_version_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.file_information_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
-#if QT_CONFIG(tooltip)
-        self.cgmes_boundary_set_label.setToolTip(QCoreApplication.translate("mainWindow", u"Path of the CGMES default boundary set (single zip file)", None))
-#endif // QT_CONFIG(tooltip)
-        self.cgmes_boundary_set_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
-        self.label_90.setText(QCoreApplication.translate("mainWindow", u"Boundary set", None))
         self.label_134.setText(QCoreApplication.translate("mainWindow", u"CGMES", None))
+        self.label_135.setText(QCoreApplication.translate("mainWindow", u"Export version", None))
+        self.label_90.setText(QCoreApplication.translate("mainWindow", u"Boundary set", None))
+        self.label_139.setText(QCoreApplication.translate("mainWindow", u"Profiles to export", None))
+        self.cgmes_single_profile_per_file_checkBox.setText(QCoreApplication.translate("mainWindow", u"One file per profile", None))
+        self.label_137.setText("")
 #if QT_CONFIG(tooltip)
         self.selectCGMESBoundarySetButton.setToolTip(QCoreApplication.translate("mainWindow", u"Select the CGMES boundary set (single zip file)", None))
 #endif // QT_CONFIG(tooltip)
         self.selectCGMESBoundarySetButton.setText(QCoreApplication.translate("mainWindow", u"Select", None))
-        self.label_137.setText("")
+#if QT_CONFIG(tooltip)
+        self.cgmes_boundary_set_label.setToolTip(QCoreApplication.translate("mainWindow", u"Path of the CGMES default boundary set (single zip file)", None))
+#endif // QT_CONFIG(tooltip)
+        self.cgmes_boundary_set_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.label_102.setText("")
-        self.label_135.setText(QCoreApplication.translate("mainWindow", u"Export version", None))
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_8), QCoreApplication.translate("mainWindow", u"File", None))
         self.label_68.setText("")
         self.label_69.setText(QCoreApplication.translate("mainWindow", u"General settings", None))

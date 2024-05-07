@@ -20,6 +20,7 @@ from typing import Union, List
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox, QCheckBox
 from GridCal.Gui.GuiFunctions import get_list_model
+from GridCal.Gui.messages import error_msg
 from GridCalEngine.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 
 
@@ -62,7 +63,15 @@ class LineEditor(QDialog):
         # ------------------------------------------------------------------------------------------
 
         Vf = self.line.bus_from.Vnom
-        Vt = self.line.bus_to.Vnom
+        # Vt = self.line.bus_to.Vnom
+
+        if Vf <= 0.0:
+            error_msg(f"Vnom in bus {self.line.bus_from} is {Vf}\n"
+                      f"That causes an infinite base admittance.\n"
+                      f"The process has been aborted.\n"
+                      f"Please correct the data and try again.",
+                      title="Line editor initialization")
+            return
 
         Zbase = (Vf * Vf) / self.Sbase
         Ybase = 1 / Zbase

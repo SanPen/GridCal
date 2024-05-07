@@ -16,14 +16,16 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+
+from GridCalEngine.Devices import Substation
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 
 
 class ConnectivityNode(EditableDevice):
 
     def __init__(self, name='CN', idtag=None, code='', dc: bool = False,
-                 default_bus: Union[None, Bus] = None):
+                 default_bus: Union[None, Bus] = None, substation: Union[Substation, None] = None):
         """
         Constructor
         :param name: Name of the connectivity node
@@ -31,6 +33,7 @@ class ConnectivityNode(EditableDevice):
         :param code: secondary identifyier
         :param dc: is this a DC connectivity node?
         :param default_bus: Default bus to use for topology processing (optional)
+        :param substation: Substation of this connectivity node (optional)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -42,8 +45,12 @@ class ConnectivityNode(EditableDevice):
 
         self.default_bus: Union[None, Bus] = default_bus
 
+        self.substation: Union[Substation, None] = substation
+
         self.register("dc", "", bool, "is this a DC connectivity node?")
 
         self.register("default_bus", "", DeviceType.BusDevice,
                       "Default bus to use for topology processing (optional)")
 
+        self.register("substation", "", DeviceType.SubstationDevice,
+                      "Substation of this connectivity node (optional)")

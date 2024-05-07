@@ -209,25 +209,21 @@ def test_topology_reduction():
                 assert t.bus3, "Transformer3w without bus3 associated"
 
 
-def test_topology_rts():
+def test_topology_rts() -> None:
     """
     This function tests topology reduction for Bus/branch model networks
     """
     for fname in [os.path.join('data', 'grids', 'case24_ieee_rts.m')]:
-        grid_ = FileOpen(fname).open()
+        grid = FileOpen(fname).open()
 
         # Original grid to compare its topology with reduced topology after creating a Node/Breaker model from it
-        originalgrid = grid_.copy()
+        original_grid = grid.copy()
 
-        grid_.convert_to_node_breaker()  # Converting to Node/Breaker model
-        topodriver = TopologyProcessorDriver(grid=grid_)
-        topodriver.run()  # Processing topology from new grid
+        grid.convert_to_node_breaker_adding_switches()  # Converting to Node/Breaker model
+        processor_info = grid.process_topology_at(t_idx=None)  # Processing topology from new grid
 
         # Comparing bus considering bus number assigned
-        for ln in range(len(grid_.get_lines())):
-            loriginal = originalgrid.lines[ln]
-            lnb = grid_.lines[ln]
+        for loriginal, lnb in zip(grid.get_lines(), original_grid.get_lines()):
 
             assert loriginal.bus_to.code == lnb.bus_to.code
             assert loriginal.bus_from.code == lnb.bus_from.code
-        print("")

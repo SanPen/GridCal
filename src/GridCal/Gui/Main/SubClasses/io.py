@@ -37,6 +37,7 @@ from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
 class IoMain(ConfigurationMain):
@@ -60,8 +61,19 @@ class IoMain(ConfigurationMain):
                                     '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc']
 
-        self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15, CGMESVersions.v3_0_0]}
+        self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15,
+                                                        CGMESVersions.v3_0_0]}
         self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
+
+        self.cgmes_profiles_dict = {x.value: x for x in [cgmesProfile.EQ,
+                                                         cgmesProfile.TP,
+                                                         cgmesProfile.SV,
+                                                         cgmesProfile.SSH,
+                                                         cgmesProfile.DY,
+                                                         cgmesProfile.DL,
+                                                         cgmesProfile.GL]}
+        self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
+                                                                   checks=True, check_value=True))
 
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
@@ -536,11 +548,18 @@ class IoMain(ConfigurationMain):
 
         cgmes_version = self.cgmes_version_dict[self.ui.cgmes_version_comboBox.currentText()]
 
+        cgmes_profiles_txt = gf.get_checked_values(mdl=self.ui.cgmes_profiles_listView.model())
+        cgmes_profiles = [self.cgmes_profiles_dict[e] for e in cgmes_profiles_txt]
+
+        one_file_per_profile = self.ui.cgmes_single_profile_per_file_checkBox.isChecked()
+
         options = filedrv.FileSavingOptions(cgmes_boundary_set=self.current_boundary_set,
                                             simulation_drivers=self.get_simulations(),
                                             sessions_data=sessions_data,
                                             dictionary_of_json_files=json_files,
-                                            cgmes_version=cgmes_version)
+                                            cgmes_version=cgmes_version,
+                                            cgmes_profiles=cgmes_profiles,
+                                            one_file_per_profile=one_file_per_profile)
 
         return options
 

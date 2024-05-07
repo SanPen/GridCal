@@ -705,7 +705,7 @@ class SchematicWidget(QSplitter):
             y0 = point0.y()
 
             if obj_type == self.library_model.get_bus_mime_data():
-                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', vnom=self.default_bus_voltage)
+                obj = Bus(name=f'Bus {self.circuit.get_bus_number()}', Vnom=self.default_bus_voltage)
                 graphic_object = BusGraphicItem(editor=self, bus=obj, x=x0, y=y0, h=20, w=80)
                 self.circuit.add_bus(obj=obj)
 
@@ -1833,7 +1833,7 @@ class SchematicWidget(QSplitter):
 
                             if fn.bus is None:
                                 # the fluid node does not have a bus, make one
-                                fn_bus = Bus(fn.name, vnom=bus.Vnom)
+                                fn_bus = Bus(fn.name, Vnom=bus.Vnom)
                                 self.circuit.add_bus(fn_bus)
                                 fn.bus = fn_bus
                             else:
@@ -1853,7 +1853,7 @@ class SchematicWidget(QSplitter):
 
                             if fn.bus is None:
                                 # the fluid node does not have a bus, make one
-                                fn_bus = Bus(fn.name, vnom=bus.Vnom)
+                                fn_bus = Bus(fn.name, Vnom=bus.Vnom)
                                 self.circuit.add_bus(fn_bus)
                                 fn.bus = fn_bus
                             else:
@@ -2491,6 +2491,7 @@ class SchematicWidget(QSplitter):
         add API branch to the Scene
         :param branch: Branch instance
         """
+
         bus_f_graphics = self.graphics_manager.query(branch.bus_from)
         bus_t_graphics = self.graphics_manager.query(branch.bus_to)
 
@@ -3911,7 +3912,7 @@ class SchematicWidget(QSplitter):
                                  country=line.bus_from.country)
             mid_vl = VoltageLevel(name=name, substation=mid_sub)
             mid_bus = Bus(name=name,
-                          vnom=line.bus_from.Vnom,
+                          Vnom=line.bus_from.Vnom,
                           vmin=line.bus_from.Vmin,
                           vmax=line.bus_from.Vmax,
                           voltage_level=mid_vl,
@@ -4117,7 +4118,7 @@ class SchematicWidget(QSplitter):
                                         bus_t_graphics_data.y - bus_f_graphics_data.y) * position
 
                                 B1 = Bus(name=line.name + ' split bus 1',
-                                         vnom=line.bus_from.Vnom,
+                                         Vnom=line.bus_from.Vnom,
                                          vmin=line.bus_from.Vmin,
                                          vmax=line.bus_from.Vmax,
                                          area=line.bus_from.area,
@@ -4125,7 +4126,7 @@ class SchematicWidget(QSplitter):
                                          country=line.bus_from.country)
 
                                 B2 = Bus(name=line.name + ' split bus 2',
-                                         vnom=line.bus_from.Vnom,
+                                         Vnom=line.bus_from.Vnom,
                                          vmin=line.bus_from.Vmin,
                                          vmax=line.bus_from.Vmax,
                                          area=line.bus_from.area,
@@ -4139,7 +4140,7 @@ class SchematicWidget(QSplitter):
                                 mid_vl = VoltageLevel(name=line.name + ' new bus',
                                                       substation=mid_sub)
                                 B3 = Bus(name=line.name + ' new bus',
-                                         vnom=line.bus_from.Vnom,
+                                         Vnom=line.bus_from.Vnom,
                                          vmin=line.bus_from.Vmin,
                                          vmax=line.bus_from.Vmax,
                                          voltage_level=mid_vl,

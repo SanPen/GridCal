@@ -5717,51 +5717,6 @@ class MultiCircuit:
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
-    def convert_to_node_breaker(self) -> None:
-        """
-        Convert this MultiCircuit from bus/branch to node/breaker network model
-        """
-
-        bbcn = dict()
-        for bus in self.buses:
-            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
-            self.add_bus_bar(bus_bar)
-            bbcn[bus.idtag] = bus_bar.cn
-            bus_bar.cn.code = bus.code  # for soft checking later
-            # bus_bar.cn.default_bus = bus
-
-        # branches
-        for elm in self.get_branches():
-            # Create two new connectivity nodes
-            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
-            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
-            self.add_connectivity_node(cnfrom)
-            self.add_connectivity_node(cnto)
-            elm.cn_to = cnto
-            elm.cn_from = cnfrom
-            # Create two new switches
-            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
-                             cn_from=bbcn[elm.bus_from.idtag],
-                             cn_to=cnfrom,
-                             active=True)
-            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
-                             cn_from=cnto,
-                             cn_to=bbcn[elm.bus_to.idtag],
-                             active=True)
-            self.add_switch(sw1)
-            self.add_switch(sw2)
-
-        # injections
-        for elm in self.get_injection_devices():
-            # TODO: Add the posibbility to add a switch here too
-            elm.cn = bbcn[elm.bus.idtag]
-
-        # Removing original buses
-        # if not keep_buses:
-        bidx = [b for b in self.get_buses()]
-        for b in bidx:
-            self.delete_bus(b)
-
     def clean_branches(self,
                        nt: int,
                        bus_set: Set[dev.Bus],
@@ -5972,40 +5927,191 @@ class MultiCircuit:
 
         return logger
 
-    # def split_line(self, line: dev.Line, position: float) -> Tuple["Line", "Line", Bus]:
-    #     """
-    #     Split a branch by a given distance
-    #     :param position: per unit distance measured from the "from" bus (0 ~ 1)
-    #     :return: the two new Branches and the mid short circuited bus
-    #     """
-    #
-    #     assert (0.0 < position < 1.0)
-    #
-    #     # Each of the Branches will have the proportional impedance
-    #     # Bus_from           Middle_bus            Bus_To
-    #     # o----------------------o--------------------o
-    #     #   >-------- x -------->|
-    #     #   (x: distance measured in per unit (0~1)
-    #
-    #     middle_bus = line.bus_from.copy()
-    #     middle_bus.name += ' split'
-    #
-    #     # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-    #     middle_bus.X = line.bus_from.x + (line.bus_to.x - line.bus_from.x) * position
-    #     middle_bus.y = line.bus_from.y + (line.bus_to.y - line.bus_from.y) * position
-    #
-    #     props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
-    #
-    #     br1 = line.copy()
-    #     br1.bus_from = line.bus_from
-    #     br1.bus_to = middle_bus
-    #     for p in props_to_scale:
-    #         setattr(br1, p, getattr(line, p) * position)
-    #
-    #     br2 = line.copy()
-    #     br2.bus_from = middle_bus
-    #     br2.bus_to = line.bus_to
-    #     for p in props_to_scale:
-    #         setattr(br2, p, getattr(line, p) * (1.0 - position))
-    #
-    #     return br1, br2, middle_bus
+    def convert_to_node_breaker(self) -> None:
+        """
+        Convert this MultiCircuit in-place from bus/branch to node/breaker network model
+        """
+
+        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
+        for bus in self.buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
+            self.add_bus_bar(bus_bar)
+            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
+            bus_bar.cn.code = bus.code  # for soft checking later
+            if bus_bar.cn.default_bus:
+                bus_bar.cn.default_bus.code = bus.code  # for soft checking later
+
+        # add the cn's at the branches
+        for lst in [self.get_branches(), self.get_switches()]:
+            for elm in lst:
+                if elm.bus_from:
+                    elm.cn_from = bus_to_busbar_cn.get(elm.bus_from.idtag, None)
+                if elm.bus_to:
+                    elm.cn_to = bus_to_busbar_cn.get(elm.bus_to.idtag, None)
+
+        # add the cn's at the branches
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
+                if elm.bus:
+                    elm.cn = bus_to_busbar_cn.get(elm.bus.idtag, None)
+
+    def convert_to_node_breaker_adding_switches(self) -> None:
+        """
+        Convert this MultiCircuit in-place from bus/branch to node/breaker network model,
+        adding switches at the extremes of every branch
+        """
+
+        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
+        for bus in self.buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
+            self.add_bus_bar(bus_bar)
+            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
+            bus_bar.cn.code = bus.code  # for soft checking later
+            if bus_bar.cn.default_bus:
+                bus_bar.cn.default_bus.code = bus.code  # for soft checking later
+
+        # branches
+        for elm in self.get_branches():
+            # Create two new connectivity nodes
+            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
+            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
+            self.add_connectivity_node(cnfrom)
+            self.add_connectivity_node(cnto)
+            elm.cn_to = cnto
+            elm.cn_from = cnfrom
+
+            # Create two new switches
+            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
+                             cn_from=bus_to_busbar_cn[elm.bus_from.idtag],
+                             cn_to=cnfrom,
+                             active=True)
+            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
+                             cn_from=cnto,
+                             cn_to=bus_to_busbar_cn[elm.bus_to.idtag],
+                             active=True)
+            self.add_switch(sw1)
+            self.add_switch(sw2)
+
+        # injections
+        for elm in self.get_injection_devices():
+            # TODO: Add the posibbility to add a switch here too
+            elm.cn = bus_to_busbar_cn[elm.bus.idtag]
+
+        # Removing original buses
+        bidx = [b for b in self.get_buses()]
+        for b in bidx:
+            self.delete_bus(b)
+
+    def process_topology_at(self,
+                            t_idx: Union[int, None] = None,
+                            logger: Union[Logger, None] = None) -> tp.TopologyProcessorInfo:
+        """
+        Topology processor finding the Buses that calculate a certain node-breaker topology
+        This function fill the bus pointers into the grid object, and adds any new bus required for simulation
+        :param t_idx: Time index, None for the Snapshot
+        :param logger: Logger object
+        :return: TopologyProcessorInfo
+        """
+        # --------------------------------------------------------------------------------------------------------------
+        # compose the candidate nodes (buses)
+        # --------------------------------------------------------------------------------------------------------------
+        process_info = tp.TopologyProcessorInfo()
+
+        # traverse connectivity nodes
+        for cn in self.get_connectivity_nodes():
+
+            if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
+                # create a new candidate
+                candidate_bus = dev.Bus(f"Candidate from {cn.name}")
+                candidate_bus.code = cn.code  # for soft checking
+                cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
+                process_info.add_new_candidate(candidate_bus)
+            else:
+                # pick the default candidate
+                candidate_bus = cn.default_bus
+                candidate_bus.code = cn.code  # for soft checking
+
+            # register
+            process_info.add_candidate(candidate_bus)
+            process_info.cn_to_candidate[cn] = candidate_bus
+
+        nbus_candidate = process_info.candidate_number()
+        bus_active = process_info.get_candidate_active(t_idx=t_idx)
+
+        # get a list of all branches
+        all_branches = self.get_branches() + self.get_switches()
+
+        # --------------------------------------------------------------------------------------------------------------
+        # create the connectivity matrices
+        # --------------------------------------------------------------------------------------------------------------
+        nbr = len(all_branches)
+
+        # declare the matrices
+        Cf = lil_matrix((nbr, nbus_candidate))
+        Ct = lil_matrix((nbr, nbus_candidate))
+        br_active = np.empty(nbr, dtype=int)
+
+        # fill matrices approprietly
+        for i, elm in enumerate(all_branches):
+
+            if elm.cn_from is not None:
+                f = process_info.get_candidate_pos_from_cn(elm.cn_from)
+                Cf[i, f] = 1
+
+            if elm.cn_to is not None:
+                t = process_info.get_candidate_pos_from_cn(elm.cn_to)
+                Ct[i, t] = 1
+
+            if elm.device_type == DeviceType.SwitchDevice:
+                br_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
+            else:
+                # non switches form islands, because we want islands to be
+                # the set of candidates to fuse into one
+                br_active[i] = 0
+
+        # --------------------------------------------------------------------------------------------------------------
+        # compose the adjacency matrix from the connectivity information
+        # --------------------------------------------------------------------------------------------------------------
+        A = tp.get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
+                                    C_branch_bus_t=Ct.tocsc(),
+                                    branch_active=br_active,
+                                    bus_active=bus_active)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # perform the topology search, this will find candidate buses that reduce to be the same bus
+        # --------------------------------------------------------------------------------------------------------------
+
+        islands = tp.find_islands(adj=A, active=bus_active)  # each island is finally a single calculation element
+
+        # --------------------------------------------------------------------------------------------------------------
+        # generate auxiliary structures that derive from the topology results
+        # --------------------------------------------------------------------------------------------------------------
+        final_buses = process_info.apply_results(islands=islands)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # apply the results to the grid object
+        # --------------------------------------------------------------------------------------------------------------
+
+        # add any extra bus that may arise from the calculation
+        grid_buses_set = {b for b in self.get_buses()}
+        for bus_device in final_buses:
+            if bus_device not in grid_buses_set:
+                self.add_bus(bus_device)
+                if logger:
+                    logger.add_info("Bus added to grid", device=bus_device.name)
+
+        # map the buses to the branches from their connectivity nodes
+        for i, elm in enumerate(all_branches):
+            if elm.cn_from is not None:
+                elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
+
+            if elm.cn_to is not None:
+                elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
+
+        for dev_lst in self.get_injection_devices_lists():
+            for elm in dev_lst:
+                if elm.cn is not None:
+                    elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
+
+        # return the TopologyProcessorInfo
+        return process_info

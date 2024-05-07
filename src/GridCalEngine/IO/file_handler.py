@@ -47,6 +47,7 @@ from GridCalEngine.IO.gridcal.sqlite_interface import save_data_frames_to_sqlite
 from GridCalEngine.IO.gridcal.h5_interface import save_h5, open_h5
 from GridCalEngine.IO.raw.rawx_parser_writer import parse_rawx, write_rawx
 from GridCalEngine.IO.others.pypsa_parser import parse_netcdf, parse_hdf5
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -63,7 +64,9 @@ class FileSavingOptions:
                  simulation_drivers: List[DriverTemplate] = None,
                  sessions_data: List[DriverToSave] = None,
                  dictionary_of_json_files: Dict[str, Dict[str, Any]] = None,
-                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15):
+                 cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
+                 cgmes_profiles: Union[None, List[cgmesProfile]] = None,
+                 one_file_per_profile: bool = False):
         """
         Constructor
         :param cgmes_boundary_set: CGMES boundary set zip file path
@@ -71,6 +74,8 @@ class FileSavingOptions:
         :param sessions_data: List of sessions_data
         :param dictionary_of_json_files: Dictionary of json files
         :param cgmes_version: Version to use with CGMES
+        :param cgmes_profiles: CGMES profile list to export
+        :param one_file_per_profile: use one file per profile?
         """
 
         self.cgmes_version: CGMESVersions = cgmes_version
@@ -85,6 +90,18 @@ class FileSavingOptions:
 
         # File type description as it appears in the file saving dialogue i.e. GridCal zip (*.gridcal)
         self.type_selected: str = ""
+
+        # CGMES profile list
+        self.cgmes_profiles = cgmes_profiles if cgmes_profiles is not None else [cgmesProfile.EQ,
+                                                                                 cgmesProfile.TP,
+                                                                                 cgmesProfile.SV,
+                                                                                 cgmesProfile.SSH,
+                                                                                 cgmesProfile.DY,
+                                                                                 cgmesProfile.DL,
+                                                                                 cgmesProfile.GL]
+
+        # use one file per profile?
+        self.one_file_per_profile = one_file_per_profile
 
     def get_power_flow_results(self) -> Union[None, PowerFlowResults]:
         """

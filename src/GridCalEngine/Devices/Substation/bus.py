@@ -32,7 +32,7 @@ class Bus(EditableDevice):
     def __init__(self, name="Bus",
                  idtag=None,
                  code='',
-                 vnom=10,
+                 Vnom=10,
                  vmin=0.9,
                  vmax=1.1,
                  angle_min=-6.28,
@@ -63,7 +63,7 @@ class Bus(EditableDevice):
         :param name: Name of the bus
         :param idtag: Unique identifier, if empty or None, a random one is generated
         :param code: Compatibility id with legacy systems
-        :param vnom: Nominal voltage in kV
+        :param Vnom: Nominal voltage in kV
         :param vmin: Minimum per unit voltage (p.u.)
         :param vmax: Maximum per unit voltage (p.u.)
         :param angle_min: Minimum voltage angle (rad)
@@ -98,7 +98,7 @@ class Bus(EditableDevice):
         self._active_prof = Profile(default_value=active, data_type=bool)
 
         # Nominal voltage (kV)
-        self.Vnom = vnom
+        self.Vnom = Vnom
 
         # minimum voltage limit
         self.Vmin = vmin

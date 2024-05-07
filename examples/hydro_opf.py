@@ -140,11 +140,11 @@ grid.add_fluid_p2x(f1, p2x1)
 
 # Add the electrical grid part
 b1 = gce.Bus(name='b1',
-             vnom=10,
+             Vnom=10,
              is_slack=True)
 
 b2 = gce.Bus(name='b2',
-             vnom=10)
+             Vnom=10)
 
 grid.add_bus(b1)
 grid.add_bus(b2)

@@ -633,7 +633,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         buses_dict[ID] = i
         bus_name = buses['loc_name'][i].decode(codification)  # BUS_Name
         vnom = buses['uknom'][i]
-        bus = dev.Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, active=True)
+        bus = dev.Bus(name=bus_name, Vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, active=True)
         circuit.add_bus(bus)
 
     ####################################################################################################################

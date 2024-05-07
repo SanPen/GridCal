@@ -358,7 +358,7 @@ class NodeBreakerEditorWidget(QSplitter):
         self.PreviewSketch = False
 
         obj1 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
-                  vnom=self.default_bus_voltage)
+                   Vnom=self.default_bus_voltage)
 
         Bus1 = BusGraphicItem(editor=self,
                                         bus = obj1,
@@ -370,7 +370,7 @@ class NodeBreakerEditorWidget(QSplitter):
         self.previewPlug1 = Plug(self.diagram_scene, Bus1, None)
 
         obj2 = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
-                  vnom=self.default_bus_voltage)
+                   Vnom=self.default_bus_voltage)
 
         Bus2 = BusGraphicItem(editor=self,
                                         bus = obj2,
@@ -459,7 +459,7 @@ class NodeBreakerEditorWidget(QSplitter):
 
             if bus_data == obj_type:
                 obj = Bus(name=f'BUS_BAR {len(self.circuit.buses)}',
-                          vnom=self.default_bus_voltage)
+                          Vnom=self.default_bus_voltage)
 
                 graphic_object = BusGraphicItem(editor=self,
                                                 bus=obj,

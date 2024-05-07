@@ -26,10 +26,10 @@ Sbase = 100  # MVA
 
 def test_cable_temp():
     B_C3 = Bus(name="B_C3",
-               vnom=10)  # kV
+               Vnom=10)  # kV
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10)  # kV
+                   Vnom=10)  # kV
 
     cable = Branch(bus_from=B_C3,
                    bus_to=B_MV_M32,
@@ -45,10 +45,10 @@ def test_cable_temp():
 
 def test_same_temp():
     B_C3 = Bus(name="B_C3",
-               vnom=10)  # kV
+               Vnom=10)  # kV
 
     B_MV_M32 = Bus(name="B_MV_M32",
-                   vnom=10)  # kV
+                   Vnom=10)  # kV
 
     cable = Line(bus_from=B_C3,
                  bus_to=B_MV_M32,
@@ -71,8 +71,8 @@ def test_corr_line_losses():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=10, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=10)
+    Bus0 = Bus(name="Bus0", Vnom=10, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=10)
 
     grid.add_bus(Bus0)
     grid.add_bus(Bus1)
