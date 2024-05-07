@@ -2261,10 +2261,10 @@ class SimulationsMain(TimeEventsMain):
                         fmax = np.max(frequencies)
 
                         # prepare the color map
-                        seq = [(0, 'green'),
-                               (0.6, 'orange'),
-                               (1.0, 'red')]
-                        cmap = LinearSegmentedColormap.from_list('vcolors', seq)
+                        seq: List[Tuple[float, str]] = [(0, 'green'),
+                                                        (0.6, 'orange'),
+                                                        (1.0, 'red')]
+                        cmap = LinearSegmentedColormap.from_list(name='vcolors', colors=seq)
 
                         self.buses_for_storage = list()
                         colors = list()

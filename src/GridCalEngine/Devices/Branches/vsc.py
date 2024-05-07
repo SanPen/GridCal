@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 from typing import List, Tuple
 
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import ConverterControlType, BuildStatus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -28,7 +29,11 @@ from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
 class VSC(BranchParent):
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='VSC', idtag=None, code='', active=True,
+    def __init__(self,
+                 bus_from: Bus = None, bus_to: Bus = None,
+                 cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None,
+                 name='VSC', idtag=None, code='', active=True,
                  r=0.0001, x=0.05,
                  tap_module=1.0, tap_module_max=1.1, tap_module_min=0.8,
                  tap_phase=0.1, tap_phase_max=6.28, tap_phase_min=-6.28,
@@ -94,8 +99,8 @@ class VSC(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,

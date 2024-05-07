@@ -446,7 +446,10 @@ class IoMain(ConfigurationMain):
                         if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+                            injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
+                                                                     busbars=new_circuit.bus_bars,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
                                                                      transformers2w=new_circuit.transformers2w,
@@ -454,10 +457,12 @@ class IoMain(ConfigurationMain):
                                                                      hvdc_lines=new_circuit.hvdc_lines,
                                                                      vsc_devices=new_circuit.vsc_devices,
                                                                      upfc_devices=new_circuit.upfc_devices,
+                                                                     switches=new_circuit.switch_devices,
                                                                      fluid_nodes=new_circuit.fluid_nodes,
                                                                      fluid_paths=new_circuit.fluid_paths,
                                                                      injections_by_bus=injections_by_bus,
                                                                      injections_by_fluid_node=injections_by_fluid_node,
+                                                                     injections_by_cn=injections_by_cn,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
