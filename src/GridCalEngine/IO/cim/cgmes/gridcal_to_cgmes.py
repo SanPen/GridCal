@@ -242,7 +242,16 @@ def create_cgmes_terminal(bus: Bus,
         logger.add_error(msg='No found TopologinalNode',
                          device=bus,
                          device_class=gcdev.Bus)
-    # TODO link CN as
+
+    cn = find_object_by_uuid(cgmes_model=cgmes_model,
+                             object_list=cgmes_model.cgmes_assets.ConnectivityNode_list,
+                             target_uuid=bus.idtag)
+    if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
+        term.ConnectivityNode = cn
+    else:
+        logger.add_error(msg='No found ConnectivityNode',
+                         device=bus,
+                         device_class=gcdev.Bus)
 
     cgmes_model.add(term)
 
@@ -676,11 +685,10 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
             line.x = mc_elm.X * zbase
             # line.gch = mc_elm.G * Ybase
             line.bch = mc_elm.B * ybase
-            if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-                line.r0 = mc_elm.R0 * zbase
-                line.x0 = mc_elm.X0 * zbase
-                # line.g0ch = mc_elm.G0 * Ybase
-                line.b0ch = mc_elm.B0 * ybase
+            line.r0 = mc_elm.R0 * zbase
+            line.x0 = mc_elm.X0 * zbase
+            # line.g0ch = mc_elm.G0 * Ybase
+            line.b0ch = mc_elm.B0 * ybase
 
         cgmes_model.add(line)
 
@@ -781,11 +789,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte1.x = x
         pte1.g = g
         pte1.b = b
-        if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-            pte1.r0 = r0
-            pte1.x0 = x0
-            pte1.g0 = g0
-            pte1.b0 = b0
+        pte1.r0 = r0
+        pte1.x0 = x0
+        pte1.g0 = g0
+        pte1.b0 = b0
         pte1.ratedU = mc_elm.HV
         pte1.ratedS = mc_elm.Sn
         pte1.endNumber = 1
@@ -796,11 +803,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.x = 0
         pte2.g = 0
         pte2.b = 0
-        if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-            pte2.r0 = 0
-            pte2.x0 = 0
-            pte2.g0 = 0
-            pte2.b0 = 0
+        pte2.r0 = 0
+        pte2.x0 = 0
+        pte2.g0 = 0
+        pte2.b0 = 0
         pte2.ratedU = mc_elm.LV
         pte2.ratedS = mc_elm.Sn
         pte2.endNumber = 2
@@ -839,11 +845,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte1.x = x
         pte1.g = g
         pte1.b = b
-        if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-            pte1.r0 = r0
-            pte1.x0 = x0
-            pte1.g0 = g0
-            pte1.b0 = b0
+        pte1.r0 = r0
+        pte1.x0 = x0
+        pte1.g0 = g0
+        pte1.b0 = b0
 
         pte2 = object_template()
         pte2.PowerTransformer = cm_transformer
@@ -879,11 +884,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte3.x = x
         pte3.g = g
         pte3.b = b
-        if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-            pte3.r0 = r0
-            pte3.x0 = x0
-            pte3.g0 = g0
-            pte3.b0 = b0
+        pte3.r0 = r0
+        pte3.x0 = x0
+        pte3.g0 = g0
+        pte3.b0 = b0
 
         cm_transformer.PowerTransformerEnd.append(pte1)
         cgmes_model.add(pte1)
@@ -978,7 +982,7 @@ def get_cgmes_sv_power_flow(cgmes_model: CgmesCircuit,
     """
     # SVPowerFlow: p, q -> Terminals
 
-    for voltage in pf_results.loading:   # TODO loading?
+    for voltage in pf_results.loading:  # TODO loading?
 
         object_template = cgmes_model.get_class_type("SvPowerFlow")
         new_rdf_id = get_new_rdfid()
@@ -1017,7 +1021,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
 
     get_cgmes_cn_nodes_from_buses(gc_model, cgmes_model, logger)
-    get_cgmes_cn_nodes_from_buses(gc_model, cgmes_model, logger)
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)
@@ -1041,5 +1044,4 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # abort export on gui ?
         # strategy?: option to export it with default data
         print("No PowerFlow result for CGMES export.")
-    print('cgmes export end')
     return cgmes_model
