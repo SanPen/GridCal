@@ -132,7 +132,7 @@ class IoMain(ConfigurationMain):
                     else:
                         error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
-                if self.circuit.get_bus_number() > 0:
+                if self.circuit.valid_for_simulation() > 0:
                     quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                                "\n If the process is cancelled the grid will remain."
                     reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -193,7 +193,7 @@ class IoMain(ConfigurationMain):
         Create new grid
         :return:
         """
-        if self.circuit.get_bus_number() > 0:
+        if self.circuit.valid_for_simulation() > 0:
             quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
@@ -208,7 +208,7 @@ class IoMain(ConfigurationMain):
         @return:
         """
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 quit_msg = ("Are you sure that you want to quit the current grid and open a new one?"
                             "\n If the process is cancelled the grid will remain.")
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -419,8 +419,8 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                if self.circuit.get_bus_number() == 0:
-                    # load the circuit
+                if not self.circuit.valid_for_simulation():
+                    # load the circuit right away
                     self.stuff_running_now.append('file_open')
                     self.post_open_file()
                 else:
@@ -637,7 +637,7 @@ class IoMain(ConfigurationMain):
 
         if self.grid_generator_dialogue.applied:
 
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                        'Are you sure that you want to delete '
                                                        'the current grid and replace it?',

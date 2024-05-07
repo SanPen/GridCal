@@ -1185,7 +1185,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Get the x, y coordinates of the buses from their latitude and longitude
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
@@ -1281,7 +1281,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Add contingencies from the schematic selection
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             # get the selected buses
             selected = self.get_selected_devices()
@@ -1315,7 +1315,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Add contingencies from the schematic selection
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             # get the selected investment devices
             selected = self.get_selected_devices()

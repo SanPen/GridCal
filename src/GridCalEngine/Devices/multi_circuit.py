@@ -441,6 +441,13 @@ class MultiCircuit:
     def __str__(self):
         return str(self.name)
 
+    def valid_for_simulation(self) -> bool:
+        """
+        Checks if the data could be simulated
+        :return: true / false
+        """
+        return (self.get_bus_number() + self.get_connectivity_nodes_number()) > 0
+
     @property
     def snapshot_time(self) -> dateslib.datetime:
         """
