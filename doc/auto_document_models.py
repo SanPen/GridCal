@@ -6,6 +6,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.gridcal.pack_unpack import get_objects_dictionary
+from GridCalEngine.enumerations import CGMESVersions
 
 
 def get_cgmes_data_frames():
@@ -14,7 +15,7 @@ def get_cgmes_data_frames():
     :return:
     """
     info = dict()
-    circuit = CgmesCircuit()
+    circuit = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
 
     for class_name, class_type in circuit.class_dict.items():
 
@@ -298,8 +299,8 @@ def write_models_to_rst(filename):
 
 
 if __name__ == '__main__':
-    cgmes_info = get_cgmes_data_frames()
-    psse_info = get_psse_data_frames()
+    # cgmes_info = get_cgmes_data_frames()
+    # psse_info = get_psse_data_frames()
     gridcal_info = get_gridcal_data_frames()
     gridcal_info_cat = get_gridcal_data_frames_per_category()
 

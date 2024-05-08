@@ -139,6 +139,7 @@ class GCProp:
                 'mandatory': False,
                 'max_chars': '',
                 "descriptions": self.definition,
+                "has_profile": self.has_profile(),
                 'comment': ''}
 
     def __str__(self):

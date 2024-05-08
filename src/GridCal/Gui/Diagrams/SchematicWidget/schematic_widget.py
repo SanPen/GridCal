@@ -103,7 +103,7 @@ BRANCH_GRAPHICS = Union[
 OPTIONAL_PORT = Union[BarTerminalItem, RoundTerminalItem, None]
 
 
-class BusBranchLibraryModel(QStandardItemModel):
+class SchematicLibraryModel(QStandardItemModel):
     """
     Items model to host the draggable icons
     This is the list of draggable items
@@ -224,9 +224,9 @@ class BusBranchLibraryModel(QStandardItemModel):
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
-class BusBranchDiagramScene(QGraphicsScene):
+class SchematicScene(QGraphicsScene):
     """
-    DiagramScene
+    SchematicScene
     This class is needed to augment the mouse move and release events
     """
 
@@ -235,7 +235,7 @@ class BusBranchDiagramScene(QGraphicsScene):
 
         :param parent:
         """
-        super(BusBranchDiagramScene, self).__init__(parent)
+        super(SchematicScene, self).__init__(parent)
         self.parent_ = parent
         self.displacement = QPoint(0, 0)
 
@@ -248,7 +248,7 @@ class BusBranchDiagramScene(QGraphicsScene):
         self.parent_.scene_mouse_move_event(event)
 
         # call the parent event
-        super(BusBranchDiagramScene, self).mouseMoveEvent(event)
+        super(SchematicScene, self).mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -258,7 +258,7 @@ class BusBranchDiagramScene(QGraphicsScene):
         """
         self.parent_.scene_mouse_press_event(event)
         self.displacement = QPointF(0, 0)
-        super(BusBranchDiagramScene, self).mousePressEvent(event)
+        super(SchematicScene, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
@@ -271,7 +271,7 @@ class BusBranchDiagramScene(QGraphicsScene):
         # call mouseReleaseEvent on "me" (conti
         #
         # nue with the rest of the actions)
-        super(BusBranchDiagramScene, self).mouseReleaseEvent(event)
+        super(SchematicScene, self).mouseReleaseEvent(event)
 
     # def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
     #     """
@@ -459,7 +459,7 @@ class SchematicWidget(QSplitter):
      |
       - .editor_graphics_view {QGraphicsView} (Handles the drag and drop)
      |
-      - .diagram_scene {DiagramScene: QGraphicsScene}
+      - .diagram_scene {SchematicScene: QGraphicsScene}
      |
       - .circuit {MultiCircuit} (Calculation engine)
      |
@@ -504,7 +504,7 @@ class SchematicWidget(QSplitter):
         self.object_editor_table = QTableView(self)
 
         # library model
-        self.library_model = BusBranchLibraryModel(self)
+        self.library_model = SchematicLibraryModel(self)
 
         # Actual libraryView object
         self.library_view = QListView(self)
@@ -513,7 +513,7 @@ class SchematicWidget(QSplitter):
         self.library_view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
         # create all the schematic objects and replace the existing ones
-        self.diagram_scene = BusBranchDiagramScene(parent=self)  # scene to add to the QGraphicsView
+        self.diagram_scene = SchematicScene(parent=self)  # scene to add to the QGraphicsView
 
         self.results_dictionary = dict()
 
@@ -1003,6 +1003,7 @@ class SchematicWidget(QSplitter):
 
                         # add buses reference for later
                         self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+
             else:
                 # pass for now...
                 pass
@@ -1152,6 +1153,27 @@ class SchematicWidget(QSplitter):
                                                                         editor=self,
                                                                         api_object=location.api_object,
                                                                         draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
+
+                            graphic_object.redraw()
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+
+            elif category == DeviceType.SwitchDevice.value:
+
+                for idtag, location in points_group.locations.items():
+
+                    # search for the api object, because it may be created already
+                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+
+                    if graphic_object is None:
+
+                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        if from_port is not None and to_port is not None:
+                            graphic_object = SwitchGraphicItem(from_port=from_port,
+                                                               to_port=to_port,
+                                                               editor=self,
+                                                               api_object=location.api_object,
+                                                               draw_labels=location.draw_labels)
                             self.add_to_scene(graphic_object=graphic_object)
 
                             graphic_object.redraw()
@@ -4837,21 +4859,21 @@ def generate_bus_branch_diagram(buses: List[Bus],
 
 def get_devices_to_expand(circuit: MultiCircuit,
                           root_bus: Bus,
-                          max_level: int = 1) -> Tuple[
-    List[Bus],
-    List[BusBar],
-    List[ConnectivityNode],
-    List[Line],
-    List[DcLine],
-    List[Transformer2W],
-    List[Transformer3W],
-    List[Winding],
-    List[HvdcLine],
-    List[VSC],
-    List[UPFC],
-    List[SeriesReactance],
-    List[FluidNode],
-    List[FluidPath]]:
+                          max_level: int = 1
+                          ) -> Tuple[List[Bus],
+                                     List[BusBar],
+                                     List[ConnectivityNode],
+                                     List[Line],
+                                     List[DcLine],
+                                     List[Transformer2W],
+                                     List[Transformer3W],
+                                     List[Winding],
+                                     List[HvdcLine],
+                                     List[VSC],
+                                     List[UPFC],
+                                     List[SeriesReactance],
+                                     List[FluidNode],
+                                     List[FluidPath]]:
     """
     get lists of devices to expand given a root bus
     :param circuit: MultiCircuit

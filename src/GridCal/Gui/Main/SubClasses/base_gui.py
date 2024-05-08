@@ -64,7 +64,8 @@ from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, 
 
 
 def terminate_thread(thread):
-    """Terminates a python thread from another thread.
+    """
+    Terminates a python thread from another thread.
 
     :param thread: a threading.Thread instance
     """
@@ -552,7 +553,7 @@ class BaseMainGui(QMainWindow):
         update the drop down menus that display dates
         """
         if self.circuit.time_profile is not None:
-            mdl = gf.get_list_model(self.circuit.time_profile)
+            mdl = gf.get_list_model([str(e) for e in self.circuit.time_profile])
             # setup profile sliders
             t = len(self.circuit.time_profile) - 1
             self.setup_sim_indices(0, t)
@@ -650,7 +651,7 @@ class BaseMainGui(QMainWindow):
         branches = self.circuit.get_branches()
 
         if len(branches) > 0:
-            pf_results = self.session.power_flow()
+            pf_results = self.session.power_flow
 
             if pf_results is not None:
                 factor = self.ui.branch_rating_doubleSpinBox.value()
