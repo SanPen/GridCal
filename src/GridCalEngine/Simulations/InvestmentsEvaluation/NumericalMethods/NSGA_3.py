@@ -30,8 +30,7 @@ class UniformBinarySampling(Sampling):
         num_ones = np.linspace(0, problem.n_var, n_samples, dtype=int)
         num_ones[-1] = problem.n_var
         ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
-
-        # Fill ones into array randomly
+        # Fill ones_into_array randomly
         for i, num in enumerate(num_ones):
             ones_into_array[i, :num] = 1
             np.random.shuffle(ones_into_array[i])
@@ -100,7 +99,7 @@ def NSGA_3(obj_func,
     algorithm = NSGA3(pop_size=pop_size,
                       sampling=UniformBinarySampling(),
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
-                      mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4),
+                      mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4, repair=RoundingRepair()),
                       # selection=TournamentSelection(pressure=2),
                       eliminate_duplicates=True,
                       ref_dirs=ref_dirs)
