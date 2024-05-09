@@ -41,7 +41,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode, ResultTypes, SimulationTypes)
+                                        BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -118,6 +118,15 @@ class SimulationsMain(TimeEventsMain):
         self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
         self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
         self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
+
+        # opf solvers dictionary
+        self.nodal_capacity_methods_dict = OrderedDict()
+        self.nodal_capacity_methods_dict[
+            NodalCapacityMethod.LinearOptimization.value] = NodalCapacityMethod.LinearOptimization
+        self.nodal_capacity_methods_dict[
+            NodalCapacityMethod.NonlinearOptimization.value] = NodalCapacityMethod.NonlinearOptimization
+        self.ui.nodal_capacity_method_comboBox.setModel(
+            gf.get_list_model(list(self.nodal_capacity_methods_dict.keys())))
 
         # branch types for reduction
         mdl = gf.get_list_model([DeviceType.LineDevice.value,
@@ -2542,3 +2551,92 @@ class SimulationsMain(TimeEventsMain):
                 warning_msg("There are no clustering results.")
                 self.ui.actionUse_clustering.setChecked(False)
                 return None
+
+    def get_nodal_capacity_options(self) -> sim.NodalCapacityOptions:
+        """
+        Get the nodal capacity options
+        :return: NodalCapacityOptions
+        """
+
+        bus_dict = self.circuit.get_bus_index_dict()
+        sel_buses = self.get_selected_buses()
+        capacity_nodes_idx = np.array([bus_dict[b] for _, b, _ in sel_buses])
+
+        method = self.nodal_capacity_methods_dict[self.ui.nodal_capacity_method_comboBox.currentText()]
+
+        opt = sim.NodalCapacityOptions(opf_options=self.get_opf_options(),
+                                       capacity_nodes_idx=capacity_nodes_idx,
+                                       method=method)
+
+        return opt
+
+    def run_nodal_capacity(self):
+        """
+        OPF Time Series run
+        """
+        if self.circuit.valid_for_simulation():
+
+            if not self.session.is_this_running(SimulationTypes.NodalCapacityTimeSeries_run):
+
+                if self.ts_flag():
+                    time_indices = self.get_time_indices()
+                else:
+                    time_indices = [None]
+
+                self.add_simulation(SimulationTypes.NodalCapacityTimeSeries_run)
+
+                self.LOCK()
+
+                # Compile the grid
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+                # get the power flow options from the GUI
+                options = self.get_nodal_capacity_options()
+
+                if options is not None:
+                    # create the OPF time series instance
+                    # if non_sequential:
+                    drv = sim.NodalCapacityTimeSeriesDriver(grid=self.circuit,
+                                                            options=options,
+                                                            time_indices=time_indices,
+                                                            clustering_results=self.get_clustering_results())
+
+                    drv.engine = self.get_preferred_engine()
+
+                    self.session.run(drv,
+                                     post_func=self.post_nodal_capacity,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another OPF time series is running already...')
+
+        else:
+            pass
+
+    def post_nodal_capacity(self):
+        """
+        Post OPF Time Series
+        """
+
+        results = self.session.nodal_capacity_optimization_ts
+
+        if results is not None:
+
+            # expand the clusters
+            results.expand_clustered_results()
+
+            # remove from the current simulations
+            self.remove_simulation(SimulationTypes.NodalCapacityTimeSeries_run)
+
+            if results is not None:
+                self.update_available_results()
+
+                self.colour_diagrams()
+
+        else:
+            pass
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()

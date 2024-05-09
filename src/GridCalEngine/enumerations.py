@@ -1664,6 +1664,7 @@ class SimulationTypes(Enum):
     OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
     InvestmestsEvaluation_run = 'Investments evaluation'
     TopologyProcessor_run = 'Topology Processor'
+    NodalCapacityTimeSeries_run = 'Nodal capacity time series'
 
     def __str__(self):
         return self.value

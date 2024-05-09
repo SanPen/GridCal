@@ -32,3 +32,4 @@ from GridCalEngine.Simulations.NTC import *
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.Clustering import *
 from GridCalEngine.Simulations.InvestmentsEvaluation import *
+from GridCalEngine.Simulations.NodalCapacity import *

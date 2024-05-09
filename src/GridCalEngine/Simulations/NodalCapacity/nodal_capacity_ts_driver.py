@@ -34,8 +34,8 @@ from GridCalEngine.enumerations import NodalCapacityMethod
 
 
 class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
-    name = 'Optimal power flow time series'
-    tpe = SimulationTypes.OPFTimeSeries_run
+    name = 'Nodal capacity time series'
+    tpe = SimulationTypes.NodalCapacityTimeSeries_run
 
     def __init__(self,
                  grid: MultiCircuit,
