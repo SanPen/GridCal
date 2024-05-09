@@ -17,7 +17,7 @@
 
 from typing import Union
 
-from GridCalEngine.Devices import Substation
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 
@@ -29,7 +29,7 @@ class ConnectivityNode(EditableDevice):
                  code='',
                  dc: bool = False,
                  default_bus: Union[None, Bus] = None,
-                 substation: Union[Substation, None] = None,
+                 voltage_level: Union[VoltageLevel, None] = None,
                  internal: bool = False):
         """
         Constructor
@@ -38,7 +38,7 @@ class ConnectivityNode(EditableDevice):
         :param code: secondary identifyier
         :param dc: is this a DC connectivity node?
         :param default_bus: Default bus to use for topology processing (optional)
-        :param substation: Substation of this connectivity node (optional)
+        :param voltage_level: Substation of this connectivity node (optional)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -50,7 +50,7 @@ class ConnectivityNode(EditableDevice):
 
         self.default_bus: Union[None, Bus] = default_bus
 
-        self.substation: Union[Substation, None] = substation
+        self.voltage_level: Union[VoltageLevel, None] = voltage_level
 
         self.internal: bool = internal
 
@@ -61,5 +61,5 @@ class ConnectivityNode(EditableDevice):
         self.register("default_bus", "", DeviceType.BusDevice,
                       "Default bus to use for topology processing (optional)")
 
-        self.register("substation", "", DeviceType.SubstationDevice,
-                      "Substation of this connectivity node (optional)")
+        self.register("voltage_level", "", DeviceType.VoltageLevelDevice,
+                      "Voltage level of this connectivity node (optional)")

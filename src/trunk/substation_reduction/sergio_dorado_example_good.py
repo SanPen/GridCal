@@ -86,10 +86,10 @@ def get_grid_node_breaker() -> gce.MultiCircuit:
     grid2.add_bus_bar(b3_2)
 
     # we create the 4 middle connectivity nodes
-    cn3_1 = gce.ConnectivityNode(name="CN3_1", substation=se3)
-    cn3_2 = gce.ConnectivityNode(name="CN3_2", substation=se3)
-    cn3_3 = gce.ConnectivityNode(name="CN3_3", substation=se3)
-    cn3_4 = gce.ConnectivityNode(name="CN3_4", substation=se3)
+    cn3_1 = gce.ConnectivityNode(name="CN3_1", voltage_level=vl3_1)
+    cn3_2 = gce.ConnectivityNode(name="CN3_2", voltage_level=vl3_1)
+    cn3_3 = gce.ConnectivityNode(name="CN3_3", voltage_level=vl3_1)
+    cn3_4 = gce.ConnectivityNode(name="CN3_4", voltage_level=vl3_1)
 
     grid2.add_connectivity_node(cn3_1)
     grid2.add_connectivity_node(cn3_2)
