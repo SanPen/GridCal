@@ -741,17 +741,17 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_gen.minOperatingP = mc_elm.Pmin
         cgmes_gen.normalPF = mc_elm.Pf  # power_factor
 
-        # Synchronous Machine
+        # Synchronous Machine ------------------------------------------------
         object_template = cgmes_model.get_class_type("SynchronousMachine")
         cgmes_syn = object_template(rdfid=form_rdfid(mc_elm.idtag))
         cgmes_syn.description = mc_elm.code
         cgmes_syn.name = mc_elm.name
-        # cgmes_syn.aggregate is optional, not exported\
+        # cgmes_syn.aggregate is optional, not exported
         if mc_elm.bus.is_slack:
             cgmes_syn.referencePriority = 1
         else:
             cgmes_syn.referencePriority = 0
-        # cgmes_syn.EquipmentContainer: VoltageLevel
+        # TODO cgmes_syn.EquipmentContainer: VoltageLevel
         # TODO implement control_node in MultiCircuit
         # has_control: do we have control
         # control_type: voltage or power control, ..
@@ -759,15 +759,26 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         if mc_elm.is_controlled:
             cgmes_syn.RegulatingControl = create_cgmes_regulating_control(cgmes_syn, cgmes_model)
             cgmes_syn.RegulatingControl.RegulatingCondEq = cgmes_syn
+            cgmes_syn.controlEnabled = True
+        else:
+            cgmes_syn.controlEnabled = False
 
-        # cgmes_syn.ratedPowerFactor =
+        # Todo cgmes_syn.ratedPowerFactor = 1.0
         cgmes_syn.ratedS = mc_elm.Snom
         cgmes_syn.GeneratingUnit = cgmes_gen  # linking them together
         cgmes_gen.RotatingMachine = cgmes_syn  # linking them together
         cgmes_syn.maxQ = mc_elm.Qmax
         cgmes_syn.minQ = mc_elm.Qmin
+        cgmes_syn.r = mc_elm.R1 if mc_elm.R1 != 1e-20 else None  # default value not exported
+        cgmes_syn.p = -mc_elm.P  # negative sign!
+        cgmes_gen.q = -mc_elm.P * np.tan(np.arccos(mc_elm.Pf))
+        # TODO cgmes_syn.qPercent =
+        if cgmes_syn.p > 0:
+            cgmes_syn.operatingMode = SynchronousMachineOperatingMode.generator
+            cgmes_syn.type = SynchronousMachineKind.generator
+            # TODO motor, condenser ?
+
         cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
-        # ...
 
         cgmes_model.add(cgmes_syn)
 
