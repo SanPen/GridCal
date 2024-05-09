@@ -210,22 +210,25 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             if slack_id == cgmes_elm.rdfid:
                 is_slack = True
 
-        # subs = find_object_by_idtag(
-        #     object_list=gc_model.substations,
-        #     target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
-        # )
-
-        # volt_lev = ''
+        volt_lev, substat = None, None
         # if cgmes_elm.ConnectivityNodeContainer != '':     for IEEE14 import when CoNoC is missing
         volt_lev = find_object_by_idtag(
             object_list=gc_model.voltage_levels,
             target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
         )
         if volt_lev is None:
-            logger.add_warning(msg='No voltage level found',
-                               device=cgmes_elm.name,
+            logger.add_warning(msg='No voltage level found for the bus',
+                               device=cgmes_elm.rdfid,
                                device_class=cgmes_elm.tpe,
-                               device_property="ConnectivityNodeContainer")
+                               device_property="TopologicalNode")
+        else:
+            substat = find_object_by_idtag(
+                object_list=gc_model.substations,
+                target_idtag=volt_lev.substation.idtag
+            )
+            if substat is None:
+                print(f'No substation found for BUS {cgmes_elm.name}')
+            # else form here get SubRegion and Region for Country..
 
         gcdev_elm = gcdev.Bus(name=cgmes_elm.name,
                               idtag=cgmes_elm.uuid,
@@ -239,8 +242,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                               # is_internal=False,
                               area=None,  # TODO get tp area
                               zone=None,  # TODO get tp zone
-                              substation=None,  # TODO
-                              voltage_level=volt_lev,  # TODO
+                              substation=substat,
+                              voltage_level=volt_lev,
                               country=None,  # TODO
                               # latitude=0.0,
                               # longitude=0.0,
@@ -962,7 +965,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                     bus_to=calc_node_t,
                     rate=op_rate,
                     rated_current=rated_current,
-                    #is_open=cgmes_elm.open,
+                    # is_open=cgmes_elm.open,
                     retained=cgmes_elm.retained,
                     normal_open=cgmes_elm.normalOpen
                 )
@@ -1193,6 +1196,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # get_gcdev_controllable_shunts()  TODO controllable shunts
     get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
 
+    print('debug')
     cgmes_model.emit_progress(100)
     cgmes_model.emit_text("Cgmes import done!")
 
@@ -1211,5 +1215,8 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # print("ET export time: ", end - start, "sec")
 
     # Export data converted from gridcal
+
+    # Run topology progcessing
+    tp_info = gc_model.process_topology_at()
 
     return gc_model

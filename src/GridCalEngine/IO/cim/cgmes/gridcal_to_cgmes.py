@@ -11,10 +11,11 @@ from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingMode,
+                                                    SynchronousMachineKind)
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
-
 
 # region UTILS
 
@@ -722,13 +723,29 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
     """
 
     for mc_elm in multicircuit_model.generators:
-        # Generating Units
+        # Generating Units ---------------------------------------------------
         cgmes_gen = create_cgmes_generating_unit(
             gen=mc_elm, cgmes_model=cgmes_model
         )
         cgmes_gen.name = mc_elm.name
         cgmes_gen.description = mc_elm.code
         # cgmes_gen.EquipmentContainer: cgmes.Substation
+        if cgmes_model.cgmes_assets.Substation_list:
+            subs = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.Substation_list,
+                target_uuid=mc_elm.bus.substation.idtag
+            )
+            if subs is not None:
+                cgmes_gen.EquipmentContainer = subs
+                # link back
+                if isinstance(subs.Equipments, list):
+                    subs.Equipment.append(cgmes_gen)
+                else:
+                    subs.Equipment = [cgmes_gen]
+            else:
+                print(f'No substation found for generator {mc_elm.name}')
+
         cgmes_gen.initialP = mc_elm.P
         cgmes_gen.maxOperatingP = mc_elm.Pmax
         cgmes_gen.minOperatingP = mc_elm.Pmin
@@ -1021,6 +1038,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_substations(gc_model, cgmes_model, logger)
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
 
+    get_cgmes_tn_nodes(gc_model, cgmes_model, logger)
     get_cgmes_cn_nodes_from_buses(gc_model, cgmes_model, logger)
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
