@@ -39,7 +39,7 @@ class NodalCapacityOptions:
         :param nodal_capacity_sign: if > 0 the generation is maximized, if < 0 the load is maximized
         :param method: NodalCapacityMethod
         """
-        self.opf_options = opf_options if opf_options else OptimalPowerFlowOptions()
-        self.capacity_nodes_idx = capacity_nodes_idx if capacity_nodes_idx else np.zeros(0, dtype=int)
+        self.opf_options = opf_options if opf_options is not None else OptimalPowerFlowOptions()
+        self.capacity_nodes_idx = capacity_nodes_idx if capacity_nodes_idx is not None else np.zeros(0, dtype=int)
         self.method = method
         self.nodal_capacity_sign = nodal_capacity_sign

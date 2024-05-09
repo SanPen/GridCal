@@ -3518,10 +3518,7 @@ class MultiCircuit:
         Delete Substation
         :param obj: Substation object
         """
-        for elm in self.connectivity_nodes:
-            if elm.bus_bar == obj:
-                elm.bus_bar = None
-
+        self.delete_connectivity_node(obj=obj.cn)
         self.bus_bars.remove(obj)
 
     def get_connectivity_nodes(self) -> List[dev.ConnectivityNode]:
