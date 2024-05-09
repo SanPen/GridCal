@@ -216,6 +216,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
         self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
         self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
+        self.ui.actionNodal_capacity.triggered.connect(self.run_nodal_capacity)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -2578,6 +2579,14 @@ class SimulationsMain(TimeEventsMain):
 
             if not self.session.is_this_running(SimulationTypes.NodalCapacityTimeSeries_run):
 
+                # get the power flow options from the GUI
+                options = self.get_nodal_capacity_options()
+
+                if len(options.capacity_nodes_idx) == 0:
+                    error_msg(text="For this simulation, you need to select some buses from the interface",
+                              title="Nodal hosting capacity")
+                    return
+
                 if self.ts_flag():
                     time_indices = self.get_time_indices()
                 else:
@@ -2591,8 +2600,7 @@ class SimulationsMain(TimeEventsMain):
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
 
-                # get the power flow options from the GUI
-                options = self.get_nodal_capacity_options()
+
 
                 if options is not None:
                     # create the OPF time series instance

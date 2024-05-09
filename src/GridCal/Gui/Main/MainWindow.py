@@ -4530,7 +4530,7 @@ class Ui_mainWindow(object):
         self.actionDetect_substations.setText(QCoreApplication.translate("mainWindow", u"Detect substations", None))
         self.actionNodal_capacity.setText(QCoreApplication.translate("mainWindow", u"Nodal capacity", None))
 #if QT_CONFIG(tooltip)
-        self.actionNodal_capacity.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Optimal nodal capacity</span></p><p>Run the nodal capacity calculation using the selected optimization method</p></body></html>", None))
+        self.actionNodal_capacity.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Nodal hosting capacity</span></p><p>Run the nodal hosting capacity calculation using the selected optimization method</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.grid_name_line_edit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the grid model", None))

@@ -176,6 +176,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Function to be called when Action 1 is selected.
         """
+        self.line_container.create_node(index=self.index)
         # Implement the functionality for Action 1 here
         pass
 

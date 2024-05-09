@@ -66,6 +66,8 @@ class IoMain(ConfigurationMain):
         self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
 
         self.cgmes_profiles_dict = {x.value: x for x in [cgmesProfile.EQ,
+                                                         cgmesProfile.OP,
+                                                         cgmesProfile.SC,
                                                          cgmesProfile.TP,
                                                          cgmesProfile.SV,
                                                          cgmesProfile.SSH,

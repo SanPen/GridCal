@@ -250,6 +250,9 @@ class MapWidget(QWidget):
         self.view_blat = 0
         self.view_tlat = 0
 
+        self.startLat = 0
+        self.startLon = 0
+
         # some cursors
         self.standard_cursor = QCursor(self.StandardCursor)
         self.box_select_cursor = QCursor(self.BoxSelectCursor)
@@ -336,17 +339,17 @@ class MapWidget(QWidget):
         self.disableMove = False
 
         # Set initial zoom level (change the values as needed)
-        # initial_zoom_factor = 1
-        # self.devXFact = 22.8
-        # self.devYFact = 33.0
-        initial_zoom_factor = 0.47
-        self.devXFact = 48.3
-        self.devYFact = 61.9
+        initial_zoom_factor = 1
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
         self.remapSchema()
 
         self.selTempDistance = 20
+
+        self.initialPos = True
+        level, longitude, latitude = self.get_level_and_position()
+        self.startLon = longitude
+        self.startLat = latitude
 
     def convertToQMouseEvent(self, sceneMouseEvent):
         # Get relevant information from QGraphicsSceneMouseEvent
@@ -481,6 +484,13 @@ class MapWidget(QWidget):
         if b == Qt.NoButton:
             pass
         elif b == Qt.LeftButton:
+
+            if self.initialPos:
+                level, longitude, latitude = self.get_level_and_position()
+                self.startLon = longitude
+                self.startLat = latitude
+                self.initialPos = False
+
             self.left_mbutton_down = True
             if self.shift_down:
                 (self.sbox_w, self.sbox_h) = (0, 0)
@@ -646,10 +656,23 @@ class MapWidget(QWidget):
         """
 
         level, longitude, latitude = self.get_level_and_position()
-        if longitude is not None:
-            longitude = longitude * self.devXFact  # TODO: improve transforming function from adhoc values to true transformer
-            latitude = -latitude * self.devYFact  # TODO: improve transforming function from adhoc values to true transformer
-            point = QPointF(longitude, latitude)
+
+        if self.initialPos:
+            self.startLon = longitude
+            self.startLat = latitude
+
+
+        if self.startLon is not None:
+
+            x, y = self.geo_to_view(longitude=self.startLon, latitude=self.startLat)
+
+            # x, y = self.geo_to_view(longitude=longitude, latitude=latitude)
+
+            he = self.view.height()
+            wi = self.view.width()
+
+            scale = math.pow(5 / level, 3.8)
+            point = QPointF((wi / 2) + (((wi / 2) - x) * scale), (he / 2) + (((he / 2) - y) * scale))
             self.view.centerOn(point)
 
     def mouseMoveEvent(self, event: QMouseEvent):

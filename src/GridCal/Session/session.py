@@ -537,7 +537,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.OPF_run)[1]
+        drv, results = self.get_driver_results(SimulationTypes.OPF_run)
         return results
 
     @property
