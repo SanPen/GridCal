@@ -437,7 +437,7 @@ def caseREE():
 
 if __name__ == '__main__':
     # example_3bus_acopf()
-    # case_3bus()
+    case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
@@ -448,4 +448,4 @@ if __name__ == '__main__':
     # case300()
     # casepegase13k()
     # casehvdc()
-    caseREE()
+    #caseREE()

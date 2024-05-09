@@ -97,8 +97,8 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                  M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc, acopf_mode=acopf_mode)
+    _, _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq, M=nll, ntapm=ntapm,
+                                                     ntapt=ntapt, ndc=ndc, nslcap=0, acopf_mode=acopf_mode)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -160,7 +160,8 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
 
 
 def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: bool, admittances, Cg, R, X, Sd, slack,
-                                from_idx, to_idx, f_nd_dc, t_nd_dc, fdc, tdc, ndc, pq, pv, Pf_nondisp, Pdcmax, V_U, V_L,
+                                from_idx, to_idx, f_nd_dc, t_nd_dc, fdc, tdc, ndc, capacity_nodes_idx,
+                                nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, V_U, V_L,
                                 P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                 k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
                                 acopf_mode) -> IpsFunctionReturn:
@@ -226,9 +227,9 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm0 = alltapm.copy()
     alltapt0 = alltapt.copy()
 
-    _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                  M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
-                                                  acopf_mode=acopf_mode)
+    _, _, _, _, _, _, _, _, _, tapm, tapt, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
+                                                     M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                     nslcap=nslcap, acopf_mode=acopf_mode)
 
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
@@ -241,18 +242,22 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     Cf = admittances.Cf
     Ct = admittances.Ct
 
-    f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, nll=nll, c0=c0, c1=c1, c2=c2, c_s=c_s, c_v=c_v,
-               ig=ig, npq=npq, ndc=ndc, Sbase=Sbase, acopf_mode=acopf_mode)
-    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, nll=nll, npq=npq, pv=pv, f_nd_dc=f_nd_dc,
-                      t_nd_dc=t_nd_dc, fdc=fdc, tdc=tdc, Pf_nondisp=Pf_nondisp, k_m=k_m, k_tau=k_tau, Vm_max=V_U,
-                      Sg_undis=Sg_undis, slack=slack, acopf_mode=acopf_mode)
-    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, pq=pq, k_m=k_m, k_tau=k_tau, Vm_max=V_U,
-                       Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max, tapm_min=tapm_min,
-                       tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
+    f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, nll=nll, c0=c0, c1=c1, c2=c2, c_s=c_s, nslcap=nslcap,
+               nodal_capacity_sign=nodal_capacity_sign, c_v=c_v, ig=ig, npq=npq, ndc=ndc, Sbase=Sbase,
+               acopf_mode=acopf_mode)
+    G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, nll=nll, nslcap=nslcap,
+                      nodal_capacity_sign=nodal_capacity_sign, capacity_nodes_idx=capacity_nodes_idx, npq=npq, pv=pv,
+                      f_nd_dc=f_nd_dc, t_nd_dc=t_nd_dc, fdc=fdc, tdc=tdc, Pf_nondisp=Pf_nondisp, k_m=k_m, k_tau=k_tau,
+                      Vm_max=V_U, Sg_undis=Sg_undis, slack=slack, acopf_mode=acopf_mode)
+    H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
+                       Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max,
+                       tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
                        rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ, acopf_mode=acopf_mode)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf,
-                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, slack=slack, pq=pq,
+                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, slack=slack,
+                                                       nslcap=nslcap, nodal_capacity_sign=nodal_capacity_sign,
+                                                       capacity_nodes_idx=capacity_nodes_idx, pq=pq,
                                                        pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, fdc=fdc,
                                                        tdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
                                                        F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
@@ -457,6 +462,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                           Sbus_pf: Union[CxVec, None] = None,
                           voltage_pf: Union[CxVec, None] = None,
                           plot_error: bool = False,
+                          optimize_nodal_capacity: bool = False,
+                          nodal_capacity_sign: float = 1.0,
+                          capacity_nodes_idx: Union[IntVec, None] = None,
                           logger: Logger = Logger()) -> NonlinearOPFResults:
     """
 
@@ -555,8 +563,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
-                           1.0)  # Cost squared since the slack is also squared
+        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
         c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
@@ -571,6 +578,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         sl_st0 = np.array([])
         sl_vmax0 = np.array([])
         sl_vmin0 = np.array([])
+
+    if optimize_nodal_capacity:
+        nslcap = len(capacity_nodes_idx)
+        slcap0 = np.zeros(nslcap)
+
+    else:
+        nslcap = 0
+        slcap0 = np.array([])
 
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus + n_slack + npv
@@ -618,6 +633,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                sl_st=sl_st0,
                sl_vmax=sl_vmax0,
                sl_vmin=sl_vmin0,
+               slcap=slcap0,
                tapm=tapm0,
                tapt=tapt0,
                Pfdc=Pf0_hvdc)
@@ -637,8 +653,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                             k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx,
-                                            gen_nondisp_idx,
-                                            Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
+                                            gen_nondisp_idx, Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
                                        verbose=opf_options.verbose,
                                        max_iter=opf_options.ips_iterations,
                                        tol=opf_options.ips_tolerance,
@@ -665,8 +680,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            func=compute_analytic_structures,
                                            arg=(
                                            admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc, t_nd_hvdc,
-                                           f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, pq, pv, Pf_nondisp, P_hvdc_max,
-                                           Vm_max, Vm_min, Pg_max,
+                                           f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, capacity_nodes_idx, nodal_capacity_sign,
+                                           nslcap, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
                                            Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
                                            alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, br_mon_idx,
                                            n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis, pf_options.control_Q,
@@ -678,15 +693,15 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # convert the solution to the problem variables
     (Va, Vm, Pg_dis, Qg_dis, sl_sf, sl_st,
-     sl_vmax, sl_vmin, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=n_gen_disp, nQg=n_gen_disp,
-                                                 M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
-                                                 acopf_mode=opf_options.acopf_mode)
+     sl_vmax, sl_vmin, slcap, tapm, tapt, Pfdc) = x2var(result.x, nVa=nbus, nVm=nbus, nPg=n_gen_disp, nQg=n_gen_disp,
+                                                        M=n_br_mon, npq=npq, ntapm=ntapm, ntapt=ntapt, ndc=n_disp_hvdc,
+                                                        nslcap=nslcap, acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
-    # pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
-    # pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
-    # pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
-    # pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
+    #pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
+    #pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
+    #pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
+    #pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
 
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
@@ -872,9 +887,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param Sbus_pf0: Sbus initial solution
     :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
-    :param optimize_nodal_capacity: Optimize the nodal capacity? (optional)
-    :param nodal_capacity_sign: if > 0 the generation is maximized, if < 0 the load is maximized
-    :param capacity_nodes_idx: Array of bus indices to optimize their nodal capacity for
+    :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param logger: Logger object
     :return: NonlinearOPFResults
     """
@@ -915,6 +928,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
                                            Sbus_pf=Sbus_pf[island.original_bus_idx],
                                            voltage_pf=voltage_pf[island.original_bus_idx],
                                            plot_error=plot_error,
+                                           optimize_nodal_capacity=optimize_nodal_capacity,
+                                           nodal_capacity_sign=nodal_capacity_sign,
+                                           capacity_nodes_idx=capacity_nodes_idx,
                                            logger=logger)
 
         # if pf_init and not island_res.converged:
