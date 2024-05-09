@@ -232,26 +232,17 @@ def create_cgmes_terminal(bus: Bus,
     if cond_eq and isinstance(cond_eq, cond_eq_type):
         term.ConductingEquipment = cond_eq
     term.connected = True
+
     tn = find_object_by_uuid(
         cgmes_model=cgmes_model,
         object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
         target_uuid=bus.idtag
     )
-
     if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
         term.TopologicalNode = tn
+        term.ConnectivityNode = tn.ConnectivityNodes
     else:
         logger.add_error(msg='No found TopologinalNode',
-                         device=bus,
-                         device_class=gcdev.Bus)
-
-    cn = find_object_by_uuid(cgmes_model=cgmes_model,
-                             object_list=cgmes_model.cgmes_assets.ConnectivityNode_list,
-                             target_uuid=bus.idtag)
-    if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
-        term.ConnectivityNode = cn
-    else:
-        logger.add_error(msg='No found ConnectivityNode',
                          device=bus,
                          device_class=gcdev.Bus)
 
@@ -491,8 +482,15 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
     for bus in multi_circuit_model.buses:
+        tn = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+            target_uuid=bus.idtag
+        )
+        if tn is not None:
+            continue
         object_template = cgmes_model.get_class_type("TopologicalNode")
-        tn = object_template(rdfid=bus.idtag)
+        tn = object_template(rdfid=form_rdfid(bus.idtag))
         tn.name = bus.name
         tn.shortName = bus.name
         tn.description = bus.code
@@ -519,32 +517,24 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
     return
 
 
-def get_cgmes_cn_nodes_from_buses(multi_circuit_model: MultiCircuit,
-                                  cgmes_model: CgmesCircuit,
-                                  logger: DataLogger) -> None:
-    for bus in multi_circuit_model.buses:
+def get_cgmes_cn_nodes_from_tn_nodes(multi_circuit_model: MultiCircuit,
+                                     cgmes_model: CgmesCircuit,
+                                     logger: DataLogger) -> None:
+    for tn in cgmes_model.cgmes_assets.TopologicalNode_list:
+        new_rdf_id = get_new_rdfid()
         object_template = cgmes_model.get_class_type("ConnectivityNode")
-        cn = object_template(rdfid=bus.idtag)
-        cn.name = bus.name
-        cn.shortName = bus.name
-        cn.description = bus.code
-        cn.BaseVoltage = find_object_by_vnom(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-            target_vnom=bus.Vnom
-        )
+        cn = object_template(rdfid=new_rdf_id)
+        cn.name = tn.name
+        cn.shortName = tn.shortName
+        cn.description = tn.description
+        cn.BaseVoltage = tn.BaseVoltage
 
-        if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
-            vl = find_object_by_uuid(
-                cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-                target_uuid=bus.voltage_level.idtag
-            )
-            cn.ConnectivityNodeContainer = vl
-            # link back
-            vl.TopologicalNode = cn
-        else:
-            print(f'Bus.voltage_level.idtag is None for {bus.name}')
+        tn.ConnectivityNodes = cn
+        cn.TopologicalNode = tn
+
+        if tn.ConnectivityNodeContainer:
+            tn.ConnectivityNodeContainer.ConnectivityNodes = cn
+            cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
 
         cgmes_model.add(cn)
 
@@ -1039,7 +1029,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
 
     get_cgmes_tn_nodes(gc_model, cgmes_model, logger)
-    get_cgmes_cn_nodes_from_buses(gc_model, cgmes_model, logger)
+    get_cgmes_cn_nodes_from_tn_nodes(gc_model, cgmes_model, logger)
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)
