@@ -21,6 +21,8 @@ class cgmesProfile(Enum):
     EQ_BD = 'EQ_BD'  # EquipmentBoundary
     TP_BD = 'TP_BD'  # TopologyBoundary
     EQ = 'EQ'  # Equipment
+    OP = 'OP'  # Operation
+    SC = 'SC'  # Short Circuit
     TP = 'TP'  # Topology
     SSH = 'SSH'  # SteadyStateHypothesis
     SV = 'SV'  # StateVariables
