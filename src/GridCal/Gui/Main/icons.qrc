@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/nodal_capacity.svg</file>
     <file>icons/spmat.svg</file>
     <file>icons/bus_bar_icon.svg</file>
     <file>icons/cn_icon.svg</file>

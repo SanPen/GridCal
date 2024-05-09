@@ -53,6 +53,8 @@ from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaA
 from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults
 from GridCalEngine.Simulations.NTC.ntc_ts_driver import (OptimalNetTransferCapacityTimeSeriesDriver,
                                                          OptimalNetTransferCapacityTimeSeriesResults)
+from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
+                                                                              NodalCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
 from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -85,7 +87,8 @@ DRIVER_OBJECTS = Union[
     NodeGroupsDriver,
     InputsAnalysisDriver,
     InvestmentsEvaluationDriver,
-    TopologyProcessorDriver
+    TopologyProcessorDriver,
+    NodalCapacityTimeSeriesDriver
 ]
 
 RESULTS_OBJECTS = Union[
@@ -108,7 +111,8 @@ RESULTS_OBJECTS = Union[
     OptimalNetTransferCapacityResults,
     OptimalNetTransferCapacityTimeSeriesResults,
     InputsAnalysisResults,
-    InvestmentsEvaluationResults
+    InvestmentsEvaluationResults,
+    NodalCapacityTimeSeriesResults
 ]
 
 
@@ -415,6 +419,12 @@ class SimulationSession:
                                                    time_indices=time_indices,
                                                    clustering_results=None)
 
+        elif study_name == NodalCapacityTimeSeriesDriver.tpe.value:
+            drv = NodalCapacityTimeSeriesDriver(grid=grid,
+                                                options=None,
+                                                time_indices=time_indices,
+                                                clustering_results=None)
+
         elif study_name == PowerFlowDriver.tpe.value:
             drv = PowerFlowDriver(grid=grid,
                                   options=None)
@@ -627,6 +637,15 @@ class SimulationSession:
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPF_NTC_TS_run)
+        return results
+
+    @property
+    def nodal_capacity_optimization_ts(self) -> NodalCapacityTimeSeriesResults:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.NodalCapacityTimeSeries_run)
         return results
 
     @property

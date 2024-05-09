@@ -89,8 +89,8 @@ class MapTemplateLine:
             ln1.locations.data = first_list
             ln2.locations.data = second_list
 
-            self.editor.create_line(ln1, diagram=self.editor.diagram)
-            self.editor.create_line(ln2, diagram=self.editor.diagram)
+            self.editor.create_line(ln1, diagram=self.editor.diagram, original=False)
+            self.editor.create_line(ln2, diagram=self.editor.diagram, original=False)
 
             self.disableLine()
 
