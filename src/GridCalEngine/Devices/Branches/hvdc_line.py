@@ -22,6 +22,7 @@ from typing import Tuple, Union
 from matplotlib import pyplot as plt
 
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.enumerations import HvdcControlType
@@ -136,7 +137,10 @@ class HvdcLine(BranchParent):
     HvdcLine
     """
 
-    def __init__(self, bus_from: Bus = None, bus_to: Bus = None, name='HVDC Line', idtag=None, active=True, code='',
+    def __init__(self, bus_from: Bus = None, bus_to: Bus = None,
+                 cn_from: ConnectivityNode = None,
+                 cn_to: ConnectivityNode = None,
+                 name='HVDC Line', idtag=None, active=True, code='',
                  rate=1.0, Pset=0.0, r=1e-20, loss_factor=0.0, Vset_f=1.0, Vset_t=1.0, length=1.0, mttf=0.0, mttr=0.0,
                  overload_cost=1000.0, min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0, contingency_factor=1.0, protection_rating_factor: float = 1.4,
@@ -170,8 +174,8 @@ class HvdcLine(BranchParent):
                               code=code,
                               bus_from=bus_from,
                               bus_to=bus_to,
-                              cn_from=None,
-                              cn_to=None,
+                              cn_from=cn_from,
+                              cn_to=cn_to,
                               active=active,
                               rate=rate,
                               contingency_factor=contingency_factor,

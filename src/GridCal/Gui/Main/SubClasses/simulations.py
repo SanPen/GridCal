@@ -41,7 +41,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode, ResultTypes, SimulationTypes)
+                                        BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -118,6 +118,15 @@ class SimulationsMain(TimeEventsMain):
         self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
         self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
         self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
+
+        # opf solvers dictionary
+        self.nodal_capacity_methods_dict = OrderedDict()
+        self.nodal_capacity_methods_dict[
+            NodalCapacityMethod.LinearOptimization.value] = NodalCapacityMethod.LinearOptimization
+        self.nodal_capacity_methods_dict[
+            NodalCapacityMethod.NonlinearOptimization.value] = NodalCapacityMethod.NonlinearOptimization
+        self.ui.nodal_capacity_method_comboBox.setModel(
+            gf.get_list_model(list(self.nodal_capacity_methods_dict.keys())))
 
         # branch types for reduction
         mdl = gf.get_list_model([DeviceType.LineDevice.value,
@@ -207,6 +216,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.actionInvestments_evaluation.triggered.connect(self.run_investments_evaluation)
         self.ui.actionProcess_topology.triggered.connect(self.run_topology_processor)
         self.ui.actionUse_clustering.triggered.connect(self.activate_clustering)
+        self.ui.actionNodal_capacity.triggered.connect(self.run_nodal_capacity)
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
@@ -365,7 +375,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Check if there are valid time series
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if self.circuit.time_profile is not None:
                 if len(self.circuit.time_profile) > 0:
                     return True
@@ -715,7 +725,7 @@ class SimulationsMain(TimeEventsMain):
         Run a power flow simulation
         :return:
         """
-        if self.circuit.get_bus_number():
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.PowerFlow_run):
 
@@ -786,7 +796,7 @@ class SimulationsMain(TimeEventsMain):
         without any load or topology change
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.ShortCircuit_run):
 
                 pf_results = self.session.power_flow
@@ -891,7 +901,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.LinearAnalysis_run):
 
                 self.add_simulation(SimulationTypes.LinearAnalysis_run)
@@ -942,7 +952,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run PTDF time series simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if self.valid_time_series():
                 if not self.session.is_this_running(SimulationTypes.LinearAnalysis_TS_run):
 
@@ -1028,7 +1038,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if len(self.circuit.contingency_groups) > 0:
 
@@ -1086,7 +1096,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if len(self.circuit.contingency_groups) > 0:
 
@@ -1150,7 +1160,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.NetTransferCapacity_run):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
@@ -1262,7 +1272,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if self.valid_time_series():
                 if not self.session.is_this_running(SimulationTypes.NetTransferCapacity_run):
@@ -1387,7 +1397,7 @@ class SimulationsMain(TimeEventsMain):
         :return:
         """
 
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             pf_drv, pf_results = self.session.power_flow_driver_and_results
 
@@ -1569,7 +1579,7 @@ class SimulationsMain(TimeEventsMain):
         Run a time series power flow simulation in a separated thread from the gui
         @return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.PowerFlowTimeSeries_run):
                 if self.valid_time_series():
                     self.LOCK()
@@ -1635,7 +1645,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.MonteCarlo_run):
 
@@ -1822,7 +1832,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run OPF simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPF_run):
 
@@ -1875,7 +1885,7 @@ class SimulationsMain(TimeEventsMain):
         """
         OPF Time Series run
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPFTimeSeries_run):
 
@@ -1946,7 +1956,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Copy the OPF generation values to the Time series object and execute a time series simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if self.circuit.time_profile is not None:
 
@@ -2028,7 +2038,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run OPF simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPF_NTC_run):
 
@@ -2075,7 +2085,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run OPF NTC time series simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPF_NTC_TS_run):
 
@@ -2200,7 +2210,7 @@ class SimulationsMain(TimeEventsMain):
 
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.InputsAnalysis_run):
 
@@ -2240,7 +2250,7 @@ class SimulationsMain(TimeEventsMain):
         Add storage markers to the schematic
         """
 
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if self.ui.actionStorage_location_suggestion.isChecked():
 
@@ -2261,10 +2271,10 @@ class SimulationsMain(TimeEventsMain):
                         fmax = np.max(frequencies)
 
                         # prepare the color map
-                        seq = [(0, 'green'),
-                               (0.6, 'orange'),
-                               (1.0, 'red')]
-                        cmap = LinearSegmentedColormap.from_list('vcolors', seq)
+                        seq: List[Tuple[float, str]] = [(0, 'green'),
+                                                        (0.6, 'orange'),
+                                                        (1.0, 'red')]
+                        cmap = LinearSegmentedColormap.from_list(name='vcolors', colors=seq)
 
                         self.buses_for_storage = list()
                         colors = list()
@@ -2305,7 +2315,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run the sigma analysis
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             options = self.get_selected_power_flow_options()
             bus_names = np.array([b.name for b in self.circuit.buses])
             sigma_driver = sim.SigmaAnalysisDriver(grid=self.circuit, options=options)
@@ -2325,7 +2335,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run investments evaluation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if len(self.circuit.investments_groups) > 0:
 
@@ -2415,7 +2425,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run a clustering analysis
         """
-        if self.circuit.get_bus_number() > 0 and self.circuit.get_time_number() > 0:
+        if self.circuit.valid_for_simulation() > 0 and self.circuit.get_time_number() > 0:
 
             if not self.session.is_this_running(SimulationTypes.ClusteringAnalysis_run):
 
@@ -2542,3 +2552,99 @@ class SimulationsMain(TimeEventsMain):
                 warning_msg("There are no clustering results.")
                 self.ui.actionUse_clustering.setChecked(False)
                 return None
+
+    def get_nodal_capacity_options(self) -> sim.NodalCapacityOptions:
+        """
+        Get the nodal capacity options
+        :return: NodalCapacityOptions
+        """
+
+        bus_dict = self.circuit.get_bus_index_dict()
+        sel_buses = self.get_selected_buses()
+        capacity_nodes_idx = np.array([bus_dict[b] for _, b, _ in sel_buses])
+
+        method = self.nodal_capacity_methods_dict[self.ui.nodal_capacity_method_comboBox.currentText()]
+
+        opt = sim.NodalCapacityOptions(opf_options=self.get_opf_options(),
+                                       capacity_nodes_idx=capacity_nodes_idx,
+                                       method=method)
+
+        return opt
+
+    def run_nodal_capacity(self):
+        """
+        OPF Time Series run
+        """
+        if self.circuit.valid_for_simulation():
+
+            if not self.session.is_this_running(SimulationTypes.NodalCapacityTimeSeries_run):
+
+                # get the power flow options from the GUI
+                options = self.get_nodal_capacity_options()
+
+                if len(options.capacity_nodes_idx) == 0:
+                    error_msg(text="For this simulation, you need to select some buses from the interface",
+                              title="Nodal hosting capacity")
+                    return
+
+                if self.ts_flag():
+                    time_indices = self.get_time_indices()
+                else:
+                    time_indices = [None]
+
+                self.add_simulation(SimulationTypes.NodalCapacityTimeSeries_run)
+
+                self.LOCK()
+
+                # Compile the grid
+                self.ui.progress_label.setText('Compiling the grid...')
+                QtGui.QGuiApplication.processEvents()
+
+
+
+                if options is not None:
+                    # create the OPF time series instance
+                    # if non_sequential:
+                    drv = sim.NodalCapacityTimeSeriesDriver(grid=self.circuit,
+                                                            options=options,
+                                                            time_indices=time_indices,
+                                                            clustering_results=self.get_clustering_results())
+
+                    drv.engine = self.get_preferred_engine()
+
+                    self.session.run(drv,
+                                     post_func=self.post_nodal_capacity,
+                                     prog_func=self.ui.progressBar.setValue,
+                                     text_func=self.ui.progress_label.setText)
+
+            else:
+                warning_msg('Another OPF time series is running already...')
+
+        else:
+            pass
+
+    def post_nodal_capacity(self):
+        """
+        Post OPF Time Series
+        """
+
+        results = self.session.nodal_capacity_optimization_ts
+
+        if results is not None:
+
+            # expand the clusters
+            results.expand_clustered_results()
+
+            # remove from the current simulations
+            self.remove_simulation(SimulationTypes.NodalCapacityTimeSeries_run)
+
+            if results is not None:
+                self.update_available_results()
+
+                self.colour_diagrams()
+
+        else:
+            pass
+
+        if not self.session.is_anything_running():
+            self.UNLOCK()

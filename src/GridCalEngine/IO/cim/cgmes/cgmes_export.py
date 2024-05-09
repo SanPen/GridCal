@@ -16,24 +16,31 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import zipfile
-from io import StringIO, BytesIO
+from io import BytesIO
 from rdflib import OWL
 from rdflib.graph import Graph
 from rdflib.namespace import RDF, RDFS
+from typing import List
 
 import json
 import os
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.export_template_data import (RDFS_serialization_2_4_15, RDFS_serialization_3_0_0,
-                                                             RDFS_INFO_2_4_15, RDFS_INFO_3_0_0)
+from GridCalEngine.IO.cim.cgmes.rdfs_serializations import RDFS_serialization_2_4_15, RDFS_serialization_3_0_0
+from GridCalEngine.IO.cim.cgmes.rdfs_infos import RDFS_INFO_2_4_15, RDFS_INFO_3_0_0
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.enumerations import CGMESVersions
 import xml.etree.ElementTree as Et
 import xml.dom.minidom
 
 
 class CimExporter:
-    def __init__(self, cgmes_circuit: CgmesCircuit):
+    def __init__(self, cgmes_circuit: CgmesCircuit, profiles_to_export: List[cgmesProfile], one_file_per_profile: bool):
         self.cgmes_circuit = cgmes_circuit
+
+        self.profiles_to_export = profiles_to_export
+        self.one_file_per_profile = one_file_per_profile
+        self.export_OP = False
+        self.export_SC = False
 
         current_directory = os.path.dirname(__file__)
 
@@ -164,33 +171,39 @@ class CimExporter:
 
     def export(self, file_name):
         fname = os.path.basename(file_name)
+        fpath = os.path.dirname(file_name)
         name, extension = os.path.splitext(fname)
 
-        if self.cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
-            profiles_to_export = ['EQ', 'SSH', 'SV', 'TP']
-        elif self.cgmes_circuit.cgmes_version == CGMESVersions.v3_0_0:
-            profiles_to_export = ['EQ', 'OP', 'SC', 'SSH', 'SV', 'TP']
-        else:
-            raise ValueError(f"Unrecognized CGMES version {self.cgmes_circuit.cgmes_version}")
+        profiles_to_export = []
+        for prof_enum in self.profiles_to_export:
+            if self.cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
+                if prof_enum.value not in ["OP", "SC"]:
+                    profiles_to_export.append(prof_enum.value)
+            elif self.cgmes_circuit.cgmes_version == CGMESVersions.v3_0_0:
+                profiles_to_export.append(prof_enum.value)
+            else:
+                raise ValueError(f"Unrecognized CGMES version {self.cgmes_circuit.cgmes_version}")
 
-        i = 1
-        with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+        if self.one_file_per_profile:
+            i = 1
             for prof in profiles_to_export:
-                self.cgmes_circuit.emit_text(f"Export {prof} profile file")
-                self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
-                i += 1
-                with BytesIO() as buffer:
-                    self.serialize(stream=buffer, profile=prof)
-                    f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
-
-            # with open(f"{name}_EQ{extension}", 'wb') as f:
-            #     self.serialize(f, "EQ")
-            # with open(f"{name}_SSH{extension}", 'wb') as f:
-            #     self.serialize(f, "SSH")
-            # with open(f"{name}_SV{extension}", 'wb') as f:
-            #     self.serialize(f, "SV")
-            # with open(f"{name}_TP{extension}", 'wb') as f:
-            #     self.serialize(f, "TP")
+                with zipfile.ZipFile(os.path.join(fpath, f"{name}_{prof}{extension}"), 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+                    self.cgmes_circuit.emit_text(f"Export {prof} profile file")
+                    self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
+                    i += 1
+                    with BytesIO() as buffer:
+                        self.serialize(stream=buffer, profile=prof)
+                        f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
+        else:
+            i = 1
+            with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+                for prof in profiles_to_export:
+                    self.cgmes_circuit.emit_text(f"Export {prof} profile file")
+                    self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
+                    i += 1
+                    with BytesIO() as buffer:
+                        self.serialize(stream=buffer, profile=prof)
+                        f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
 
     def serialize(self, stream, profile):
         root = Et.Element("rdf:RDF", self.namespaces)
@@ -280,10 +293,10 @@ class CimExporter:
             return True
         else:
             if self.cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15 and profile == "EQ":
-                if True:  # There will be a boolean for operation profile
+                if self.export_OP:
                     if "OP" in attr_filters["Profile"]:
                         return True
-                if True:  # There will be a boolean for short circuit profile
+                if self.export_SC:
                     if "SC" in attr_filters["Profile"]:
                         return True
         return False
@@ -297,7 +310,7 @@ class CimExporter:
             for obj in objects:
                 obj_dict = obj.__dict__
                 if self.about_dict.get(profile) is not None and class_name in self.about_dict.get(profile):
-                    element = Et.Element("cim:" + class_name, {"rdf:about": "_" + obj.rdfid})
+                    element = Et.Element("cim:" + class_name, {"rdf:about": "#_" + obj.rdfid})
                 else:
                     element = Et.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
                 has_child = False
