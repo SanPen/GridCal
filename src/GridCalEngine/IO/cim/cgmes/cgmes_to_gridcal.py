@@ -212,6 +212,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
 
         volt_lev, substat = None, None
         # if cgmes_elm.ConnectivityNodeContainer != '':     for IEEE14 import when CoNoC is missing
+        # TODO check if the container is a VoltageLevel or a Line
         volt_lev = find_object_by_idtag(
             object_list=gc_model.voltage_levels,
             target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
@@ -289,7 +290,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
             default_bus=bus
         )
 
-        # gcdev_model.connectivity_nodes.append(gcdev_elm)
+        gcdev_model.connectivity_nodes.append(gcdev_elm)
         cn_node_dict[gcdev_elm.idtag] = gcdev_elm
 
     return cn_node_dict
@@ -954,18 +955,22 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                 else:
                     rated_current = op_rate
 
+                active = True
+                if cgmes_elm.open:
+                    active = False
+
                 gcdev_elm = gcdev.Switch(
                     idtag=cgmes_elm.uuid,
                     code=cgmes_elm.description,
                     name=cgmes_elm.name,
-                    active=True,
+                    active=active,
                     cn_from=cn_f,
                     cn_to=cn_t,
                     bus_from=calc_node_f,
                     bus_to=calc_node_t,
                     rate=op_rate,
                     rated_current=rated_current,
-                    # is_open=cgmes_elm.open,
+                    # is_open=cgmes_elm.open,   # not used
                     retained=cgmes_elm.retained,
                     normal_open=cgmes_elm.normalOpen
                 )
@@ -1085,7 +1090,7 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                     name=cgmes_elm.name,
                     idtag=cgmes_elm.uuid,
                     code=cgmes_elm.description,
-                    # substation=substation,  #TODO fix it with VoltageLevel
+                    # voltage_level=
                     cn=cn
                 )
                 gcdev_model.add_bus_bar(gcdev_elm)
@@ -1183,7 +1188,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, sv_volt_dict, logger)
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model, calc_node_dict, logger)
-    get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    # get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
 
     get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
