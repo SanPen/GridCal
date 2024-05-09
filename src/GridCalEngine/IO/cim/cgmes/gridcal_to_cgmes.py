@@ -232,26 +232,17 @@ def create_cgmes_terminal(bus: Bus,
     if cond_eq and isinstance(cond_eq, cond_eq_type):
         term.ConductingEquipment = cond_eq
     term.connected = True
+
     tn = find_object_by_uuid(
         cgmes_model=cgmes_model,
         object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
         target_uuid=bus.idtag
     )
-
     if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
         term.TopologicalNode = tn
+        term.ConnectivityNode = tn.ConnectivityNodes
     else:
         logger.add_error(msg='No found TopologinalNode',
-                         device=bus,
-                         device_class=gcdev.Bus)
-
-    cn = find_object_by_uuid(cgmes_model=cgmes_model,
-                             object_list=cgmes_model.cgmes_assets.ConnectivityNode_list,
-                             target_uuid=bus.idtag)
-    if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
-        term.ConnectivityNode = cn
-    else:
-        logger.add_error(msg='No found ConnectivityNode',
                          device=bus,
                          device_class=gcdev.Bus)
 
@@ -491,8 +482,15 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
     for bus in multi_circuit_model.buses:
+        tn = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+            target_uuid=bus.idtag
+        )
+        if tn is not None:
+            continue
         object_template = cgmes_model.get_class_type("TopologicalNode")
-        tn = object_template(rdfid=bus.idtag)
+        tn = object_template(rdfid=form_rdfid(bus.idtag))
         tn.name = bus.name
         tn.shortName = bus.name
         tn.description = bus.code
@@ -519,32 +517,24 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
     return
 
 
-def get_cgmes_cn_nodes_from_buses(multi_circuit_model: MultiCircuit,
-                                  cgmes_model: CgmesCircuit,
-                                  logger: DataLogger) -> None:
-    for bus in multi_circuit_model.buses:
+def get_cgmes_cn_nodes_from_tn_nodes(multi_circuit_model: MultiCircuit,
+                                     cgmes_model: CgmesCircuit,
+                                     logger: DataLogger) -> None:
+    for tn in cgmes_model.cgmes_assets.TopologicalNode_list:
+        new_rdf_id = get_new_rdfid()
         object_template = cgmes_model.get_class_type("ConnectivityNode")
-        cn = object_template(rdfid=bus.idtag)
-        cn.name = bus.name
-        cn.shortName = bus.name
-        cn.description = bus.code
-        cn.BaseVoltage = find_object_by_vnom(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-            target_vnom=bus.Vnom
-        )
+        cn = object_template(rdfid=new_rdf_id)
+        cn.name = tn.name
+        cn.shortName = tn.shortName
+        cn.description = tn.description
+        cn.BaseVoltage = tn.BaseVoltage
 
-        if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
-            vl = find_object_by_uuid(
-                cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-                target_uuid=bus.voltage_level.idtag
-            )
-            cn.ConnectivityNodeContainer = vl
-            # link back
-            vl.TopologicalNode = cn
-        else:
-            print(f'Bus.voltage_level.idtag is None for {bus.name}')
+        tn.ConnectivityNodes = cn
+        cn.TopologicalNode = tn
+
+        if tn.ConnectivityNodeContainer:
+            tn.ConnectivityNodeContainer.ConnectivityNodes = cn
+            cn.ConnectivityNodeContainer = tn.ConnectivityNodeContainer
 
         cgmes_model.add(cn)
 
@@ -751,17 +741,17 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_gen.minOperatingP = mc_elm.Pmin
         cgmes_gen.normalPF = mc_elm.Pf  # power_factor
 
-        # Synchronous Machine
+        # Synchronous Machine ------------------------------------------------
         object_template = cgmes_model.get_class_type("SynchronousMachine")
         cgmes_syn = object_template(rdfid=form_rdfid(mc_elm.idtag))
         cgmes_syn.description = mc_elm.code
         cgmes_syn.name = mc_elm.name
-        # cgmes_syn.aggregate is optional, not exported\
+        # cgmes_syn.aggregate is optional, not exported
         if mc_elm.bus.is_slack:
             cgmes_syn.referencePriority = 1
         else:
             cgmes_syn.referencePriority = 0
-        # cgmes_syn.EquipmentContainer: VoltageLevel
+        # TODO cgmes_syn.EquipmentContainer: VoltageLevel
         # TODO implement control_node in MultiCircuit
         # has_control: do we have control
         # control_type: voltage or power control, ..
@@ -769,15 +759,26 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         if mc_elm.is_controlled:
             cgmes_syn.RegulatingControl = create_cgmes_regulating_control(cgmes_syn, cgmes_model)
             cgmes_syn.RegulatingControl.RegulatingCondEq = cgmes_syn
+            cgmes_syn.controlEnabled = True
+        else:
+            cgmes_syn.controlEnabled = False
 
-        # cgmes_syn.ratedPowerFactor =
+        # Todo cgmes_syn.ratedPowerFactor = 1.0
         cgmes_syn.ratedS = mc_elm.Snom
         cgmes_syn.GeneratingUnit = cgmes_gen  # linking them together
         cgmes_gen.RotatingMachine = cgmes_syn  # linking them together
         cgmes_syn.maxQ = mc_elm.Qmax
         cgmes_syn.minQ = mc_elm.Qmin
+        cgmes_syn.r = mc_elm.R1 if mc_elm.R1 != 1e-20 else None  # default value not exported
+        cgmes_syn.p = -mc_elm.P  # negative sign!
+        cgmes_gen.q = -mc_elm.P * np.tan(np.arccos(mc_elm.Pf))
+        # TODO cgmes_syn.qPercent =
+        if cgmes_syn.p > 0:
+            cgmes_syn.operatingMode = SynchronousMachineOperatingMode.generator
+            cgmes_syn.type = SynchronousMachineKind.generator
+            # TODO motor, condenser ?
+
         cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
-        # ...
 
         cgmes_model.add(cgmes_syn)
 
@@ -1039,7 +1040,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
 
     get_cgmes_tn_nodes(gc_model, cgmes_model, logger)
-    get_cgmes_cn_nodes_from_buses(gc_model, cgmes_model, logger)
+    get_cgmes_cn_nodes_from_tn_nodes(gc_model, cgmes_model, logger)
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)
