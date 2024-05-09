@@ -441,6 +441,13 @@ class MultiCircuit:
     def __str__(self):
         return str(self.name)
 
+    def valid_for_simulation(self) -> bool:
+        """
+        Checks if the data could be simulated
+        :return: true / false
+        """
+        return (self.get_bus_number() + self.get_connectivity_nodes_number()) > 0
+
     @property
     def snapshot_time(self) -> dateslib.datetime:
         """
@@ -1086,6 +1093,13 @@ class MultiCircuit:
         :return:
         """
         return self.switch_devices
+
+    def get_switches_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.switch_devices)
 
     def get_hvdc(self) -> List[dev.HvdcLine]:
         """
@@ -3516,6 +3530,12 @@ class MultiCircuit:
         """
         return self.connectivity_nodes
 
+    def get_connectivity_nodes_number(self) -> int:
+        """
+        Get all connectivity nodes
+        """
+        return len(self.connectivity_nodes)
+
     def add_connectivity_node(self, obj: dev.ConnectivityNode):
         """
         Add Substation
@@ -4257,6 +4277,8 @@ class MultiCircuit:
         """
         hvdc = dev.HvdcLine(bus_from=line.bus_from,
                             bus_to=line.bus_to,
+                            cn_from=line.cn_from,
+                            cn_to=line.cn_to,
                             name='HVDC Line',
                             active=line.active,
                             rate=line.rate,
@@ -4281,6 +4303,8 @@ class MultiCircuit:
         """
         transformer = dev.Transformer2W(bus_from=line.bus_from,
                                         bus_to=line.bus_to,
+                                        cn_from=line.cn_from,
+                                        cn_to=line.cn_to,
                                         name='Transformer',
                                         active=line.active,
                                         rate=line.rate,
@@ -4336,7 +4360,7 @@ class MultiCircuit:
         batt.vset_prof = gen.Vset_prof
 
         # add device to the circuit
-        self.add_battery(gen.bus, batt)
+        self.add_battery(bus=gen.bus, api_obj=batt, cn=gen.cn)
 
         # delete the line from the circuit
         self.delete_injection_device(gen)
@@ -4351,6 +4375,8 @@ class MultiCircuit:
         """
         vsc = dev.VSC(bus_from=line.bus_from,
                       bus_to=line.bus_to,
+                      cn_from=line.cn_from,
+                      cn_to=line.cn_to,
                       name='VSC',
                       active=line.active,
                       rate=line.rate,
@@ -4379,6 +4405,8 @@ class MultiCircuit:
         """
         upfc = dev.UPFC(bus_from=line.bus_from,
                         bus_to=line.bus_to,
+                        cn_from=line.cn_from,
+                        cn_to=line.cn_to,
                         name='UPFC',
                         active=line.active,
                         rate=line.rate,
@@ -4404,12 +4432,41 @@ class MultiCircuit:
         """
         series_reactance = dev.SeriesReactance(bus_from=line.bus_from,
                                                bus_to=line.bus_to,
+                                               cn_from=line.cn_from,
+                                               cn_to=line.cn_to,
                                                name='Series reactance',
                                                active=line.active,
                                                rate=line.rate,
                                                r=line.R,
                                                x=line.X,
                                                )
+
+        series_reactance.active_prof = line.active_prof
+        series_reactance.rate_prof = line.rate_prof
+
+        # add device to the circuit
+        self.add_series_reactance(series_reactance)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return series_reactance
+
+    def convert_line_to_switch(self, line: dev.Line) -> dev.Switch:
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: SeriesReactance
+        """
+        series_reactance = dev.Switch(bus_from=line.bus_from,
+                                      bus_to=line.bus_to,
+                                      cn_from=line.cn_from,
+                                      cn_to=line.cn_to,
+                                      name='Switch',
+                                      active=line.active,
+                                      rate=line.rate,
+                                      r=line.R,
+                                      x=line.X)
 
         series_reactance.active_prof = line.active_prof
         series_reactance.rate_prof = line.rate_prof
@@ -5099,6 +5156,30 @@ class MultiCircuit:
 
                 if devices_by_type is None:
                     groups[elm.bus] = {elm.device_type: [elm]}
+                else:
+                    lst = devices_by_type.get(elm.device_type, None)
+                    if lst is None:
+                        devices_by_type[elm.device_type] = [elm]
+                    else:
+                        devices_by_type[elm.device_type].append(elm)
+
+        return groups
+
+    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        """
+        groups: Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
+
+        for lst in self.get_injection_devices_lists():
+
+            for elm in lst:
+
+                devices_by_type = groups.get(elm.cn, None)
+
+                if devices_by_type is None:
+                    groups[elm.cn] = {elm.device_type: [elm]}
                 else:
                     lst = devices_by_type.get(elm.device_type, None)
                     if lst is None:

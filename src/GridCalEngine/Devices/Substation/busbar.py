@@ -43,6 +43,7 @@ class BusBar(EditableDevice):
         self.voltage_level: Union[None, VoltageLevel] = voltage_level
 
         self._cn: ConnectivityNode = cn if cn is not None else ConnectivityNode(name=name)
+        self._cn.internal = True  # always
 
         self.register("voltage_level", "", DeviceType.VoltageLevelDevice,
                       "Substation voltage level (optional)")

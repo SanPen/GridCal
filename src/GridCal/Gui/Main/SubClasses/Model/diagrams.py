@@ -234,11 +234,10 @@ class DiagramsMain(CompiledArraysMain):
                 selected = self.get_selected_buses()
 
                 if len(selected) == 0:
-                    buses = self.circuit.buses
+                    diagram.center_nodes(elements=None)
                 else:
-                    buses = [b for i, b, graphic in selected]
-
-                diagram.center_nodes(elements=buses)
+                    buses = [bus for i, bus, graphic in selected]
+                    diagram.center_nodes(elements=buses)
 
     def get_selected_buses(self) -> List[Tuple[int, dev.Bus, BusGraphicItem]]:
         """
@@ -772,6 +771,8 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram_widget, SchematicWidget):
                 # set pointer to the circuit
                 diagram = generate_bus_branch_diagram(buses=self.circuit.get_buses(),
+                                                      busbars=self.circuit.get_bus_bars(),
+                                                      connecivity_nodes=self.circuit.get_connectivity_nodes(),
                                                       lines=self.circuit.get_lines(),
                                                       dc_lines=self.circuit.get_dc_lines(),
                                                       transformers2w=self.circuit.get_transformers2w(),
@@ -805,6 +806,8 @@ class DiagramsMain(CompiledArraysMain):
         :return DiagramEditorWidget
         """
         diagram = generate_bus_branch_diagram(buses=self.circuit.get_buses(),
+                                              busbars=self.circuit.get_bus_bars(),
+                                              connecivity_nodes=self.circuit.get_connectivity_nodes(),
                                               lines=self.circuit.get_lines(),
                                               dc_lines=self.circuit.get_dc_lines(),
                                               transformers2w=self.circuit.get_transformers2w(),
@@ -1186,7 +1189,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Get the x, y coordinates of the buses from their latitude and longitude
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
@@ -1282,7 +1285,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Add contingencies from the schematic selection
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             # get the selected buses
             selected = self.get_selected_devices()
@@ -1316,7 +1319,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Add contingencies from the schematic selection
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             # get the selected investment devices
             selected = self.get_selected_devices()

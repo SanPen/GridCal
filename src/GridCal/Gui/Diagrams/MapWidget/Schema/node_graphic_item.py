@@ -16,7 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMenu
+from GridCal.Gui.GuiFunctions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
@@ -45,7 +46,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
                  api_object: LineLocation,
                  lat: float,
                  lon: float,
-                 r: float = 20.0):
+                 r: float = 0.006
+    ):
         """
 
         :param editor:
@@ -68,6 +70,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.editor: GridMapWidget = editor
         self.line_container: MapTemplateLine = line_container
         self.api_object: LineLocation = api_object
+        self.index = -1
 
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
@@ -75,7 +78,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
 
         # Create a pen with reduced line width
-        self.change_pen_width(1)
+        self.change_pen_width(0.001)
 
         # self.colorInner = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         # self.colorBorder = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -89,6 +92,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.hovered = False
         self.needsUpdateFirst = True
         self.needsUpdateSecond = True
+        self.enabled = True
 
     def updateRealPos(self) -> None:
         """
@@ -105,11 +109,13 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
 
         :return:
         """
-        self.updateRealPos()
-        self.needsUpdateFirst = True
-        self.needsUpdateSecond = True
-        self.line_container.update_connectors()
-        self.updateDiagram()
+
+        if self.enabled:
+            self.updateRealPos()
+            self.needsUpdateFirst = True
+            self.needsUpdateSecond = True
+            self.line_container.update_connectors()
+            self.updateDiagram()
 
     def updateDiagram(self):
         """
@@ -133,16 +139,60 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Event handler for mouse move events.
         """
-        super().mouseMoveEvent(event)
-        if self.hovered:
-            self.updatePosition()
+        if self.enabled:
+            super().mouseMoveEvent(event)
+            if self.hovered and self.enabled:
+                self.updatePosition()
 
     def mousePressEvent(self, event):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        self.editor.disableMove = True
+
+        if self.enabled:
+            self.editor.disableMove = True
+            if event.button() == Qt.RightButton:
+                menu = QMenu()
+
+                add_menu_entry(menu=menu,
+                               text="Add",
+                               icon_path="",
+                               function_ptr=self.AddFunction)
+
+                add_menu_entry(menu=menu,
+                               text="Split",
+                               icon_path="",
+                               function_ptr=self.SplitFunction)
+
+                add_menu_entry(menu=menu,
+                               text="Remove",
+                               icon_path="",
+                               function_ptr=self.RemoveFunction)
+
+                menu.exec_(event.screenPos())
+
+    def AddFunction(self):
+        """
+        Function to be called when Action 1 is selected.
+        """
+        # Implement the functionality for Action 1 here
+        pass
+
+    def SplitFunction(self):
+        """
+        Function to be called when Action 1 is selected.
+        """
+        self.line_container.split_Line(index=self.index)
+        # Implement the functionality for Action 1 here
+        pass
+
+    def RemoveFunction(self):
+        """
+        Function to be called when Action 1 is selected.
+        """
+        # Implement the functionality for Action 1 here
+        pass
 
     def mouseReleaseEvent(self, event):
         """

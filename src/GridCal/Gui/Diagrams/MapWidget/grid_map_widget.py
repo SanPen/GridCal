@@ -286,6 +286,9 @@ class GridMapWidget(MapWidget):
                     self.add_to_scene(graphic_object=graphic_obj)
 
                     nodSiz = line_container.number_of_nodes()
+
+                    graphic_obj.index = nodSiz
+
                     if nodSiz > 1:
                         i1 = nodSiz - 1
                         i2 = nodSiz - 2

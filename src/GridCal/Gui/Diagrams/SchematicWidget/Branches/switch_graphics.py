@@ -33,7 +33,8 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
                  to_port: Union[BarTerminalItem, RoundTerminalItem, None],
                  editor: SchematicWidget,
                  width=5,
-                 api_object: Switch = None):
+                 api_object: Switch = None,
+                 draw_labels: bool = True):
         """
 
         :param from_port:
@@ -41,13 +42,15 @@ class SwitchGraphicItem(LineGraphicTemplateItem):
         :param editor:
         :param width:
         :param api_object:
+        :param draw_labels:
         """
         LineGraphicTemplateItem.__init__(self=self,
                                          from_port=from_port,
                                          to_port=to_port,
                                          editor=editor,
                                          width=width,
-                                         api_object=api_object)
+                                         api_object=api_object,
+                                         draw_labels=draw_labels)
 
     def contextMenuEvent(self, event):
         """

@@ -329,7 +329,7 @@ class TimeEventsMain(ObjectsTableMain):
             idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
             magnitude_to = magnitudes[idx_to]
 
-            if len(self.circuit.buses) > 0 and magnitude_from != magnitude_to:
+            if self.circuit.valid_for_simulation() and magnitude_from != magnitude_to:
 
                 msg = "Are you sure that you want to overwrite the values " + magnitude_to + \
                       " with the values of " + magnitude_from + "?"
@@ -429,7 +429,7 @@ class TimeEventsMain(ObjectsTableMain):
         Open the dialogue to load profile data from models
         """
 
-        if len(self.circuit.buses) == 0:
+        if not self.circuit.valid_for_simulation():
             warning_msg("There are no objects to which to assign a profile. \n"
                         "You need to load or create a grid!")
             return

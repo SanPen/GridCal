@@ -134,7 +134,7 @@ class IoMain(ConfigurationMain):
                     else:
                         error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
-                if self.circuit.get_bus_number() > 0:
+                if self.circuit.valid_for_simulation() > 0:
                     quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                                "\n If the process is cancelled the grid will remain."
                     reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -195,7 +195,7 @@ class IoMain(ConfigurationMain):
         Create new grid
         :return:
         """
-        if self.circuit.get_bus_number() > 0:
+        if self.circuit.valid_for_simulation() > 0:
             quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
@@ -210,7 +210,7 @@ class IoMain(ConfigurationMain):
         @return:
         """
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 quit_msg = ("Are you sure that you want to quit the current grid and open a new one?"
                             "\n If the process is cancelled the grid will remain.")
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -421,8 +421,8 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                if self.circuit.get_bus_number() == 0:
-                    # load the circuit
+                if not self.circuit.valid_for_simulation():
+                    # load the circuit right away
                     self.stuff_running_now.append('file_open')
                     self.post_open_file()
                 else:
@@ -448,7 +448,10 @@ class IoMain(ConfigurationMain):
                         if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+                            injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
+                                                                     busbars=new_circuit.bus_bars,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
                                                                      transformers2w=new_circuit.transformers2w,
@@ -456,10 +459,12 @@ class IoMain(ConfigurationMain):
                                                                      hvdc_lines=new_circuit.hvdc_lines,
                                                                      vsc_devices=new_circuit.vsc_devices,
                                                                      upfc_devices=new_circuit.upfc_devices,
+                                                                     switches=new_circuit.switch_devices,
                                                                      fluid_nodes=new_circuit.fluid_nodes,
                                                                      fluid_paths=new_circuit.fluid_paths,
                                                                      injections_by_bus=injections_by_bus,
                                                                      injections_by_fluid_node=injections_by_fluid_node,
+                                                                     injections_by_cn=injections_by_cn,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
@@ -639,7 +644,7 @@ class IoMain(ConfigurationMain):
 
         if self.grid_generator_dialogue.applied:
 
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                        'Are you sure that you want to delete '
                                                        'the current grid and replace it?',

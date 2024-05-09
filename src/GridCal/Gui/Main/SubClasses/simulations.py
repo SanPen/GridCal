@@ -365,7 +365,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Check if there are valid time series
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if self.circuit.time_profile is not None:
                 if len(self.circuit.time_profile) > 0:
                     return True
@@ -715,7 +715,7 @@ class SimulationsMain(TimeEventsMain):
         Run a power flow simulation
         :return:
         """
-        if self.circuit.get_bus_number():
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.PowerFlow_run):
 
@@ -786,7 +786,7 @@ class SimulationsMain(TimeEventsMain):
         without any load or topology change
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.ShortCircuit_run):
 
                 pf_results = self.session.power_flow
@@ -891,7 +891,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.LinearAnalysis_run):
 
                 self.add_simulation(SimulationTypes.LinearAnalysis_run)
@@ -942,7 +942,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run PTDF time series simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if self.valid_time_series():
                 if not self.session.is_this_running(SimulationTypes.LinearAnalysis_TS_run):
 
@@ -1028,7 +1028,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if len(self.circuit.contingency_groups) > 0:
 
@@ -1086,7 +1086,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if len(self.circuit.contingency_groups) > 0:
 
@@ -1150,7 +1150,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.NetTransferCapacity_run):
                 distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
@@ -1262,7 +1262,7 @@ class SimulationsMain(TimeEventsMain):
         Run a Power Transfer Distribution Factors analysis
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if self.valid_time_series():
                 if not self.session.is_this_running(SimulationTypes.NetTransferCapacity_run):
@@ -1387,7 +1387,7 @@ class SimulationsMain(TimeEventsMain):
         :return:
         """
 
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             pf_drv, pf_results = self.session.power_flow_driver_and_results
 
@@ -1569,7 +1569,7 @@ class SimulationsMain(TimeEventsMain):
         Run a time series power flow simulation in a separated thread from the gui
         @return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.PowerFlowTimeSeries_run):
                 if self.valid_time_series():
                     self.LOCK()
@@ -1635,7 +1635,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.MonteCarlo_run):
 
@@ -1822,7 +1822,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run OPF simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPF_run):
 
@@ -1875,7 +1875,7 @@ class SimulationsMain(TimeEventsMain):
         """
         OPF Time Series run
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPFTimeSeries_run):
 
@@ -1946,7 +1946,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Copy the OPF generation values to the Time series object and execute a time series simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if self.circuit.time_profile is not None:
 
@@ -2028,7 +2028,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run OPF simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPF_NTC_run):
 
@@ -2075,7 +2075,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run OPF NTC time series simulation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.OPF_NTC_TS_run):
 
@@ -2200,7 +2200,7 @@ class SimulationsMain(TimeEventsMain):
 
         :return:
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if not self.session.is_this_running(SimulationTypes.InputsAnalysis_run):
 
@@ -2240,7 +2240,7 @@ class SimulationsMain(TimeEventsMain):
         Add storage markers to the schematic
         """
 
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if self.ui.actionStorage_location_suggestion.isChecked():
 
@@ -2261,10 +2261,10 @@ class SimulationsMain(TimeEventsMain):
                         fmax = np.max(frequencies)
 
                         # prepare the color map
-                        seq = [(0, 'green'),
-                               (0.6, 'orange'),
-                               (1.0, 'red')]
-                        cmap = LinearSegmentedColormap.from_list('vcolors', seq)
+                        seq: List[Tuple[float, str]] = [(0, 'green'),
+                                                        (0.6, 'orange'),
+                                                        (1.0, 'red')]
+                        cmap = LinearSegmentedColormap.from_list(name='vcolors', colors=seq)
 
                         self.buses_for_storage = list()
                         colors = list()
@@ -2305,7 +2305,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run the sigma analysis
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
             options = self.get_selected_power_flow_options()
             bus_names = np.array([b.name for b in self.circuit.buses])
             sigma_driver = sim.SigmaAnalysisDriver(grid=self.circuit, options=options)
@@ -2325,7 +2325,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run investments evaluation
         """
-        if len(self.circuit.buses) > 0:
+        if self.circuit.valid_for_simulation():
 
             if len(self.circuit.investments_groups) > 0:
 
@@ -2415,7 +2415,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Run a clustering analysis
         """
-        if self.circuit.get_bus_number() > 0 and self.circuit.get_time_number() > 0:
+        if self.circuit.valid_for_simulation() > 0 and self.circuit.get_time_number() > 0:
 
             if not self.session.is_this_running(SimulationTypes.ClusteringAnalysis_run):
 

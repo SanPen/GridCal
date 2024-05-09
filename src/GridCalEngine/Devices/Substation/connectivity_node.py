@@ -24,8 +24,13 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 class ConnectivityNode(EditableDevice):
 
-    def __init__(self, name='CN', idtag=None, code='', dc: bool = False,
-                 default_bus: Union[None, Bus] = None, substation: Union[Substation, None] = None):
+    def __init__(self, name='CN',
+                 idtag=None,
+                 code='',
+                 dc: bool = False,
+                 default_bus: Union[None, Bus] = None,
+                 substation: Union[Substation, None] = None,
+                 internal: bool = False):
         """
         Constructor
         :param name: Name of the connectivity node
@@ -47,7 +52,11 @@ class ConnectivityNode(EditableDevice):
 
         self.substation: Union[Substation, None] = substation
 
+        self.internal: bool = internal
+
         self.register("dc", "", bool, "is this a DC connectivity node?")
+
+        self.register("internal", "", bool, "is internal of a busbar?")
 
         self.register("default_bus", "", DeviceType.BusDevice,
                       "Default bus to use for topology processing (optional)")
