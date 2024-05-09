@@ -4,6 +4,7 @@ from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 # import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
@@ -108,7 +109,7 @@ def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, 
 
 # region create new classes for CC
 
-def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime: str = "",
+def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgmesProfile], desc: str = "", scenariotime: str = "",
                          modelingauthorityset: str = "", version: str = ""):
     from datetime import datetime
 
@@ -135,8 +136,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
         profile_uris = {
             "EQ": ["http://entsoe.eu/CIM/EquipmentCore/3/1",
-                   "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1",
-                   "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
+                   "http://entsoe.eu/CIM/EquipmentOperation/3/1",
+                   "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1"],
             "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
             "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
             "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
@@ -156,9 +157,9 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, desc: str = "", scenariotime
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
         prof = profile_uris.get("EQ")
         fm_list[0].profile = [prof[0]]
-        if True:  # TODO How to decide if it contains Operation?
+        if cgmesProfile.OP in profiles_to_export:
             fm_list[0].profile.append(prof[1])
-        if True:  # TODO How to decide if it contains ShortCircuit?
+        if cgmesProfile.SC in profiles_to_export:
             fm_list[0].profile.append(prof[2])
     elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
         fm_list[0].profile = profile_uris.get("EQ")
