@@ -443,7 +443,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
             crossover_prob=0.8,
-            mutation_probability=0.4,
+            mutation_probability=0.1,
             eta=20,
         )
 

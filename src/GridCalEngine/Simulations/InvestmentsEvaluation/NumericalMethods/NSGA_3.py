@@ -21,8 +21,9 @@ from pymoo.optimize import minimize
 from pymoo.algorithms.moo.nsga3 import NSGA3
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.repair.rounding import RoundingRepair
-from pymoo.operators.mutation.bitflip import BitflipMutation
+# from pymoo.operators.mutation.bitflip import BitflipMutation
 from pymoo.core.sampling import Sampling
+from pymoo.core.mutation import Mutation
 
 
 class UniformBinarySampling(Sampling):
@@ -36,6 +37,14 @@ class UniformBinarySampling(Sampling):
             np.random.shuffle(ones_into_array[i])
 
         return ones_into_array
+
+
+class BitflipMutation(Mutation):
+
+    def _do(self, problem, x, **kwargs):
+        mask = np.random.random(x.shape) < self.get_prob_var(problem)
+        x[mask] = 1 - x[mask]
+        return x
 
 
 class GridNsga(ElementwiseProblem):
