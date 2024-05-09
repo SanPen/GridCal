@@ -310,7 +310,7 @@ class CimExporter:
             for obj in objects:
                 obj_dict = obj.__dict__
                 if self.about_dict.get(profile) is not None and class_name in self.about_dict.get(profile):
-                    element = Et.Element("cim:" + class_name, {"rdf:about": "_" + obj.rdfid})
+                    element = Et.Element("cim:" + class_name, {"rdf:about": "#_" + obj.rdfid})
                 else:
                     element = Et.Element("cim:" + class_name, {"rdf:ID": "_" + obj.rdfid})
                 has_child = False
