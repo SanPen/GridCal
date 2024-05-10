@@ -112,12 +112,15 @@ class NodalCapacityTimeSeriesResults(OptimalPowerFlowTimeSeriesResults):
                                                    bus_types=bus_types,
                                                    clustering_results=clustering_results)
 
-        self.capacity_nodes_idx = capacity_nodes_idx if capacity_nodes_idx else np.zeros(0, dtype=int)
+        self.capacity_nodes_idx = capacity_nodes_idx if capacity_nodes_idx is not None else np.zeros(0, dtype=int)
+
+        self.nodal_capacity = np.zeros((nt, len(self.capacity_nodes_idx)), dtype=int)
 
         # hack the available results to add another entry
         self.available_results[ResultTypes.BusResults].append(ResultTypes.BusNodalCapacity)
 
         self.register(name='capacity_nodes_idx', tpe=IntVec)
+        self.register(name='nodal_capacity', tpe=Mat)
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -126,13 +129,13 @@ class NodalCapacityTimeSeriesResults(OptimalPowerFlowTimeSeriesResults):
         :return:
         """
 
-        if result_type == ResultTypes.ContingencyFlowsReport:
-            return ResultsTable(data=self.Sbus.real[self.capacity_nodes_idx],
+        if result_type == ResultTypes.BusNodalCapacity:
+            return ResultsTable(data=self.nodal_capacity[:, :],
                                 index=pd.to_datetime(self.time_array),
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.bus_names[self.capacity_nodes_idx],
                                 cols_device_type=DeviceType.BusDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
