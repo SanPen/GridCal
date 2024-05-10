@@ -340,7 +340,6 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                         i_r = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantCurrent
                         i_i = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantCurrent
 
-                        # g = cgmes_elm.p / cgmes_elm.LoadResponse.pConstantImpedance  # TODO ask Chavdar
                         g = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantImpedance
                         b = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantImpedance
                 else:
@@ -388,14 +387,16 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     thermal_tech = gcdev.Technology(idtag='', code='', name='Thermal')
     hydro_tech = gcdev.Technology(idtag='', code='', name='Hydro')
     solar_tech = gcdev.Technology(idtag='', code='', name='Solar')
-    wind_tech = gcdev.Technology(idtag='', code='', name='Wind')
+    wind_tech_on = gcdev.Technology(idtag='', code='', name='Wind Onshore')
+    wind_tech_off = gcdev.Technology(idtag='', code='', name='Wind Offshore')
     nuclear_tech = gcdev.Technology(idtag='', code='', name='Nuclear')
 
     gcdev_model.add_technology(general_tech)
     gcdev_model.add_technology(thermal_tech)
     gcdev_model.add_technology(hydro_tech)
     gcdev_model.add_technology(solar_tech)
-    gcdev_model.add_technology(wind_tech)
+    gcdev_model.add_technology(wind_tech_on)
+    gcdev_model.add_technology(wind_tech_off)
     gcdev_model.add_technology(nuclear_tech)
 
     tech_dict = {
@@ -403,7 +404,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
         "ThermalGeneratingUnit": thermal_tech,
         "HydroGeneratingUnit": hydro_tech,
         "SolarGeneratingUnit": solar_tech,
-        "WindGeneratingUnit": wind_tech,
+        "WindGeneratingUnit": [wind_tech_on, wind_tech_off],
         "NuclearGeneratingUnit": nuclear_tech,
     }
 
@@ -434,6 +435,11 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                         pf = 0.8
 
                     technology = tech_dict.get(cgmes_elm.GeneratingUnit.tpe, None)
+                    if cgmes_elm.GeneratingUnit.tpe == "WindGeneratingUnit":
+                        if cgmes_elm.GeneratingUnit.windGenUnitType == cgmes_enums.WindGenUnitKind.onshore:
+                            technology = technology[0]
+                        else:
+                            technology = technology[1]
 
                     gcdev_elm = gcdev.Generator(idtag=cgmes_elm.uuid,
                                                 code=cgmes_elm.description,
