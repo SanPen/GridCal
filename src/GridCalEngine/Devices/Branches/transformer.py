@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
-                                        TapAngleControl, TapModuleControl)
+                                        TapAngleControl, TapModuleControl, TapChangerTypes)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -85,7 +85,12 @@ class Transformer2W(ControllableBranchParent):
                  conn: WindingsConnection = WindingsConnection.GG,
                  capex: float = 0.0,
                  opex: float = 0.0,
-                 build_status: BuildStatus = BuildStatus.Commissioned):
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 tc_total_positions: int = 5,
+                 tc_neutral_position: int = 2,
+                 tc_dV: float = 0.01,
+                 tc_asymmetry_angle=90,
+                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation):
         """
         Transformer constructor
         :param name: Name of the branch
@@ -190,7 +195,12 @@ class Transformer2W(ControllableBranchParent):
                                           capex=capex,
                                           opex=opex,
                                           build_status=build_status,
-                                          device_type=DeviceType.Transformer2WDevice)
+                                          device_type=DeviceType.Transformer2WDevice,
+                                          tc_total_positions=tc_total_positions,
+                                          tc_neutral_position=tc_neutral_position,
+                                          tc_dV=tc_dV,
+                                          tc_asymmetry_angle=tc_asymmetry_angle,
+                                          tc_type=tc_type)
 
         # set the high and low voltage values
         self.HV = HV
@@ -317,7 +327,7 @@ class Transformer2W(ControllableBranchParent):
             tpe_f_v = self.LV
 
         return tpe_f_v, tpe_t_v
-    
+
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
         Get the branch virtual taps
