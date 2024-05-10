@@ -4,7 +4,7 @@ from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, WindGenUnitKind, RegulatingControlModeKind
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 # import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
@@ -16,6 +16,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingM
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
+
 
 # region UTILS
 
@@ -110,7 +111,8 @@ def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, 
 
 # region create new classes for CC
 
-def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgmesProfile], desc: str = "", scenariotime: str = "",
+def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgmesProfile], desc: str = "",
+                         scenariotime: str = "",
                          modelingauthorityset: str = "", version: str = ""):
     from datetime import datetime
 
@@ -259,10 +261,11 @@ def create_cgmes_load_response_char(
     lrc_template = cgmes_model.get_class_type("LoadResponseCharacteristic")
     lrc = lrc_template(rdfid=new_rdf_id)
     # lrc.name =
+    lrc.exponentModel = False
     lrc.pConstantCurrent = load.Ir / load.P if load.P != 0.0 else 0
     lrc.qConstantCurrent = load.Ii / load.Q if load.Q != 0.0 else 0
     lrc.pConstantImpedance = load.G / load.P if load.P != 0.0 else 0
-    lrc.qConstantImpedance = load.B / load.Q if load.Q != 0.0 else 0  # TODO ask Chavdar
+    lrc.qConstantImpedance = load.B / load.Q if load.Q != 0.0 else 0
     lrc.pConstantPower = 1 - lrc.pConstantCurrent - lrc.pConstantImpedance
     lrc.qConstantPower = 1 - lrc.qConstantCurrent - lrc.qConstantImpedance
     if lrc.pConstantPower < 0 or lrc.qConstantPower < 0:
@@ -272,6 +275,7 @@ def create_cgmes_load_response_char(
     # sum for 3 for p = 1
     # TODO B only 1 lrc for every load
     # if it not supports voltage dependent load, lf wont be the same
+    cgmes_model.add(lrc)
     return lrc
 
 
@@ -315,9 +319,17 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
         cgmes_model.add(sgu)
         return sgu
 
-    if gen.technology.name == 'Wind':
+    if gen.technology.name == 'Wind Onshore':
         object_template = cgmes_model.get_class_type("WindGeneratingUnit")
         wgu = object_template(new_rdf_id)
+        wgu.windGenUnitType = WindGenUnitKind.onshore
+        cgmes_model.add(wgu)
+        return wgu
+
+    if gen.technology.name == 'Wind Offshore':
+        object_template = cgmes_model.get_class_type("WindGeneratingUnit")
+        wgu = object_template(new_rdf_id)
+        wgu.windGenUnitType = WindGenUnitKind.offshore
         cgmes_model.add(wgu)
         return wgu
 
@@ -345,7 +357,6 @@ def create_cgmes_regulating_control(
 
     rc.name = f'_RC_{gen.name}'
     rc.RegulatingCondEq = gen
-    # rc.mode: RegulatingControlModeKind
     # rc.Terminal
     # rc.discrete
     # rc.enabled
@@ -758,6 +769,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
             cgmes_syn.RegulatingControl = create_cgmes_regulating_control(cgmes_syn, cgmes_model)
+            cgmes_syn.RegulatingControl.mode: RegulatingControlModeKind.voltage
             cgmes_syn.RegulatingControl.RegulatingCondEq = cgmes_syn
             cgmes_syn.controlEnabled = True
         else:
@@ -771,12 +783,44 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_syn.minQ = mc_elm.Qmin
         cgmes_syn.r = mc_elm.R1 if mc_elm.R1 != 1e-20 else None  # default value not exported
         cgmes_syn.p = -mc_elm.P  # negative sign!
-        cgmes_gen.q = -mc_elm.P * np.tan(np.arccos(mc_elm.Pf))
+        cgmes_syn.q = -mc_elm.P * np.tan(np.arccos(mc_elm.Pf))
         # TODO cgmes_syn.qPercent =
-        if cgmes_syn.p > 0:
+        if mc_elm.q_curve is not None:
+            pMin = mc_elm.q_curve.get_Pmin()
+        else:
+            pMin = mc_elm.Pmin
+        if cgmes_syn.p < 0:
             cgmes_syn.operatingMode = SynchronousMachineOperatingMode.generator
-            cgmes_syn.type = SynchronousMachineKind.generator
-            # TODO motor, condenser ?
+            if pMin < 0:
+                cgmes_syn.type = SynchronousMachineKind.generatorOrMotor
+            elif pMin == 0:
+                cgmes_syn.type = SynchronousMachineKind.generatorOrCondenser
+            else:
+                cgmes_syn.type = SynchronousMachineKind.generator
+        elif cgmes_syn.p == 0:
+            cgmes_syn.operatingMode = SynchronousMachineOperatingMode.condenser
+            if pMin < 0:  # TODO We don't have all the types
+                cgmes_syn.type = SynchronousMachineKind.motorOrCondenser
+            elif pMin == 0:
+                cgmes_syn.type = SynchronousMachineKind.generatorOrCondenser
+            else:
+                cgmes_syn.type = SynchronousMachineKind.generatorOrCondenser
+        else:
+            cgmes_syn.operatingMode = SynchronousMachineOperatingMode.motor
+            if pMin < 0:
+                cgmes_syn.type = SynchronousMachineKind.generatorOrMotor
+            elif pMin == 0:
+                cgmes_syn.type = SynchronousMachineKind.motorOrCondenser
+            else:
+                cgmes_syn.type = SynchronousMachineKind.generatorOrMotor
+
+        # generatorOrCondenser = 'generatorOrCondenser'
+        # generator = 'generator'
+        # generatorOrMotor = 'generatorOrMotor'
+        # motor = 'motor'
+        # motorOrCondenser = 'motorOrCondenser'
+        # generatorOrCondenserOrMotor = 'generatorOrCondenserOrMotor'
+        # condenser = 'condenser'
 
         cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
 
@@ -940,11 +984,15 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         # lsc.RegulatingControl = False  # TODO: Should be an object
         lsc.controlEnabled = False
         lsc.maximumSections = 1
-        # lsc.nomU = lsc.EquipmentContainer.BaseVoltage.nominalVoltage
-        # lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
-        # lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
-        # lsc.sections = ?
-        # lsc.normalSections = ?
+
+        lsc.nomU = mc_elm.bus.Vnom
+        lsc.bPerSection = mc_elm.B / (lsc.nomU ** 2)
+        lsc.gPerSection = mc_elm.G / (lsc.nomU ** 2)
+        if mc_elm.active:
+            lsc.sections = 1
+        else:
+            lsc.sections = 0
+        lsc.normalSections = lsc.sections
 
         lsc.Terminals = create_cgmes_terminal(mc_elm.bus, lsc, cgmes_model, logger)
 
