@@ -1,6 +1,6 @@
-=======================================
+====================================
 Investments evaluation with NSGA-III
-=======================================
+====================================
 
 Introduction
 _____________________
@@ -32,7 +32,7 @@ algorithm.
     :align: center
     :scale: 40 %
 
-Figure 1: MVRSM results with hypothetical improved Pareto front
+    Figure 1: MVRSM results with hypothetical improved Pareto front
 
 NSGA-III Theory
 _____________________
@@ -48,7 +48,7 @@ assigned randomly to maintain diversity.
     :align: center
     :scale: 20 %
 
-Figure 2: (a) Non-dominated sorting (b) Points assigned to reference lines
+    Figure 2: (a) Non-dominated sorting (b) Points assigned to reference lines
 
 As NSGA-III converges, each reference direction seeks to find a representative non-
 dominated solution, eventually achieving a balanced distribution of solutions across
@@ -78,14 +78,14 @@ however, as the algorithm may struggle to adequately explore the solution space.
     :align: center
     :scale: 20 %
 
-Figure 3: (a) Dimension scaled by 2 has shallow curvature
+    Figure 3: (a) Dimension scaled by 2 has shallow curvature
 
 .. figure:: ../figures/nsga/4.png
     :alt: pop_size
     :align: center
     :scale: 20 %
 
-(b) Dimension scaled by 0.2 provides finds more optimal solutions due to its deeper curve
+     (b) Dimension scaled by 0.2 provides finds more optimal solutions due to its deeper curve
 
 
 Reference Directions
@@ -104,14 +104,14 @@ the maximum number of partitions is the population’s dimension.
     :align: center
     :scale: 40 %
 
-Figure 4: (a) No. partitions = population size / 10
+    Figure 4: (a) No. partitions = population size / 10
 
 .. figure:: ../figures/nsga/normal.png
     :alt: normal
     :align: center
     :scale: 40 %
 
-(b) No. partitions = population size
+     (b) No. partitions = population size
 
 
 There are also different types of reference direction sources: The uniform and das-
@@ -143,28 +143,28 @@ of sampling, the first three are unable to explore points past an investment cos
     :align: center
     :scale: 40 %
 
-Figure 5: (a) latin hypercube sampling
+    Figure 5: (a) latin hypercube sampling
 
 .. figure:: ../figures/nsga/integer.png
     :alt: integer
     :align: center
     :scale: 40 %
 
-(b) integer random
+    (b) integer random
 
 .. figure:: ../figures/nsga/binary.png
     :alt: binary
     :align: center
     :scale: 40 %
 
-(c) binary random
+    (c) binary random
 
 .. figure:: ../figures/nsga/uniform.png
     :alt: uniform
     :align: center
     :scale: 40 %
 
-(d) binary uniform
+    (d) binary uniform
 
 Selection
 ~~~~~~~~~~~~~~~~~~~~~
@@ -232,21 +232,21 @@ more optimal than MVRSM’s can still be produced with few iterations.
 
 .. table:: Optimum Parameter Configuration:
 
-+------------------+-----------------------------+
-| Parameter        | Setting                     |
-+==================+=============================+
-| Population size  | No. investment groups / 5   |
-+------------------+-----------------------------+
-| No. partitions   | Population size             |
-+------------------+-----------------------------+
-| Sampling         | Binary uniform              |
-+------------------+-----------------------------+
-| Crossover        | Probability 0.8             |
-+------------------+-----------------------------+
-| Mutation         | Probability 0.5             |
-+------------------+-----------------------------+
-| Eta              | 30                          |
-+------------------+-----------------------------+
+   +------------------+-------------------+
+   | Parameter name   | Setting           |
+   +==================+===================+
+   | Population size  | No. investment groups / 5 |
+   +------------------+-------------------+
+   | No. partitions   | Population size          |
+   +------------------+-------------------+
+   | Sampling         | Binary uniform           |
+   +------------------+-------------------+
+   | Crossover        | Probability 0.8          |
+   +------------------+-------------------+
+   | Mutation         | Probability 0.5          |
+   +------------------+-------------------+
+   | Eta              | 30                       |
+   +------------------+-------------------+
 
 
 Future Development

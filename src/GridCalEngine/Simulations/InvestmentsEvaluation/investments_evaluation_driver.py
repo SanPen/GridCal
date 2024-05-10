@@ -443,8 +443,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
             crossover_prob=0.8,
-            mutation_probability=0.5,
-            eta=30,
+            mutation_probability=0.1,
+            eta=20,
         )
 
         self.results.set_best_combination(combination=X[:, 0])
