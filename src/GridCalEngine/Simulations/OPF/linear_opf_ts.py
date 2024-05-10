@@ -1312,7 +1312,9 @@ def add_linear_node_balance(t_idx: int,
     P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
     P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
     P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
-    P_esp[np.ix_(t_idx, capacity_nodes_idx)] += nodal_capacity_vars.P[t_idx, :]
+
+    if len(capacity_nodes_idx) > 0:
+        P_esp[np.ix_(t_idx, capacity_nodes_idx)] += nodal_capacity_vars.P[t_idx, :]
 
     # calculate the linear nodal injection
     bus_vars.Pcalc[t_idx, :] = lpDot(B, bus_vars.theta[t_idx, :])
@@ -1566,6 +1568,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
         else:
             time_indices = [None]
+
+    if capacity_nodes_idx is None:
+        capacity_nodes_idx = np.zeros(0, dtype=int)
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()
