@@ -18,7 +18,7 @@ import datetime
 
 import numpy as np
 import pandas as pd
-from typing import Union
+from typing import Union, List
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import EngineType, SimulationTypes
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
@@ -62,6 +62,10 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         # find the number of time steps
         nt = len(self.time_indices) if self.time_indices is not None else 1
 
+        # compose the time array
+        time_array = (self.grid.time_profile[self.time_indices] if self.time_indices is not None
+                      else [datetime.datetime.now()])
+
         # OPF results
         self.results: NodalCapacityTimeSeriesResults = NodalCapacityTimeSeriesResults(
             bus_names=self.grid.get_bus_names(),
@@ -85,8 +89,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             n_fluid_node=self.grid.get_fluid_nodes_number(),
             n_fluid_path=self.grid.get_fluid_paths_number(),
             n_fluid_injection=self.grid.get_fluid_injection_number(),
-            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
-                datetime.datetime.now()],
+            time_array=time_array,
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results,
             capacity_nodes_idx=self.options.capacity_nodes_idx
@@ -197,12 +200,23 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         elif self.options.method == NodalCapacityMethod.NonlinearOptimization:
 
+            if self.time_indices is not None:
+                has_ts = True
+                t_indices: Union[List[None], IntVec] = self.time_indices
+            else:
+                has_ts = False
+                t_indices: Union[List[None], IntVec] = [None]
+
             self.report_progress(0.0)
-            for it, t in enumerate(self.time_indices):
+            for it, t in enumerate(t_indices):
 
                 # report progress
-                self.report_text('Nonlinear OPF at ' + str(self.grid.time_profile[t]) + '...')
-                self.report_progress2(it, len(self.time_indices))
+                if has_ts:
+                    self.report_text('Nonlinear OPF at ' + str(self.grid.time_profile[t]) + '...')
+                    self.report_progress2(it, len(self.time_indices))
+                else:
+                    self.report_text('Nonlinear OPF at the snapshot...')
+                    self.report_progress2(it, 1)
 
                 # run opf
                 res = run_nonlinear_opf(grid=self.grid,
@@ -210,7 +224,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                         pf_options=self.pf_options,
                                         t_idx=t,
                                         # for the first power flow, use the given strategy
-                                        # for the succesive ones, use the previous solution
+                                        # for the successive ones, use the previous solution
                                         pf_init=self.opf_options.ips_init_with_pf if it == 0 else True,
                                         Sbus_pf0=self.results.Sbus[it - 1, :] if it > 0 else None,
                                         voltage_pf0=self.results.voltage[it - 1, :] if it > 0 else None,
@@ -218,6 +232,8 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                         nodal_capacity_sign=self.options.nodal_capacity_sign,
                                         capacity_nodes_idx=self.options.capacity_nodes_idx,
                                         logger=self.logger)
+
+                # set the results
                 Sbase = self.grid.Sbase
                 self.results.voltage[it, :] = res.V
                 self.results.Sbus[it, :] = res.S * Sbase
