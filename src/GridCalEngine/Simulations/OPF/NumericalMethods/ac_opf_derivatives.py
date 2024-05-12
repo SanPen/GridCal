@@ -499,7 +499,8 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
     S_dispatch = Cg[:, ig] @ (Pg_dis + 1j * Qg_dis)  # Variable generation
     S_undispatch = Cg[:, nig] @ Sg_undis  # Fixed generation
     dS = S + Sd - S_dispatch - S_undispatch   # Nodal power balance
-    dS[capacity_nodes_idx] += - nodal_capacity_sign * slcap # Nodal capacity slack addition
+    if nslcap !=0:
+        dS[capacity_nodes_idx] += - nodal_capacity_sign * slcap # Nodal capacity slack addition
 
     for link in range(len(Pfdc)):
         dS[fdc[link]] += Pfdc[link]  # Variable DC links. Lossless model (Pdc_From = Pdc_To)
@@ -789,8 +790,9 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
 
         Gslcap = lil_matrix((N, nslcap), dtype=complex)
 
-        for idslcap, capbus in enumerate(capacity_nodes_idx):
-            Gslcap[capbus, idslcap] = - nodal_capacity_sign
+        if nslcap !=0:
+            for idslcap, capbus in enumerate(capacity_nodes_idx):
+                Gslcap[capbus, idslcap] = - nodal_capacity_sign
 
         GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gslcap, Gtapm, Gtapt, GSpfdc])
 

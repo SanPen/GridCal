@@ -740,6 +740,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_slvmin = pd.DataFrame(data={'Slacks Vmin': sl_vmin})
         df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm}, index=k_m)
         df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt}, index=k_tau)
+        if optimize_nodal_capacity:
+            df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': slcap * nc.Sbase}, index=capacity_nodes_idx)
 
         print()
         print("Bus:\n", df_bus)
@@ -751,6 +753,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Slacks:\n", df_slst)
         print("Slacks:\n", df_slvmax)
         print("Slacks:\n", df_slvmin)
+        if optimize_nodal_capacity:
+            print("Nodal Capacity:\n", df_nodal_cap)
         print("Error", result.error)
         print("Gamma", result.gamma)
         print("Sf", result.structs.Sf)
