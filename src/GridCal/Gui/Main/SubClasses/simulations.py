@@ -2589,8 +2589,11 @@ class SimulationsMain(TimeEventsMain):
 
                 if self.ts_flag():
                     time_indices = self.get_time_indices()
+                    clustering_results = self.get_clustering_results()
                 else:
-                    time_indices = [None]
+                    # snapshot
+                    time_indices = None
+                    clustering_results = None
 
                 self.add_simulation(SimulationTypes.NodalCapacityTimeSeries_run)
 
@@ -2600,15 +2603,13 @@ class SimulationsMain(TimeEventsMain):
                 self.ui.progress_label.setText('Compiling the grid...')
                 QtGui.QGuiApplication.processEvents()
 
-
-
                 if options is not None:
                     # create the OPF time series instance
                     # if non_sequential:
                     drv = sim.NodalCapacityTimeSeriesDriver(grid=self.circuit,
                                                             options=options,
                                                             time_indices=time_indices,
-                                                            clustering_results=self.get_clustering_results())
+                                                            clustering_results=clustering_results)
 
                     drv.engine = self.get_preferred_engine()
 

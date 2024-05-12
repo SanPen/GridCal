@@ -62,7 +62,6 @@ from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import ResultTypes, SimulationTypes
 from GridCalEngine.basic_structures import Logger
-
 from GridCal.Session.results_model import ResultsModel
 
 DRIVER_OBJECTS = Union[
@@ -373,8 +372,7 @@ class SimulationSession:
 
         # get the results' object dictionary
         if study_name == AvailableTransferCapacityDriver.tpe.value:
-            drv = AvailableTransferCapacityDriver(grid=grid,
-                                                  options=None)
+            drv = AvailableTransferCapacityDriver(grid=grid, options=None)
 
         elif study_name == AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             drv = AvailableTransferCapacityTimeSeriesDriver(grid=grid,
@@ -383,8 +381,7 @@ class SimulationSession:
                                                             clustering_results=None)
 
         elif study_name == ContingencyAnalysisDriver.tpe.value:
-            drv = ContingencyAnalysisDriver(grid=grid,
-                                            options=None)
+            drv = ContingencyAnalysisDriver(grid=grid, options=None)
 
         elif study_name == ContingencyAnalysisTimeSeriesDriver.tpe.value:
             drv = ContingencyAnalysisTimeSeriesDriver(grid=grid,
@@ -400,8 +397,7 @@ class SimulationSession:
                                               opf_results=None)
 
         elif study_name == LinearAnalysisDriver.tpe.value:
-            drv = LinearAnalysisDriver(grid=grid,
-                                       options=None)
+            drv = LinearAnalysisDriver(grid=grid, options=None)
 
         elif study_name == ContinuationPowerFlowDriver.tpe.value:
             drv = LinearAnalysisTimeSeriesDriver(grid=grid,
@@ -410,8 +406,7 @@ class SimulationSession:
                                                  clustering_results=None)
 
         elif study_name == OptimalPowerFlowDriver.tpe.value:
-            drv = OptimalPowerFlowDriver(grid=grid,
-                                         options=None)
+            drv = OptimalPowerFlowDriver(grid=grid, options=None)
 
         elif study_name == OptimalPowerFlowTimeSeriesDriver.tpe.value:
             drv = OptimalPowerFlowTimeSeriesDriver(grid=grid,
@@ -426,8 +421,7 @@ class SimulationSession:
                                                 clustering_results=None)
 
         elif study_name == PowerFlowDriver.tpe.value:
-            drv = PowerFlowDriver(grid=grid,
-                                  options=None)
+            drv = PowerFlowDriver(grid=grid, options=None)
 
         elif study_name == PowerFlowTimeSeriesDriver.tpe.value:
             drv = PowerFlowTimeSeriesDriver(grid=grid,
@@ -443,8 +437,7 @@ class SimulationSession:
                                      opf_results=None)
 
         elif study_name == StochasticPowerFlowDriver.tpe.value:
-            drv = StochasticPowerFlowDriver(grid=grid,
-                                            options=None)
+            drv = StochasticPowerFlowDriver(grid=grid, options=None)
 
         elif study_name == ClusteringDriver.tpe.value:
             drv = ClusteringDriver(grid=grid, options=None)

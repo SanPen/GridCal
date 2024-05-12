@@ -849,13 +849,18 @@ def add_linear_battery_formulation(t: Union[int, None],
                 if unit_commitment:
 
                     # declare unit commitment vars
-                    batt_vars.starting_up[t, k] = prob.add_int(0, 1, join("bat_starting_up_", [t, k], "_"))
-                    batt_vars.producing[t, k] = prob.add_int(0, 1, join("bat_producing_", [t, k], "_"))
-                    batt_vars.shutting_down[t, k] = prob.add_int(0, 1, join("bat_shutting_down_", [t, k], "_"))
+                    batt_vars.starting_up[t, k] = prob.add_int(0, 1,
+                                                               join("bat_starting_up_", [t, k], "_"))
+
+                    batt_vars.producing[t, k] = prob.add_int(0, 1,
+                                                             join("bat_producing_", [t, k], "_"))
+
+                    batt_vars.shutting_down[t, k] = prob.add_int(0, 1,
+                                                                 join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[
-                        t, k]
+                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]
+                              + batt_data_t.cost_0[k] * batt_vars.producing[t, k])
 
                     # start-up cost
                     f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
@@ -863,30 +868,31 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.add_cst(
-                            cst=batt_vars.p[t, k] >= (
-                                    batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
-                                t, k]),
+                            cst=(batt_vars.p[t, k] >= (batt_data_t.availability[k] * batt_data_t.pmin[k] /
+                                                       Sbase * batt_vars.producing[t, k])),
                             name=join("batt>=Pmin", [t, k], "_"))
+
                         prob.add_cst(
-                            cst=batt_vars.p[t, k] <= (
-                                    batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
-                                t, k]),
+                            cst=(batt_vars.p[t, k] <= (batt_data_t.availability[k] * batt_data_t.pmax[k] /
+                                                       Sbase * batt_vars.producing[t, k])),
                             name=join("batt<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
                             prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
-                                    batt_vars.producing[t, k] - float(batt_data_t.active[k]),
+                                cst=(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
+                                     batt_vars.producing[t, k] - float(batt_data_t.active[k])),
                                 name=join("binary_alg1_", [t, k], "_"))
+
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                 name=join("binary_alg2_", [t, k], "_"))
                         else:
                             prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
-                                    batt_vars.producing[t, k] - batt_vars.producing[t - 1, k],
+                                cst=(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
+                                     batt_vars.producing[t, k] - batt_vars.producing[t - 1, k]),
                                 name=join("binary_alg3_", [t, k], "_"))
+
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                 name=join("binary_alg4_", [t, k], "_"))
@@ -925,8 +931,8 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                 if t > 0:
                     # energy decreases / increases with power · dt
-                    prob.add_cst(cst=batt_vars.e[t, k] ==
-                                     batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k],
+                    prob.add_cst(cst=(batt_vars.e[t, k] ==
+                                      batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k]),
                                  name=join("batt_energy_", [t, k], "_"))
                 else:
                     # set the initial energy value
@@ -954,9 +960,9 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                 elif p < 0:
                     # the negative sign is because P is already negative here
-                    batt_vars.shedding[t, k] = prob.add_var(0,
-                                                            -p,
-                                                            join("bat_shedding_", [t, k], "_"))
+                    batt_vars.shedding[t, k] = prob.add_var(lb=0,
+                                                            ub=-p,
+                                                            name=join("bat_shedding_", [t, k], "_"))
 
                     prob.add_cst(
                         cst=batt_vars.p[t, k] == batt_data_t.p[k] / Sbase + batt_vars.shedding[t, k],
@@ -1312,7 +1318,9 @@ def add_linear_node_balance(t_idx: int,
     P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
     P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
     P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
-    P_esp[np.ix_(t_idx, capacity_nodes_idx)] += nodal_capacity_vars.P[t_idx, :]
+
+    if len(capacity_nodes_idx) > 0:
+        P_esp[capacity_nodes_idx] += nodal_capacity_vars.P[t_idx, :]
 
     # calculate the linear nodal injection
     bus_vars.Pcalc[t_idx, :] = lpDot(B, bus_vars.theta[t_idx, :])
@@ -1566,6 +1574,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
         else:
             time_indices = [None]
+
+    if capacity_nodes_idx is None:
+        capacity_nodes_idx = np.zeros(0, dtype=int)
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()

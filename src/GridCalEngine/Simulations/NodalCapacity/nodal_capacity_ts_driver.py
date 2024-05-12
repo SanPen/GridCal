@@ -52,8 +52,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
         """
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,
-                                          time_indices=time_indices
-                                          if time_indices is not None else grid.get_all_time_indices(),
+                                          time_indices=time_indices,
                                           clustering_results=clustering_results,
                                           engine=engine)
 
@@ -156,6 +155,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.Sbus = opf_vars.bus_vars.Pcalc + 1j * np.zeros_like(opf_vars.bus_vars.Pcalc)
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
+            self.results.nodal_capacity = opf_vars.nodal_capacity_vars.P
 
             self.results.load_shedding = opf_vars.load_vars.shedding
 
