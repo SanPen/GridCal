@@ -604,17 +604,17 @@ def caseREE():
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
-    # linn5bus_example()
+    # linn5bus_example() #not using gpf
     # linn5bus_example2() #converges True and accurate to normal Ac pf
-    # pegase_example() #does not converge
-    # case14_example_noshunt()
-    case14_example()
-    # case14_example_noshunt_notrafo()
-    # acdc2bus_example()
-    # acdc3bus_example()
-    # acdc4bus_example()
-    # acdc10bus_example()
-    # two_grids_of_3bus()
+    pegase_example() #does not converge
+    # case14_example_noshunt() #does not converge
+    # case14_example() #does not converge
+    # case14_example_noshunt_notrafo() #does not converge
+    # acdc2bus_example() #converges true
+    # acdc3bus_example() #problem with the control
+    # acdc4bus_example() #converges true
+    # acdc10bus_example() #converges false
+    # two_grids_of_3bus() #does not use gpf
     # case9()
     # case14()
     # case_gb()
