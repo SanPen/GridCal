@@ -75,7 +75,8 @@ dependencies = ['setuptools>=41.0.1',
                 "windpowerlib",
                 "pvlib",
                 "hyperopt",
-                "rdflib"
+                "rdflib",
+                "pymoo>=0.6"
                 ]
 
 extras_require = {
