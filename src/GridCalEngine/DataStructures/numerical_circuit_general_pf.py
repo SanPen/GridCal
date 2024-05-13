@@ -852,7 +852,8 @@ class NumericalCircuit:
                                     vsc_data=self.vsc_data,
                                     bus_data = self.bus_data,
                                     adj = adj,
-                                    idx_islands=idx_islands)
+                                    idx_islands=idx_islands,
+                                    Sbase = self.Sbase)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """

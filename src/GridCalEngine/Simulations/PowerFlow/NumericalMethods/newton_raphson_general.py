@@ -63,102 +63,6 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     """
     start = time.time()
 
-    print("(newton_raphson_general.py) after compile information")
-    print("(newton_raphson_general.py) nc.ac_indices", nc.ac_indices)
-    print("(newton_raphson_general.py) nc.dc_indices", nc.dc_indices)
-
-    print("(newton_raphson_general.py) vsc data")
-    print("(newton_raphson_general.py) nc.vsc_data.F", nc.vsc_data.F)
-    print("(newton_raphson_general.py) nc.vsc_data.T", nc.vsc_data.T)
-
-    print("(newton_raphson_general.py) nc.vsc_data.branch_index", nc.vsc_data.branch_index)
-
-    print("(newton_raphson_general.py) nc.kn_volt_idx")
-    print(nc.kn_volt_idx)
-    print(nc.kn_volt_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_angle_idx")
-    print(nc.kn_angle_idx)
-    print(nc.kn_angle_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_pzip_idx")
-    print(nc.kn_pzip_idx)
-    print(nc.kn_pzip_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_qzip_idx")
-    print(nc.kn_qzip_idx)
-    print(nc.kn_qzip_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_pfrom_kdx")
-    print(nc.kn_pfrom_kdx)
-    print(nc.kn_pfrom_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_qfrom_kdx")
-    print(nc.kn_qfrom_kdx)
-    print(nc.kn_qfrom_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_pto_kdx")
-    print(nc.kn_pto_kdx)
-    print(nc.kn_pto_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_qto_kdx")
-    print(nc.kn_qto_kdx)
-    print(nc.kn_qto_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_tau_kdx")
-    print(nc.kn_tau_kdx)
-    print(nc.kn_tau_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_mod_kdx")
-    print(nc.kn_mod_kdx)
-    print(nc.kn_mod_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_passive_pfrom_kdx")
-    print(nc.kn_passive_pfrom_kdx)
-    print(nc.kn_passive_pfrom_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_passive_qfrom_kdx")
-    print(nc.kn_passive_qfrom_kdx)
-    print(nc.kn_passive_qfrom_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_passive_pto_kdx")
-    print(nc.kn_passive_pto_kdx)
-    print(nc.kn_passive_pto_setpoints)
-
-    print("(newton_raphson_general.py) nc.kn_passive_qto_kdx")
-    print(nc.kn_passive_qto_kdx)
-    print(nc.kn_passive_qto_setpoints)
-
-    print("(newton_raphson_general.py) nc.un_volt_idx")
-    print(nc.un_volt_idx)
-
-    print("(newton_raphson_general.py) nc.un_angle_idx")
-    print(nc.un_angle_idx)
-
-    print("(newton_raphson_general.py) nc.un_pzip_idx")
-    print(nc.un_pzip_idx)
-
-    print("(newton_raphson_general.py) nc.un_qzip_idx")
-    print(nc.un_qzip_idx)
-
-    print("(newton_raphson_general.py) nc.un_pfrom_kdx")
-    print(nc.un_pfrom_kdx)
-
-    print("(newton_raphson_general.py) nc.un_qfrom_kdx")
-    print(nc.un_qfrom_kdx)
-
-    print("(newton_raphson_general.py) nc.un_pto_kdx")
-    print(nc.un_pto_kdx)
-
-    print("(newton_raphson_general.py) nc.un_qto_kdx")
-    print(nc.un_qto_kdx)
-
-    print("(newton_raphson_general.py) nc.un_tau_kdx")
-    print(nc.un_tau_kdx)
-
-    print("(newton_raphson_general.py) nc.un_mod_kdx")
-    print(nc.un_mod_kdx)
-
 
     '''
     Split the AC and DC subsystems
@@ -176,7 +80,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     q_to = np.zeros(nc.nbus)
     p_zip = np.zeros(nc.nbus)
     q_zip = np.zeros(nc.nbus)
-    modulations = np.zeros(nc.nbus)
+    modulations = np.ones(nc.nbus)
     taus = np.zeros(nc.nbus)
     Vm0 = np.abs(V0)
     Va0 = np.angle(V0)
@@ -297,6 +201,102 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
     V = Vm0 * np.exp(1j * Va0)
     Scalc = compute_power(nc.Ybus, V)
+
+    print("(newton_raphson_general.py) after compile information")
+    print("(newton_raphson_general.py) nc.ac_indices", nc.ac_indices)
+    print("(newton_raphson_general.py) nc.dc_indices", nc.dc_indices)
+
+    print("(newton_raphson_general.py) vsc data")
+    print("(newton_raphson_general.py) nc.vsc_data.F", nc.vsc_data.F)
+    print("(newton_raphson_general.py) nc.vsc_data.T", nc.vsc_data.T)
+
+    print("(newton_raphson_general.py) nc.vsc_data.branch_index", nc.vsc_data.branch_index)
+
+    print("(newton_raphson_general.py) nc.kn_volt_idx")
+    print(nc.kn_volt_idx)
+    print(nc.kn_volt_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_angle_idx")
+    print(nc.kn_angle_idx)
+    print(nc.kn_angle_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_pzip_idx")
+    print(nc.kn_pzip_idx)
+    print(nc.kn_pzip_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_qzip_idx")
+    print(nc.kn_qzip_idx)
+    print(nc.kn_qzip_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_pfrom_kdx")
+    print(nc.kn_pfrom_kdx)
+    print(nc.kn_pfrom_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_qfrom_kdx")
+    print(nc.kn_qfrom_kdx)
+    print(nc.kn_qfrom_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_pto_kdx")
+    print(nc.kn_pto_kdx)
+    print(nc.kn_pto_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_qto_kdx")
+    print(nc.kn_qto_kdx)
+    print(nc.kn_qto_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_tau_kdx")
+    print(nc.kn_tau_kdx)
+    print(nc.kn_tau_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_mod_kdx")
+    print(nc.kn_mod_kdx)
+    print(nc.kn_mod_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_passive_pfrom_kdx")
+    print(nc.kn_passive_pfrom_kdx)
+    print(nc.kn_passive_pfrom_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_passive_qfrom_kdx")
+    print(nc.kn_passive_qfrom_kdx)
+    print(nc.kn_passive_qfrom_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_passive_pto_kdx")
+    print(nc.kn_passive_pto_kdx)
+    print(nc.kn_passive_pto_setpoints)
+
+    print("(newton_raphson_general.py) nc.kn_passive_qto_kdx")
+    print(nc.kn_passive_qto_kdx)
+    print(nc.kn_passive_qto_setpoints)
+
+    print("(newton_raphson_general.py) nc.un_volt_idx")
+    print(nc.un_volt_idx)
+
+    print("(newton_raphson_general.py) nc.un_angle_idx")
+    print(nc.un_angle_idx)
+
+    print("(newton_raphson_general.py) nc.un_pzip_idx")
+    print(nc.un_pzip_idx)
+
+    print("(newton_raphson_general.py) nc.un_qzip_idx")
+    print(nc.un_qzip_idx)
+
+    print("(newton_raphson_general.py) nc.un_pfrom_kdx")
+    print(nc.un_pfrom_kdx)
+
+    print("(newton_raphson_general.py) nc.un_qfrom_kdx")
+    print(nc.un_qfrom_kdx)
+
+    print("(newton_raphson_general.py) nc.un_pto_kdx")
+    print(nc.un_pto_kdx)
+
+    print("(newton_raphson_general.py) nc.un_qto_kdx")
+    print(nc.un_qto_kdx)
+
+    print("(newton_raphson_general.py) nc.un_tau_kdx")
+    print(nc.un_tau_kdx)
+
+    print("(newton_raphson_general.py) nc.un_mod_kdx")
+    print(nc.un_mod_kdx)    
 
     print("(newton_raphson_general.py) Voltages")
     for i in range(len(V)):

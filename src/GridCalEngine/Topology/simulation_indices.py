@@ -540,7 +540,8 @@ class SimulationIndices2:
                  vsc_data,
                  bus_data,
                  adj,
-                 idx_islands):
+                 idx_islands,
+                 Sbase):
         """
 
         :param bus_types: Bus type initial guess array
@@ -744,7 +745,7 @@ class SimulationIndices2:
         self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
         # (Generalised PF) determine the indices and setpoints
-        self.compile_control_indices_generalised_pf(gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 1)
+        self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 1)
 
     def recompile_types(self,
                         bus_types: IntVec,
@@ -760,7 +761,7 @@ class SimulationIndices2:
         # determine the bus indices
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
-    def compile_control_indices_generalised_pf(self, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0):
+    def compile_control_indices_generalised_pf(self, Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0):
         # print("we have gen_data")
         # print("nelm")
         # print(gen_data.nelm)
@@ -974,7 +975,9 @@ class SimulationIndices2:
                 _popIdx = np.where(dict_unknown_idx["Pzip"] == bus)
                 dict_unknown_idx["Pzip"] = np.delete(dict_unknown_idx["Pzip"], _popIdx)
                 dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
-                dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], gen_data.p[gen_data.bus_idx == bus])
+                rawPower = gen_data.p[gen_data.bus_idx == bus]
+                puPower = rawPower/Sbase
+                dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
 
         #Set the "control modes" for VSCs (we do it one by one because I dont know the order of the control_modes array)
         for vsc_idx in range(num_vsc):

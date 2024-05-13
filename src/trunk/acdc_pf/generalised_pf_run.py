@@ -227,6 +227,49 @@ def pegase_example():
     print(results.get_branch_df())
     print("Error:", results.error)
 
+def pegase2k_example():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/2869 Pegase.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def bus300_example():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/10_bus_hvdc.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+    results.converged
+
+    # print(results.get_bus_df())
+    # print()
+    # print(results.get_branch_df())
+    # print("Error:", results.error)
+
+
+def ieee5bus_example():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/IEEE 5 Bus.xlsx'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
 
 
 def case14_example():
@@ -243,19 +286,6 @@ def case14_example():
     print(results.get_branch_df())
     print("Error:", results.error)
 
-
-def case14_example_noshunt_notrafo():
-    file_path = 'C:/Users/raiya/Desktop/gridcal_models/14bus_no_shunt_notrafo.gridcal'
-    grid = gce.FileOpen(file_path).open()
-    assert grid is not None
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
-
-    results = gce.power_flow(grid, options=pf_options)
-
-    print(results.get_bus_df())
-    print()
-    print(results.get_branch_df())
-    print("Error:", results.error)
 
 def case14_example_noshunt():
     file_path = 'C:/Users/raiya/Desktop/gridcal_models/14bus_no_shunt.gridcal'
@@ -310,8 +340,8 @@ def acdc4bus_example():
     print("Error:", results.error)              
 
 
-def acdc10bus_example():
-    file_path = 'C:/Users/raiya/Desktop/gridcal_models/10busACDC.gridcal'
+def pegase2869_example():
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/2869 Pegase.gridcal'
     grid = gce.FileOpen(file_path).open()
     assert grid is not None
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
@@ -601,19 +631,64 @@ def caseREE():
 
 
 
+import os
+import GridCalEngine.api as gce
+
+def read_processed_files(log_file_path):
+    processed_files = {}
+    try:
+        with open(log_file_path, 'r') as file:
+            for line in file:
+                if "Converged" in line or "Exception" in line or "Skipped, timeout" in line:
+                    filename, status = line.split(":")[0], line.split(":")[1]
+                    processed_files[filename.strip()] = status.strip()
+    except FileNotFoundError:
+        # If the log file does not exist yet, just return an empty dictionary
+        pass
+    return processed_files
+
+def test_convergence(directory_path, log_file_path):
+    # Read the list of already processed files
+    processed_files = read_processed_files(log_file_path)
+
+    # Open the log file for appending so each run adds to the log file instead of overwriting it
+    with open(log_file_path, 'a') as log_file:
+        for file_name in os.listdir(directory_path):
+            if file_name.endswith(('.gridcal', '.m', '.raw', '.xlsx')) and file_name not in processed_files:
+                log_file.write(f"{file_name}: Processing...\n")  # Log that processing is starting
+                log_file.flush()  # Ensure the entry is written immediately
+                full_path = os.path.join(directory_path, file_name)
+                try:
+                    grid = gce.FileOpen(full_path).open()
+                    if grid:
+                        pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+                        results = gce.power_flow(grid, options=pf_options)
+                        result_text = f"{file_name}: Converged={results.converged}\n"
+                    else:
+                        result_text = f"{file_name}: Failed to load grid\n"
+                except Exception as e:
+                    result_text = f"{file_name}: Exception={str(e)}\n"
+                log_file.write(result_text)  # Write the final result
+                log_file.flush()  # Ensure that each entry is written and saved immediately
+
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example() #not using gpf
     # linn5bus_example2() #converges True and accurate to normal Ac pf
-    pegase_example() #does not converge
-    # case14_example_noshunt() #does not converge
-    # case14_example() #does not converge
-    # case14_example_noshunt_notrafo() #does not converge
-    # acdc2bus_example() #converges true
-    # acdc3bus_example() #problem with the control
+    # pegase_example() #Converges True
+    # ieee5bus_example() #converges True
+    # case14_example_noshunt() #converges true
+    # case14_example() #converges True
+    # acdc2bus_example() #converges True
     # acdc4bus_example() #converges true
-    # acdc10bus_example() #converges false
+    
+    
+    
+    bus300_example()
+    # acdc3bus_example() #problem with the control
+    # pegase2k_example() #runs super slow and does not converge
+    
     # two_grids_of_3bus() #does not use gpf
     # case9()
     # case14()
@@ -625,3 +700,15 @@ if __name__ == '__main__':
     # casehvdc()
     # caseREE()
 
+
+    # # Path to your directory containing the grid files
+    # directory_path = 'Grids_and_profiles/grids/'
+    # # Path where you want to save the log file
+    # log_file_path = 'convergence_log.txt'
+
+    # # Call the function
+    # test_convergence(directory_path, log_file_path)
+
+    # # If you want to see the contents of the log, you can print them out:
+    # with open(log_file_path, 'r') as file:
+    #     print(file.read())
