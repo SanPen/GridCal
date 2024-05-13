@@ -421,9 +421,9 @@ class MapWidget(QWidget):
             val = self.zoom_level(new_level, self.mouse_x, self.mouse_y)
             if val:
                 if event.delta() > 0:
-                    self.zoom_in()
+                    self._zoom_in()
                 else:
-                    self.zoom_out()
+                    self._zoom_out()
             else:
                 self.level = zoomInitial
                 val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
@@ -778,14 +778,20 @@ class MapWidget(QWidget):
 
         # self.centerSchema()
 
-    def zoom_in(self):
-        # Translate the scene to make the center point correspond to the origin
+    def _zoom_in(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom * self.zoom_factor
         self.view.scale(self.zoom_factor, self.zoom_factor)
         self.remapSchema()
 
-    def zoom_out(self):
-        # Translate the scene to make the center point correspond to the origin
+    def _zoom_out(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom / self.zoom_factor
         self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
         self.remapSchema()
@@ -907,7 +913,8 @@ class MapWidget(QWidget):
         painter.end()
 
     def normalize_key_after_drag(self, delta_x=None, delta_y=None):
-        """After drag, set "key" tile correctly.
+        """
+        After drag, set "key" tile correctly.
 
         delta_x  the X amount dragged (pixels), None if not dragged in X
         delta_y  the Y amount dragged (pixels), None if not dragged in Y

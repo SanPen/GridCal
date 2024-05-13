@@ -149,23 +149,33 @@ class GridMapWidget(MapWidget):
 
     def zoom_callback(self, zoom_level: int) -> None:
         """
-
-        :param zoom_level:
-        :return:
+        Update the diagram zoom level (useful for saving)
+        :param zoom_level: whatever zoom level
         """
-        # print('zoom', zoom_level)
         self.diagram.start_level = zoom_level
 
     def position_callback(self, longitude: float, latitude: float) -> None:
         """
-
-        :param longitude:
-        :param latitude:
-        :return:
+        Update the diagram central position (useful for saving)
+        :param longitude: in deg
+        :param latitude: in deg
         """
-        # print('Map lat:', latitude, 'lon:', longitude)
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
+
+    def zoom_in(self):
+        """
+        Zoom in
+        """
+        if self.level + 1 <= self.max_level:
+            self.zoom_level(level=self.level + 1)
+
+    def zoom_out(self):
+        """
+        Zoom out
+        """
+        if self.level - 1 >= self.min_level:
+            self.zoom_level(level=self.level - 1)
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
@@ -236,11 +246,12 @@ class GridMapWidget(MapWidget):
 
         return graphic_object
 
-    def create_line(self, api_object: BRANCH_TYPES, diagram: MapDiagram, original = True) -> MapTemplateLine:
+    def create_line(self, api_object: BRANCH_TYPES, diagram: MapDiagram, original: bool = True) -> MapTemplateLine:
         """
         Adds a line with the nodes and segments
         :param api_object: Any branch type from the database
         :param diagram: MapDiagram instance
+        :param original:
         :return: MapTemplateLine
         """
         line_container = MapTemplateLine(editor=self, api_object=api_object)
@@ -283,13 +294,13 @@ class GridMapWidget(MapWidget):
                     # draw the node in the scene
                     self.add_to_scene(graphic_object=graphic_obj)
 
-                    nodSiz = line_container.number_of_nodes()
+                    node_num = line_container.number_of_nodes()
 
-                    graphic_obj.index = nodSiz
+                    graphic_obj.index = node_num
 
-                    if nodSiz > 1:
-                        i1 = nodSiz - 1
-                        i2 = nodSiz - 2
+                    if node_num > 1:
+                        i1 = node_num - 1
+                        i2 = node_num - 2
                         # Assuming Connector takes (scene, node1, node2) as arguments
                         segment_graphic_object = Segment(first=line_container.nodes_list[i1],
                                                          second=line_container.nodes_list[i2])
@@ -407,7 +418,7 @@ class GridMapWidget(MapWidget):
             elif category == DeviceType.LineDevice.value:
                 for idtag, location in points_group.locations.items():
                     line: Line = location.api_object
-                    self.create_line(api_object=line, diagram=diagram)  # no need to add to the scene
+                    self.create_line(api_object=line, diagram=diagram, original=True)  # no need to add to the scene
 
             elif category == DeviceType.DCLineDevice.value:
                 pass  # TODO: implementar

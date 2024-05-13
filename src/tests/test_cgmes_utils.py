@@ -19,6 +19,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import To
 from GridCalEngine.data_logger import DataLogger
 
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
+
+
 # from src.GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
 
 
@@ -367,6 +369,7 @@ def test_get_nodes_dipole_not_terminals_returns_none():
     assert n1 is None
     assert n2 is None
 
+
 def test_get_nodes_dipole_1_terminal_returns_none():
     i = IdentifiedObject("a", "b")
     t1 = Terminal()
@@ -375,6 +378,7 @@ def test_get_nodes_dipole_1_terminal_returns_none():
     n1, n2 = get_nodes_dipole(i)
     assert n1 is None
     assert n2 is None
+
 
 def test_get_topological_node_monopole_correct_data_returns_topolificalnode():
     ce = ConductingEquipment()
@@ -514,9 +518,10 @@ def test_check_exponent_model_return_proper_errors():
     load_response_characteristic.qConstantImpedance = None
     load_response_characteristic.rdfid = "rdfid_example"
     logger = DataLogger()
-    result = check(load_response_characteristic, logger)
-    assert result == False
+    result = check(logger)
+    assert result is False
     assert len(logger.entries) == 2
+
 
 def test_check_():
     load_response_characteristic = LoadResponseCharacteristic()
@@ -537,6 +542,6 @@ def test_check_():
     load_response_characteristic.qConstantCurrent = 1
     load_response_characteristic.qConstantPower = 1
     logger = DataLogger()
-    result = check(load_response_characteristic, logger)
-    assert result == False
+    result = check(logger)
+    assert result is False
     assert len(logger.entries) == 8

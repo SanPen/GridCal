@@ -75,6 +75,11 @@ class MapTemplateLine:
             conector.update_endings()
 
     def split_Line(self, index):
+        """
+        Split Line
+        :param index:
+        :return:
+        """
         if 0 < index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 3:
 
             ln1 = Line()
@@ -92,18 +97,21 @@ class MapTemplateLine:
             self.editor.create_line(ln1, diagram=self.editor.diagram, original=False)
             self.editor.create_line(ln2, diagram=self.editor.diagram, original=False)
 
-            self.disableLine()
+            self.disable_line()
 
             return first_list, second_list
         else:
             # Handle invalid index
             raise ValueError("Index out of range or invalid")
 
+    def disable_line(self):
+        """
 
-    def disableLine(self):
+        :return:
+        """
         self.enabled = False
         for node in self.nodes_list:
-            node.enabled=False
+            node.enabled = False
         for line in self.segments_list:
             line.set_line_color(Qt.gray)
 

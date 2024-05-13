@@ -278,8 +278,9 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, SchematicWidget):
                 diagram.zoom_in()
             elif isinstance(diagram, GridMapWidget):
-                # TODO implement this
-                pass
+                diagram.zoom_in()
+            else:
+                print("zoom_in: Unsupported diagram type")
 
     def zoom_out(self):
         """
@@ -290,8 +291,9 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, SchematicWidget):
                 diagram.zoom_out()
             elif isinstance(diagram, GridMapWidget):
-                # TODO implement this
-                pass
+                diagram.zoom_out()
+            else:
+                print("zoom_out: Unsupported diagram type")
 
     def edit_time_interval(self):
         """
@@ -1292,14 +1294,19 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
                 names = [elm.type_name + ": " + elm.name for elm in selected]
-                self.contingency_checks_diag = CheckListDialogue(objects_list=names, title="Add contingency")
+                group_text = "Contingency " + str(len(self.circuit.contingency_groups))
+                self.contingency_checks_diag = CheckListDialogue(objects_list=names,
+                                                                 title="Add contingency",
+                                                                 ask_for_group_name=True,
+                                                                 group_label="Contingency name",
+                                                                 group_text=group_text)
                 self.contingency_checks_diag.setModal(True)
                 self.contingency_checks_diag.exec_()
 
                 if self.contingency_checks_diag.is_accepted:
 
                     group = dev.ContingencyGroup(idtag=None,
-                                                 name="Contingency " + str(len(self.circuit.contingency_groups)),
+                                                 name=self.contingency_checks_diag.get_group_text(),
                                                  category="single" if len(selected) == 1 else "multiple")
                     self.circuit.add_contingency_group(group)
 
@@ -1326,9 +1333,15 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
 
+                group_name = "Investment " + str(len(self.circuit.contingency_groups))
+
                 # launch selection dialogue to add/remove from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]
-                self.investment_checks_diag = CheckListDialogue(objects_list=names, title="Add investment")
+                self.investment_checks_diag = CheckListDialogue(objects_list=names,
+                                                                title="Add investment",
+                                                                ask_for_group_name=True,
+                                                                group_label="Investment name",
+                                                                group_text=group_name)
                 self.investment_checks_diag.setModal(True)
                 self.investment_checks_diag.exec_()
 
@@ -1336,7 +1349,7 @@ class DiagramsMain(CompiledArraysMain):
 
                     # create a new investments group
                     group = dev.InvestmentsGroup(idtag=None,
-                                                 name="Investment " + str(len(self.circuit.contingency_groups)),
+                                                 name=self.investment_checks_diag.get_group_text(),
                                                  category="single" if len(selected) == 1 else "multiple")
                     self.circuit.add_investments_group(group)
 
