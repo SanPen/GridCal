@@ -74,6 +74,9 @@ class MapTemplateLine:
         for conector in self.segments_list:
             conector.update_endings()
 
+    def create_node(self):
+        return 0
+
     def split_Line(self, index):
         if 0 < index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 3:
 
