@@ -152,8 +152,9 @@ class Base:
             if prop is not None:
                 setattr(self, prop_name, prop_value)
             else:
-                logger.add_error("Missing object property", device_class=self.tpe, device_property=prop_name,
-                                 device=self.rdfid)
+                if not self.boundary_set:
+                    logger.add_error("Missing object property", device_class=self.tpe, device_property=prop_name,
+                                     device=self.rdfid)
 
     def __repr__(self):
         return self.rdfid
