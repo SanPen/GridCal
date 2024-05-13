@@ -66,13 +66,6 @@ class GridMapWidget(MapWidget):
                            position_callback=self.position_callback)
 
         self.Substations = list()
-        # self.devX = 48.3
-        # self.devY = 61.9
-        # amb el zoom 0.47
-        # self.devX = 48.3
-        # self.devY = 55
-        self.devX = 22
-        self.devY = 25
 
         # object to handle the relation between the graphic widgets and the database objects
         self.graphics_manager = GraphicsManager()
@@ -93,13 +86,18 @@ class GridMapWidget(MapWidget):
                                                        # levels at which to show the polylines
                                                        name='<polyline_layer>')
 
-
-
         # Any representation on the map must be done after this Goto Function
         self.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
 
-        self.startLat = None
-        self.startLon = None
+        self.startLev = start_level
+        self.startLat = latitude
+        self.startLon = longitude
+
+        he = self.view.height()
+        wi = self.view.width()
+
+        self.startHe = he
+        self.startWi = wi
 
         # draw
         self.draw()
@@ -177,14 +175,8 @@ class GridMapWidget(MapWidget):
         :return:
         """
 
-        # transform = 180 / np.pi
-        # lat = np.degrees(2 * np.arctan(np.exp(y / (self.devY * transform))) - np.pi / 2)
-        # lon = np.degrees(x / (self.devX * transform))
-
         lon, lat = self.view_to_geo(xview=x, yview=y)
 
-        # lat = - y / self.devY
-        # lon = x / self.devX
         return lat, lon
 
     def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
@@ -194,13 +186,6 @@ class GridMapWidget(MapWidget):
         :param lon:
         :return:
         """
-        # transform = 180 / np.pi
-        # lat_rad = np.radians(lat)
-        # y = -self.devY * transform * np.log(np.tan(np.pi / 4 + lat_rad / 2))
-        # x = self.devX * transform * np.radians(lon)
-
-        # x = lon * self.devX
-        # y = -lat * self.devY
 
         x, y = self.geo_to_view(longitude=lon, latitude=lat)
 
