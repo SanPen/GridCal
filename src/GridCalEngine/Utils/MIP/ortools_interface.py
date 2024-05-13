@@ -33,7 +33,8 @@ from ortools.init.python import init
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
-init.CppBridge.init_logging("")  # this avoids displaying all the solver logger information, should only be called once
+# this avoids displaying all the solver logger information, should only be called once
+init.CppBridge.init_logging("")
 
 
 def get_available_mip_solvers() -> List[str]:
