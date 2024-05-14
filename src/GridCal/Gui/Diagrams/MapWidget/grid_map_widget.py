@@ -17,6 +17,8 @@
 from typing import Union, List, Tuple
 import numpy as np
 from PySide6.QtWidgets import QWidget, QGraphicsItem
+from PySide6.QtCore import Qt
+from PySide6.QtGui import (QColor, QPen)
 from collections.abc import Callable
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
@@ -36,10 +38,9 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocation
 
 from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
 from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, PolylineData, Place
+from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager, ALL_MAP_GRAPHICS
@@ -485,9 +486,6 @@ class GridMapWidget(MapWidget):
         :param cmap: Color map [palettes.Colormaps]
         """
 
-        # (polyline_points, placement, width, rgba, offset_x, offset_y, udata)
-        data: List[PolylineData] = list()
-
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
         bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
@@ -504,9 +502,14 @@ class GridMapWidget(MapWidget):
         latitudes = np.zeros(n)
         nodes_dict = dict()
         for i, bus in enumerate(buses):
-            longitudes[i] = bus.longitude
-            latitudes[i] = bus.latitude
-            nodes_dict[bus.name] = (bus.latitude, bus.longitude)
+
+            # try to find the diagram object of the DB object
+            graphic_object = self.graphics_manager.query(bus)
+
+            if graphic_object:
+                longitudes[i] = bus.longitude
+                latitudes[i] = bus.latitude
+                nodes_dict[bus.name] = (bus.latitude, bus.longitude)
 
         # Pnorm = np.abs(Sbus.real) / np.max(Sbus.real)
         #
@@ -539,17 +542,20 @@ class GridMapWidget(MapWidget):
         #                   color=html_color,
         #                   tooltip=tooltip).add_to(marker_cluster)
 
-        # add lines
+        # Try colouring the branches
         if len(branches):
+
             lnorm = np.abs(loadings)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(Sf)
             Sfnorm = Sfabs / np.max(Sfabs + 1e-20)
             for i, branch in enumerate(branches):
 
-                points = branch.get_coordinates()
+                # try to find the diagram object of the DB object
+                graphic_object: MapTemplateLine = self.graphics_manager.query(branch)
 
-                if not viz.has_null_coordinates(points):
+                if graphic_object:
+
                     # compose the tooltip
                     tooltip = str(i) + ': ' + branch.name
                     tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
@@ -576,14 +582,16 @@ class GridMapWidget(MapWidget):
                         b *= 255
                         a *= 255
 
+                    color = QColor(r, g, b, a)
+                    style = Qt.SolidLine
                     if use_flow_based_width:
-                        weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                        weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 3
+                        weight = 0.5
 
-                    # draw the line
-                    data.append(PolylineData(points, Place.Center, weight, (r, g, b, a), 0, 0, {}))
+                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
 
+        # try colouring the HVDC lines
         if len(hvdc_lines) > 0:
 
             lnorm = np.abs(hvdc_loading)
@@ -593,9 +601,11 @@ class GridMapWidget(MapWidget):
 
             for i, branch in enumerate(hvdc_lines):
 
-                points = branch.get_coordinates()
+                # try to find the diagram object of the DB object
+                graphic_object: MapTemplateLine = self.graphics_manager.query(branch)
 
-                if not viz.has_null_coordinates(points):
+                if graphic_object:
+
                     # compose the tooltip
                     tooltip = str(i) + ': ' + branch.name
                     tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(lnorm[i] * 100) + ' [%]'
@@ -622,17 +632,14 @@ class GridMapWidget(MapWidget):
                         b *= 255
                         a *= 255
 
+                    color = QColor(r, g, b, a)
+                    style = Qt.SolidLine
                     if use_flow_based_width:
-                        weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                        weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 3
+                        weight = 0.5
 
-                    # draw the line
-                    # data.append((points, {"width": weight, "color": html_color, 'tooltip': tooltip}))
-                    data.append(PolylineData(points, Place.Center, weight, (r, g, b, a), 0, 0, {}))
-
-        self.setLayerData(lid=self.polyline_layer_id, data=data)
-        self.update()
+                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
 
 
 def generate_map_diagram(substations: List[Substation],

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, List, Union
 import logging
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QPen, QBrush
 from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 from GridCalEngine.Devices import LineLocation
 from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
@@ -53,7 +54,7 @@ class MapTemplateLine:
         self.enabled = True
         self.original = True
 
-    def clean_segments(self):
+    def clean_segments(self) -> None:
         """
         Remove all segments from the scene
         """
@@ -62,7 +63,7 @@ class MapTemplateLine:
 
         self.segments_list = list()
 
-    def clean_nodes(self):
+    def clean_nodes(self) -> None:
         """
         Remove all the nodes from the scene
         """
@@ -71,7 +72,7 @@ class MapTemplateLine:
 
         self.nodes_list = list()
 
-    def clean(self):
+    def clean(self) -> None:
         """
         Clean all graphic elements from the scene
         """
@@ -98,6 +99,21 @@ class MapTemplateLine:
         :param segment: Connector
         """
         self.segments_list.append(segment)
+
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle, tool_tip: str = '') -> None:
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :param tool_tip: tool tip text
+        :return:
+        """
+        for segment in self.segments_list:
+            segment.setPen(QPen(color, w, style))
+            segment.setToolTip(tool_tip)
+            # segment.setPen(Qt.NoPen)
+            # segment.setBrush(color)
 
     def update_connectors(self) -> None:
         """

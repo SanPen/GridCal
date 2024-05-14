@@ -40,6 +40,7 @@ from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateL
 from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 
 
 ALL_BUS_BRACH_GRAPHICS = Union[
@@ -65,7 +66,8 @@ ALL_MAP_GRAPHICS = Union[
     MapTemplateLine,
     VoltageLevelGraphicItem,
     NodeGraphicItem,
-    SubstationGraphicItem
+    SubstationGraphicItem,
+    Segment
 ]
 
 ALL_GRAPHICS = Union[ALL_BUS_BRACH_GRAPHICS, ALL_MAP_GRAPHICS]
