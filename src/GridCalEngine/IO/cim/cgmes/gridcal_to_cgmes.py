@@ -845,6 +845,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
         pte1 = object_template()
         pte1.PowerTransformer = cm_transformer
+        pte1.Terminal = cm_transformer.Terminals[0]
+        pte1.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.bus_from.Vnom
+        )
         R, X, G, B, R0, X0, G0, B0 = (mc_elm.R, mc_elm.X, mc_elm.G, mc_elm.B, mc_elm.R0,
                                       mc_elm.X0, mc_elm.G0, mc_elm.B0)
         r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.Sn, mc_elm.HV)
@@ -862,6 +868,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         pte2 = object_template()
         pte2.PowerTransformer = cm_transformer
+        pte2.Terminal = cm_transformer.Terminals[1]
+        pte2.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.bus_to.Vnom
+        )
         pte2.r = 0
         pte2.x = 0
         pte2.g = 0
@@ -896,6 +908,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         pte1 = object_template()
         pte1.PowerTransformer = cm_transformer
+        pte1.Terminal = cm_transformer.Terminals[0]
+        pte1.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.bus1.Vnom
+        )
         pte1.ratedU = mc_elm.V1
         pte1.ratedS = mc_elm.rate12
         pte1.endNumber = 1
@@ -915,6 +933,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         pte2 = object_template()
         pte2.PowerTransformer = cm_transformer
+        pte2.Terminal = cm_transformer.Terminals[1]
+        pte2.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.bus2.Vnom
+        )
         pte2.ratedU = mc_elm.V2
         pte2.ratedS = mc_elm.rate23
         pte2.endNumber = 2
@@ -935,6 +959,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         pte3 = object_template()
         pte3.PowerTransformer = cm_transformer
+        pte3.Terminal = cm_transformer.Terminals[2]
+        pte3.BaseVoltage = find_object_by_vnom(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+            target_vnom=mc_elm.bus3.Vnom
+        )
         pte3.ratedU = mc_elm.V3
         pte3.ratedS = mc_elm.rate31
         pte3.endNumber = 3
