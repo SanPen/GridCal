@@ -25,7 +25,6 @@ from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
-from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
@@ -139,6 +138,14 @@ class GridMapWidget(MapWidget):
 
         self.diagram_scene.addItem(graphic_object)
 
+    def remove_from_scene(self, graphic_object: QGraphicsItem = None) -> None:
+        """
+        Add item to the diagram and the diagram scene
+        :param graphic_object: Graphic object associated
+        """
+
+        self.diagram_scene.removeItem(graphic_object)
+
     def setBranchData(self, data):
         """
 
@@ -245,9 +252,13 @@ class GridMapWidget(MapWidget):
                                          api_object=api_object,
                                          lat=lat, lon=lon,
                                          r=0.005)
+
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
         line_container.add_node(node=graphic_object)
+
+        # draw the node in the scene
+        self.add_to_scene(graphic_object=graphic_object)
 
         return graphic_object
 
@@ -264,56 +275,8 @@ class GridMapWidget(MapWidget):
 
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
-        diagram_locations: PointsGroup = diagram.data.get(DeviceType.LineLocation.value, None)
-
         # create the nodes
-        for elm in api_object.locations.data:
-
-            if diagram_locations is None:
-                # no locations found, use the data from the api object
-                # lat = elm.lat
-                # lon = elm.long
-                pass
-            else:
-
-                # try to get location from the diagram
-                diagram_location = diagram_locations.locations.get(elm.idtag, None)
-
-                if diagram_location is None:
-                    # no particular location found, use the data from the api object
-                    # lat = elm.lat
-                    # lon = elm.long
-                    pass
-                else:
-                    # Draw only what's on the diagram
-                    # diagram data found, use it
-                    lat = diagram_location.latitude
-                    lon = diagram_location.longitude
-
-                    graphic_obj = self.create_node(line_container=line_container,
-                                                   api_object=elm,
-                                                   lat=lat,  # 42.0 ...
-                                                   lon=lon)  # 2.7 ...
-
-                    # draw the node in the scene
-                    self.add_to_scene(graphic_object=graphic_obj)
-
-                    nodSiz = line_container.number_of_nodes()
-
-                    graphic_obj.index = nodSiz
-
-                    if nodSiz > 1:
-                        i1 = nodSiz - 1
-                        i2 = nodSiz - 2
-                        # Assuming Connector takes (scene, node1, node2) as arguments
-                        segment_graphic_object = Segment(first=line_container.nodes_list[i1],
-                                                         second=line_container.nodes_list[i2])
-
-                        # register the segment in the line
-                        line_container.add_segment(segment=segment_graphic_object)
-
-                        # draw the segment in the scene
-                        self.add_to_scene(graphic_object=segment_graphic_object)
+        line_container.redraw_connectors_nodes()
 
         return line_container
 
