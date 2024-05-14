@@ -36,6 +36,7 @@ class MapTemplateLine:
     """
     Represents a polyline in the map
     """
+
     def __init__(self, editor: GridMapWidget, api_object: BRANCH_TYPES):
         """
 
@@ -49,6 +50,31 @@ class MapTemplateLine:
         self.segments_list = list()
         self.enabled = True
         self.original = True
+
+    def clean_segments(self):
+        """
+        Remove all segments from the scene
+        """
+        for segment in self.segments_list:
+            self.editor.remove_from_scene(segment)
+
+        self.segments_list = list()
+
+    def clean_nodes(self):
+        """
+        Remove all the nodes from the scene
+        """
+        for node in self.nodes_list:
+            self.editor.remove_from_scene(node)
+
+        self.nodes_list = list()
+
+    def clean(self):
+        """
+        Clean all graphic elements from the scene
+        """
+        self.clean_segments()
+        self.clean_nodes()
 
     def number_of_nodes(self) -> int:
         """
@@ -80,11 +106,18 @@ class MapTemplateLine:
             conector.update_endings()
 
     def redraw_connectors_nodes(self):
+        """
 
-        self.segments_list = list()
+        :return:
+        """
+        self.clean()
 
         diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
 
+        # link to
+        substation_from = self.api_object.get_substation_from()
+
+        # draw line locations
         for elm in self.api_object.locations.data:
 
             if diagram_locations is None:
@@ -109,9 +142,9 @@ class MapTemplateLine:
                     lon = diagram_location.longitude
 
                     graphic_obj = self.editor.create_node(line_container=self,
-                                                   api_object=elm,
-                                                   lat=lat,  # 42.0 ...
-                                                   lon=lon)  # 2.7 ...
+                                                          api_object=elm,
+                                                          lat=lat,  # 42.0 ...
+                                                          lon=lon)  # 2.7 ...
 
                     nodSiz = self.number_of_nodes()
 
@@ -126,7 +159,7 @@ class MapTemplateLine:
 
                         self.nodes_list[i1].needsUpdateFirst = True
                         self.nodes_list[i2].needsUpdateSecond = True
-                        segment_graphic_object.needsUpdate=True
+                        segment_graphic_object.needsUpdate = True
 
                         # register the segment in the line
                         self.add_segment(segment=segment_graphic_object)
@@ -134,20 +167,20 @@ class MapTemplateLine:
                         # draw the segment in the scene
                         self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
+        substation_to = self.api_object.get_substation_to()
+
         self.update_connectors()
 
     def redraw_connectors(self):
+        """
 
-        for segment in self.segments_list:
-            self.editor.remove_from_scene(segment)
-
-        self.segments_list = list()
+        :return:
+        """
+        self.clean_segments()
 
         diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
 
-        id = 0
-
-        for elm in self.api_object.locations.data:
+        for idx, elm in enumerate(self.api_object.locations.data):
 
             if diagram_locations is None:
                 # no locations found, use the data from the api object
@@ -168,16 +201,16 @@ class MapTemplateLine:
                     # Draw only what's on the diagram
                     # diagram data found, use it
 
-                    if id > 0:
-                        i1 = id
-                        i2 = id - 1
+                    if idx > 0:
+                        i1 = idx
+                        i2 = idx - 1
                         # Assuming Connector takes (scene, node1, node2) as arguments
                         segment_graphic_object = Segment(first=self.nodes_list[i1],
                                                          second=self.nodes_list[i2])
 
                         self.nodes_list[i1].needsUpdateFirst = True
                         self.nodes_list[i2].needsUpdateSecond = True
-                        segment_graphic_object.needsUpdate=True
+                        segment_graphic_object.needsUpdate = True
 
                         # register the segment in the line
                         self.add_segment(segment=segment_graphic_object)
@@ -185,47 +218,50 @@ class MapTemplateLine:
                         # draw the segment in the scene
                         self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
-                    id = id + 1
-
         self.update_connectors()
 
     def create_node(self, index):
+        """
 
+        :param index:
+        :return:
+        """
         # Check if the index is valid
-        if  (1 <= index < len(self.api_object.locations.data)):
+        if 1 <= index < len(self.api_object.locations.data):
 
             # Create a new API object for the node. Assuming `api_object.locations.data` holds coordinates or similar data
             new_api_node_data = self.api_object.locations.data[index]
 
-            new_api_node_data.lat = (self.api_object.locations.data[index - 1].lat + self.api_object.locations.data[index].lat) / 2
-            new_api_node_data.long = (self.api_object.locations.data[index -1].long + self.api_object.locations.data[index].long) / 2
+            new_api_node_data.lat = ((self.api_object.locations.data[index - 1].lat
+                                      + self.api_object.locations.data[index].lat) / 2)
 
-            new_api_object = LineLocation(lat = new_api_node_data.lat,
+            new_api_node_data.long = ((self.api_object.locations.data[index - 1].long
+                                       + self.api_object.locations.data[index].long) / 2)
+
+            new_api_object = LineLocation(lat=new_api_node_data.lat,
                                           lon=new_api_node_data.long,
                                           z=new_api_node_data.alt,
                                           seq=new_api_node_data.seq,
                                           name=new_api_node_data.name,
                                           idtag=new_api_node_data.idtag,
-                                          code=new_api_node_data.code
-                                          )
+                                          code=new_api_node_data.code)
 
             self.api_object.locations.data.insert(index, new_api_object)
 
             # Create a new graphical node item
 
-            new_node = self.editor.create_node(self,new_api_object,new_api_object.lat,new_api_object.long)
+            new_node = self.editor.create_node(self, new_api_object, new_api_object.lat, new_api_object.long)
 
             new_node.index = index
 
-            id = 0
+            idx = 0
 
             for nod in self.nodes_list:
 
-                if id >= index:
-
+                if idx >= index:
                     nod.index = nod.index + 1
 
-                    id = id + 1
+                    idx = idx + 1
 
             # Add the node to the nodes list
             self.nodes_list.insert(index, new_node)
@@ -262,8 +298,8 @@ class MapTemplateLine:
             ln1.locations.data = first_list
             ln2.locations.data = second_list
 
-            self.editor.create_line(ln1, diagram=self.editor.diagram, original=False)
-            self.editor.create_line(ln2, diagram=self.editor.diagram, original=False)
+            self.editor.create_line(ln1, original=False)
+            self.editor.create_line(ln2, original=False)
 
             self.disable_line()
 
@@ -282,6 +318,3 @@ class MapTemplateLine:
             node.enabled = False
         for line in self.segments_list:
             line.set_line_color(Qt.gray)
-
-
-

@@ -216,8 +216,8 @@ class GridMapWidget(MapWidget):
 
         x, y = self.geo_to_view(longitude=lon, latitude=lat)
 
-        x = x + node_gen_dx/2
-        y = y + node_gen_dy/2
+        x = x + node_gen_dx / 2
+        y = y + node_gen_dy / 2
 
         self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
@@ -272,11 +272,10 @@ class GridMapWidget(MapWidget):
 
         return graphic_object
 
-    def create_line(self, api_object: BRANCH_TYPES, diagram: MapDiagram, original: bool = True) -> MapTemplateLine:
+    def create_line(self, api_object: BRANCH_TYPES, original: bool = True) -> MapTemplateLine:
         """
         Adds a line with the nodes and segments
         :param api_object: Any branch type from the database
-        :param diagram: MapDiagram instance
         :param original:
         :return: MapTemplateLine
         """
@@ -396,7 +395,7 @@ class GridMapWidget(MapWidget):
             elif category == DeviceType.LineDevice.value:
                 for idtag, location in points_group.locations.items():
                     line: Line = location.api_object
-                    self.create_line(api_object=line, diagram=diagram, original=True)  # no need to add to the scene
+                    self.create_line(api_object=line, original=True)  # no need to add to the scene
 
             elif category == DeviceType.DCLineDevice.value:
                 pass  # TODO: implementar
@@ -715,10 +714,20 @@ def generate_map_diagram(substations: List[Substation],
         diagram.set_point(device=branch, location=MapLocation())
 
         # register all the line locations
+        # if branch.bus_from is not None:
+        #     diagram.set_point(device=branch.bus_from, location=MapLocation(latitude=branch.bus_from.latitude,
+        #                                                                    longitude=branch.bus_from.longitude,
+        #                                                                    altitude=0))
+
         for loc in branch.locations.get_locations():
             diagram.set_point(device=loc, location=MapLocation(latitude=loc.lat,
                                                                longitude=loc.long,
                                                                altitude=loc.alt))
+
+        # if branch.bus_to is not None:
+        #     diagram.set_point(device=branch.bus_to, location=MapLocation(latitude=branch.bus_to.latitude,
+        #                                                                  longitude=branch.bus_to.longitude,
+        #                                                                  altitude=0))
 
     # --------------------------------------------------------------------------------------------------------------
     if text_func is not None:
