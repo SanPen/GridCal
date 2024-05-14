@@ -248,7 +248,7 @@ class GridMapWidget(MapWidget):
     def create_node(self,
                     line_container: MapTemplateLine,
                     api_object: LineLocation,
-                    lat: float, lon: float) -> NodeGraphicItem:
+                    lat: float, lon: float, index: int) -> NodeGraphicItem:
         """
 
         :param line_container:
@@ -261,11 +261,10 @@ class GridMapWidget(MapWidget):
                                          line_container=line_container,
                                          api_object=api_object,
                                          lat=lat, lon=lon,
+                                         index=index,
                                          r=0.005)
 
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
-
-        line_container.add_node(node=graphic_object)
 
         # draw the node in the scene
         self.add_to_scene(graphic_object=graphic_object)
@@ -286,7 +285,7 @@ class GridMapWidget(MapWidget):
         self.graphics_manager.add_device(elm=api_object, graphic=line_container)
 
         # create the nodes
-        line_container.redraw_connectors_nodes()
+        line_container.draw_all()
 
         return line_container
 

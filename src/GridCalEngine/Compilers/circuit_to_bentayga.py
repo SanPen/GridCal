@@ -89,7 +89,7 @@ def add_btg_buses(
         else:
             elm.active = np.ones(ntime, dtype=BINT) * int(bus.active)
 
-        btg_circuit.add_node(elm)
+        btg_circuit.register_new_node(elm)
         bus_dict[elm.uuid] = elm
 
     return bus_dict

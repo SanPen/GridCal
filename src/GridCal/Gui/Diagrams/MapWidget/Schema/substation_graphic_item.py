@@ -22,13 +22,14 @@ from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCalEngine.Devices.Substation.substation import Substation
+from GridCal.Gui.Diagrams.MapWidget.Schema.node_template import NodeTemplate
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
     from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
 
 
-class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
+class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -53,7 +54,8 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem):
         :param lon:
         :param r:
         """
-        super().__init__()
+        NodeTemplate.__init__(self, lat=lat, lon=lon)
+        QtWidgets.QGraphicsRectItem.__init__(self)
 
         self.setRect(0.0, 0.0, r, r)
         self.lat = lat

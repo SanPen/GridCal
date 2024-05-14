@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Union
 
 import logging
 
@@ -29,6 +29,8 @@ from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
@@ -46,8 +48,8 @@ class MapTemplateLine:
         # self.Parent = parent
         self.editor = editor
         self.api_object = api_object
-        self.nodes_list = list()
-        self.segments_list = list()
+        self.nodes_list: List[NodeGraphicItem] = list()
+        self.segments_list: List[Segment] = list()
         self.enabled = True
         self.original = True
 
@@ -83,7 +85,7 @@ class MapTemplateLine:
         """
         return len(self.nodes_list)
 
-    def add_node(self, node: NodeGraphicItem):
+    def register_new_node(self, node: NodeGraphicItem):
         """
         Add node
         :param node: NodeGraphicItem
@@ -97,7 +99,7 @@ class MapTemplateLine:
         """
         self.segments_list.append(segment)
 
-    def update_connectors(self):
+    def update_connectors(self) -> None:
         """
 
         :return:
@@ -105,7 +107,7 @@ class MapTemplateLine:
         for conector in self.segments_list:
             conector.update_endings()
 
-    def redraw_connectors_nodes(self):
+    def draw_all(self) -> None:
         """
 
         :return:
@@ -113,9 +115,6 @@ class MapTemplateLine:
         self.clean()
 
         diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
-
-        # link to
-        substation_from = self.api_object.get_substation_from()
 
         # draw line locations
         for elm in self.api_object.locations.data:
@@ -138,91 +137,103 @@ class MapTemplateLine:
                 else:
                     # Draw only what's on the diagram
                     # diagram data found, use it
-                    lat = diagram_location.latitude
-                    lon = diagram_location.longitude
-
                     graphic_obj = self.editor.create_node(line_container=self,
                                                           api_object=elm,
-                                                          lat=lat,  # 42.0 ...
-                                                          lon=lon)  # 2.7 ...
+                                                          lat=diagram_location.latitude,  # 42.0 ...
+                                                          lon=diagram_location.longitude,
+                                                          index=self.number_of_nodes())  # 2.7 ...
 
-                    nodSiz = self.number_of_nodes()
+                    self.register_new_node(node=graphic_obj)
 
-                    graphic_obj.index = nodSiz
+        # second pass: create the segments
+        self.redraw_segments()
 
-                    if nodSiz > 1:
-                        i1 = nodSiz - 1
-                        i2 = nodSiz - 2
-                        # Assuming Connector takes (scene, node1, node2) as arguments
-                        segment_graphic_object = Segment(first=self.nodes_list[i1],
-                                                         second=self.nodes_list[i2])
-
-                        self.nodes_list[i1].needsUpdateFirst = True
-                        self.nodes_list[i2].needsUpdateSecond = True
-                        segment_graphic_object.needsUpdate = True
-
-                        # register the segment in the line
-                        self.add_segment(segment=segment_graphic_object)
-
-                        # draw the segment in the scene
-                        self.editor.add_to_scene(graphic_object=segment_graphic_object)
-
-        substation_to = self.api_object.get_substation_to()
-
-        self.update_connectors()
-
-    def redraw_connectors(self):
+    def redraw_segments(self) -> None:
         """
-
-        :return:
+        Draw all segments in the line
+        If there were previous segments, those are deleted
         """
         self.clean_segments()
 
-        diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
+        connection_elements: List[Union[NodeGraphicItem, SubstationGraphicItem, VoltageLevelGraphicItem]] = list()
 
-        for idx, elm in enumerate(self.api_object.locations.data):
+        # add the substation from
+        substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
+        if substation_from_graphics is not None:
+            if substation_from_graphics.valid_coordinates():
+                connection_elements.append(substation_from_graphics)
 
-            if diagram_locations is None:
-                # no locations found, use the data from the api object
-                # lat = elm.lat
-                # lon = elm.long
-                pass
-            else:
+        # add all the intermediate positions
+        connection_elements += self.nodes_list
 
-                # try to get location from the diagram
-                diagram_location = diagram_locations.locations.get(elm.idtag, None)
+        # add the substation to
+        substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+        if substation_to_graphics is not None:
+            if substation_to_graphics.valid_coordinates():
+                connection_elements.append(substation_to_graphics)
 
-                if diagram_location is None:
-                    # no particular location found, use the data from the api object
-                    # lat = elm.lat
-                    # lon = elm.long
-                    pass
-                else:
-                    # Draw only what's on the diagram
-                    # diagram data found, use it
+        # second pass: create the segments
+        for i in range(1, len(connection_elements)):
+            elm1 = connection_elements[i - 1]
+            elm2 = connection_elements[i]
+            # Assuming Connector takes (scene, node1, node2) as arguments
+            segment_graphic_object = Segment(first=elm1, second=elm2)
 
-                    if idx > 0:
-                        i1 = idx
-                        i2 = idx - 1
-                        # Assuming Connector takes (scene, node1, node2) as arguments
-                        segment_graphic_object = Segment(first=self.nodes_list[i1],
-                                                         second=self.nodes_list[i2])
+            elm1.needsUpdateFirst = True
+            elm2.needsUpdateSecond = True
+            segment_graphic_object.needsUpdate = True
 
-                        self.nodes_list[i1].needsUpdateFirst = True
-                        self.nodes_list[i2].needsUpdateSecond = True
-                        segment_graphic_object.needsUpdate = True
+            # register the segment in the line
+            self.add_segment(segment=segment_graphic_object)
 
-                        # register the segment in the line
-                        self.add_segment(segment=segment_graphic_object)
+            # draw the segment in the scene
+            self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
-                        # draw the segment in the scene
-                        self.editor.add_to_scene(graphic_object=segment_graphic_object)
+        # diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
+        #
+        # for idx, elm in enumerate(self.api_object.locations.data):
+        #
+        #     if diagram_locations is None:
+        #         # no locations found, use the data from the api object
+        #         # lat = elm.lat
+        #         # lon = elm.long
+        #         pass
+        #     else:
+        #
+        #         # try to get location from the diagram
+        #         diagram_location = diagram_locations.locations.get(elm.idtag, None)
+        #
+        #         if diagram_location is None:
+        #             # no particular location found, use the data from the api object
+        #             # lat = elm.lat
+        #             # lon = elm.long
+        #             pass
+        #         else:
+        #             # Draw only what's on the diagram
+        #             # diagram data found, use it
+        #
+        #             if idx > 0:
+        #                 i1 = idx
+        #                 i2 = idx - 1
+        #                 # Assuming Connector takes (scene, node1, node2) as arguments
+        #                 segment_graphic_object = Segment(first=self.nodes_list[i1],
+        #                                                  second=self.nodes_list[i2])
+        #
+        #                 self.nodes_list[i1].needsUpdateFirst = True
+        #                 self.nodes_list[i2].needsUpdateSecond = True
+        #                 segment_graphic_object.needsUpdate = True
+        #
+        #                 # register the segment in the line
+        #                 self.add_segment(segment=segment_graphic_object)
+        #
+        #                 # draw the segment in the scene
+        #                 self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
         self.update_connectors()
 
-    def create_node(self, index):
+    def insert_new_node_at_position(self, index: int):
         """
-
+        Creates a new node in the list at the given position
         :param index:
         :return:
         """
@@ -250,9 +261,12 @@ class MapTemplateLine:
 
             # Create a new graphical node item
 
-            new_node = self.editor.create_node(self, new_api_object, new_api_object.lat, new_api_object.long)
-
-            new_node.index = index
+            graphic_obj = self.editor.create_node(line_container=self,
+                                                  api_object=new_api_object,
+                                                  lat=new_api_object.lat,
+                                                  lon=new_api_object.long,
+                                                  index=index)
+            self.register_new_node(node=graphic_obj)
 
             idx = 0
 
@@ -264,13 +278,13 @@ class MapTemplateLine:
                     idx = idx + 1
 
             # Add the node to the nodes list
-            self.nodes_list.insert(index, new_node)
+            self.nodes_list.insert(index, graphic_obj)
 
             # Update connectors if necessary
-            self.redraw_connectors()
+            self.redraw_segments()
 
             # Return the newly created node
-            return new_node
+            return graphic_obj
 
         else:
 
