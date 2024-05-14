@@ -34,18 +34,19 @@ import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
 from scipy.sparse import csr_matrix, csc_matrix
 from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec, Logger
 
+
 def NR_LS_GENERAL(nc: NumericalCircuit,
-               V0: CxVec,
-               S0: CxVec,
-               I0: CxVec,
-               Y0: CxVec,
-               tolerance=1e-6,
-               max_iter=4,
-               mu_0=1.0,
-               acceleration_parameter=0.05,
-               verbose=False,
-               control_q=ReactivePowerControlMode.NoControl,
-               pf_options=None) -> NumericPowerFlowResults:
+                  V0: CxVec,
+                  S0: CxVec,
+                  I0: CxVec,
+                  Y0: CxVec,
+                  tolerance=1e-6,
+                  max_iter=4,
+                  mu_0=1.0,
+                  acceleration_parameter=0.05,
+                  verbose=False,
+                  control_q=ReactivePowerControlMode.NoControl,
+                  pf_options=None) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation
     :param nc: NumericalCircuit
@@ -59,10 +60,10 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     :param acceleration_parameter: Acceleration parameter (rate to decrease mu)
     :param verbose: Verbose?
     :param control_q: Reactive power control mode
+    :param pf_options: PF options
     :return: NumericPowerFlowResults
     """
     start = time.time()
-
 
     '''
     Split the AC and DC subsystems
@@ -85,7 +86,6 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     Vm0 = np.abs(V0)
     Va0 = np.angle(V0)
 
-
     branch_from_indices = nc.branch_data.F
     branch_to_indices = nc.branch_data.T
 
@@ -105,11 +105,13 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     print(vsc_to_indices)
 
     for i in range(len(nc.kn_pfrom_kdx)):
-        print("(newtown_raphson_general.py) the from bus of the first pfrom kdx", branch_from_indices[nc.kn_pfrom_kdx[i]])
-        print("(newtown_raphson_general.py) the setpoint of this", nc.kn_pfrom_setpoints[i])	
+        print("(newtown_raphson_general.py) the from bus of the first pfrom kdx",
+              branch_from_indices[nc.kn_pfrom_kdx[i]])
+        print("(newtown_raphson_general.py) the setpoint of this", nc.kn_pfrom_setpoints[i])
 
     for i in range(len(nc.kn_qfrom_kdx)):
-        print("(newtown_raphson_general.py) the from bus of the first qfrom kdx", branch_from_indices[nc.kn_qfrom_kdx[i]])
+        print("(newtown_raphson_general.py) the from bus of the first qfrom kdx",
+              branch_from_indices[nc.kn_qfrom_kdx[i]])
         print("(newtown_raphson_general.py) the setpoint of this", nc.kn_qfrom_setpoints[i])
 
     for i in range(len(nc.kn_pto_kdx)):
@@ -122,7 +124,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
 
     for i in range(len(nc.un_pfrom_kdx)):
         print("(newtown_raphson_general.py) known pfrom", branch_from_indices[nc.un_pfrom_kdx[i]])
-    
+
     for i in range(len(nc.un_qfrom_kdx)):
         print("(newtown_raphson_general.py) known qfrom", branch_from_indices[nc.un_qfrom_kdx[i]])
 
@@ -132,20 +134,31 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     for i in range(len(nc.un_qto_kdx)):
         print("(newtown_raphson_general.py) known qto", branch_to_indices[nc.un_qto_kdx[i]])
 
-
-
     # Creating the known dictionary with checks for non-empty arrays
     known_dict = {
-        'Voltage': {idx: val for idx, val in zip(nc.kn_volt_idx, nc.kn_volt_setpoints) if len(nc.kn_volt_idx) > 0 and len(nc.kn_volt_setpoints) > 0},
-        'Angle': {idx: val for idx, val in zip(nc.kn_angle_idx, nc.kn_angle_setpoints) if len(nc.kn_angle_idx) > 0 and len(nc.kn_angle_setpoints) > 0},
-        'Pzip': {idx: val for idx, val in zip(nc.kn_pzip_idx, nc.kn_pzip_setpoints) if len(nc.kn_pzip_idx) > 0 and len(nc.kn_pzip_setpoints) > 0},
-        'Qzip': {idx: val for idx, val in zip(nc.kn_qzip_idx, nc.kn_qzip_setpoints) if len(nc.kn_qzip_idx) > 0 and len(nc.kn_qzip_setpoints) > 0},
-        'Pfrom': {(branch_from_indices[nc.kn_pfrom_kdx[i]], branch_to_indices[nc.kn_pfrom_kdx[i]]): nc.kn_pfrom_setpoints[i] for i in range(len(nc.kn_pfrom_kdx)) if len(nc.kn_pfrom_setpoints) > 0},
-        'Pto': {(branch_from_indices[nc.kn_pto_kdx[i]], branch_to_indices[nc.kn_pto_kdx[i]]): nc.kn_pto_setpoints[i] for i in range(len(nc.kn_pto_kdx)) if len(nc.kn_pto_setpoints) > 0},
-        'Qfrom': {(branch_from_indices[nc.kn_qfrom_kdx[i]], branch_to_indices[nc.kn_qfrom_kdx[i]]): nc.kn_qfrom_setpoints[i] for i in range(len(nc.kn_qfrom_kdx)) if len(nc.kn_qfrom_setpoints) > 0},
-        'Qto': {(branch_from_indices[nc.kn_qto_kdx[i]], branch_to_indices[nc.kn_qto_kdx[i]]): nc.kn_qto_setpoints[i] for i in range(len(nc.kn_qto_kdx)) if len(nc.kn_qto_setpoints) > 0},
-        'Modulation': {(branch_from_indices[nc.kn_mod_kdx[i]], branch_to_indices[nc.kn_mod_kdx[i]]): nc.kn_mod_setpoints[i] for i in range(len(nc.kn_mod_kdx)) if len(nc.kn_mod_setpoints) > 0},
-        'Tau': {(branch_from_indices[nc.kn_tau_kdx[i]], branch_to_indices[nc.kn_tau_kdx[i]]): nc.kn_tau_setpoints[i] for i in range(len(nc.kn_tau_kdx)) if len(nc.kn_tau_setpoints) > 0}
+        'Voltage': {idx: val for idx, val in zip(nc.kn_volt_idx, nc.kn_volt_setpoints) if
+                    len(nc.kn_volt_idx) > 0 and len(nc.kn_volt_setpoints) > 0},
+        'Angle': {idx: val for idx, val in zip(nc.kn_angle_idx, nc.kn_angle_setpoints) if
+                  len(nc.kn_angle_idx) > 0 and len(nc.kn_angle_setpoints) > 0},
+        'Pzip': {idx: val for idx, val in zip(nc.kn_pzip_idx, nc.kn_pzip_setpoints) if
+                 len(nc.kn_pzip_idx) > 0 and len(nc.kn_pzip_setpoints) > 0},
+        'Qzip': {idx: val for idx, val in zip(nc.kn_qzip_idx, nc.kn_qzip_setpoints) if
+                 len(nc.kn_qzip_idx) > 0 and len(nc.kn_qzip_setpoints) > 0},
+        'Pfrom': {
+            (branch_from_indices[nc.kn_pfrom_kdx[i]], branch_to_indices[nc.kn_pfrom_kdx[i]]): nc.kn_pfrom_setpoints[i]
+            for i in range(len(nc.kn_pfrom_kdx)) if len(nc.kn_pfrom_setpoints) > 0},
+        'Pto': {(branch_from_indices[nc.kn_pto_kdx[i]], branch_to_indices[nc.kn_pto_kdx[i]]): nc.kn_pto_setpoints[i] for
+                i in range(len(nc.kn_pto_kdx)) if len(nc.kn_pto_setpoints) > 0},
+        'Qfrom': {
+            (branch_from_indices[nc.kn_qfrom_kdx[i]], branch_to_indices[nc.kn_qfrom_kdx[i]]): nc.kn_qfrom_setpoints[i]
+            for i in range(len(nc.kn_qfrom_kdx)) if len(nc.kn_qfrom_setpoints) > 0},
+        'Qto': {(branch_from_indices[nc.kn_qto_kdx[i]], branch_to_indices[nc.kn_qto_kdx[i]]): nc.kn_qto_setpoints[i] for
+                i in range(len(nc.kn_qto_kdx)) if len(nc.kn_qto_setpoints) > 0},
+        'Modulation': {
+            (branch_from_indices[nc.kn_mod_kdx[i]], branch_to_indices[nc.kn_mod_kdx[i]]): nc.kn_mod_setpoints[i] for i
+            in range(len(nc.kn_mod_kdx)) if len(nc.kn_mod_setpoints) > 0},
+        'Tau': {(branch_from_indices[nc.kn_tau_kdx[i]], branch_to_indices[nc.kn_tau_kdx[i]]): nc.kn_tau_setpoints[i] for
+                i in range(len(nc.kn_tau_kdx)) if len(nc.kn_tau_setpoints) > 0}
     }
 
     # Creating the unknown dictionary with similar checks
@@ -154,12 +167,18 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
         'Angle': {idx: '' for idx in nc.un_angle_idx if len(nc.un_angle_idx) > 0},
         'Pzip': {idx: '' for idx in nc.un_pzip_idx if len(nc.un_pzip_idx) > 0},
         'Qzip': {idx: '' for idx in nc.un_qzip_idx if len(nc.un_qzip_idx) > 0},
-        'Pfrom': {(branch_from_indices[nc.un_pfrom_kdx[i]], branch_to_indices[nc.un_pfrom_kdx[i]]): '' for i in range(len(nc.un_pfrom_kdx)) if len(nc.un_pfrom_kdx) > 0},
-        'Pto': {(branch_from_indices[nc.un_pto_kdx[i]], branch_to_indices[nc.un_pto_kdx[i]]): '' for i in range(len(nc.un_pto_kdx)) if len(nc.un_pto_kdx) > 0},
-        'Qfrom': {(branch_from_indices[nc.un_qfrom_kdx[i]], branch_to_indices[nc.un_qfrom_kdx[i]]): '' for i in range(len(nc.un_qfrom_kdx)) if len(nc.un_qfrom_kdx) > 0},
-        'Qto': {(branch_from_indices[nc.un_qto_kdx[i]], branch_to_indices[nc.un_qto_kdx[i]]): '' for i in range(len(nc.un_qto_kdx)) if len(nc.un_qto_kdx) > 0},
-        'Modulation': {(branch_from_indices[nc.un_mod_kdx[i]], branch_to_indices[nc.un_mod_kdx[i]]): '' for i in range(len(nc.un_mod_kdx)) if len(nc.un_mod_kdx) > 0},
-        'Tau': {(branch_from_indices[nc.un_tau_kdx[i]], branch_to_indices[nc.un_tau_kdx[i]]): '' for i in range(len(nc.un_tau_kdx)) if len(nc.un_tau_kdx) > 0}
+        'Pfrom': {(branch_from_indices[nc.un_pfrom_kdx[i]], branch_to_indices[nc.un_pfrom_kdx[i]]): '' for i in
+                  range(len(nc.un_pfrom_kdx)) if len(nc.un_pfrom_kdx) > 0},
+        'Pto': {(branch_from_indices[nc.un_pto_kdx[i]], branch_to_indices[nc.un_pto_kdx[i]]): '' for i in
+                range(len(nc.un_pto_kdx)) if len(nc.un_pto_kdx) > 0},
+        'Qfrom': {(branch_from_indices[nc.un_qfrom_kdx[i]], branch_to_indices[nc.un_qfrom_kdx[i]]): '' for i in
+                  range(len(nc.un_qfrom_kdx)) if len(nc.un_qfrom_kdx) > 0},
+        'Qto': {(branch_from_indices[nc.un_qto_kdx[i]], branch_to_indices[nc.un_qto_kdx[i]]): '' for i in
+                range(len(nc.un_qto_kdx)) if len(nc.un_qto_kdx) > 0},
+        'Modulation': {(branch_from_indices[nc.un_mod_kdx[i]], branch_to_indices[nc.un_mod_kdx[i]]): '' for i in
+                       range(len(nc.un_mod_kdx)) if len(nc.un_mod_kdx) > 0},
+        'Tau': {(branch_from_indices[nc.un_tau_kdx[i]], branch_to_indices[nc.un_tau_kdx[i]]): '' for i in
+                range(len(nc.un_tau_kdx)) if len(nc.un_tau_kdx) > 0}
     }
 
     # Passive branch dictionary remains empty as previously defined
@@ -174,31 +193,48 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     print("unknown_dict: ", unknown_dict)
     print("passive_branch_dict: ", passive_branch_dict)
 
-
     '''
     Using known values, update setpoints
     '''
-    Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
-
+    Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = update_setpoints(known_dict, nc,
+                                                                                                         Vm0, Va0, S0,
+                                                                                                         I0, Y0, p_from,
+                                                                                                         p_to, q_from,
+                                                                                                         q_to, p_zip,
+                                                                                                         q_zip,
+                                                                                                         modulations,
+                                                                                                         taus,
+                                                                                                         verbose=0)
 
     '''
     Create unknowns vector
     '''
-    x0 = var2x_raiyan_ver2(unknown_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, verbose = 1)
-
+    x0 = var2x_raiyan_ver2(unknown_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations,
+                           taus, verbose=1)
 
     logger = Logger()
 
     ret: ConvexMethodResult = newton_raphson(func=pf_function_raiyan,
-                                                func_args=(unknown_dict, passive_branch_dict, known_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc.Ybus, nc, nc.dc_indices, nc.ac_indices),
-                                                x0=x0,
-                                                tol=pf_options.tolerance,
-                                                max_iter=pf_options.max_iter,
-                                                trust=pf_options.trust_radius,
-                                                verbose=pf_options.verbose,
-                                                logger= logger)
+                                             func_args=(
+                                             unknown_dict, passive_branch_dict, known_dict, Vm0, Va0, S0, I0, Y0, p_to,
+                                             p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc.Ybus, nc,
+                                             nc.dc_indices, nc.ac_indices),
+                                             x0=x0,
+                                             tol=pf_options.tolerance,
+                                             max_iter=pf_options.max_iter,
+                                             trust=pf_options.trust_radius,
+                                             verbose=pf_options.verbose,
+                                             logger=logger)
 
-    Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
+    Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = update_setpoints(known_dict, nc,
+                                                                                                         Vm0, Va0, S0,
+                                                                                                         I0, Y0, p_from,
+                                                                                                         p_to, q_from,
+                                                                                                         q_to, p_zip,
+                                                                                                         q_zip,
+                                                                                                         modulations,
+                                                                                                         taus,
+                                                                                                         verbose=0)
     V = Vm0 * np.exp(1j * Va0)
     Scalc = compute_power(nc.Ybus, V)
 
@@ -296,18 +332,17 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     print(nc.un_tau_kdx)
 
     print("(newton_raphson_general.py) nc.un_mod_kdx")
-    print(nc.un_mod_kdx)    
+    print(nc.un_mod_kdx)
 
     print("(newton_raphson_general.py) Voltages")
     for i in range(len(V)):
-        print("Bus", i, ":" ,V[i])
+        print("Bus", i, ":", V[i])
 
     end = time.time()
     elapsed = end - start
 
     return NumericPowerFlowResults(V=V, converged=ret.converged, norm_f=ret.error,
                                    Scalc=Scalc)
-
 
 
 def isolate_AC_DC(nc, Ybus) -> csc_matrix:
@@ -332,7 +367,7 @@ def isolate_AC_DC(nc, Ybus) -> csc_matrix:
     _matrix = Ybus.copy()
     n = _matrix.shape[0]  # Assuming Ybus is square
 
-    #iterate through and first delete anything that has to do with the dc_lines
+    # iterate through and first delete anything that has to do with the dc_lines
     for i in range(len(nc.vsc_data.F)):
         # Get indices for the buses
         from_idx = nc.vsc_data.F[i]
@@ -341,16 +376,14 @@ def isolate_AC_DC(nc, Ybus) -> csc_matrix:
         _z2 = _matrix[to_idx, from_idx]
         _matrix[from_idx, to_idx] = 0
         _matrix[to_idx, from_idx] = 0
-        
-    #set all diagonals to zero
+
+    # set all diagonals to zero
     for i in range(n):
         _matrix[i, i] = 0
-    
-    #recalculate the diagonals
+
+    # recalculate the diagonals
     for i in range(n):
         _matrix[i, i] = -np.sum(_matrix[i, :])
-
-
 
     # for elm in nc.dc_lines:
     #     # Get indices for the buses
@@ -360,41 +393,40 @@ def isolate_AC_DC(nc, Ybus) -> csc_matrix:
     #     # print("from_idx: ", from_idx)
     #     # print("to_idx: ", to_idx)
     #     # print("R", elm.R)
-        
+
     #     # Convert resistance to conductance?
     #     G = 1 / elm.R
     #     # G = elm.R
-        
+
     #     # Subtract conductance from off-diagonal elements
     #     _matrix[from_idx, to_idx] -= G
     #     _matrix[to_idx, from_idx] -= G
-        
+
     #     # Add conductance to diagonal elements
     #     _matrix[from_idx, from_idx] += G
     #     _matrix[to_idx, to_idx] += G
-    
+
     # print("altered Ybus: ", _matrix.copy().todense())
 
     return _matrix
 
 
-
-def update_setpoints(known_dict, 
-                    nc,
-                    Vm0, 
-                    Va0, 
-                    S0, 
-                    I0, 
-                    Y0, 
-                    p_from, 
-                    p_to, 
-                    q_from, 
-                    q_to,
-                    p_zip, 
-                    q_zip,
-                    modulations,
-                    taus,
-                    verbose = 0):
+def update_setpoints(known_dict,
+                     nc,
+                     Vm0,
+                     Va0,
+                     S0,
+                     I0,
+                     Y0,
+                     p_from,
+                     p_to,
+                     q_from,
+                     q_to,
+                     p_zip,
+                     q_zip,
+                     modulations,
+                     taus,
+                     verbose=0):
     """
     Updates the initial setpoints for various nc parameters based on the known values.
 
@@ -424,12 +456,12 @@ def update_setpoints(known_dict,
     tuple
         Returns a tuple containing updated arrays/lists for all input parameters, reflecting the known setpoints.
     """
-    
+
     # Check and update 'Voltage' if it's present in known_dict
     if 'Voltage' in known_dict:
         for bus_index, voltage in known_dict['Voltage'].items():
             Vm0[bus_index] = voltage  # Update the voltage magnitude at the specified bus index
-    
+
     # Check and update 'Angle' if it's present in known_dict
     if 'Angle' in known_dict:
         for bus_index, angle in known_dict['Angle'].items():
@@ -437,32 +469,32 @@ def update_setpoints(known_dict,
 
     if 'Pto' in known_dict:
         for bus_index, pto in known_dict['Pto'].items():
-            #add the pto setpoint to the p_to list using the index
+            # add the pto setpoint to the p_to list using the index
             p_to[bus_index[1]] = pto
 
     if 'Pfrom' in known_dict:
         for bus_index, pfrom in known_dict['Pfrom'].items():
-            #add the pfrom setpoint to the p_from list using the index
+            # add the pfrom setpoint to the p_from list using the index
             p_from[bus_index[0]] = pfrom
 
     if 'Qto' in known_dict:
         for bus_index, qto in known_dict['Qto'].items():
-            #add the qto setpoint to the q_to list using the index
+            # add the qto setpoint to the q_to list using the index
             q_to[bus_index[1]] = qto
 
     if 'Qfrom' in known_dict:
         for bus_index, qfrom in known_dict['Qfrom'].items():
-            #add the qfrom setpoint to the q_from list using the index
+            # add the qfrom setpoint to the q_from list using the index
             q_from[bus_index[0]] = qfrom
 
-    if 'Pzip' in known_dict:	
-        for bus_index, pzip in known_dict['Pzip'].items():	
-            #add the pzip setpoint to the p_zip list using the index	
+    if 'Pzip' in known_dict:
+        for bus_index, pzip in known_dict['Pzip'].items():
+            # add the pzip setpoint to the p_zip list using the index
             p_zip[bus_index] = pzip
 
     if 'Qzip' in known_dict:
         for bus_index, qzip in known_dict['Qzip'].items():
-            #add the qzip setpoint to the q_zip list using the index
+            # add the qzip setpoint to the q_zip list using the index
             q_zip[bus_index] = qzip
 
     if 'Modulation' in known_dict:
@@ -479,7 +511,7 @@ def update_setpoints(known_dict,
         print('Pto after updating known Pto setpoints:', p_to)
         print('Pfrom after updating known Pfrom setpoints:', p_from)
         print('Qto after updating known Qto setpoints:', q_to)
-        print('Qfrom after updating known Qfrom setpoints:', q_from)    
+        print('Qfrom after updating known Qfrom setpoints:', q_from)
         print('Pzip after updating known Pzip setpoints:', p_zip)
         print('Qzip after updating known Qzip setpoints:', q_zip)
         print('Modulation after updating known Modulation setpoints:', modulations)
@@ -487,47 +519,55 @@ def update_setpoints(known_dict,
     return Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus
 
 
-
 def pf_function_raiyan(x: Vec,
-                compute_jac: bool,
-                # these are the args:
-                unknown_dict: dict,
-                passive_branch_dict: dict,
-                known_dict: dict,
-                Vm0: Vec, 
-                Va0: Vec, 
-                S0: CxVec, 
-                I0: CxVec, 
-                Y0: CxVec, 
-                p_to: Vec, 
-                p_from: Vec, 
-                q_to: Vec, 
-                q_from: Vec, 
-                p_zip: Vec, 
-                q_zip: Vec, 
-                modulations: Vec, 
-                taus: Vec, 
-                Ybus: CscMat, 
-                nc: NumericalCircuit, 
-                dc_buses: IntVec, 
-                ac_buses) -> ConvexFunctionResult:
-
+                       compute_jac: bool,
+                       # these are the args:
+                       unknown_dict: dict,
+                       passive_branch_dict: dict,
+                       known_dict: dict,
+                       Vm0: Vec,
+                       Va0: Vec,
+                       S0: CxVec,
+                       I0: CxVec,
+                       Y0: CxVec,
+                       p_to: Vec,
+                       p_from: Vec,
+                       q_to: Vec,
+                       q_from: Vec,
+                       p_zip: Vec,
+                       q_zip: Vec,
+                       modulations: Vec,
+                       taus: Vec,
+                       Ybus: CscMat,
+                       nc: NumericalCircuit,
+                       dc_buses: IntVec,
+                       ac_buses) -> ConvexFunctionResult:
     Va = Va0.copy()
     Vm = Vm0.copy()
-    Vm, Va, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = x2var_raiyan_ver2(x, unknown_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, verbose = 0)
+    Vm, Va, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = x2var_raiyan_ver2(x, unknown_dict,
+                                                                                                        Vm0, Va0, S0,
+                                                                                                        I0, Y0, p_to,
+                                                                                                        p_from, q_to,
+                                                                                                        q_from, p_zip,
+                                                                                                        q_zip,
+                                                                                                        modulations,
+                                                                                                        taus, verbose=0)
     V = Vm * np.exp(1j * Va)
 
-    g = compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc, dc_buses, ac_buses, passive_branch_dict, known_dict)
+    g = compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc, dc_buses,
+                  ac_buses, passive_branch_dict, known_dict)
 
     if compute_jac:
-        Gx = compute_gx(x, g, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc, dc_buses, ac_buses, unknown_dict, passive_branch_dict, known_dict)
+        Gx = compute_gx(x, g, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc,
+                        dc_buses, ac_buses, unknown_dict, passive_branch_dict, known_dict)
     else:
         Gx = None
 
     return ConvexFunctionResult(f=g, J=Gx)
 
 
-def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc, dc_buses, ac_buses, passive_branch_dict, known_dict) -> Vec:
+def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc, dc_buses,
+              ac_buses, passive_branch_dict, known_dict) -> Vec:
     """
     Compose the power flow function
     :param V:
@@ -543,8 +583,6 @@ def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip,
     Sbus = compute_zip_power(S0, I0, Y0, Vm)
     Scalc = compute_power(Ybus, V)
 
-
-
     # mapping of bus-VSC and bus-trafo
     vsc_frombus = nc.vsc_data.F
     vsc_tobus = nc.vsc_data.T
@@ -553,21 +591,19 @@ def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip,
     controllable_trafo_yshunt = np.zeros((0))
     controllable_trafo_yseries = np.zeros((0))
 
-
-
-    g = compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, dc_buses, ac_buses, vsc_frombus, vsc_tobus, controllable_trafo_frombus, controllable_trafo_tobus, controllable_trafo_yshunt, controllable_trafo_yseries, V, passive_branch_dict, known_dict, Ybus)
+    g = compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, dc_buses, ac_buses,
+                          vsc_frombus, vsc_tobus, controllable_trafo_frombus, controllable_trafo_tobus,
+                          controllable_trafo_yshunt, controllable_trafo_yseries, V, passive_branch_dict, known_dict,
+                          Ybus)
     return g
 
 
-
-def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc, dc_buses, ac_buses, unknown_dict, passive_branch_dict, known_dict) -> CscMat:
-
+def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc,
+               dc_buses, ac_buses, unknown_dict, passive_branch_dict, known_dict) -> CscMat:
     delta = 1e-6
     x1 = x.copy()
     J = np.zeros((len(x), len(x)), dtype=float)
     for i in range(len(x)):
-
-
         '''
         Make a deepcopy and alter the ith element
         '''
@@ -587,8 +623,10 @@ def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zi
         '''
         Put the unknowns back into their vectors
         '''
-        Vm_after, Va_after, S0, I0, Y0, p_to_after, p_from_after, q_to_after, q_from_after, p_zip_after, q_zip_after, modulations_after, taus_after = x2var_raiyan_ver2(x1, unknown_dict, Vm_after, Va_after, S0, I0, Y0, p_to_after, p_from_after, q_to_after, q_from_after, p_zip_after, q_zip_after, modulations_after, taus_after, verbose = 0)
-        
+        Vm_after, Va_after, S0, I0, Y0, p_to_after, p_from_after, q_to_after, q_from_after, p_zip_after, q_zip_after, modulations_after, taus_after = x2var_raiyan_ver2(
+            x1, unknown_dict, Vm_after, Va_after, S0, I0, Y0, p_to_after, p_from_after, q_to_after, q_from_after,
+            p_zip_after, q_zip_after, modulations_after, taus_after, verbose=0)
+
         '''
         Calculate powers
         '''
@@ -596,11 +634,10 @@ def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zi
         Sbus = compute_zip_power(S0, I0, Y0, Vm)
         Scalc = compute_power(Ybus, V)
 
-
         '''
         Get the difference in the vectors and append to J
         '''
-        #move this outside maybe? get mapping between bus-vsc and bus-trafo
+        # move this outside maybe? get mapping between bus-vsc and bus-trafo
         vsc_frombus = nc.vsc_data.F
         vsc_tobus = nc.vsc_data.T
         controllable_trafo_frombus = np.zeros((0))
@@ -608,13 +645,17 @@ def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zi
         controllable_trafo_yshunt = np.zeros((0))
         controllable_trafo_yseries = np.zeros((0))
 
-        fx_altered = compute_fx_raiyan(Scalc, Sbus, p_to_after, p_from_after, q_to_after, q_from_after, p_zip_after, q_zip_after, modulations_after, taus_after, dc_buses, ac_buses, vsc_frombus, vsc_tobus, controllable_trafo_frombus, controllable_trafo_tobus, controllable_trafo_yshunt, controllable_trafo_yseries, V, passive_branch_dict, known_dict, Ybus)
+        fx_altered = compute_fx_raiyan(Scalc, Sbus, p_to_after, p_from_after, q_to_after, q_from_after, p_zip_after,
+                                       q_zip_after, modulations_after, taus_after, dc_buses, ac_buses, vsc_frombus,
+                                       vsc_tobus, controllable_trafo_frombus, controllable_trafo_tobus,
+                                       controllable_trafo_yshunt, controllable_trafo_yseries, V, passive_branch_dict,
+                                       known_dict, Ybus)
         diff = (fx_altered - fx) / delta
         J[:, i] = diff
 
     # print("(newton_raphson_general.py) J: ")
     # print(J)
-    #make a df of J
+    # make a df of J
     # import pandas as pd
     # df = pd.DataFrame(J)
     # listOfFuncs =  ['DC Real Bus:3', 'DC Real Bus:4', 'DC Real Bus:5', 'AC Real Bus:0', 'AC Imag Bus:0', 'AC Real Bus:1', 'AC Imag Bus:1', 'AC Real Bus:2', 'AC Imag Bus:2', 'AC Real Bus:6', 'AC Imag Bus:6', 'AC Real Bus:7', 'AC Imag Bus:7', 'AC Real Bus:8', 'AC Imag Bus:8', 'AC Real Bus:9', 'AC Imag Bus:9', 'VSC Active Power Balance:32', 'VSC Active Power Balance:56', 'Trafo Active Power From:8', 'Trafo Active Power From:8', 'Trafo Reactive Power To:9', 'Trafo Reactive Power To:9']
@@ -624,8 +665,10 @@ def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zi
     return csr_matrix((J), shape=(len(x), len(x))).tocsc()
 
 
-
-def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, dc_buses, ac_buses, vsc_frombus, vsc_tobus, controllable_trafo_frombus, controllable_trafo_tobus, controllable_trafo_yshunt, controllable_trafo_yseries, V, passive_branch_dict, known_dict, Ybus) -> Vec:
+def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, dc_buses, ac_buses,
+                      vsc_frombus, vsc_tobus, controllable_trafo_frombus, controllable_trafo_tobus,
+                      controllable_trafo_yshunt, controllable_trafo_yseries, V, passive_branch_dict, known_dict,
+                      Ybus) -> Vec:
     """
     Compute the NR-like error function
     :param Scalc: Calculated power injections
@@ -660,8 +703,8 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
     '''
     Vm = np.abs(V)
     for busfrom, busTo in zip(vsc_frombus, vsc_tobus):
-        _loss = (p_to[busTo]**2 + q_to[busTo]**2)**0.5 / Vm[busTo]
-        fx.append(a + b * _loss + c * _loss**2 - p_to[busTo] - p_from[busfrom])
+        _loss = (p_to[busTo] ** 2 + q_to[busTo] ** 2) ** 0.5 / Vm[busTo]
+        fx.append(a + b * _loss + c * _loss ** 2 - p_to[busTo] - p_from[busfrom])
         listOfFuncs.append("VSC Active Power Balance:" + str(busfrom) + str(busTo))
 
     '''
@@ -669,11 +712,18 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
     '''
     for i in range(len(controllable_trafo_frombus)):
         # right what are we going to do here, we need to form four equations
-        _a = Vm[controllable_trafo_frombus[i]]**2 * (np.conj(controllable_trafo_yseries[i]) + np.conj(controllable_trafo_yshunt[i])) / modulations[controllable_trafo_frombus[i]]**2
-        _b = V[controllable_trafo_frombus[i]] * np.conj(V[controllable_trafo_tobus[i]]) * np.conj(controllable_trafo_yseries[i]) / (modulations[controllable_trafo_frombus[i]] * np.exp(1j * taus[controllable_trafo_frombus[i]]))
-        Sfrom =  _a - _b
-        _c = Vm[controllable_trafo_tobus[i]]**2 * (np.conj(controllable_trafo_yseries[i]) + np.conj(controllable_trafo_yshunt[i]))
-        _d = V[controllable_trafo_tobus[i]] * np.conj(V[controllable_trafo_frombus[i]]) * np.conj(controllable_trafo_yseries[i]) / (modulations[controllable_trafo_frombus[i]] * np.exp(-1j * taus[controllable_trafo_frombus[i]]))
+        _a = Vm[controllable_trafo_frombus[i]] ** 2 * (
+                    np.conj(controllable_trafo_yseries[i]) + np.conj(controllable_trafo_yshunt[i])) / modulations[
+                 controllable_trafo_frombus[i]] ** 2
+        _b = V[controllable_trafo_frombus[i]] * np.conj(V[controllable_trafo_tobus[i]]) * np.conj(
+            controllable_trafo_yseries[i]) / (
+                         modulations[controllable_trafo_frombus[i]] * np.exp(1j * taus[controllable_trafo_frombus[i]]))
+        Sfrom = _a - _b
+        _c = Vm[controllable_trafo_tobus[i]] ** 2 * (
+                    np.conj(controllable_trafo_yseries[i]) + np.conj(controllable_trafo_yshunt[i]))
+        _d = V[controllable_trafo_tobus[i]] * np.conj(V[controllable_trafo_frombus[i]]) * np.conj(
+            controllable_trafo_yseries[i]) / (
+                         modulations[controllable_trafo_frombus[i]] * np.exp(-1j * taus[controllable_trafo_frombus[i]]))
         Sto = _c - _d
 
         fx.append(Sfrom.real - p_from[controllable_trafo_frombus[i]])
@@ -683,7 +733,7 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
 
         listOfFuncs.append("Trafo Active Power From:" + str(controllable_trafo_frombus[i]))
         listOfFuncs.append("Trafo Active Power From:" + str(controllable_trafo_frombus[i]))
-        listOfFuncs.append("Trafo Reactive Power To:" + str(controllable_trafo_tobus[i]))	
+        listOfFuncs.append("Trafo Reactive Power To:" + str(controllable_trafo_tobus[i]))
         listOfFuncs.append("Trafo Reactive Power To:" + str(controllable_trafo_tobus[i]))
 
     if len(passive_branch_dict["Pfrom"]):
@@ -695,7 +745,7 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
             to_bus = key[1]
             _a = value - (V[from_bus] * (V[from_bus] - V[to_bus]) * np.conj(Ybus[from_bus, to_bus])).real
             fx.append(_a)
-    
+
     if len(passive_branch_dict["Pto"]):
         for key, value in passive_branch_dict["Pto"].items():
             print("Passive Branch Active Power To:")
@@ -715,7 +765,7 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
             to_bus = key[1]
             _a = value - (V[from_bus] * (V[from_bus] - V[to_bus]) * np.conj(Ybus[from_bus, to_bus])).imag
             fx.append(_a)
-    
+
     if len(passive_branch_dict["Qto"]):
         for key, value in passive_branch_dict["Qto"].items():
             print("Passive Branch Reactive Power To:")
@@ -726,7 +776,6 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
             _a = value - (V[to_bus] * (V[to_bus] - V[from_bus]) * np.conj(Ybus[to_bus, from_bus])).imag
             fx.append(_a)
 
-
     # DO NOT DELETE THIS LINE: nb has does not do well with loops
     for i in range(1):
         pass
@@ -734,15 +783,14 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
     return np.array(fx)
 
 
-
-def x2var_raiyan_ver2(x0, 
-                      unknown_dict, 
-                      Vm0, Va0, 
-                      S0, I0, Y0, 
-                      p_to, p_from, q_to, q_from, 
-                      p_zip, q_zip, 
-                      modulations, 
-                      taus, 
+def x2var_raiyan_ver2(x0,
+                      unknown_dict,
+                      Vm0, Va0,
+                      S0, I0, Y0,
+                      p_to, p_from, q_to, q_from,
+                      p_zip, q_zip,
+                      modulations,
+                      taus,
                       verbose=1):
     """
     Arrange the unknowns vector into the physical variables
@@ -750,7 +798,7 @@ def x2var_raiyan_ver2(x0,
 
     # Initialize an index for x0
     x0_index = 0
-    
+
     # Process Voltage and Angle which are directly indexed
     if 'Voltage' in unknown_dict:
         for bus_index in unknown_dict['Voltage']:
@@ -771,7 +819,6 @@ def x2var_raiyan_ver2(x0,
             q_zip[bus_index] = x0[x0_index]
             x0_index += 1
 
-
     # Process other parameters which might involve tuple keys
     # For tuples, use the specified index for p_from/p_to and q_from/q_to
     for category, items in unknown_dict.items():
@@ -789,10 +836,8 @@ def x2var_raiyan_ver2(x0,
                     modulations[bus_indices[0]] = x0[x0_index]
                 elif category == 'Tau':
                     taus[bus_indices[0]] = x0[x0_index]
-                    #raise an aerror
+                    # raise an aerror
                 x0_index += 1
-
-
 
     if verbose:
         # Print updated values
@@ -811,7 +856,8 @@ def x2var_raiyan_ver2(x0,
     return Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus
 
 
-def var2x_raiyan_ver2(unknown_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, verbose=0):
+def var2x_raiyan_ver2(unknown_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus,
+                      verbose=0):
     """
     Converts variable parameters into a vector form based on a dictionary of unknowns.
 
@@ -840,16 +886,14 @@ def var2x_raiyan_ver2(unknown_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_
         The vector `x` containing values for the unknown parameters as specified in `unknown_dict`.
     """
 
-
     x = []
     x_names = []
 
-      
     if 'Voltage' in unknown_dict:
         for bus_index in unknown_dict['Voltage']:
             x.append(Vm0[bus_index])
             x_names.append(f'Voltage_{bus_index}')
-    
+
     if 'Angle' in unknown_dict:
         for bus_index in unknown_dict['Angle']:
             x.append(Va0[bus_index])
@@ -895,10 +939,9 @@ def var2x_raiyan_ver2(unknown_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_
             x.append(taus[bus_indices[0]])
             x_names.append(f'Tau_{bus_indices[0]}')
 
-
     if verbose:
         print('Unknowns vector x:', x)
         print('Identifiers of x:', x_names)
         print('Length of x:', len(x))
-    
+
     return x
