@@ -348,7 +348,6 @@ class MapWidget(QWidget):
         initial_zoom_factor = 1
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
-        self.remapSchema()
 
         self.selTempDistance = 20
 
@@ -421,9 +420,9 @@ class MapWidget(QWidget):
             val = self.zoom_level(new_level, self.mouse_x, self.mouse_y)
             if val:
                 if event.delta() > 0:
-                    self._zoom_in()
+                    self.diagram_zoom_in()
                 else:
-                    self._zoom_out()
+                    self.diagram_zoom_out()
             else:
                 self.level = zoomInitial
                 val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
@@ -778,30 +777,21 @@ class MapWidget(QWidget):
 
         # self.centerSchema()
 
-    def _zoom_in(self):
+    def diagram_zoom_in(self):
         """
         Translate the scene to make the center point correspond to the origin
         :return:
         """
         self.schema_zoom = self.schema_zoom * self.zoom_factor
         self.view.scale(self.zoom_factor, self.zoom_factor)
-        self.remapSchema()
 
-    def _zoom_out(self):
+    def diagram_zoom_out(self):
         """
         Translate the scene to make the center point correspond to the origin
         :return:
         """
         self.schema_zoom = self.schema_zoom / self.zoom_factor
         self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
-        self.remapSchema()
-
-    def remapSchema(self):
-        a = 0
-        # if self.schema_zoom > 0 and self.schema_zoom < 22:
-        #     self.change_size_and_pen_width_all(0.5,0.5)
-        # if self.schema_zoom >= 22:
-        #     self.change_size_and_pen_width_all(0.2,0.5)
 
     def resizeEvent(self, event: QResizeEvent = None, updateDisplacement = True):
         """

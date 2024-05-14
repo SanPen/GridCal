@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -154,7 +154,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.modelTypeLabel)
 
-        self.horizontalSpacer = QSpacerItem(529, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(529, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer)
 
@@ -256,7 +256,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.availableDBsComboBox)
 
-        self.horizontalSpacer_3 = QSpacerItem(392, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(392, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_3)
 
@@ -324,11 +324,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout_2.addWidget(self.frame_8, 0, 0, 1, 1)
 
-        self.horizontalSpacer_2 = QSpacerItem(937, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(937, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_2.addItem(self.horizontalSpacer_2, 0, 1, 1, 1)
 
-        self.verticalSpacer = QSpacerItem(20, 539, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 539, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_2.addItem(self.verticalSpacer, 1, 0, 1, 1)
 
