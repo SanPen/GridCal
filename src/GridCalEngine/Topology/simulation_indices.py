@@ -521,7 +521,7 @@ class SimulationIndices:
             br_vf=branch_data.vf_set,
             br_vt=branch_data.vt_set
         )
-    
+
 
 class SimulationIndices2:
     """
@@ -737,7 +737,6 @@ class SimulationIndices2:
         # (Generalised PF) indices of the branches where modulation is unknown
         self.un_mod_kdx: IntVec = np.zeros(0, dtype=int)
 
-
         # determine the bus indices
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
@@ -745,7 +744,7 @@ class SimulationIndices2:
         self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
         # (Generalised PF) determine the indices and setpoints
-        self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 1)
+        self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose=1)
 
     def recompile_types(self,
                         bus_types: IntVec,
@@ -761,7 +760,7 @@ class SimulationIndices2:
         # determine the bus indices
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
-    def compile_control_indices_generalised_pf(self, Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0):
+    def compile_control_indices_generalised_pf(self, Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose=0):
         # print("we have gen_data")
         # print("nelm")
         # print(gen_data.nelm)
@@ -835,40 +834,39 @@ class SimulationIndices2:
 
         # print("original_idx")
         # print(gen_data.original_idx)
-            
+
         # print("we have vsc_data")
         # print("vsc_data.nbus",vsc_data.nbus)
         # print("vsc_data.nelm",vsc_data.nelm)
 
-        #get the number of ac buses
+        # get the number of ac buses
         ac_buses = self.ac
         num_ac_buses = len(ac_buses)
 
-        #get the number of dc buses
+        # get the number of dc buses
         dc_buses = self.dc
         num_dc_buses = len(dc_buses)
 
-        #get the number of vscs
+        # get the number of vscs
         num_vsc = vsc_data.nelm
 
-        #get the number of transformers
+        # get the number of transformers
         num_trafo = 0
 
-        total = num_ac_buses*2 + num_dc_buses + num_vsc + num_trafo*4
+        total = num_ac_buses * 2 + num_dc_buses + num_vsc + num_trafo * 4
 
         if verbose:
             import prettytable as pt
             table = pt.PrettyTable()
             table.field_names = ["Type", "Number of Instances", "Number of Equations"]
-            table.add_row(["AC Bus", num_ac_buses, num_ac_buses*2])
+            table.add_row(["AC Bus", num_ac_buses, num_ac_buses * 2])
             table.add_row(["DC Bus", num_dc_buses, num_dc_buses])
             table.add_row(["VSC", num_vsc, num_vsc])
-            table.add_row(["Controllable Trafo", num_trafo, num_trafo*4])
+            table.add_row(["Controllable Trafo", num_trafo, num_trafo * 4])
             table.add_row(["Total", "", total])
             print(table)
 
-
-        dict_known_idx =  {
+        dict_known_idx = {
             "Voltage": self.kn_volt_idx,
             "Angle": self.kn_angle_idx,
             "Pzip": self.kn_pzip_idx,
@@ -894,7 +892,7 @@ class SimulationIndices2:
             "Tau": self.kn_tau_setpoints
         }
 
-        dict_unknown_idx =  {
+        dict_unknown_idx = {
             "Voltage": self.un_volt_idx,
             "Angle": self.un_angle_idx,
             "Pzip": self.un_pzip_idx,
@@ -944,12 +942,12 @@ class SimulationIndices2:
             dict_unknown_idx["Qto"] = np.append(dict_unknown_idx["Qto"], vsc_data.branch_index[vsc_idx])
 
         for trafo_idx in range(num_trafo):
-            #controllable Trafo not supported yet
+            # controllable Trafo not supported yet
             pass
 
-        #Set the "control modes" for generators 
+        # Set the "control modes" for generators
         for bus in gen_data.bus_idx:
-            #grab the voltage setpoint
+            # grab the voltage setpoint
             _setpoint = gen_data.v[gen_data.bus_idx == bus]
             print("bus here has a generator", bus)
             print("its voltage setpoint is", _setpoint)
@@ -963,7 +961,7 @@ class SimulationIndices2:
             dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
 
             # We are going to use the slack array to determine the control mode (which means that you must set slack yourself)
-            if bus_data.bus_types[bus] == BusMode.Slack.value: #Slack bus
+            if bus_data.bus_types[bus] == BusMode.Slack.value:  # Slack bus
                 # We set the angle
                 _popIdx = np.where(dict_unknown_idx["Angle"] == bus)
                 dict_unknown_idx["Angle"] = np.delete(dict_unknown_idx["Angle"], _popIdx)
@@ -976,10 +974,10 @@ class SimulationIndices2:
                 dict_unknown_idx["Pzip"] = np.delete(dict_unknown_idx["Pzip"], _popIdx)
                 dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
                 rawPower = gen_data.p[gen_data.bus_idx == bus]
-                puPower = rawPower/Sbase
+                puPower = rawPower / Sbase
                 dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
 
-        #Set the "control modes" for VSCs (we do it one by one because I dont know the order of the control_modes array)
+        # Set the "control modes" for VSCs (we do it one by one because I dont know the order of the control_modes array)
         for vsc_idx in range(num_vsc):
             # print("vsc number", vsc_idx)
             # print("from bus", vsc_data.F[vsc_idx])
@@ -1044,7 +1042,7 @@ class SimulationIndices2:
                 dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], vsc_data.T[vsc_idx])
                 dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], vsc_data.Vac_set[vsc_idx])
 
-        #use pretty table to print the above information
+        # use pretty table to print the above information
         if verbose == 1:
             table = pt.PrettyTable()
             table.field_names = ["Type", "Number of Unknowns"]
@@ -1058,10 +1056,13 @@ class SimulationIndices2:
             table.add_row(["Qto", len(dict_unknown_idx["Qto"])])
             table.add_row(["Modulation", len(dict_unknown_idx["Modulation"])])
             table.add_row(["Tau", len(dict_unknown_idx["Tau"])])
-            table.add_row(["Total", len(dict_unknown_idx["Voltage"]) + len(dict_unknown_idx["Angle"]) + len(dict_unknown_idx["Pzip"]) + len(dict_unknown_idx["Qzip"]) + len(dict_unknown_idx["Pfrom"]) + len(dict_unknown_idx["Pto"]) + len(dict_unknown_idx["Qfrom"]) + len(dict_unknown_idx["Qto"]) + len(dict_unknown_idx["Modulation"]) + len(dict_unknown_idx["Tau"])])
+            table.add_row(["Total", len(dict_unknown_idx["Voltage"]) + len(dict_unknown_idx["Angle"]) + len(
+                dict_unknown_idx["Pzip"]) + len(dict_unknown_idx["Qzip"]) + len(dict_unknown_idx["Pfrom"]) + len(
+                dict_unknown_idx["Pto"]) + len(dict_unknown_idx["Qfrom"]) + len(dict_unknown_idx["Qto"]) + len(
+                dict_unknown_idx["Modulation"]) + len(dict_unknown_idx["Tau"])])
             print(table)
-        
-        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 1)
+
+        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose=1, strict=1)
 
         self.kn_volt_idx = dict_known_idx["Voltage"]
         self.kn_angle_idx = dict_known_idx["Angle"]
@@ -1098,19 +1099,19 @@ class SimulationIndices2:
 
         return
 
-    def check_subsystem_slacks(self, systems, dict_known_idx, bus_data, verbose = 0, strict = 0):
+    def check_subsystem_slacks(self, systems, dict_known_idx, bus_data, verbose=0, strict=0):
         subSystemSlacks = np.zeros(len(systems), dtype=bool)
-        #initialise pretty table
+        # initialise pretty table
         import prettytable as pt
         table = pt.PrettyTable()
-        #add some headers
+        # add some headers
         table.field_names = ["System", "Slack Buses", "Remarks"]
 
         for i, system in enumerate(systems):
             isSlack = []
             isDC = False
             for busIndex in system:
-                #get bus object from index using grid object
+                # get bus object from index using grid object
                 if bus_data.is_dc[busIndex] == True:
                     if busIndex in dict_known_idx["Voltage"]:
                         isSlack.append(busIndex)
@@ -1118,17 +1119,16 @@ class SimulationIndices2:
                     if busIndex in dict_known_idx["Voltage"] and busIndex in dict_known_idx["Angle"]:
                         isSlack.append(busIndex)
 
-
-            #add the system to the table
-            table.add_row([f"Subsystem {i+1}", isSlack, "All good" if len(isSlack)  == 1 else "No good"])
-            #true is there is exactly one slack, false otherwise
+            # add the system to the table
+            table.add_row([f"Subsystem {i + 1}", isSlack, "All good" if len(isSlack) == 1 else "No good"])
+            # true is there is exactly one slack, false otherwise
             subSystemSlacks[i] = len(isSlack) == 1
 
         if verbose:
             print(table)
 
         if strict:
-            #if adding up lengthwise does not equal the length of the buses, then assert an error
+            # if adding up lengthwise does not equal the length of the buses, then assert an error
             assert sum(subSystemSlacks) == len(systems), "You do not have exactly one slack bus for each subsystem"
 
         return
@@ -1141,14 +1141,15 @@ class SimulationIndices2:
         """
         if control_mode is not None:
             if control_mode == ConverterControlType.type_0_free:
-                raise ControlLengthError(controlmode=control_mode, length = 0)
-            
-            if control_mode in [ConverterControlType.type_I_1, ConverterControlType.type_IV_I, ConverterControlType.type_IV_II]:
-                raise ControlLengthError(controlmode=control_mode, length = 1)
-            
+                raise ControlLengthError(controlmode=control_mode, length=0)
+
+            if control_mode in [ConverterControlType.type_I_1, ConverterControlType.type_IV_I,
+                                ConverterControlType.type_IV_II]:
+                raise ControlLengthError(controlmode=control_mode, length=1)
+
             if control_mode in [ConverterControlType.type_III_6, ConverterControlType.type_III_7]:
                 raise ControlNotImplementedError(controlmode=control_mode)
-            
+
     def compile_control_indices(self,
                                 control_mode: List[Union[TransformerControlType, ConverterControlType]],
                                 F: IntVec,
