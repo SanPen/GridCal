@@ -18,7 +18,7 @@ from typing import Union, List, Tuple
 import numpy as np
 from PySide6.QtWidgets import QWidget, QGraphicsItem
 from PySide6.QtCore import Qt
-from PySide6.QtGui import (QColor, QPen)
+from PySide6.QtGui import QColor
 from collections.abc import Callable
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation

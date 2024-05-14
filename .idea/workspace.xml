@@ -29,7 +29,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Now the map draws the lines with only substation information">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Colouring working on the map">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
     </list>
@@ -654,9 +654,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests in test_ptdf.py" />
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python.update_gui_all" />
       </list>
@@ -1684,7 +1684,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="528" />
+    <option name="localTasksCounter" value="529" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1730,7 +1730,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More types in the power flow worker" />
     <MESSAGE value="Improved types" />
     <MESSAGE value="Refactored the test_ptdf to avoid import *" />
     <MESSAGE value="Fixed the contingencies memory usage" />
@@ -1755,7 +1754,8 @@
     <MESSAGE value="Fixed the calling to the nodal capacity" />
     <MESSAGE value="Merged raiyan's code" />
     <MESSAGE value="Now the map draws the lines with only substation information" />
-    <option name="LAST_COMMIT_MESSAGE" value="Now the map draws the lines with only substation information" />
+    <MESSAGE value="Colouring working on the map" />
+    <option name="LAST_COMMIT_MESSAGE" value="Colouring working on the map" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2214,7 +2214,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>671</line>
+          <line>678</line>
           <option name="timeStamp" value="1627" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2429,7 +2429,7 @@
     <SUITE FILE_PATH="coverage/GridCal$flatpak_pip_generator.coverage" NAME="flatpak-pip-generator Coverage Results" MODIFIED="1694345245258" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_tutorials_py.coverage" NAME="Nosetests in test_tutorials.py Coverage Results" MODIFIED="1602941091349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_by_node_groups.coverage" NAME="PTDF_by_node_groups Coverage Results" MODIFIED="1619774485543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1715685713133" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1715697849168" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$raw_to_cgmes_mapping.coverage" NAME="raw_to_cgmes_mapping Coverage Results" MODIFIED="1693562939167" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ConsoleLogController.coverage" NAME="ConsoleLogController Coverage Results" MODIFIED="1663862178388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf.coverage" NAME="ntc_opf Coverage Results" MODIFIED="1630509729235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
