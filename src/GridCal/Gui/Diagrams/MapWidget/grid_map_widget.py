@@ -42,7 +42,7 @@ from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import Vol
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget, PolylineData, Place
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
+from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager, ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 
@@ -130,7 +130,7 @@ class GridMapWidget(MapWidget):
         """
         self.diagram.name = val
 
-    def add_to_scene(self, graphic_object: QGraphicsItem = None) -> None:
+    def add_to_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
@@ -138,13 +138,14 @@ class GridMapWidget(MapWidget):
 
         self.diagram_scene.addItem(graphic_object)
 
-    def remove_from_scene(self, graphic_object: QGraphicsItem = None) -> None:
+    def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
 
         self.diagram_scene.removeItem(graphic_object)
+        self.graphics_manager.delete_device(graphic_object.api_object)
 
     def setBranchData(self, data):
         """
