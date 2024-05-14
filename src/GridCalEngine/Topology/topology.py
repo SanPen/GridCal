@@ -19,7 +19,7 @@ from typing import List, Dict, Union
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from scipy.sparse import csc_matrix, csr_matrix, diags
+from scipy.sparse import csc_matrix, csr_matrix, diags, csr_matrix, lil_matrix
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -439,3 +439,32 @@ class TopologyProcessorInfo:
         :return: Final calculation Bus
         """
         return self.cn_to_final_bus[cn]
+
+
+def compute_connectivity_acdc_isolated(branch_active: IntVec,
+                                       Cf_: csc_matrix,
+                                       Ct_: csc_matrix,
+                                       vsc_active: Union[None, IntVec] = None,
+                                       Cf_vsc: Union[None, csc_matrix] = None,
+                                       Ct_vsc: Union[None, csc_matrix] = None,
+                                       vsc_branch_idx: Union[None, IntVec] = None) -> ConnectivityMatrices:
+    """
+    Remove the VSC branches from the connectivity matrices by setting rows indexed by vsc_branch_idx to zero.
+    """
+
+    # Convert matrices to LIL format for efficient row manipulation
+    Cf = Cf_.tolil()
+    Ct = Ct_.tolil()
+
+    # Set rows corresponding to VSC branches to zero
+    for idx in vsc_branch_idx:
+        Cf[idx, :] = 0
+        Ct[idx, :] = 0
+
+    # print("(topology.py) Modified Cf:")
+    # print(Cf)
+    # print("(topology.py) Modified Ct:")
+    # print(Ct)
+
+    # Convert back to CSC format for efficient matrix operations
+    return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())

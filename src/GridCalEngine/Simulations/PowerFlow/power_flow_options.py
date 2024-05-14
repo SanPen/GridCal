@@ -95,7 +95,8 @@ class PowerFlowOptions:
                  backtracking_parameter=0.05,
                  use_stored_guess=False,
                  override_branch_controls=False,
-                 generate_report=False):
+                 generate_report=False,
+                 generalised_pf=False):
 
         self.solver_type = solver_type
 
@@ -140,6 +141,8 @@ class PowerFlowOptions:
         self.override_branch_controls = override_branch_controls
 
         self.generate_report = generate_report
+
+        self.generalised_pf = generalised_pf
 
     def __str__(self):
         return "PowerFlowOptions"
