@@ -197,7 +197,22 @@ class GridMapWidget(MapWidget):
         :return:
         """
 
+        level, longitude, latitude = self.get_level_and_position()
+
+        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+
+        he = self.view.height()
+        wi = self.view.width()
+
+        node_gen_dx = self.startWi - wi
+        node_gen_dy = self.startHe - he
+
         x, y = self.geo_to_view(longitude=lon, latitude=lat)
+
+        x = x + node_gen_dx/2
+        y = y + node_gen_dy/2
+
+        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return x, y
 

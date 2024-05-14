@@ -74,6 +74,9 @@ class MapTemplateLine:
         for conector in self.segments_list:
             conector.update_endings()
 
+    def create_node(self):
+        return 0
+
     def split_Line(self, index):
         """
         Split Line
