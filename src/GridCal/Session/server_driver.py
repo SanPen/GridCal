@@ -128,18 +128,21 @@ class ServerDriver(QThread):
             while not self.__cancel__:
 
                 if not self.__pause__:
-                    self.report_status("Running")
+                    self.report_status("Sync" if ok else "Server not responding")
                     self.__running__ = True
 
                     # sleep
                     time.sleep(self.sleep_time)
 
                 else:
-                    self.report_status("Pause")
+                    self.report_status("Sync paused" if ok else "Server not responding")
                     self.__running__ = False
 
                     # sleep 1 second to catch other events
                     time.sleep(self.sleep_time)
+
+                # check if alive
+                ok = self.server_connect()
         else:
             # bad connection
             self.report_status("Could not connect")
@@ -147,7 +150,7 @@ class ServerDriver(QThread):
             self.done_signal.emit()
             return None
 
-        self.report_status("Stop")
+        self.report_status("Sync stop")
         self.__running__ = False
         self.done_signal.emit()
 

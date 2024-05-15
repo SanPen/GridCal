@@ -113,7 +113,7 @@ if __name__ == "__main__":
                 description_content_type=_description_content_type,
                 provides_extra=_provides_extra,
                 long_description=_long_description,
-                ext_filter=['.py', '.csv', '.txt']
+                ext_filter=['.py', '.csv', '.txt', '.ico']
                 )
 
     else:

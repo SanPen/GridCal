@@ -24,7 +24,6 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import set_dark_mode, set_light_mode
-from GridCal.Session.server_driver import ServerDriver
 from GridCal.Gui.messages import yes_no_question, warning_msg
 
 
@@ -101,8 +100,7 @@ class ConfigurationMain(ResultsMain):
         # DateTime change
         self.ui.snapshot_dateTimeEdit.dateTimeChanged.connect(self.snapshot_datetime_changed)
 
-        # menu
-        self.ui.actionEnable_server_mode.triggered.connect(self.server_start_stop)
+
 
     def change_theme_mode(self) -> None:
         """
@@ -502,48 +500,3 @@ class ConfigurationMain(ResultsMain):
         date_time_value = self.ui.snapshot_dateTimeEdit.dateTime().toPython()
 
         self.circuit.snapshot_time = date_time_value
-
-    def server_start_stop(self):
-        """
-
-        :return:
-        """
-        if self.ui.actionEnable_server_mode.isChecked():
-
-            # create a new driver
-            self.server_driver = ServerDriver(url=self.ui.server_url_lineEdit.text().strip(),
-                                              port=self.ui.server_port_spinBox.value(),
-                                              pwd=self.ui.server_pwd_lineEdit.text().strip(),
-                                              status_func=self.ui.server_status_label.setText)
-
-            # it may be useful to save the latest attempted values
-            self.save_server_config()
-
-            # connect the post function
-            self.server_driver.done_signal.connect(self.post_start_stop_server)
-
-            # run asynchronously
-            self.server_driver.start()
-
-        else:
-
-            ok = yes_no_question(text="The server connection is running, are you sure that you want to stop it?",
-                                 title="Stop Server")
-
-            if ok:
-                self.server_driver.cancel()
-                self.ui.actionEnable_server_mode.setChecked(False)
-            else:
-                self.ui.actionEnable_server_mode.setChecked(True)
-
-    def post_start_stop_server(self):
-        """
-        Post server run
-        :return:
-        """
-        if not self.server_driver.is_running():
-            # self.ui.actionEnable_server_mode.setChecked(False)
-
-            if len(self.server_driver.logger):
-                warning_msg(text="Could not connect to the server", title="Server connection")
-                self.ui.actionEnable_server_mode.setChecked(False)

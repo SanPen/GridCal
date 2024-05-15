@@ -29,23 +29,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Started GridCalServer">
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons/server.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCal/Session/server_driver.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalServer/data/GridCal_icon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalServer/data/__init__.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Implemented early server driver">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/GridCalMain.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/base_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/base_gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons.qrc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/file_system.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/file_system.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalServer/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalServer/endpoints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalServer/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalServer/run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Session/server_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Session/server_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/upload_to_pypi.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/upload_to_pypi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -149,7 +138,7 @@
     "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
     "Python tests.Nosetests in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
     "Python.ac_opf_derivatives_bound_slacks.executor": "Debug",
     "Python.acopf_run.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
@@ -195,7 +184,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -669,8 +658,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.run" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.run" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.Nosetests in tests" />
         <item itemvalue="Python tests.Nosetests in test_ptdf.py" />
@@ -1357,7 +1346,7 @@
       <workItem from="1715677789415" duration="4493000" />
       <workItem from="1715708420077" duration="630000" />
       <workItem from="1715759365508" duration="4303000" />
-      <workItem from="1715769548008" duration="11012000" />
+      <workItem from="1715769548008" duration="13182000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1702,7 +1691,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="531" />
+    <option name="localTasksCounter" value="532" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1748,7 +1737,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed the contingencies memory usage" />
     <MESSAGE value="Added the probability index to the contingency run" />
     <MESSAGE value="Enforce types h" />
     <MESSAGE value="Set types in jacobians constructor" />
@@ -1773,7 +1761,8 @@
     <MESSAGE value="Colouring working on the map" />
     <MESSAGE value="file formatting" />
     <MESSAGE value="Started GridCalServer" />
-    <option name="LAST_COMMIT_MESSAGE" value="Started GridCalServer" />
+    <MESSAGE value="Implemented early server driver" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implemented early server driver" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2448,7 +2437,7 @@
     <SUITE FILE_PATH="coverage/GridCal$flatpak_pip_generator.coverage" NAME="flatpak-pip-generator Coverage Results" MODIFIED="1694345245258" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_tutorials_py.coverage" NAME="Nosetests in test_tutorials.py Coverage Results" MODIFIED="1602941091349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$PTDF_by_node_groups.coverage" NAME="PTDF_by_node_groups Coverage Results" MODIFIED="1619774485543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1715784852347" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1715787090298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$raw_to_cgmes_mapping.coverage" NAME="raw_to_cgmes_mapping Coverage Results" MODIFIED="1693562939167" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ConsoleLogController.coverage" NAME="ConsoleLogController Coverage Results" MODIFIED="1663862178388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
     <SUITE FILE_PATH="coverage/GridCal$ntc_opf.coverage" NAME="ntc_opf Coverage Results" MODIFIED="1630509729235" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />
