@@ -81,7 +81,7 @@ class MainGUI(ScriptingMain):
 
         self.clear_results()
 
-        self.load_gui_config()
+        self.load_all_config()
 
         self.add_complete_bus_branch_diagram()
         self.add_map_diagram()
@@ -101,17 +101,17 @@ class MainGUI(ScriptingMain):
 
             if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 # save config regardless
-                self.save_gui_config()
+                self.save_all_config()
                 self.stop_all_threads()
                 event.accept()
             else:
                 # save config regardless
-                self.save_gui_config()
+                self.save_all_config()
                 event.ignore()
         else:
             # no buses so exit
             # save config regardless
-            self.save_gui_config()
+            self.save_all_config()
             self.stop_all_threads()
             event.accept()
 

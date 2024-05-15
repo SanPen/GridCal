@@ -24,6 +24,8 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Session.server_driver import ServerDriver
+from GridCal.Gui.messages import yes_no_question, warning_msg
 
 
 def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],
@@ -99,6 +101,9 @@ class ConfigurationMain(ResultsMain):
         # DateTime change
         self.ui.snapshot_dateTimeEdit.dateTimeChanged.connect(self.snapshot_datetime_changed)
 
+        # menu
+        self.ui.actionEnable_server_mode.triggered.connect(self.server_start_stop)
+
     def change_theme_mode(self) -> None:
         """
         Change the GUI theme
@@ -153,6 +158,21 @@ class ConfigurationMain(ResultsMain):
         :return: True / False
         """
         return os.path.exists(self.config_file_path())
+
+    @staticmethod
+    def server_config_file_path() -> str:
+        """
+        get the config file path
+        :return: config file path
+        """
+        return os.path.join(get_create_gridcal_folder(), 'server_config.json')
+
+    def server_config_file_exists(self) -> bool:
+        """
+        Check if the config file exists
+        :return: True / False
+        """
+        return os.path.exists(self.server_config_file_path())
 
     @staticmethod
     def scripts_path() -> str:
@@ -400,7 +420,64 @@ class ConfigurationMain(ResultsMain):
                 except json.decoder.JSONDecodeError as e:
                     print(e)
                     self.save_gui_config()
-                    print("Config file was erroneous, wrote a new one")
+                    print("GUI config file was erroneous, wrote a new one")
+
+    def get_gui_server_config_data(self):
+        """
+        Get server data from the GUI
+        :return:
+        """
+        return {"url": self.ui.server_url_lineEdit.text(),
+                "port": self.ui.server_port_spinBox.value(),
+                "user": "",
+                "pwd": self.ui.server_pwd_lineEdit.text()}
+
+    def save_server_config(self):
+        """
+        Save the GUI configuration
+        :return:
+        """
+        data = self.get_gui_server_config_data()
+        with open(self.server_config_file_path(), "w") as f:
+            f.write(json.dumps(data, indent=4))
+
+    def apply_server_config(self, data: Dict[str, Union[str, int]]) -> None:
+        """
+        Apply the server config
+        :param data: Some local data
+        """
+        self.ui.server_url_lineEdit.setText(data.get("url", "localhost"))
+        self.ui.server_port_spinBox.setValue(data.get("port", 8080))
+        # "user": "",
+        self.ui.server_pwd_lineEdit.setText(data.get("pwd", "1234"))
+
+    def load_server_config(self) -> None:
+        """
+        Load server configuration from the local user folder
+        """
+        if self.server_config_file_exists():
+            with open(self.server_config_file_path(), "r") as f:
+                try:
+                    data = json.load(f)
+                    self.apply_server_config(data=data)
+                except json.decoder.JSONDecodeError as e:
+                    print(e)
+                    self.save_server_config()
+                    print("Server config file was erroneous, wrote a new one")
+
+    def save_all_config(self):
+        """
+        Save all configuration files needed
+        """
+        self.save_gui_config()
+        self.save_server_config()
+
+    def load_all_config(self):
+        """
+        Load all configuration files needed
+        """
+        self.load_gui_config()
+        self.load_server_config()
 
     def select_cgmes_boundary_set(self):
         """
@@ -425,3 +502,48 @@ class ConfigurationMain(ResultsMain):
         date_time_value = self.ui.snapshot_dateTimeEdit.dateTime().toPython()
 
         self.circuit.snapshot_time = date_time_value
+
+    def server_start_stop(self):
+        """
+
+        :return:
+        """
+        if self.ui.actionEnable_server_mode.isChecked():
+
+            # create a new driver
+            self.server_driver = ServerDriver(url=self.ui.server_url_lineEdit.text().strip(),
+                                              port=self.ui.server_port_spinBox.value(),
+                                              pwd=self.ui.server_pwd_lineEdit.text().strip(),
+                                              status_func=self.ui.server_status_label.setText)
+
+            # it may be useful to save the latest attempted values
+            self.save_server_config()
+
+            # connect the post function
+            self.server_driver.done_signal.connect(self.post_start_stop_server)
+
+            # run asynchronously
+            self.server_driver.start()
+
+        else:
+
+            ok = yes_no_question(text="The server connection is running, are you sure that you want to stop it?",
+                                 title="Stop Server")
+
+            if ok:
+                self.server_driver.cancel()
+                self.ui.actionEnable_server_mode.setChecked(False)
+            else:
+                self.ui.actionEnable_server_mode.setChecked(True)
+
+    def post_start_stop_server(self):
+        """
+        Post server run
+        :return:
+        """
+        if not self.server_driver.is_running():
+            # self.ui.actionEnable_server_mode.setChecked(False)
+
+            if len(self.server_driver.logger):
+                warning_msg(text="Could not connect to the server", title="Server connection")
+                self.ui.actionEnable_server_mode.setChecked(False)

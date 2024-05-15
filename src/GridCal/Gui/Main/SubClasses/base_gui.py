@@ -58,6 +58,7 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
+from GridCal.Session.server_driver import ServerDriver
 from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import IS_DARK
 from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
                                get_sequence_lines_catalogue)
@@ -158,6 +159,8 @@ class BaseMainGui(QMainWindow):
         self.topology_reduction = None
         self.find_node_groups_driver: Union[sim.NodeGroupsDriver, None] = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
+        # Server driver
+        self.server_driver: ServerDriver = ServerDriver(url="", port=0, pwd="")
 
         # simulation start end
         self.simulation_start_index: int = 0
@@ -411,7 +414,9 @@ class BaseMainGui(QMainWindow):
                        self.delete_and_reduce_driver,
                        self.export_all_thread_object,
                        self.find_node_groups_driver,
-                       self.file_sync_thread]
+                       self.file_sync_thread,
+                       self.server_driver,
+                       ]
         return all_threads
 
     def get_all_threads(self) -> List[GcThread]:
