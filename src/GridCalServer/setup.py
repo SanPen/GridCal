@@ -25,7 +25,6 @@ import os
 
 from GridCalServer.__version__ import __GridCalServer_VERSION__
 
-
 here = os.path.abspath(os.path.dirname(__file__))
 
 long_description = '''# GridCal
@@ -48,7 +47,7 @@ from the project's [documentation](https://gridcal.readthedocs.io)
 
 description = 'GridCal is a Power Systems simulation program intended for professional use and research'
 
-base_path = os.path.join('GridCal')
+base_path = os.path.join('GridCalServer')
 
 pkgs_to_exclude = ['docs', 'research', 'tests', 'tutorials', 'GridCalEngine']
 
@@ -66,15 +65,11 @@ for package in packages:
     if not excluded:
         packages2.append(package)
 
-
-package_data = {'GridCal': ['*.md',
-                            '*.rst',
-                            'LICENSE.txt',
-                            'setup.py',
-                            'data/cables.csv',
-                            'data/transformers.csv',
-                            'data/wires.csv',
-                            'data/sequence_lines.csv'],
+package_data = {'GridCalServer': ['*.md',
+                                  '*.rst',
+                                  'LICENSE.txt',
+                                  'setup.py',
+                                  'data/GridCal_icon.ico'],
                 }
 
 dependencies = ['setuptools>=41.0.1',
@@ -86,8 +81,8 @@ dependencies = ['setuptools>=41.0.1',
                 ]
 
 extras_require = {
-        'gch5 files':  ["tables"]  # this is for h5 compatibility
-    }
+    'gch5 files': ["tables"]  # this is for h5 compatibility
+}
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
 
