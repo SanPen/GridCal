@@ -32,20 +32,29 @@ from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import CGMESVersions
 
 
-def find_attribute(referenced_object, obj, property_name, association_inverse_dict, class_dict):
-    for inverse, current in association_inverse_dict.items():
-        c_class = str(current).split('.')[0]
-        c_prop = str(current).split('.')[-1]
+def find_attribute(referenced_object: Base,
+                   obj: Base,
+                   property_name: str,
+                   association_inverse_dict: Dict[str, str],
+                   class_dict: Dict[str, Base]):
+    def check_inverse(obj_tpe: str):
+        inverse = association_inverse_dict.get(f"{obj_tpe}.{property_name}")
+        if inverse is not None:
+            i_class, i_prop = inverse.split('.')
+            return i_prop
+        return None
 
-        if isinstance(obj, class_dict.get(c_class)) and c_prop == property_name:
-            i_class = str(inverse).split('.')[0]
-            i_prop = str(inverse).split('.')[-1]
-            if isinstance(referenced_object, class_dict.get(i_class)) and i_prop in vars(referenced_object):
-                return i_prop
-            else:
-                continue
-        else:
-            continue
+    result = check_inverse(obj.tpe)
+    if result:
+        return result
+
+    mro_classes_instance = type(obj).mro()
+    obj_parents = [cls for cls in mro_classes_instance[1:-3]]
+
+    for tpe in obj_parents:
+        result = check_inverse(tpe.__name__)
+        if result:
+            return result
     return None
 
 
@@ -70,8 +79,11 @@ def find_references(elements_by_type: Dict[str, List[Base]],
     """
     added_from_the_boundary_set = list()
 
+    # Store dictionary values in local variables
+    elements_by_type_items = elements_by_type.items()
+
     # find cross-references
-    for class_name, elements in elements_by_type.items():
+    for class_name, elements in elements_by_type_items:
         for element in elements:  # for every element of the type
             if mark_used:
                 element.used = True
