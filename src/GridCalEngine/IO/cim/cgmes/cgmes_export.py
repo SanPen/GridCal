@@ -187,7 +187,7 @@ class CimExporter:
         if self.one_file_per_profile:
             i = 1
             for prof in profiles_to_export:
-                with zipfile.ZipFile(os.path.join(fpath, f"{name}_{prof}{extension}"), 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
+                with zipfile.ZipFile(os.path.join(fpath, f"{name}_{prof}_001{extension}"), 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
                     self.cgmes_circuit.emit_text(f"Export {prof} profile file")
                     self.cgmes_circuit.emit_progress(i / profiles_to_export.__len__() * 100)
                     i += 1
@@ -203,7 +203,7 @@ class CimExporter:
                     i += 1
                     with BytesIO() as buffer:
                         self.serialize(stream=buffer, profile=prof)
-                        f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
+                        f_zip_ptr.writestr(f"{name}_{prof}_001.xml", buffer.getvalue())
 
     def serialize(self, stream, profile):
         root = Et.Element("rdf:RDF", self.namespaces)

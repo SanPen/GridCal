@@ -32,28 +32,37 @@ from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import CGMESVersions
 
 
-def find_attribute(referenced_object, obj, property_name, association_inverse_dict, class_dict):
-    for inverse, current in association_inverse_dict.items():
-        c_class = str(current).split('.')[0]
-        c_prop = str(current).split('.')[-1]
+def find_attribute(referenced_object: Base,
+                   obj: Base,
+                   property_name: str,
+                   association_inverse_dict: Dict[str, str],
+                   class_dict: Dict[str, Base]):
+    def check_inverse(obj_tpe: str):
+        inverse = association_inverse_dict.get(f"{obj_tpe}.{property_name}")
+        if inverse is not None:
+            i_class, i_prop = inverse.split('.')
+            return i_prop
+        return None
 
-        if isinstance(obj, class_dict.get(c_class)) and c_prop == property_name:
-            i_class = str(inverse).split('.')[0]
-            i_prop = str(inverse).split('.')[-1]
-            if isinstance(referenced_object, class_dict.get(i_class)) and i_prop in vars(referenced_object):
-                return i_prop
-            else:
-                continue
-        else:
-            continue
+    result = check_inverse(obj.tpe)
+    if result:
+        return result
+
+    mro_classes_instance = type(obj).mro()
+    obj_parents = [cls for cls in mro_classes_instance[1:-3]]
+
+    for tpe in obj_parents:
+        result = check_inverse(tpe.__name__)
+        if result:
+            return result
     return None
 
 
 def find_references(elements_by_type: Dict[str, List[Base]],
                     all_objects_dict: Dict[str, Base],
                     all_objects_dict_boundary: Union[Dict[str, Base], None],
-                    association_inverse_dict,
-                    class_dict,
+                    association_inverse_dict: Dict[str, str],
+                    class_dict: Dict[str, Base],
                     logger: DataLogger,
                     mark_used: bool) -> None:
     """
@@ -70,8 +79,11 @@ def find_references(elements_by_type: Dict[str, List[Base]],
     """
     added_from_the_boundary_set = list()
 
+    # Store dictionary values in local variables
+    elements_by_type_items = elements_by_type.items()
+
     # find cross-references
-    for class_name, elements in elements_by_type.items():
+    for class_name, elements in elements_by_type_items:
         for element in elements:  # for every element of the type
             if mark_used:
                 element.used = True
@@ -325,6 +337,8 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
             if object_template is not None:
 
                 parsed_object = object_template(rdfid=rdfid, tpe=class_name)
+                if all_objects_dict_boundary is None:
+                    parsed_object.boundary_set = True
                 parsed_object.parse_dict(data=object_data, logger=logger)
 
                 found = all_objects_dict.get(parsed_object.rdfid, None)
@@ -427,13 +441,13 @@ class CgmesCircuit(BaseCircuit):
         #                               progress_func=self.progress_func,
         #                               logger=self.logger)
         # data_parser.load_files(files=files)
-        import time
+
         self.emit_text("Processing CGMES model")
         self.emit_progress(20)
         # set the data
         self.set_data(data=data_parser.data,
                       boundary_set=data_parser.boudary_set)
-
+        self.emit_progress(25)
         # convert the dictionaries to the internal class model for the boundary set
         # do not mark the boundary set objects as used
         convert_data_to_objects(data=self.boundary_set,
@@ -443,8 +457,8 @@ class CgmesCircuit(BaseCircuit):
                                 class_dict=self.cgmes_assets.class_dict,
                                 association_inverse_dict=self.cgmes_assets.association_inverse_dict,
                                 logger=self.logger)
-        start = time.time()
-        self.emit_progress(30)
+
+        self.emit_progress(33)
         # convert the dictionaries to the internal class model,
         # this marks as used only the boundary set objects that are referenced,
         # this allows to delete the excess of boundary set objects later
@@ -455,11 +469,11 @@ class CgmesCircuit(BaseCircuit):
                                 class_dict=self.cgmes_assets.class_dict,
                                 association_inverse_dict=self.cgmes_assets.association_inverse_dict,
                                 logger=self.logger)
-        endt = time.time()
-        print("Data to objects time: ", endt - start, "sec")
+
         # Assign the data from all_objects_dict to the appropriate lists in the circuit
+        self.emit_progress(42)
         self.assign_data_to_lists()
-        self.emit_progress(50)
+
         if delete_unused:
             # delete the unused objects from the boundary set
             self.delete_unused()
@@ -467,6 +481,7 @@ class CgmesCircuit(BaseCircuit):
         if detect_circular_references:
             # for reporting porpuses, detect the circular references in the model due to polymorphism
             self.detect_circular_references()
+        self.emit_progress(50)
 
     def assign_data_to_lists(self) -> None:
         """
