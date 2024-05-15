@@ -252,6 +252,10 @@ class MapWidget(QWidget):
 
         self.startLat = 0
         self.startLon = 0
+        self.startLev = 1
+
+        self.start_X = 0
+        self.start_Y = 0
 
         # some cursors
         self.standard_cursor = QCursor(self.StandardCursor)
@@ -337,19 +341,15 @@ class MapWidget(QWidget):
 
         self.pressed = False
         self.disableMove = False
+        self.startHe = 360
+        self.startWi = 240
 
         # Set initial zoom level (change the values as needed)
         initial_zoom_factor = 1
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
-        self.remapSchema()
 
         self.selTempDistance = 20
-
-        self.initialPos = True
-        level, longitude, latitude = self.get_level_and_position()
-        self.startLon = longitude
-        self.startLat = latitude
 
     def convertToQMouseEvent(self, sceneMouseEvent):
         # Get relevant information from QGraphicsSceneMouseEvent
@@ -420,9 +420,9 @@ class MapWidget(QWidget):
             val = self.zoom_level(new_level, self.mouse_x, self.mouse_y)
             if val:
                 if event.delta() > 0:
-                    self.zoom_in()
+                    self.diagram_zoom_in()
                 else:
-                    self.zoom_out()
+                    self.diagram_zoom_out()
             else:
                 self.level = zoomInitial
                 val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
@@ -484,13 +484,6 @@ class MapWidget(QWidget):
         if b == Qt.NoButton:
             pass
         elif b == Qt.LeftButton:
-
-            if self.initialPos:
-                level, longitude, latitude = self.get_level_and_position()
-                self.startLon = longitude
-                self.startLat = latitude
-                self.initialPos = False
-
             self.left_mbutton_down = True
             if self.shift_down:
                 (self.sbox_w, self.sbox_h) = (0, 0)
@@ -655,24 +648,19 @@ class MapWidget(QWidget):
         This function centers the schema relative to the map according to lat. and long.
         """
 
+        he = self.view.height()
+        wi = self.view.width()
+
         level, longitude, latitude = self.get_level_and_position()
 
-        if self.initialPos:
-            self.startLon = longitude
-            self.startLat = latitude
-
-
         if self.startLon is not None:
+            x, y = self.geo_to_view(longitude=longitude, latitude=latitude)
+            sx, sy = self.geo_to_view(longitude=self.startLon, latitude=self.startLat)
 
-            x, y = self.geo_to_view(longitude=self.startLon, latitude=self.startLat)
+            dx = x + (self.startWi - wi)/2 + (x - sx) * 1 / self.schema_zoom
+            dy = y + (self.startHe - he)/2 + (y - sy) * 1 / self.schema_zoom
 
-            # x, y = self.geo_to_view(longitude=longitude, latitude=latitude)
-
-            he = self.view.height()
-            wi = self.view.width()
-
-            scale = math.pow(5 / level, 3.8)
-            point = QPointF((wi / 2) + (((wi / 2) - x) * scale), (he / 2) + (((he / 2) - y) * scale))
+            point = QPointF(dx, dy)
             self.view.centerOn(point)
 
     def mouseMoveEvent(self, event: QMouseEvent):
@@ -789,26 +777,23 @@ class MapWidget(QWidget):
 
         # self.centerSchema()
 
-    def zoom_in(self):
-        # Translate the scene to make the center point correspond to the origin
+    def diagram_zoom_in(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom * self.zoom_factor
         self.view.scale(self.zoom_factor, self.zoom_factor)
-        self.remapSchema()
 
-    def zoom_out(self):
-        # Translate the scene to make the center point correspond to the origin
+    def diagram_zoom_out(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom / self.zoom_factor
         self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
-        self.remapSchema()
 
-    def remapSchema(self):
-        a = 0
-        # if self.schema_zoom > 0 and self.schema_zoom < 22:
-        #     self.change_size_and_pen_width_all(0.5,0.5)
-        # if self.schema_zoom >= 22:
-        #     self.change_size_and_pen_width_all(0.2,0.5)
-
-    def resizeEvent(self, event: QResizeEvent = None):
+    def resizeEvent(self, event: QResizeEvent = None, updateDisplacement = True):
         """
         Widget resized, recompute some state.
         """
@@ -918,7 +903,8 @@ class MapWidget(QWidget):
         painter.end()
 
     def normalize_key_after_drag(self, delta_x=None, delta_y=None):
-        """After drag, set "key" tile correctly.
+        """
+        After drag, set "key" tile correctly.
 
         delta_x  the X amount dragged (pixels), None if not dragged in X
         delta_y  the Y amount dragged (pixels), None if not dragged in Y
@@ -2033,7 +2019,7 @@ class MapWidget(QWidget):
             self.pan_position(longitude, latitude, view_x, view_y)
 
             # to set some state variables
-            self.resizeEvent()
+            self.resizeEvent(updateDisplacement = False)
 
             # raise the EVT_PYSLIPQT_LEVEL event
             LevelEvent(level=level).emit_event()
@@ -3911,7 +3897,7 @@ class MapWidget(QWidget):
          self.map_blat, self.map_tlat) = self.tile_src.extent
 
         # to set some state variables
-        self.resizeEvent()
+        self.resizeEvent(updateDisplacement = False)
 
         # raise level change event
         LevelEvent(level=level).emit_event()

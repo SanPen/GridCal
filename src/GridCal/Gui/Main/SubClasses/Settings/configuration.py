@@ -275,6 +275,10 @@ class ConfigurationMain(ResultsMain):
 
                 "ntc_opt_consider_contingencies": self.ui.consider_ntc_contingencies_checkBox,
             },
+            "nodal_hosting_capacity": {
+                "method": self.ui.nodal_capacity_method_comboBox,
+                "sense": self.ui.nodal_capacity_sense_SpinBox
+            },
             "general": {
                 "base_power": self.ui.sbase_doubleSpinBox,
                 "frequency": self.ui.fbase_doubleSpinBox,
@@ -294,7 +298,8 @@ class ConfigurationMain(ResultsMain):
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox,
                 "current_boundary_set": self.current_boundary_set,
-                "cgmes_selected_version": self.ui.cgmes_version_comboBox
+                "cgmes_selected_version": self.ui.cgmes_version_comboBox,
+                "cgmes_single_profile_per_file": self.ui.cgmes_single_profile_per_file_checkBox
             }
         }
 

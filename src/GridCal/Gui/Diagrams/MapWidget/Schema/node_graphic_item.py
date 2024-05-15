@@ -24,12 +24,13 @@ from PySide6.QtGui import QBrush, QColor
 
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
+from GridCal.Gui.Diagrams.MapWidget.Schema.node_template import NodeTemplate
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
+class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -46,8 +47,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
                  api_object: LineLocation,
                  lat: float,
                  lon: float,
-                 r: float = 0.006
-    ):
+                 index: int,
+                 r: float = 0.006):
         """
 
         :param editor:
@@ -57,7 +58,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         :param lon:
         :param r:
         """
-        super().__init__()
+        NodeTemplate.__init__(self, lat=lat, lon=lon)
+        QtWidgets.QGraphicsRectItem.__init__(self)
 
         self.lat = lat
         self.lon = lon
@@ -70,7 +72,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.editor: GridMapWidget = editor
         self.line_container: MapTemplateLine = line_container
         self.api_object: LineLocation = api_object
-        self.index = -1
+        self.index = index
 
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
@@ -90,8 +92,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         self.setDefaultColor()
 
         self.hovered = False
-        self.needsUpdateFirst = True
-        self.needsUpdateSecond = True
         self.enabled = True
 
     def updateRealPos(self) -> None:
@@ -176,7 +176,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem):
         """
         Function to be called when Action 1 is selected.
         """
-        self.line_container.create_node(index=self.index)
+        self.line_container.insert_new_node_at_position(index=self.index)
         # Implement the functionality for Action 1 here
         pass
 

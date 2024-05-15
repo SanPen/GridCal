@@ -237,7 +237,7 @@ def case9():
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
                                               ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
                       optimize_nodal_capacity=True,
                       nodal_capacity_sign=1.0,
                       capacity_nodes_idx=np.array([1]))
@@ -480,5 +480,5 @@ if __name__ == '__main__':
     # case300()
     # casepegase13k()
     #  casehvdc()
-    #caseREE()
-    #case_nodalcap()
+    # caseREE()
+    # case_nodalcap()
