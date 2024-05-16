@@ -94,15 +94,12 @@ async def process_file(websocket: WebSocket):
 
     if "sender_id" in json_data:
 
-        if "model" in json_data:
-            circuit = parse_gridcal_data(data=json_data["model"])
+        circuit = parse_gridcal_data(data=json_data)
+        print('Circuit loaded alright')
 
-            await websocket.send_text("Model loaded successfully")
-
-        await websocket.send_text("File and JSON data received successfully")
-
+        # await websocket.send_text("File and JSON data received successfully")
     else:
-        await websocket.send_text("Faild: Json data must contain sender_id")
+        print("No sender_id found")
 
 
 if __name__ == "__main__":

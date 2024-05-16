@@ -40,7 +40,7 @@ async def send_json_data(model_json: Dict[str, Dict[str, str]],
         # Serialize the instructions JSON data
         json_str = json.dumps({"sender_id": uuid4().hex,
                                "instructions": instructions_json,
-                               "model": model_json})
+                               "model_data": model_json})
 
         # Send JSON data in chunks
         chunk_size = 4096  # Adjust as needed
