@@ -20,27 +20,23 @@ import requests
 import asyncio
 import websockets
 import json
-from uuid import uuid4
-from typing import Callable, Dict, Any
+from typing import Callable, Dict, Any, Union
 from PySide6.QtCore import QThread, Signal
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons
+from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons_for_communication
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
-async def send_json_data(model_json: Dict[str, Dict[str, str]],
-                         instructions_json: Dict[str, Any], websocket_url: str):
+async def send_json_data(model_json: Dict[str, Union[str, Dict[str, Dict[str, str]]]], websocket_url: str):
     """
     Send a file along with instructions about the file
     :param model_json: Json with te model
-    :param instructions_json: Json data with instructions about what to do with the file
     :param websocket_url: Web socket URL to connect to
     """
     async with websockets.connect(websocket_url) as ws:
+
         # Serialize the instructions JSON data
-        json_str = json.dumps({"sender_id": uuid4().hex,
-                               "instructions": instructions_json,
-                               "model_data": model_json})
+        json_str = json.dumps(model_json)
 
         # Send JSON data in chunks
         chunk_size = 4096  # Adjust as needed
@@ -154,10 +150,10 @@ class ServerDriver(QThread):
         websocket_url = f"ws://{self.url}:{self.port}/process_file"
 
         if self.is_running():
-            model_data = gather_model_as_jsons(circuit)
+            model_data = gather_model_as_jsons_for_communication(circuit=circuit,
+                                                                 instructions_json=instructions_json)
 
             asyncio.get_event_loop().run_until_complete(send_json_data(model_json=model_data,
-                                                                       instructions_json=instructions_json,
                                                                        websocket_url=websocket_url))
 
     def run(self) -> None:

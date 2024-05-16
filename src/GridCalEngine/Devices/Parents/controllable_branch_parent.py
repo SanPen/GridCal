@@ -218,7 +218,6 @@ class ControllableBranchParent(BranchParent):
         self.regulation_branch: BranchParent = regulation_branch
 
         self.regulation_bus: Bus = regulation_bus
-
         self.regulation_cn: ConnectivityNode = regulation_cn
 
         self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')

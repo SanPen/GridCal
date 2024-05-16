@@ -115,6 +115,9 @@ class ServerMain(BaseMainGui):
                                           pwd=self.ui.server_pwd_lineEdit.text().strip(),
                                           status_func=self.ui.server_status_label.setText)
 
+            # save the last server config
+            self.save_server_config()
+
             # run asynchronously
             self.server_driver.start()
 
