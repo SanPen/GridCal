@@ -21,6 +21,7 @@ import asyncio
 import websockets
 import numpy as np
 import json
+import urllib3
 from typing import Callable, Dict, Any, Union
 from PySide6.QtCore import QThread, Signal
 from GridCalEngine.basic_structures import Logger
@@ -65,22 +66,24 @@ async def send_json_data(model_json: Dict[str, Union[str, Dict[str, Dict[str, st
     :param model_json: Json with te model
     :param websocket_url: Web socket URL to connect to
     """
-    # async with websockets.connect(websocket_url) as ws:
+    # response = requests.post(websocket_url, json=model_json, stream=True)
     #
-    #     # Serialize the instructions JSON data
-    #     json_str = json.dumps(model_json, cls=CustomJsonizer)
-    #
-    #     # Send JSON data in chunks
-    #     chunk_size = 4096  # Adjust as needed
-    #     n = len(json_str)
-    #     for i in range(0, n, chunk_size):
-    #         chunk = json_str[i:i + chunk_size]
-    #         await try_send(ws, chunk)
+    # # Print server response
+    # print(response.json())
 
-    response = requests.post(websocket_url, json=model_json, stream=True)
+    http = urllib3.PoolManager()
+    response = http.request('POST', websocket_url, body=json.dumps(model_json), preload_content=False)
 
-    # Print server response
-    print(response.json())
+    total_size = int(response.headers['Content-Length'])
+    progress = 0
+
+    with response:
+        for chunk in response.stream(32):
+            # Process each chunk of data here
+            progress += len(chunk)
+            # Calculate progress percentage
+            progress_percentage = (progress / total_size) * 100
+            print(f"Progress: {progress_percentage:.2f}%")
 
 
 class ServerDriver(QThread):
