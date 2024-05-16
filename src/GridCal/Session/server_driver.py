@@ -17,9 +17,36 @@
 
 import time
 import requests
-from typing import Callable
+import asyncio
+import websockets
+import json
+from uuid import uuid4
+from typing import Callable, Dict, Any
 from PySide6.QtCore import QThread, Signal
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+
+
+async def send_json_data(model_json: Dict[str, Dict[str, str]],
+                         instructions_json: Dict[str, Any], websocket_url: str):
+    """
+    Send a file along with instructions about the file
+    :param model_json: Json with te model
+    :param instructions_json: Json data with instructions about what to do with the file
+    :param websocket_url: Web socket URL to connect to
+    """
+    async with websockets.connect(websocket_url) as ws:
+        # Serialize the instructions JSON data
+        json_str = json.dumps({"sender_id": uuid4().hex,
+                               "instructions": instructions_json,
+                               "model": model_json})
+
+        # Send JSON data in chunks
+        chunk_size = 4096  # Adjust as needed
+        for i in range(0, len(json_str), chunk_size):
+            chunk = json_str[i:i + chunk_size]
+            await ws.send(chunk.encode(encoding='utf-8'))
 
 
 class ServerDriver(QThread):
@@ -89,7 +116,8 @@ class ServerDriver(QThread):
             response = requests.get(f"http://{self.url}:{self.port}/",
                                     headers={
                                         "API-Key": self.pwd
-                                    })
+                                    },
+                                    timeout=2)
 
             # Check if the request was successful
             if response.status_code == 200:
@@ -116,12 +144,30 @@ class ServerDriver(QThread):
         if self.status_func is not None:
             self.status_func(txt)
 
+    def send_data(self, circuit: MultiCircuit, instructions_json: Dict[str, Any]) -> None:
+        """
+        
+        :param circuit: 
+        :param instructions_json: 
+        :return: 
+        """
+        websocket_url = f"ws://{self.url}:{self.port}/process_file"
+
+        if self.is_running():
+            model_data = gather_model_as_jsons(circuit)
+
+            asyncio.get_event_loop().run_until_complete(send_json_data(model_json=model_data,
+                                                                       instructions_json=instructions_json,
+                                                                       websocket_url=websocket_url))
+
     def run(self) -> None:
         """
         run the file save procedure
         """
         self.__cancel__ = False
         self.__pause__ = False
+
+        self.report_status("Trying to connect")
         ok = self.server_connect()
 
         if ok:

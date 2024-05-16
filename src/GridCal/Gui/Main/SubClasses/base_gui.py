@@ -58,7 +58,6 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Session.server_driver import ServerDriver
 from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import IS_DARK
 from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
                                get_sequence_lines_catalogue)
@@ -160,10 +159,6 @@ class BaseMainGui(QMainWindow):
         self.find_node_groups_driver: Union[sim.NodeGroupsDriver, None] = None
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
 
-        # Server driver
-        self.server_driver: ServerDriver = ServerDriver(url="", port=0, pwd="")
-        self.server_driver.done_signal.connect(self.post_start_stop_server)  # connect the post function
-
         # simulation start end
         self.simulation_start_index: int = 0
         self.simulation_end_index: int = 0
@@ -223,7 +218,6 @@ class BaseMainGui(QMainWindow):
         )
         self.ui.actionFix_loads_active_based_on_the_power.triggered.connect(self.fix_loads_active_based_on_the_power)
         self.ui.actionInitialize_contingencies.triggered.connect(self.initialize_contingencies)
-        self.ui.actionEnable_server_mode.triggered.connect(self.server_start_stop)
 
         # Buttons
         self.ui.cancelButton.clicked.connect(self.set_cancel_state)
@@ -418,7 +412,6 @@ class BaseMainGui(QMainWindow):
                        self.export_all_thread_object,
                        self.find_node_groups_driver,
                        self.file_sync_thread,
-                       self.server_driver,
                        ]
         return all_threads
 
@@ -791,44 +784,3 @@ class BaseMainGui(QMainWindow):
                 self.circuit.contingencies += self.contingency_planner_dialogue.contingencies
             else:
                 info_msg(text="No contingencies were generated :/", title="Contingency planner")
-
-    def server_start_stop(self):
-        """
-
-        :return:
-        """
-        if self.ui.actionEnable_server_mode.isChecked():
-
-            # create a new driver
-            self.server_driver.set_values(url=self.ui.server_url_lineEdit.text().strip(),
-                                          port=self.ui.server_port_spinBox.value(),
-                                          pwd=self.ui.server_pwd_lineEdit.text().strip(),
-                                          status_func=self.ui.server_status_label.setText)
-
-
-
-            # run asynchronously
-            self.server_driver.start()
-
-        else:
-
-            ok = yes_no_question(text="The server connection is running, are you sure that you want to stop it?",
-                                 title="Stop Server")
-
-            if ok:
-                self.server_driver.cancel()
-                self.ui.actionEnable_server_mode.setChecked(False)
-            else:
-                self.ui.actionEnable_server_mode.setChecked(True)
-
-    def post_start_stop_server(self):
-        """
-        Post server run
-        :return:
-        """
-        if not self.server_driver.is_running():
-            # self.ui.actionEnable_server_mode.setChecked(False)
-
-            if len(self.server_driver.logger):
-                warning_msg(text="Could not connect to the server", title="Server connection")
-                self.ui.actionEnable_server_mode.setChecked(False)
