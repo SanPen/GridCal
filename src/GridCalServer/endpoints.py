@@ -17,8 +17,9 @@
 import os
 import json
 from hashlib import sha256
-from fastapi import FastAPI, WebSocket, Header, HTTPException
+from fastapi import FastAPI, WebSocket, Header, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
+from starlette.responses import StreamingResponse
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.IO.gridcal.pack_unpack import parse_gridcal_data, gather_model_as_jsons
 
@@ -64,6 +65,44 @@ async def favicon():
     return FileResponse(os.path.join(os.path.dirname(__file__), "data", "GridCal_icon.ico"))
 
 
+async def stream_load_json(json_data):
+    """
+
+    :param json_data:
+    :return:
+    """
+    async def generate():
+        """
+
+        """
+        yield json.dumps(json_data).encode()
+
+    return StreamingResponse(generate())
+
+
+async def process_json_data(json_data):
+    """
+
+    :param json_data:
+    """
+    circuit = parse_gridcal_data(data=json_data)
+    print(f'Circuit loaded alright nbus{circuit.get_bus_number()}, nbr{circuit.get_branch_number()}')
+
+
+@app.post("/upload/")
+async def upload_json_background(json_data: dict, background_tasks: BackgroundTasks):
+    """
+
+    :param json_data:
+    :param background_tasks:
+    :return:
+    """
+    background_tasks.add_task(stream_load_json, json_data)
+    background_tasks.add_task(process_json_data, json_data)
+
+    return {"message": "JSON data streaming initiated"}
+
+
 @app.websocket("/process_file")
 async def process_file(websocket: WebSocket):
     """
@@ -80,26 +119,32 @@ async def process_file(websocket: WebSocket):
     # Receive JSON data in chunks
     async for chunk in websocket.iter_bytes():
         json_buffer += chunk
-
-        print("chk:", chunk.decode(encoding='utf-8'))
-
         # Check if the end of JSON data is reached (e.g., by checking for a delimiter)
         # Here, we assume that the end of JSON data is marked by an empty chunk
         if not chunk:
             break
 
     # Deserialize the JSON data
-    json_data = json.loads(json_buffer.decode(encoding='utf-8'))
-    print("ALL: ", json_data)
+    try:
+        print("start: ", json_buffer[0:5].decode(encoding='utf-8'))
+        print("end: ", json_buffer[-5:].decode(encoding='utf-8'))
+        json_data = json.loads(json_buffer.decode(encoding='utf-8'))
 
-    if "sender_id" in json_data:
+        json_ok = True
+    except json.decoder.JSONDecodeError as e:
+        print("Json parse error:", e)
+        json_ok = False
+        json_data = dict()
 
-        circuit = parse_gridcal_data(data=json_data)
-        print('Circuit loaded alright')
+    if json_ok:
+        if "sender_id" in json_data:
 
-        # await websocket.send_text("File and JSON data received successfully")
-    else:
-        print("No sender_id found")
+            circuit = parse_gridcal_data(data=json_data)
+            print('Circuit loaded alright')
+
+            # await websocket.send_text("File and JSON data received successfully")
+        else:
+            print("No sender_id found")
 
 
 if __name__ == "__main__":

@@ -29,7 +29,15 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 class CustomJsonizer(json.JSONEncoder):
+    """
+    Class to serialize json while catching unserializable data like np._bool
+    """
     def default(self, obj):
+        """
+        Override the default
+        :param obj:
+        :return:
+        """
         return super().encode(bool(obj)) if isinstance(obj, np.bool_) else super().default(obj)
 
 
@@ -57,17 +65,22 @@ async def send_json_data(model_json: Dict[str, Union[str, Dict[str, Dict[str, st
     :param model_json: Json with te model
     :param websocket_url: Web socket URL to connect to
     """
-    async with websockets.connect(websocket_url) as ws:
+    # async with websockets.connect(websocket_url) as ws:
+    #
+    #     # Serialize the instructions JSON data
+    #     json_str = json.dumps(model_json, cls=CustomJsonizer)
+    #
+    #     # Send JSON data in chunks
+    #     chunk_size = 4096  # Adjust as needed
+    #     n = len(json_str)
+    #     for i in range(0, n, chunk_size):
+    #         chunk = json_str[i:i + chunk_size]
+    #         await try_send(ws, chunk)
 
-        # Serialize the instructions JSON data
-        json_str = json.dumps(model_json, cls=CustomJsonizer)
+    response = requests.post(websocket_url, json=model_json, stream=True)
 
-        # Send JSON data in chunks
-        chunk_size = 4096  # Adjust as needed
-        n = len(json_str)
-        for i in range(0, n, chunk_size):
-            chunk = json_str[i:i + chunk_size]
-            await try_send(ws, chunk)
+    # Print server response
+    print(response.json())
 
 
 class ServerDriver(QThread):
@@ -172,7 +185,8 @@ class ServerDriver(QThread):
         :param instructions_json: 
         :return: 
         """
-        websocket_url = f"ws://{self.url}:{self.port}/process_file"
+        # websocket_url = f"ws://{self.url}:{self.port}/process_file"
+        websocket_url = f"http://{self.url}:{self.port}/upload"
 
         if self.is_running():
             model_data = gather_model_as_jsons_for_communication(circuit=circuit,
