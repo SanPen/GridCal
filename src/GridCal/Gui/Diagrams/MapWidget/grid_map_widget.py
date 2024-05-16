@@ -144,13 +144,13 @@ class GridMapWidget(MapWidget):
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
-
+        api_object = getattr(graphic_object, 'api_object', None)
+        if api_object != None:
+            self.graphics_manager.delete_device(api_object)
         self.diagram_scene.removeItem(graphic_object)
-        self.graphics_manager.delete_device(graphic_object.api_object)
 
     def setBranchData(self, data):
         """
-
         :param data:
         """
         self.setLayerData(self.polyline_layer_id, data)
@@ -194,7 +194,19 @@ class GridMapWidget(MapWidget):
         :return:
         """
 
-        lon, lat = self.view_to_geo(xview=x, yview=y)
+        level, longitude, latitude = self.get_level_and_position()
+
+        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+
+        he = self.view.height()
+        wi = self.view.width()
+
+        node_gen_dx = self.startWi - wi
+        node_gen_dy = self.startHe - he
+
+        lon, lat = self.view_to_geo(xview=x - node_gen_dx / 2, yview=y - node_gen_dy / 2)
+
+        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return lat, lon
 

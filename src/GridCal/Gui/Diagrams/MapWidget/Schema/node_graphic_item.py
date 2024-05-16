@@ -135,6 +135,9 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                                            longitude=long,
                                            graphic_object=self)
 
+        self.lat = lat
+        self.lon = long
+
     def mouseMoveEvent(self, event):
         """
         Event handler for mouse move events.
@@ -143,6 +146,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             super().mouseMoveEvent(event)
             if self.hovered and self.enabled:
                 self.updatePosition()
+                self.updateDiagram()
 
     def mousePressEvent(self, event):
         """
