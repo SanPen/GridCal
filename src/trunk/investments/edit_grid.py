@@ -9,15 +9,77 @@ import cProfile
 import cProfile
 import pstats
 from GridCalEngine.IO import FileOpen, FileSave
+from GridCalEngine.Devices import Investment, InvestmentsGroup
+import random
 
 
 if __name__ == "__main__":
-    fname = os.path.join('IEEE 118 Bus - ntc_areas_two.gridcal')
+    fname = os.path.join('IEEE 118 Bus - investments.gridcal')
     grid = FileOpen(fname).open()
-    for load in grid.loads:
-        load.Q = 3.5*load.Q
-    pf_options = sim.PowerFlowOptions()
 
+    for load in grid.loads:
+        load.P = 1.5*load.P
+        load.Q = 1.5*load.Q
+    for gen in grid.generators:
+        gen.P = 1.5*gen.P
+
+    new_lines = []
+    for line in grid.lines:
+        new_line = line.copy()
+        new_line.active = False
+        # new_line.B = 0
+        # new_line.R = 0
+        new_lines.append(new_line)
+
+    for new_line in new_lines:
+        grid.add_line(new_line)
+
+    new_trs = []
+    for transformer in grid.transformers2w:
+        new_tr = transformer.copy()
+        new_tr.active = False
+        new_trs.append(new_tr)
+
+    for new_tr in new_trs:
+        grid.add_transformer2w(new_tr)
+
+    num_lines = len(grid.lines)
+    nset_lines = int(num_lines / 2)  # number of investments
+    for ii in range(nset_lines):
+        group = InvestmentsGroup(idtag=None,
+                                 name=f'Investment {ii}',
+                                 category="single")
+        grid.add_investments_group(group)
+
+        # add the selection as investments to the group
+        elm = grid.lines[nset_lines + ii]
+        con = Investment(device_idtag=elm.idtag,
+                         code=elm.code,
+                         name=elm.type_name + ": " + elm.name,
+                         CAPEX=100,
+                         OPEX=0,
+                         group=group)
+        grid.add_investment(con)
+
+    num_trs = len(grid.transformers2w)
+    nset_trs = int(num_trs / 2)  # number of investments
+    for ii in range(nset_trs):
+        group = InvestmentsGroup(idtag=None,
+                                 name=f'Investment {ii}',
+                                 category="single")
+        grid.add_investments_group(group)
+
+        # add the selection as investments to the group
+        elm = grid.transformers2w[nset_trs + ii]
+        con = Investment(device_idtag=elm.idtag,
+                         code=elm.code,
+                         name=elm.type_name + ": " + elm.name,
+                         CAPEX=random.randint(1, 100),
+                         OPEX=0,
+                         group=group)
+        grid.add_investment(con)
+
+    pf_options = sim.PowerFlowOptions()
     st_time = time.time()
 
     driver = sim.PowerFlowDriver(grid, pf_options)

@@ -28,10 +28,12 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed random points being plotted near 0 investment cost">
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/IEEE 118 Bus - ntc_areas_two.gridcal" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/edit_grid.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="New 118 bus grid added">
+      <change afterPath="$PROJECT_DIR$/src/trunk/investments/IEEE 118 Bus - investments.gridcal" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/IEEE 118 Bus - ntc_areas_two.gridcal" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/edit_grid.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/edit_grid.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -162,7 +164,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "204__investments__evaluation",
-    "last_opened_file_path": "C:/Work/git_local/GridCal/doc",
+    "last_opened_file_path": "/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/investments",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -180,11 +182,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/trunk/investments" />
       <recent name="C:\Work\git_local\GridCal\doc" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/trunk/investments" />
@@ -1701,7 +1703,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="507" />
+    <option name="localTasksCounter" value="508" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1735,7 +1737,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="cgmes alias for class import, create LoadResponseChar" />
     <MESSAGE value="export CGMES generators" />
     <MESSAGE value="export CGMES: load response char, reg control, get connectivity nodes" />
     <MESSAGE value="buse" />
@@ -1760,7 +1761,8 @@
     <MESSAGE value="Improved the diagram centering&#10;Improved the diagram line-to-other branches when the line is connected between other elements that are not buses" />
     <MESSAGE value="Added automatic topology processing" />
     <MESSAGE value="Improved the detection of the simulability with the `valid_for_simulation` function" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved the detection of the simulability with the `valid_for_simulation` function" />
+    <MESSAGE value="New 118 bus grid added" />
+    <option name="LAST_COMMIT_MESSAGE" value="New 118 bus grid added" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
