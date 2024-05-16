@@ -33,6 +33,7 @@ class CustomJsonizer(json.JSONEncoder):
     """
     Class to serialize json while catching unserializable data like np._bool
     """
+
     def default(self, obj):
         """
         Override the default
@@ -60,30 +61,22 @@ async def try_send(ws, chunk: str) -> bool:
     return False
 
 
-async def send_json_data(model_json: Dict[str, Union[str, Dict[str, Dict[str, str]]]], websocket_url: str):
+def upload_progress_monitor(encoder, read, total):
+    # Your progress monitoring logic here
+    print(f"Progress: {read}/{total} bytes")
+
+
+async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]], endpoint_url: str):
     """
     Send a file along with instructions about the file
-    :param model_json: Json with te model
-    :param websocket_url: Web socket URL to connect to
+    :param json_data: Json with te model
+    :param endpoint_url: Web socket URL to connect to
     """
-    # response = requests.post(websocket_url, json=model_json, stream=True)
-    #
-    # # Print server response
-    # print(response.json())
 
-    http = urllib3.PoolManager()
-    response = http.request('POST', websocket_url, body=json.dumps(model_json), preload_content=False)
+    response = requests.post(endpoint_url, json=json_data, stream=True)
 
-    total_size = int(response.headers['Content-Length'])
-    progress = 0
-
-    with response:
-        for chunk in response.stream(32):
-            # Process each chunk of data here
-            progress += len(chunk)
-            # Calculate progress percentage
-            progress_percentage = (progress / total_size) * 100
-            print(f"Progress: {progress_percentage:.2f}%")
+    # Print server response
+    print(response.json())
 
 
 class ServerDriver(QThread):
@@ -195,8 +188,8 @@ class ServerDriver(QThread):
             model_data = gather_model_as_jsons_for_communication(circuit=circuit,
                                                                  instructions_json=instructions_json)
 
-            asyncio.get_event_loop().run_until_complete(send_json_data(model_json=model_data,
-                                                                       websocket_url=websocket_url))
+            asyncio.get_event_loop().run_until_complete(send_json_data(json_data=model_data,
+                                                                       endpoint_url=websocket_url))
 
     def run(self) -> None:
         """
