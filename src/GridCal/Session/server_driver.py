@@ -19,12 +19,36 @@ import time
 import requests
 import asyncio
 import websockets
+import numpy as np
 import json
 from typing import Callable, Dict, Any, Union
 from PySide6.QtCore import QThread, Signal
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons_for_communication
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+
+
+class CustomJsonizer(json.JSONEncoder):
+    def default(self, obj):
+        return super().encode(bool(obj)) if isinstance(obj, np.bool_) else super().default(obj)
+
+
+async def try_send(ws, chunk: str) -> bool:
+    """
+    Send a chunk of data to the websocket server
+    :param ws:
+    :param chunk: text chunk
+    :return: success?
+    """
+    n_retry = 0
+    while n_retry < 10:
+        try:
+            await ws.send(chunk.encode(encoding='utf-8'))
+            return True
+        except websockets.exceptions.ConnectionClosedError as e:
+            n_retry += 1
+
+    return False
 
 
 async def send_json_data(model_json: Dict[str, Union[str, Dict[str, Dict[str, str]]]], websocket_url: str):
@@ -36,13 +60,14 @@ async def send_json_data(model_json: Dict[str, Union[str, Dict[str, Dict[str, st
     async with websockets.connect(websocket_url) as ws:
 
         # Serialize the instructions JSON data
-        json_str = json.dumps(model_json)
+        json_str = json.dumps(model_json, cls=CustomJsonizer)
 
         # Send JSON data in chunks
         chunk_size = 4096  # Adjust as needed
-        for i in range(0, len(json_str), chunk_size):
+        n = len(json_str)
+        for i in range(0, n, chunk_size):
             chunk = json_str[i:i + chunk_size]
-            await ws.send(chunk.encode(encoding='utf-8'))
+            await try_send(ws, chunk)
 
 
 class ServerDriver(QThread):
