@@ -400,7 +400,9 @@ class ConfigurationMain(ResultsMain):
                 except json.decoder.JSONDecodeError as e:
                     print(e)
                     self.save_gui_config()
-                    print("Config file was erroneous, wrote a new one")
+                    print("GUI config file was erroneous, wrote a new one")
+
+
 
     def select_cgmes_boundary_set(self):
         """
