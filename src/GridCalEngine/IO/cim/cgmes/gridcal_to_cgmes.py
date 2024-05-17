@@ -358,10 +358,10 @@ def create_cgmes_regulating_control(
     rc.name = f'_RC_{gen.name}'
     rc.RegulatingCondEq = gen
     # rc.Terminal
-    # rc.discrete
+    rc.discrete = False
     # rc.enabled
     # rc.targetDeadband
-    # rc.targetValue = gen.Vset
+    rc.targetValue = gen.Vset
     # rc.targetValueUnitMultiplier = 'k'
 
     cgmes_model.add(rc)
@@ -763,6 +763,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         else:
             cgmes_syn.referencePriority = 0
         # TODO cgmes_syn.EquipmentContainer: VoltageLevel
+
         # TODO implement control_node in MultiCircuit
         # has_control: do we have control
         # control_type: voltage or power control, ..
@@ -1119,6 +1120,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     get_cgmes_tn_nodes(gc_model, cgmes_model, logger)
     get_cgmes_cn_nodes_from_tn_nodes(gc_model, cgmes_model, logger)
+    # TODO BusbarSection
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)

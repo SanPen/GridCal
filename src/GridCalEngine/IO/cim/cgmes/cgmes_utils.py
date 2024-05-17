@@ -17,6 +17,8 @@ from typing import List, Tuple
 # from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator import LinearShuntCompensator
 # from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 from GridCalEngine.data_logger import DataLogger
+from GridCalEngine.enumerations import (TapAngleControl, TapModuleControl)
+from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapChangerTypes)
 import numpy as np
 
 
@@ -699,12 +701,28 @@ def get_regulating_control(cgmes_elm,
         else:
             is_controlled = False
 
+        control_node = None
+
+        # TapModuleControl
+        # fixed = 'Fixed'
+        # Vm = 'Vm'
+        # Qf = 'Qf'
+        # Qt = 'Qt'
+        #
+        #
+        # TapAngleControl,
+        # fixed = 'Fixed'
+        # Pf = 'Pf'
+        # Pt = 'Pt'
+        # belongs to PhaseTap, fixed if
+
         if cgmes_elm.RegulatingControl.mode == cgmes_enums.RegulatingControlModeKind.voltage:
 
             v_control_value = cgmes_elm.RegulatingControl.targetValue  # kV
 
             # cgmes_elm.EquipmentContainer.BaseVoltage.nominalVoltage
             controlled_terminal = cgmes_elm.RegulatingControl.Terminal
+            # control_node = # TODO get gc.cn from terminal
             base_voltage = controlled_terminal.TopologicalNode.BaseVoltage.nominalVoltage
             # TODO is tp is None, check cn and pick tp from there
             v_set = v_control_value / base_voltage
@@ -751,4 +769,4 @@ def get_regulating_control(cgmes_elm,
                            value='None',
                            expected_value='BaseVoltage')
 
-    return v_set, is_controlled
+    return v_set, control_node, is_controlled   # control_mode
