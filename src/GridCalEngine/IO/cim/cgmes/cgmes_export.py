@@ -193,7 +193,7 @@ class CimExporter:
                     i += 1
                     with BytesIO() as buffer:
                         self.serialize(stream=buffer, profile=prof)
-                        f_zip_ptr.writestr(f"{name}_{prof}.xml", buffer.getvalue())
+                        f_zip_ptr.writestr(f"{name}_{prof}_001.xml", buffer.getvalue())
         else:
             i = 1
             with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
