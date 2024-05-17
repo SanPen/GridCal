@@ -35,26 +35,12 @@ from GridCalEngine.enumerations import CGMESVersions
 def find_attribute(referenced_object: Base,
                    obj: Base,
                    property_name: str,
-                   association_inverse_dict: Dict[str, str],
-                   class_dict: Dict[str, Base]):
-    def check_inverse(obj_tpe: str):
-        inverse = association_inverse_dict.get(f"{obj_tpe}.{property_name}")
-        if inverse is not None:
-            i_class, i_prop = inverse.split('.')
-            return i_prop
-        return None
-
-    result = check_inverse(obj.tpe)
-    if result:
-        return result
-
-    mro_classes_instance = type(obj).mro()
-    obj_parents = [cls for cls in mro_classes_instance[1:-3]]
-
-    for tpe in obj_parents:
-        result = check_inverse(tpe.__name__)
-        if result:
-            return result
+                   association_inverse_dict: Dict[str, str]):
+    prop_dict = association_inverse_dict.get(obj.tpe, None)
+    if prop_dict:
+        inverse_prop_name = prop_dict.get(property_name, None)
+        if inverse_prop_name and hasattr(referenced_object, inverse_prop_name):
+            return inverse_prop_name
     return None
 
 
@@ -156,8 +142,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                                 ref_attribute = find_attribute(referenced_object=referenced_object,
                                                                obj=element,
                                                                property_name=property_name,
-                                                               association_inverse_dict=association_inverse_dict,
-                                                               class_dict=class_dict)
+                                                               association_inverse_dict=association_inverse_dict)
                                 if ref_attribute is not None:
                                     referenced_object.add_reference(element, ref_attribute)
 
@@ -225,8 +210,7 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                                     ref_attribute = find_attribute(referenced_object=referenced_object,
                                                                    obj=element,
                                                                    property_name=property_name,
-                                                                   association_inverse_dict=association_inverse_dict,
-                                                                   class_dict=class_dict)
+                                                                   association_inverse_dict=association_inverse_dict)
                                     if ref_attribute is not None:
                                         referenced_object.add_reference(element, ref_attribute)
 
