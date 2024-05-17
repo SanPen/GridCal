@@ -40,12 +40,30 @@ class CnLookup:
     """
 
     def __init__(self, cgmes_model: CgmesCircuit):
+
+        # Information that is filled when creating CN's and BusBars
         self.cn_list: List[gcdev.ConnectivityNode] = list()
         self.bb_list: List[gcdev.BusBar] = list()
         self.bb_cn_list: List[gcdev.ConnectivityNode] = list()
 
-        self.cn_to_bb_dict, self.tn_to_bb_dict = cgmes_model.get_cn_to_bb_dict()
+        # fill information from CGMES terminals
+        self.cn_to_bb_dict = dict()
+        self.tn_to_bb_dict = dict()
+        bb_tpe = cgmes_model.cgmes_assets.class_dict.get("BusbarSection", None)
 
+        if bb_tpe is not None:
+
+            # find the terminal -> CN links
+            for terminal in cgmes_model.cgmes_assets.Terminal_list:
+                if isinstance(terminal.ConductingEquipment, bb_tpe):
+
+                    if terminal.ConnectivityNode is not None:
+                        self.cn_to_bb_dict[terminal.ConnectivityNode] = terminal.ConductingEquipment
+
+                    if terminal.TopologicalNode is not None:
+                        self.tn_to_bb_dict[terminal.TopologicalNode] = terminal.ConductingEquipment
+
+        # results
         self.replacement_cn_dict: Dict[gcdev.ConnectivityNode, gcdev.ConnectivityNode] = dict()
         self.final_cn_list: List[gcdev.ConnectivityNode] = list()
 
@@ -66,25 +84,26 @@ class CnLookup:
         self.bb_list.append(bb)
         self.bb_cn_list.append(bb.cn)
 
-    def consolidate(self):
+    def consolidate(self) -> None:
         """
-        Create the replacement_cn_dict
+        Create the `replacement_cn_dict` and fill `final_cn_list`
         :return: None
         """
         bb_to_cn_dict = {bb.idtag: bb.cn for bb in self.bb_list}
         cn_dict = {cn.idtag: cn for cn in self.cn_list}
-        for cgmes_cn, cgmes_bb in self.cn_to_bb_dict.items():
 
+        for cgmes_cn, cgmes_bb in self.cn_to_bb_dict.items():
             original_cn = cn_dict[cgmes_cn.uuid]
             replacement_cn = bb_to_cn_dict.get(cgmes_bb.uuid, None)
 
             if replacement_cn is not None:
-                self.replacement_cn_dict[original_cn] = replacement_cn
+                if replacement_cn != original_cn:
+                    self.replacement_cn_dict[original_cn] = replacement_cn
 
         # add the CN's without replacement to the model
         for cn in self.cn_list:
             replacement_cn = self.replacement_cn_dict.get(cn, None)
-            if replacement_cn is not None:
+            if replacement_cn is None:
                 self.final_cn_list.append(cn)
 
     def get_cn(self, cn: gcdev.ConnectivityNode) -> gcdev.ConnectivityNode:
@@ -371,6 +390,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                     calc_node_dict: Dict[str, gcdev.Bus],
                     cn_dict: Dict[str, gcdev.ConnectivityNode],
                     device_to_terminal_dict: Dict[str, List[Base]],
+                    cn_look_up: CnLookup,
                     logger: DataLogger) -> None:
     """
     Convert the CGMES loads to gcdev
@@ -379,6 +399,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -426,7 +447,8 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                                        Ii=i_i,
                                        G=g,
                                        B=b)
-                gcdev_model.add_load(calc_node, gcdev_elm)
+
+                gcdev_model.add_load(bus=calc_node, api_obj=gcdev_elm, cn=cn_look_up.get_cn(cn))
 
             else:
                 logger.add_error(msg='Not exactly one terminal',
@@ -442,6 +464,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                          calc_node_dict: Dict[str, gcdev.Bus],
                          cn_dict: Dict[str, gcdev.ConnectivityNode],
                          device_to_terminal_dict: Dict[str, List[Base]],
+                         cn_look_up: CnLookup,
                          logger: DataLogger) -> None:
     """
     Convert the CGMES generators to gcdev
@@ -450,6 +473,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger: Logger object
     """
     # add generation technologies
@@ -529,7 +553,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 # control_cn=,
                                                 )
 
-                    gcdev_model.add_generator(calc_node, gcdev_elm)
+                    gcdev_model.add_generator(bus=calc_node, api_obj=gcdev_elm, cn=cn_look_up.get_cn(cn))
 
                     if technology:
                         gen_tech = gcdev.GeneratorTechnology(name=gcdev_elm.name + "_" + technology.name,
@@ -558,6 +582,7 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
                              calc_node_dict: Dict[str, gcdev.Bus],
                              cn_dict: Dict[str, gcdev.ConnectivityNode],
                              device_to_terminal_dict: Dict[str, List[Base]],
+                             cn_look_up: CnLookup,
                              logger: DataLogger) -> None:
     """
     Convert the CGMES loads to gcdev
@@ -566,6 +591,7 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -589,7 +615,7 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
                                                P=cgmes_elm.p,
                                                Q=cgmes_elm.q)
 
-                gcdev_model.add_external_grid(calc_node, gcdev_elm)
+                gcdev_model.add_external_grid(bus=calc_node, api_obj=gcdev_elm, cn=cn_look_up.get_cn(cn))
             else:
                 logger.add_error(msg='Not exactly one terminal',
                                  device=cgmes_elm.rdfid,
@@ -693,6 +719,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                               calc_node_dict: Dict[str, gcdev.Bus],
                               cn_dict: Dict[str, gcdev.ConnectivityNode],
                               device_to_terminal_dict: Dict[str, List[Base]],
+                              cn_look_up: CnLookup,
                               logger: DataLogger,
                               Sbase: float) -> None:
     """
@@ -702,6 +729,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -750,8 +778,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     code=cgmes_elm.description,
                                                     name=cgmes_elm.name,
                                                     active=True,
-                                                    # cn_from=cn_f,
-                                                    # cn_to=cn_t,
+                                                    cn_from=cn_look_up.get_cn(cn_f),
+                                                    cn_to=cn_look_up.get_cn(cn_t),
                                                     bus_from=calc_node_f,
                                                     bus_to=calc_node_t,
                                                     nominal_power=rated_s,
@@ -824,8 +852,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     rate12=windings[0].ratedS,
                                                     rate23=windings[1].ratedS,
                                                     rate31=windings[2].ratedS,
-                                                    x=0.0, y=0.0
-                                                    )
+                                                    x=0.0,
+                                                    y=0.0)
+
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[0], Sbase)
                     gcdev_elm.winding1.R = r
                     gcdev_elm.winding1.X = x
@@ -836,6 +865,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding1.G0 = g0
                     gcdev_elm.winding1.B0 = b0
                     gcdev_elm.winding1.rate = windings[0].ratedS
+                    gcdev_elm.winding1.cn_from = cn_look_up.get_cn(cn_1)
+                    gcdev_elm.winding1.cn_to = cn_look_up.get_cn(cn_2)
 
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[1], Sbase)
                     gcdev_elm.winding2.R = r
@@ -847,6 +878,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding2.G0 = g0
                     gcdev_elm.winding2.B0 = b0
                     gcdev_elm.winding2.rate = windings[1].ratedS
+                    gcdev_elm.winding2.cn_from = cn_look_up.get_cn(cn_2)
+                    gcdev_elm.winding2.cn_to = cn_look_up.get_cn(cn_3)
 
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[2], Sbase)
                     gcdev_elm.winding3.R = r
@@ -858,9 +891,10 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.G0 = g0
                     gcdev_elm.winding3.B0 = b0
                     gcdev_elm.winding3.rate = windings[2].ratedS
+                    gcdev_elm.winding3.cn_from = cn_look_up.get_cn(cn_3)
+                    gcdev_elm.winding3.cn_to = cn_look_up.get_cn(cn_1)
 
                     gcdev_model.add_transformer3w(gcdev_elm)
-
 
                 else:
                     logger.add_error(msg='Not exactly three terminals',
@@ -884,6 +918,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                      calc_node_dict: Dict[str, gcdev.Bus],
                      cn_dict: Dict[str, gcdev.ConnectivityNode],
                      device_to_terminal_dict: Dict[str, List[Base]],
+                     cn_look_up: CnLookup,
                      logger: DataLogger,
                      Sbase: float) -> None:
     """
@@ -894,7 +929,9 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger:
+    :param Sbase:
     """
     # convert shunts
     for device_list in [cgmes_model.cgmes_assets.LinearShuntCompensator_list]:
@@ -928,7 +965,7 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                     # Bmin=B,
                     active=True,
                 )
-                gcdev_model.add_shunt(calc_node, gcdev_elm)
+                gcdev_model.add_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn_look_up.get_cn(cn))
 
             else:
                 logger.add_error(msg='Not exactly one terminal',
@@ -972,6 +1009,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                        calc_node_dict: Dict[str, gcdev.Bus],
                        cn_dict: Dict[str, gcdev.ConnectivityNode],
                        device_to_terminal_dict: Dict[str, List[Base]],
+                       cn_look_up: CnLookup,
                        logger: DataLogger,
                        Sbase: float) -> None:
     """
@@ -982,6 +1020,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -1048,8 +1087,8 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                     code=cgmes_elm.description,
                     name=cgmes_elm.name,
                     active=active,
-                    cn_from=cn_f,
-                    cn_to=cn_t,
+                    cn_from=cn_look_up.get_cn(cn_f),
+                    cn_to=cn_look_up.get_cn(cn_t),
                     bus_from=calc_node_f,
                     bus_to=calc_node_t,
                     rate=op_rate,
@@ -1274,10 +1313,16 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     cn_look_up = CnLookup(cgmes_model)
 
-    sv_volt_dict = get_gcdev_voltage_dict(cgmes_model, logger)
-    device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model, logger)
+    sv_volt_dict = get_gcdev_voltage_dict(cgmes_model=cgmes_model,
+                                          logger=logger)
 
-    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, sv_volt_dict, logger)
+    device_to_terminal_dict = get_gcdev_device_to_terminal_dict(cgmes_model=cgmes_model,
+                                                                logger=logger)
+
+    calc_node_dict = get_gcdev_calculation_nodes(cgmes_model=cgmes_model,
+                                                 gc_model=gc_model,
+                                                 v_dict=sv_volt_dict,
+                                                 logger=logger)
 
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,
@@ -1293,13 +1338,36 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                       cn_look_up=cn_look_up,
                       logger=logger)
 
-    # consolidate the connectivity nodes lookup and add the final ones to the GridCal model
+    # consolidate the connectivity nodes lookup
     cn_look_up.consolidate()
-    gc_model.set_elements_by_type(DeviceType.ConnectivityNodeDevice, cn_look_up.final_cn_list)
 
-    get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
-    get_gcdev_generators(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    # Add the final connectivity nodes to the GridCal model
+    gc_model.set_elements_by_type(device_type=DeviceType.ConnectivityNodeDevice,
+                                  devices=cn_look_up.final_cn_list)
+
+    get_gcdev_loads(cgmes_model=cgmes_model,
+                    gcdev_model=gc_model,
+                    calc_node_dict=calc_node_dict,
+                    cn_dict=cn_dict,
+                    device_to_terminal_dict=device_to_terminal_dict,
+                    cn_look_up=cn_look_up,
+                    logger=logger)
+
+    get_gcdev_external_grids(cgmes_model=cgmes_model,
+                             gcdev_model=gc_model,
+                             calc_node_dict=calc_node_dict,
+                             cn_dict=cn_dict,
+                             device_to_terminal_dict=device_to_terminal_dict,
+                             cn_look_up=cn_look_up,
+                             logger=logger)
+
+    get_gcdev_generators(cgmes_model=cgmes_model,
+                         gcdev_model=gc_model,
+                         calc_node_dict=calc_node_dict,
+                         cn_dict=cn_dict,
+                         device_to_terminal_dict=device_to_terminal_dict,
+                         cn_look_up=cn_look_up,
+                         logger=logger)
 
     get_gcdev_ac_lines(cgmes_model=cgmes_model,
                        gcdev_model=gc_model,
@@ -1310,11 +1378,33 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                        logger=logger,
                        Sbase=Sbase)
 
-    get_gcdev_ac_transformers(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_ac_transformers(cgmes_model=cgmes_model,
+                              gcdev_model=gc_model,
+                              calc_node_dict=calc_node_dict,
+                              cn_dict=cn_dict,
+                              device_to_terminal_dict=device_to_terminal_dict,
+                              cn_look_up=cn_look_up,
+                              logger=logger,
+                              Sbase=Sbase)
 
-    get_gcdev_shunts(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_shunts(cgmes_model=cgmes_model,
+                     gcdev_model=gc_model,
+                     calc_node_dict=calc_node_dict,
+                     cn_dict=cn_dict,
+                     device_to_terminal_dict=device_to_terminal_dict,
+                     cn_look_up=cn_look_up,
+                     logger=logger,
+                     Sbase=Sbase)
+
     # get_gcdev_controllable_shunts()  TODO controllable shunts
-    get_gcdev_switches(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger, Sbase)
+    get_gcdev_switches(cgmes_model=cgmes_model,
+                       gcdev_model=gc_model,
+                       calc_node_dict=calc_node_dict,
+                       cn_dict=cn_dict,
+                       device_to_terminal_dict=device_to_terminal_dict,
+                       cn_look_up=cn_look_up,
+                       logger=logger,
+                       Sbase=Sbase)
 
     print('debug')
     cgmes_model.emit_progress(100)

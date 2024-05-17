@@ -76,7 +76,8 @@ dependencies = ['setuptools>=41.0.1',
                 "pvlib",
                 "hyperopt",
                 "rdflib",
-                "pymoo>=0.6"
+                "pymoo>=0.6",
+                "websockets",
                 ]
 
 extras_require = {

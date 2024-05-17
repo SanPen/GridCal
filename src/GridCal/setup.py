@@ -106,6 +106,7 @@ dependencies = ['setuptools>=41.0.1',
                 "pvlib",
                 "hyperopt",
                 "rdflib",
+                "websockets",
                 "GridCalEngine==" + __GridCal_VERSION__,  # the GridCalEngine version must be exactly the same
                 ]
 
