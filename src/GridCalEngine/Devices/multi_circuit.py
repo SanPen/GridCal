@@ -362,6 +362,7 @@ class MultiCircuit:
                 dev.BusBar(),
                 dev.ConnectivityNode(),
                 dev.Bus(),
+                dev.Switch()
             ],
             "Injections": [
                 dev.Generator(),
