@@ -26,7 +26,7 @@ from uuid import getnode as get_mac, uuid4
 import datetime as dateslib
 import networkx as nx
 from matplotlib import pyplot as plt
-from scipy.sparse import csc_matrix, lil_matrix
+from scipy.sparse import csc_matrix, lil_matrix, diags
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
@@ -3511,15 +3511,17 @@ class MultiCircuit:
         """
         return len(self.bus_bars)
 
-    def add_bus_bar(self, obj: dev.BusBar):
+    def add_bus_bar(self, obj: dev.BusBar, add_cn: bool = True):
         """
         Add Substation
         :param obj: BusBar object
+        :param add_cn: Add the internal CN of the BusBar?
         """
         self.bus_bars.append(obj)
 
         # add the internal connectivity node
-        self.add_connectivity_node(obj.cn)
+        if add_cn:
+            self.add_connectivity_node(obj.cn)
 
     def delete_bus_bar(self, obj: dev.BusBar):
         """
@@ -6090,12 +6092,14 @@ class MultiCircuit:
 
     def process_topology_at(self,
                             t_idx: Union[int, None] = None,
-                            logger: Union[Logger, None] = None) -> tp.TopologyProcessorInfo:
+                            logger: Union[Logger, None] = None,
+                            debug: int = 0) -> tp.TopologyProcessorInfo:
         """
         Topology processor finding the Buses that calculate a certain node-breaker topology
         This function fill the bus pointers into the grid object, and adds any new bus required for simulation
         :param t_idx: Time index, None for the Snapshot
         :param logger: Logger object
+        :param debug: Debug level
         :return: TopologyProcessorInfo
         """
         # --------------------------------------------------------------------------------------------------------------
@@ -6125,7 +6129,7 @@ class MultiCircuit:
         bus_active = process_info.get_candidate_active(t_idx=t_idx)
 
         # get a list of all branches
-        all_branches = self.get_branches() + self.get_switches()
+        all_branches = self.get_switches() + self.get_branches()
 
         # --------------------------------------------------------------------------------------------------------------
         # create the connectivity matrices
@@ -6140,20 +6144,19 @@ class MultiCircuit:
         # fill matrices approprietly
         for i, elm in enumerate(all_branches):
 
-            if elm.cn_from is not None:
-                f = process_info.get_candidate_pos_from_cn(elm.cn_from)
-                Cf[i, f] = 1
-
-            if elm.cn_to is not None:
-                t = process_info.get_candidate_pos_from_cn(elm.cn_to)
-                Ct[i, t] = 1
-
             if elm.device_type == DeviceType.SwitchDevice:
                 br_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
             else:
                 # non switches form islands, because we want islands to be
                 # the set of candidates to fuse into one
                 br_active[i] = 0
+
+            # if elm.cn_from is not None and elm.cn_to is not None:
+            #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
+            #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
+            f, t = process_info.get_connection_indices(elm=elm)
+            Cf[i, f] = br_active[i]
+            Ct[i, t] = br_active[i]
 
         # --------------------------------------------------------------------------------------------------------------
         # compose the adjacency matrix from the connectivity information
@@ -6162,6 +6165,19 @@ class MultiCircuit:
                                     C_branch_bus_t=Ct.tocsc(),
                                     branch_active=br_active,
                                     bus_active=bus_active)
+
+        if debug >= 2:
+            candidate_names = process_info.get_candidate_names()
+            br_names = [br.name for br in all_branches]
+            C = Cf + Ct
+            df = pd.DataFrame(data=C.toarray(), columns=candidate_names, index=br_names)
+            print(df.replace(to_replace=0.0, value="-"))
+
+            print("A:")
+
+            df = pd.DataFrame(data=A.toarray(), columns=candidate_names, index=candidate_names)
+            print(df.replace(to_replace=0.0, value="-"))
+            print()
 
         # --------------------------------------------------------------------------------------------------------------
         # perform the topology search, this will find candidate buses that reduce to be the same bus

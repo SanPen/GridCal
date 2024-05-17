@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
@@ -23,6 +23,7 @@ from scipy.sparse import csc_matrix, csr_matrix, diags, csr_matrix, lil_matrix
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
 @nb.njit(cache=True)
@@ -363,6 +364,93 @@ class TopologyProcessorInfo:
         # map of ConnectivityNodes to final Buses
         self.cn_to_final_bus: dict[ConnectivityNode, Bus] = dict()
 
+    def get_connection_indices(self, elm: BRANCH_TYPES) -> Tuple[int, int]:
+        """
+        Get connection indices
+        :param elm:
+        :return: f, t
+        """
+        if elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is not None:
+            # All properties are not None
+            f = self.get_candidate_pos_from_cn(elm.cn_from)
+            t = self.get_candidate_pos_from_cn(elm.cn_to)
+
+        elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is None:
+            # bus_to is None
+            f = self.get_candidate_pos_from_cn(elm.cn_from)
+            t = self.get_candidate_pos_from_cn(elm.cn_to)
+
+        elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is not None:
+            # bus_from is None
+            f = self.get_candidate_pos_from_cn(elm.cn_from)
+            t = self.get_candidate_pos_from_cn(elm.cn_to)
+
+        elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is None:
+            # bus_from and bus_to are None
+            f = self.get_candidate_pos_from_cn(elm.cn_from)
+            t = self.get_candidate_pos_from_cn(elm.cn_to)
+
+        elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is not None:
+            # cn_to is None
+            f = self.get_candidate_pos_from_cn(elm.cn_from)
+            t = self.get_candidate_pos_from_bus(elm.bus_to)
+
+        elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is None:
+            # cn_to and bus_to are None
+            raise ValueError("No to connection provided!")
+
+        elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is not None:
+            # cn_to and bus_from are None
+            f = self.get_candidate_pos_from_cn(elm.cn_from)
+            t = self.get_candidate_pos_from_bus(elm.bus_to)
+
+        elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is None:
+            # cn_to, bus_from, and bus_to are None
+            raise ValueError("No to connection provided!")
+
+        elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is not None:
+            # cn_from is None
+            f = self.get_candidate_pos_from_bus(elm.bus_from)
+            t = self.get_candidate_pos_from_cn(elm.cn_to)
+
+        elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is None:
+            # cn_from and bus_to are None
+            f = self.get_candidate_pos_from_bus(elm.bus_from)
+            t = self.get_candidate_pos_from_cn(elm.cn_to)
+
+        elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is not None:
+            # cn_from and bus_from are None
+            raise ValueError("No from connection provided!")
+
+        elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is None:
+            # cn_from, bus_from, and bus_to are None
+            raise ValueError("No from connection provided!")
+
+        elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is not None:
+            # cn_from and cn_to are None
+            f = self.get_candidate_pos_from_bus(elm.bus_from)
+            t = self.get_candidate_pos_from_bus(elm.bus_to)
+
+        elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is None:
+            # cn_from, cn_to, and bus_to are None
+            raise ValueError("No to connection provided!")
+
+        elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is not None:
+            # cn_from, cn_to, and bus_from are None
+            raise ValueError("No from connection provided!")
+
+        elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is None:
+            # All properties are None
+            raise ValueError("isolated branch!")
+        else:
+            # All properties are None
+            raise ValueError("isolated branch!")
+
+        if f == t:
+            raise ValueError("Loop connected branch!")
+
+        return f, t
+
     def add_new_candidate(self, new_candidate: Bus):
         """
 
@@ -395,6 +483,14 @@ class TopologyProcessorInfo:
         """
         candidate = self.cn_to_candidate[cn]
         return self.candidate_to_int_dict[candidate]
+
+    def get_candidate_pos_from_bus(self, bus: Bus) -> int:
+        """
+        Get the integer position of the candidate bus matching
+        :param bus: Bus
+        :return: integer
+        """
+        return self.candidate_to_int_dict[bus]
 
     def get_candidate_active(self, t_idx: Union[None, int]) -> IntVec:
         """
@@ -439,6 +535,31 @@ class TopologyProcessorInfo:
         :return: Final calculation Bus
         """
         return self.cn_to_final_bus[cn]
+
+    def get_cn_lists_per_bus(self) -> Dict[Bus, List[ConnectivityNode]]:
+        """
+        Invert cn_to_final_bus
+        :return: Dict[Bus, List[ConnectivityNode]]
+        """
+        data = dict()
+
+        for cn, bus in self.cn_to_final_bus.items():
+
+            lst = data.get(bus, None)
+
+            if lst is None:
+                data[bus] = [cn]
+            else:
+                lst.append(cn)
+
+        return data
+
+    def get_candidate_names(self) -> List[str]:
+        """
+
+        :return:
+        """
+        return [c.name for c in self.candidates]
 
 
 def compute_connectivity_acdc_isolated(branch_active: IntVec,
