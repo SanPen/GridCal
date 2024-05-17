@@ -259,14 +259,14 @@ class MapTemplateLine:
             # Create a new API object for the node. Assuming `api_object.locations.data` holds coordinates or similar data
             new_api_node_data = self.api_object.locations.data[index]
 
-            new_api_node_data.lat = ((self.api_object.locations.data[index - 1].lat
-                                      + self.api_object.locations.data[index].lat) / 2)
+            nd1 = self.nodes_list[index]
+            nd2 = self.nodes_list[index - 1]
 
-            new_api_node_data.long = ((self.api_object.locations.data[index - 1].long
-                                       + self.api_object.locations.data[index].long) / 2)
+            new_lat = ((nd2.lat + nd1.lat) / 2)
+            new_long = ((nd2.lon + nd1.lon) / 2)
 
-            new_api_object = LineLocation(lat=new_api_node_data.lat,
-                                          lon=new_api_node_data.long,
+            new_api_object = LineLocation(lat=new_lat,
+                                          lon=new_long,
                                           z=new_api_node_data.alt,
                                           seq=new_api_node_data.seq,
                                           name=new_api_node_data.name,
@@ -282,7 +282,6 @@ class MapTemplateLine:
                                                   lat=new_api_object.lat,
                                                   lon=new_api_object.long,
                                                   index=index)
-            self.register_new_node(node=graphic_obj)
 
             idx = 0
 
@@ -291,10 +290,12 @@ class MapTemplateLine:
                 if idx >= index:
                     nod.index = nod.index + 1
 
-                    idx = idx + 1
+                idx = idx + 1
 
             # Add the node to the nodes list
             self.nodes_list.insert(index, graphic_obj)
+
+            graphic_obj.updatePosition()
 
             # Update connectors if necessary
             self.redraw_segments()

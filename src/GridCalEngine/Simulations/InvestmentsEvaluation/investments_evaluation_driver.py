@@ -145,7 +145,7 @@ def power_flow_function(inv_list: List[Investment],
     scores.losses_score = np.sum(driver.results.losses.real)
     scores.overload_score = get_overload_score(loading=driver.results.loading,
                                                branches_cost=branches_cost)
-
+    # scores.overload_score = 0
     scores.voltage_module_score = get_voltage_module_score(voltage=driver.results.voltage,
                                                            vm_cost=vm_cost,
                                                            vm_max=vm_max,
