@@ -769,4 +769,4 @@ def get_regulating_control(cgmes_elm,
                            value='None',
                            expected_value='BaseVoltage')
 
-    return v_set, control_node, is_controlled   # control_mode
+    return v_set, is_controlled   # control_node, control_mode
