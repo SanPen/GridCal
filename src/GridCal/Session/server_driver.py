@@ -21,7 +21,6 @@ import asyncio
 import websockets
 import numpy as np
 import json
-import urllib3
 from typing import Callable, Dict, Any, Union
 from PySide6.QtCore import QThread, Signal
 from GridCalEngine.basic_structures import Logger
