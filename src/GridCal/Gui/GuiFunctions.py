@@ -2434,7 +2434,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 #         return True
 
 
-def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
+def get_list_model(lst: List[Union[str, ALL_DEV_TYPES]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
     Pass a list to a list model
     """
