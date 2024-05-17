@@ -19,6 +19,7 @@ import math
 from typing import Dict, Union, List, Tuple, Any, Callable
 import pandas as pd
 import numpy as np
+from uuid import uuid4
 from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -422,7 +423,7 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
 
 def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     """
-
+    Transform a MultiCircuit into a collection of Json files
     :param circuit:
     :return:
     """
@@ -454,6 +455,30 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
                     'prob': list(np.ones(len(unix_time))),
                     'snapshot_unix': circuit.get_snapshot_time_unix()}
 
+    return data
+
+
+def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
+                                            instructions_json: Union[None, Dict[str, str]] = None
+                                            ) -> Dict[str, Dict[str, Dict[str, str]]]:
+    """
+    Create a Json with the same information expected for loading with `parse_gridcal_data`
+    :param circuit: MultiCircuit
+    :param instructions_json: Some extra dictionary with instructions about what to do with the model
+    :return: JSON like data
+    """
+
+    data = {
+        'name': circuit.name,
+        'baseMVA': circuit.Sbase,
+        'Comments': circuit.comments,
+        'ModelVersion': circuit.model_version,
+        'UserName': circuit.user_name,
+        'sender_id': uuid4().hex,
+        'instructions': instructions_json if instructions_json is not None else dict(),
+        'model_data': gather_model_as_jsons(circuit=circuit),
+        'diagrams': []
+    }
     return data
 
 

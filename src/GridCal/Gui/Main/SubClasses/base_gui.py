@@ -411,7 +411,8 @@ class BaseMainGui(QMainWindow):
                        self.delete_and_reduce_driver,
                        self.export_all_thread_object,
                        self.find_node_groups_driver,
-                       self.file_sync_thread]
+                       self.file_sync_thread,
+                       ]
         return all_threads
 
     def get_all_threads(self) -> List[GcThread]:
