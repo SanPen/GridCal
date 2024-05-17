@@ -134,6 +134,10 @@ class ObjectsTableMain(DiagramsMain):
             elm = dev.Line()
             dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
 
+        elif elm_type == DeviceType.SwitchDevice:
+            elm = dev.Switch()
+            dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
+
         elif elm_type == DeviceType.Transformer2WDevice:
             elm = dev.Transformer2W()
             dictionary_of_lists = {DeviceType.BranchGroupDevice.value: self.circuit.get_branch_groups()}
