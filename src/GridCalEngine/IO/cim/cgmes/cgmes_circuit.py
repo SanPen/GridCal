@@ -17,7 +17,7 @@
 
 import pandas as pd
 from collections.abc import Callable
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 from enum import Enum, EnumMeta
 
 from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets import Cgmes_2_4_15_Assets
@@ -427,6 +427,30 @@ class CgmesCircuit(BaseCircuit):
         # dictionary representation of the xml data
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
         self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
+
+    def get_cn_to_bb_dict(self) -> Tuple[dict, dict]:
+        """
+        Get a dictionary of the ConnectivityNodes to the BusBars
+        Get a dictionary of the TopologicalNode to the BusBars
+        :return: cn_to_bb_dict, tn_to_bb_dict
+        """
+        data_bb = dict()
+        data_tn = dict()
+        bb_tpe = self.cgmes_assets.class_dict.get("BusbarSection", None)
+
+        if bb_tpe is not None:
+
+            # find the terminal -> CN links
+            for terminal in self.cgmes_assets.Terminal_list:
+                if isinstance(terminal.ConductingEquipment, bb_tpe):
+
+                    if terminal.ConnectivityNode is not None:
+                        data_bb[terminal.ConnectivityNode] = terminal.ConductingEquipment
+
+                    if terminal.TopologicalNode is not None:
+                        data_tn[terminal.TopologicalNode] = terminal.ConductingEquipment
+
+        return data_bb, data_tn
 
     def parse_files(self, data_parser: CgmesDataParser, delete_unused=True, detect_circular_references=False):
         """
