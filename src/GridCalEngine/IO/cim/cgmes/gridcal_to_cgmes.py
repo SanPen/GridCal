@@ -358,10 +358,10 @@ def create_cgmes_regulating_control(
     rc.name = f'_RC_{gen.name}'
     rc.RegulatingCondEq = gen
     # rc.Terminal
-    # rc.discrete
+    rc.discrete = False
     # rc.enabled
     # rc.targetDeadband
-    # rc.targetValue = gen.Vset
+    rc.targetValue = gen.Vset
     # rc.targetValueUnitMultiplier = 'k'
 
     cgmes_model.add(rc)
@@ -377,33 +377,57 @@ def create_cgmes_regulating_control(
 def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
                                   cgmes_model: CgmesCircuit,
                                   logger: DataLogger):
-    for mc_elm in multi_circuit_model.countries:
-        object_template = cgmes_model.get_class_type("GeographicalRegion")
-        geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        geo_region.name = mc_elm.name
-        geo_region.description = mc_elm.code
+    for mc_class in [multi_circuit_model.countries, multi_circuit_model.areas]:
+        for mc_elm in mc_class:
+            object_template = cgmes_model.get_class_type("GeographicalRegion")
+            geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
+            geo_region.name = mc_elm.name
+            geo_region.description = mc_elm.code
 
-        cgmes_model.add(geo_region)
+            cgmes_model.add(geo_region)
+    if len(cgmes_model.cgmes_assets.GeographicalRegion_list) == 0:
+        logger.add_error(msg='Country or Area is not defined and GeographicalRegion cannot be exported',
+                         device_class="GeographicalRegion",
+                         comment="The CGMES export will not be valid!")
 
 
 def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
                                      cgmes_model: CgmesCircuit,
                                      logger: DataLogger):
-    for mc_elm in multi_circuit_model.communities:
-        object_template = cgmes_model.get_class_type("SubGeographicalRegion")
-        sub_geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        sub_geo_region.name = mc_elm.name
-        sub_geo_region.description = mc_elm.code
+    for mc_class in [multi_circuit_model.communities, multi_circuit_model.zones]:
+        for mc_elm in mc_class:
+            object_template = cgmes_model.get_class_type("SubGeographicalRegion")
+            sub_geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
+            sub_geo_region.name = mc_elm.name
+            sub_geo_region.description = mc_elm.code
 
-        region = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.GeographicalRegion_list,
-            target_uuid=mc_elm.idtag
-        )
-        if region is not None:
-            sub_geo_region.Region = region
+            if hasattr(mc_elm, "country"):
+                region_id = mc_elm.country.idtag
+            elif hasattr(mc_elm, "area"):
+                region_id = mc_elm.area.idtag
+            else:
+                region_id = ""
 
-        cgmes_model.add(sub_geo_region)
+            region = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.GeographicalRegion_list,
+                target_uuid=region_id
+            )
+            if region is not None:
+                sub_geo_region.Region = region
+            else:
+                try:
+                    sub_geo_region.Region = cgmes_model.cgmes_assets.GeographicalRegion_list[0]
+                except:
+                    sub_geo_region.Region = None
+                logger.add_warning(msg='GeographicalRegion not found for SubGeographicalRegion',
+                                   device_class="SubGeographicalRegion")
+
+            cgmes_model.add(sub_geo_region)
+    if len(cgmes_model.cgmes_assets.SubGeographicalRegion_list) == 0:
+        logger.add_error(msg='Community or Zone is not defined and SubGeographicalRegion cannot be exported',
+                         device_class="SubGeographicalRegion",
+                         comment="The CGMES export will not be valid!")
 
 
 def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
@@ -449,7 +473,10 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
         if region is not None:
             substation.Region = region
         else:
-            print(f'Region not found for Substation {substation.name}')
+            try:
+                substation.Region = cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
+            except:
+                substation.Region = None
             logger.add_warning(msg='Region not found for Substation',
                                device_class="SubGeographicalRegion")
 
@@ -604,16 +631,16 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
         cl.Terminals = create_cgmes_terminal(mc_elm.bus, cl, cgmes_model, logger)
         cl.name = mc_elm.name
 
-        # vl = find_object_by_tn_uuid(
-        #     object_list=cgmes_model.VoltageLevel_list,
-        #     target_uuid=cl.Terminals.TopologicalNode.uuid
-        # )
-        # if isinstance(vl, cgmes.VoltageLevel):
-        #     cl.EquipmentContainer = vl
-        # else:
-        #     print("hello")
+        vl = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+            target_uuid=mc_elm.bus.voltage_level.idtag
+        )
+        cl.EquipmentContainer = vl
 
-        # cl.BaseVoltage = BaseVoltage
+        cl.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                                             target_vnom=mc_elm.bus.Vnom)
         cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm, cgmes_model=cgmes_model, logger=logger)
         # cl.LoadGroup = ConformLoadGroup ..?
         cl.p = mc_elm.P / cl.LoadResponse.pConstantPower
@@ -700,7 +727,9 @@ def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
     # OperationalLimitSet and OperationalLimitType
-
+    # rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+    #                                     4)
+    # TODO Move it to util, we need a device and its terminals and create a limit for the terminals, create the LimitTypes
     pass
 
 
@@ -750,7 +779,6 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         cgmes_gen.initialP = mc_elm.P
         cgmes_gen.maxOperatingP = mc_elm.Pmax
         cgmes_gen.minOperatingP = mc_elm.Pmin
-        cgmes_gen.normalPF = mc_elm.Pf  # power_factor
 
         # Synchronous Machine ------------------------------------------------
         object_template = cgmes_model.get_class_type("SynchronousMachine")
@@ -760,9 +788,12 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # cgmes_syn.aggregate is optional, not exported
         if mc_elm.bus.is_slack:
             cgmes_syn.referencePriority = 1
+            cgmes_gen.normalPF = 1
         else:
             cgmes_syn.referencePriority = 0
+            cgmes_gen.normalPF = 0
         # TODO cgmes_syn.EquipmentContainer: VoltageLevel
+
         # TODO implement control_node in MultiCircuit
         # has_control: do we have control
         # control_type: voltage or power control, ..
@@ -823,7 +854,16 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # condenser = 'condenser'
 
         cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
+        vl = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+            target_uuid=mc_elm.bus.voltage_level.idtag
+        )
+        cgmes_syn.EquipmentContainer = vl
 
+        cgmes_syn.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                                    object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                                                    target_vnom=mc_elm.bus.Vnom)
         cgmes_model.add(cgmes_syn)
 
 
@@ -1010,7 +1050,16 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         lsc = object_template(rdfid=form_rdfid(mc_elm.idtag))
         lsc.name = mc_elm.name
         lsc.description = mc_elm.code
-        # lsc.EquipmentContainer: VoltageLevel .. like at tn_nodes line 284
+        vl = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+            target_uuid=mc_elm.bus.voltage_level.idtag
+        )
+        lsc.EquipmentContainer = vl
+
+        lsc.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
+                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                                              target_vnom=mc_elm.bus.Vnom)
         # lsc.RegulatingControl = False  # TODO: Should be an object
         lsc.controlEnabled = False
         lsc.maximumSections = 1
@@ -1119,6 +1168,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     get_cgmes_tn_nodes(gc_model, cgmes_model, logger)
     get_cgmes_cn_nodes_from_tn_nodes(gc_model, cgmes_model, logger)
+    # TODO BusbarSection
     # get_cgmes_cn_nodes_from_cns(gc_model, cgmes_model, logger)
 
     get_cgmes_loads(gc_model, cgmes_model, logger)

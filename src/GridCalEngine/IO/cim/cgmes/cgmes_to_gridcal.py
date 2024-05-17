@@ -454,7 +454,10 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 Qmax=cgmes_elm.maxQ,
                                                 Qmin=cgmes_elm.minQ,
                                                 vset=v_set,
-                                                is_controlled=is_controlled)
+                                                is_controlled=is_controlled,
+                                                # control_bus=,  # TODO get controlled gc.bus
+                                                # control_cn=,
+                                                )
 
                     gcdev_model.add_generator(calc_node, gcdev_elm)
 
@@ -692,6 +695,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     b0=b0,
                                                     tap_module=1.0,
                                                     tap_phase=0.0,
+                                                    # control_mode,  # legacy
+                                                    # tap_module_control_mode=,
+                                                    # tap_angle_control_mode=,
                                                     # rate=get_rate(cgmes_elm))
                                                     rate=rated_s)
 
@@ -1086,17 +1092,20 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 bay_type = cgmes_model.get_class_type("Bay")
                 container = cgmes_elm.EquipmentContainer
                 if isinstance(container, vl_type):
+                    vl = container
                     substation = container.Substation
                 elif isinstance(container, bay_type):
+                    vl = None
                     substation = container.VoltageLevel.Substation
                 else:
+                    vl = None
                     substation = None
 
                 gcdev_elm = gcdev.BusBar(
                     name=cgmes_elm.name,
                     idtag=cgmes_elm.uuid,
                     code=cgmes_elm.description,
-                    # voltage_level=
+                    voltage_level=vl,
                     cn=cn
                 )
                 gcdev_model.add_bus_bar(gcdev_elm)
@@ -1155,7 +1164,7 @@ def get_gcdev_community(cgmes_model: CgmesCircuit,
 
             c = find_object_by_idtag(
                 object_list=gcdev_model.countries,
-                target_idtag=cgmes_elm.uuid
+                target_idtag=cgmes_elm.Region.uuid
             )
             if c is not None:
                 gcdev_elm.country = c
@@ -1194,7 +1203,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     calc_node_dict = get_gcdev_calculation_nodes(cgmes_model, gc_model, sv_volt_dict, logger)
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model, gc_model, calc_node_dict, logger)
-    # get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
+    get_gcdev_busbars(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
 
     get_gcdev_loads(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     get_gcdev_external_grids(cgmes_model, gc_model, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
