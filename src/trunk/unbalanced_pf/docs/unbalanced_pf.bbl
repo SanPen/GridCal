@@ -1,0 +1,116 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.2 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global}
+    \entry{kersting2018distribution}{incollection}{}
+      \name{author}{1}{}{%
+        {{hash=67f8d2b0ce5c9f9b4a3d252ceb2f404b}{%
+           family={Kersting},
+           familyi={K\bibinitperiod},
+           given={William\bibnamedelima H},
+           giveni={W\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {CRC press}%
+      }
+      \strng{namehash}{67f8d2b0ce5c9f9b4a3d252ceb2f404b}
+      \strng{fullhash}{67f8d2b0ce5c9f9b4a3d252ceb2f404b}
+      \strng{bibnamehash}{67f8d2b0ce5c9f9b4a3d252ceb2f404b}
+      \strng{authorbibnamehash}{67f8d2b0ce5c9f9b4a3d252ceb2f404b}
+      \strng{authornamehash}{67f8d2b0ce5c9f9b4a3d252ceb2f404b}
+      \strng{authorfullhash}{67f8d2b0ce5c9f9b4a3d252ceb2f404b}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Electric power generation, transmission, and distribution}
+      \field{title}{Distribution system modeling and analysis}
+      \field{year}{2018}
+      \field{pages}{26\bibrangedash 1}
+      \range{pages}{-4}
+    \endentry
+    \entry{krolo2018computation}{article}{}
+      \name{author}{3}{}{%
+        {{hash=f9136742224ea535fe2d8f7c6fd25dcc}{%
+           family={Krolo},
+           familyi={K\bibinitperiod},
+           given={Ivan},
+           giveni={I\bibinitperiod}}}%
+        {{hash=48dbae59ab2929f43e08669381a5e702}{%
+           family={Vujević},
+           familyi={V\bibinitperiod},
+           given={Slavko},
+           giveni={S\bibinitperiod}}}%
+        {{hash=6d0460e25105ed55589872a41950ea5e}{%
+           family={Modrić},
+           familyi={M\bibinitperiod},
+           given={Tonći},
+           giveni={T\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Fakultet gra{đ}evinarstva, arhitekture i geodezije; Fakultet elektrotehnike~…}%
+      }
+      \strng{namehash}{151364b0c5b566584991071960f9fa33}
+      \strng{fullhash}{151364b0c5b566584991071960f9fa33}
+      \strng{bibnamehash}{151364b0c5b566584991071960f9fa33}
+      \strng{authorbibnamehash}{151364b0c5b566584991071960f9fa33}
+      \strng{authornamehash}{151364b0c5b566584991071960f9fa33}
+      \strng{authorfullhash}{151364b0c5b566584991071960f9fa33}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International journal for engineering modelling}
+      \field{number}{1-2}
+      \field{title}{Computation of Carson formulas using piecewise approximation of kernel function}
+      \field{volume}{31}
+      \field{year}{2018}
+      \field{pages}{15\bibrangedash 30}
+      \range{pages}{16}
+    \endentry
+    \entry{dubanton1969calcul}{article}{}
+      \name{author}{1}{}{%
+        {{hash=f2bb55fc8f9270792fc2930e9249fd85}{%
+           family={Dubanton},
+           familyi={D\bibinitperiod},
+           given={C},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{f2bb55fc8f9270792fc2930e9249fd85}
+      \strng{fullhash}{f2bb55fc8f9270792fc2930e9249fd85}
+      \strng{bibnamehash}{f2bb55fc8f9270792fc2930e9249fd85}
+      \strng{authorbibnamehash}{f2bb55fc8f9270792fc2930e9249fd85}
+      \strng{authornamehash}{f2bb55fc8f9270792fc2930e9249fd85}
+      \strng{authorfullhash}{f2bb55fc8f9270792fc2930e9249fd85}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{EDF Bull. Direct. Etudes Rech}
+      \field{title}{Calcul approché des parametres primaires et secondaires d'une ligne de transport}
+      \field{volume}{1}
+      \field{year}{1969}
+      \field{pages}{53\bibrangedash 62}
+      \range{pages}{10}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+
