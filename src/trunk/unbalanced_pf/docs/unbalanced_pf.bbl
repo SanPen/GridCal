@@ -110,6 +110,158 @@
       \field{pages}{53\bibrangedash 62}
       \range{pages}{10}
     \endentry
+    \entry{fortescue1918method}{article}{}
+      \name{author}{1}{}{%
+        {{hash=c648d6bcd2114416bb5f3f1f9acabd32}{%
+           family={Fortescue},
+           familyi={F\bibinitperiod},
+           given={Charles\bibnamedelima L},
+           giveni={C\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {IEEE}%
+      }
+      \strng{namehash}{c648d6bcd2114416bb5f3f1f9acabd32}
+      \strng{fullhash}{c648d6bcd2114416bb5f3f1f9acabd32}
+      \strng{bibnamehash}{c648d6bcd2114416bb5f3f1f9acabd32}
+      \strng{authorbibnamehash}{c648d6bcd2114416bb5f3f1f9acabd32}
+      \strng{authornamehash}{c648d6bcd2114416bb5f3f1f9acabd32}
+      \strng{authorfullhash}{c648d6bcd2114416bb5f3f1f9acabd32}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Transactions of the American Institute of Electrical Engineers}
+      \field{number}{2}
+      \field{title}{Method of symmetrical co-ordinates applied to the solution of polyphase networks}
+      \field{volume}{37}
+      \field{year}{1918}
+      \field{pages}{1027\bibrangedash 1140}
+      \range{pages}{114}
+    \endentry
+    \entry{alvarez2021universal}{article}{}
+      \name{author}{4}{}{%
+        {{hash=3b18a0a6dd802b8939995067d96481ba}{%
+           family={Alvarez-Bustos},
+           familyi={A\bibinithyphendelim B\bibinitperiod},
+           given={Abraham},
+           giveni={A\bibinitperiod}}}%
+        {{hash=db29f62819c62501fc86061f49f30eef}{%
+           family={Kazemtabrizi},
+           familyi={K\bibinitperiod},
+           given={Behzad},
+           giveni={B\bibinitperiod}}}%
+        {{hash=7903b1efec4b1a04da7ea778c4643c23}{%
+           family={Shahbazi},
+           familyi={S\bibinitperiod},
+           given={Mahmoud},
+           giveni={M\bibinitperiod}}}%
+        {{hash=68b8e9cc27c01a1326b89199116cd5f4}{%
+           family={Acha-Daza},
+           familyi={A\bibinithyphendelim D\bibinitperiod},
+           given={Enrique},
+           giveni={E\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{fullhash}{c8decf8b25f4f1abe38acadfab3c4ad0}
+      \strng{bibnamehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{authorbibnamehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{authornamehash}{7f024cc3f66ad5da0d38bb0b4f6b7899}
+      \strng{authorfullhash}{c8decf8b25f4f1abe38acadfab3c4ad0}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Journal of Electrical Power \& Energy Systems}
+      \field{title}{Universal branch model for the solution of optimal power flows in hybrid AC/DC grids}
+      \field{volume}{126}
+      \field{year}{2021}
+      \field{pages}{106543}
+      \range{pages}{1}
+    \endentry
+    \entry{tleis2007power}{book}{}
+      \name{author}{1}{}{%
+        {{hash=ee97648ecc0211768764a73caeea447d}{%
+           family={Tleis},
+           familyi={T\bibinitperiod},
+           given={Nasser},
+           giveni={N\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Elsevier}%
+      }
+      \strng{namehash}{ee97648ecc0211768764a73caeea447d}
+      \strng{fullhash}{ee97648ecc0211768764a73caeea447d}
+      \strng{bibnamehash}{ee97648ecc0211768764a73caeea447d}
+      \strng{authorbibnamehash}{ee97648ecc0211768764a73caeea447d}
+      \strng{authornamehash}{ee97648ecc0211768764a73caeea447d}
+      \strng{authorfullhash}{ee97648ecc0211768764a73caeea447d}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Power systems modelling and fault analysis: theory and practice}
+      \field{year}{2007}
+    \endentry
+    \entry{rupa2014power}{article}{}
+      \name{author}{2}{}{%
+        {{hash=4c34b65768eeb10fa64657c984fb6ce6}{%
+           family={Rupa},
+           familyi={R\bibinitperiod},
+           given={JA\bibnamedelima Michline},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=6cd23ca872df6b0758a911bb0eea9983}{%
+           family={Ganesh},
+           familyi={G\bibinitperiod},
+           given={S},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{e7f1a49c7e3d8a168f875aebe5e7b834}
+      \strng{fullhash}{e7f1a49c7e3d8a168f875aebe5e7b834}
+      \strng{bibnamehash}{e7f1a49c7e3d8a168f875aebe5e7b834}
+      \strng{authorbibnamehash}{e7f1a49c7e3d8a168f875aebe5e7b834}
+      \strng{authornamehash}{e7f1a49c7e3d8a168f875aebe5e7b834}
+      \strng{authorfullhash}{e7f1a49c7e3d8a168f875aebe5e7b834}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{International Journal of Electrical, Computer, Electronics and Communication Engineering}
+      \field{number}{10}
+      \field{title}{Power flow analysis for radial distribution system using backward/forward sweep method}
+      \field{volume}{8}
+      \field{year}{2014}
+      \field{pages}{1540\bibrangedash 1544}
+      \range{pages}{5}
+    \endentry
+    \entry{zimmerman2010ac}{article}{}
+      \name{author}{1}{}{%
+        {{hash=7b370dc6294fd28d0a5516c6301d953d}{%
+           family={Zimmerman},
+           familyi={Z\bibinitperiod},
+           given={Ray\bibnamedelima D},
+           giveni={R\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+      }
+      \strng{namehash}{7b370dc6294fd28d0a5516c6301d953d}
+      \strng{fullhash}{7b370dc6294fd28d0a5516c6301d953d}
+      \strng{bibnamehash}{7b370dc6294fd28d0a5516c6301d953d}
+      \strng{authorbibnamehash}{7b370dc6294fd28d0a5516c6301d953d}
+      \strng{authornamehash}{7b370dc6294fd28d0a5516c6301d953d}
+      \strng{authorfullhash}{7b370dc6294fd28d0a5516c6301d953d}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{MATPOWER Tech. Note}
+      \field{title}{AC power flows, generalized OPF costs and their derivatives using complex matrix notation}
+      \field{volume}{2}
+      \field{year}{2010}
+      \field{pages}{60\bibrangedash 62}
+      \range{pages}{3}
+    \endentry
   \enddatalist
 \endrefsection
 \endinput

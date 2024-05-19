@@ -2364,6 +2364,13 @@
     <bcf:citekey order="1" intorder="1">kersting2018distribution</bcf:citekey>
     <bcf:citekey order="2" intorder="1">krolo2018computation</bcf:citekey>
     <bcf:citekey order="3" intorder="1">dubanton1969calcul</bcf:citekey>
+    <bcf:citekey order="4" intorder="1">fortescue1918method</bcf:citekey>
+    <bcf:citekey order="5" intorder="1">alvarez2021universal</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">alvarez2021universal</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">tleis2007power</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">tleis2007power</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">rupa2014power</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">zimmerman2010ac</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">
