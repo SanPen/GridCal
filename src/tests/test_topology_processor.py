@@ -227,11 +227,12 @@ def test_topology_rts() -> None:
             assert loriginal.bus_from.code == lnb.bus_from.code
 
 
-def test_topology_NL_microgrid():
+def test_topology_NL_microgrid() -> None:
     fname = os.path.join('data', 'grids', 'CGMES_2_4_15', 'micro_grid_NL_T1.zip')
     grid = FileOpen(fname).open()
+    logger = Logger()
 
-    info = grid.process_topology_at(debug=2)
+    info = grid.process_topology_at(debug=1, logger=logger)
 
     cn_per_bus = info.get_cn_lists_per_bus()
 
@@ -266,7 +267,7 @@ def test_topology_NL_microgrid():
         'N1230992231': '',
         'N1230822396': '',
 
-        # frontier buses
+        # frontier buses (5 of them)
         'Border_GY11': 'TN_Border_GY11',
         'Border_ST23': 'TN_Border_ST23',
         'Border_ST24': 'TN_Border_ST24',
@@ -274,5 +275,7 @@ def test_topology_NL_microgrid():
         'Border_AL11': 'TN_Border_AL11'
     }
     # NOTE: Probably the candidate nodes are causing trouble here
+
+    logger.print()
 
     print()

@@ -338,8 +338,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
                                  calc_node_dict: Dict[str, gcdev.Bus],
                                  cn_look_up: CnLookup,
-                                 logger: DataLogger
-                                 ) -> Dict[str, gcdev.ConnectivityNode]:
+                                 logger: DataLogger) -> Dict[str, gcdev.ConnectivityNode]:
     """
     Convert the TopologicalNodes to CalculationNodes
     :param calc_node_dict: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
@@ -366,7 +365,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
             code=cgmes_elm.description,
             name=cgmes_elm.name,
             dc=False,
-            default_bus=bus
+            # default_bus=bus  # this is only set by the BusBar's
         )
 
         gcdev_model.connectivity_nodes.append(gcdev_elm)

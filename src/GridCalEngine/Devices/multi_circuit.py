@@ -26,7 +26,7 @@ from uuid import getnode as get_mac, uuid4
 import datetime as dateslib
 import networkx as nx
 from matplotlib import pyplot as plt
-from scipy.sparse import csc_matrix, lil_matrix, diags
+from scipy.sparse import csc_matrix, lil_matrix
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
@@ -6102,8 +6102,12 @@ class MultiCircuit:
         :param debug: Debug level
         :return: TopologyProcessorInfo
         """
+
+        if logger is None:
+            logger = Logger()
+
         # --------------------------------------------------------------------------------------------------------------
-        # compose the candidate nodes (buses)
+        # Compose the candidate nodes (buses)
         # --------------------------------------------------------------------------------------------------------------
         process_info = tp.TopologyProcessorInfo()
 
@@ -6132,7 +6136,7 @@ class MultiCircuit:
         all_branches = self.get_switches() + self.get_branches()
 
         # --------------------------------------------------------------------------------------------------------------
-        # create the connectivity matrices
+        # Create the connectivity matrices
         # --------------------------------------------------------------------------------------------------------------
         nbr = len(all_branches)
 
@@ -6154,12 +6158,12 @@ class MultiCircuit:
             # if elm.cn_from is not None and elm.cn_to is not None:
             #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
             #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
-            f, t = process_info.get_connection_indices(elm=elm)
+            f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
             Cf[i, f] = br_active[i]
             Ct[i, t] = br_active[i]
 
         # --------------------------------------------------------------------------------------------------------------
-        # compose the adjacency matrix from the connectivity information
+        # Compose the adjacency matrix from the connectivity information
         # --------------------------------------------------------------------------------------------------------------
         A = tp.get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
                                     C_branch_bus_t=Ct.tocsc(),
@@ -6180,21 +6184,24 @@ class MultiCircuit:
             print()
 
         # --------------------------------------------------------------------------------------------------------------
-        # perform the topology search, this will find candidate buses that reduce to be the same bus
+        # Perform the topology search, this will find candidate buses that reduce to be the same bus
         # --------------------------------------------------------------------------------------------------------------
-
         islands = tp.find_islands(adj=A, active=bus_active)  # each island is finally a single calculation element
 
+        if debug >= 1:
+            for i, island in enumerate(islands):
+                print(f"island {i}:", island)
+
         # --------------------------------------------------------------------------------------------------------------
-        # generate auxiliary structures that derive from the topology results
+        # Generate auxiliary structures that derive from the topology results
         # --------------------------------------------------------------------------------------------------------------
         final_buses = process_info.apply_results(islands=islands)
 
         # --------------------------------------------------------------------------------------------------------------
-        # apply the results to the grid object
+        # Apply the results to the grid object
         # --------------------------------------------------------------------------------------------------------------
 
-        # add any extra bus that may arise from the calculation
+        # Add any extra bus that may arise from the calculation
         grid_buses_set = {b for b in self.get_buses()}
         for bus_device in final_buses:
             if bus_device not in grid_buses_set:
