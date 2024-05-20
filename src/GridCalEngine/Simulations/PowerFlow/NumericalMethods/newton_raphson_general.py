@@ -192,6 +192,11 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     '''
     Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
 
+
+    print("(newton_raphson_general.py) p_zip before running algo, before update")
+    print(p_zip)
+    p_zip = update_p_zip(nc.nbus, p_zip, nc.kn_pzip_idx, nc.kn_pzip_setpoints)
+
     print("(newton_raphson_general.py) Vm0")
     print(Vm0)
 
@@ -206,6 +211,12 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
 
     print("(newton_raphson_general.py) Y0")
     print(Y0)
+
+    print("(newton_raphson_general.py) p_zip before running algo, after update")
+    print(p_zip)
+
+    print("(newton_raphson_general.py) q_zip before running algo")
+    print(q_zip)
 
 
     '''
@@ -226,8 +237,15 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
                                                 logger= logger)
 
     Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
+    p_zip = update_p_zip(nc.nbus, p_zip, nc.kn_pzip_idx, nc.kn_pzip_setpoints)
     V = Vm0 * np.exp(1j * Va0)
     Scalc = compute_power(Ybus, V)
+
+    print("(newton_raphson_general.py) p_zip after running algo")
+    print(p_zip)
+
+    print("(newton_raphson_general.py) q_zip after running algo")
+    print(q_zip)
 
 
     print("(newton_raphson_general.py) after compile information")
@@ -251,6 +269,10 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     print("(newton_raphson_general.py) nc.kn_pzip_idx")
     print(nc.kn_pzip_idx)
     print(nc.kn_pzip_setpoints)
+
+    print("(newton_raphson_general.py) create_gen_connection_matrix")
+    print(create_zip2bus_connection_matrix(nc.nbus, nc.kn_pzip_idx))
+    print("active power contribution to the bus", np.dot(create_zip2bus_connection_matrix(nc.nbus, nc.kn_pzip_idx), nc.kn_pzip_setpoints))
 
     print("(newton_raphson_general.py) nc.kn_qzip_idx")
     print(nc.kn_qzip_idx)
@@ -361,6 +383,67 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     
     results.converged = ret.converged
     return results
+
+def update_p_zip(nbus, p_zip, pzip_keys, pzip_values):
+    """
+    Updates the p_zip vector with non-zero contributions from specified Pzip values.
+
+    Parameters:
+    nbus : int
+        The number of buses.
+    p_zip : np.array
+        Original p_zip vector that needs to be updated.
+    pzip_keys : iterable
+        Keys indicating bus indices for Pzip values.
+    pzip_values : iterable
+        Pzip values corresponding to the keys.
+
+    Returns:
+    np.array
+        Updated p_zip vector.
+    """
+    # Create the connection matrix for Pzip contributions
+    connection_matrix = create_zip2bus_connection_matrix(nbus, pzip_keys)
+    
+    # Calculate the new contributions using dot product
+    new_contributions = np.dot(connection_matrix, np.array(pzip_values))
+
+    # Create a mask where the contributions are non-zero
+    non_zero_mask = new_contributions != 0
+
+    # Update the original p_zip vector only at positions where there are non-zero contributions
+    p_zip[non_zero_mask] = new_contributions[non_zero_mask]
+
+    return p_zip
+
+def create_zip2bus_connection_matrix(nbus, zip_idx):
+    """
+    Create a binary connection matrix indicating which generators are connected to which buses.
+
+    Parameters:
+    nbus : int
+        The number of buses in the system.
+    kn_pzip_idx : list or np.array
+        The indices of buses where each generator contributes power.
+
+    Returns:
+    np.array
+        A binary matrix of shape (nbus, number of generators) where each column represents a generator
+        and a '1' in a row indicates that the generator is connected to that bus.
+    """
+    # Number of generators is the length of the kn_pzip_idx array
+    num_generators = len(zip_idx)
+    
+    # Initialize the matrix with zeros
+    matrix = np.zeros((nbus, num_generators), dtype=int)
+    
+    # Populate the matrix with 1s indicating connections
+    for i in range(num_generators):
+        bus_index = zip_idx[i]
+        matrix[bus_index, i] = 1
+
+    return matrix
+
 
 
 def remove_gen_from_zip(S0: CxVec,

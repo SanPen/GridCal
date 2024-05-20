@@ -963,35 +963,56 @@ class SimulationIndices2:
 
             # We assume for the time being that all generators set the voltage
             _popIdx = np.where(dict_unknown_idx["Voltage"] == bus)
-            # if len(_setpoint) == 1:
-            dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
-            dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], bus)
-            dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
-            # elif len(_setpoint) > 1:
-            #     dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
-            #     buses = bus * np.ones(len(_setpoint))
-            #     dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], buses)
-            #     dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
-            # assert len(dict_known_setpoints["Voltage"]) == len(dict_known_idx["Voltage"]), f"Voltages setpoints {dict_known_setpoints['Voltage']} and buses {dict_known_idx['Voltage']} are not the same length"
+            if _popIdx[0].size == 0:
+                continue
+            if len(_setpoint) == 1:
+                dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+                dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], bus)
+                dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
+            elif len(_setpoint) > 1:
+                dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+                buses = (bus * np.ones(len(_setpoint))).astype(int) #MUST cast as int because it is index later
+                dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], buses)
+                dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
+            assert len(dict_known_setpoints["Voltage"]) == len(dict_known_idx["Voltage"]), f"Voltages setpoints {dict_known_setpoints['Voltage']} and buses {dict_known_idx['Voltage']} are not the same length"
 
             # We are going to use the slack array to determine the control mode (which means that you must set slack yourself)
             if bus_data.bus_types[bus] == BusMode.Slack.value: #Slack bus
                 # We set the angle
                 _popIdx = np.where(dict_unknown_idx["Angle"] == bus)
-                dict_unknown_idx["Angle"] = np.delete(dict_unknown_idx["Angle"], _popIdx)
-                dict_known_idx["Angle"] = np.append(dict_known_idx["Angle"], bus)
-                dict_known_setpoints["Angle"] = np.append(dict_known_setpoints["Angle"], 0)
-                # assert len(dict_known_setpoints["Angle"]) == len(dict_known_idx["Angle"]), f"Angles setpoints {dict_known_setpoints['Angle']} and buses {dict_known_idx['Angle']} are not the same length"
+                if len(_setpoint) == 1:
+                    dict_unknown_idx["Angle"] = np.delete(dict_unknown_idx["Angle"], _popIdx)
+                    dict_known_idx["Angle"] = np.append(dict_known_idx["Angle"], bus)
+                    dict_known_setpoints["Angle"] = np.append(dict_known_setpoints["Angle"], 0)
+                elif len(_setpoint) > 1:
+                    dict_unknown_idx["Angle"] = np.delete(dict_unknown_idx["Angle"], _popIdx)
+                    buses = (bus * np.ones(len(_setpoint))).astype(int) #MUST cast as int because it is index later
+                    dict_known_idx["Angle"] = np.append(dict_known_idx["Angle"], buses)
+                    dict_known_setpoints["Angle"] = np.append(dict_known_setpoints["Angle"], np.zeros(len(_setpoint)))
+                assert len(dict_known_setpoints["Angle"]) == len(dict_known_idx["Angle"]), f"Angles setpoints {dict_known_setpoints['Angle']} and buses {dict_known_idx['Angle']} are not the same length"
 
             else:
                 # We set the active power
                 _popIdx = np.where(dict_unknown_idx["Pzip"] == bus)
-                dict_unknown_idx["Pzip"] = np.delete(dict_unknown_idx["Pzip"], _popIdx)
-                dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
-                rawPower = gen_data.p[gen_data.bus_idx == bus]
-                puPower = rawPower/Sbase
-                dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
-                # assert len(dict_known_setpoints["Pzip"]) == len(dict_known_idx["Pzip"]), f"Powers setpoints {dict_known_setpoints['Pzip']} and buses {dict_known_idx['Pzip']} are not the same length"
+                if len(_setpoint) == 1:
+                    dict_unknown_idx["Pzip"] = np.delete(dict_unknown_idx["Pzip"], _popIdx)
+                    dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
+                    rawPower = gen_data.p[gen_data.bus_idx == bus]
+                    puPower = rawPower/Sbase
+                    dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
+                elif len(_setpoint) > 1:
+                    dict_unknown_idx["Pzip"] = np.delete(dict_unknown_idx["Pzip"], _popIdx)
+                    buses = (bus * np.ones(len(_setpoint))).astype(int) #MUST cast as int because it is index later
+                    dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], buses)
+                    rawPower = gen_data.p[gen_data.bus_idx == bus]
+                    puPower = rawPower/Sbase
+                    dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
+                # dict_unknown_idx["Pzip"] = np.delete(dict_unknown_idx["Pzip"], _popIdx)
+                # dict_known_idx["Pzip"] = np.append(dict_known_idx["Pzip"], bus)
+                # rawPower = gen_data.p[gen_data.bus_idx == bus]
+                # puPower = rawPower/Sbase
+                # dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
+                assert len(dict_known_setpoints["Pzip"]) == len(dict_known_idx["Pzip"]), f"Powers setpoints {dict_known_setpoints['Pzip']} and buses {dict_known_idx['Pzip']} are not the same length"
 
             print((dict_known_idx["Voltage"]), "known voltage")
             print((dict_known_idx["Pzip"]), " known pzip")
