@@ -1024,186 +1024,66 @@ class SchematicWidget(QSplitter):
             if category == DeviceType.LineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = LineGraphicItem(from_port=from_port,
-                                                             to_port=to_port,
-                                                             editor=self,
-                                                             api_object=location.api_object,
-                                                             draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_line(branch=location.api_object,
+                                      draw_labels=location.draw_labels,
+                                      prefer_node_breaker=prefer_node_breaker,
+                                      logger=logger)
 
             elif category == DeviceType.DCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = DcLineGraphicItem(from_port=from_port,
-                                                               to_port=to_port,
-                                                               editor=self,
-                                                               api_object=location.api_object,
-                                                               draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_dc_line(branch=location.api_object,
+                                         draw_labels=location.draw_labels,
+                                         prefer_node_breaker=prefer_node_breaker,
+                                         logger=logger)
 
             elif category == DeviceType.HVDCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = HvdcGraphicItem(from_port=from_port,
-                                                             to_port=to_port,
-                                                             editor=self,
-                                                             api_object=location.api_object,
-                                                             draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_hvdc(branch=location.api_object,
+                                      draw_labels=location.draw_labels,
+                                      prefer_node_breaker=prefer_node_breaker,
+                                      logger=logger)
 
             elif category == DeviceType.VscDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = VscGraphicItem(from_port=from_port,
-                                                            to_port=to_port,
-                                                            editor=self,
-                                                            api_object=location.api_object,
-                                                            draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_vsc(branch=location.api_object,
+                                     draw_labels=location.draw_labels,
+                                     prefer_node_breaker=prefer_node_breaker,
+                                     logger=logger)
 
             elif category == DeviceType.UpfcDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = UpfcGraphicItem(from_port=from_port,
-                                                             to_port=to_port,
-                                                             editor=self,
-                                                             api_object=location.api_object,
-                                                             draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_upfc(branch=location.api_object,
+                                      draw_labels=location.draw_labels,
+                                      prefer_node_breaker=prefer_node_breaker,
+                                      logger=logger)
 
             elif category == DeviceType.Transformer2WDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = TransformerGraphicItem(from_port=from_port,
-                                                                    to_port=to_port,
-                                                                    editor=self,
-                                                                    api_object=location.api_object,
-                                                                    draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_transformer(branch=location.api_object,
+                                             draw_labels=location.draw_labels,
+                                             prefer_node_breaker=prefer_node_breaker,
+                                             logger=logger)
 
             elif category == DeviceType.SeriesReactanceDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = SeriesReactanceGraphicItem(from_port=from_port,
-                                                                        to_port=to_port,
-                                                                        editor=self,
-                                                                        api_object=location.api_object,
-                                                                        draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_series_reactance(branch=location.api_object,
+                                                  draw_labels=location.draw_labels,
+                                                  prefer_node_breaker=prefer_node_breaker,
+                                                  logger=logger)
 
             elif category == DeviceType.SwitchDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object,
-                                                             prefer_node_breaker=prefer_node_breaker,
-                                                             logger=logger)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = SwitchGraphicItem(from_port=from_port,
-                                                               to_port=to_port,
-                                                               editor=self,
-                                                               api_object=location.api_object,
-                                                               draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_switch(branch=location.api_object,
+                                        draw_labels=location.draw_labels,
+                                        prefer_node_breaker=prefer_node_breaker,
+                                        logger=logger)
 
             elif category == DeviceType.WindingDevice.value:
 
@@ -2340,7 +2220,7 @@ class SchematicWidget(QSplitter):
                    cn: ConnectivityNode,
                    injections_by_tpe: Dict[DeviceType, List[ALL_DEV_TYPES]],
                    x0: Union[int, None] = None,
-                   y0: Union[int, None] = None) -> BusGraphicItem:
+                   y0: Union[int, None] = None) -> CnGraphicItem:
         """
         Add API bus to the diagram
         :param cn: Bus instance
@@ -2466,260 +2346,272 @@ class SchematicWidget(QSplitter):
 
         return from_port, to_port
 
-    def add_api_line(self, branch: Line,
-                     from_port: OPTIONAL_PORT = None,
-                     to_port: OPTIONAL_PORT = None) -> Union[None, LineGraphicItem]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        :return LineGraphicItem or None
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-            graphic_object = LineGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print(f"Branch's {branch.name} buses were not found in the diagram :(")
-            return None
-
-    def add_api_line_between_fluid_graphics(self, branch: Line,
-                                            from_port: OPTIONAL_PORT = None,
-                                            to_port: OPTIONAL_PORT = None) -> Union[LineGraphicItem, None]:
-        """
-        add API branch to the Scene
-
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-            graphic_object = LineGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print(f"Branch's {branch.name} buses were not found in the diagram :(")
-            return None
-
-    def add_api_dc_line(self, branch: DcLine,
-                        from_port: OPTIONAL_PORT = None,
-                        to_port: OPTIONAL_PORT = None) -> Union[DcLineGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = DcLineGraphicItem(from_port=from_port,
-                                               to_port=to_port,
-                                               editor=self,
-                                               api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_hvdc(self, branch: HvdcLine,
-                     from_port: OPTIONAL_PORT = None,
-                     to_port: OPTIONAL_PORT = None) -> Union[HvdcGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = HvdcGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_vsc(self, branch: VSC,
-                    from_port: OPTIONAL_PORT = None,
-                    to_port: OPTIONAL_PORT = None) -> Union[VscGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = VscGraphicItem(from_port=from_port,
-                                            to_port=to_port,
-                                            editor=self,
-                                            api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_upfc(self, branch: UPFC,
-                     from_port: OPTIONAL_PORT = None,
-                     to_port: OPTIONAL_PORT = None) -> Union[UpfcGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = UpfcGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_series_reactance(self, branch: SeriesReactance,
-                                 from_port: OPTIONAL_PORT = None,
-                                 to_port: OPTIONAL_PORT = None) -> Union[SeriesReactanceGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = SeriesReactanceGraphicItem(from_port=from_port,
-                                                        to_port=to_port,
-                                                        editor=self,
-                                                        api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_transformer(self, branch: Transformer2W,
-                            from_port: OPTIONAL_PORT = None,
-                            to_port: OPTIONAL_PORT = None) -> Union[TransformerGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = TransformerGraphicItem(from_port=from_port,
-                                                    to_port=to_port,
-                                                    editor=self,
-                                                    api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_switch(self, branch: Switch,
+    def add_api_branch(self,
+                       branch: BRANCH_TYPES,
+                       new_graphic_func: Callable[[Union[BarTerminalItem, RoundTerminalItem],
+                                                   Union[BarTerminalItem, RoundTerminalItem, None],
+                                                   "SchematicWidget",
+                                                   int,
+                                                   BRANCH_TYPES,
+                                                   bool], BRANCH_GRAPHICS],
                        from_port: OPTIONAL_PORT = None,
-                       to_port: OPTIONAL_PORT = None) -> Union[SwitchGraphicItem, None]:
+                       to_port: OPTIONAL_PORT = None,
+                       prefer_node_breaker: bool = False,
+                       draw_labels: bool = True,
+                       logger: Logger = Logger()) -> Union[TransformerGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param new_graphic_func: New graphic object to use if needed
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param draw_labels: Draw labels by default?
+        :param logger: Logger
+        """
+
+        # search for the api object, because it may be created already
+        graphic_object = self.graphics_manager.query(elm=branch)
+
+        if graphic_object is None:
+
+            if from_port is None and to_port is None:
+                from_port, to_port = self.find_ports(branch=branch,
+                                                     prefer_node_breaker=prefer_node_breaker,
+                                                     logger=logger)
+
+            if from_port and to_port:
+
+                # Create new graphics object
+                graphic_object = new_graphic_func(from_port,
+                                                  to_port,
+                                                  self,
+                                                  5,
+                                                  branch,
+                                                  draw_labels)
+
+                self.add_to_scene(graphic_object=graphic_object)
+
+                graphic_object.redraw()
+                self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                            draw_labels=graphic_object.draw_labels,
+                                            graphic_object=graphic_object)
+                return graphic_object
+            else:
+                # print("Branch's ports were not found in the diagram :(")
+                logger.add_warning(msg="Branch's ports were not found in the diagram",
+                                   device=branch.name)
+                return None
+
+        else:
+            return graphic_object
+
+    def add_api_line(self,
+                     branch: Line,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None,
+                     draw_labels: bool = True,
+                     prefer_node_breaker: bool = False,
+                     logger: Logger = Logger()) -> Union[LineGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: LineGraphicItem or None
         """
 
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=LineGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
 
-        if from_port and to_port:
+    def add_api_dc_line(self,
+                        branch: DcLine,
+                        from_port: OPTIONAL_PORT = None,
+                        to_port: OPTIONAL_PORT = None,
+                        draw_labels: bool = True,
+                        prefer_node_breaker: bool = False,
+                        logger: Logger = Logger()) -> Union[DcLineGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: DcLineGraphicItem or None
+        """
 
-            graphic_object = SwitchGraphicItem(from_port=from_port,
-                                               to_port=to_port,
-                                               editor=self,
-                                               api_object=branch)
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=DcLineGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
 
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
+    def add_api_hvdc(self,
+                     branch: HvdcLine,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None,
+                     draw_labels: bool = True,
+                     prefer_node_breaker: bool = False,
+                     logger: Logger = Logger()) -> Union[HvdcGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=HvdcGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_vsc(self,
+                    branch: VSC,
+                    from_port: OPTIONAL_PORT = None,
+                    to_port: OPTIONAL_PORT = None,
+                    draw_labels: bool = True,
+                    prefer_node_breaker: bool = False,
+                    logger: Logger = Logger()) -> Union[VscGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=VscGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_upfc(self,
+                     branch: UPFC,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None,
+                     draw_labels: bool = True,
+                     prefer_node_breaker: bool = False,
+                     logger: Logger = Logger()) -> Union[UpfcGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=UpfcGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_series_reactance(self,
+                                 branch: SeriesReactance,
+                                 from_port: OPTIONAL_PORT = None,
+                                 to_port: OPTIONAL_PORT = None,
+                                 draw_labels: bool = True,
+                                 prefer_node_breaker: bool = False,
+                                 logger: Logger = Logger()) -> Union[SeriesReactanceGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=SeriesReactanceGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_transformer(self,
+                            branch: Transformer2W,
+                            from_port: OPTIONAL_PORT = None,
+                            to_port: OPTIONAL_PORT = None,
+                            draw_labels: bool = True,
+                            prefer_node_breaker: bool = False,
+                            logger: Logger = Logger()) -> Union[TransformerGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: TransformerGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=TransformerGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_switch(self,
+                       branch: Switch,
+                       from_port: OPTIONAL_PORT = None,
+                       to_port: OPTIONAL_PORT = None,
+                       draw_labels: bool = True,
+                       prefer_node_breaker: bool = False,
+                       logger: Logger = Logger()) -> Union[SwitchGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=SwitchGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
 
     def add_api_transformer_3w(self, elm: Transformer3W):
         """
@@ -2831,7 +2723,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_hvdc(branch=hvdc,
                                            from_port=line_graphic.get_terminal_from(),
-                                           to_port=line_graphic.get_terminal_to())
+                                           to_port=line_graphic.get_terminal_to(),
+                                           draw_labels=line_graphic.draw_labels,
+                                           prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2856,7 +2750,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_transformer(branch=transformer,
                                                   from_port=line_graphic.get_terminal_from(),
-                                                  to_port=line_graphic.get_terminal_to())
+                                                  to_port=line_graphic.get_terminal_to(),
+                                                  draw_labels=line_graphic.draw_labels,
+                                                  prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2882,7 +2778,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_vsc(branch=vsc,
                                           from_port=line_graphic.get_terminal_from(),
-                                          to_port=line_graphic.get_terminal_to())
+                                          to_port=line_graphic.get_terminal_to(),
+                                          draw_labels=line_graphic.draw_labels,
+                                          prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2907,7 +2805,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_upfc(branch=upfc,
                                            from_port=line_graphic.get_terminal_from(),
-                                           to_port=line_graphic.get_terminal_to())
+                                           to_port=line_graphic.get_terminal_to(),
+                                           draw_labels=line_graphic.draw_labels,
+                                           prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2932,7 +2832,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_series_reactance(branch=series_reactance,
                                                        from_port=line_graphic.get_terminal_from(),
-                                                       to_port=line_graphic.get_terminal_to())
+                                                       to_port=line_graphic.get_terminal_to(),
+                                                       draw_labels=line_graphic.draw_labels,
+                                                       prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2957,7 +2859,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_switch(branch=switch,
                                              from_port=line_graphic.get_terminal_from(),
-                                             to_port=line_graphic.get_terminal_to())
+                                             to_port=line_graphic.get_terminal_to(),
+                                             draw_labels=line_graphic.draw_labels,
+                                             prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2987,9 +2891,11 @@ class SchematicWidget(QSplitter):
         line = self.circuit.convert_fluid_path_to_line(element)
 
         # add device to the schematic
-        graphic_object = self.add_api_line_between_fluid_graphics(branch=line,
-                                                                  from_port=fl_from.get_terminal(),
-                                                                  to_port=fl_to.get_terminal())
+        graphic_object = self.add_api_line(branch=line,
+                                           from_port=fl_from.get_terminal(),
+                                           to_port=fl_to.get_terminal(),
+                                           draw_labels=True,
+                                           prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -3028,13 +2934,15 @@ class SchematicWidget(QSplitter):
             elm: ALL_DEV_TYPES,
             injections_by_bus: Union[None, Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]] = None,
             injections_by_fluid_node: Union[None, Dict[FluidNode, Dict[DeviceType, List[FLUID_TYPES]]]] = None,
+            injections_by_cn: Union[None, Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]] = None,
             logger: Logger = Logger()):
         """
 
         :param elm:
         :param injections_by_bus:
         :param injections_by_fluid_node:
-        :param logger: Logger
+        :param injections_by_cn:
+        :param logger:
         :return:
         """
 
@@ -3060,6 +2968,22 @@ class SchematicWidget(QSplitter):
                 graphic_obj = self.add_api_fluid_node(node=elm,
                                                       injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
+            elif isinstance(elm, ConnectivityNode):
+
+                if injections_by_cn is None:
+                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
+
+                graphic_obj = self.add_api_cn(cn=elm,
+                                              injections_by_tpe=injections_by_cn.get(elm, dict()))
+
+            elif isinstance(elm, BusBar):
+
+                if injections_by_cn is None:
+                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
+
+                graphic_obj = self.add_api_busbar(bus=elm,
+                                                  injections_by_tpe=injections_by_cn.get(elm.cn, dict()))
+
             elif isinstance(elm, Line):
                 graphic_obj = self.add_api_line(elm)
 
@@ -3074,6 +2998,12 @@ class SchematicWidget(QSplitter):
 
             elif isinstance(elm, HvdcLine):
                 graphic_obj = self.add_api_hvdc(elm)
+
+            elif isinstance(elm, SeriesReactance):
+                graphic_obj = self.add_api_series_reactance(elm)
+
+            elif isinstance(elm, Switch):
+                graphic_obj = self.add_api_switch(elm)
 
             elif isinstance(elm, VSC):
                 graphic_obj = self.add_api_vsc(elm)
@@ -4748,189 +4678,62 @@ def generate_schematic_diagram(buses: List[Bus],
             y = int(bus.y * explode_factor)
             diagram.set_point(device=bus, location=GraphicLocation(x=x, y=y, h=bus.h, w=bus.w))
 
-    # --------------------------------------------------------------------------------------------------------------
+    def add_devices_list(cls: str, dev_lst: List[ALL_DEV_TYPES]):
+        """
 
-    if text_func is not None:
-        text_func('Creating schematic busbars devices')
+        :param cls:
+        :param dev_lst:
+        """
+        if text_func is not None:
+            text_func(f'Adding {cls} devices to the diagram')
 
-    nn = len(busbars)
-    for i, elm in enumerate(busbars):
+        nn = len(dev_lst)
+        for i, elm in enumerate(dev_lst):
 
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
 
-        diagram.set_point(device=elm, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-
-    if text_func is not None:
-        text_func('Creating schematic connectivity nodes devices')
-
-    nn = len(connecivity_nodes)
-    for i, elm in enumerate(connecivity_nodes):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        if not elm.internal:
             diagram.set_point(device=elm, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic fluid nodes devices')
 
-    nn = len(fluid_nodes)
-    for i, elm in enumerate(fluid_nodes):
+    add_devices_list(cls="busbars", dev_lst=busbars)
+    add_devices_list(cls="connecivity_nodes", dev_lst=connecivity_nodes)
+    add_devices_list(cls="fluid_nodes", dev_lst=fluid_nodes)
+    add_devices_list(cls="transformers3w", dev_lst=transformers3w)
 
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=elm, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic line devices')
-
-    nn = len(lines)
-    for i, branch in enumerate(lines):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
+    add_devices_list(cls="lines", dev_lst=lines)
+    add_devices_list(cls="dc_lines", dev_lst=dc_lines)
+    add_devices_list(cls="transformers2w", dev_lst=transformers2w)
+    add_devices_list(cls="series_reactances", dev_lst=series_reactances)
+    add_devices_list(cls="switches", dev_lst=switches)
+    add_devices_list(cls="windings", dev_lst=windings)
+    add_devices_list(cls="hvdc_lines", dev_lst=hvdc_lines)
+    add_devices_list(cls="vsc_devices", dev_lst=vsc_devices)
+    add_devices_list(cls="upfc_devices", dev_lst=upfc_devices)
+    add_devices_list(cls="fluid_paths", dev_lst=fluid_paths)
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic line devices')
-
-    nn = len(dc_lines)
-    for i, branch in enumerate(dc_lines):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic transformer devices')
-
-    nn = len(transformers2w)
-    for i, branch in enumerate(transformers2w):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic series reactances devices')
-
-    nn = len(series_reactances)
-    for i, branch in enumerate(series_reactances):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic series switch devices')
-
-    nn = len(switches)
-    for i, branch in enumerate(switches):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic transformer3w devices')
-
-    nn = len(transformers3w)
-    for i, elm in enumerate(transformers3w):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        x = int(elm.x * explode_factor)
-        y = int(elm.y * explode_factor)
-        diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
-        diagram.set_point(device=elm.winding1, location=GraphicLocation())
-        diagram.set_point(device=elm.winding2, location=GraphicLocation())
-        diagram.set_point(device=elm.winding3, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic winding devices')
-
-    nn = len(windings)
-    for i, branch in enumerate(windings):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic HVDC devices')
-
-    nn = len(hvdc_lines)
-    for i, branch in enumerate(hvdc_lines):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic VSC devices')
-
-    nn = len(vsc_devices)
-    for i, branch in enumerate(vsc_devices):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic UPFC devices')
-
-    nn = len(upfc_devices)
-    for i, branch in enumerate(upfc_devices):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic fluid paths devices')
-
-    nn = len(fluid_paths)
-    for i, elm in enumerate(fluid_paths):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=elm, location=GraphicLocation())
+    # if text_func is not None:
+    #     text_func('Creating schematic transformer3w devices')
+    #
+    # nn = len(transformers3w)
+    # for i, elm in enumerate(transformers3w):
+    #
+    #     if prog_func is not None:
+    #         prog_func((i + 1) / nn * 100.0)
+    #
+    #     x = int(elm.x * explode_factor)
+    #     y = int(elm.y * explode_factor)
+    #     diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
+    #     diagram.set_point(device=elm.winding1, location=GraphicLocation())
+    #     diagram.set_point(device=elm.winding2, location=GraphicLocation())
+    #     diagram.set_point(device=elm.winding3, location=GraphicLocation())
 
     return diagram
 
 
-def get_devices_to_expand(circuit: MultiCircuit,
-                          root_bus: Bus,
-                          max_level: int = 1
-                          ) -> Tuple[List[Bus],
+def get_devices_to_expand(circuit: MultiCircuit, root_bus: Bus, max_level: int = 1) -> Tuple[List[Bus],
 List[BusBar],
 List[ConnectivityNode],
 List[Line],

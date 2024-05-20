@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/switch.svg</file>
     <file>icons/server.svg</file>
     <file>icons/nodal_capacity.svg</file>
     <file>icons/spmat.svg</file>

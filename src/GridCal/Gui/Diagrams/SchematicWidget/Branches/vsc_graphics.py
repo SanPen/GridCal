@@ -35,7 +35,8 @@ class VscGraphicItem(LineGraphicTemplateItem):
     def __init__(self,
                  from_port: Union[BarTerminalItem, RoundTerminalItem],
                  to_port: Union[BarTerminalItem, RoundTerminalItem],
-                 editor: SchematicWidget, width=5,
+                 editor: SchematicWidget,
+                 width=5,
                  api_object: VSC = None,
                  draw_labels: bool = True):
         """

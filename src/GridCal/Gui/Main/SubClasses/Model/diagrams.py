@@ -849,13 +849,13 @@ class DiagramsMain(CompiledArraysMain):
         """
         Add ageneral bus-branch diagram
         """
-        self.add_complete_bus_branch_diagram_now(name='All bus branches', prefer_node_breaker=False)
+        self.add_complete_bus_branch_diagram_now(name='All bus-branch', prefer_node_breaker=False)
 
     def add_complete_node_breaker_diagram(self) -> None:
         """
         Add ageneral bus-branch diagram
         """
-        self.add_complete_bus_branch_diagram_now(name='All bus branches', prefer_node_breaker=True)
+        self.add_complete_bus_branch_diagram_now(name='All node-breaker', prefer_node_breaker=True)
 
     def new_bus_branch_diagram_from_selection(self):
         """

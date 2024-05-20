@@ -233,7 +233,8 @@ class DcLineGraphicItem(LineGraphicTemplateItem):
                  from_port: Union[BarTerminalItem, RoundTerminalItem],
                  to_port: Union[BarTerminalItem, RoundTerminalItem],
                  editor: SchematicWidget,
-                 width=5, api_object: DcLine = None,
+                 width=5,
+                 api_object: DcLine = None,
                  draw_labels: bool = True):
         """
 

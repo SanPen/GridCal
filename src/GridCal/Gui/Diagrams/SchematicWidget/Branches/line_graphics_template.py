@@ -38,6 +38,7 @@ from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.Devices.Branches.switch import Switch
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
@@ -334,6 +335,16 @@ class SeriesReactanceSymbol(VscSymbol):
                            icon_route=":/Icons/icons/to_series_reactance.svg")
 
 
+class SwitchSymbol(VscSymbol):
+    """
+    UpfcSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=48, w=48):
+        VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
+                           icon_route=":/Icons/icons/switch.svg")
+
+
 class HvdcSymbol(QGraphicsRectItem):
     """
     HvdcSymbol
@@ -454,6 +465,8 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
             self.symbol = HvdcSymbol(parent=self, pen_width=width, h=30, w=30)
         elif isinstance(api_object, SeriesReactance):
             self.symbol = SeriesReactanceSymbol(parent=self, pen_width=width, h=30, w=30)
+        elif isinstance(api_object, Switch):
+            self.symbol = SwitchSymbol(parent=self, pen_width=width, h=30, w=30)
         else:
             self.symbol = None
 

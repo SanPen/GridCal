@@ -30,7 +30,8 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 class UpfcGraphicItem(LineGraphicTemplateItem):
 
     def __init__(self, from_port: BarTerminalItem, to_port: BarTerminalItem,
-                 editor: SchematicWidget, width=5,
+                 editor: SchematicWidget,
+                 width=5,
                  api_object: UPFC = None,
                  draw_labels: bool = True):
         """

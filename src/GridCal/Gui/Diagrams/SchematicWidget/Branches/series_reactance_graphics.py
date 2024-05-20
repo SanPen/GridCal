@@ -31,7 +31,8 @@ class SeriesReactanceGraphicItem(LineGraphicTemplateItem):
     def __init__(self,
                  from_port: Union[BarTerminalItem, RoundTerminalItem],
                  to_port: Union[BarTerminalItem, RoundTerminalItem],
-                 editor: SchematicWidget, width=5,
+                 editor: SchematicWidget,
+                 width=5,
                  api_object: SeriesReactance = None,
                  draw_labels: bool = True):
         """
