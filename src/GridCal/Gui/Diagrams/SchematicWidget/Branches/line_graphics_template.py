@@ -330,9 +330,9 @@ class SeriesReactanceSymbol(VscSymbol):
     UpfcSymbol
     """
 
-    def __init__(self, parent, pen_width, h=48, w=48):
+    def __init__(self, parent, pen_width, h=30, w=30):
         VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
-                           icon_route=":/Icons/icons/to_series_reactance.svg")
+                           icon_route=":/Icons/icons/reactance.svg")
 
 
 class SwitchSymbol(VscSymbol):
@@ -340,7 +340,7 @@ class SwitchSymbol(VscSymbol):
     UpfcSymbol
     """
 
-    def __init__(self, parent, pen_width, h=48, w=48):
+    def __init__(self, parent, pen_width, h=30, w=30):
         VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
                            icon_route=":/Icons/icons/switch.svg")
 
