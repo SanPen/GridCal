@@ -307,6 +307,8 @@ def solve(circuit: NumericalCircuit,
         else:
             # for any other method, raise exception
             raise Exception(solver_type.value + ' Not supported in power flow mode')
+        
+        print("(power_flow_worker.py) solution.V: ", solution.V)
 
         # record the solution type
         solution.method = solver_type
@@ -326,6 +328,7 @@ def solve(circuit: NumericalCircuit,
 
         # record the solver steps
         solver_idx += 1
+        print("(power_flow_worker.py) solver_idx: ", solver_idx)
 
     if not final_solution.converged:
         logger.add_error('Did not converge, even after retry!', 'Error', str(final_solution.norm_f), options.tolerance)
@@ -664,6 +667,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                     results=res,
                     b_idx=island.original_bus_idx,
                     br_idx=island.original_branch_idx,
+                    generalised_pf = options.generalised_pf
                 )
 
             else:
@@ -751,6 +755,7 @@ def multi_island_pf(multi_circuit: MultiCircuit,
     :param areas_dict: Area to area index dictionary
     :return: PowerFlowResults instance
     """
+
 
     # Generalised PowerFlow
     if options.generalised_pf:

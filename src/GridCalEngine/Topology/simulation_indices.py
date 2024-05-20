@@ -18,6 +18,7 @@
 
 import numpy as np
 import numba as nb
+import pandas as pd
 from typing import Union, Tuple, List
 from GridCalEngine.enumerations import TransformerControlType, ConverterControlType, BusMode
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
@@ -857,15 +858,19 @@ class SimulationIndices2:
         total = num_ac_buses*2 + num_dc_buses + num_vsc + num_trafo*4
 
         if verbose:
-            import prettytable as pt
-            table = pt.PrettyTable()
-            table.field_names = ["Type", "Number of Instances", "Number of Equations"]
-            table.add_row(["AC Bus", num_ac_buses, num_ac_buses*2])
-            table.add_row(["DC Bus", num_dc_buses, num_dc_buses])
-            table.add_row(["VSC", num_vsc, num_vsc])
-            table.add_row(["Controllable Trafo", num_trafo, num_trafo*4])
-            table.add_row(["Total", "", total])
-            print(table)
+            # Create a dictionary with the data
+            data = {
+                "Type": ["AC Bus", "DC Bus", "VSC", "Controllable Trafo", "Total"],
+                "Number of Instances": [num_ac_buses, num_dc_buses, num_vsc, num_trafo, ""],
+                "Number of Equations": [num_ac_buses*2, num_dc_buses, num_vsc, num_trafo*4, total]
+            }
+
+            # Create the DataFrame
+            df = pd.DataFrame(data)
+
+            # Print the DataFrame
+            print(df)
+
 
 
         dict_known_idx =  {
@@ -958,9 +963,16 @@ class SimulationIndices2:
 
             # We assume for the time being that all generators set the voltage
             _popIdx = np.where(dict_unknown_idx["Voltage"] == bus)
+            # if len(_setpoint) == 1:
             dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
             dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], bus)
             dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
+            # elif len(_setpoint) > 1:
+            #     dict_unknown_idx["Voltage"] = np.delete(dict_unknown_idx["Voltage"], _popIdx)
+            #     buses = bus * np.ones(len(_setpoint))
+            #     dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], buses)
+            #     dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], _setpoint)
+            # assert len(dict_known_setpoints["Voltage"]) == len(dict_known_idx["Voltage"]), f"Voltages setpoints {dict_known_setpoints['Voltage']} and buses {dict_known_idx['Voltage']} are not the same length"
 
             # We are going to use the slack array to determine the control mode (which means that you must set slack yourself)
             if bus_data.bus_types[bus] == BusMode.Slack.value: #Slack bus
@@ -969,6 +981,7 @@ class SimulationIndices2:
                 dict_unknown_idx["Angle"] = np.delete(dict_unknown_idx["Angle"], _popIdx)
                 dict_known_idx["Angle"] = np.append(dict_known_idx["Angle"], bus)
                 dict_known_setpoints["Angle"] = np.append(dict_known_setpoints["Angle"], 0)
+                # assert len(dict_known_setpoints["Angle"]) == len(dict_known_idx["Angle"]), f"Angles setpoints {dict_known_setpoints['Angle']} and buses {dict_known_idx['Angle']} are not the same length"
 
             else:
                 # We set the active power
@@ -978,6 +991,10 @@ class SimulationIndices2:
                 rawPower = gen_data.p[gen_data.bus_idx == bus]
                 puPower = rawPower/Sbase
                 dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
+                # assert len(dict_known_setpoints["Pzip"]) == len(dict_known_idx["Pzip"]), f"Powers setpoints {dict_known_setpoints['Pzip']} and buses {dict_known_idx['Pzip']} are not the same length"
+
+            print((dict_known_idx["Voltage"]), "known voltage")
+            print((dict_known_idx["Pzip"]), " known pzip")
 
         #Set the "control modes" for VSCs (we do it one by one because I dont know the order of the control_modes array)
         for vsc_idx in range(num_vsc):
@@ -1044,22 +1061,32 @@ class SimulationIndices2:
                 dict_known_idx["Voltage"] = np.append(dict_known_idx["Voltage"], vsc_data.T[vsc_idx])
                 dict_known_setpoints["Voltage"] = np.append(dict_known_setpoints["Voltage"], vsc_data.Vac_set[vsc_idx])
 
-        #use pretty table to print the above information
+
         if verbose == 1:
-            table = pt.PrettyTable()
-            table.field_names = ["Type", "Number of Unknowns"]
-            table.add_row(["Voltage", len(dict_unknown_idx["Voltage"])])
-            table.add_row(["Angle", len(dict_unknown_idx["Angle"])])
-            table.add_row(["Pzip", len(dict_unknown_idx["Pzip"])])
-            table.add_row(["Qzip", len(dict_unknown_idx["Qzip"])])
-            table.add_row(["Pfrom", len(dict_unknown_idx["Pfrom"])])
-            table.add_row(["Pto", len(dict_unknown_idx["Pto"])])
-            table.add_row(["Qfrom", len(dict_unknown_idx["Qfrom"])])
-            table.add_row(["Qto", len(dict_unknown_idx["Qto"])])
-            table.add_row(["Modulation", len(dict_unknown_idx["Modulation"])])
-            table.add_row(["Tau", len(dict_unknown_idx["Tau"])])
-            table.add_row(["Total", len(dict_unknown_idx["Voltage"]) + len(dict_unknown_idx["Angle"]) + len(dict_unknown_idx["Pzip"]) + len(dict_unknown_idx["Qzip"]) + len(dict_unknown_idx["Pfrom"]) + len(dict_unknown_idx["Pto"]) + len(dict_unknown_idx["Qfrom"]) + len(dict_unknown_idx["Qto"]) + len(dict_unknown_idx["Modulation"]) + len(dict_unknown_idx["Tau"])])
-            print(table)
+            # Initialize the data for the DataFrame
+            data = {
+                "Type": ["Voltage", "Angle", "Pzip", "Qzip", "Pfrom", "Pto", "Qfrom", "Qto", "Modulation", "Tau", "Total"],
+                "Number of Unknowns": [
+                    len(dict_unknown_idx["Voltage"]),
+                    len(dict_unknown_idx["Angle"]),
+                    len(dict_unknown_idx["Pzip"]),
+                    len(dict_unknown_idx["Qzip"]),
+                    len(dict_unknown_idx["Pfrom"]),
+                    len(dict_unknown_idx["Pto"]),
+                    len(dict_unknown_idx["Qfrom"]),
+                    len(dict_unknown_idx["Qto"]),
+                    len(dict_unknown_idx["Modulation"]),
+                    len(dict_unknown_idx["Tau"]),
+                    len(dict_unknown_idx["Voltage"]) + len(dict_unknown_idx["Angle"]) + len(dict_unknown_idx["Pzip"]) + len(dict_unknown_idx["Qzip"]) + len(dict_unknown_idx["Pfrom"]) + len(dict_unknown_idx["Pto"]) + len(dict_unknown_idx["Qfrom"]) + len(dict_unknown_idx["Qto"]) + len(dict_unknown_idx["Modulation"]) + len(dict_unknown_idx["Tau"])
+                ]
+            }
+
+            # Create the DataFrame
+            df = pd.DataFrame(data)
+
+            # Print the DataFrame
+            print(df)
+
         
         self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 1)
 
@@ -1098,19 +1125,17 @@ class SimulationIndices2:
 
         return
 
-    def check_subsystem_slacks(self, systems, dict_known_idx, bus_data, verbose = 0, strict = 0):
+
+    def check_subsystem_slacks(self, systems, dict_known_idx, bus_data, verbose=0, strict=0):
         subSystemSlacks = np.zeros(len(systems), dtype=bool)
-        #initialise pretty table
-        import prettytable as pt
-        table = pt.PrettyTable()
-        #add some headers
-        table.field_names = ["System", "Slack Buses", "Remarks"]
+        # Data list for DataFrame
+        data = {"System": [], "Slack Buses": [], "Remarks": []}
 
         for i, system in enumerate(systems):
             isSlack = []
             isDC = False
             for busIndex in system:
-                #get bus object from index using grid object
+                # get bus object from index using grid object
                 if bus_data.is_dc[busIndex] == True:
                     if busIndex in dict_known_idx["Voltage"]:
                         isSlack.append(busIndex)
@@ -1118,20 +1143,26 @@ class SimulationIndices2:
                     if busIndex in dict_known_idx["Voltage"] and busIndex in dict_known_idx["Angle"]:
                         isSlack.append(busIndex)
 
+            # Append system info to data list
+            data["System"].append(f"Subsystem {i + 1}")
+            data["Slack Buses"].append(isSlack)
+            data["Remarks"].append("All good" if len(isSlack) == 1 else "No good")
 
-            #add the system to the table
-            table.add_row([f"Subsystem {i+1}", isSlack, "All good" if len(isSlack)  == 1 else "No good"])
-            #true is there is exactly one slack, false otherwise
+            # true if there is exactly one slack, false otherwise
             subSystemSlacks[i] = len(isSlack) == 1
 
         if verbose:
-            print(table)
+            # Create the DataFrame from data list
+            df = pd.DataFrame(data)
+            # Print the DataFrame
+            print(df)
 
         if strict:
-            #if adding up lengthwise does not equal the length of the buses, then assert an error
+            # if adding up lengthwise does not equal the length of the buses, then assert an error
             assert sum(subSystemSlacks) == len(systems), "You do not have exactly one slack bus for each subsystem"
 
         return
+
 
     def check_control_modes(self, control_mode: List[Union[TransformerControlType, ConverterControlType]]):
         """

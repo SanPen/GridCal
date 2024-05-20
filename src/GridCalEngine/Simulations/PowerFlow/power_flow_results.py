@@ -268,7 +268,8 @@ class PowerFlowResults(ResultsTemplate):
     def apply_from_island(self,
                           results: "PowerFlowResults",
                           b_idx: np.ndarray,
-                          br_idx: np.ndarray):
+                          br_idx: np.ndarray,
+                          generalised_pf: bool = False):
         """
         Apply results from another island circuit to the circuit results represented
         here.
@@ -298,6 +299,9 @@ class PowerFlowResults(ResultsTemplate):
         self.losses[br_idx] = results.losses
 
         self.convergence_reports += results.convergence_reports
+
+        if generalised_pf:
+            self.voltage = results.voltage.copy()
 
     def get_report_dataframe(self, island_idx=0):
         """

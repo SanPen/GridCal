@@ -18,6 +18,7 @@
 import time
 import scipy
 import numpy as np
+import scipy.sparse as sp
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
@@ -74,11 +75,60 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     npq = len(pq)
     npvpq = npv + npq
 
+    Vm0 = np.abs(V0)
+    Va0 = np.angle(V0)
+
+    print("(newton_raphson.py) Ybus")
+    print(Ybus)
+
+    print("(newton_raphson.py) Vm0")
+    print(Vm0)
+
+    print("(newton_raphson.py) Va0")
+    print(Va0)
+
+    print("(newton_raphson.py) S0")
+    print(S0)
+
+    print("(newton_raphson.py) I0")
+    print(I0)
+
+    print("(newton_raphson.py) Y0")
+    print(Y0)
+
+    # print("(newton_raphson.py) changing the Ybus to the generalised version")
+    # # Define the Ybus matrix from the generalized power flow results
+    # matrix_generalised_pf = np.array([
+    #     [6.02502906-19.49807021j, -4.9991316 +15.26308652j, 0j, 0j, -1.02589745 +4.23498368j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j],
+    #     [-4.9991316 +15.26308652j, 9.52132361-30.3547154j, -1.13501919 +4.78186315j, -1.68603315 +5.11583833j, -1.70113967 +5.1939274j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j],
+    #     [0j, -1.13501919 +4.78186315j, 3.1209949  -9.85068013j, -1.98597571 +5.06881698j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j],
+    #     [0j, -1.68603315 +5.11583833j, -1.98597571 +5.06881698j, 10.51298952-38.5082215j, -6.84098066+21.57855398j, 0j, -0.0 +4.88951266j, 0j, -0.0 +1.85549956j, 0j, 0j, 0j, 0j, 0j],
+    #     [-1.02589745 +4.23498368j, -1.70113967 +5.1939274j, 0j, -6.84098066+21.57855398j, 9.56801778-35.2649104j, -0.0 +4.25744534j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j],
+    #     [0j, 0j, 0j, 0j, -0.0 +4.25744534j, 6.57992341-17.63023909j, 0j, 0j, 0j, 0j, -1.95502856 +4.09407434j, -1.52596744 +3.17596397j, -3.0989274  +6.10275545j, 0j],
+    #     [0j, 0j, 0j, -0.0 +4.88951266j, 0j, 0j, 0.0-19.65657523j, -0.0 +5.67697985j, -0.0 +9.09008272j, 0j, 0j, 0j, 0j, 0j],
+    #     [0j, 0j, 0j, 0j, 0j, 0j, -0.0 +5.67697985j, 0.0-5.67697985j, 0j, 0j, 0j, 0j, 0j, 0j],
+    #     [0j, 0j, 0j, -0.0 +1.85549956j, 0j, 0j, -0.0 +9.09008272j, 0j, 5.32605504-24.34002686j, -3.90204955+10.36539413j, 0j, 0j, 0j, -1.42400549 +3.02905046j],
+    #     [0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, -3.90204955+10.36539413j, 5.78293431-14.76833788j, -1.88088475 +4.40294375j, 0j, 0j, 0j],
+    #     [0j, 0j, 0j, 0j, 0j, -1.95502856 +4.09407434j, 0j, 0j, 0j, -1.88088475 +4.40294375j, 3.83591332 -8.49701809j, 0j, 0j, 0j],
+    #     [0j, 0j, 0j, 0j, 0j, -1.52596744 +3.17596397j, 0j, 0j, 0j, 0j, 0j, 4.01499203 -5.42793859j, -2.48902459 +2.25197463j, 0j],
+    #     [0j, 0j, 0j, 0j, 0j, -3.0989274  +6.10275545j, 0j, 0j, 0j, 0j, 0j, -2.48902459 +2.25197463j, 6.72494615-10.66969355j, -1.13699416 +2.31496348j],
+    #     [0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, -1.42400549 +3.02905046j, 0j, 0j, 0j, -1.13699416 +2.31496348j, 2.56099964 -5.34401393j]
+    # ], dtype=complex)
+
+    # # Convert matrix to a sparse format using scipy
+    # Ybus = sp.csr_matrix(matrix_generalised_pf)
+
+    # print("(newton_raphson.py) Ybus matrix:")
+    # print(Ybus)
+
     if npvpq > 0:
 
         # evaluate F(x0)
         Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
         Scalc = cf.compute_power(Ybus, V)
+        # print("(newton_raphson.py) Scalc", Scalc)
+        # print("(newton_raphson.py) Sbus", Sbus)
+
         f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
         norm_f = cf.compute_fx_error(f)
         converged = norm_f < tol
@@ -148,6 +198,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 # compute the mismatch function f(x_new)
                 Sbus = cf.compute_zip_power(S0, I0, Y0, Vm2)
                 Scalc = cf.compute_power(Ybus, V2)
+                # print("(newton_raphson.py) Scalc", Scalc)
+                # print("(newton_raphson.py) Sbus", Sbus)
                 f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
                 norm_f_new = cf.compute_fx_error(f)
 
@@ -206,6 +258,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
                     # recompute the error based on the new Scalc and S0
                     Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
+                    # print("(newton_raphson.py) Scalc", Scalc)
+                    # print("(newton_raphson.py) Sbus", Sbus)
                     f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
                     norm_f = np.linalg.norm(f, np.inf)
 

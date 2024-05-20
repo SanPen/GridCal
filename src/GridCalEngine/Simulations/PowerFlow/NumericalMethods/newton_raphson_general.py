@@ -67,9 +67,21 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     '''
     Split the AC and DC subsystems
     '''
-    Ybus = isolate_AC_DC(nc, nc.Ybus)
-    print("Ybus")
-    print(Ybus.todense())
+    # print("(newton_raphson_general.py) Ybus before isoloating")
+    # print(nc.Ybus.todense())
+    Ybus = nc.Ybus
+    # Ybus = isolate_AC_DC(nc, nc.Ybus)
+    np.savetxt('Ybus_grdical.txt', Ybus.todense().view(float))
+    # Ybus = np.loadtxt('outfile.txt').view(complex)
+    # #turn it into sparse
+    # Ybus = csr_matrix(Ybus)
+
+    '''
+    Remove the generator powers from S0
+    '''
+    S0 = remove_gen_from_zip(S0, nc)
+
+
 
     '''
     Initialising from and to powers, and tau and modulation
@@ -85,7 +97,6 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     Vm0 = np.abs(V0)
     Va0 = np.angle(V0)
 
-
     branch_from_indices = nc.branch_data.F
     branch_to_indices = nc.branch_data.T
 
@@ -98,39 +109,40 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     vsc_from_indices = nc.vsc_data.F
     vsc_to_indices = nc.vsc_data.T
 
-    print("vsc_from_indices full array")
-    print(vsc_from_indices)
+    # print("vsc_from_indices full array")
+    # print(vsc_from_indices)
 
-    print("vsc_to_indices full array")
-    print(vsc_to_indices)
+    # print("vsc_to_indices full array")
+    # print(vsc_to_indices)
 
-    for i in range(len(nc.kn_pfrom_kdx)):
-        print("(newtown_raphson_general.py) the from bus of the first pfrom kdx", branch_from_indices[nc.kn_pfrom_kdx[i]])
-        print("(newtown_raphson_general.py) the setpoint of this", nc.kn_pfrom_setpoints[i])	
+    # for i in range(len(nc.kn_pfrom_kdx)):
+    #     print("(newtown_raphson_general.py) the from bus of the first pfrom kdx", branch_from_indices[nc.kn_pfrom_kdx[i]])
+    #     print("(newtown_raphson_general.py) the setpoint of this", nc.kn_pfrom_setpoints[i])	
 
-    for i in range(len(nc.kn_qfrom_kdx)):
-        print("(newtown_raphson_general.py) the from bus of the first qfrom kdx", branch_from_indices[nc.kn_qfrom_kdx[i]])
-        print("(newtown_raphson_general.py) the setpoint of this", nc.kn_qfrom_setpoints[i])
+    # for i in range(len(nc.kn_qfrom_kdx)):
+    #     print("(newtown_raphson_general.py) the from bus of the first qfrom kdx", branch_from_indices[nc.kn_qfrom_kdx[i]])
+    #     print("(newtown_raphson_general.py) the setpoint of this", nc.kn_qfrom_setpoints[i])
 
-    for i in range(len(nc.kn_pto_kdx)):
-        print("(newtown_raphson_general.py) the to bus of the first pto kdx", branch_to_indices[nc.kn_pto_kdx[i]])
-        print("(newtown_raphson_general.py) the setpoint of this", nc.kn_pto_setpoints[i])
+    # for i in range(len(nc.kn_pto_kdx)):
+    #     print("(newtown_raphson_general.py) the to bus of the first pto kdx", branch_to_indices[nc.kn_pto_kdx[i]])
+    #     print("(newtown_raphson_general.py) the setpoint of this", nc.kn_pto_setpoints[i])
 
-    for i in range(len(nc.kn_qto_kdx)):
-        print("(newtown_raphson_general.py) the to bus of the first qto kdx", branch_to_indices[nc.kn_qto_kdx[i]])
-        print("(newtown_raphson_general.py) the setpoint of this", nc.kn_qto_setpoints[i])
+    # for i in range(len(nc.kn_qto_kdx)):
+    #     print("(newtown_raphson_general.py) the to bus of the first qto kdx", branch_to_indices[nc.kn_qto_kdx[i]])
+    #     print("(newtown_raphson_general.py) the setpoint of this", nc.kn_qto_setpoints[i])
 
-    for i in range(len(nc.un_pfrom_kdx)):
-        print("(newtown_raphson_general.py) known pfrom", branch_from_indices[nc.un_pfrom_kdx[i]])
+    # for i in range(len(nc.un_pfrom_kdx)):
+    #     print("(newtown_raphson_general.py) known pfrom", branch_from_indices[nc.un_pfrom_kdx[i]])
     
-    for i in range(len(nc.un_qfrom_kdx)):
-        print("(newtown_raphson_general.py) known qfrom", branch_from_indices[nc.un_qfrom_kdx[i]])
+    # for i in range(len(nc.un_qfrom_kdx)):
+    #     print("(newtown_raphson_general.py) known qfrom", branch_from_indices[nc.un_qfrom_kdx[i]])
 
-    for i in range(len(nc.un_pto_kdx)):
-        print("(newtown_raphson_general.py) known pto", branch_to_indices[nc.un_pto_kdx[i]])
+    # for i in range(len(nc.un_pto_kdx)):
+    #     print("(newtown_raphson_general.py) known pto", branch_to_indices[nc.un_pto_kdx[i]])
 
-    for i in range(len(nc.un_qto_kdx)):
-        print("(newtown_raphson_general.py) known qto", branch_to_indices[nc.un_qto_kdx[i]])
+    # for i in range(len(nc.un_qto_kdx)):
+    #     print("(newtown_raphson_general.py) known qto", branch_to_indices[nc.un_qto_kdx[i]])
+
 
 
 
@@ -180,6 +192,21 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     '''
     Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
 
+    print("(newton_raphson_general.py) Vm0")
+    print(Vm0)
+
+    print("(newton_raphson_general.py) Va0")
+    print(Va0)
+
+    print("(newton_raphson_general.py) S0")
+    print(S0)
+
+    print("(newton_raphson_general.py) I0")
+    print(I0)
+
+    print("(newton_raphson_general.py) Y0")
+    print(Y0)
+
 
     '''
     Create unknowns vector
@@ -190,7 +217,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     logger = Logger()
 
     ret: ConvexMethodResult = newton_raphson(func=pf_function_raiyan,
-                                                func_args=(unknown_dict, passive_branch_dict, known_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc.Ybus, nc, nc.dc_indices, nc.ac_indices),
+                                                func_args=(unknown_dict, passive_branch_dict, known_dict, Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, Ybus, nc, nc.dc_indices, nc.ac_indices),
                                                 x0=x0,
                                                 tol=pf_options.tolerance,
                                                 max_iter=pf_options.max_iter,
@@ -200,7 +227,8 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
 
     Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
     V = Vm0 * np.exp(1j * Va0)
-    Scalc = compute_power(nc.Ybus, V)
+    Scalc = compute_power(Ybus, V)
+
 
     print("(newton_raphson_general.py) after compile information")
     print("(newton_raphson_general.py) nc.ac_indices", nc.ac_indices)
@@ -298,16 +326,77 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     print("(newton_raphson_general.py) nc.un_mod_kdx")
     print(nc.un_mod_kdx)    
 
-    print("(newton_raphson_general.py) Voltages")
-    for i in range(len(V)):
-        print("Bus", i, ":" ,V[i])
+    # print("(newton_raphson_general.py) Voltages")
+    # for i in range(len(V)):
+    #     print("Bus", i, ":" ,V[i])
 
     end = time.time()
     elapsed = end - start
 
-    return NumericPowerFlowResults(V=V, converged=ret.converged, norm_f=ret.error,
-                                   Scalc=Scalc)
 
+    # import csv
+    # # CSV file to append the data
+    # csv_file = 'raiyanoutput2.csv'
+
+    # # Check if file exists to decide whether to write headers
+    # import os
+    # file_exists = os.path.isfile(csv_file)
+
+    # # Write to CSV file
+    # with open(csv_file, 'a', newline='') as file:
+    #     writer = csv.writer(file)
+    #     if not file_exists:
+    #         writer.writerow(["Converged", "Error Evolution", "Final Error", "Elapsed Time"])
+    #     writer.writerow([ret.converged, ret.error_evolution, ret.error, elapsed])
+
+
+    if ret.converged == False:
+        #raise an exception that says the power flow did not converge
+        raise Exception("Power flow did not converge")
+
+
+
+    results = NumericPowerFlowResults(V=V, converged=ret.converged, norm_f=ret.error,
+                                   Scalc=Scalc)
+    
+    results.converged = ret.converged
+    return results
+
+
+def remove_gen_from_zip(S0: CxVec,
+                        nc: NumericalCircuit) -> CxVec:
+    """
+    Removes the generator powers from the ZIP load injections.
+
+    This function removes the generator powers from the ZIP load injections to ensure that the generator powers are not included in the ZIP load calculations.
+
+    Parameters
+    ----------
+    S0 : CxVec
+        The power injections vector.
+    nc : NumericalCircuit
+        The numerical circuit object.
+
+    Returns
+    -------
+    CxVec
+        The updated power injections vector with generator powers removed.
+
+    """
+    # print("(newton_raphson_general.py) nc.generator_data.bus_idx")
+    # print(nc.generator_data.bus_idx)
+    S0 = S0.copy()
+    for i, genIdx in enumerate(nc.generator_data.bus_idx):
+        print("(newton_raphson_general.py) i", i)
+        print("(newton_raphson_general.py) genIdx", genIdx)
+        print("(newton_raphson_general.py) active power", nc.generator_data.p[i])
+        print("(newton_raphson_general.py) power factor", nc.generator_data.pf[i])
+        print("(newton_raphson_general.py) reactive power", p2q(nc.generator_data.p[i], nc.generator_data.pf[i]))
+        #convert nc.generator_data.p[i] to pu
+        _activePower = nc.generator_data.p[i]/nc.Sbase
+        _reactivePower = p2q(nc.generator_data.p[i], nc.generator_data.pf[i])/nc.Sbase
+        S0[genIdx] -= _activePower + 1j * _reactivePower
+    return S0
 
 
 def isolate_AC_DC(nc, Ybus) -> csc_matrix:
@@ -377,6 +466,26 @@ def isolate_AC_DC(nc, Ybus) -> csc_matrix:
 
     return _matrix
 
+def p2q(p, pf):
+    """
+    Convert active power to reactive power based on power factor.
+
+    This function converts active power to reactive power based on the power factor provided.
+
+    Parameters
+    ----------
+    p : float
+        The active power value.
+    pf : float
+        The power factor value.
+
+    Returns
+    -------
+    float
+        The reactive power value corresponding to the active power and power factor.
+
+    """
+    return p * np.tan(np.arccos(pf))
 
 
 def update_setpoints(known_dict, 
@@ -543,6 +652,8 @@ def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip,
     Sbus = compute_zip_power(S0, I0, Y0, Vm)
     Scalc = compute_power(Ybus, V)
 
+    # print("(newton_raphson_general.py) Scalc", Scalc)
+    # print("(newton_raphson_general.py) Sbus", Sbus)
 
 
     # mapping of bus-VSC and bus-trafo

@@ -1105,6 +1105,27 @@ def get_branch_data(circuit: MultiCircuit,
 
     return data
 
+
+def get_controllable_trafo_data(circuit: MultiCircuit,
+                                bus_dict: Dict[Bus, int],
+                                bus_types: CxVec,
+                                t_idx: int = -1,
+                                time_series: bool = False,
+                                opf_results: Union[OptimalPowerFlowResults, None] = None,
+                                branch_data: ds.BranchData = None) -> ds.ControllableTrafoData:
+    # Get first the number of all 2w trafos
+    trafos_2w_all = circuit.get_transformers2w()
+    #iterate over all 2w trafos and see if the control_mode is Control
+    # for i, elm in enumerate(trafos_2w_all):
+    #     if elm.control_mode == TransformerControlType.control:
+    #         trafos_2w_control.append(elm)
+
+    data = ds.ControllableTrafoData(nelm=len(trafos_2w_all),
+                                    nbus=circuit.get_bus_number())
+    
+    return data
+
+
 def get_vsc_data(circuit: MultiCircuit,
                     bus_dict: Dict[Bus, int],
                     bus_types: CxVec,
