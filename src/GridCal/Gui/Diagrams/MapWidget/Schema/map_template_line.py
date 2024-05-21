@@ -143,23 +143,26 @@ class MapTemplateLine:
             else:
 
                 # try to get location from the diagram
-                diagram_location = diagram_locations.locations.get(elm.idtag, None)
+                # We will not take the location of the element in the database because we want to keep...
+                # ... the diagram separated from database
+                # diagram_location = diagram_locations.locations.get(elm.idtag, None)
 
-                if diagram_location is None:
-                    # no particular location found, use the data from the api object
-                    # lat = elm.lat
-                    # lon = elm.long
-                    pass
-                else:
-                    # Draw only what's on the diagram
-                    # diagram data found, use it
-                    graphic_obj = self.editor.create_node(line_container=self,
+                # if diagram_location is None:
+                #     # no particular location found, use the data from the api object
+                #     # lat = elm.lat
+                #     # lon = elm.long
+                #     pass
+                # else:
+                #     # Draw only what's on the diagram
+                #     # diagram data found, use it
+
+                graphic_obj = self.editor.create_node(line_container=self,
                                                           api_object=elm,
-                                                          lat=diagram_location.latitude,  # 42.0 ...
-                                                          lon=diagram_location.longitude,
+                                                          lat=elm.lat,  # 42.0 ...
+                                                          lon=elm.long,
                                                           index=self.number_of_nodes())  # 2.7 ...
 
-                    self.register_new_node(node=graphic_obj)
+                self.register_new_node(node=graphic_obj)
 
         # second pass: create the segments
         self.redraw_segments()
@@ -329,8 +332,19 @@ class MapTemplateLine:
             ln1.locations.data = first_list
             ln2.locations.data = second_list
 
-            self.editor.create_line(ln1, original=False)
-            self.editor.create_line(ln2, original=False)
+            idx = 0
+            for api_obj in first_list:
+                api_obj.lat = self.nodes_list[idx].lat
+                api_obj.long = self.nodes_list[idx].lon
+                idx = idx + 1
+
+            for api_obj in second_list:
+                api_obj.lat = self.nodes_list[idx].lat
+                api_obj.long = self.nodes_list[idx].lon
+                idx = idx + 1
+
+            l1 = self.editor.create_line(ln1, original=False)
+            l2 = self.editor.create_line(ln2, original=False)
 
             self.disable_line()
 

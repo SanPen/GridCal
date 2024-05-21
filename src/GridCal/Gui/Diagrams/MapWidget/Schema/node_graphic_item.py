@@ -115,7 +115,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             self.needsUpdateFirst = True
             self.needsUpdateSecond = True
             self.line_container.update_connectors()
-            self.updateDiagram()
 
     def updateDiagram(self):
         """
@@ -146,7 +145,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             super().mouseMoveEvent(event)
             if self.hovered and self.enabled:
                 self.updatePosition()
-                self.updateDiagram()
 
     def mousePressEvent(self, event):
         """
@@ -205,6 +203,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
+        self.updateDiagram()
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
