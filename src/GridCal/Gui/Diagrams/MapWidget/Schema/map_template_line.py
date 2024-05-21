@@ -157,10 +157,10 @@ class MapTemplateLine:
                 #     # diagram data found, use it
 
                 graphic_obj = self.editor.create_node(line_container=self,
-                                                          api_object=elm,
-                                                          lat=elm.lat,  # 42.0 ...
-                                                          lon=elm.long,
-                                                          index=self.number_of_nodes())  # 2.7 ...
+                                                      api_object=elm,
+                                                      lat=elm.lat,  # 42.0 ...
+                                                      lon=elm.long,
+                                                      index=self.number_of_nodes())  # 2.7 ...
 
                 self.register_new_node(node=graphic_obj)
 
@@ -322,6 +322,7 @@ class MapTemplateLine:
 
             ln1 = Line()
             ln1.copyData(self.api_object)
+            # ln1 = self.api_object.copy()
 
             ln2 = Line()
             ln2.copyData(self.api_object)

@@ -2284,185 +2284,183 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
-    def delete_elements_by_type(self, obj: ALL_DEV_TYPES):
+    def delete_elements_by_type(self, obj: ALL_DEV_TYPES) -> None:
         """
         Get set of elements and their parent nodes
         :param obj: device object to delete
-        :return: List of elements, it raises an exception if the elements are unknown
+        :return: Nothing
         """
 
-        element_type = obj.device_type
-
-        if element_type == DeviceType.LoadDevice:
+        if obj.device_type == DeviceType.LoadDevice:
             self.loads.remove(obj)
 
-        elif element_type == DeviceType.StaticGeneratorDevice:
+        elif obj.device_type == DeviceType.StaticGeneratorDevice:
             self.static_generators.remove(obj)
 
-        elif element_type == DeviceType.GeneratorDevice:
+        elif obj.device_type == DeviceType.GeneratorDevice:
             self.generators.remove(obj)
 
-        elif element_type == DeviceType.BatteryDevice:
+        elif obj.device_type == DeviceType.BatteryDevice:
             self.batteries.remove(obj)
 
-        elif element_type == DeviceType.ShuntDevice:
+        elif obj.device_type == DeviceType.ShuntDevice:
             self.shunts.remove(obj)
 
-        elif element_type == DeviceType.ExternalGridDevice:
+        elif obj.device_type == DeviceType.ExternalGridDevice:
             self.external_grids.remove(obj)
 
-        elif element_type == DeviceType.CurrentInjectionDevice:
+        elif obj.device_type == DeviceType.CurrentInjectionDevice:
             self.current_injections.remove(obj)
 
-        elif element_type == DeviceType.ControllableShuntDevice:
+        elif obj.device_type == DeviceType.ControllableShuntDevice:
             self.controllable_shunts.remove(obj)
 
-        elif element_type == DeviceType.LineDevice:
-            return self.delete_line(obj)
+        elif obj.device_type == DeviceType.LineDevice:
+            self.delete_line(obj)
 
-        elif element_type == DeviceType.Transformer2WDevice:
-            return self.delete_transformer2w(obj)
+        elif obj.device_type == DeviceType.Transformer2WDevice:
+            self.delete_transformer2w(obj)
 
-        elif element_type == DeviceType.Transformer3WDevice:
-            return self.delete_transformer3w(obj)
+        elif obj.device_type == DeviceType.Transformer3WDevice:
+            self.delete_transformer3w(obj)
 
-        elif element_type == DeviceType.WindingDevice:
-            return self.delete_winding(obj)
+        elif obj.device_type == DeviceType.WindingDevice:
+            self.delete_winding(obj)
 
-        elif element_type == DeviceType.SeriesReactanceDevice:
-            return self.delete_series_reactance(obj)
+        elif obj.device_type == DeviceType.SeriesReactanceDevice:
+            self.delete_series_reactance(obj)
 
-        elif element_type == DeviceType.HVDCLineDevice:
-            return self.delete_hvdc_line(obj)
+        elif obj.device_type == DeviceType.HVDCLineDevice:
+            self.delete_hvdc_line(obj)
 
-        elif element_type == DeviceType.UpfcDevice:
-            return self.delete_upfc_converter(obj)
+        elif obj.device_type == DeviceType.UpfcDevice:
+            self.delete_upfc_converter(obj)
 
-        elif element_type == DeviceType.VscDevice:
-            return self.delete_vsc_converter(obj)
+        elif obj.device_type == DeviceType.VscDevice:
+            self.delete_vsc_converter(obj)
 
-        elif element_type == DeviceType.BusDevice:
-            return self.delete_bus(obj, delete_associated=True)
+        elif obj.device_type == DeviceType.BusDevice:
+            self.delete_bus(obj, delete_associated=True)
 
-        elif element_type == DeviceType.ConnectivityNodeDevice:
-            return self.delete_connectivity_node(obj)
+        elif obj.device_type == DeviceType.ConnectivityNodeDevice:
+            self.delete_connectivity_node(obj)
 
-        elif element_type == DeviceType.BranchGroupDevice:
-            return self.delete_branch_group(obj)
+        elif obj.device_type == DeviceType.BranchGroupDevice:
+            self.delete_branch_group(obj)
 
-        elif element_type == DeviceType.BusBarDevice:
-            return self.delete_bus_bar(obj)
+        elif obj.device_type == DeviceType.BusBarDevice:
+            self.delete_bus_bar(obj)
 
-        elif element_type == DeviceType.OverheadLineTypeDevice:
-            return self.delete_overhead_line(obj)
+        elif obj.device_type == DeviceType.OverheadLineTypeDevice:
+            self.delete_overhead_line(obj)
 
-        elif element_type == DeviceType.TransformerTypeDevice:
-            return self.delete_transformer_type(obj)
+        elif obj.device_type == DeviceType.TransformerTypeDevice:
+            self.delete_transformer_type(obj)
 
-        elif element_type == DeviceType.UnderGroundLineDevice:
-            return self.delete_underground_line(obj)
+        elif obj.device_type == DeviceType.UnderGroundLineDevice:
+            self.delete_underground_line(obj)
 
-        elif element_type == DeviceType.SequenceLineDevice:
-            return self.delete_sequence_line(obj)
+        elif obj.device_type == DeviceType.SequenceLineDevice:
+            self.delete_sequence_line(obj)
 
-        elif element_type == DeviceType.WireDevice:
-            return self.delete_wire(obj)
+        elif obj.device_type == DeviceType.WireDevice:
+            self.delete_wire(obj)
 
-        elif element_type == DeviceType.DCLineDevice:
-            return self.delete_dc_line(obj)
+        elif obj.device_type == DeviceType.DCLineDevice:
+            self.delete_dc_line(obj)
 
-        elif element_type == DeviceType.SubstationDevice:
-            return self.delete_substation(obj)
+        elif obj.device_type == DeviceType.SubstationDevice:
+            self.delete_substation(obj)
 
-        elif element_type == DeviceType.VoltageLevelDevice:
-            return self.delete_voltage_level(obj)
+        elif obj.device_type == DeviceType.VoltageLevelDevice:
+            self.delete_voltage_level(obj)
 
-        elif element_type == DeviceType.AreaDevice:
-            return self.delete_area(obj)
+        elif obj.device_type == DeviceType.AreaDevice:
+            self.delete_area(obj)
 
-        elif element_type == DeviceType.ZoneDevice:
-            return self.delete_zone(obj)
+        elif obj.device_type == DeviceType.ZoneDevice:
+            self.delete_zone(obj)
 
-        elif element_type == DeviceType.CountryDevice:
-            return self.delete_country(obj)
+        elif obj.device_type == DeviceType.CountryDevice:
+            self.delete_country(obj)
 
-        elif element_type == DeviceType.CommunityDevice:
-            return self.delete_community(obj)
+        elif obj.device_type == DeviceType.CommunityDevice:
+            self.delete_community(obj)
 
-        elif element_type == DeviceType.RegionDevice:
-            return self.delete_region(obj)
+        elif obj.device_type == DeviceType.RegionDevice:
+            self.delete_region(obj)
 
-        elif element_type == DeviceType.MunicipalityDevice:
-            return self.delete_municipality(obj)
+        elif obj.device_type == DeviceType.MunicipalityDevice:
+            self.delete_municipality(obj)
 
-        elif element_type == DeviceType.ContingencyDevice:
-            return self.delete_contingency(obj)
+        elif obj.device_type == DeviceType.ContingencyDevice:
+            self.delete_contingency(obj)
 
-        elif element_type == DeviceType.ContingencyGroupDevice:
-            return self.delete_contingency_group(obj)
+        elif obj.device_type == DeviceType.ContingencyGroupDevice:
+            self.delete_contingency_group(obj)
 
-        elif element_type == DeviceType.Technology:
-            return self.delete_technology(obj)
+        elif obj.device_type == DeviceType.Technology:
+            self.delete_technology(obj)
 
-        elif element_type == DeviceType.InvestmentDevice:
-            return self.delete_investment(obj)
+        elif obj.device_type == DeviceType.InvestmentDevice:
+            self.delete_investment(obj)
 
-        elif element_type == DeviceType.InvestmentsGroupDevice:
-            return self.delete_investment_groups(obj)
+        elif obj.device_type == DeviceType.InvestmentsGroupDevice:
+            self.delete_investment_groups(obj)
 
-        elif element_type == DeviceType.FuelDevice:
-            return self.delete_fuel(obj)
+        elif obj.device_type == DeviceType.FuelDevice:
+            self.delete_fuel(obj)
 
-        elif element_type == DeviceType.EmissionGasDevice:
-            return self.delete_emission_gas(obj)
+        elif obj.device_type == DeviceType.EmissionGasDevice:
+            self.delete_emission_gas(obj)
 
-        elif element_type == DeviceType.GeneratorTechnologyAssociation:
-            return self.delete_generator_technology(obj)
+        elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
+            self.delete_generator_technology(obj)
 
-        elif element_type == DeviceType.GeneratorFuelAssociation:
-            return self.delete_generator_fuel(obj)
+        elif obj.device_type == DeviceType.GeneratorFuelAssociation:
+            self.delete_generator_fuel(obj)
 
-        elif element_type == DeviceType.GeneratorEmissionAssociation:
-            return self.delete_generator_emission(obj)
+        elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
+            self.delete_generator_emission(obj)
 
-        elif element_type == DeviceType.FluidNodeDevice:
-            return self.delete_fluid_node(obj)
+        elif obj.device_type == DeviceType.FluidNodeDevice:
+            self.delete_fluid_node(obj)
 
-        elif element_type == DeviceType.FluidTurbineDevice:
-            return self.delete_fluid_turbine(obj)
+        elif obj.device_type == DeviceType.FluidTurbineDevice:
+            self.delete_fluid_turbine(obj)
 
-        elif element_type == DeviceType.FluidP2XDevice:
-            return self.delete_fluid_p2x(obj)
+        elif obj.device_type == DeviceType.FluidP2XDevice:
+            self.delete_fluid_p2x(obj)
 
-        elif element_type == DeviceType.FluidPumpDevice:
-            return self.delete_fluid_pump(obj)
+        elif obj.device_type == DeviceType.FluidPumpDevice:
+            self.delete_fluid_pump(obj)
 
-        elif element_type == DeviceType.FluidPathDevice:
-            return self.delete_fluid_path(obj)
+        elif obj.device_type == DeviceType.FluidPathDevice:
+            self.delete_fluid_path(obj)
 
-        elif element_type == DeviceType.PiMeasurementDevice:
-            return self.delete_pi_measurement(obj)
+        elif obj.device_type == DeviceType.PiMeasurementDevice:
+            self.delete_pi_measurement(obj)
 
-        elif element_type == DeviceType.QiMeasurementDevice:
-            return self.delete_qi_measurement(obj)
+        elif obj.device_type == DeviceType.QiMeasurementDevice:
+            self.delete_qi_measurement(obj)
 
-        elif element_type == DeviceType.PfMeasurementDevice:
-            return self.delete_pf_measurement(obj)
+        elif obj.device_type == DeviceType.PfMeasurementDevice:
+            self.delete_pf_measurement(obj)
 
-        elif element_type == DeviceType.QfMeasurementDevice:
-            return self.delete_qf_measurement(obj)
+        elif obj.device_type == DeviceType.QfMeasurementDevice:
+            self.delete_qf_measurement(obj)
 
-        elif element_type == DeviceType.VmMeasurementDevice:
-            return self.delete_vm_measurement(obj)
+        elif obj.device_type == DeviceType.VmMeasurementDevice:
+            self.delete_vm_measurement(obj)
 
-        elif element_type == DeviceType.IfMeasurementDevice:
-            return self.delete_if_measurement(obj)
+        elif obj.device_type == DeviceType.IfMeasurementDevice:
+            self.delete_if_measurement(obj)
 
-        elif element_type == DeviceType.ModellingAuthority:
-            return self.delete_modelling_authority(obj)
+        elif obj.device_type == DeviceType.ModellingAuthority:
+            self.delete_modelling_authority(obj)
 
         else:
-            raise Exception('Element type not understood ' + str(element_type))
+            raise Exception('Element type not understood ' + str(obj.device_type))
 
     def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
         """

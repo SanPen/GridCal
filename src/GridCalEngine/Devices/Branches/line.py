@@ -368,6 +368,7 @@ class Line(BranchParent):
         self.length = length
 
     def copyData(self, second_Line):
+        self.copy()
         self.busfrom = second_Line.bus_from if second_Line.bus_from is not None else None
         self.busto = second_Line.bus_to if second_Line.bus_to is not None else None
         self.cnfrom = second_Line.cn_from

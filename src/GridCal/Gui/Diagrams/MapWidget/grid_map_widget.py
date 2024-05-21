@@ -56,7 +56,19 @@ class GridMapWidget(MapWidget):
                  longitude: float,
                  latitude: float,
                  name: str,
-                 diagram: Union[None, MapDiagram] = None):
+                 diagram: Union[None, MapDiagram] = None,
+                 call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None):
+        """
+
+        :param parent:
+        :param tile_src:
+        :param start_level:
+        :param longitude:
+        :param latitude:
+        :param name:
+        :param diagram:
+        :param call_delete_db_element_func:
+        """
 
         MapWidget.__init__(self,
                            parent=parent,
@@ -76,6 +88,10 @@ class GridMapWidget(MapWidget):
                                               start_level=start_level,
                                               longitude=longitude,
                                               latitude=latitude) if diagram is None else diagram
+
+        # This function is meant to be a master delete function that is passed to each diagram
+        # so that when a diagram deletes an element, the element is deleted in all other diagrams
+        self.call_delete_db_element_func = call_delete_db_element_func
 
         # add empty polylines layer
         self.polyline_layer_id = self.AddPolylineLayer(data=[],
@@ -113,6 +129,9 @@ class GridMapWidget(MapWidget):
     def delete_diagram_element(self, device: ALL_DEV_TYPES):
         # TODO: Implement this
         pass
+
+        if self.call_delete_db_element_func is not None:
+            self.call_delete_db_element_func(self, device)
 
     @property
     def name(self):

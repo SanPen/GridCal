@@ -476,7 +476,8 @@ class SchematicWidget(QSplitter):
                  diagram: Union[SchematicDiagram, None],
                  default_bus_voltage: float = 10.0,
                  time_index: Union[None, int] = None,
-                 prefer_node_breaker: bool = False):
+                 prefer_node_breaker: bool = False,
+                 call_delete_db_element_func: Callable[["SchematicWidget", ALL_DEV_TYPES], None] = None):
         """
         Creates the Diagram Editor (DiagramEditorWidget)
         :param circuit: Circuit that is handling
@@ -497,6 +498,14 @@ class SchematicWidget(QSplitter):
 
         # default_bus_voltage (kV)
         self.default_bus_voltage = default_bus_voltage
+
+        #
+        self.prefer_node_breaker: bool = prefer_node_breaker
+        self.logger: Logger = Logger()
+
+        # This function is meant to be a master delete function that is passed to each diagram
+        # so that when a diagram deletes an element, the element is deleted in all other diagrams
+        self.call_delete_db_element_func = call_delete_db_element_func
 
         # nodes distance "explosion" factor
         self.expand_factor = 1.1
@@ -571,9 +580,6 @@ class SchematicWidget(QSplitter):
 
         # current time index from the GUI (None or 0, 1, 2, ..., n-1)
         self._time_index: Union[None, int] = time_index
-
-        self.prefer_node_breaker: bool = prefer_node_breaker
-        self.logger: Logger = Logger()
 
         if diagram is not None:
             self.draw()
@@ -1238,6 +1244,9 @@ class SchematicWidget(QSplitter):
             self.remove_from_scene(graphic_object)
             # except:
             #     warn(f"Could not remove {graphic_object} from the scene")
+
+        if self.call_delete_db_element_func is not None:
+            self.call_delete_db_element_func(self, device)
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
