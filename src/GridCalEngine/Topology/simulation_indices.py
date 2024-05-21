@@ -1165,7 +1165,8 @@ class SimulationIndices2:
                         isSlack.append(busIndex)
 
             # Append system info to data list
-            data["System"].append(f"Subsystem {i + 1}")
+            _buses_in_system = [bus_data.names[busIndex] for busIndex in system]
+            data["System"].append(f"Subsystem {_buses_in_system}")
             data["Slack Buses"].append(isSlack)
             data["Remarks"].append("All good" if len(isSlack) == 1 else "No good")
 

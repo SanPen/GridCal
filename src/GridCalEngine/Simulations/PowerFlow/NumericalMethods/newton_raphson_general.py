@@ -67,14 +67,8 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     '''
     Split the AC and DC subsystems
     '''
-    # print("(newton_raphson_general.py) Ybus before isoloating")
-    # print(nc.Ybus.todense())
     Ybus = nc.Ybus
-    # Ybus = isolate_AC_DC(nc, nc.Ybus)
-    np.savetxt('Ybus_grdical.txt', Ybus.todense().view(float))
-    # Ybus = np.loadtxt('outfile.txt').view(complex)
-    # #turn it into sparse
-    # Ybus = csr_matrix(Ybus)
+    # Ybus = isolate_AC_DC(nc, nc.Ybus) #did i already take out the ACDC links? i might have done this in the compile_numerical_circuit_at function
 
     '''
     Remove the generator powers from S0
@@ -273,6 +267,10 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     print("(newton_raphson_general.py) create_gen_connection_matrix")
     print(create_zip2bus_connection_matrix(nc.nbus, nc.kn_pzip_idx))
     print("active power contribution to the bus", np.dot(create_zip2bus_connection_matrix(nc.nbus, nc.kn_pzip_idx), nc.kn_pzip_setpoints))
+
+    print("(newton_raphson_general.py) reactive power matrix")
+    print(create_zip2bus_connection_matrix(nc.nbus, nc.kn_qzip_idx))
+    print("reactive power contribution to the bus", np.dot(create_zip2bus_connection_matrix(nc.nbus, nc.kn_qzip_idx), nc.kn_qzip_setpoints))
 
     print("(newton_raphson_general.py) nc.kn_qzip_idx")
     print(nc.kn_qzip_idx)
@@ -501,6 +499,10 @@ def isolate_AC_DC(nc, Ybus) -> csc_matrix:
         The modified admittance matrix with the AC and DC components isolated.
 
     """
+    # if nc.vsc_from_indices is empty, return the original Ybus
+    if len(nc.vsc_data.F) == 0:
+        return Ybus
+    
     _matrix = Ybus.copy()
     n = _matrix.shape[0]  # Assuming Ybus is square
 

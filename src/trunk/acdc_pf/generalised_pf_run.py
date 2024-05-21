@@ -295,7 +295,7 @@ def whatever_func():
     import time
     start = time.time()
     # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
-    file_path = 'Grids_and_profiles/grids/Pegase 2869.xlsx'
+    file_path = 'Grids_and_profiles/grids/IEEE 5 Bus.xlsx'
     grid = gce.FileOpen(file_path).open()
     assert grid is not None
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True, tolerance=1e-10)
