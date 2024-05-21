@@ -1812,45 +1812,37 @@ class SchematicWidget(QSplitter):
         max_x = -sys.maxsize
         max_y = -sys.maxsize
 
-        if len(self.diagram_scene.selectedItems()) > 0:
+        check_selected_only = len(self.diagram_scene.selectedItems()) > 0
 
-            # expand selection
-            for item in self.diagram_scene.selectedItems():
-                if type(item) is BusGraphicItem:
-                    x = item.pos().x() * factor
-                    y = item.pos().y() * factor
-                    item.setPos(QPointF(x, y))
+        for dev_tpe in [DeviceType.BusDevice,
+                        DeviceType.BusBarDevice,
+                        DeviceType.ConnectivityNodeDevice,
+                        DeviceType.FluidNodeDevice,
+                        DeviceType.Transformer3WDevice]:
 
+            graphic_objects_dict = self.graphics_manager.graphic_dict.get(dev_tpe, dict())
+
+            for key, item in graphic_objects_dict.items():
+                x = item.pos().x() * factor
+                y = item.pos().y() * factor
+                item.setPos(QPointF(x, y))
+
+                if check_selected_only:
+                    if item.isSelected():
+                        max_x = max(max_x, x)
+                        min_x = min(min_x, x)
+                        max_y = max(max_y, y)
+                        min_y = min(min_y, y)
+                    else:
+                        pass
+                else:
                     max_x = max(max_x, x)
                     min_x = min(min_x, x)
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
 
-                    # apply changes to the diagram coordinates
-                    location = self.diagram.query_point(item.api_object)
-                    if location:
-                        location.x = x
-                        location.y = y
-
-        else:
-
-            # expand all
-            for item in self.diagram_scene.items():
-                if type(item) is BusGraphicItem:
-                    x = item.pos().x() * factor
-                    y = item.pos().y() * factor
-                    item.setPos(QPointF(x, y))
-
-                    max_x = max(max_x, x)
-                    min_x = min(min_x, x)
-                    max_y = max(max_y, y)
-                    min_y = min(min_y, y)
-
-                    # apply changes to the diagram coordinates
-                    location = self.diagram.query_point(item.api_object)
-                    if location:
-                        location.x = x
-                        location.y = y
+                # apply changes to the diagram coordinates
+                self.diagram.update_xy(api_object=item.api_object, x=x, y=y)
 
         # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
@@ -1906,14 +1898,16 @@ class SchematicWidget(QSplitter):
         :param margin_factor:
         :param elements: list of API
         """
-        tpes = [BusGraphicItem, FluidNodeGraphicItem, CnGraphicItem, BusBarGraphicItem, Transformer3WGraphicItem]
+        node_like_types = [BusGraphicItem, FluidNodeGraphicItem, CnGraphicItem,
+                           BusBarGraphicItem, Transformer3WGraphicItem]
+
         min_x = sys.maxsize
         min_y = sys.maxsize
         max_x = -sys.maxsize
         max_y = -sys.maxsize
         if elements is None:
             for item in self.diagram_scene.items():
-                if type(item) in tpes:
+                if type(item) in node_like_types:
                     x = item.pos().x()
                     y = item.pos().y()
 
@@ -1923,7 +1917,7 @@ class SchematicWidget(QSplitter):
                     min_y = min(min_y, y)
         else:
             for item in self.diagram_scene.items():
-                if type(item) in tpes:
+                if type(item) in node_like_types:
 
                     if item.api_object in elements:
                         x = item.pos().x()
