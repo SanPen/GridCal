@@ -1002,12 +1002,18 @@ def add_nodal_capacity_formulation(t: Union[int, None],
     f_obj = 0.0
     for k, idx in enumerate(capacity_nodes_idx):
         # assign load shedding variable
-        nodal_capacity_vars.P[t, k] = prob.add_var(lb=0,
-                                                   ub=9999,
-                                                   name=join("nodal_capacity_", [t, k], "_"))
+        if nodal_capacity_sign < 0:
+            nodal_capacity_vars.P[t, k] = prob.add_var(lb=0.0,
+                                                       ub=9999.9,
+                                                       name=join("nodal_capacity_", [t, k], "_"))
+
+        else:
+            nodal_capacity_vars.P[t, k] = prob.add_var(lb=-9999.9,
+                                                       ub=0.0,
+                                                       name=join("nodal_capacity_", [t, k], "_"))
 
         # minimize the load shedding
-        f_obj += nodal_capacity_sign * nodal_capacity_vars.P[t, k]
+        f_obj += 10 * nodal_capacity_sign * nodal_capacity_vars.P[t, k]
 
     return f_obj
 
@@ -1122,9 +1128,14 @@ def add_linear_branches_formulation(t: int,
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m]:
-                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf,
+                # branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf,
+                #                                                  name=join("flow_slack_pos_", [t, m], "_"))
+                # branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf,
+                #                                                  name=join("flow_slack_neg_", [t, m], "_"))
+
+                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, 0.0001,
                                                                  name=join("flow_slack_pos_", [t, m], "_"))
-                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf,
+                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, 0.0001,
                                                                  name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
@@ -1788,7 +1799,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # production equals demand -------------------------------------------------------------------------------------
         lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[local_t_idx, :]) +
-                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) >=
+                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) +
+                              lp_model.sum(mip_vars.nodal_capacity_vars.P[local_t_idx, :]) >=
                               mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
                                   local_t_idx].sum()),
                          name="satisfy_demand_at_{0}".format(local_t_idx))
@@ -1834,5 +1846,5 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # add the model logger to the main logger
     logger += lp_model.logger
 
-    # lp_model.save_model('hydro_opf.lp')
+    lp_model.save_model('nodal_opf.lp')
     return vars_v
