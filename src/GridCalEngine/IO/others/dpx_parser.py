@@ -405,7 +405,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, Vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
 
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
@@ -424,7 +424,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
+                bus = dev.Bus(name=name, Vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
 
@@ -450,7 +450,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, Vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
 
@@ -489,7 +489,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, Vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
 
                 name = 'LD' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
                 p = float(df['P'].values[i]) * Sbase
@@ -512,7 +512,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
+                bus = dev.Bus(name=name, Vnom=Vnom, xpos=x, ypos=y, height=40, width=60, is_slack=True)
 
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
@@ -530,7 +530,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
-                bus = dev.Bus(name=name, vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
+                bus = dev.Bus(name=name, Vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
 
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus

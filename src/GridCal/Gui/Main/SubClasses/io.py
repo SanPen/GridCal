@@ -37,6 +37,7 @@ from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
 class IoMain(ConfigurationMain):
@@ -60,8 +61,21 @@ class IoMain(ConfigurationMain):
                                     '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc']
 
-        self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15, CGMESVersions.v3_0_0]}
+        self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15,
+                                                        CGMESVersions.v3_0_0]}
         self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
+
+        self.cgmes_profiles_dict = {x.value: x for x in [cgmesProfile.EQ,
+                                                         cgmesProfile.OP,
+                                                         cgmesProfile.SC,
+                                                         cgmesProfile.TP,
+                                                         cgmesProfile.SV,
+                                                         cgmesProfile.SSH,
+                                                         cgmesProfile.DY,
+                                                         cgmesProfile.DL,
+                                                         cgmesProfile.GL]}
+        self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
+                                                                   checks=True, check_value=True))
 
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
@@ -120,7 +134,7 @@ class IoMain(ConfigurationMain):
                     else:
                         error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
-                if self.circuit.get_bus_number() > 0:
+                if self.circuit.valid_for_simulation() > 0:
                     quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                                "\n If the process is cancelled the grid will remain."
                     reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -181,7 +195,7 @@ class IoMain(ConfigurationMain):
         Create new grid
         :return:
         """
-        if self.circuit.get_bus_number() > 0:
+        if self.circuit.valid_for_simulation() > 0:
             quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
@@ -196,7 +210,7 @@ class IoMain(ConfigurationMain):
         @return:
         """
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 quit_msg = ("Are you sure that you want to quit the current grid and open a new one?"
                             "\n If the process is cancelled the grid will remain.")
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -407,8 +421,8 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                if self.circuit.get_bus_number() == 0:
-                    # load the circuit
+                if not self.circuit.valid_for_simulation():
+                    # load the circuit right away
                     self.stuff_running_now.append('file_open')
                     self.post_open_file()
                 else:
@@ -434,7 +448,10 @@ class IoMain(ConfigurationMain):
                         if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+                            injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
+                                                                     busbars=new_circuit.bus_bars,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
                                                                      transformers2w=new_circuit.transformers2w,
@@ -442,10 +459,12 @@ class IoMain(ConfigurationMain):
                                                                      hvdc_lines=new_circuit.hvdc_lines,
                                                                      vsc_devices=new_circuit.vsc_devices,
                                                                      upfc_devices=new_circuit.upfc_devices,
+                                                                     switches=new_circuit.switch_devices,
                                                                      fluid_nodes=new_circuit.fluid_nodes,
                                                                      fluid_paths=new_circuit.fluid_paths,
                                                                      injections_by_bus=injections_by_bus,
                                                                      injections_by_fluid_node=injections_by_fluid_node,
+                                                                     injections_by_cn=injections_by_cn,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
@@ -536,11 +555,18 @@ class IoMain(ConfigurationMain):
 
         cgmes_version = self.cgmes_version_dict[self.ui.cgmes_version_comboBox.currentText()]
 
+        cgmes_profiles_txt = gf.get_checked_values(mdl=self.ui.cgmes_profiles_listView.model())
+        cgmes_profiles = [self.cgmes_profiles_dict[e] for e in cgmes_profiles_txt]
+
+        one_file_per_profile = self.ui.cgmes_single_profile_per_file_checkBox.isChecked()
+
         options = filedrv.FileSavingOptions(cgmes_boundary_set=self.current_boundary_set,
                                             simulation_drivers=self.get_simulations(),
                                             sessions_data=sessions_data,
                                             dictionary_of_json_files=json_files,
-                                            cgmes_version=cgmes_version)
+                                            cgmes_version=cgmes_version,
+                                            cgmes_profiles=cgmes_profiles,
+                                            one_file_per_profile=one_file_per_profile)
 
         return options
 
@@ -618,7 +644,7 @@ class IoMain(ConfigurationMain):
 
         if self.grid_generator_dialogue.applied:
 
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                        'Are you sure that you want to delete '
                                                        'the current grid and replace it?',

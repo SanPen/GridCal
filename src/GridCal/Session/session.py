@@ -53,6 +53,8 @@ from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaA
 from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults
 from GridCalEngine.Simulations.NTC.ntc_ts_driver import (OptimalNetTransferCapacityTimeSeriesDriver,
                                                          OptimalNetTransferCapacityTimeSeriesResults)
+from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
+                                                                              NodalCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
 from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -85,7 +87,8 @@ DRIVER_OBJECTS = Union[
     NodeGroupsDriver,
     InputsAnalysisDriver,
     InvestmentsEvaluationDriver,
-    TopologyProcessorDriver
+    TopologyProcessorDriver,
+    NodalCapacityTimeSeriesDriver
 ]
 
 RESULTS_OBJECTS = Union[
@@ -108,7 +111,8 @@ RESULTS_OBJECTS = Union[
     OptimalNetTransferCapacityResults,
     OptimalNetTransferCapacityTimeSeriesResults,
     InputsAnalysisResults,
-    InvestmentsEvaluationResults
+    InvestmentsEvaluationResults,
+    NodalCapacityTimeSeriesResults
 ]
 
 
@@ -369,8 +373,7 @@ class SimulationSession:
 
         # get the results' object dictionary
         if study_name == AvailableTransferCapacityDriver.tpe.value:
-            drv = AvailableTransferCapacityDriver(grid=grid,
-                                                  options=None)
+            drv = AvailableTransferCapacityDriver(grid=grid, options=None)
 
         elif study_name == AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             drv = AvailableTransferCapacityTimeSeriesDriver(grid=grid,
@@ -379,8 +382,7 @@ class SimulationSession:
                                                             clustering_results=None)
 
         elif study_name == ContingencyAnalysisDriver.tpe.value:
-            drv = ContingencyAnalysisDriver(grid=grid,
-                                            options=None)
+            drv = ContingencyAnalysisDriver(grid=grid, options=None)
 
         elif study_name == ContingencyAnalysisTimeSeriesDriver.tpe.value:
             drv = ContingencyAnalysisTimeSeriesDriver(grid=grid,
@@ -396,8 +398,7 @@ class SimulationSession:
                                               opf_results=None)
 
         elif study_name == LinearAnalysisDriver.tpe.value:
-            drv = LinearAnalysisDriver(grid=grid,
-                                       options=None)
+            drv = LinearAnalysisDriver(grid=grid, options=None)
 
         elif study_name == ContinuationPowerFlowDriver.tpe.value:
             drv = LinearAnalysisTimeSeriesDriver(grid=grid,
@@ -406,8 +407,7 @@ class SimulationSession:
                                                  clustering_results=None)
 
         elif study_name == OptimalPowerFlowDriver.tpe.value:
-            drv = OptimalPowerFlowDriver(grid=grid,
-                                         options=None)
+            drv = OptimalPowerFlowDriver(grid=grid, options=None)
 
         elif study_name == OptimalPowerFlowTimeSeriesDriver.tpe.value:
             drv = OptimalPowerFlowTimeSeriesDriver(grid=grid,
@@ -415,9 +415,14 @@ class SimulationSession:
                                                    time_indices=time_indices,
                                                    clustering_results=None)
 
+        elif study_name == NodalCapacityTimeSeriesDriver.tpe.value:
+            drv = NodalCapacityTimeSeriesDriver(grid=grid,
+                                                options=None,
+                                                time_indices=time_indices,
+                                                clustering_results=None)
+
         elif study_name == PowerFlowDriver.tpe.value:
-            drv = PowerFlowDriver(grid=grid,
-                                  options=None)
+            drv = PowerFlowDriver(grid=grid, options=None)
 
         elif study_name == PowerFlowTimeSeriesDriver.tpe.value:
             drv = PowerFlowTimeSeriesDriver(grid=grid,
@@ -433,8 +438,7 @@ class SimulationSession:
                                      opf_results=None)
 
         elif study_name == StochasticPowerFlowDriver.tpe.value:
-            drv = StochasticPowerFlowDriver(grid=grid,
-                                            options=None)
+            drv = StochasticPowerFlowDriver(grid=grid, options=None)
 
         elif study_name == ClusteringDriver.tpe.value:
             drv = ClusteringDriver(grid=grid, options=None)
@@ -527,7 +531,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.OPF_run)[1]
+        drv, results = self.get_driver_results(SimulationTypes.OPF_run)
         return results
 
     @property
@@ -627,6 +631,15 @@ class SimulationSession:
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPF_NTC_TS_run)
+        return results
+
+    @property
+    def nodal_capacity_optimization_ts(self) -> NodalCapacityTimeSeriesResults:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.NodalCapacityTimeSeries_run)
         return results
 
     @property

@@ -555,7 +555,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
+        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
+                           1.0)  # Cost squared since the slack is also squared
         c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
@@ -570,7 +571,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         sl_st0 = np.array([])
         sl_vmax0 = np.array([])
         sl_vmin0 = np.array([])
-
 
     # Number of equalities: Nodal power balances, the voltage module of slack and pv buses and the slack reference
     NE = 2 * nbus + n_slack + npv
@@ -636,7 +636,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        arg=(admittances, Cg, Sd, slack, from_idx, to_idx,
                                             pq, pv, Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min,
                                             Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
-                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx,
+                                            k_m, k_tau, k_mtau, c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx,
+                                            gen_nondisp_idx,
                                             Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
                                        verbose=opf_options.verbose,
                                        max_iter=opf_options.ips_iterations,
@@ -651,7 +652,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            arg=(admittances, Cg, Sd, slack, from_idx, to_idx, pq, pv,
                                                 Va_max, Va_min, Vm_max, Vm_min, Pg_max, Pg_min, Qg_max, Qg_min,
                                                 tapm_max, tapm_min, tapt_max, tapt_min, k_m, k_tau, k_mtau,
-                                                c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx, Sg_undis,
+                                                c0, c1, c2, Sbase, rates, br_mon_idx, gen_disp_idx, gen_nondisp_idx,
+                                                Sg_undis,
                                                 opf_options.acopf_mode, 1e-5),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
@@ -661,11 +663,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
             # run the solver with the analytic derivatives
             result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
                                            func=compute_analytic_structures,
-                                           arg=(admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc, t_nd_hvdc,
-                                                f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
-                                                Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
-                                                alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, br_mon_idx,
-                                                n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis, pf_options.control_Q, opf_options.acopf_mode),
+                                           arg=(
+                                           admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc, t_nd_hvdc,
+                                           f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, pq, pv, Pf_nondisp, P_hvdc_max,
+                                           Vm_max, Vm_min, Pg_max,
+                                           Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
+                                           alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, br_mon_idx,
+                                           n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis, pf_options.control_Q,
+                                           opf_options.acopf_mode),
                                            verbose=opf_options.verbose,
                                            max_iter=opf_options.ips_iterations,
                                            tol=opf_options.ips_tolerance,
@@ -678,10 +683,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                                  acopf_mode=opf_options.acopf_mode)
 
     # Save Results DataFrame for tests
-    #pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
-    #pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
-    #pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
-    #pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
+    # pd.DataFrame(Va).transpose().to_csv('REEresth.csv')
+    # pd.DataFrame(Vm).transpose().to_csv('REEresV.csv')
+    # pd.DataFrame(Pg_dis).transpose().to_csv('REEresP.csv')
+    # pd.DataFrame(Qg_dis).transpose().to_csv('REEresQ.csv')
 
     Pg = np.zeros(len(ind_gens))
     Qg = np.zeros(len(ind_gens))
@@ -851,6 +856,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       Sbus_pf0: Union[CxVec, None] = None,
                       voltage_pf0: Union[CxVec, None] = None,
                       plot_error: bool = False,
+                      optimize_nodal_capacity: bool = False,
+                      nodal_capacity_sign: float = 1.0,
+                      capacity_nodes_idx: Union[IntVec, None] = None,
                       logger: Logger = Logger()) -> NonlinearOPFResults:
     """
     Run optimal power flow for a MultiCircuit
@@ -864,7 +872,9 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param Sbus_pf0: Sbus initial solution
     :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
-    :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
+    :param optimize_nodal_capacity: Optimize the nodal capacity? (optional)
+    :param nodal_capacity_sign: if > 0 the generation is maximized, if < 0 the load is maximized
+    :param capacity_nodes_idx: Array of bus indices to optimize their nodal capacity for
     :param logger: Logger object
     :return: NonlinearOPFResults
     """

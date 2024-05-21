@@ -32,6 +32,11 @@ class PowerTransformerEnd(TransformerEnd):
 		self.ratedU: float = None
 		self.r: float = None
 		self.x: float = None
+		self.b0: float = None
+		self.phaseAngleClock: int = None
+		self.g0: float = None
+		self.r0: float = None
+		self.x0: float = None
 
 		self.register_property(
 			name='PowerTransformer',
@@ -91,6 +96,46 @@ class PowerTransformerEnd(TransformerEnd):
 		)
 		self.register_property(
 			name='x',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='b0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.S,
+			description='''Imaginary part of admittance.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='phaseAngleClock',
+			class_type=int,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Terminal voltage phase angle displacement where 360 degrees are represented with clock hours. The valid values are 0 to 11. For example, for the secondary side end of a transformer with vector group code of 'Dyn11', specify the connection kind as wye with neutral and specify the phase angle of the clock as 11.  The clock value of the transformer end number specified as 1, is assumed to be zero.  Note the transformer end number is not assumed to be the same as the terminal sequence number.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='g0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.S,
+			description='''Factor by which voltage must be multiplied to give corresponding power lost from a circuit. Real part of admittance.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='r0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='x0',
 			class_type=float,
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.ohm,

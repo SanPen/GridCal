@@ -1309,6 +1309,47 @@ class SparseSolver(Enum):
     def __str__(self):
         return self.value
 
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return CGMESVersions[s]
+        except KeyError:
+            return s
+
+
+class NodalCapacityMethod(Enum):
+    """
+    Sparse solvers to use
+    """
+    NonlinearOptimization = 'Nonlinear Optimization'
+    LinearOptimization = 'Linear Optimization'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return NodalCapacityMethod[s]
+        except KeyError:
+            return s
+
 
 class ResultTypes(Enum):
     """
@@ -1382,6 +1423,7 @@ class ResultTypes(Enum):
     GeneratorStartingUp = 'Generator starting up'
     GeneratorShuttingDown = 'Generator shutting down'
     BusVoltagePolarPlot = 'Voltage plot'
+    BusNodalCapacity = "Nodal capacity"
 
     # OPF-NTC
     HvdcOverloads = 'HVDC overloads'
@@ -1622,6 +1664,7 @@ class SimulationTypes(Enum):
     OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
     InvestmestsEvaluation_run = 'Investments evaluation'
     TopologyProcessor_run = 'Topology Processor'
+    NodalCapacityTimeSeries_run = 'Nodal capacity time series'
 
     def __str__(self):
         return self.value

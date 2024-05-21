@@ -150,7 +150,7 @@ def get_reg_prop_code(attributes):
         reg_prop += f"\t\t\tclass_type={class_type},\n"
         reg_prop += f"\t\t\tmultiplier={multiplier},\n"
         reg_prop += f"\t\t\tunit={unit},\n"
-        reg_prop += f"\t\t\tdescription='''{description}''',\n"
+        reg_prop += f"\t\t\tdescription='''{description}''' ,\n"
         reg_prop += f"\t\t\tprofiles=[]\n"
         reg_prop += f"\t\t)\n"
     return reg_prop

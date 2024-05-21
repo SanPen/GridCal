@@ -2579,6 +2579,21 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> IntVec:
     return np.array(idx)
 
 
+def get_checked_values(mdl: QtGui.QStandardItemModel()) -> List[str]:
+    """
+    Get a list of the selected values in a QStandardItemModel
+    :param mdl:
+    :return:
+    """
+    idx = list()
+    for row in range(mdl.rowCount()):
+        item = mdl.item(row)
+        if item.checkState() == QtCore.Qt.CheckState.Checked:
+            idx.append(item.text())
+
+    return idx
+
+
 def fill_model_from_dict(parent: QtGui.QStandardItem,
                          d: Dict[str, Union[Dict[str, Any], List[str]]],
                          editable=False,

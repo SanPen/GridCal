@@ -114,7 +114,8 @@ def compare_inputs(circuit_1, circuit_2, tol=1e-6):
     print("done!")
 
 
-def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logger: Logger) -> None:
+# def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logger: Logger) -> None:
+def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
     """
 
     :param arr:

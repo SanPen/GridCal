@@ -604,8 +604,8 @@ class ControlRaiyan:
 
 
 class BusRaiyan(gce.Bus):
-    def __init__(self, name: str, vnom: float):
-        super().__init__(name, vnom)
+    def __init__(self, name: str, Vnom: float):
+        super().__init__(name, Vnom)
 
 
 class HelperFunctions:
@@ -1019,7 +1019,7 @@ class HelperFunctions:
         grid.change_base(1000)
 
 
-        bus1 = gce.Bus('Bus 1', vnom=20)
+        bus1 = gce.Bus('Bus 1', Vnom=20)
         grid.add_bus(bus1)
         gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.01)
         gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
@@ -1028,23 +1028,23 @@ class HelperFunctions:
         
 
         grid.add_generator(bus1, gen1)
-        bus2 = gce.Bus('Bus 2', vnom=20)
+        bus2 = gce.Bus('Bus 2', Vnom=20)
         grid.add_bus(bus2)
         grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
 
         line12 = gce.Line(bus1, bus2, 'line 1-2', r=0.1, x=0.3, b=0.0)
         grid.add_line(line12)
 
-        bus3 = gce.Bus('Bus 3', vnom=20)
+        bus3 = gce.Bus('Bus 3', Vnom=20)
         bus3.is_dc = True
         grid.add_bus(bus3)
 
-        bus4 = gce.Bus('Bus 4', vnom=20)
+        bus4 = gce.Bus('Bus 4', Vnom=20)
         bus4.is_dc = True
         grid.add_bus(bus4)
         grid.add_load(bus4, gce.Load('load 2', P=300, Q=0))
 
-        bus5 = gce.Bus('Bus 5', vnom=20)
+        bus5 = gce.Bus('Bus 5', Vnom=20)
         bus5.is_dc = True
         grid.add_bus(bus5)
 
@@ -1073,18 +1073,18 @@ class HelperFunctions:
         grid.change_base(1000)
 
         # Add the buses and the generators and loads attached
-        bus1 = gce.Bus('Bus 1', vnom=20)
+        bus1 = gce.Bus('Bus 1', Vnom=20)
         bus1.is_dc = True
         grid.add_bus(bus1)
 
         # add bus 2 with a load attached
-        bus2 = gce.Bus('Bus 2', vnom=20)
+        bus2 = gce.Bus('Bus 2', Vnom=20)
         bus2.is_dc = True
         grid.add_bus(bus2)
         grid.add_load(bus2, gce.Load('load 2', P=300, Q=0))
 
         # add bus 3 with a load attached
-        bus3 = gce.Bus('Bus 3', vnom=20)
+        bus3 = gce.Bus('Bus 3', Vnom=20)
         bus3.is_dc = True
         grid.add_bus(bus3)
         grid.add_load(bus3, gce.Load('load 3', P=200, Q=0))
@@ -1117,7 +1117,7 @@ class HelperFunctions:
         grid.change_base(1000)
 
 
-        bus1 = gce.Bus('Bus 1', vnom=20)
+        bus1 = gce.Bus('Bus 1', Vnom=20)
         grid.add_bus(bus1)
         gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.01)
         gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
@@ -1126,7 +1126,7 @@ class HelperFunctions:
         
 
         grid.add_generator(bus1, gen1)
-        bus2 = gce.Bus('Bus 2', vnom=20)
+        bus2 = gce.Bus('Bus 2', Vnom=20)
         grid.add_bus(bus2)
         grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
 
@@ -1143,7 +1143,7 @@ class HelperFunctions:
         grid.change_base(1000)
 
 
-        bus1 = gce.Bus('Bus 1', vnom=20)
+        bus1 = gce.Bus('Bus 1', Vnom=20)
         grid.add_bus(bus1)
         gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.01)
         gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
@@ -1152,11 +1152,11 @@ class HelperFunctions:
         
 
         grid.add_generator(bus1, gen1)
-        bus2 = gce.Bus('Bus 2', vnom=20)
+        bus2 = gce.Bus('Bus 2', Vnom=20)
         grid.add_bus(bus2)
         grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
 
-        bus3 = gce.Bus('Bus 3', vnom=20)
+        bus3 = gce.Bus('Bus 3', Vnom=20)
         grid.add_bus(bus3)  
         grid.add_load(bus3, gce.Load('load 3', P=200, Q=50))
 
@@ -1180,59 +1180,59 @@ class HelperFunctions:
         grid.change_base(1000)
 
         # Add the buses and the generators and loads attached
-        bus1 = gce.Bus('Bus 1', vnom=20)
+        bus1 = gce.Bus('Bus 1', Vnom=20)
         # bus1.is_slack = True  # we may mark the bus a slack
         grid.add_bus(bus1)
 
         # add bus 2 with a load attached
-        bus2 = gce.Bus('Bus 2', vnom=20)
+        bus2 = gce.Bus('Bus 2', Vnom=20)
         grid.add_bus(bus2)
         grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
 
         # add bus 3 with a load attached
-        bus3 = gce.Bus('Bus 3', vnom=20)
+        bus3 = gce.Bus('Bus 3', Vnom=20)
         grid.add_bus(bus3)
         grid.add_load(bus3, gce.Load('load 3', P=200, Q=50))
 
         # add bus 4 with a load attached
-        bus4 = gce.Bus('Bus 4', vnom=20)
+        bus4 = gce.Bus('Bus 4', Vnom=20)
         bus4.is_dc = True
         grid.add_bus(bus4)
         grid.add_load(bus4, gce.Load('load 4', P=200))
 
         # add bus 5 with a load attached
-        bus5 = gce.Bus('Bus 5', vnom=20)
+        bus5 = gce.Bus('Bus 5', Vnom=20)
         bus5.is_dc = True
         grid.add_bus(bus5)
         grid.add_load(bus5, gce.Load('load 5', P=100))
 
         # add bus 6
-        bus6 = gce.Bus('Bus 6', vnom=150)
+        bus6 = gce.Bus('Bus 6', Vnom=150)
         bus6.is_dc = True
         grid.add_bus(bus6)
         grid.add_load(bus6, gce.Load('load 6', P=150))
 
         #add bus 7 with a load attached
-        bus7 = gce.Bus('Bus 7', vnom=20)
+        bus7 = gce.Bus('Bus 7', Vnom=20)
         grid.add_bus(bus7)
         grid.add_load(bus7, gce.Load('load 7', P=100, Q=100))
 
 
         #add bus 8 with a load attached
-        bus8 = gce.Bus('Bus 8', vnom=20)
+        bus8 = gce.Bus('Bus 8', Vnom=20)
         grid.add_bus(bus8)
         #add load 0.2 + 0.05 * 1j pu
         grid.add_load(bus8, gce.Load('load 8', P=200, Q=50))
 
 
         #add bus 9 with a load attached
-        bus9 = gce.Bus('Bus 9', vnom=20)
+        bus9 = gce.Bus('Bus 9', Vnom=20)
         grid.add_bus(bus9)
         grid.add_load(bus9, gce.Load('load 9', P=300, Q=100))
 
 
         #add bus 10 as a slack bus
-        bus10 = gce.Bus('Bus 10', vnom=20)
+        bus10 = gce.Bus('Bus 10', Vnom=20)
         # bus10.is_slack = True
         grid.add_bus(bus10)
 

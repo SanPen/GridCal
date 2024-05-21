@@ -60,7 +60,7 @@ class CompiledArraysMain(BaseMainGui):
 
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
-        if i > -1 and len(self.circuit.buses) > 0:
+        if i > -1 and self.circuit.valid_for_simulation():
             elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)

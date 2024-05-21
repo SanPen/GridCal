@@ -46,7 +46,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
                  elm: Transformer3W,
                  pos: QPoint = None,
                  parent=None,
-                 index=0):
+                 index=0,
+                 draw_labels: bool = True):
         """
 
         :param editor: GridEditor object
@@ -54,6 +55,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :param pos: position
         :param parent:
         :param index:
+        :param draw_labels:
         """
         QGraphicsRectItem.__init__(self, parent=parent)
         self.n_windings = 3
@@ -66,6 +68,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         self.api_object: Transformer3W = elm
         self.editor = editor
+
+        self.draw_labels = draw_labels
 
         # color
         self.pen_width = 4

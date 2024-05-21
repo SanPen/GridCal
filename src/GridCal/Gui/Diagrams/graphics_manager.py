@@ -141,12 +141,16 @@ class GraphicsManager:
         :param elm: Any database element
         :return: Corresponding graphic
         """
-        elm_dict: Dict[str, ALL_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
-
-        if elm_dict is None:
+        if elm is None:
             return None
+
         else:
-            return elm_dict.get(elm.idtag, None)
+            elm_dict: Dict[str, ALL_GRAPHICS] = self.graphic_dict.get(elm.device_type, None)
+
+            if elm_dict is None:
+                return None
+            else:
+                return elm_dict.get(elm.idtag, None)
 
     def get_device_type_list(self, device_type: DeviceType) -> List[ALL_GRAPHICS]:
         """

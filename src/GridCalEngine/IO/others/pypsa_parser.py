@@ -79,7 +79,7 @@ class PyPSAParser:
             is_slack = data['control'] == 'Slack'  # otherwise 'PQ' or 'PV'
             is_dc = data['carrier'] == 'DC'
             country = self.countries[data['country']]
-            bus = Bus(ix, vnom=data['v_nom'], vmin=data['v_mag_pu_min'], vmax=data['v_mag_pu_max'],
+            bus = Bus(ix, Vnom=data['v_nom'], vmin=data['v_mag_pu_min'], vmax=data['v_mag_pu_max'],
                       xpos=data['x'] * BUS_X_SCALE_FACTOR, ypos=data['y'] * BUS_Y_SCALE_FACTOR,
                       active=active, is_slack=is_slack, is_dc=is_dc, country=country)
             self.dest.add_bus(bus)

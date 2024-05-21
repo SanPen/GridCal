@@ -706,6 +706,7 @@ def get_regulating_control(cgmes_elm,
             # cgmes_elm.EquipmentContainer.BaseVoltage.nominalVoltage
             controlled_terminal = cgmes_elm.RegulatingControl.Terminal
             base_voltage = controlled_terminal.TopologicalNode.BaseVoltage.nominalVoltage
+            # TODO is tp is None, check cn and pick tp from there
             v_set = v_control_value / base_voltage
 
             # if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
