@@ -41,6 +41,8 @@ from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import Vol
 from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
+from GridCalEngine.Devices.Substation.busbar import BusBar
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 
 ALL_BUS_BRACH_GRAPHICS = Union[
@@ -84,6 +86,9 @@ class GraphicsManager:
         # second idtag -> GraphicItem
         self.graphic_dict: Dict[DeviceType, Dict[str, ALL_GRAPHICS]] = dict()
 
+        # this dictionary stores the relationship between CN and their BusBar if applicable
+        self.cn_to_busbar_dict: Dict[ConnectivityNode, BusBar] = dict()
+
     def clear(self):
         """
         Clear all graphics references
@@ -110,6 +115,10 @@ class GraphicsManager:
                     if graphic_0 != graphic:
                         warn(f"Replacing {graphic} with {graphic}, this could be a sign of an idtag bug")
                     elm_dict[elm.idtag] = graphic
+
+            # store the cn->busbar relationship
+            if isinstance(elm, BusBar):
+                self.cn_to_busbar_dict[elm.cn] = elm
         else:
             raise ValueError(f"Trying to set a None graphic object for {elm}")
 
@@ -153,6 +162,21 @@ class GraphicsManager:
                 return None
             else:
                 return elm_dict.get(elm.idtag, None)
+
+    def query_preferring_busbars(self, elm: ALL_DEV_TYPES) -> Union[None, ALL_GRAPHICS]:
+        """
+        Because some connectivity nodes are graphically substituted by BusBars, we need to do this
+        :param elm:
+        :return:
+        """
+        if isinstance(elm, ConnectivityNode):
+            bb = self.cn_to_busbar_dict.get(elm, None)
+            if bb is not None:
+                return self.query(elm=bb)
+            else:
+                return self.query(elm=elm)
+        else:
+            return self.query(elm=elm)
 
     def get_device_type_list(self, device_type: DeviceType) -> List[ALL_GRAPHICS]:
         """

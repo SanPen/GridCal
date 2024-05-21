@@ -841,6 +841,7 @@ class SchematicWidget(QSplitter):
         """
         inj_dev_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
         inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+        inj_dev_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
 
         # add node-like elements first
         for category, points_group in diagram.data.items():
@@ -964,28 +965,29 @@ class SchematicWidget(QSplitter):
 
                 for idtag, location in points_group.locations.items():
 
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+                    if not location.api_object.internal:
+                        # search for the api object, because it may be created already
+                        graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                    if graphic_object is None:
-                        # add the graphic object to the diagram view
-                        graphic_object = self.create_connectivity_node_graphics(node=location.api_object,
-                                                                                x=location.x,
-                                                                                y=location.y,
-                                                                                h=location.h,
-                                                                                w=location.w,
-                                                                                draw_labels=location.draw_labels)
-                        self.add_to_scene(graphic_object=graphic_object)
+                        if graphic_object is None:
+                            # add the graphic object to the diagram view
+                            graphic_object = self.create_connectivity_node_graphics(node=location.api_object,
+                                                                                    x=location.x,
+                                                                                    y=location.y,
+                                                                                    h=location.h,
+                                                                                    w=location.w,
+                                                                                    draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        # create the bus children
-                        graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
-                        )
+                            # create the bus children
+                            graphic_object.create_children_widgets(
+                                injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
+                            )
 
-                        # graphic_object.change_size(w=location.w)
+                            # graphic_object.change_size(w=location.w)
 
-                        # add buses reference for later
-                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            # add buses reference for later
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
             elif category == DeviceType.BusBarDevice.value and prefer_node_breaker:
 
@@ -1006,7 +1008,7 @@ class SchematicWidget(QSplitter):
 
                         # create the bus children
                         graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
+                            injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
                         )
 
                         graphic_object.change_size(w=location.w)
@@ -1859,7 +1861,11 @@ class SchematicWidget(QSplitter):
         """
         self.apply_expansion_factor(1.0 / self.expand_factor)
 
-    def set_limits(self, min_x: int, max_x: Union[float, int], min_y: Union[float, int], max_y: int,
+    def set_limits(self,
+                   min_x: int,
+                   max_x: Union[float, int],
+                   min_y: Union[float, int],
+                   max_y: int,
                    margin_factor: float = 0.1) -> None:
         """
         Set the picture limits
@@ -2305,11 +2311,15 @@ class SchematicWidget(QSplitter):
         else:
             return port
 
-    def find_ports(self, branch: BRANCH_TYPES, prefer_node_breaker: bool, logger: Logger) -> Tuple[
-        OPTIONAL_PORT, OPTIONAL_PORT]:
+    def find_ports(self,
+                   branch: BRANCH_TYPES,
+                   prefer_node_breaker: bool,
+                   logger: Logger) -> Tuple[OPTIONAL_PORT, OPTIONAL_PORT]:
         """
         Find the preferred set of ports for drawing
         :param branch: some API branch
+        :param prefer_node_breaker:
+        :param logger:
         :return: OPTIONAL_PORT, OPTIONAL_PORT
         """
 
@@ -2318,7 +2328,7 @@ class SchematicWidget(QSplitter):
                                                                  prefer_node_breaker=prefer_node_breaker)
 
         # Bus provided, search its graphics
-        bus_graphic0 = self.graphics_manager.query(obj_from)
+        bus_graphic0 = self.graphics_manager.query_preferring_busbars(obj_from)
         if bus_graphic0 is None:
             # could not find any graphics :(
             from_port = None
@@ -2327,7 +2337,7 @@ class SchematicWidget(QSplitter):
             from_port = bus_graphic0.get_terminal()
 
         # Bus provided, search its graphics
-        bus_graphic1 = self.graphics_manager.query(obj_to)
+        bus_graphic1 = self.graphics_manager.query_preferring_busbars(obj_to)
         if bus_graphic1 is None:
             # could not find any graphics :(
             to_port = None
