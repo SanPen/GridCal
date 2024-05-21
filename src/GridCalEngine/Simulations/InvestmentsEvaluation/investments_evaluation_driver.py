@@ -15,9 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-import hyperopt
-import functools
-
 from typing import List, Dict
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
@@ -309,36 +306,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.report_done()
 
-    def optimized_evaluation_hyperopt(self) -> None:
-        """
-        Run an optimized investment evaluation without considering multiple evaluation groups at a time
-        """
-
-        self.report_text("Evaluating investments with Hyperopt")
-
-        # number of random evaluations at the beginning
-        rand_evals = round(self.dim * 1.5)
-
-        # binary search space
-        space = [hyperopt.hp.randint(f'x_{i}', 2) for i in range(self.dim)]
-
-        if self.options.max_eval == rand_evals:
-            algo = hyperopt.rand.suggest
-        else:
-            algo = functools.partial(hyperopt.tpe.suggest, n_startup_jobs=rand_evals)
-
-        # compile the snapshot
-        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.options.max_eval + 1)
-
-        # add baseline
-        self.objective_function_so(combination=np.zeros(self.results.n_groups, dtype=int))
-
-        # run
-        results = hyperopt.fmin(self.objective_function_so, space, algo, self.options.max_eval)
-
-        self.report_done()
-
     def optimized_evaluation_mvrsm(self) -> None:
         """
         Run an optimized investment evaluation without considering multiple evaluation groups at a time
@@ -463,9 +430,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         if self.options.solver == InvestmentEvaluationMethod.Independent:
             self.independent_evaluation()
-
-        elif self.options.solver == InvestmentEvaluationMethod.Hyperopt:
-            self.optimized_evaluation_hyperopt()
 
         elif self.options.solver == InvestmentEvaluationMethod.MVRSM:
             self.optimized_evaluation_mvrsm_pareto()

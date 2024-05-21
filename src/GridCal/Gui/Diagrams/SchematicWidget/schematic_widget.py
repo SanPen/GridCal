@@ -4858,12 +4858,18 @@ List[FluidPath]]:
             list(fluid_nodes), fluid_paths)
 
 
-def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int = 1):
+def make_vecinity_diagram(circuit: MultiCircuit,
+                          root_bus: Bus,
+                          max_level: int = 1,
+                          prog_func: Union[Callable, None] = None,
+                          text_func: Union[Callable, None] = None):
     """
     Create a vecinity diagram
     :param circuit: MultiCircuit
     :param root_bus: Bus
     :param max_level: max expansion level
+    :param prog_func:
+    :param text_func:
     :return:
     """
 
@@ -4891,8 +4897,8 @@ def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int =
                                          fluid_nodes=list(fluid_nodes),
                                          fluid_paths=fluid_paths,
                                          explode_factor=1.0,
-                                         prog_func=None,
-                                         text_func=print,
+                                         prog_func=prog_func,
+                                         text_func=text_func,
                                          name=root_bus.name + 'vecinity')
 
     return diagram
