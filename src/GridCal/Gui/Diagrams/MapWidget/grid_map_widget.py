@@ -126,12 +126,19 @@ class GridMapWidget(MapWidget):
         """
         self.diagram = diagram
 
-    def delete_diagram_element(self, device: ALL_DEV_TYPES):
+    def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True):
+        """
+
+        :param device:
+        :param propagate: Propagate the delete to other diagrams?
+        :return:
+        """
         # TODO: Implement this
         pass
 
-        if self.call_delete_db_element_func is not None:
-            self.call_delete_db_element_func(self, device)
+        if propagate:
+            if self.call_delete_db_element_func is not None:
+                self.call_delete_db_element_func(self, device)
 
     @property
     def name(self):

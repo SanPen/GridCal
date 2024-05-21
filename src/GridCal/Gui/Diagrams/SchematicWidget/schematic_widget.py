@@ -1231,10 +1231,11 @@ class SchematicWidget(QSplitter):
             else:
                 warn(f"Null scene for {graphic_object}, was it deleted already?")
 
-    def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
+    def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True) -> None:
         """
         Delete device from the diagram registry
         :param device: EditableDevice
+        :param propagate: Propagate the delete to other diagrams?
         """
         self.diagram.delete_device(device=device)
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
@@ -1245,8 +1246,9 @@ class SchematicWidget(QSplitter):
             # except:
             #     warn(f"Could not remove {graphic_object} from the scene")
 
-        if self.call_delete_db_element_func is not None:
-            self.call_delete_db_element_func(self, device)
+        if propagate:
+            if self.call_delete_db_element_func is not None:
+                self.call_delete_db_element_func(self, device)
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,

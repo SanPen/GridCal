@@ -456,7 +456,7 @@ class ObjectsTableMain(DiagramsMain):
 
                     # delete from all diagrams
                     for diagram in self.diagram_widgets_list:
-                        diagram.delete_diagram_element(device=obj)
+                        diagram.delete_diagram_element(device=obj, propagate=False)
 
                 # update the view
                 self.view_objects_data()

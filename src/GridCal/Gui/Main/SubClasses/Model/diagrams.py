@@ -1584,6 +1584,6 @@ class DiagramsMain(CompiledArraysMain):
         """
         for diagram in self.diagram_widgets_list:
             if diagram != caller:
-                diagram.delete_diagram_element(device=api_obj)
+                diagram.delete_diagram_element(device=api_obj, propagate=False)
 
         self.circuit.delete_elements_by_type(obj=api_obj)
