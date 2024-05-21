@@ -231,7 +231,7 @@ def case9():
 
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
@@ -240,7 +240,7 @@ def case9():
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
                       optimize_nodal_capacity=True,
                       nodal_capacity_sign=1.0,
-                      capacity_nodes_idx=np.array([1]))
+                      capacity_nodes_idx=np.array([10]))
     print('')
 
 
@@ -461,7 +461,7 @@ def case_nodalcap():
                                               verbose=1, ips_iterations=150, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     nc_options = NodalCapacityOptions(opf_options=opf_options, capacity_nodes_idx=np.array([2, 3, 6]),
-                                      nodal_capacity_sign=-1.0, method=NodalCapacityMethod.NonlinearOptimization)
+                                      nodal_capacity_sign=1.0, method=NodalCapacityMethod.NonlinearOptimization)
     case = NodalCapacityTimeSeriesDriver(grid=grid, time_indices=np.array([0]), options=nc_options)
     case.run()
     #run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
