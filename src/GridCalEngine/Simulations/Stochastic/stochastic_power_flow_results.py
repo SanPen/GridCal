@@ -382,7 +382,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
             labels = self.bus_names
             cdf = CDF(np.abs(self.V_points))
             y_label = '(p.u.)'
-            x_label = 'Probability $P(X \leq x)$'
+            x_label = "Probability $P(X \leq x)$"
             return ResultsTable(data=cdf.arr,
                                 index=cdf.prob,
                                 idx_device_type=DeviceType.NoDevice,

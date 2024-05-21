@@ -20,7 +20,7 @@ pyproj
 pyarrow >= 15
 fastparquet
 darkdetect
-pyqtdarktheme
+# pyqtdarktheme
 # qdarktheme
 nptyping
 windpowerlib

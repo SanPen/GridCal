@@ -16,10 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
 import os
-import qdarktheme
 from typing import Dict, Union, Any
 from PySide6 import QtWidgets
 
+import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -108,9 +108,11 @@ class ConfigurationMain(ResultsMain):
 
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()
+
             qdarktheme.setup_theme(theme='dark',
                                    custom_colors=custom_colors,
                                    additional_qss="QToolTip {color: white; background-color: black; border: 0px; }")
+
             # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()
@@ -127,6 +129,7 @@ class ConfigurationMain(ResultsMain):
             qdarktheme.setup_theme(theme='light',
                                    custom_colors=custom_colors,
                                    additional_qss="QToolTip {color: black; background-color: white; border: 0px;}")
+
             # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()

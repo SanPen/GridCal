@@ -4,7 +4,7 @@ from typing import List, Union
 import webbrowser
 import darkdetect
 import pandas as pd
-import qdarktheme
+import GridCal.ThirdParty.qdarktheme as qdarktheme
 # Engine imports
 
 # GUI imports
