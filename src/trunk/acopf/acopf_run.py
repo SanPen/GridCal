@@ -257,6 +257,8 @@ def case9():
     print('P nodal capacity: ', res.nodal_capacity_vars.P)
     print('P generators: ', res.gen_vars.p)
     print('P loads: ', res.load_vars.shedding)
+    print('P slacks pos: ', res.branch_vars.flow_slacks_pos)
+    print('P slacks neg: ', res.branch_vars.flow_slacks_neg)
     print('')
 
 
