@@ -239,8 +239,8 @@ def case9():
                                               ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
     res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
                       optimize_nodal_capacity=True,
-                      nodal_capacity_sign=1.0,
-                      capacity_nodes_idx=np.array([10]))
+                      nodal_capacity_sign= -1.0,
+                      capacity_nodes_idx=np.array([1]))
     print('')
 
 
