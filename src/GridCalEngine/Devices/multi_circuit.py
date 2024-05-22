@@ -1115,7 +1115,7 @@ class MultiCircuit:
         :return:
         """
         return len(self.hvdc_lines)
-    
+
     def get_vsc_number(self) -> int:
         """
 
@@ -5170,7 +5170,8 @@ class MultiCircuit:
 
         return groups
 
-    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+    def get_injection_devices_grouped_by_cn(self) -> Dict[
+        dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
         :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
@@ -6222,3 +6223,269 @@ class MultiCircuit:
 
         # return the TopologyProcessorInfo
         return process_info
+
+    def split_line(self,
+                   original_line: Union[dev.Line],
+                   position: float,
+                   extra_km: float):
+        """
+
+        :param original_line:
+        :param position:
+        :param extra_km:
+        :return:
+        """
+
+        # Each of the Branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
+
+        name = original_line.name + ' split'
+        mid_sub = dev.Substation(name=name,
+                                 area=original_line.bus_from.area,
+                                 zone=original_line.bus_from.zone,
+                                 country=original_line.bus_from.country)
+
+        mid_vl = dev.VoltageLevel(name=name, substation=mid_sub)
+
+        mid_bus = dev.Bus(name=name,
+                          Vnom=original_line.bus_from.Vnom,
+                          vmin=original_line.bus_from.Vmin,
+                          vmax=original_line.bus_from.Vmax,
+                          voltage_level=mid_vl,
+                          substation=mid_sub,
+                          area=original_line.bus_from.area,
+                          zone=original_line.bus_from.zone,
+                          country=original_line.bus_from.country)
+
+        position_a = position + (extra_km / original_line.length) if original_line.length > 0.0 else position
+
+        # create first split
+        br1 = dev.Line(name=original_line.name + ' split 1',
+                       bus_from=original_line.bus_from,
+                       bus_to=mid_bus,
+                       r=original_line.R * position_a,
+                       x=original_line.X * position_a,
+                       b=original_line.B * position_a,
+                       r0=original_line.R0 * position_a,
+                       x0=original_line.X0 * position_a,
+                       b0=original_line.B0 * position_a,
+                       r2=original_line.R2 * position_a,
+                       x2=original_line.X2 * position_a,
+                       b2=original_line.B2 * position_a,
+                       length=original_line.length * position_a,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        position_c = ((1.0 - position) + (extra_km / original_line.length)
+                      if original_line.length > 0.0 else (1.0 - position))
+
+        br2 = dev.Line(name=original_line.name + ' split 2',
+                       bus_from=mid_bus,
+                       bus_to=original_line.bus_to,
+                       r=original_line.R * position_c,
+                       x=original_line.X * position_c,
+                       b=original_line.B * position_c,
+                       r0=original_line.R0 * position_c,
+                       x0=original_line.X0 * position_c,
+                       b0=original_line.B0 * position_c,
+                       r2=original_line.R2 * position_c,
+                       x2=original_line.X2 * position_c,
+                       b2=original_line.B2 * position_c,
+                       length=original_line.length * position_c,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # deactivate the original line
+        original_line.active = False
+        original_line.active_prof.fill(False)
+
+        # add to gridcal the new 2 lines and the bus
+        self.add_substation(obj=mid_sub)
+        self.add_voltage_level(obj=mid_vl)
+        self.add_bus(mid_bus)
+        self.add_line(br1)
+        self.add_line(br2)
+
+        # add new stuff as new investment
+        inv_group = dev.InvestmentsGroup(name=original_line.name + ' split', category='Line split')
+        self.add_investments_group(inv_group)
+        self.add_investment(dev.Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+
+        # include the deactivation of the original line
+        self.add_investment(dev.Investment(name=original_line.name,
+                                           device_idtag=original_line.idtag,
+                                           status=False, group=inv_group))
+
+        return mid_sub, mid_vl, mid_bus, br1, br2
+
+    def split_line_int_out(self,
+                           original_line: Union[dev.Line],
+                           position: float,
+                           km_io: float):
+        """
+
+        :param original_line:
+        :param position:
+        :param km_io:
+        :return:
+        """
+
+        # Each of the Branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
+
+        # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+
+        B1 = dev.Bus(name=original_line.name + ' split bus 1',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        B2 = dev.Bus(name=original_line.name + ' split bus 2',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        mid_sub = dev.Substation(name=original_line.name + ' new bus',
+                                 area=original_line.bus_from.area,
+                                 zone=original_line.bus_from.zone,
+                                 country=original_line.bus_from.country)
+        mid_vl = dev.VoltageLevel(name=original_line.name + ' new bus',
+                                  substation=mid_sub)
+        B3 = dev.Bus(name=original_line.name + ' new bus',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     voltage_level=mid_vl,
+                     substation=mid_sub,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        # create first split
+        br1 = dev.Line(name=original_line.name + ' split 1',
+                       bus_from=original_line.bus_from,
+                       bus_to=B1,
+                       r=original_line.R * position,
+                       x=original_line.X * position,
+                       b=original_line.B * position,
+                       r0=original_line.R0 * position,
+                       x0=original_line.X0 * position,
+                       b0=original_line.B0 * position,
+                       r2=original_line.R2 * position,
+                       x2=original_line.X2 * position,
+                       b2=original_line.B2 * position,
+                       length=original_line.length * position,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        position_c = 1.0 - position
+        br2 = dev.Line(name=original_line.name + ' split 2',
+                       bus_from=B2,
+                       bus_to=original_line.bus_to,
+                       r=original_line.R * position_c,
+                       x=original_line.X * position_c,
+                       b=original_line.B * position_c,
+                       r0=original_line.R0 * position_c,
+                       x0=original_line.X0 * position_c,
+                       b0=original_line.B0 * position_c,
+                       r2=original_line.R2 * position_c,
+                       x2=original_line.X2 * position_c,
+                       b2=original_line.B2 * position_c,
+                       length=original_line.length * position_c,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # kilometers of the in/out appart from the original line
+        proportion_io = km_io / original_line.length
+
+        br3 = dev.Line(name=original_line.name + ' in',
+                       bus_from=B1,
+                       bus_to=B3,
+                       r=original_line.R * proportion_io,
+                       x=original_line.X * proportion_io,
+                       b=original_line.B * proportion_io,
+                       r0=original_line.R0 * proportion_io,
+                       x0=original_line.X0 * proportion_io,
+                       b0=original_line.B0 * proportion_io,
+                       r2=original_line.R2 * proportion_io,
+                       x2=original_line.X2 * proportion_io,
+                       b2=original_line.B2 * proportion_io,
+                       length=original_line.length * proportion_io,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        br4 = dev.Line(name=original_line.name + ' out',
+                       bus_from=B3,
+                       bus_to=B2,
+                       r=original_line.R * proportion_io,
+                       x=original_line.X * proportion_io,
+                       b=original_line.B * proportion_io,
+                       r0=original_line.R0 * proportion_io,
+                       x0=original_line.X0 * proportion_io,
+                       b0=original_line.B0 * proportion_io,
+                       r2=original_line.R2 * proportion_io,
+                       x2=original_line.X2 * proportion_io,
+                       b2=original_line.B2 * proportion_io,
+                       length=original_line.length * proportion_io,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # deactivate the original line
+        original_line.active = False
+        original_line.active_prof.fill(False)
+
+        # add to gridcal the new 2 lines and the bus
+        self.add_substation(obj=mid_sub)
+        self.add_voltage_level(obj=mid_vl)
+        self.add_bus(B1)
+        self.add_bus(B2)
+        self.add_bus(B3)
+        self.add_line(br1)
+        self.add_line(br2)
+        self.add_line(br3)
+        self.add_line(br4)
+
+        # add new stuff as new investment
+        inv_group = dev.InvestmentsGroup(name=original_line.name + ' in/out', category='Line in/out')
+        self.add_investments_group(inv_group)
+        self.add_investment(
+            dev.Investment(name=B1.name, device_idtag=B1.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=B2.name, device_idtag=B2.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=B3.name, device_idtag=B3.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br1.name, device_idtag=br1.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br2.name, device_idtag=br2.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br3.name, device_idtag=br3.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br4.name, device_idtag=br4.idtag, status=True, group=inv_group))
+
+        # include the deactivation of the original line
+        self.add_investment(dev.Investment(name=original_line.name,
+                                           device_idtag=original_line.idtag,
+                                           status=False, group=inv_group))
+
+        return mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4

@@ -171,7 +171,7 @@ class GridMapWidget(MapWidget):
         :param graphic_object: Graphic object associated
         """
         api_object = getattr(graphic_object, 'api_object', None)
-        if api_object != None:
+        if api_object is not None:
             self.graphics_manager.delete_device(api_object)
         self.diagram_scene.removeItem(graphic_object)
 
@@ -295,6 +295,7 @@ class GridMapWidget(MapWidget):
         :param api_object:
         :param lat:
         :param lon:
+        :param index:
         :return:
         """
         graphic_object = NodeGraphicItem(editor=self,
