@@ -62,6 +62,9 @@ def get_assoc_dict():
 
     i = 0
     for c_name in c_list:
+        if c_name not in all_class:
+            i += 1
+            continue
         if c_name not in formated_dict:
             formated_dict[c_name] = {}
         formated_dict[c_name][c_prop_list[i]] = i_prop_list[i]
