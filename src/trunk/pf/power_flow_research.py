@@ -3184,7 +3184,7 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
     return ret.converged
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
     # import os
     # grid_ = HelperFunctions.linn5bus_example()    #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.linn5bus_example2()   #converges true
@@ -3193,7 +3193,7 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
     # grid_ = HelperFunctions.pure_ac_2bus()        #converges true
     # grid_ = HelperFunctions.pure_ac_3bus_trafo()  #converges true, your trafo is not broken maybe?
     # grid_ = HelperFunctions.acdc_5bus()           #converges true 
-    # grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
+    grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
     # grid_ = HelperFunctions.acdc_10buswoTrafo()
     # grid_ = HelperFunctions.linn5bus_example2()
     # grid_ = HelperFunctions.bus14_example()
@@ -3203,46 +3203,46 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
     # grid_ = HelperFunctions.acdc_10bus_branchcontrol() #converges true, but not every remote branch control will converge so
 
     
-    # pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
-    #                                    max_iter=10,
-    #                                    trust_radius=5.0,
-    #                                    tolerance=1e-10,
-    #                                    verbose=1)
-    # run_pf_ver2(grid=grid_, pf_options=pf_options_, debug = 1)
+    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                       max_iter=10,
+                                       trust_radius=5.0,
+                                       tolerance=1e-10,
+                                       verbose=1)
+    run_pf_ver2(grid=grid_, pf_options=pf_options_, debug = 1)
 
-import os
-import csv
+# import os
+# import csv
 
-if __name__ == '__main__':
-    # Define the output CSV file
-    csv_file_path = os.path.join(os.getcwd(), 'simulation_results_scanning_6.csv')
+# if __name__ == '__main__':
+#     # Define the output CSV file
+#     csv_file_path = os.path.join(os.getcwd(), 'simulation_results_scanning_6.csv')
     
-    # Prepare to write to the CSV file
-    with open(csv_file_path, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['vsc1_qfrom_setpoint', 'vsc1_vmf_setpoint', 'vsc2_pfrom_setpoint', 'vsc2_vmt_setpoint', 'convergence_status'])
+#     # Prepare to write to the CSV file
+#     with open(csv_file_path, mode='w', newline='') as file:
+#         writer = csv.writer(file)
+#         writer.writerow(['vsc1_qfrom_setpoint', 'vsc1_vmf_setpoint', 'vsc2_pfrom_setpoint', 'vsc2_vmt_setpoint', 'convergence_status'])
 
-        # Loop over the power range for Qto and Pto
-        for vsc1_qto in [i * 0.1 for i in range(-10, 11)]:  # Generates values from -1.0 to 1.0 with a step of 0.1
-            for vsc2_pto in [i * 0.1 for i in range(-10, 11)]:  # Same as above for vsc2_pto
+#         # Loop over the power range for Qto and Pto
+#         for vsc1_qto in [i * 0.1 for i in range(-10, 11)]:  # Generates values from -1.0 to 1.0 with a step of 0.1
+#             for vsc2_pto in [i * 0.1 for i in range(-10, 11)]:  # Same as above for vsc2_pto
 
-                # Set the voltage setpoints to 1
-                vsc1_vmf = 1
-                vsc2_vmt = 1
+#                 # Set the voltage setpoints to 1
+#                 vsc1_vmf = 1
+#                 vsc2_vmt = 1
 
-                # Destroy all Control objects if necessary
-                # Depending on your implementation you may need to reset or destroy previous instances
+#                 # Destroy all Control objects if necessary
+#                 # Depending on your implementation you may need to reset or destroy previous instances
 
-                # Call the method to configure the grid with new parameters
-                grid = HelperFunctions.acdc_10bus_changing_vars(float(vsc1_qto), float(vsc1_vmf), float(vsc2_pto), float(vsc2_vmt))
+#                 # Call the method to configure the grid with new parameters
+#                 grid = HelperFunctions.acdc_10bus_changing_vars(float(vsc1_qto), float(vsc1_vmf), float(vsc2_pto), float(vsc2_vmt))
 
-                # Set power flow options
-                pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, max_iter=10,
-                                                  trust_radius=5.0, tolerance=1e-10, verbose=1)
+#                 # Set power flow options
+#                 pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, max_iter=10,
+#                                                   trust_radius=5.0, tolerance=1e-10, verbose=1)
                 
-                # Run power flow
-                convergence_status = run_pf_ver2(grid=grid, pf_options=pf_options, debug=1)
+#                 # Run power flow
+#                 convergence_status = run_pf_ver2(grid=grid, pf_options=pf_options, debug=1)
 
-                # Write results to CSV
-                writer.writerow([vsc1_qto, vsc1_vmf, vsc2_pto, vsc2_vmt, convergence_status])
+#                 # Write results to CSV
+#                 writer.writerow([vsc1_qto, vsc1_vmf, vsc2_pto, vsc2_vmt, convergence_status])
 

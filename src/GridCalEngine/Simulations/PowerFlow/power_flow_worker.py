@@ -784,7 +784,6 @@ def multi_island_pf(multi_circuit: MultiCircuit,
             bus_dict=bus_dict,
             areas_dict=areas_dict
         )
-        print("Normal PowerFlow")
 
     res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
 

@@ -746,7 +746,7 @@ class SimulationIndices2:
         self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
         # (Generalised PF) determine the indices and setpoints
-        self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 1)
+        self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0)
 
     def recompile_types(self,
                         bus_types: IntVec,
@@ -763,83 +763,6 @@ class SimulationIndices2:
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
     def compile_control_indices_generalised_pf(self, Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0):
-        # print("we have gen_data")
-        # print("nelm")
-        # print(gen_data.nelm)
-        # print("nbus")
-        # print(gen_data.nbus)
-        # print("names")
-        # print(gen_data.names)
-        # print("idtag")
-        # print(gen_data.idtag)
-        # print("controllable")
-        # print(gen_data.controllable)
-        # print("installed_p")
-        # print(gen_data.installed_p)
-
-        # print("isActive")
-        # print(gen_data.active)
-        # print("p")
-        # print(gen_data.p)
-        # print("pf")
-        # print(gen_data.pf)
-        # print("v")
-        # print(gen_data.v)
-
-        # print("mttf")
-        # print(gen_data.mttf)
-        # print("mttr")
-        # print(gen_data.mttr)
-
-        # print("C_bus_elm")
-        # print(gen_data.C_bus_elm)
-
-        # print("r0")
-        # print(gen_data.r0)
-        # print("r1")
-        # print(gen_data.r1)
-        # print("r2")
-        # print(gen_data.r2)
-
-        # print("x0")
-        # print(gen_data.x0)
-        # print("x1")
-        # print(gen_data.x1)
-        # print("x2")
-        # print(gen_data.x2)
-
-        # print("dispatchable")
-        # print(gen_data.dispatchable)
-        # print("pmax")
-        # print(gen_data.pmax)
-        # print("pmin")
-        # print(gen_data.pmin)
-
-        # print("cost_1")
-        # print(gen_data.cost_1)
-        # print("cost_0")
-        # print(gen_data.cost_0)
-        # print("cost_2")
-        # print(gen_data.cost_2)
-        # print("startup_cost")
-        # print(gen_data.startup_cost)
-        # print("availability")
-        # print(gen_data.availability)
-        # print("ramp_up")
-        # print(gen_data.ramp_up)
-        # print("ramp_down")
-        # print(gen_data.ramp_down)
-        # print("min_time_up")
-        # print(gen_data.min_time_up)
-        # print("min_time_down")
-        # print(gen_data.min_time_down)
-
-        # print("original_idx")
-        # print(gen_data.original_idx)
-            
-        # print("we have vsc_data")
-        # print("vsc_data.nbus",vsc_data.nbus)
-        # print("vsc_data.nelm",vsc_data.nelm)
 
         #get the number of ac buses
         ac_buses = self.ac
@@ -956,10 +879,10 @@ class SimulationIndices2:
         for bus in gen_data.bus_idx:
             #grab the voltage setpoint
             _setpoint = gen_data.v[gen_data.bus_idx == bus]
-            print("bus here has a generator", bus)
-            print("its voltage setpoint is", _setpoint)
-            print("its active power setpoint is", gen_data.p[gen_data.bus_idx == bus])
-            print("power factor is at", gen_data.pf[gen_data.bus_idx == bus])
+            # print("bus here has a generator", bus)
+            # print("its voltage setpoint is", _setpoint)
+            # print("its active power setpoint is", gen_data.p[gen_data.bus_idx == bus])
+            # print("power factor is at", gen_data.pf[gen_data.bus_idx == bus])
 
             # We assume for the time being that all generators set the voltage
             _popIdx = np.where(dict_unknown_idx["Voltage"] == bus)
@@ -1014,8 +937,8 @@ class SimulationIndices2:
                 # dict_known_setpoints["Pzip"] = np.append(dict_known_setpoints["Pzip"], puPower)
                 assert len(dict_known_setpoints["Pzip"]) == len(dict_known_idx["Pzip"]), f"Powers setpoints {dict_known_setpoints['Pzip']} and buses {dict_known_idx['Pzip']} are not the same length"
 
-            print((dict_known_idx["Voltage"]), "known voltage")
-            print((dict_known_idx["Pzip"]), " known pzip")
+            # print((dict_known_idx["Voltage"]), "known voltage")
+            # print((dict_known_idx["Pzip"]), " known pzip")
 
         #Set the "control modes" for VSCs (we do it one by one because I dont know the order of the control_modes array)
         for vsc_idx in range(num_vsc):
@@ -1109,7 +1032,7 @@ class SimulationIndices2:
             print(df)
 
         
-        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 1)
+        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 0, strict = 1)
 
         self.kn_volt_idx = dict_known_idx["Voltage"]
         self.kn_angle_idx = dict_known_idx["Angle"]
