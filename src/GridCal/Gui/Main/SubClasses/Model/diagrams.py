@@ -441,37 +441,38 @@ class DiagramsMain(CompiledArraysMain):
                 info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
-            if t_idx is None:
-                results: sim.StochasticPowerFlowResults = self.session.get_results(
-                    SimulationTypes.StochasticPowerFlow)
-                bus_active = [bus.active for bus in self.circuit.buses]
-                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
-                return diagram.colour_results(buses=buses,
-                                              branches=branches,
-                                              hvdc_lines=hvdc_lines,
-                                              Sbus=results.S_points.mean(axis=0),
-                                              types=results.bus_types,
-                                              voltages=results.V_points.mean(axis=0),
-                                              bus_active=bus_active,
-                                              loadings=np.abs(results.loading_points).mean(axis=0),
-                                              Sf=results.Sbr_points.mean(axis=0),
-                                              St=-results.Sbr_points.mean(axis=0),
-                                              br_active=br_active,
-                                              hvdc_Pf=None,
-                                              hvdc_Pt=None,
-                                              hvdc_losses=None,
-                                              hvdc_loading=None,
-                                              hvdc_active=None,
-                                              use_flow_based_width=use_flow_based_width,
-                                              min_branch_width=min_branch_width,
-                                              max_branch_width=max_branch_width,
-                                              min_bus_width=min_bus_width,
-                                              max_bus_width=max_bus_width,
-                                              cmap=cmap)
-            else:
-                info_msg(f"{current_study} only has values for the snapshot")
+            # the time is not relevant in this study
+
+            results: sim.StochasticPowerFlowResults = self.session.get_results(
+                SimulationTypes.StochasticPowerFlow
+            )
+            bus_active = [bus.active for bus in self.circuit.buses]
+            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+
+            return diagram.colour_results(buses=buses,
+                                          branches=branches,
+                                          hvdc_lines=hvdc_lines,
+                                          Sbus=results.S_points.mean(axis=0),
+                                          types=results.bus_types,
+                                          voltages=results.V_points.mean(axis=0),
+                                          bus_active=bus_active,
+                                          loadings=np.abs(results.loading_points).mean(axis=0),
+                                          Sf=results.Sbr_points.mean(axis=0),
+                                          St=-results.Sbr_points.mean(axis=0),
+                                          br_active=br_active,
+                                          hvdc_Pf=None,
+                                          hvdc_Pt=None,
+                                          hvdc_losses=None,
+                                          hvdc_loading=None,
+                                          hvdc_active=None,
+                                          use_flow_based_width=use_flow_based_width,
+                                          min_branch_width=min_branch_width,
+                                          max_branch_width=max_branch_width,
+                                          min_bus_width=min_bus_width,
+                                          max_bus_width=max_bus_width,
+                                          cmap=cmap)
 
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             if t_idx is None:

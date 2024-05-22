@@ -28,8 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added the propagate flag to delete_diagram_element&#10;Deleted BusViewer from the trunk">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Simplified the grid_colour_function and added the hosting capacity driver">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1841,7 +1840,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="486" />
+    <option name="localTasksCounter" value="487" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1887,7 +1886,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Remove unused imports" />
     <MESSAGE value="Added missing pymoo dependency in the setup.py of GridCalEngine" />
     <MESSAGE value="Fixed gui icons" />
     <MESSAGE value="Moved the PTDF settings to the pf tab" />
@@ -1912,7 +1910,8 @@
     <MESSAGE value="Added call_delete_db_element_func" />
     <MESSAGE value="Added qdarktheme as a third party embedded dependency" />
     <MESSAGE value="Added the propagate flag to delete_diagram_element&#10;Deleted BusViewer from the trunk" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added the propagate flag to delete_diagram_element&#10;Deleted BusViewer from the trunk" />
+    <MESSAGE value="Simplified the grid_colour_function and added the hosting capacity driver" />
+    <option name="LAST_COMMIT_MESSAGE" value="Simplified the grid_colour_function and added the hosting capacity driver" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
