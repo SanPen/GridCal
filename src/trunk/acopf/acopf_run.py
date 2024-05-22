@@ -2,12 +2,14 @@ import os
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import NodalCapacityTimeSeriesDriver
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_options import NodalCapacityOptions
 import numpy as np
 import pandas as pd
 from GridCalEngine.enumerations import NodalCapacityMethod
+
 
 def example_3bus_acopf():
     """
@@ -231,16 +233,32 @@ def case9():
 
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
+    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 14 zip costs.gridcal')
 
     grid = gce.FileOpen(file_path).open()
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+
+    # pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    # opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+    #                                           ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+    # res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+    #                   optimize_nodal_capacity=True,
+    #                   nodal_capacity_sign=1.0,
+    #                   capacity_nodes_idx=np.array([10, 11, 12]))
+
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.LINEAR_OPF, ips_tolerance=1e-8,
                                               ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
-    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
-                      optimize_nodal_capacity=True,
-                      nodal_capacity_sign= -1.0,
-                      capacity_nodes_idx=np.array([1]))
+    res = run_linear_opf_ts(grid=grid,
+                            optimize_nodal_capacity=True,
+                            time_indices=None,
+                            nodal_capacity_sign=1.0,
+                            capacity_nodes_idx=np.array([3, 4]))
+    print('P nodal capacity: ', res.nodal_capacity_vars.P)
+    print('P generators: ', res.gen_vars.p)
+    print('P loads: ', res.load_vars.shedding)
+    print('P slacks pos: ', res.branch_vars.flow_slacks_pos)
+    print('P slacks neg: ', res.branch_vars.flow_slacks_neg)
     print('')
 
 
@@ -461,10 +479,10 @@ def case_nodalcap():
                                               verbose=1, ips_iterations=150, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     nc_options = NodalCapacityOptions(opf_options=opf_options, capacity_nodes_idx=np.array([2, 3, 6]),
-                                      nodal_capacity_sign=1.0, method=NodalCapacityMethod.NonlinearOptimization)
+                                      nodal_capacity_sign=-1.0, method=NodalCapacityMethod.NonlinearOptimization)
     case = NodalCapacityTimeSeriesDriver(grid=grid, time_indices=np.array([0]), options=nc_options)
     case.run()
-    #run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
 if __name__ == '__main__':
