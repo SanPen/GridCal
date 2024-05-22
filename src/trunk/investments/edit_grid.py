@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     new_lines = []
     for line in grid.lines:
-        new_line = line.copy()
+        new_line = line.copy(forced_new_idtag=True)
         new_line.active = False
         # new_line.B = 0
         # new_line.R = 0
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     new_trs = []
     for transformer in grid.transformers2w:
-        new_tr = transformer.copy()
+        new_tr = transformer.copy(forced_new_idtag=True)
         new_tr.active = False
         new_trs.append(new_tr)
 
