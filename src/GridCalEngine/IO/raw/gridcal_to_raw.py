@@ -1,7 +1,7 @@
 import numpy as np
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus
+from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 
@@ -24,7 +24,7 @@ def get_psse_bus(bus: dev.Bus, area_dict, zones_dict) -> RawBus:
     psse_bus = RawBus()
     psse_bus.NAME = bus.name
     psse_bus.BASKV = bus.Vnom
-    psse_bus.I = int(bus.code)
+    psse_bus.I = int(bus.code)  # TODO: Can it be modified on the UI?
 
     psse_bus.EVLO = bus.Vmin
     psse_bus.EVHI = bus.Vmax
@@ -37,6 +37,25 @@ def get_psse_bus(bus: dev.Bus, area_dict, zones_dict) -> RawBus:
     psse_bus.IDE = bus.type.value
 
     return psse_bus
+
+
+def get_psse_load(load: dev.Load) -> RawLoad:
+    psse_load = RawLoad()
+
+    i, id_ = load.name.split("_", 1)  # TODO: Can it be modified on the UI?
+
+    psse_load.I = i
+    psse_load.ID = id_
+
+    psse_load.YP = load.G
+    psse_load.YQ = load.B
+    psse_load.IP = load.Ir
+    psse_load.IQ = load.Ii
+    psse_load.PL = load.P
+    psse_load.QL = load.Q
+    psse_load.STATUS = 1 if load.active else 0
+
+    return psse_load
 
 
 def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
@@ -54,5 +73,7 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     psse_circuit.buses = [get_psse_bus(bus, area_dict, zones_dict) for bus in grid.buses]
 
     # TODO: Should we generate shunts? Are they used only in older versions of PSS/E?
+
+    psse_circuit.loads = [get_psse_load(load) for load in grid.loads]
 
     return psse_circuit
