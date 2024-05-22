@@ -22,6 +22,24 @@ from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapChan
 import numpy as np
 
 
+def find_object_by_idtag(object_list, target_idtag):
+    """
+    Finds an object with the specified idtag
+     in the given object_list from a Multi Circuit.
+
+    Args:
+        object_list (list[MyObject]): List of MyObject instances.
+        target_idtag (str): The uuid to search for.
+
+    Returns:
+        MyObject or None: The found object or None if not found.
+    """
+    for obj in object_list:
+        if obj.idtag == target_idtag:
+            return obj
+    return None
+
+
 def get_slack_id(machines):
     """
 
@@ -251,7 +269,7 @@ def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: fl
             X = ac_line_segment.x / Zbase
             G = ac_line_segment.gch / Ybase if ac_line_segment.gch is not None else 0
             B = ac_line_segment.bch / Ybase if ac_line_segment.bch is not None else 0
-            if hasattr(ac_line_segment,"r0"):
+            if hasattr(ac_line_segment, "r0"):
                 R0 = ac_line_segment.r0 / Zbase if ac_line_segment.r0 is not None else 0
                 X0 = ac_line_segment.x0 / Zbase if ac_line_segment.x0 is not None else 0
                 G0 = ac_line_segment.g0ch / Ybase if ac_line_segment.g0ch is not None else 0
@@ -690,7 +708,6 @@ def base_voltage_to_str(base_voltage):
 def get_regulating_control(cgmes_elm,
                            cgmes_enums,
                            logger: DataLogger):
-
     if cgmes_elm.RegulatingControl is not None:
 
         if cgmes_elm.RegulatingControl.enabled:
@@ -769,4 +786,4 @@ def get_regulating_control(cgmes_elm,
                            value='None',
                            expected_value='BaseVoltage')
 
-    return v_set, is_controlled   # control_node, control_mode
+    return v_set, is_controlled  # control_node, control_mode
