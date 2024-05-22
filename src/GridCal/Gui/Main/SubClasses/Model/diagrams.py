@@ -372,7 +372,8 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
-                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(SimulationTypes.PowerFlowTimeSeries_run)
+                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(
+                    SimulationTypes.PowerFlowTimeSeries_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -835,7 +836,8 @@ class DiagramsMain(CompiledArraysMain):
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                          time_index=self.get_diagram_slider_index(),
-                                         prefer_node_breaker=prefer_node_breaker)
+                                         prefer_node_breaker=prefer_node_breaker,
+                                         call_delete_db_element_func=self.call_delete_db_element)
 
         diagram_widget.setStretchFactor(1, 10)
         diagram_widget.center_nodes()
@@ -871,7 +873,8 @@ class DiagramsMain(CompiledArraysMain):
                 diagram_widget = SchematicWidget(self.circuit,
                                                  diagram=diagram,
                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                 time_index=self.get_diagram_slider_index())
+                                                 time_index=self.get_diagram_slider_index(),
+                                                 call_delete_db_element_func=self.call_delete_db_element)
 
                 self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
                 self.set_diagrams_list_view()
@@ -943,7 +946,8 @@ class DiagramsMain(CompiledArraysMain):
                             diagram_widget = SchematicWidget(self.circuit,
                                                              diagram=diagram,
                                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                             time_index=self.get_diagram_slider_index())
+                                                             time_index=self.get_diagram_slider_index(),
+                                                             call_delete_db_element_func=self.call_delete_db_element)
 
                             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
                                                                 diagram=diagram)
@@ -963,7 +967,9 @@ class DiagramsMain(CompiledArraysMain):
                 diagram_widget = SchematicWidget(self.circuit,
                                                  diagram=diagram,
                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
-                                                 time_index=self.get_diagram_slider_index())
+                                                 time_index=self.get_diagram_slider_index(),
+                                                 call_delete_db_element_func=self.call_delete_db_element)
+
                 diagram_widget.setStretchFactor(1, 10)
                 diagram_widget.center_nodes()
                 self.diagram_widgets_list.append(diagram_widget)
@@ -1021,7 +1027,8 @@ class DiagramsMain(CompiledArraysMain):
                                    longitude=diagram.longitude,
                                    latitude=diagram.latitude,
                                    name=diagram.name,
-                                   diagram=diagram)
+                                   diagram=diagram,
+                                   call_delete_db_element_func=self.call_delete_db_element)
 
         self.add_diagram_widget_and_diagram(diagram_widget=map_widget, diagram=diagram)
         self.set_diagrams_list_view()
@@ -1566,3 +1573,17 @@ class DiagramsMain(CompiledArraysMain):
 
         if isinstance(diagram, SchematicWidget):
             diagram.enable_all_results_tags()
+
+    def call_delete_db_element(self, caller: Union[SchematicWidget, GridMapWidget], api_obj: ALL_DEV_TYPES):
+        """
+        This function is meant to be a master delete function that is passed to each diagram
+        so that when a diagram deletes an element, the element is deleted in all other diagrams
+        :param caller:
+        :param api_obj:
+        :return:
+        """
+        for diagram in self.diagram_widgets_list:
+            if diagram != caller:
+                diagram.delete_diagram_element(device=api_obj, propagate=False)
+
+        self.circuit.delete_elements_by_type(obj=api_obj)

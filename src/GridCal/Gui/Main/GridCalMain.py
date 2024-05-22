@@ -17,12 +17,12 @@
 import os.path
 import sys
 
-import qdarktheme
+# import qdarktheme
 from PySide6 import QtWidgets, QtGui
 
 from GridCal.Gui.Main.MainWindow import QApplication
 from GridCal.Gui.Main.SubClasses.Scripting.scripting import ScriptingMain
-from GridCal.Gui.Main.SubClasses.Server.server import ServerMain
+import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCal.__version__ import __GridCal_VERSION__
 
 __author__ = 'Santiago Peñate Vera'
@@ -136,7 +136,9 @@ def runGridCal() -> None:
     Main function to run the GUI
     :return:
     """
+    # if hasattr(qdarktheme, 'enable_hi_dpi'):
     qdarktheme.enable_hi_dpi()
+
     app = QApplication(sys.argv)
     # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
 
