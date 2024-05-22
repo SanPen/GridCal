@@ -1128,14 +1128,9 @@ def add_linear_branches_formulation(t: int,
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m]:
-                # branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf,
-                #                                                  name=join("flow_slack_pos_", [t, m], "_"))
-                # branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf,
-                #                                                  name=join("flow_slack_neg_", [t, m], "_"))
-
-                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, 0.0001,
+                branch_vars.flow_slacks_pos[t, m] = prob.add_var(0, inf,
                                                                  name=join("flow_slack_pos_", [t, m], "_"))
-                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, 0.0001,
+                branch_vars.flow_slacks_neg[t, m] = prob.add_var(0, inf,
                                                                  name=join("flow_slack_neg_", [t, m], "_"))
 
                 # add upper rate constraint
@@ -1846,5 +1841,5 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # add the model logger to the main logger
     logger += lp_model.logger
 
-    lp_model.save_model('nodal_opf.lp')
+    # lp_model.save_model('nodal_opf.lp')
     return vars_v
