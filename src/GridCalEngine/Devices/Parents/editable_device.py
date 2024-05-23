@@ -352,8 +352,8 @@ class EditableDevice:
             obj = getattr(self, name)
             if properties.tpe in [str, float, int, bool]:
                 data.append(obj)
-            elif properties.tpe == DeviceType.GeneratorQCurve:
-                data.append(obj.str())
+            # elif properties.tpe == DeviceType.GeneratorQCurve:
+            #     data.append(obj.str())
             else:
                 # if the object is not of a primary type, get the idtag instead
                 if hasattr(obj, 'idtag'):

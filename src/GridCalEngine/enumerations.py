@@ -1331,6 +1331,7 @@ class NodalCapacityMethod(Enum):
     """
     NonlinearOptimization = 'Nonlinear Optimization'
     LinearOptimization = 'Linear Optimization'
+    CPF = "Continuation power flow"
 
     def __str__(self):
         return self.value
