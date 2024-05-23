@@ -1086,7 +1086,7 @@ if __name__ == '__main__':
     # acdc2bus_example() #converges True
     # acdc4bus_example() #converges true
     
-    # compare_results()
+    compare_results()
     
     # acdc10_example() #converges true but there is a HVDC Link so it doesnt make sense to converge
     # fubm_caseHVDC_vt()
@@ -1095,7 +1095,7 @@ if __name__ == '__main__':
     # pegase2k_example() #runs super slow and does not converge
 
 
-    whatever_func()
+    # whatever_func()
     
     # two_grids_of_3bus() #does not use gpf
     # case9()
@@ -1107,21 +1107,3 @@ if __name__ == '__main__':
     # casepegase13k()
     # casehvdc()
     # caseREE()
-
-    ####### Looping through all files in the grid folder ##########
-    # Path to your directory containing the grid files
-    # directory_path = 'Grids_and_profiles/grids/'
-    # txt_file_path = 'C:/Users/raiya/Desktop/makingCharts'
-    # log_path = "comparison2.txt"
-    # compare_answers(directory_path, txt_file_path, log_path)
-
-    # #Log path
-    # log_path = "traditionalPFAnswers.txt"
-    # Iterate through list
-    # for file_name in file_names:
-        # Call the function
-        # get_gridProperties(directory_path, file_names)
-
-
-    # Call the function
-    # test_convergence(directory_path, log_file_path)

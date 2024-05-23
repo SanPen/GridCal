@@ -243,9 +243,9 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     end = time.time()
     elapsed = end - start
 
-    if ret.converged == False:
-        #raise an exception that says the power flow did not converge
-        raise Exception("Power flow did not converge")
+    # if ret.converged == False:
+    #     #raise an exception that says the power flow did not converge
+    #     raise Exception("Power flow did not converge")
 
 
 
