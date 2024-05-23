@@ -93,9 +93,9 @@ class InvestmentScores:
         self.voltage_module_score: float = 0.0
         self.voltage_angle_score: float = 0.0
 
-    @property
-    def electrical_score(self) -> float:
-        return self.losses_score + self.overload_score + self.voltage_module_score + self.voltage_angle_score
+    # @property
+    # def electrical_score(self) -> float:
+    #     return self.losses_score + self.overload_score + self.voltage_module_score + self.voltage_angle_score
 
     @property
     def financial_score(self) -> float:
@@ -106,7 +106,8 @@ class InvestmentScores:
         Return multidimensional metrics for the optimization
         :return: array of 2 values
         """
-        return np.array([self.electrical_score, self.financial_score])
+        # return np.array([self.electrical_score, self.financial_score])
+        return np.array([self.losses_score, self.overload_score, self.voltage_module_score, self.voltage_angle_score, self.financial_score])
 
 
 def power_flow_function(inv_list: List[Investment],
@@ -263,7 +264,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                          losses=scores.losses_score,
                          overload_score=scores.overload_score,
                          voltage_score=scores.voltage_module_score,
-                         electrical=scores.electrical_score,
+                         # electrical=scores.electrical_score,
                          financial=scores.financial_score,
                          objective_function_sum=scores.arr().sum(),
                          combination=combination)
@@ -391,7 +392,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = int(round(self.dim/5))
+        pop_size = int(round(self.dim)) # divide by 5 for ideal grid
         n_partitions = int(round(pop_size))
 
         # compile the snapshot
@@ -411,7 +412,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             pop_size=pop_size,
             crossover_prob=0.8,
             mutation_probability=0.1,
-            eta=20,
+            eta=30,
         )
 
         self.results.set_best_combination(combination=X[:, 0])
