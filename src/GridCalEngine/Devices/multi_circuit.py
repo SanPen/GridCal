@@ -2947,7 +2947,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.windings.append(obj)
 
-    def add_transformer3w(self, obj: dev.Transformer3W):
+    def add_transformer3w(self, obj: dev.Transformer3W, add_middle_bus: bool = True):
         """
         Add a transformer object
         :param obj: Transformer3W instance
@@ -2956,7 +2956,8 @@ class MultiCircuit:
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
         self.transformers3w.append(obj)
-        self.add_bus(obj.bus0)  # add the middle transformer
+        if add_middle_bus:
+            self.add_bus(obj.bus0)  # add the middle transformer
         self.add_winding(obj.winding1)
         self.add_winding(obj.winding2)
         self.add_winding(obj.winding3)

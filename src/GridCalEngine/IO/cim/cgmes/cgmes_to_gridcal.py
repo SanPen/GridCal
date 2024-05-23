@@ -808,6 +808,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     code=cgmes_elm.description,
                                                     name=cgmes_elm.name,
                                                     active=True,
+                                                    # bus0=,
                                                     bus1=calc_node_1,
                                                     bus2=calc_node_2,
                                                     bus3=calc_node_3,
@@ -861,7 +862,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.cn_from = cn_3
                     gcdev_elm.winding3.cn_to = cn_1
 
-                    gcdev_model.add_transformer3w(gcdev_elm)
+                    gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=False)
 
                 else:
                     logger.add_error(msg='Not exactly three terminals',
