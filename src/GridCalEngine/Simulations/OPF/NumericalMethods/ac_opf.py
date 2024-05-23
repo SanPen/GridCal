@@ -491,10 +491,23 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     from_idx = nc.F
     to_idx = nc.T
 
+    # PV buses are identified by those who have the same upper and lower limits for the voltage. Slack obtained from nc
+
+    slack = nc.vd
+    slackgens = np.where(Cg[slack, :].toarray() == 1)[1]
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
-    Pg_max = nc.generator_data.pmax / Sbase
-    Pg_min = nc.generator_data.pmin / Sbase
+
+    if optimize_nodal_capacity:
+        Pg_max = nc.generator_data.p / Sbase + 1e-6
+        Pg_min = nc.generator_data.p / Sbase - 1e-6
+    else:
+        Pg_max = nc.generator_data.pmax / Sbase
+        Pg_min = nc.generator_data.pmin / Sbase
+
+    Pg_max[slackgens] = nc.generator_data.pmax[slackgens] / Sbase
+    Pg_min[slackgens] = nc.generator_data.pmin[slackgens] / Sbase
+
     Qg_max = nc.generator_data.qmax / Sbase
     Qg_min = nc.generator_data.qmin / Sbase
     Vm_max = nc.bus_data.Vmax
@@ -502,10 +515,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     pf = nc.generator_data.pf
     tanmax = ((1 - pf ** 2) ** (1 / 2)) / (pf + 1e-15)
 
-    # PV buses are identified by those who have the same upper and lower limits for the voltage. Slack obtained from nc
     pv = np.flatnonzero(Vm_max == Vm_min)
     pq = np.flatnonzero(Vm_max != Vm_min)
-    slack = nc.vd
 
     # Check the active elements and their operational limits.
     br_mon_idx = nc.branch_data.get_monitor_enabled_indices()
