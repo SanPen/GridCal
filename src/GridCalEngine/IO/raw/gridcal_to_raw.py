@@ -1,7 +1,7 @@
 import numpy as np
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt
+from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 
@@ -83,6 +83,29 @@ def get_psse_fixed_shunt(shunt: dev.Shunt) -> RawFixedShunt:
     return psse_shunt
 
 
+def get_psse_generator(generator: dev.Generator) -> RawGenerator:
+    psse_raw_generator = RawGenerator()
+
+    i, id_ = generator.name.split("_", 1)
+
+    # TODO: Can it be modified on the UI?
+    #  Does the "I" need to be generated as an automatically incrementing number?
+    #  Then how should the ID be generated?
+    psse_raw_generator.I = i
+    psse_raw_generator.ID = id_
+
+    psse_raw_generator.PG = generator.P
+    psse_raw_generator.VS = generator.Vset
+    psse_raw_generator.QB = generator.Qmin
+    psse_raw_generator.QT = generator.Qmax
+    psse_raw_generator.MBASE = generator.Snom
+    psse_raw_generator.PT = generator.Pmax
+    psse_raw_generator.PB = generator.Pmin
+    psse_raw_generator.STAT = 1 if generator.active else 0
+
+    return psse_raw_generator
+
+
 def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     psse_circuit = PsseCircuit()
 
@@ -99,5 +122,7 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     psse_circuit.fixed_shunts = [get_psse_fixed_shunt(shunt) for shunt in grid.shunts]
 
     # TODO: convert switched shunts
+
+    psse_circuit.generators = [get_psse_generator(generator) for generator in grid.generators]
 
     return psse_circuit
