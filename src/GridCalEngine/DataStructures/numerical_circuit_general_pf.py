@@ -187,6 +187,7 @@ class NumericalCircuit:
         self.nshunt: int = nshunt
         self.nhvdc: int = nhvdc
         self.nvsc: int = 0
+        self.ncontrollable_trafo: int = 0
 
         self.nfluidnode: int = nfluidnode
         self.nfluidturbine: int = nfluidturbine
@@ -203,6 +204,7 @@ class NumericalCircuit:
         self.branch_data: ds.BranchData = ds.BranchData(nelm=nbr, nbus=nbus)
         self.hvdc_data: ds.HvdcData = ds.HvdcData(nelm=nhvdc, nbus=nbus)
         self.vsc_data: ds.VscData = ds.VscData(nelm=self.nvsc, nbus=nbus)
+        self.controllable_trafo_data: ds.ControllableTrafoData = ds.ControllableTrafoData(nelm=self.ncontrollable_trafo, nbus=nbus)
 
         self.load_data: ds.LoadData = ds.LoadData(nelm=nload, nbus=nbus)
 
@@ -2427,6 +2429,14 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                             opf_results=opf_results,
                                             branch_data = nc.branch_data)
     
+    nc.controllable_trafo_data = gc_compiler2.get_controllable_trafo_data(circuit=circuit,
+                                                                            t_idx=t_idx,
+                                                                            time_series=time_series,
+                                                                            bus_dict=bus_dict,
+                                                                            bus_types=nc.bus_data.bus_types,
+                                                                            opf_results=opf_results,
+                                                                            branch_data = nc.branch_data)
+    
 
     if len(circuit.fluid_nodes) > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
@@ -2453,101 +2463,4 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                               t_idx=t_idx)
 
     nc.consolidate_information(use_stored_guess=use_stored_guess)
-    
-    print("(numerical_circuit_general_pf.py) after compile information")
-    print("(numerical_circuit_general_pf.py) nc.ac_indices", nc.ac_indices)
-    print("(numerical_circuit_general_pf.py) nc.dc_indices", nc.dc_indices)
-
-    print("(numerical_circuit_general_pf.py) vsc data print")
-    print("(numerical_circuit_general_pf.py) nc.vsc_data.F", nc.vsc_data.F)
-    print("(numerical_circuit_general_pf.py) nc.vsc_data.T", nc.vsc_data.T)
-
-    print("(numerical_circuit_general_pf.py) nc.vsc_data.branch_index", nc.vsc_data.branch_index)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_volt_idx")
-    print(nc.kn_volt_idx)
-    print(nc.kn_volt_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_angle_idx")
-    print(nc.kn_angle_idx)
-    print(nc.kn_angle_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_pzip_idx")
-    print(nc.kn_pzip_idx)
-    print(nc.kn_pzip_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_qzip_idx")
-    print(nc.kn_qzip_idx)
-    print(nc.kn_qzip_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_pfrom_kdx")
-    print(nc.kn_pfrom_kdx)
-    print(nc.kn_pfrom_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_qfrom_kdx")
-    print(nc.kn_qfrom_kdx)
-    print(nc.kn_qfrom_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_pto_kdx")
-    print(nc.kn_pto_kdx)
-    print(nc.kn_pto_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_qto_kdx")
-    print(nc.kn_qto_kdx)
-    print(nc.kn_qto_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_tau_kdx")
-    print(nc.kn_tau_kdx)
-    print(nc.kn_tau_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_mod_kdx")
-    print(nc.kn_mod_kdx)
-    print(nc.kn_mod_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_passive_pfrom_kdx")
-    print(nc.kn_passive_pfrom_kdx)
-    print(nc.kn_passive_pfrom_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_passive_qfrom_kdx")
-    print(nc.kn_passive_qfrom_kdx)
-    print(nc.kn_passive_qfrom_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_passive_pto_kdx")
-    print(nc.kn_passive_pto_kdx)
-    print(nc.kn_passive_pto_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.kn_passive_qto_kdx")
-    print(nc.kn_passive_qto_kdx)
-    print(nc.kn_passive_qto_setpoints)
-
-    print("(numerical_circuit_general_pf.py) nc.un_volt_idx")
-    print(nc.un_volt_idx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_angle_idx")
-    print(nc.un_angle_idx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_pzip_idx")
-    print(nc.un_pzip_idx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_qzip_idx")
-    print(nc.un_qzip_idx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_pfrom_kdx")
-    print(nc.un_pfrom_kdx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_qfrom_kdx")
-    print(nc.un_qfrom_kdx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_pto_kdx")
-    print(nc.un_pto_kdx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_qto_kdx")
-    print(nc.un_qto_kdx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_tau_kdx")
-    print(nc.un_tau_kdx)
-
-    print("(numerical_circuit_general_pf.py) nc.un_mod_kdx")
-    print(nc.un_mod_kdx)
-
     return nc

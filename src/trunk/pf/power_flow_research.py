@@ -178,6 +178,17 @@ class ControlRaiyan:
         ControlRaiyan.collisionDetection(self)
 
     @classmethod
+    def destroyAllControls(cls):
+        for controlInstance in cls._instancesList:
+            del controlInstance
+
+        cls._instancesList = []
+        cls._controlDict = {}
+        cls._bus_voltage_known = {}
+        cls._bus_angle_known = {}
+        
+
+    @classmethod
     def collisionDetection(cls, controlInstance):
         #print everything
         # print("controlInstance.busFrom", controlInstance.busFrom)
@@ -1829,6 +1840,127 @@ class HelperFunctions:
 
 
     @staticmethod
+    def acdc_10bus_changing_vars(vsc1_qto_setpoint, vsc1_vmf_setpoint, vsc2_pto_setpoint, vsc2_vmt_setpoint):
+        ControlRaiyan.destroyAllControls()
+        # declare a circuit object
+        grid = MultiCircuitRaiyan()
+        grid.change_base(1000)
+
+        # Add the buses and the generators and loads attached
+        bus1 = gce.Bus('Bus 1', vnom=20)
+        grid.add_bus(bus1)
+
+        # add bus 2 with a load attached
+        bus2 = gce.Bus('Bus 2', vnom=20)
+        grid.add_bus(bus2)
+        grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
+
+        # add bus 3 with a load attached
+        bus3 = gce.Bus('Bus 3', vnom=20)
+        grid.add_bus(bus3)
+        grid.add_load(bus3, gce.Load('load 3', P=200, Q=50))
+
+        # add bus 4 with a load attached
+        bus4 = gce.Bus('Bus 4', vnom=20)
+        bus4.is_dc = True
+        grid.add_bus(bus4)
+        grid.add_load(bus4, gce.Load('load 4', P=200))
+
+        # add bus 5 with a load attached
+        bus5 = gce.Bus('Bus 5', vnom=20)
+        bus5.is_dc = True
+        grid.add_bus(bus5)
+        grid.add_load(bus5, gce.Load('load 5', P=100))
+
+        # add bus 6
+        bus6 = gce.Bus('Bus 6', vnom=150)
+        bus6.is_dc = True
+        grid.add_bus(bus6)
+        grid.add_load(bus6, gce.Load('load 6', P=150))
+
+        #add bus 7 with a load attached
+        bus7 = gce.Bus('Bus 7', vnom=20)
+        grid.add_bus(bus7)
+        grid.add_load(bus7, gce.Load('load 7', P=100, Q=100))
+
+
+        #add bus 8 with a load attached
+        bus8 = gce.Bus('Bus 8', vnom=20)
+        grid.add_bus(bus8)
+        #add load 0.2 + 0.05 * 1j pu
+        grid.add_load(bus8, gce.Load('load 8', P=200, Q=50))
+
+
+        #add bus 9 with a load attached
+        bus9 = gce.Bus('Bus 9', vnom=20)
+        grid.add_bus(bus9)
+        grid.add_load(bus9, gce.Load('load 9', P=300, Q=100))
+
+
+        #add bus 10 as a slack bus
+        bus10 = gce.Bus('Bus 10', vnom=20) 
+        grid.add_bus(bus10)
+
+
+        #add lines
+        line12 = gce.Line(bus1, bus2, 'line 1-2', r=0.1, x=0.3, b=0.0)
+        line13 = gce.Line(bus1, bus3, 'line 1-3', r=0.1, x=0.3, b=0.0)
+        line23 = gce.Line(bus2, bus3, 'line 2-3', r=0.1, x=0.3, b=0.0)
+        line45 = gce.DcLine(bus4, bus5, 'DC line 4-5', r=0.1)
+        line56 = gce.DcLine(bus5, bus6, 'DC line 5-6', r=0.1)
+        line46 = gce.DcLine(bus4, bus6, 'DC line 4-6', r=0.1)
+        line78 = gce.Line(bus7, bus8, 'line 7-8', r=0.1, x=0.3, b=0.0)
+        line89 = gce.Line(bus8, bus9, 'line 8-9', r=0.1, x=0.3, b=0.0)
+        line910 = gce.Line(bus9, bus10, 'line 9-10', r=0.1, x=0.3, b=0.0)
+        grid.add_line(line12)
+        grid.add_line(line13)
+        grid.add_line(line23)
+        grid.add_dc_line(line45)
+        grid.add_dc_line(line56)
+        grid.add_dc_line(line46)
+        grid.add_line(line78)
+        grid.add_line(line89)
+        grid.add_line(line910)    
+
+        #use gen 1 control to set bus 1 as slack
+        gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.1)
+        gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
+        gen1 = GeneratorRaiyan('Some random generator 1', gen1_control1, gen1_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        grid.add_generator(bus1, gen1)
+
+        
+        #use gen 10 control to set bus 10 as slack, same as gen1
+        gen10_control1 = ControlRaiyan(grid, bus10, "Voltage", 0.98)
+        gen10_control2 = ControlRaiyan(grid, bus10, "Angle", 0.0)
+        gen10 = GeneratorRaiyan('Some random generator 2', gen10_control1, gen10_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        grid.add_generator(bus10, gen10)
+
+        # VSC1 configurations with parameterized setpoints
+        VSC1_control1 = ControlRaiyan(grid, bus4, "Voltage", 1.0)
+        VSC1_control2 = ControlRaiyan(grid, bus4, "Qfrom", vsc1_qto_setpoint, bus3)
+        vsc1 = VSC_Series(bus3, bus4, 'VSC 3-4', 0.1, {'Qt': vsc1_qto_setpoint, 'Vmf': vsc1_vmf_setpoint}, VSC1_control1, VSC1_control2)
+        grid.add_vsc(vsc1)
+
+        # VSC2 configurations with parameterized setpoints
+        VSC2_control1 = ControlRaiyan(grid, bus6, "Pfrom", vsc2_pto_setpoint, bus7)
+        VSC2_control2 = ControlRaiyan(grid, bus7, "Voltage", vsc2_vmt_setpoint)
+        vsc2 = VSC_Series(bus6, bus7, 'VSC 6-7', 0.1, {'Pf': vsc2_pto_setpoint, 'Vmt': vsc2_vmt_setpoint}, VSC2_control1, VSC2_control2)
+        grid.add_vsc(vsc2)
+
+
+        trafo1_control1 = ControlRaiyan(grid, bus9, "Tau", 0.05, bus10)
+        trafo2_control2 = ControlRaiyan(grid, bus9, "Pfrom", 0.5, bus10)    
+        trafo1 = Controlled_Trafo(bus9, bus10, 'Trafo 9-10', trafo1_control1, trafo2_control2)
+        grid.add_contTrafo(bus9, bus10, trafo1)
+
+
+        #return the grid
+        return grid
+
+
+    @staticmethod
     def acdc_10bus():
         # declare a circuit object
         grid = MultiCircuitRaiyan()
@@ -2993,9 +3125,12 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
     '''
     Split the AC and DC subsystems
     '''
-    Ybus = isolate_AC_DC(grid, Ybus)
-    print("Ybus")
+    print("(power_flow_research.py) Ybus before isolating")
     print(Ybus.todense())
+    Ybus = isolate_AC_DC(grid, Ybus)
+    np.savetxt('outfile.txt', Ybus.todense().view(float))
+    # print("Ybus")
+    # print(Ybus.todense())
 
 
     '''
@@ -3015,7 +3150,16 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
     Using known values, update setpoints
     '''
     Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, grid, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
-
+    print(("research.py", "Vm0: "))
+    print(Vm0)
+    print(("research.py", "Va0: "))
+    print(Va0)
+    print(("research.py", "S0: "))
+    print(S0)
+    print(("research.py", "I0: "))
+    print(I0)
+    print(("research.py", "Y0: "))
+    print(Y0)
 
     '''
     Create unknowns vector
@@ -3037,22 +3181,24 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
                                                  logger=logger)
 
     Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, grid, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
-
+    return ret.converged
 
 
 if __name__ == '__main__':
-    import os
+    # import os
     # grid_ = HelperFunctions.linn5bus_example()    #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.linn5bus_example2()   #converges true
-    grid_ = HelperFunctions.ieee14_example()      #converges true, and same as traditional powerflow
+    # grid_ = HelperFunctions.ieee14_example()      #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.pure_dc_3bus()        #converges true
     # grid_ = HelperFunctions.pure_ac_2bus()        #converges true
     # grid_ = HelperFunctions.pure_ac_3bus_trafo()  #converges true, your trafo is not broken maybe?
     # grid_ = HelperFunctions.acdc_5bus()           #converges true 
-    # grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
+    grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
     # grid_ = HelperFunctions.acdc_10buswoTrafo()
     # grid_ = HelperFunctions.linn5bus_example2()
     # grid_ = HelperFunctions.bus14_example()
+
+    # grid_ = HelperFunctions.acdc_10bus_changing_vars() 
 
     # grid_ = HelperFunctions.acdc_10bus_branchcontrol() #converges true, but not every remote branch control will converge so
 
@@ -3063,3 +3209,40 @@ if __name__ == '__main__':
                                        tolerance=1e-10,
                                        verbose=1)
     run_pf_ver2(grid=grid_, pf_options=pf_options_, debug = 1)
+
+# import os
+# import csv
+
+# if __name__ == '__main__':
+#     # Define the output CSV file
+#     csv_file_path = os.path.join(os.getcwd(), 'simulation_results_scanning_6.csv')
+    
+#     # Prepare to write to the CSV file
+#     with open(csv_file_path, mode='w', newline='') as file:
+#         writer = csv.writer(file)
+#         writer.writerow(['vsc1_qfrom_setpoint', 'vsc1_vmf_setpoint', 'vsc2_pfrom_setpoint', 'vsc2_vmt_setpoint', 'convergence_status'])
+
+#         # Loop over the power range for Qto and Pto
+#         for vsc1_qto in [i * 0.1 for i in range(-10, 11)]:  # Generates values from -1.0 to 1.0 with a step of 0.1
+#             for vsc2_pto in [i * 0.1 for i in range(-10, 11)]:  # Same as above for vsc2_pto
+
+#                 # Set the voltage setpoints to 1
+#                 vsc1_vmf = 1
+#                 vsc2_vmt = 1
+
+#                 # Destroy all Control objects if necessary
+#                 # Depending on your implementation you may need to reset or destroy previous instances
+
+#                 # Call the method to configure the grid with new parameters
+#                 grid = HelperFunctions.acdc_10bus_changing_vars(float(vsc1_qto), float(vsc1_vmf), float(vsc2_pto), float(vsc2_vmt))
+
+#                 # Set power flow options
+#                 pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, max_iter=10,
+#                                                   trust_radius=5.0, tolerance=1e-10, verbose=1)
+                
+#                 # Run power flow
+#                 convergence_status = run_pf_ver2(grid=grid, pf_options=pf_options, debug=1)
+
+#                 # Write results to CSV
+#                 writer.writerow([vsc1_qto, vsc1_vmf, vsc2_pto, vsc2_vmt, convergence_status])
+

@@ -216,8 +216,7 @@ def linn5bus_example2():
     print(results.get_branch_df())
     print("Error:", results.error)
 
-
-def pegase_example():
+def pegase_example89():
     # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
     file_path = 'Grids_and_profiles/grids/case89pegase.m'
     grid = gce.FileOpen(file_path).open()
@@ -246,8 +245,7 @@ def pegase2k_example():
     print(results.get_branch_df())
     print("Error:", results.error)
 
-
-def bus300_example():
+def acdc10_example():
     # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
     file_path = 'Grids_and_profiles/grids/10_bus_hvdc.gridcal'
     grid = gce.FileOpen(file_path).open()
@@ -261,6 +259,75 @@ def bus300_example():
     # print()
     # print(results.get_branch_df())
     # print("Error:", results.error)
+
+
+
+def fubm_caseHVDC_vt_normalNR():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/1951 Bus RTE.xlsx'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+
+    results = gce.power_flow(grid, options=pf_options)
+    results.converged
+
+    print(results.get_bus_df())
+    # print()
+    # print(results.get_branch_df())
+    print("Error:", results.error)
+    print("Converged?", results.converged)
+
+def fubm_caseHVDC_vt():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/IEEE 5 Bus.xlsx'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+    results.converged
+
+    print(results.get_bus_df())
+    print()
+    # print(results.get_branch_df())
+    print("Error:", results.error)
+    print("Converged?", results.converged)
+
+
+def whatever_func():
+    import time
+    start = time.time()
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/IEEE 5 Bus.xlsx'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+    results.converged
+
+    print(results.get_bus_df())
+    
+    
+    #compare to normal NR
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    results_normal = gce.power_flow(grid, options=pf_options)
+    
+    print(results.get_bus_df().loc[:, ['Vm', 'Va']])
+    print(results_normal.get_bus_df().loc[:, ['Vm', 'Va']])
+    df_diff = abs((results.get_bus_df().loc[:, ['Vm', 'Va']] - results_normal.get_bus_df().loc[:, ['Vm', 'Va']])/ results_normal.get_bus_df().loc[:, ['Vm', 'Va']]) * 100
+    print(df_diff)
+
+    #find the largest difference
+    print("biggest error:")
+    vm_array = df_diff['Vm'].to_numpy()
+    va_array = df_diff['Va'].to_numpy()
+    print("Vm:", max(vm_array))
+    print("Va:", max(va_array))
+
+    end = time.time() - start
+    print("Time:", end)
 
 
 def ieee5bus_example():
@@ -685,22 +752,362 @@ def test_convergence(directory_path, log_file_path):
                 log_file.flush()  # Ensure that each entry is written and saved immediately
 
 
+import os
+
+def whatever(directory_path, file_names, log_path):
+    # Open the log file for appending so each run adds to the log file instead of overwriting it
+    with open(log_path, 'a') as log_file:
+        for file_name in file_names:
+            full_path = os.path.join(directory_path, file_name)
+            log_file.write(f"{file_name}: Processing...\n")  # Log that processing is starting
+            log_file.flush()  # Ensure the entry is written immediately
+            try:
+                grid = gce.FileOpen(full_path).open()
+                if grid:
+                    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+                    results = gce.power_flow(grid, options=pf_options)
+                    result_text = f"{file_name}: Converged={results.converged}\n"
+                else:
+                    result_text = f"{file_name}: Failed to load grid\n"
+            except Exception as e:
+                result_text = f"{file_name}: Exception={str(e)}\n"
+            
+            log_file.write(result_text)  # Write the final result
+            log_file.flush()  # Ensure that each entry is written and saved immediately
+
+
+def whatever_traditionalPF(directory_path, file_names, log_path):
+    # Open the log file for appending so each run adds to the log file instead of overwriting it
+    with open(log_path, 'a') as log_file:
+        for file_name in file_names:
+            full_path = os.path.join(directory_path, file_name)
+            log_file.write(f"{file_name}: Processing...\n")  # Log that processing is starting
+            log_file.flush()  # Ensure the entry is written immediately
+            try:
+                grid = gce.FileOpen(full_path).open()
+                if grid:
+                    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+                    results = gce.power_flow(grid, options=pf_options)
+                    result_text = f"{results.get_bus_df()}\n"
+                    result_text += f"{file_name}: Converged={results.converged}\n"
+                else:
+                    result_text = f"{file_name}: Failed to load grid\n"
+            except Exception as e:
+                result_text = f"{file_name}: Exception={str(e)}\n"
+            
+            log_file.write(result_text)  # Write the final result
+            log_file.flush()  # Ensure that each entry is written and saved immediately
+
+def get_gridProperties(directory_path, file_names):
+    import os
+    import csv
+    # CSV file to append the data
+    csv_file = 'gridProperties.csv'
+    # Open the log file for appending so each run adds to the log file instead of overwriting it
+    for file_name in file_names:
+        print(file_name)
+        full_path = os.path.join(directory_path, file_name)
+        # Check if file exists to decide whether to write headers
+        
+        grid = gce.FileOpen(full_path).open()
+        """
+        self.lines: List[dev.Line] = list()
+
+        self.dc_lines: List[dev.DcLine] = list()
+
+        self.transformers2w: List[dev.Transformer2W] = list()
+
+        self.hvdc_lines: List[dev.HvdcLine] = list()
+
+        self.vsc_devices: List[dev.VSC] = list()
+
+        self.upfc_devices: List[dev.UPFC] = list()
+
+        self.switch_devices: List[dev.Switch] = list()
+
+        self.transformers3w: List[dev.Transformer3W] = list()
+
+        self.windings: List[dev.Winding] = list()
+
+        self.series_reactances: List[dev.SeriesReactance] = list()
+
+        self.buses: List[dev.Bus] = list()
+
+        self.voltage_levels: List[dev.VoltageLevel] = list()
+
+        # List of loads
+        self.loads: List[dev.Load] = list()
+
+        # List of generators
+        self.generators: List[dev.Generator] = list()
+
+        # List of External Grids
+        self.external_grids: List[dev.ExternalGrid] = list()
+
+        # List of shunts
+        self.shunts: List[dev.Shunt] = list()
+
+        # List of batteries
+        self.batteries: List[dev.Battery] = list()
+
+        # List of static generators
+        self.static_generators: List[dev.StaticGenerator] = list()
+
+        # List of current injections devices
+        self.current_injections: List[dev.CurrentInjection] = list()
+
+        # List of linear shunt devices
+        self.controllable_shunts: List[dev.ControllableShunt] = list()
+        """
+        with open(csv_file, 'a', newline='') as file:
+            writer = csv.writer(file)
+            file_exists = os.path.isfile(csv_file)
+            if not file_exists:
+                writer.writerow(["Lines", "DC Lines", "2W Transformers", "HVDC Lines", "VSC Devices", "UPFC Devices", "Switch Devices", "3W Transformers", "Windings", "Series Reactances", "Buses", "Voltage Levels", "Loads", "Generators", "External Grids", "Shunts", "Batteries", "Static Generators", "Current Injections", "Controllable Shunts"])
+            writer.writerow([len(grid.lines), len(grid.dc_lines), len(grid.transformers2w), len(grid.hvdc_lines), len(grid.vsc_devices), len(grid.upfc_devices), len(grid.switch_devices), len(grid.transformers3w), len(grid.windings), len(grid.series_reactances), len(grid.buses), len(grid.voltage_levels), len(grid.loads), len(grid.generators), len(grid.external_grids), len(grid.shunts), len(grid.batteries), len(grid.static_generators), len(grid.current_injections), len(grid.controllable_shunts)])
+
+
+
+def compare_answers(directory_path, txt_file_path, log_path):
+    import pandas as pd
+    #iterate through all .txt files in txt_file_path
+    for file_name in os.listdir(txt_file_path):
+        if file_name.endswith('.txt'):
+            # Open the log file for appending so each run adds to the log file instead of overwriting it
+            with open(log_path, 'a') as log_file:
+                #split the file_name using the delimiter :
+                #get the first part of the split
+                _file_name = file_name.split(".txt")[0]
+                #look for the file in the directory_path
+                full_path = os.path.join(directory_path, _file_name)
+                print(full_path)
+                #open the grid and run using normal power flow
+                grid = gce.FileOpen(full_path).open()
+                pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+                results = gce.power_flow(grid, options=pf_options)
+                traditional_pf_results = results.get_bus_df()
+                print(traditional_pf_results.head())
+                # generalised_pf_results load the file_name
+                generalised_pf_results = pd.read_csv(os.path.join(txt_file_path, file_name), skiprows=2, delimiter=r'\s+', header=None)
+
+                #print the shape of the df
+                generalised_pf_results.columns = ['Voltage Magnitude', 'Voltage Angle']
+
+                #convert the column 'Voltage Angle' from radian to degrees
+                generalised_pf_results['Voltage Angle'] = generalised_pf_results['Voltage Angle'].apply(lambda x: x * 180 / 3.14159265359)
+                       
+
+                #assert that the number of rows in the two dataframes are equal
+                assert len(traditional_pf_results) == len(generalised_pf_results)
+
+                #find the biggest differences in first two columns between the two dataframes in percentage, using traditional power flow as the base
+                max_diff_volt = 0
+                max_diff_ang = 0
+
+                for i in range(len(traditional_pf_results)):
+                    #use the column names to access the values
+                    #find the percentage difference
+                    #update the max_diff_volt and max_diff_ang if the current difference is greater
+                    diff_volt = abs((generalised_pf_results.iloc[i]['Voltage Magnitude'] - traditional_pf_results.iloc[i]['Vm']))
+                    diff_ang = abs((generalised_pf_results.iloc[i]['Voltage Angle'] - traditional_pf_results.iloc[i]['Va']) )
+                    if diff_volt > max_diff_volt:
+                        max_diff_volt = diff_volt
+                    if diff_ang > max_diff_ang:
+                        max_diff_ang = diff_ang
+
+                
+                log_file.write(f"{file_name}, {max_diff_volt}, {max_diff_ang}\n")
+
+def compare_results():
+    import time
+    import pandas as pd
+    start = time.time()
+    file_names = [
+        "10_bus_hvdc.gridcal",
+        "10_bus_hvdc_no_oscillations.gridcal",
+        "2bus_HVDC.gridcal",
+        "3Bus_controlled_transformer.gridcal",
+        "4Bus_SalvadorAchaDaza.gridcal",
+        "5bus_HVDC.gridcal",
+        "8_nodes_2_islands.gridcal",
+        "8_nodes_2_islands_hvdc.gridcal",
+        "ACTIVSg 500 - South Carolina 500 Bus System.gridcal",
+        "Australia.xlsx",
+        "Brazil11_loading05.gridcal",
+        "case_ACTIVSg500.m",
+        "case14.m",
+        "case300.m",
+        "case6ww.m",
+        "case89pegase.m",
+        "case9.m",
+        "ding0_test_network_2_mvlv.gridcal",
+        "example_transformer_tpe.xlsx",
+        "GB reduced network.gridcal",
+        "grid.raw",
+        "Grid4Bus-OPF.gridcal",
+        "hydro_grid2.gridcal",
+        "hydro_grid3.gridcal",
+        "hydro_IEEE39.gridcal",
+        "hydro_simple.gridcal",
+        "IEEE 118 Bus - ntc_areas.gridcal",
+        "IEEE 118 Bus - ntc_areas.raw",
+        "IEEE 118 Bus - ntc_areas_two.gridcal",
+        "IEEE 118 Bus v2.raw",
+        "IEEE 118.xlsx",
+        "IEEE 14 bus.raw",
+        "IEEE 14 zip.gridcal",
+        "IEEE 14.xlsx",
+        "IEEE 145 Bus.xlsx",
+        "IEEE 30 Bus with storage.xlsx",
+        "IEEE 30 Bus.gridcal",
+        "IEEE 30 bus.raw",
+        "IEEE 39 dynamic bus types.gridcal",
+        "IEEE 39+HVDC line.gridcal",
+        "IEEE 5 Bus.xlsx",
+        "IEEE 57.xlsx",
+        "IEEE 9 Bus.gridcal",
+        "IEEE14 - ntc areas.gridcal",
+        "IEEE14 - ntc areas_voltages.gridcal",
+        "IEEE14 - ntc areas_voltages_hvdc.gridcal",
+        "IEEE14 - ntc areas_voltages_hvdc_shifter.gridcal",
+        "IEEE14 - ntc areas_voltages_hvdc_shifter_l10free.gridcal",
+        "IEEE14_from_raw.gridcal",
+        "IEEE25.gridcal",
+        "IEEE39.gridcal",
+        "IEEE39.xlsx",
+        "IEEE39_1W.gridcal",
+        "Illinois 200 Bus.gridcal",
+        "Illinois200Bus.xlsx",
+        "KULeuven_5node.gridcal",
+        "Lynn 5 Bus (pq).gridcal",
+        "Lynn 5 bus (SVC).gridcal",
+        "Lynn 5 Bus pv (opf).gridcal",
+        "Lynn 5 Bus pv.gridcal",
+        "lynn5buspq.xlsx",
+        "lynn5buspv.xlsx",
+        "NETS-NYPS 68 Bus System.raw",
+        "New England 68 Bus.xlsx",
+        "Nord pool model.xlsx",
+        "Pegasus 89 Bus.xlsx",
+        "PGOC_6bus(from .raw).gridcal",
+        "PGOC_6bus.gridcal",
+        "PGOC_6bus_modNTC.gridcal",
+        "Random grid 1000 buses.gridcal",
+        "sc_test.xlsx",
+        "Simple_NTC_test_grid.gridcal",
+        "test_temp_correction.xlsx"
+    ]
+
+    directory_path = 'Grids_and_profiles/grids/'
+
+    #make a dictionary that prepares to be turned into a df in the end, with the following columns: file_name, max_diff_volt, max_diff_ang, converged
+    comparison_dict = {
+        "file_name": [],
+        "max_diff_volt": [],
+        "max_diff_ang": [],
+        "converged": []
+    }
+
+    for file in file_names:
+        print(file)
+        full_path = os.path.join(directory_path, file)
+        grid = gce.FileOpen(full_path).open()
+        assert grid is not None
+        pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True, tolerance=1e-10)
+        try:
+            results_generalised = gce.power_flow(grid, options=pf_options)
+        except Exception as e:
+                continue
+        if results_generalised.converged:
+            #run normal powerflow
+            pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+            results_normal = gce.power_flow(grid, options=pf_options)            
+
+            #compare the Vm and Va values of the two results
+            #convert the generalised results to a df
+            generalised_pf_results = results_generalised.get_bus_df()
+            #convert the normal results to a df
+            normal_pf_results = results_normal.get_bus_df()
+
+            #find the biggest differences in first two columns between the two dataframes in percentage, using normal power flow as the base
+            max_diff_volt = 0
+            max_diff_ang = 0
+
+            for i in range(len(normal_pf_results)):
+                #use the column names to access the values
+                #find the percentage difference
+                #update the max_diff_volt and max_diff_ang if the current difference is greater
+                diff_volt = abs((generalised_pf_results.iloc[i]['Vm'] - normal_pf_results.iloc[i]['Vm']) / normal_pf_results.iloc[i]['Vm'])
+                diff_ang = abs((generalised_pf_results.iloc[i]['Va'] - normal_pf_results.iloc[i]['Va']) / normal_pf_results.iloc[i]['Va'])
+                if diff_volt > max_diff_volt:
+                    max_diff_volt = diff_volt
+                if diff_ang > max_diff_ang:
+                    max_diff_ang = diff_ang
+
+            #append the max_diff_volt and max_diff_ang to the dictionary
+            comparison_dict["max_diff_volt"].append(max_diff_volt)
+            comparison_dict["max_diff_ang"].append(max_diff_ang)
+            #append filename to the dictionary
+            comparison_dict["file_name"].append(file)
+            #append converged to the dictionary
+            comparison_dict["converged"].append(results_generalised.converged)
+        
+        else:
+            comparison_dict["max_diff_volt"].append(None)
+            comparison_dict["max_diff_ang"].append(None)
+            comparison_dict["file_name"].append(file)
+            comparison_dict["converged"].append(results_generalised.converged)
+
+
+
+    #return the df
+    df = pd.DataFrame(comparison_dict)
+    print(df)
+    #end timer
+    end = time.time()
+    print(f"Time taken: {end - start}")
+    #find how many grids converged
+    print("Converged:")
+    print(df['converged'].value_counts())
+    #find the average max_diff_volt and max_diff_ang
+    print("Average max_diff_volt:")
+    print(df['max_diff_volt'].mean())
+    print("Average max_diff_ang:")
+    print(df['max_diff_ang'].mean())
+    #median max_diff_volt and max_diff_ang
+    print("Median max_diff_volt:")
+    print(df['max_diff_volt'].median())
+    print("Median max_diff_ang:")
+    print(df['max_diff_ang'].median())
+    #find the number where max_diff_volt and max_diff_ang are greater than 0.01
+    print("Greater than 0.01:")
+    print(df[(df['max_diff_volt'] > 0.01) | (df['max_diff_ang'] > 0.01)])
+
+
+
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example() #not using gpf
     # linn5bus_example2() #converges True and accurate to normal Ac pf
-    # pegase_example() #Converges True
+    # pegase_example89() #Converges True
     # ieee5bus_example() #converges True
     # case14_example_noshunt() #converges true
     # case14_example() #converges True
     # acdc2bus_example() #converges True
     # acdc4bus_example() #converges true
-
-    bus300_example()
+    
+    compare_results()
+    
+    # acdc10_example() #converges true but there is a HVDC Link so it doesnt make sense to converge
+    # fubm_caseHVDC_vt()
+    # fubm_caseHVDC_vt_normalNR()
     # acdc3bus_example() #problem with the control
     # pegase2k_example() #runs super slow and does not converge
 
+
+    # whatever_func()
+    
     # two_grids_of_3bus() #does not use gpf
     # case9()
     # case14()
@@ -711,15 +1118,3 @@ if __name__ == '__main__':
     # casepegase13k()
     # casehvdc()
     # caseREE()
-
-    # # Path to your directory containing the grid files
-    # directory_path = 'Grids_and_profiles/grids/'
-    # # Path where you want to save the log file
-    # log_file_path = 'convergence_log.txt'
-
-    # # Call the function
-    # test_convergence(directory_path, log_file_path)
-
-    # # If you want to see the contents of the log, you can print them out:
-    # with open(log_file_path, 'r') as file:
-    #     print(file.read())
