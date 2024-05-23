@@ -22,13 +22,12 @@ from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.enumerations import ResultTypes, DeviceType
+from GridCalEngine.enumerations import ResultTypes, DeviceType, SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, \
-    sigma_function
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import (helm_coefficients_josep,
+                                                                                  sigma_function)
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.basic_structures import Vec
 
 

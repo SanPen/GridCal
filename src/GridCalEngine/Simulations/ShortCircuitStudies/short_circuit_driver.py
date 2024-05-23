@@ -27,9 +27,8 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import 
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices import Branch, Bus
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import FaultType, BranchImpedanceMode
+from GridCalEngine.enumerations import FaultType, BranchImpedanceMode, SimulationTypes
 
 
 class ShortCircuitOptions:

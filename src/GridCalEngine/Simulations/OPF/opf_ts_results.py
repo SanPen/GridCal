@@ -308,7 +308,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
             if len(pr) == circuit.get_time_number():
                 elm.Pset_prof = pr
 
-    def mdl(self, result_type) -> "ResultsTable":
+    def mdl(self, result_type) -> ResultsTable:
         """
         Plot the results
         :param result_type:

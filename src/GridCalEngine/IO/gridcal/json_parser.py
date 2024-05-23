@@ -154,7 +154,7 @@ def parse_json_data(data) -> MultiCircuit:
 
                 # create the bus and add some properties
                 elm = dev.Bus(name=element["name"],
-                              vnom=element["Vnom"],
+                              Vnom=element["Vnom"],
                               vmin=0.9,
                               vmax=1.1,
                               xpos=element['x'],
@@ -402,7 +402,7 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 bus = dev.Bus(name=str(jentry['name']),
                               idtag=str(jentry['id']),
                               code=str(jentry['name_code']),
-                              vnom=float(jentry['vnom']),
+                              Vnom=float(jentry['vnom']),
                               vmin=float(jentry['vmin']),
                               vmax=float(jentry['vmax']),
                               r_fault=float(jentry['rf']),
@@ -1079,7 +1079,7 @@ def parse_json_data_v2(data: dict, logger: Logger):
 
                 bus = dev.Bus(name=str(jentry['name']),
                               idtag=str(jentry['id']),
-                              vnom=float(jentry['vnom']),
+                              Vnom=float(jentry['vnom']),
                               vmin=float(jentry['vmin']),
                               vmax=float(jentry['vmax']),
                               r_fault=float(jentry['rf']),

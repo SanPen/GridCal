@@ -28,7 +28,7 @@ from GridCalEngine.Devices.Parents.editable_device import GCProp, EditableDevice
 from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, IdentifiedObject
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, Base
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
@@ -2434,7 +2434,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 #         return True
 
 
-def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
+def get_list_model(lst: List[Union[str, ALL_DEV_TYPES]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
     Pass a list to a list model
     """
@@ -2579,6 +2579,21 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> IntVec:
     return np.array(idx)
 
 
+def get_checked_values(mdl: QtGui.QStandardItemModel()) -> List[str]:
+    """
+    Get a list of the selected values in a QStandardItemModel
+    :param mdl:
+    :return:
+    """
+    idx = list()
+    for row in range(mdl.rowCount()):
+        item = mdl.item(row)
+        if item.checkState() == QtCore.Qt.CheckState.Checked:
+            idx.append(item.text())
+
+    return idx
+
+
 def fill_model_from_dict(parent: QtGui.QStandardItem,
                          d: Dict[str, Union[Dict[str, Any], List[str]]],
                          editable=False,
@@ -2682,7 +2697,7 @@ def fast_data_to_numpy_text(data: np.ndarray):
 
 
 def add_cim_object_node(class_tag,
-                        device: IdentifiedObject,
+                        device: Base,
                         editable=False,
                         already_visited: Union[List, None] = None):
     """

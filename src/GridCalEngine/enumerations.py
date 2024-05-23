@@ -99,7 +99,7 @@ class InvestmentEvaluationMethod(Enum):
     Independent = "Independent"
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
-    MVRSM_multi = "MVRSM_multi"
+    NSGA3 = "NSGA3"
 
     def __str__(self):
         return self.value
@@ -1309,6 +1309,48 @@ class SparseSolver(Enum):
     def __str__(self):
         return self.value
 
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return CGMESVersions[s]
+        except KeyError:
+            return s
+
+
+class NodalCapacityMethod(Enum):
+    """
+    Sparse solvers to use
+    """
+    NonlinearOptimization = 'Nonlinear Optimization'
+    LinearOptimization = 'Linear Optimization'
+    CPF = "Continuation power flow"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return NodalCapacityMethod[s]
+        except KeyError:
+            return s
+
 
 class ResultTypes(Enum):
     """
@@ -1382,6 +1424,7 @@ class ResultTypes(Enum):
     GeneratorStartingUp = 'Generator starting up'
     GeneratorShuttingDown = 'Generator shutting down'
     BusVoltagePolarPlot = 'Voltage plot'
+    BusNodalCapacity = "Nodal capacity"
 
     # OPF-NTC
     HvdcOverloads = 'HVDC overloads'
@@ -1565,7 +1608,10 @@ class ResultTypes(Enum):
 
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report'
-    InvestmentsParetoPlot = 'Pareto plot'
+    InvestmentsParetoPlot1 = 'Pareto plot 1'
+    InvestmentsParetoPlot2 = 'Pareto plot 2'
+    InvestmentsParetoPlot3 = 'Pareto plot 3'
+    InvestmentsParetoPlot4 = 'Pareto plot 4'
     InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
@@ -1583,5 +1629,61 @@ class ResultTypes(Enum):
         """
         try:
             return ResultTypes[s]
+        except KeyError:
+            return s
+
+
+class SimulationTypes(Enum):
+    """
+    Enumeration of simulation types
+    """
+    TemplateDriver = 'Template'
+    PowerFlow_run = 'Power flow'
+    ShortCircuit_run = 'Short circuit'
+    MonteCarlo_run = 'Monte Carlo'
+    PowerFlowTimeSeries_run = 'Power flow time series'
+    ClusteringAnalysis_run = 'Clustering Analysis'
+    ContinuationPowerFlow_run = 'Voltage collapse'
+    LatinHypercube_run = 'Latin Hypercube'
+    StochasticPowerFlow = 'Stochastic Power Flow'
+    Cascade_run = 'Cascade'
+    OPF_run = 'Optimal power flow'
+    OPF_NTC_run = 'Optimal net transfer capacity'
+    OPF_NTC_TS_run = 'Optimal net transfer capacity time series'
+    OPFTimeSeries_run = 'Optimal power flow time series'
+    TransientStability_run = 'Transient stability'
+    TopologyReduction_run = 'Topology reduction'
+    LinearAnalysis_run = 'Linear analysis'
+    LinearAnalysis_TS_run = 'Linear analysis time series'
+    NonLinearAnalysis_run = 'Nonlinear analysis'
+    NonLinearAnalysis_TS_run = 'Nonlinear analysis time series'
+    ContingencyAnalysis_run = 'Contingency analysis'
+    ContingencyAnalysisTS_run = 'Contingency analysis time series'
+    Delete_and_reduce_run = 'Delete and reduce'
+    NetTransferCapacity_run = 'Available transfer capacity'
+    NetTransferCapacityTS_run = 'Available transfer capacity time series'
+    SigmaAnalysis_run = "Sigma Analysis"
+    NodeGrouping_run = "Node groups"
+    InputsAnalysis_run = 'Inputs Analysis'
+    OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
+    InvestmestsEvaluation_run = 'Investments evaluation'
+    TopologyProcessor_run = 'Topology Processor'
+    NodalCapacityTimeSeries_run = 'Nodal capacity time series'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return SimulationTypes[s]
         except KeyError:
             return s

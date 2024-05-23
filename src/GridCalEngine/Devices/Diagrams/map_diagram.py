@@ -18,7 +18,7 @@ from typing import Dict, Union
 from GridCalEngine.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType
 from GridCalEngine.basic_structures import Logger
 
@@ -62,7 +62,7 @@ class MapDiagram(BaseDiagram):
 
     def parse_data(self,
                    data: Dict[str, Dict[str, Dict[str, Union[int, float]]]],
-                   obj_dict: Dict[str, Dict[str, EditableDevice]],
+                   obj_dict: Dict[str, Dict[str, ALL_DEV_TYPES]],
                    logger: Logger):
         """
         Parse file data ito this class

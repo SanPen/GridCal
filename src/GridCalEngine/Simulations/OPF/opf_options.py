@@ -18,6 +18,7 @@
 from typing import List, Union
 from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping, AcOpfMode
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
 
 class OptimalPowerFlowOptions:
@@ -32,7 +33,7 @@ class OptimalPowerFlowOptions:
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  mip_solver=MIPSolvers.CBC,
                  faster_less_accurate=False,
-                 power_flow_options=None,
+                 power_flow_options: Union[None, PowerFlowOptions] = None,
                  bus_types=None,
                  consider_contingencies=False,
                  skip_generation_limits=False,
@@ -83,7 +84,7 @@ class OptimalPowerFlowOptions:
 
         self.faster_less_accurate = faster_less_accurate
 
-        self.power_flow_options = power_flow_options
+        self.power_flow_options: PowerFlowOptions = power_flow_options if power_flow_options else PowerFlowOptions()
 
         self.bus_types = bus_types
 

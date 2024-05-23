@@ -113,3 +113,5 @@ ALL_DEV_TYPES = Union[
     UndergroundLineType,
     SequenceLineType
 ]
+
+CONNECTION_TYPE = Union[ConnectivityNode, Bus, None]

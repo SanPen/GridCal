@@ -34,7 +34,7 @@ class Switch(BranchParent):
                  rate=1.0,
                  active=True,
                  contingency_factor=1.0, protection_rating_factor: float = 1.4,
-                 is_open=False,
+                 # is_open=False,
                  retained=True,
                  normal_open=False,
                  rated_current=0.0):
@@ -77,7 +77,7 @@ class Switch(BranchParent):
         self.R = r
         self.X = x
 
-        self.is_open = is_open
+        # self.is_open = is_open
         self.retained = retained
 
         self.normal_open = normal_open
@@ -86,8 +86,8 @@ class Switch(BranchParent):
         self.register(key='R', units='pu', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='pu', tpe=float, definition='Positive-sequence reactance')
 
-        self.register(key='is_open', units="", tpe=bool,
-                      definition='Switch is open', old_names=['open'])
+        # self.register(key='is_open', units="", tpe=bool,
+        #               definition='Switch is open', old_names=['open'])
         self.register(key='retained', units="", tpe=bool,
                       definition='Switch is retained')
 

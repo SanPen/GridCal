@@ -16,14 +16,21 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 
 
 class ConnectivityNode(EditableDevice):
 
-    def __init__(self, name='CN', idtag=None, code='', dc: bool = False,
-                 default_bus: Union[None, Bus] = None):
+    def __init__(self, name='CN',
+                 idtag=None,
+                 code='',
+                 dc: bool = False,
+                 default_bus: Union[None, Bus] = None,
+                 voltage_level: Union[VoltageLevel, None] = None,
+                 internal: bool = False):
         """
         Constructor
         :param name: Name of the connectivity node
@@ -31,6 +38,7 @@ class ConnectivityNode(EditableDevice):
         :param code: secondary identifyier
         :param dc: is this a DC connectivity node?
         :param default_bus: Default bus to use for topology processing (optional)
+        :param voltage_level: Substation of this connectivity node (optional)
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -42,8 +50,16 @@ class ConnectivityNode(EditableDevice):
 
         self.default_bus: Union[None, Bus] = default_bus
 
+        self.voltage_level: Union[VoltageLevel, None] = voltage_level
+
+        self.internal: bool = internal
+
         self.register("dc", "", bool, "is this a DC connectivity node?")
+
+        self.register("internal", "", bool, "is internal of a busbar?")
 
         self.register("default_bus", "", DeviceType.BusDevice,
                       "Default bus to use for topology processing (optional)")
 
+        self.register("voltage_level", "", DeviceType.VoltageLevelDevice,
+                      "Voltage level of this connectivity node (optional)")

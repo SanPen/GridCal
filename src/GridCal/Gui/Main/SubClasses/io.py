@@ -26,7 +26,7 @@ import GridCal.Session.file_handler as filedrv
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
-from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
@@ -37,6 +37,7 @@ from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
 class IoMain(ConfigurationMain):
@@ -60,8 +61,21 @@ class IoMain(ConfigurationMain):
                                     '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc']
 
-        self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15, CGMESVersions.v3_0_0]}
+        self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15,
+                                                        CGMESVersions.v3_0_0]}
         self.ui.cgmes_version_comboBox.setModel(gf.get_list_model(list(self.cgmes_version_dict.keys())))
+
+        self.cgmes_profiles_dict = {x.value: x for x in [cgmesProfile.EQ,
+                                                         cgmesProfile.OP,
+                                                         cgmesProfile.SC,
+                                                         cgmesProfile.TP,
+                                                         cgmesProfile.SV,
+                                                         cgmesProfile.SSH,
+                                                         cgmesProfile.DY,
+                                                         cgmesProfile.DL,
+                                                         cgmesProfile.GL]}
+        self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
+                                                                   checks=True, check_value=True))
 
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
@@ -120,7 +134,7 @@ class IoMain(ConfigurationMain):
                     else:
                         error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
-                if self.circuit.get_bus_number() > 0:
+                if self.circuit.valid_for_simulation() > 0:
                     quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
                                "\n If the process is cancelled the grid will remain."
                     reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -181,7 +195,7 @@ class IoMain(ConfigurationMain):
         Create new grid
         :return:
         """
-        if self.circuit.get_bus_number() > 0:
+        if self.circuit.valid_for_simulation() > 0:
             quit_msg = "Are you sure that you want to quit the current grid and create a new one?"
             reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
                                                    QtWidgets.QMessageBox.StandardButton.Yes,
@@ -196,7 +210,7 @@ class IoMain(ConfigurationMain):
         @return:
         """
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 quit_msg = ("Are you sure that you want to quit the current grid and open a new one?"
                             "\n If the process is cancelled the grid will remain.")
                 reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
@@ -379,7 +393,7 @@ class IoMain(ConfigurationMain):
             # center nodes
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.center_nodes()
 
         self.collect_memory()
@@ -407,8 +421,8 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                if self.circuit.get_bus_number() == 0:
-                    # load the circuit
+                if not self.circuit.valid_for_simulation():
+                    # load the circuit right away
                     self.stuff_running_now.append('file_open')
                     self.post_open_file()
                 else:
@@ -431,10 +445,13 @@ class IoMain(ConfigurationMain):
 
                     # add to schematic
                     if diagram_widget is not None:
-                        if isinstance(diagram_widget, DiagramEditorWidget):
+                        if isinstance(diagram_widget, SchematicWidget):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+                            injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
                             diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
+                                                                     busbars=new_circuit.bus_bars,
                                                                      lines=new_circuit.lines,
                                                                      dc_lines=new_circuit.dc_lines,
                                                                      transformers2w=new_circuit.transformers2w,
@@ -442,10 +459,12 @@ class IoMain(ConfigurationMain):
                                                                      hvdc_lines=new_circuit.hvdc_lines,
                                                                      vsc_devices=new_circuit.vsc_devices,
                                                                      upfc_devices=new_circuit.upfc_devices,
+                                                                     switches=new_circuit.switch_devices,
                                                                      fluid_nodes=new_circuit.fluid_nodes,
                                                                      fluid_paths=new_circuit.fluid_paths,
                                                                      injections_by_bus=injections_by_bus,
                                                                      injections_by_fluid_node=injections_by_fluid_node,
+                                                                     injections_by_cn=injections_by_cn,
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
@@ -463,60 +482,69 @@ class IoMain(ConfigurationMain):
         """
         Save the circuit case to a file
         """
-        # declare the allowed file types
-        files_types = ("GridCal zip (*.gridcal);;"
-                       "GridCal HDF5 (*.gch5);;"
-                       "Excel (*.xlsx);;"
-                       "CIM (*.xml);;"
-                       "Electrical Json V3 (*.ejson3);;"
-                       "Rawx (*.rawx);;"
-                       "Sqlite (*.sqlite);;")
 
-        if NEWTON_PA_AVAILABLE:
-            files_types += "Newton (*.newton);;"
+        if self.server_driver.is_running():
 
-        if PGM_AVAILABLE:
-            files_types += "PGM Json (*.pgm);;"
+            self.server_driver.send_data(circuit=self.circuit,
+                                         instructions_json={"instruction": "open"})
 
-        # call dialog to select the file
-        if self.project_directory is None:
-            self.project_directory = ''
-
-        # gather comments
-        self.circuit.comments = self.ui.comments_textEdit.toPlainText()
-
-        if self.file_name == '':
-            # if the global file_name is empty, ask where to save
-            fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
-
-            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
-
-            if filename != '':
-
-                # if the user did not enter the extension, add it automatically
-                name, file_extension = os.path.splitext(filename)
-
-                extension = dict()
-                extension['Excel (*.xlsx)'] = '.xlsx'
-                extension['CIM (*.xml)'] = '.xml'
-                extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
-                extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
-                extension['GridCal zip (*.gridcal)'] = '.gridcal'
-                extension['PSSe rawx (*.rawx)'] = '.rawx'
-                extension['GridCal HDF5 (*.gch5)'] = '.gch5'
-                extension['Sqlite (*.sqlite)'] = '.sqlite'
-                extension['Newton (*.newton)'] = '.newton'
-                extension['PGM Json (*.pgm)'] = '.pgm'
-
-                if file_extension == '':
-                    filename = name + extension[type_selected]
-
-                # we were able to compose the file correctly, now save it
-                self.file_name = filename
-                self.save_file_now(self.file_name)
         else:
-            # save directly
-            self.save_file_now(self.file_name)
+            # declare the allowed file types
+            files_types = ("GridCal zip (*.gridcal);;"
+                           "GridCal HDF5 (*.gch5);;"
+                           "Excel (*.xlsx);;"
+                           "CGMES (*.zip);;"
+                           "CIM (*.xml);;"
+                           "Electrical Json V3 (*.ejson3);;"
+                           "Rawx (*.rawx);;"
+                           "Sqlite (*.sqlite);;")
+
+            if NEWTON_PA_AVAILABLE:
+                files_types += "Newton (*.newton);;"
+
+            if PGM_AVAILABLE:
+                files_types += "PGM Json (*.pgm);;"
+
+            # call dialog to select the file
+            if self.project_directory is None:
+                self.project_directory = ''
+
+            # gather comments
+            self.circuit.comments = self.ui.comments_textEdit.toPlainText()
+
+            if self.file_name == '':
+                # if the global file_name is empty, ask where to save
+                fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
+
+                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+                if filename != '':
+
+                    # if the user did not enter the extension, add it automatically
+                    name, file_extension = os.path.splitext(filename)
+
+                    extension = dict()
+                    extension['Excel (*.xlsx)'] = '.xlsx'
+                    extension['CIM (*.xml)'] = '.xml'
+                    extension['CGMES (*.zip)'] = '.zip'
+                    extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
+                    extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
+                    extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                    extension['PSSe rawx (*.rawx)'] = '.rawx'
+                    extension['GridCal HDF5 (*.gch5)'] = '.gch5'
+                    extension['Sqlite (*.sqlite)'] = '.sqlite'
+                    extension['Newton (*.newton)'] = '.newton'
+                    extension['PGM Json (*.pgm)'] = '.pgm'
+
+                    if file_extension == '':
+                        filename = name + extension[type_selected]
+
+                    # we were able to compose the file correctly, now save it
+                    self.file_name = filename
+                    self.save_file_now(self.file_name, type_selected=type_selected)
+            else:
+                # save directly
+                self.save_file_now(self.file_name)
 
     def get_file_save_options(self) -> filedrv.FileSavingOptions:
         """
@@ -534,18 +562,27 @@ class IoMain(ConfigurationMain):
 
         cgmes_version = self.cgmes_version_dict[self.ui.cgmes_version_comboBox.currentText()]
 
+        cgmes_profiles_txt = gf.get_checked_values(mdl=self.ui.cgmes_profiles_listView.model())
+        cgmes_profiles = [self.cgmes_profiles_dict[e] for e in cgmes_profiles_txt]
+
+        one_file_per_profile = self.ui.cgmes_single_profile_per_file_checkBox.isChecked()
+
         options = filedrv.FileSavingOptions(cgmes_boundary_set=self.current_boundary_set,
                                             simulation_drivers=self.get_simulations(),
                                             sessions_data=sessions_data,
                                             dictionary_of_json_files=json_files,
-                                            cgmes_version=cgmes_version)
+                                            cgmes_version=cgmes_version,
+                                            cgmes_profiles=cgmes_profiles,
+                                            one_file_per_profile=one_file_per_profile)
 
         return options
 
-    def save_file_now(self, filename):
+    def save_file_now(self, filename: str, type_selected: str = ""):
         """
         Save the file right now, without questions
         :param filename: filename to save to
+        :param type_selected: File type description as it appears
+                              in the file saving dialogue i.e. GridCal zip (*.gridcal)
         """
 
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
@@ -559,9 +596,12 @@ class IoMain(ConfigurationMain):
                     if ok:
                         self.save_file_thread_object.quit()
 
+            options = self.get_file_save_options()
+            options.type_selected = type_selected
+
             self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
                                                                   file_name=filename,
-                                                                  options=self.get_file_save_options())
+                                                                  options=options)
 
             # make connections
             self.save_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -611,7 +651,7 @@ class IoMain(ConfigurationMain):
 
         if self.grid_generator_dialogue.applied:
 
-            if self.circuit.get_bus_number() > 0:
+            if self.circuit.valid_for_simulation() > 0:
                 reply = QtWidgets.QMessageBox.question(self, 'Message',
                                                        'Are you sure that you want to delete '
                                                        'the current grid and replace it?',
@@ -629,7 +669,7 @@ class IoMain(ConfigurationMain):
             # set circuit name
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.name.setText(f"Random grid {self.circuit.get_bus_number()} buses")
 
             # set base magnitudes

@@ -28,6 +28,8 @@ class NonlinearShuntCompensatorPoint(Base):
 		self.b: float = None
 		self.g: float = None
 		self.sectionNumber: int = None
+		self.b0: float = None
+		self.g0: float = None
 
 		self.register_property(
 			name='NonlinearShuntCompensator',
@@ -59,5 +61,21 @@ class NonlinearShuntCompensatorPoint(Base):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''The number of the section.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='b0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.S,
+			description='''Imaginary part of admittance.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='g0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.S,
+			description='''Factor by which voltage must be multiplied to give corresponding power lost from a circuit. Real part of admittance.''',
 			profiles=[]
 		)

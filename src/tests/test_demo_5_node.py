@@ -34,24 +34,24 @@ def test_demo_5_node(root_path=ROOT_PATH):
     grid = MultiCircuit()
 
     # Add buses
-    bus1 = Bus('Bus 1', vnom=20)
+    bus1 = Bus('Bus 1', Vnom=20)
     grid.add_bus(bus1)
     gen1 = Generator('Slack Generator', vset=1.0)
     grid.add_generator(bus1, gen1)
 
-    bus2 = Bus('Bus 2', vnom=20)
+    bus2 = Bus('Bus 2', Vnom=20)
     grid.add_bus(bus2)
     grid.add_load(bus2, Load('load 2', P=40, Q=20))
 
-    bus3 = Bus('Bus 3', vnom=20)
+    bus3 = Bus('Bus 3', Vnom=20)
     grid.add_bus(bus3)
     grid.add_load(bus3, Load('load 3', P=25, Q=15))
 
-    bus4 = Bus('Bus 4', vnom=20)
+    bus4 = Bus('Bus 4', Vnom=20)
     grid.add_bus(bus4)
     grid.add_load(bus4, Load('load 4', P=40, Q=20))
 
-    bus5 = Bus('Bus 5', vnom=20)
+    bus5 = Bus('Bus 5', Vnom=20)
     grid.add_bus(bus5)
     grid.add_load(bus5, Load('load 5', P=50, Q=20))
 
