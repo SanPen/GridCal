@@ -193,7 +193,7 @@ class RawSwitchedShunt(RawObject):
 
         if version >= 35:
             self.I, self.ID, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-                self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = data[0]
+                self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = field_values
 
             parse_dynamic_fields(
                 [
