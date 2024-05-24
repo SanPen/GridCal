@@ -1,9 +1,7 @@
 import pytest
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_windings_number, get_voltages, get_rate, \
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_rate, \
     get_voltage_power_transformer_end, get_pu_values_power_transformer_end, get_voltage_ac_line_segment, \
-    get_pu_values_ac_line_segment, get_rate_ac_line_segment, get_voltage_terminal, \
-    get_topological_nodes_dipole, get_nodes_dipole, \
-    get_topological_node_monopole, get_pq, get_nominal_voltage, base_voltage_to_str, check
+    get_pu_values_ac_line_segment, get_rate_ac_line_segment, get_voltage_terminal, get_nominal_voltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
@@ -24,17 +22,17 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transform
 # from src.GridCalEngine.IO.cim.cgmes.cgmes_utils import get_pu_values_power_transformer
 
 
-def test_get_windings_number_no_windings_returns_zero():
-    # Create a PowerTransformer instance with no references to PowerTransformerEnd
-    power_transformer = PowerTransformer("a", "b")
-    assert get_windings_number(power_transformer) == 0
+# def test_get_windings_number_no_windings_returns_zero():
+#     # Create a PowerTransformer instance with no references to PowerTransformerEnd
+#     power_transformer = PowerTransformer("a", "b")
+#     assert get_windings_number(power_transformer) == 0
 
 
-def test_get_windings_number_multiple_winding_returns_correct_amount():
-    # Create a PowerTransformer instance with one reference to PowerTransformerEnd
-    power_transformer = PowerTransformer("a", "b")
-    power_transformer.references_to_me["PowerTransformerEnd"] = [1, 2, 3]
-    assert get_windings_number(power_transformer) == 3
+# def test_get_windings_number_multiple_winding_returns_correct_amount():
+#     # Create a PowerTransformer instance with one reference to PowerTransformerEnd
+#     power_transformer = PowerTransformer("a", "b")
+#     power_transformer.references_to_me["PowerTransformerEnd"] = [1, 2, 3]
+#     assert get_windings_number(power_transformer) == 3
 
 
 def test_get_windings_no_windings_returns_no_element():
@@ -113,13 +111,13 @@ def test_get_pu_values_power_transformer_two_windings():
     assert B0 == 800
 
 
-def test_get_voltages_():
-    power_transformer = PowerTransformer()
-    power_transformer_end = PowerTransformerEnd()
-    power_transformer_end.ratedU = 1
-    power_transformer.references_to_me["PowerTransformerEnd"] = [power_transformer_end, power_transformer_end]
-    result = get_voltages(power_transformer)
-    assert [1, 1] == result
+# def test_get_voltages_():
+#     power_transformer = PowerTransformer()
+#     power_transformer_end = PowerTransformerEnd()
+#     power_transformer_end.ratedU = 1
+#     power_transformer.references_to_me["PowerTransformerEnd"] = [power_transformer_end, power_transformer_end]
+#     result = get_voltages(power_transformer)
+#     assert [1, 1] == result
 
 
 def test_get_rate():
@@ -296,38 +294,38 @@ def test_get_voltage_terminal_no_topologicalnode_retuns_None():
 #     assert result == []
 
 
-def test_get_topological_nodes_dipole_with_valid_terminals():
-    t1 = Terminal()
-    t2 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    t2.TopologicalNode = TopologicalNode()
-    i = IdentifiedObject("a", "b")
-    i.references_to_me["Terminal"] = [t1, t2]
-    node1, node2 = get_topological_nodes_dipole(i)
-    assert isinstance(node1, TopologicalNode)
-    assert isinstance(node2, TopologicalNode)
+# def test_get_topological_nodes_dipole_with_valid_terminals():
+#     t1 = Terminal()
+#     t2 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     t2.TopologicalNode = TopologicalNode()
+#     i = IdentifiedObject("a", "b")
+#     i.references_to_me["Terminal"] = [t1, t2]
+#     node1, node2 = get_topological_nodes_dipole(i)
+#     assert isinstance(node1, TopologicalNode)
+#     assert isinstance(node2, TopologicalNode)
 
 
-def test_get_topological_nodes_dipole_with_invalid_keys_returns_none():
-    t1 = Terminal()
-    t2 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    t2.TopologicalNode = TopologicalNode()
-    i = IdentifiedObject("a", "b")
-    i.references_to_me["aaa"] = [t1, t2]
-    node1, node2 = get_topological_nodes_dipole(i)
-    assert node1 is None
-    assert node2 is None
-
-
-def test_get_topological_nodes_dipole_with_only_one_terminal_returns_None():
-    t1 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    i = IdentifiedObject("a", "b")
-    i.references_to_me["Terminal"] = [t1]
-    node1, node2 = get_topological_nodes_dipole(i)
-    assert node1 is None
-    assert node2 is None
+# def test_get_topological_nodes_dipole_with_invalid_keys_returns_none():
+#     t1 = Terminal()
+#     t2 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     t2.TopologicalNode = TopologicalNode()
+#     i = IdentifiedObject("a", "b")
+#     i.references_to_me["aaa"] = [t1, t2]
+#     node1, node2 = get_topological_nodes_dipole(i)
+#     assert node1 is None
+#     assert node2 is None
+#
+#
+# def test_get_topological_nodes_dipole_with_only_one_terminal_returns_None():
+#     t1 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     i = IdentifiedObject("a", "b")
+#     i.references_to_me["Terminal"] = [t1]
+#     node1, node2 = get_topological_nodes_dipole(i)
+#     assert node1 is None
+#     assert node2 is None
 
 
 # def test_get_buses_dipole_setup_identified_object_returns_correct_values():
@@ -346,86 +344,86 @@ def test_get_topological_nodes_dipole_with_only_one_terminal_returns_None():
 #     assert b2 is not None
 
 
-def test_get_nodes_dipole_setup_identified_object_returns_correct_values():
-    i = IdentifiedObject("a", "b")
-    t1 = Terminal()
-    t2 = Terminal()
-    i.references_to_me["Terminal"] = [t1, t2]
-    t1.TopologicalNode = TopologicalNode()
-    t2.TopologicalNode = TopologicalNode()
-    n1, n2 = get_nodes_dipole(i)
-    assert n1 is not None
-    assert n2 is not None
+# def test_get_nodes_dipole_setup_identified_object_returns_correct_values():
+#     i = IdentifiedObject("a", "b")
+#     t1 = Terminal()
+#     t2 = Terminal()
+#     i.references_to_me["Terminal"] = [t1, t2]
+#     t1.TopologicalNode = TopologicalNode()
+#     t2.TopologicalNode = TopologicalNode()
+#     n1, n2 = get_nodes_dipole(i)
+#     assert n1 is not None
+#     assert n2 is not None
 
 
-def test_get_nodes_dipole_not_terminals_returns_none():
-    i = IdentifiedObject("a", "b")
-    t1 = Terminal()
-    t2 = Terminal()
-    i.references_to_me["aaa"] = [t1, t2]
-    t1.TopologicalNode = TopologicalNode()
-    t2.TopologicalNode = TopologicalNode()
-    n1, n2 = get_nodes_dipole(i)
-    assert n1 is None
-    assert n2 is None
+# def test_get_nodes_dipole_not_terminals_returns_none():
+#     i = IdentifiedObject("a", "b")
+#     t1 = Terminal()
+#     t2 = Terminal()
+#     i.references_to_me["aaa"] = [t1, t2]
+#     t1.TopologicalNode = TopologicalNode()
+#     t2.TopologicalNode = TopologicalNode()
+#     n1, n2 = get_nodes_dipole(i)
+#     assert n1 is None
+#     assert n2 is None
 
 
-def test_get_nodes_dipole_1_terminal_returns_none():
-    i = IdentifiedObject("a", "b")
-    t1 = Terminal()
-    i.references_to_me["Terminal"] = [t1]
-    t1.TopologicalNode = TopologicalNode()
-    n1, n2 = get_nodes_dipole(i)
-    assert n1 is None
-    assert n2 is None
-
-
-def test_get_topological_node_monopole_correct_data_returns_topolificalnode():
-    ce = ConductingEquipment()
-    t1 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    ce.references_to_me["Terminal"] = [t1]
-    res = get_topological_node_monopole(ce)
-    assert res is not None
-
-
-def test_get_topological_node_monopole_more_terminals_returns_none():
-    ce = ConductingEquipment()
-    t1 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    ce.references_to_me["Terminal"] = [t1, t1]
-    res = get_topological_node_monopole(ce)
-    assert res is None
-
-
-def test_get_topological_node_monopole_no_terminals_returns_none_with_keyerror():
-    ce = ConductingEquipment()
-    t1 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    ce.references_to_me["aaaa"] = [t1, t1]
-    res = get_topological_node_monopole(ce)
-    assert res is None
-
-
-def test_get_bus_monopole_setup_bus_return_bus():
-    ce = ConductingEquipment()
-    t1 = Terminal()
-    t1.TopologicalNode = TopologicalNode()
-    ce.references_to_me["Terminal"] = [t1]
-    res = get_topological_node_monopole(ce)
-
-
-def test_get_dict():
-    pass  # TODO
-
-
-def test_get_pq():
-    e = EnergyConsumer()
-    e.p = 1
-    e.q = 2
-    p, q = get_pq(e)
-    assert p == 1
-    assert q == 2
+# def test_get_nodes_dipole_1_terminal_returns_none():
+#     i = IdentifiedObject("a", "b")
+#     t1 = Terminal()
+#     i.references_to_me["Terminal"] = [t1]
+#     t1.TopologicalNode = TopologicalNode()
+#     n1, n2 = get_nodes_dipole(i)
+#     assert n1 is None
+#     assert n2 is None
+#
+#
+# def test_get_topological_node_monopole_correct_data_returns_topolificalnode():
+#     ce = ConductingEquipment()
+#     t1 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     ce.references_to_me["Terminal"] = [t1]
+#     res = get_topological_node_monopole(ce)
+#     assert res is not None
+#
+#
+# def test_get_topological_node_monopole_more_terminals_returns_none():
+#     ce = ConductingEquipment()
+#     t1 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     ce.references_to_me["Terminal"] = [t1, t1]
+#     res = get_topological_node_monopole(ce)
+#     assert res is None
+#
+#
+# def test_get_topological_node_monopole_no_terminals_returns_none_with_keyerror():
+#     ce = ConductingEquipment()
+#     t1 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     ce.references_to_me["aaaa"] = [t1, t1]
+#     res = get_topological_node_monopole(ce)
+#     assert res is None
+#
+#
+# def test_get_bus_monopole_setup_bus_return_bus():
+#     ce = ConductingEquipment()
+#     t1 = Terminal()
+#     t1.TopologicalNode = TopologicalNode()
+#     ce.references_to_me["Terminal"] = [t1]
+#     res = get_topological_node_monopole(ce)
+#
+#
+# def test_get_dict():
+#     pass  # TODO
+#
+#
+# def test_get_pq():
+#     e = EnergyConsumer()
+#     e.p = 1
+#     e.q = 2
+#     p, q = get_pq(e)
+#     assert p == 1
+#     assert q == 2
 
 
 def test_get_nominal_voltage_correct_nominalvoltage_returns_value():
@@ -497,51 +495,51 @@ def test_get_nominal_voltage_basevoltage_is_string_log_error():
 #     assert n2 is None
 
 
-def test_base_voltage_to_str_returns_formatted_str():
-    b = BaseVoltage()
-    b.tpe = "a"
-    b.rdfid = "b"
-    b.nominalVoltage = 1
-    assert base_voltage_to_str(b) == "a:b:1 kV"
+# def test_base_voltage_to_str_returns_formatted_str():
+#     b = BaseVoltage()
+#     b.tpe = "a"
+#     b.rdfid = "b"
+#     b.nominalVoltage = 1
+#     assert base_voltage_to_str(b) == "a:b:1 kV"
 
 
-def test_check_exponent_model_return_proper_errors():
-    load_response_characteristic = LoadResponseCharacteristic()
-    load_response_characteristic.exponentModel = True
-    load_response_characteristic.pVoltageExponent = "some_value"
-    load_response_characteristic.qVoltageExponent = "some_value"
-    load_response_characteristic.pConstantCurrent = None
-    load_response_characteristic.pConstantPower = None
-    load_response_characteristic.pConstantImpedance = None
-    load_response_characteristic.qConstantCurrent = None
-    load_response_characteristic.qConstantPower = None
-    load_response_characteristic.qConstantImpedance = None
-    load_response_characteristic.rdfid = "rdfid_example"
-    logger = DataLogger()
-    result = check(logger)
-    assert result is False
-    assert len(logger.entries) == 2
+# def test_check_exponent_model_return_proper_errors():
+#     load_response_characteristic = LoadResponseCharacteristic()
+#     load_response_characteristic.exponentModel = True
+#     load_response_characteristic.pVoltageExponent = "some_value"
+#     load_response_characteristic.qVoltageExponent = "some_value"
+#     load_response_characteristic.pConstantCurrent = None
+#     load_response_characteristic.pConstantPower = None
+#     load_response_characteristic.pConstantImpedance = None
+#     load_response_characteristic.qConstantCurrent = None
+#     load_response_characteristic.qConstantPower = None
+#     load_response_characteristic.qConstantImpedance = None
+#     load_response_characteristic.rdfid = "rdfid_example"
+#     logger = DataLogger()
+#     result = check(logger)
+#     assert result is False
+#     assert len(logger.entries) == 2
 
-
-def test_check_():
-    load_response_characteristic = LoadResponseCharacteristic()
-    load_response_characteristic.exponentModel = False
-    load_response_characteristic.pVoltageExponent = "some_value"
-    load_response_characteristic.qVoltageExponent = "some_value"
-    load_response_characteristic.pConstantCurrent = None
-    load_response_characteristic.pConstantPower = None
-    load_response_characteristic.pConstantImpedance = None
-    load_response_characteristic.qConstantCurrent = None
-    load_response_characteristic.qConstantPower = None
-    load_response_characteristic.qConstantImpedance = None
-    load_response_characteristic.rdfid = "rdfid_example"
-    load_response_characteristic.pConstantImpedance = 1
-    load_response_characteristic.pConstantCurrent = 1
-    load_response_characteristic.pConstantPower = 1
-    load_response_characteristic.qConstantImpedance = 1
-    load_response_characteristic.qConstantCurrent = 1
-    load_response_characteristic.qConstantPower = 1
-    logger = DataLogger()
-    result = check(logger)
-    assert result is False
-    assert len(logger.entries) == 8
+#
+# def test_check_():
+#     load_response_characteristic = LoadResponseCharacteristic()
+#     load_response_characteristic.exponentModel = False
+#     load_response_characteristic.pVoltageExponent = "some_value"
+#     load_response_characteristic.qVoltageExponent = "some_value"
+#     load_response_characteristic.pConstantCurrent = None
+#     load_response_characteristic.pConstantPower = None
+#     load_response_characteristic.pConstantImpedance = None
+#     load_response_characteristic.qConstantCurrent = None
+#     load_response_characteristic.qConstantPower = None
+#     load_response_characteristic.qConstantImpedance = None
+#     load_response_characteristic.rdfid = "rdfid_example"
+#     load_response_characteristic.pConstantImpedance = 1
+#     load_response_characteristic.pConstantCurrent = 1
+#     load_response_characteristic.pConstantPower = 1
+#     load_response_characteristic.qConstantImpedance = 1
+#     load_response_characteristic.qConstantCurrent = 1
+#     load_response_characteristic.qConstantPower = 1
+#     logger = DataLogger()
+#     result = check(logger)
+#     assert result is False
+#     assert len(logger.entries) == 8
