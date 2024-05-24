@@ -268,27 +268,37 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                 is_slack = True
 
         volt_lev, substat = None, None
-        # if cgmes_elm.ConnectivityNodeContainer != '':     for IEEE14 import when CoNoC is missing
-        # TODO check if the container is a VoltageLevel or a Line
-        volt_lev = find_object_by_idtag(
-            object_list=gc_model.voltage_levels,
-            target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
-        )
-        country = None
-        if volt_lev is None:
-            logger.add_warning(msg='No voltage level found for the bus',
+        if cgmes_elm.ConnectivityNodeContainer:
+            volt_lev = find_object_by_idtag(
+                object_list=gc_model.voltage_levels,
+                target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
+            )
+            country = None
+            if volt_lev is None:
+                line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
+                if not isinstance(cgmes_elm.ConnectivityNodeContainer, line_tpe):
+                    logger.add_warning(msg='No voltage level found for the bus',
+                                       device=cgmes_elm.rdfid,
+                                       device_class=cgmes_elm.tpe,
+                                       device_property="ConnectivityNodeContainer")
+            else:
+                substat = find_object_by_idtag(
+                    object_list=gc_model.substations,
+                    target_idtag=volt_lev.substation.idtag
+                )
+                if substat is None:
+                    logger.add_warning(msg='No substation found for bus.',
+                                       device=volt_lev.rdfid,
+                                       device_class=volt_lev.tpe,
+                                       device_property="substation")
+                    print(f'No substation found for BUS {cgmes_elm.name}')
+                else:
+                    country = substat.country
+        else:
+            logger.add_warning(msg='Missing voltage level.',
                                device=cgmes_elm.rdfid,
                                device_class=cgmes_elm.tpe,
-                               device_property="TopologicalNode")
-        else:
-            substat = find_object_by_idtag(
-                object_list=gc_model.substations,
-                target_idtag=volt_lev.substation.idtag
-            )
-            if substat is None:
-                print(f'No substation found for BUS {cgmes_elm.name}')
-            else:
-                country = substat.country
+                               device_property="ConnectivityNodeContainer")
             # else form here get SubRegion and Region for Country..
         gcdev_elm = gcdev.Bus(name=cgmes_elm.name,
                               idtag=cgmes_elm.uuid,
