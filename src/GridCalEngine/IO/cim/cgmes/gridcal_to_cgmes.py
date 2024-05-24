@@ -128,7 +128,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
 
     for fm in fm_list:
         fm.scenarioTime = scenariotime
-        if modelingauthorityset != "":  # TODO if 2.4 than no need in SV in 3.0 we need all
+        if modelingauthorityset != "":
             fm.modelingAuthoritySet = modelingauthorityset
         current_time = datetime.utcnow()
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -174,6 +174,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
     fm_list[1].profile = profile_uris.get("SSH")
     fm_list[2].profile = profile_uris.get("TP")
     fm_list[3].profile = profile_uris.get("SV")
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:  # if 2.4 than no need in SV in 3.0 we need all
+        fm_list[3].modelingAuthoritySet = None
 
     # DependentOn
     eqbd_id = ""

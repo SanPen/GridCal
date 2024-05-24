@@ -262,49 +262,49 @@ class Transformer2W(ControllableBranchParent):
         else:
             self.LV = LV
 
-    def copy(self, bus_dict=None):
-        """
-        Returns a copy of the branch
-        @return: A new  with the same content as this
-        """
-
-        if bus_dict is None:
-            f = self.bus_from
-            t = self.bus_to
-        else:
-            f = bus_dict[self.bus_from]
-            t = bus_dict[self.bus_to]
-
-        # z_series = complex(self.R, self.X)
-        # y_shunt = complex(self.G, self.B)
-        b = Transformer2W(bus_from=f,
-                          bus_to=t,
-                          name=self.name,
-                          r=self.R,
-                          x=self.X,
-                          g=self.G,
-                          b=self.B,
-                          rate=self.rate,
-                          tap_module=self.tap_module,
-                          tap_phase=self.tap_phase,
-                          active=self.active,
-                          mttf=self.mttf,
-                          mttr=self.mttr,
-                          vset=self.vset,
-                          temp_base=self.temp_base,
-                          temp_oper=self.temp_oper,
-                          alpha=self.alpha,
-                          template=self.template,
-                          opex=self.opex,
-                          capex=self.capex)
-
-        b.regulation_bus = self.regulation_bus
-        b.regulation_cn = self.regulation_cn
-        b.active_prof = self.active_prof
-        b.rate_prof = self.rate_prof
-        b.Cost_prof = self.Cost_prof
-
-        return b
+    # def copy(self, bus_dict=None):
+    #     """
+    #     Returns a copy of the branch
+    #     @return: A new  with the same content as this
+    #     """
+    #
+    #     if bus_dict is None:
+    #         f = self.bus_from
+    #         t = self.bus_to
+    #     else:
+    #         f = bus_dict[self.bus_from]
+    #         t = bus_dict[self.bus_to]
+    #
+    #     # z_series = complex(self.R, self.X)
+    #     # y_shunt = complex(self.G, self.B)
+    #     b = Transformer2W(bus_from=f,
+    #                       bus_to=t,
+    #                       name=self.name,
+    #                       r=self.R,
+    #                       x=self.X,
+    #                       g=self.G,
+    #                       b=self.B,
+    #                       rate=self.rate,
+    #                       tap_module=self.tap_module,
+    #                       tap_phase=self.tap_phase,
+    #                       active=self.active,
+    #                       mttf=self.mttf,
+    #                       mttr=self.mttr,
+    #                       vset=self.vset,
+    #                       temp_base=self.temp_base,
+    #                       temp_oper=self.temp_oper,
+    #                       alpha=self.alpha,
+    #                       template=self.template,
+    #                       opex=self.opex,
+    #                       capex=self.capex)
+    #
+    #     b.regulation_bus = self.regulation_bus
+    #     b.regulation_cn = self.regulation_cn
+    #     b.active_prof = self.active_prof
+    #     b.rate_prof = self.rate_prof
+    #     b.Cost_prof = self.Cost_prof
+    #
+    #     return b
 
     def get_from_to_nominal_voltages(self) -> Tuple[float, float]:
         """

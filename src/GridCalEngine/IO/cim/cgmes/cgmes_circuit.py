@@ -257,7 +257,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
     :param logger:DataLogger
     :return: None
     """
-    import time
     for class_name, objects_dict in data.items():
 
         objects_list = list()
@@ -286,7 +285,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                 logger.add_error("Class not recognized", device_class=class_name)
 
         elements_by_type[class_name] = objects_list
-    start = time.time()
     # replace refferences by actual objects
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
@@ -295,8 +293,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                     class_dict=class_dict,
                     logger=logger,
                     mark_used=True)
-    endt = time.time()
-    print("find references: ", endt - start, "sec")
 
 
 def is_valid_cgmes(cgmes_version) -> bool:

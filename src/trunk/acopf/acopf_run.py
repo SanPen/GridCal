@@ -461,6 +461,7 @@ def caseREE():
 
 
 def case_nodalcap():
+
     cwd = os.getcwd()
 
     # Go back two directories

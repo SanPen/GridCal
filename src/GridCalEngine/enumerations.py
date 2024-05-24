@@ -1331,6 +1331,7 @@ class NodalCapacityMethod(Enum):
     """
     NonlinearOptimization = 'Nonlinear Optimization'
     LinearOptimization = 'Linear Optimization'
+    CPF = "Continuation power flow"
 
     def __str__(self):
         return self.value
@@ -1607,7 +1608,10 @@ class ResultTypes(Enum):
 
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report'
-    InvestmentsParetoPlot = 'Pareto plot'
+    InvestmentsParetoPlot1 = 'Pareto plot 1'
+    InvestmentsParetoPlot2 = 'Pareto plot 2'
+    InvestmentsParetoPlot3 = 'Pareto plot 3'
+    InvestmentsParetoPlot4 = 'Pareto plot 4'
     InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
