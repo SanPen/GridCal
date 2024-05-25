@@ -1666,9 +1666,11 @@ class SimulationTypes(Enum):
     NodeGrouping_run = "Node groups"
     InputsAnalysis_run = 'Inputs Analysis'
     OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
-    InvestmestsEvaluation_run = 'Investments evaluation'
+    InvestmentsEvaluation_run = 'Investments evaluation'
     TopologyProcessor_run = 'Topology Processor'
     NodalCapacityTimeSeries_run = 'Nodal capacity time series'
+
+    NoSim = "No simulation"
 
     def __str__(self):
         return self.value
@@ -1685,5 +1687,34 @@ class SimulationTypes(Enum):
         """
         try:
             return SimulationTypes[s]
+        except KeyError:
+            return s
+
+
+class JobStatus(Enum):
+    """
+    Job status types
+    """
+    Done = 'Done'
+    Running = 'Running'
+    Failed = "Failed"
+    Waiting = "Waiting"
+    Cancelled = "Cancelled"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return JobStatus[s]
         except KeyError:
             return s

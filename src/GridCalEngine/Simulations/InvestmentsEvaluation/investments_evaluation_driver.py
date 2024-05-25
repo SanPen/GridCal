@@ -162,7 +162,7 @@ def power_flow_function(inv_list: List[Investment],
 
 class InvestmentsEvaluationDriver(DriverTemplate):
     name = 'Investments evaluation'
-    tpe = SimulationTypes.InvestmestsEvaluation_run
+    tpe = SimulationTypes.InvestmentsEvaluation_run
 
     def __init__(self,
                  grid: MultiCircuit,

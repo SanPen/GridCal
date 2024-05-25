@@ -19,7 +19,6 @@ import math
 from typing import Dict, Union, List, Tuple, Any, Callable
 import pandas as pd
 import numpy as np
-from uuid import uuid4
 from enum import EnumMeta as EnumType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -27,7 +26,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType, TransformerControlType
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TransformerControlType)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -457,29 +456,6 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
 
     return data
 
-
-def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
-                                            instructions_json: Union[None, Dict[str, str]] = None
-                                            ) -> Dict[str, Dict[str, Dict[str, str]]]:
-    """
-    Create a Json with the same information expected for loading with `parse_gridcal_data`
-    :param circuit: MultiCircuit
-    :param instructions_json: Some extra dictionary with instructions about what to do with the model
-    :return: JSON like data
-    """
-
-    data = {
-        'name': circuit.name,
-        'baseMVA': circuit.Sbase,
-        'Comments': circuit.comments,
-        'ModelVersion': circuit.model_version,
-        'UserName': circuit.user_name,
-        'sender_id': uuid4().hex,
-        'instructions': instructions_json if instructions_json is not None else dict(),
-        'model_data': gather_model_as_jsons(circuit=circuit),
-        'diagrams': []
-    }
-    return data
 
 
 def search_property(template_elm: ALL_DEV_TYPES,
