@@ -23,7 +23,7 @@ import numpy as np
 import json
 from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.remote import gather_model_as_jsons_for_communication, RemoteInstruction, RemoteJob
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -71,12 +71,13 @@ async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str
     Send a file along with instructions about the file
     :param json_data: Json with te model
     :param endpoint_url: Web socket URL to connect to
+    :return service response
     """
 
     response = requests.post(endpoint_url, json=json_data, stream=True)
 
-    # Print server response
-    print(response.json())
+    # return server response
+    return response.json()
 
 
 class JobsModel(QtCore.QAbstractTableModel):
@@ -115,7 +116,7 @@ class JobsModel(QtCore.QAbstractTableModel):
         :param index:
         :return:
         """
-        return QtCore.Qt.ItemFlag.ItemIsSelectable
+        return QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
 
     def rowCount(self, parent: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex] = ...) -> int:
         """
@@ -183,8 +184,8 @@ class JobsModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 return self.headers[section]
-            elif orientation == QtCore.Qt.Orientation.Vertical:
-                return self.jobs[section].id_tag
+            # elif orientation == QtCore.Qt.Orientation.Vertical:
+            #     return self.jobs[section].id_tag
 
         return None
 
@@ -333,8 +334,10 @@ class ServerDriver(QThread):
         if self.is_running():
             model_data = gather_model_as_jsons_for_communication(circuit=circuit, instruction=instruction)
 
-            asyncio.get_event_loop().run_until_complete(send_json_data(json_data=model_data,
-                                                                       endpoint_url=websocket_url))
+            response = asyncio.get_event_loop().run_until_complete(send_json_data(json_data=model_data,
+                                                                                  endpoint_url=websocket_url))
+
+            self.get_jobs()
 
     def delete_job(self, job_id: str, api_key: str) -> dict:
         """
@@ -356,6 +359,8 @@ class ServerDriver(QThread):
         else:
             response.raise_for_status()
 
+        self.get_jobs()
+
     def cancel_job(self, job_id: str, api_key: str) -> dict:
         """
         Cancel a specific job by ID using the REST API.
@@ -376,6 +381,8 @@ class ServerDriver(QThread):
         else:
             response.raise_for_status()
 
+        self.get_jobs()
+
     def run(self) -> None:
         """
         run the file save procedure
@@ -387,6 +394,10 @@ class ServerDriver(QThread):
         ok = self.server_connect()
 
         if ok:
+
+            # get the running jobs
+            self.get_jobs()
+
             while not self.__cancel__:
 
                 if not self.__pause__:
@@ -402,9 +413,6 @@ class ServerDriver(QThread):
 
                     # sleep 1 second to catch other events
                     time.sleep(self.sleep_time)
-
-                # get jobs
-                self.get_jobs()
 
                 # check if alive
                 ok = self.server_connect()

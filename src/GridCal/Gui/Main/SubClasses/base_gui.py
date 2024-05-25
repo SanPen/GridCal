@@ -226,6 +226,8 @@ class BaseMainGui(QMainWindow):
         self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
         self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
+        self.ui.grid_name_line_edit.textChanged.connect(self.change_circuit_name)
+
     def LOCK(self, val: bool = True) -> None:
         """
         Lock the interface to prevent new simulation launches
@@ -733,6 +735,13 @@ class BaseMainGui(QMainWindow):
         self.circuit.change_base(Sbase_new)
 
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
+
+    def change_circuit_name(self):
+        """
+
+        :return:
+        """
+        self.circuit.name = self.ui.grid_name_line_edit.text().strip()
 
     def add_default_catalogue(self) -> None:
         """
