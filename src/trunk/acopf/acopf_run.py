@@ -461,7 +461,6 @@ def caseREE():
 
 
 def case_nodalcap():
-
     cwd = os.getcwd()
 
     # Go back two directories
@@ -485,12 +484,48 @@ def case_nodalcap():
     # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
+def compare_costs():
+    cwd = os.getcwd()
+
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 14 zip costs.gridcal')
+    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 30 Bus.gridcal')
+    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 118 Bus - ntc_areas.gridcal')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'ACTIVSg500 + VSC.gridcal')
+    grid = gce.FileOpen(file_path).open()
+
+    # OPF
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
+                                              acopf_mode=AcOpfMode.ACOPFstd, ips_tolerance=1e-8)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+
+    print('-------------')
+    print(f'Total optimized generation cost: {sum(res.Pcost)}')
+    print('-------------')
+
+    # OPF with set powers
+    for gen in grid.generators:
+        if not gen.bus.is_slack:
+            gen.enabled_dispatch = False
+
+    opf_options2 = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
+                                               acopf_mode=AcOpfMode.ACOPFslacks, ips_tolerance=1e-8)
+    res2 = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options2, plot_error=True, pf_init=True)
+
+    print('-------------')
+    print(f'Total non-optimized generation cost: {sum(res2.Pcost)}')
+    print('-------------')
+
+    print('')
+
+
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
-    case9()
+    # case9()
     # case14()
     # case_gb()
     # case6ww()
@@ -500,3 +535,4 @@ if __name__ == '__main__':
     #  casehvdc()
     # caseREE()
     # case_nodalcap()
+    compare_costs()

@@ -539,6 +539,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     c1 = nc.generator_data.cost_1[gen_disp_idx]
     c2 = nc.generator_data.cost_2[gen_disp_idx]
 
+    c0n = nc.generator_data.cost_0[gen_nondisp_idx]
+    c1n = nc.generator_data.cost_1[gen_nondisp_idx]
+    c2n = nc.generator_data.cost_2[gen_nondisp_idx]
+
     # Transformer operational limits
     tapm_max = nc.branch_data.tap_module_max[k_m]
     tapm_min = nc.branch_data.tap_module_min[k_m]
@@ -738,6 +742,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tap_phase[k_tau] = tapt
     Pcost = np.zeros(nc.ngen)
     Pcost[gen_disp_idx] = c0 + c1 * Pg[gen_disp_idx] + c2 * np.power(Pg[gen_disp_idx], 2.0)
+    print('')
+    Pcost[gen_nondisp_idx] = c0n + c1n * np.real(Sg_undis) + c2n * np.power(np.real(Sg_undis), 2.0)
 
     if opf_options.verbose > 0:
         df_bus = pd.DataFrame(data={'Va (rad)': Va, 'Vm (p.u.)': Vm,
