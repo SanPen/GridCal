@@ -1301,6 +1301,25 @@ class SchematicWidget(QSplitter):
                     lst.append((idx, bus, graphic_object))
         return lst
 
+    def get_selected_cn(self) -> List[Tuple[int, ConnectivityNode, CnGraphicItem]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, ConnectivityNode, Union[CnGraphicItem, None]]] = list()
+        cn_graphic_dict = self.graphics_manager.get_device_type_dict(DeviceType.ConnectivityNodeDevice)
+
+        cn_dict: Dict[str: Tuple[int, ConnectivityNode]] = {b.idtag: (i, b)
+                                                            for i, b in
+                                                            enumerate(self.circuit.get_connectivity_nodes())}
+
+        for idtag, graphic_object in cn_graphic_dict.items():
+            if isinstance(graphic_object, CnGraphicItem):
+                if graphic_object.isSelected():
+                    idx, bus = cn_dict[idtag]
+                    lst.append((idx, bus, graphic_object))
+        return lst
+
     def delete_Selected(self) -> None:
         """
         Delete the selected items from the diagram
@@ -4393,6 +4412,62 @@ class SchematicWidget(QSplitter):
         else:
             warning_msg("you must select the origin and destination buses!",
                         title='Change bus')
+
+    def set_generator_control_bus(self, generator_graphics: GeneratorGraphicItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param generator_graphics
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            generator_graphics.api_object.control_bus = sel_bus
+
+            if (yes_no_question("Do you want to set the profile?", "Set regulation bus")
+                    and self.circuit.has_time_series):
+                generator_graphics.api_object.control_bus_prof.fill(sel_bus)
+
+        else:
+            error_msg("You need to select exactly one bus to be set as the generator regulation bus",
+                      "Set regulation bus")
+
+    def set_generator_control_cn(self, generator_graphics: GeneratorGraphicItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param generator_graphics
+        """
+
+        idx_bus_list = self.get_selected_cn()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            generator_graphics.api_object.control_cn = sel_bus
+
+        else:
+            error_msg("You need to select exactly one bus to be set as the generator regulation connectivity node",
+                      "Set regulation connectivity node")
+
+    def set_branch_control_bus(self, line_graphics: LineGraphicTemplateItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param line_graphics
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 2:
+
+            # detect the bus and its combinations
+            if idx_bus_list[0][1] == line_graphics.api_object.bus_from:
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
 
     def disable_all_results_tags(self):
         """
