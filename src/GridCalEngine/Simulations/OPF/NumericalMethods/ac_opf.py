@@ -499,8 +499,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
 
     if optimize_nodal_capacity:
-        Pg_max = nc.generator_data.p / Sbase + 1e-6
-        Pg_min = nc.generator_data.p / Sbase - 1e-6
+        Pg_max = nc.generator_data.p / Sbase
+        Pg_min = nc.generator_data.p / Sbase
     else:
         Pg_max = nc.generator_data.pmax / Sbase
         Pg_min = nc.generator_data.pmin / Sbase

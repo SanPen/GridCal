@@ -447,12 +447,10 @@ def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
                                                                           M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
                                                                           nslcap=nslcap, acopf_mode=acopf_mode)
     # Obj. function:  Active power generation costs plus overloads and voltage deviation penalties
-    if nslcap !=0:
-        fval = np.sum(nodal_capacity_sign * slcap)
 
-    else:
-        fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
-                       + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin)))
+    fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
+                   + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin))
+                   + np.sum(nodal_capacity_sign * slcap))
 
     return fval
 
