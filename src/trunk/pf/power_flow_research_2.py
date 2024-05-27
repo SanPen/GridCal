@@ -190,6 +190,80 @@ def linn5bus_example():
 
     return grid
 
+def linn5bus_us_basecase():
+    """
+    Grid from Lynn Powel's book
+    """
+    # declare a circuit object
+    grid = gce.MultiCircuit()
+
+    # Add the buses and the generators and loads attached
+    bus1 = gce.Bus('Bus 1', vnom=138)
+    # bus1.is_slack = True  # we may mark the bus a slack
+    grid.add_bus(bus1)
+    grid.add_load(bus1, gce.Load('load 1', P=1000, Q=250))
+
+    # add bus 2 with a load attached
+    bus2 = gce.Bus('Bus 2', vnom=138)
+    grid.add_bus(bus2)
+    grid.add_load(bus2, gce.Load('load 2', P=1000, Q=250))
+    grid.add_shunt(bus2, gce.Shunt('BC 1', B=2.0))
+
+    # add bus 3 with a load attached
+    bus3 = gce.Bus('Bus 3', vnom=138)
+    grid.add_bus(bus3)
+
+    # add bus 4 with a load attached
+    bus4 = gce.Bus('Bus 4', vnom=138)
+    grid.add_bus(bus4)
+    gen1 = gce.Generator('Generator 1', control_bus=bus4, vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0, Snom=1000, P=1000)
+    grid.add_generator(bus4, gen1)
+
+    # bus5
+    bus5 = gce.Bus('Bus 5', vnom=20)
+    grid.add_bus(bus5)
+    bus5.is_slack = True
+    gen2 = gce.Generator('Generator Slack', control_bus=bus5, vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0, Snom=400, P=1000)
+    grid.add_generator(bus5, gen2)
+
+    # tr1 = gce.Transformer2W(bus2, bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
+    #                  tap_module_max=1.1, tap_module_min=0.9, tap_module=1.0,
+    #                  tap_module_control_mode=gce.TapModuleControl.Vm,
+    #                  regulation_bus=bus4)
+
+    #tr1 = gce.Transformer2W(bus_from=bus2, bus_to=bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
+    #                        tap_phase_max=1.7, tap_phase_min=1.7, tap_module=1.0,
+    #                        tap_angle_control_mode=gce.TapAngleControl.Pf, Pset=1200,
+    #                        regulation_branch=None)
+
+    tr1 = gce.Transformer2W(bus_from=bus2, bus_to=bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
+                            tap_phase_max=1.7, tap_phase_min=1.7, tap_module=1.0,
+                            tap_angle_control_mode=gce.TapAngleControl.fixed, Pset=1200,
+                            regulation_branch=None)
+
+    tr1.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
+
+    #tr2 = gce.Transformer2W(bus_from=bus1, bus_to=bus3, name='transformer 1-3', r=0.001, x=0.015, b=0.0, rate=1000,
+    #                        tap_phase_max=3.0, tap_phase_min=-3.0, tap_module=1.0,
+    #                        tap_angle_control_mode=gce.TapAngleControl.Pf, Pset=1200,
+    #                        regulation_branch=None)
+    tr2 = gce.Transformer2W(bus_from=bus1, bus_to=bus3, name='transformer 1-3', r=0.001, x=0.015, b=0.0, rate=1000,
+                            tap_phase_max=3.0, tap_phase_min=-3.0, tap_module=1.0,
+                            tap_angle_control_mode=gce.TapAngleControl.fixed, Pset=1200,
+                            regulation_branch=None)
+    tr2.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
+
+    # add Lines connecting the buses
+    grid.add_line(gce.Line(bus_from=bus1, bus_to=bus2, name='line 1-2', r=0.01, x=0.01, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus3, bus_to=bus4, name='line 3-4', r=0.005, x=0.02, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus4, bus_to=bus5, name='line 4-5', r=0.005, x=0.02, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus5, bus_to=bus3, name='line 5-3', r=0.005, x=0.01, b=0.02, rate=1000))
+    grid.add_transformer2w(tr1)
+    grid.add_transformer2w(tr2)
+
+    return grid
 
 def linn5bus_us():
     """
@@ -290,7 +364,13 @@ def compute_g(V: CxVec,
               noslack: IntVec,
               pvr: IntVec,
               k_tau: IntVec,
-              k_m: IntVec):
+              k_tau_pf: IntVec,
+              k_tau_pt: IntVec,
+              k_m: IntVec,
+              k_m_vr: IntVec,
+              k_m_qf: IntVec,
+              k_m_qt: IntVec,
+              i_m_vr: IntVec):
     """
     Compose the power flow function
     :param V:
@@ -326,13 +406,23 @@ def compute_g(V: CxVec,
     dSf_branch = Sf0 - Sf_calc
     dSt_branch = St0 - St_calc
 
+    # g = np.r_[
+    #     dS[noslack].real,  # dP
+    #     dS[np.r_[pq, pvr]].imag,  # dQ
+    #     dSf_branch[k_m].imag,  # dQf
+    #     dSt_branch[k_m].imag,  # dQt
+    #     dSf_branch[k_tau].real  # dPf
+    # ]
     g = np.r_[
         dS[noslack].real,  # dP
-        dS[np.r_[pq, pvr]].imag,  # dQ
-        dSf_branch[k_m].imag,  # dQf
-        dSt_branch[k_m].imag,  # dQt
-        dSf_branch[k_tau].real  # dPf
-    ]  # TODO: falta crear el índice i_m_vr
+        dS[np.r_[pq, pvr, i_m_vr]].imag,  # dQ
+        dSf_branch[k_tau_pf].real,  # dPf
+        dSf_branch[k_m_qf].imag,  # dQf
+        dSf_branch[k_tau_pt].real,  # dPt
+        dSt_branch[k_m_qt].imag,  # dQt
+    ]
+
+
 
     return g
 
@@ -355,11 +445,11 @@ def x2var(x: Vec, n_noslack: int, n_pqpvr: int, n_k_tau: int, n_k_m: int) -> Tup
     b += n_pqpvr
 
     Vm = x[a:b]
-    a += b
+    a += n_pqpvr
     b += n_k_tau
 
     tau = x[a:b]
-    a += b
+    a += n_k_tau
     b += n_k_m
 
     m = x[a:b]
@@ -402,7 +492,13 @@ def compute_gx_autodiff(x: Vec,
                         pvr: IntVec,
                         pqpvr: IntVec,
                         k_tau: IntVec,
-                        k_m: IntVec) -> ConvexFunctionResult:
+                        k_tau_pf: IntVec,
+                        k_tau_pt: IntVec,
+                        k_m: IntVec,
+                        k_m_vr: IntVec,
+                        k_m_qf: IntVec,
+                        k_m_qt: IntVec,
+                        i_m_vr: IntVec) -> ConvexFunctionResult:
     """
 
     :param x: vector of unknowns (handled by the solver)
@@ -433,9 +529,8 @@ def compute_gx_autodiff(x: Vec,
     V = Vm * np.exp(1j * Va)
 
     g = compute_g(V=V, Ybus=Ybus, S0=S0, I0=I0, Y0=Y0, Vm=Vm, m=m, tau=tau, Cf=Cf, Ct=Ct, F=F, T=T, pq=pq,
-                  noslack=noslack,
-                  Yf=Yf, Yt=Yt, pvr=pvr, k_tau=k_tau, k_m=k_m, Sf0=Sf0, St0=St0)
-
+                  noslack=noslack, pvr=pvr, Yf=Yf, Yt=Yt, k_tau=k_tau, k_m=k_m, k_m_vr=k_m_vr, k_m_qf=k_m_qf,
+                  k_m_qt=k_m_qt, k_tau_pf=k_tau_pf, k_tau_pt=k_tau_pt, Sf0=Sf0, St0=St0, i_m_vr=i_m_vr)
     return g
 
 
@@ -501,22 +596,107 @@ def pf_function2(x: Vec,
     V = Vm * np.exp(1j * Va)
 
     g = compute_g(V=V, Ybus=Ybus, S0=S0, I0=I0, Y0=Y0, Vm=Vm, m=m, tau=tau, Cf=Cf, Ct=Ct, F=F, T=T, pq=pq,
-                  noslack=noslack, pvr=pvr, Yf=Yf, Yt=Yt, k_tau=k_tau, k_m=k_m, Sf0=Sf0, St0=St0)
-    # TODO: Reminder: es posible que a lo largo de las iteraciones cambien los tipos de nudos y haya que actualizar la
-    # prioridad de algún control
+                  noslack=noslack, pvr=pvr, Yf=Yf, Yt=Yt, k_tau=k_tau, k_m=k_m, k_m_vr=k_m_vr, k_m_qf=k_m_qf,
+                  k_m_qt=k_m_qt, k_tau_pf=k_tau_pf, k_tau_pt=k_tau_pt, Sf0=Sf0, St0=St0, i_m_vr=i_m_vr)
+
+
     if compute_jac:
         # Gx = compute_gx(V=V, Ybus=Ybus, pvpq=pvpq, pq=pq)
-
         Gx = calc_autodiff_jacobian(func=compute_gx_autodiff,
                                     x=x,
                                     arg=(Va0, Vm0, Ybus, Yf, Yt, S0, I0, Y0, Sf0, St0, m, tau, Cf, Ct, F, T,
-                                         pq, noslack, pvr, pqpvr, k_tau, k_m))
+                                         pq, noslack, pvr, pqpvr, k_tau, k_tau_pf, k_tau_pt, k_m, k_m_vr, k_m_qf,
+                                         k_m_qt, i_m_vr))
 
     else:
         Gx = None
 
     return ConvexFunctionResult(f=g, J=Gx)
 
+def pf_function2bis(
+        x: Vec,
+        compute_jac: bool,
+        Va0: Vec,
+        Vm0: Vec,
+        Ybus: CscMat,
+        Yf: CscMat,
+        Yt: CscMat,
+        S0: CxVec,
+        I0: CxVec,
+        Y0: CxVec,
+        Sf0: CxVec,
+        St0: CxVec,
+        m0: Vec,
+        tau0: Vec,
+        Cf: CscMat,
+        Ct: CscMat,
+        F: IntVec,
+        T: IntVec,
+        pq: IntVec,
+        noslack: IntVec,
+        pvr: IntVec,
+        pqpvr: IntVec,
+        k_tau: IntVec,
+        k_tau_pf: IntVec,
+        k_tau_pt: IntVec,
+        k_m: IntVec,
+        k_m_vr: IntVec,
+        k_m_qf: IntVec,
+        k_m_qt: IntVec,
+        i_m_vr: IntVec) -> ConvexFunctionResult:
+    """
+
+    :param x: vector of unknowns (handled by the solver)
+    :param compute_jac: compute the jacobian? (handled by the solver)
+    :param Va0:
+    :param Vm0:
+    :param Ybus:
+    :param Yf:
+    :param Yt
+    :param S0:
+    :param I0:
+    :param Y0:
+    :param m:
+    :param tau:
+    :param Cf:
+    :param Ct:
+    :param F:
+    :param T:
+    :param pq:
+    :param noslack:
+    :return:
+    """
+    nnoslack = len(noslack)
+    npqpvr = len(pqpvr)
+    n_k_tau = len(k_tau)
+    n_k_m = len(k_m)
+    Va = Va0.copy()
+    Vm = Vm0.copy()
+    tau = tau0.copy()
+    m = m0.copy()
+    Va[noslack], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=x, n_noslack=nnoslack, n_pqpvr=npqpvr, n_k_tau=n_k_tau,
+                                                       n_k_m=n_k_m)
+
+    V = Vm * np.exp(1j * Va)
+
+    g = compute_g(V=V, Ybus=Ybus, S0=S0, I0=I0, Y0=Y0, Vm=Vm, m=m, tau=tau, Cf=Cf, Ct=Ct, F=F, T=T, pq=pq,
+                  noslack=noslack, pvr=pvr, Yf=Yf, Yt=Yt, k_tau=k_tau, k_m=k_m, k_m_vr=k_m_vr, k_m_qf=k_m_qf,
+                  k_m_qt=k_m_qt, k_tau_pf=k_tau_pf, k_tau_pt=k_tau_pt, Sf0=Sf0, St0=St0, i_m_vr=i_m_vr)
+
+
+    if compute_jac:
+        # Gx = compute_gx(V=V, Ybus=Ybus, pvpq=pvpq, pq=pq)
+
+        Gx = calc_autodiff_jacobian(func=compute_gx_autodiff,
+                                    x=x,
+                                    arg=(Va0, Vm0, Ybus, Yf, Yt, S0, I0, Y0, Sf0, St0, m, tau, Cf, Ct, F, T,
+                                         pq, noslack, pvr, pqpvr, k_tau, k_tau_pf, k_tau_pt, k_m, k_m_vr, k_m_qf,
+                                         k_m_qt, i_m_vr))
+
+    else:
+        Gx = None
+
+    return ConvexFunctionResult(f=g, J=Gx)
 
 def indices_computation(grid: gce.MultiCircuit):
     """
@@ -553,7 +733,136 @@ def indices_computation(grid: gce.MultiCircuit):
 
     return ref, pq, pv, pvr, no_slack, pqv, k_m_vr, k_m_qf, k_m_qt, k_tau_pf, k_tau_pt
 
+def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
+    """
 
+    :param grid:
+    :param pf_options:
+    :return:
+    """
+    nc = gce.compile_numerical_circuit_at(grid, t_idx=None)
+
+    adm = compute_passive_admittances(R=nc.branch_data.R,
+                                      X=nc.branch_data.X,
+                                      G=nc.branch_data.G,
+                                      B=nc.branch_data.B,
+                                      vtap_f=nc.branch_data.virtual_tap_f,
+                                      vtap_t=nc.branch_data.virtual_tap_t,
+                                      Cf=nc.branch_data.C_branch_bus_f.tocsc(),
+                                      Ct=nc.branch_data.C_branch_bus_t.tocsc(),
+                                      Yshunt_bus=nc.Yshunt_from_devices,
+                                      conn=nc.branch_data.conn,
+                                      seq=1,
+                                      add_windings_phase=False)
+
+    indices = SimulationIndicesV2(
+        bus_types=nc.bus_types,
+        Pbus=nc.Sbus.real,
+        branch_control_bus=nc.branch_data.ctrl_bus,
+        branch_control_branch=nc.branch_data.ctrl_branch,
+        branch_control_mode_m=nc.branch_data.ctrl_mode_m,
+        branch_control_mode_tau=nc.branch_data.ctrl_mode_tau,
+        generator_control_bus=nc.generator_data.ctrl_bus,
+        generator_iscontrolled=nc.generator_data.controllable,
+        generator_buses=nc.generator_data.genbus,
+        F=nc.F,
+        T=nc.T,
+        dc=nc.dc_indices
+    )
+    ref, pq, pv, pvr, no_slack, pqv, k_m_vr, k_m_qf, k_m_qt, k_tau_pf, k_tau_pt, i_m_vr = indices.compute_indices(
+                                                                Pbus=nc.Sbus.real,
+                                                                types=nc.bus_types,
+                                                                generator_control_bus=nc.generator_data.ctrl_bus,
+                                                                generator_buses=nc.generator_data.genbus,
+                                                                branch_control_bus=nc.branch_data.ctrl_bus,
+                                                                branch_control_branch=nc.branch_data.ctrl_branch,
+                                                                Snomgen=nc.generator_data.snom,
+                                                                branch_control_mode_m=nc.branch_data.ctrl_mode_m,
+                                                                branch_control_mode_tau=nc.branch_data.ctrl_mode_tau)
+
+    Ybus = adm.Ybus
+    #pq = nc.pq
+    pvpq = np.r_[pv, pq]    # np.r_[nc.pv, nc.pq]
+    k_tau = np.r_[k_tau_pf, k_tau_pt]   # nc.k_tau
+    n_k_tau = len(k_tau)
+    k_m = np.r_[k_m_vr, k_m_qf, k_m_qt] # nc.k_m
+    n_k_m = len(k_m)
+    pqpvr = np.r_[pq, pvr]  # np.r_[nc.pq, nc.pvr]
+    #pvr = nc.pvr
+    npqpvr = len(pqpvr)
+    npvpq = len(pvpq)
+    S0 = nc.Sbus
+    I0 = nc.Ibus
+    Y0 = nc.YLoadBus
+    Sf0 = nc.branch_data.Pfset + 1j * nc.branch_data.Qfset
+    St0 = nc.branch_data.Ptset + 1j * nc.branch_data.Qtset
+    m = nc.branch_data.tap_module
+    tau = nc.branch_data.tap_angle
+    Yf = nc.Yf
+    Yt = nc.Yt
+    Cf = nc.branch_data.C_branch_bus_f
+    Ct = nc.branch_data.C_branch_bus_t
+    F = nc.F
+    T = nc.T
+    Vm0 = np.abs(nc.Vbus)
+    Va0 = np.angle(nc.Vbus)
+    x0 = var2x(Va=Va0[no_slack], Vm=Vm0[pqpvr], tau=tau[k_tau], m=m[k_m])
+
+    logger = gce.Logger()
+
+    if pf_options.solver_type == SolverType.NR:
+        ret: ConvexMethodResult = newton_raphson(func=pf_function2bis,
+                                                 func_args=(
+                                                 Va0, Vm0, Ybus, Yf, Yt, S0, I0, Y0, Sf0, St0, m, tau, Cf, Ct, F, T,
+                                                 pq, no_slack, pvr, pqpvr, k_tau, k_tau_pf, k_tau_pt, k_m, k_m_vr,
+                                                 k_m_qf, k_m_qt, i_m_vr),
+                                                 x0=x0,
+                                                 tol=pf_options.tolerance,
+                                                 max_iter=pf_options.max_iter,
+                                                 trust=pf_options.trust_radius,
+                                                 verbose=pf_options.verbose,
+                                                 logger=logger)
+
+    elif pf_options.solver_type == SolverType.PowellDogLeg:
+        ret: ConvexMethodResult = powell_dog_leg(func=pf_function,
+                                                 func_args=(Va0, Vm0, Ybus, S0, Y0, I0, m, tau, Cf, Ct, F, T, pq, pvpq),
+                                                 x0=x0,
+                                                 tol=pf_options.tolerance,
+                                                 max_iter=pf_options.max_iter,
+                                                 trust_region_radius=pf_options.trust_radius,
+                                                 verbose=pf_options.verbose,
+                                                 logger=logger)
+
+    elif pf_options.solver_type == SolverType.LM:
+        ret: ConvexMethodResult = levenberg_marquardt(func=pf_function,
+                                                      func_args=(
+                                                          Va0, Vm0, Ybus, S0, Y0, I0, m, tau, Cf, Ct, F, T, pq, pvpq),
+                                                      x0=x0,
+                                                      tol=pf_options.tolerance,
+                                                      max_iter=pf_options.max_iter,
+                                                      verbose=pf_options.verbose,
+                                                      logger=logger)
+
+    else:
+        raise Exception(f"Solver not implemented {pf_options.solver_type.value}")
+
+    Va = Va0.copy()
+    Vm = Vm0.copy()
+    Va[pvpq], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=ret.x, n_noslack=npvpq, n_pqpvr=npqpvr, n_k_tau=n_k_tau,
+                                                    n_k_m=n_k_m)
+
+    # TODO: discretización de controles, chequeo de límites y recalcular el método numérico
+    df = pd.DataFrame(data={"Vm": Vm, "Va": np.degrees(Va)})
+    print(df)
+
+    print("Info:")
+    ret.print_info()
+
+    print("Logger:")
+    logger.print()
+    ret.plot_error()
+
+    #plt.show()
 def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     """
 
@@ -590,20 +899,26 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
         T=nc.T,
         dc=nc.dc_indices
     )
-    ref, pq, pv, pvr, no_slack, pqv, k_m_vr = indices.compute_indices(Pbus=nc.Sbus.real,
-                                                    types=nc.bus_types,
-                                                    generator_control_bus=nc.generator_data.ctrl_bus,
-                                                    generator_buses=nc.generator_data.genbus)
+    ref, pq, pv, pvr, no_slack, pqv, k_m_vr, k_m_qf, k_m_qt, k_tau_pf, k_tau_pt = indices.compute_indices(
+                                                                Pbus=nc.Sbus.real,
+                                                                types=nc.bus_types,
+                                                                generator_control_bus=nc.generator_data.ctrl_bus,
+                                                                generator_buses=nc.generator_data.genbus,
+                                                                branch_control_bus=nc.branch_data.ctrl_bus,
+                                                                branch_control_branch=nc.branch_data.ctrl_branch,
+                                                                Snomgen=nc.generator_data.snom,
+                                                                branch_control_mode_m=nc.branch_data.ctrl_mode_m,
+                                                                branch_control_mode_tau=nc.branch_data.ctrl_mode_tau)
 
     Ybus = adm.Ybus
-    pq = nc.pq
-    pvpq = np.r_[nc.pv, nc.pq]
-    k_tau = nc.k_tau
+    #pq = nc.pq
+    pvpq = np.r_[pv, pq]    # np.r_[nc.pv, nc.pq]
+    k_tau = np.r_[k_tau_pf, k_tau_pt]   # nc.k_tau
     n_k_tau = len(k_tau)
-    k_m = nc.k_m
+    k_m = np.r_[k_m_vr, k_m_qf, k_m_qt] # nc.k_m
     n_k_m = len(k_m)
-    pqpvr = np.r_[nc.pq, nc.pvr]
-    pvr = nc.pvr
+    pqpvr = np.r_[pq, pvr]  # np.r_[nc.pq, nc.pvr]
+    #pvr = nc.pvr
     npqpvr = len(pqpvr)
     npvpq = len(pvpq)
     S0 = nc.Sbus
@@ -629,7 +944,8 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
         ret: ConvexMethodResult = newton_raphson(func=pf_function2,
                                                  func_args=(
                                                  Va0, Vm0, Ybus, Yf, Yt, S0, Y0, I0, Sf0, St0, m, tau, Cf, Ct, F, T,
-                                                 pq, pvpq, pvr, pqpvr, k_tau, k_m),
+                                                 pq, pvpq, pvr, pqpvr, k_tau, k_tau_pf, k_tau_pt, k_m, k_m_vr, k_m_qf,
+                                                 k_m_qt),
                                                  x0=x0,
                                                  tol=pf_options.tolerance,
                                                  max_iter=pf_options.max_iter,
@@ -665,6 +981,7 @@ def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     Va[pvpq], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=ret.x, n_noslack=npvpq, n_pqpvr=npqpvr, n_k_tau=n_k_tau,
                                                     n_k_m=n_k_m)
 
+    # TODO: discretización de controles, chequeo de límites y recalcular el método numérico
     df = pd.DataFrame(data={"Vm": Vm, "Va": Va})
     print(df)
 
@@ -693,6 +1010,17 @@ def test_multiple_slack() -> None:
             candidate = g
     # TODO: hay que cambiar esto en otro punto diferente al del compute_indices
     # assert (candidate.bus == gridtest_.buses[ref[0]])
+
+def test_run() -> None:
+
+    gridtest_ = linn5bus_us_basecase()
+
+    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                       max_iter=50,
+                                       trust_radius=5.0,
+                                       tolerance=1e-6,
+                                       verbose=0)
+    run_pf2(grid=gridtest_, pf_options=pf_options_)
 
 
 

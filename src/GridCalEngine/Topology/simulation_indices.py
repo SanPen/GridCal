@@ -653,8 +653,9 @@ class SimulationIndicesV2:
         k_tau_Pf = np.where(branch_control_mode_tau == TapAngleControl.Pf)[0]
         k_tau_Pt = np.where(branch_control_mode_tau == TapAngleControl.Pt)[0]
         pqv = np.zeros(0, dtype=int)
+        i_m_vr = np.zeros(0, dtype=int)
+
         # TODO: hay que actualizar el types cada vez que se cambie un nudo
-        # TODO: hay que chequear si se cumplen los límites de control
         # checking the slack information consistency
         if len(ref) == 0:  # there is no slack!
             if len(np.concatenate((pv, pvr))) == 0:  # there are no pv neither -> blackout grid
@@ -701,6 +702,7 @@ class SimulationIndicesV2:
                     if branch_control_mode_m[j] == TapModuleControl.Vm:
                         pqv = np.append(pqv, np.array([i]))
                         pq = np.delete(pq, np.where(pq == i)[0])
+                        i_m_vr = np.append(i_m_vr, np.array([i]))
                     else:
                         # branch is not controlling voltage
                         pass
@@ -778,8 +780,9 @@ class SimulationIndicesV2:
                             # TODO: qué hacemos con el nudo to del transformador?
                 elif nodecontrolled in branch_control_bus:
                     # any node whose voltage is controlled by a transformer tap is pqv node
-                     if nodecontrolled not in pqv:
-                         pqv = np.append(pqv, np.array([nodecontrolled]))
+                    if nodecontrolled not in pqv:
+                        pqv = np.append(pqv, np.array([nodecontrolled]))
+                        i_m_vr = np.append(i_m_vr, np.array([nodecontrolled]))
 
                 # Let's check if nodecontrolled is a pq node to convert it to pqv
                 if nodecontrolled in pq:
@@ -787,7 +790,7 @@ class SimulationIndicesV2:
                     pq = np.delete(pq, np.where(pq == nodecontrolled)[0])
 
 
-        return ref, pq, pv, pvr, no_slack, pqv, k_m_vr, k_m_Qf, k_m_Qt, k_tau_Pf, k_tau_Pt
+        return ref, pq, pv, pvr, no_slack, pqv, k_m_vr, k_m_Qf, k_m_Qt, k_tau_Pf, k_tau_Pt, i_m_vr
     def recompile_types(self,
                         bus_types: IntVec,
                         Pbus: Vec):
