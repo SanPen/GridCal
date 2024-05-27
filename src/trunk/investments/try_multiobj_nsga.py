@@ -19,14 +19,14 @@ if __name__ == "__main__":
 
     pf_options = sim.PowerFlowOptions()
 
-    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
-                                               max_eval=4 * len(grid.investments),
+    # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
+    #                                            max_eval=4 * len(grid.investments),
+    #                                            pf_options=pf_options)
+
+    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Random,
+                                               max_eval=2 * len(grid.investments),
                                                pf_options=pf_options)
 
-    # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Random,
-    #                                            max_eval=1 * len(grid.investments),
-    #                                            pf_options=pf_options)
-    #
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     st_time = time.time()
     inv.run()
