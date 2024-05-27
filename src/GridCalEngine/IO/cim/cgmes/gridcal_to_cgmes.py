@@ -881,7 +881,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cm_transformer, cgmes_model, logger),
                                     create_cgmes_terminal(mc_elm.bus_to, cm_transformer, cgmes_model, logger)]
         cm_transformer.aggregate = False  # what is this?
-        # cm_transformer.EquipmentContainer: can be obtained only if the data is stored in MultiCircuit as well
+        cm_transformer.EquipmentContainer = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.Substation_list,
+            target_uuid=mc_elm.bus_from.substation.idtag
+        )
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
@@ -947,6 +951,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
+
+        cm_transformer.EquipmentContainer = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.Substation_list,
+            target_uuid=mc_elm.bus1.substation.idtag
+        )
 
         pte1 = object_template()
         pte1.PowerTransformer = cm_transformer
