@@ -457,6 +457,7 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                                                                              Sbus=solution.Scalc,
                                                                              V=solution.V,
                                                                              branch_rates=branch_rates,
+                                                                             Ybus=solution.Ybus,
                                                                              Yf=solution.Yf,
                                                                              Yt=solution.Yt,
                                                                              method=solution.method)
@@ -495,6 +496,7 @@ def power_flow_post_process(
         Sbus: CxVec,
         V: CxVec,
         branch_rates: CxVec,
+        Ybus: Union[CscMat, None] = None,
         Yf: Union[CscMat, None] = None,
         Yt: Union[CscMat, None] = None,
         method: Union[None, SolverType] = None
@@ -505,6 +507,7 @@ def power_flow_post_process(
     :param Sbus: Array of computed nodal injections
     :param V: Array of computed nodal voltages
     :param branch_rates: Array of branch rates
+    :param Ybus: Admittance matrix
     :param Yf: Admittance-from matrix
     :param Yt: Admittance-to matrix
     :param method: SolverType (the non-linear and Linear flow calculations differ)
@@ -515,24 +518,26 @@ def power_flow_post_process(
     pv = calculation_inputs.pv
 
     if method not in [SolverType.DC]:
-        # power at the slack nodes
-        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
-
-        # Reactive power at the pv nodes
-        P = Sbus[pv].real
-        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
-        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
-
+        if Ybus is None:
+            Ybus = calculation_inputs.Ybus
         if Yf is None:
             Yf = calculation_inputs.Yf
         if Yt is None:
             Yt = calculation_inputs.Yt
 
+        # power at the slack nodes
+        Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
+
+        # Reactive power at the pv nodes
+        P = Sbus[pv].real
+        Q = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
+        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
+
         # Branches current, loading, etc
         Vf = V[calculation_inputs.branch_data.F]
         Vt = V[calculation_inputs.branch_data.T]
-        If = Yf * V
-        It = Yt * V
+        If = Yf @ V
+        It = Yt @ V
         Sf = Vf * np.conj(If)
         St = Vt * np.conj(It)
 
