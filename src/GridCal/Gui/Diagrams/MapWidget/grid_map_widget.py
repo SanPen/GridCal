@@ -312,6 +312,45 @@ class GridMapWidget(MapWidget):
 
         return graphic_object
 
+    def merge_lines(self):
+
+        if len(self.selectedItems) < 2:
+            return 0
+
+        it1 = self.selectedItems[0]
+        it2 = self.selectedItems[1]
+
+        if it1 == it2:
+            return 0
+
+        newline = Line()
+        newline.copyData(it1.line_container.api_object)
+        # ln1 = self.api_object.copy()
+
+        better_first, better_second = self.compare_options(it1, it2)
+
+        first_list = better_first.line_container.api_object.locations.data
+        second_list = better_second.line_container.api_object.locations.data
+
+        newline.locations.data = first_list + second_list
+
+        idx = 0
+        for nod in better_first.line_container.nodes_list:
+            newline.locations.data[idx].lat = nod.lat
+            newline.locations.data[idx].long = nod.lon
+            idx = idx + 1
+
+        for nod in better_second.line_container.nodes_list:
+            newline.locations.data[idx].lat = nod.lat
+            newline.locations.data[idx].long = nod.lon
+            idx = idx + 1
+
+        newL = self.create_line(newline, original=False)
+
+        better_first.line_container.disable_line()
+        better_second.line_container.disable_line()
+
+
     def create_line(self, api_object: BRANCH_TYPES, original: bool = True) -> MapTemplateLine:
         """
         Adds a line with the nodes and segments
