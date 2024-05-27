@@ -602,7 +602,7 @@ class SchematicWidget(QSplitter):
 
     def set_editor_model(self,
                          api_object: ALL_DEV_TYPES,
-                         dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
+                         dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
