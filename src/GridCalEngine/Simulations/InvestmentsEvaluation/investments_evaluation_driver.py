@@ -111,7 +111,8 @@ class InvestmentScores:
         :return: array of 2 values
         """
         # return np.array([self.electrical_score, self.financial_score])
-        return np.array([self.losses_score, self.overload_score, self.voltage_module_score, self.voltage_angle_score, self.financial_score])
+        return np.array([self.losses_score, self.overload_score, self.voltage_module_score, self.voltage_angle_score,
+                         self.financial_score])
 
 
 def power_flow_function(inv_list: List[Investment],
@@ -220,6 +221,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         # add all the investments of the investment groups reflected in the combination
         inv_list: List[Investment] = list()
+
         for i, active in enumerate(combination):
             if active == 1:
                 inv_list += self.investments_by_group[i]

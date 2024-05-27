@@ -26,15 +26,11 @@ def random_trial(obj_func,
     # Init arrays to store results
     x = np.zeros((max_evals, n_var))
     f = np.zeros((max_evals, n_obj))
-    print("Number of rows in array f:", f.shape[0])
 
     # Compute objectives for each x combination
     for i, arr in enumerate(ones_into_array):
         x[i, :] = arr
         f[i, :] = obj_func(arr)
-    print("Number of rows in array f:", f.shape[0])
-
-    print("max_evals:", max_evals)
 
     import pandas as pd
     dff = pd.DataFrame(f)
