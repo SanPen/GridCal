@@ -100,6 +100,7 @@ class InvestmentEvaluationMethod(Enum):
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
     NSGA3 = "NSGA3"
+    Random = "Random"
 
     def __str__(self):
         return self.value

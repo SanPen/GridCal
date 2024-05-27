@@ -26,6 +26,7 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.random_eval import random_trial
 from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTypes
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec
 
@@ -392,7 +393,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = int(round(self.dim)) # divide by 5 for ideal grid
+        pop_size = int(round(self.dim))  # if needed, divide by 5 for ideal grid
         n_partitions = int(round(pop_size))
 
         # compile the snapshot
@@ -419,6 +420,31 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.report_done()
 
+    def randomized_evaluation(self) -> None:
+        """
+        Run purely random evaluations, without any optimization
+        """
+        self.report_text("Randomly evaluating investments...")
+
+        # compile the snapshot
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+                                                    max_eval=self.options.max_eval * 2)
+
+        # add baseline
+        ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+
+        # optimize
+        X, obj_values = random_trial(
+            obj_func=self.objective_function,
+            n_var=self.dim,
+            n_obj=len(ret),
+            max_evals=self.options.max_eval,
+        )
+
+        self.results.set_best_combination(combination=X[:, 0])
+
+        self.report_done()
+
     def run(self) -> None:
         """
         run the QThread
@@ -437,6 +463,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         elif self.options.solver == InvestmentEvaluationMethod.NSGA3:
             self.optimized_evaluation_nsga3()
+
+        elif self.options.solver == InvestmentEvaluationMethod.Random:
+            self.randomized_evaluation()
 
         else:
             raise Exception('Unsupported method')

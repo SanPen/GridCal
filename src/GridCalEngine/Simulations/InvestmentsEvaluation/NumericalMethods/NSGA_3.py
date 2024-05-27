@@ -99,7 +99,7 @@ class GridNsga(ElementwiseProblem):
 def NSGA_3(obj_func,
            n_partitions: int = 100,
            n_var: int = 1,
-           n_obj=2,
+           n_obj: int = 2,
            max_evals: int = 30,
            pop_size: int = 1,
            crossover_prob: float = 0.05,
@@ -137,4 +137,7 @@ def NSGA_3(obj_func,
                    verbose=True,
                    save_history=False)
 
+    import pandas as pd
+    dff = pd.DataFrame(res.F)
+    dff.to_excel('nsga.xlsx')
     return res.X, res.F
