@@ -27,7 +27,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.DataStructures.numerical_circuit_general_pf import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.DataStructures.numerical_circuit_general_pf import compile_numerical_circuit_at as compile_numerical_circuit_at_generalised_pf
+from GridCalEngine.DataStructures.numerical_circuit_general_pf import \
+    compile_numerical_circuit_at as compile_numerical_circuit_at_generalised_pf
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
@@ -221,17 +222,17 @@ def solve(circuit: NumericalCircuit,
         elif solver_type == SolverType.NR:
             if options.generalised_pf:
                 solution = pflw.NR_LS_GENERAL(nc=circuit,
-                                           V0=V0,
-                                           S0=S0,
-                                           I0=I0,
-                                           Y0=Y0,
-                                           tolerance=options.tolerance,
-                                           max_iter=options.max_iter,
-                                           acceleration_parameter=options.backtracking_parameter,
-                                           mu_0=options.trust_radius,
-                                           control_q=options.control_Q,
-                                           pf_options=options)
-                
+                                              V0=V0,
+                                              S0=S0,
+                                              I0=I0,
+                                              Y0=Y0,
+                                              tolerance=options.tolerance,
+                                              max_iter=options.max_iter,
+                                              acceleration_parameter=options.backtracking_parameter,
+                                              mu_0=options.trust_radius,
+                                              control_q=options.control_Q,
+                                              pf_options=options)
+
             elif circuit.any_control:
                 # Solve NR with the AC/DC algorithm
                 solution = pflw.NR_LS_ACDC(nc=circuit,
@@ -615,7 +616,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     # compute islands
     islands = None
     if options.generalised_pf == True:
-        islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands, generalised_pf = options.generalised_pf)
+        islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
+                                        generalised_pf=options.generalised_pf)
     else:
         islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
     results.island_number = len(islands)
@@ -764,8 +766,7 @@ def multi_island_pf(multi_circuit: MultiCircuit,
             bus_dict=bus_dict,
             areas_dict=areas_dict
         )
-        print("Generalised PowerFlow")
-    
+        # print("Generalised PowerFlow")
 
     # Normal PowerFlow
     else:
@@ -779,7 +780,7 @@ def multi_island_pf(multi_circuit: MultiCircuit,
             bus_dict=bus_dict,
             areas_dict=areas_dict
         )
-        print("Normal PowerFlow")
+        # print("Normal PowerFlow")
 
     res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
 

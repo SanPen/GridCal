@@ -19,8 +19,9 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -140,6 +141,34 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
 
+    def get_objectives(self) -> Mat:
+        """
+        Returns the multi-objectives matrix
+        :return: Matrix (n_eval, n_dim)
+        """
+        return np.c_[
+            self._capex,
+            self._opex,
+            self._losses,
+            self._overload_score,
+            self._voltage_score
+        ]
+
+    def pareto_sort(self) -> None:
+        """
+        Pareto sort the results in place
+        """
+        y, x = non_dominated_sorting(y_values=self.get_objectives(),
+                                     x_values=self._combinations)
+
+        self._capex = y[:, 0]
+        self._opex = y[:, 1]
+        self._losses = y[:, 2]
+        self._overload_score = y[:, 3]
+        self._voltage_score = y[:, 4]
+
+        self._combinations = x
+
     def add(self,
             capex: float,
             opex: float,
@@ -157,7 +186,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param losses:
         :param overload_score:
         :param voltage_score:
-        :param electrical:
+        # :param electrical:
         :param financial:
         :param objective_function_sum:
         :param combination:
@@ -332,7 +361,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             labels = self._index_names
             # columns = ["Investment cost (M€)", "Technical cost (M€)"]
             columns = ["Investment cost (M€)", "Technical cost (M€)"]
-            data = np.c_[self._financial, self._losses+self._voltage_score+self._overload_score]
+            data = np.c_[self._financial, self._losses + self._voltage_score + self._overload_score]
             y_label = ''
             title = ''
 
@@ -340,7 +369,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             color_norm = plt_colors.Normalize()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(self._financial, self._losses+self._voltage_score+self._overload_score, c=self._f_obj, norm=color_norm)
+            sc3 = ax3.scatter(self._financial, self._losses + self._voltage_score + self._overload_score, c=self._f_obj,
+                              norm=color_norm)
             ax3.set_xlabel('Investment cost (M€)')
             ax3.set_ylabel('Technical cost (M€)')
             plt.colorbar(sc3, fraction=0.05, label='Objective function')
