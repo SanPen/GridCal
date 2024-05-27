@@ -341,6 +341,7 @@ class MapWidget(QWidget):
 
         self.pressed = False
         self.disableMove = False
+        self.inItem = False
         self.startHe = 360
         self.startWi = 240
 
@@ -350,6 +351,8 @@ class MapWidget(QWidget):
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
 
         self.selTempDistance = 20
+
+        self.selectedItems = []
 
     def convertToQMouseEvent(self, sceneMouseEvent):
         # Get relevant information from QGraphicsSceneMouseEvent
@@ -394,6 +397,12 @@ class MapWidget(QWidget):
         if event.type() == QEvent.GraphicsSceneMousePress:
             self.pressed = True
             self.disableMove = False
+            b = event.button()
+            if b == Qt.RightButton:
+                if not self.inItem:
+                    for item in self.selectedItems:
+                        item.deSelectItem()
+                    self.selectedItems.clear()
 
         if event.type() == QEvent.GraphicsSceneMouseRelease:
             self.pressed = False
@@ -4065,3 +4074,34 @@ class MapWidget(QWidget):
         self.zoom_level_position(level, longitude, latitude)
 
         return old_tileset
+
+    def haversine_distance(self, lat1, lon1, lat2, lon2):
+        R = 6371  # Earth radius in kilometers
+        dLat = math.radians(lat2 - lat1)
+        dLon = math.radians(lon2 - lon1)
+        a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(math.radians(lat1)) * math.cos(
+            math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return R * c
+
+    def compare_options(self, it1, it2):
+        # Extract coordinates
+        first_last_lat, first_last_long = float(it1.line_container.api_object.locations.data[-1].lat), float(
+            it1.line_container.api_object.locations.data[-1].long)
+        second_first_lat, second_first_long = float(it2.line_container.api_object.locations.data[0].lat), float(
+            it2.line_container.api_object.locations.data[0].long)
+
+        # Calculate distances for both configurations
+        distance_1_to_2 = self.haversine_distance(first_last_lat, first_last_long, second_first_lat, second_first_long)
+
+        second_last_lat, second_last_long = float(it2.line_container.api_object.locations.data[-1].lat), float(
+            it2.line_container.api_object.locations.data[-1].long)
+        first_first_lat, first_first_long = float(it1.line_container.api_object.locations.data[0].lat), float(
+            it1.line_container.api_object.locations.data[0].long)
+
+        distance_2_to_1 = self.haversine_distance(second_last_lat, second_last_long, first_first_lat, first_first_long)
+
+        if distance_1_to_2 <= distance_2_to_1:
+            return it1, it2
+        else:
+            return it2, it1

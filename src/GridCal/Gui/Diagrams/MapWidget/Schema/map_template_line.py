@@ -354,6 +354,9 @@ class MapTemplateLine:
             # Handle invalid index
             raise ValueError("Index out of range or invalid")
 
+    def merge_line(self):
+        return 0
+
     def disable_line(self):
         """
 
