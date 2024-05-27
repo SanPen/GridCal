@@ -6115,8 +6115,11 @@ class MultiCircuit:
 
             if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
                 # create a new candidate
-                candidate_bus = dev.Bus(f"Candidate from {cn.name}")
-                candidate_bus.code = cn.code  # for soft checking
+                candidate_bus = dev.Bus(name=f"Candidate from {cn.name}",
+                                        code=cn.code,  # for soft checking
+                                        Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
+                                        )
+
                 cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
                 process_info.add_new_candidate(candidate_bus)
             else:

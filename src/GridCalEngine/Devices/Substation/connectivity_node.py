@@ -30,7 +30,8 @@ class ConnectivityNode(EditableDevice):
                  dc: bool = False,
                  default_bus: Union[None, Bus] = None,
                  voltage_level: Union[VoltageLevel, None] = None,
-                 internal: bool = False):
+                 internal: bool = False,
+                 Vnom: float = 10.0):
         """
         Constructor
         :param name: Name of the connectivity node
@@ -39,6 +40,8 @@ class ConnectivityNode(EditableDevice):
         :param dc: is this a DC connectivity node?
         :param default_bus: Default bus to use for topology processing (optional)
         :param voltage_level: Substation of this connectivity node (optional)
+        :param internal: Is internal?
+        :param Vnom: Nominal voltage in kV
         """
         EditableDevice.__init__(self,
                                 name=name,
@@ -50,9 +53,13 @@ class ConnectivityNode(EditableDevice):
 
         self.default_bus: Union[None, Bus] = default_bus
 
-        self.voltage_level: Union[VoltageLevel, None] = voltage_level
+        self._voltage_level: Union[VoltageLevel, None] = voltage_level
 
         self.internal: bool = internal
+
+        self.Vnom = Vnom if voltage_level is None else voltage_level.Vnom
+
+        self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the cn.')
 
         self.register("dc", "", bool, "is this a DC connectivity node?")
 
@@ -63,3 +70,18 @@ class ConnectivityNode(EditableDevice):
 
         self.register("voltage_level", "", DeviceType.VoltageLevelDevice,
                       "Voltage level of this connectivity node (optional)")
+
+    @property
+    def voltage_level(self) -> Union[VoltageLevel, None]:
+        """
+        The voltage level of this connectivity node
+        :return: Voltage level
+        """
+        return self._voltage_level
+
+    @voltage_level.setter
+    def voltage_level(self, val: Union[VoltageLevel, None]):
+        self._voltage_level = val
+
+        if val is not None:
+            self.Vnom = val.Vnom

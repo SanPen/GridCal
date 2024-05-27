@@ -326,12 +326,14 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
 def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
                                  calc_node_dict: Dict[str, gcdev.Bus],
+                                 vl_dict: Dict[str, gcdev.VoltageLevel],
                                  cn_look_up: CnLookup,
                                  logger: DataLogger) -> Dict[str, gcdev.ConnectivityNode]:
     """
     Convert the TopologicalNodes to CalculationNodes
     :param calc_node_dict: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
              Dict[str, gcdev.Bus]
+    :param vl_dict: dictionary relating the VoltageLevel uuid to the VoltageLevel objects
     :param cgmes_model: CgmesCircuit
     :param gcdev_model: gcdevCircuit
     :param cn_look_up: CnLookUp
@@ -341,20 +343,29 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
     """
     # dictionary relating the ConnectivityNode uuid to the gcdev ConnectivityNode
     cn_node_dict: Dict[str, gcdev.ConnectivityNode] = dict()
+    used_buses = set()
     for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
 
         bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
+
         if bus is None:
             logger.add_error(msg='No Bus found',
                              device=cgmes_elm,
                              device_class=cgmes_elm.tpe)
+            default_bus = None
+        else:
+            if bus not in used_buses:
+                default_bus = bus
+                used_buses.add(bus)
+            else:
+                default_bus = None
 
         gcdev_elm = gcdev.ConnectivityNode(
             idtag=cgmes_elm.uuid,
             code=cgmes_elm.description,
             name=cgmes_elm.name,
             dc=False,
-            # default_bus=bus  # this is only set by the BusBar's
+            default_bus=default_bus  # this is only set by the BusBar's
         )
 
         gcdev_model.connectivity_nodes.append(gcdev_elm)
@@ -1107,7 +1118,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
 
 def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
                              gcdev_model: MultiCircuit,
-                             logger: DataLogger) -> None:
+                             logger: DataLogger) -> Dict[str, gcdev.VoltageLevel]:
     """
     Convert the CGMES voltage levels to gcdev voltage levels
 
@@ -1115,6 +1126,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
     :param gcdev_model: gcdevCircuit
     :param logger:
     """
+    vl_dict = dict()
     for cgmes_elm in cgmes_model.cgmes_assets.VoltageLevel_list:
 
         gcdev_elm = gcdev.VoltageLevel(
@@ -1131,6 +1143,9 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
             gcdev_elm.substation = subs
 
         gcdev_model.add_voltage_level(gcdev_elm)
+        vl_dict[gcdev_elm.idtag] = gcdev_elm
+
+    return vl_dict
 
 
 def get_gcdev_busbars(cgmes_model: CgmesCircuit,
@@ -1278,7 +1293,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     get_gcdev_countries(cgmes_model, gc_model)
     get_gcdev_community(cgmes_model, gc_model)
     get_gcdev_substations(cgmes_model, gc_model)
-    get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
+    vl_dict = get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
 
     cn_look_up = CnLookup(cgmes_model)
 
@@ -1297,6 +1312,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,
                                            calc_node_dict=calc_node_dict,
+                                           vl_dict=vl_dict,
                                            cn_look_up=cn_look_up,
                                            logger=logger)
     cgmes_model.emit_progress(78)
