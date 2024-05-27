@@ -40,6 +40,7 @@ class ServerMain(BaseMainGui):
         # Server driver
         self.server_driver: ServerDriver = ServerDriver(url="", port=0, pwd="")
         self.server_driver.done_signal.connect(self.post_start_stop_server)  # connect the post function
+        self.ui.server_tableView.setModel(self.server_driver.data_model)
 
         # menu
         self.ui.actionEnable_server_mode.triggered.connect(self.server_start_stop)

@@ -123,7 +123,7 @@ def NSGA_3(obj_func,
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=SkewedBinarySampling(), #UniformBinarySampling() for ideal grid
+                      sampling=SkewedBinarySampling(),  #UniformBinarySampling() for ideal grid
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                       mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4, repair=RoundingRepair()),
                       # selection=TournamentSelection(pressure=2),

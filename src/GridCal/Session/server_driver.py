@@ -21,10 +21,11 @@ import asyncio
 import websockets
 import numpy as np
 import json
-from typing import Callable, Dict, Any, Union
+from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
+from PySide6 import QtCore
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons_for_communication
+from GridCalEngine.IO.gridcal.remote import gather_model_as_jsons_for_communication, RemoteInstruction, RemoteJob
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
@@ -70,12 +71,123 @@ async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str
     Send a file along with instructions about the file
     :param json_data: Json with te model
     :param endpoint_url: Web socket URL to connect to
+    :return service response
     """
 
     response = requests.post(endpoint_url, json=json_data, stream=True)
 
-    # Print server response
-    print(response.json())
+    # return server response
+    return response.json()
+
+
+class JobsModel(QtCore.QAbstractTableModel):
+    """
+    Class to populate a Qt table view with a pandas data frame
+    """
+
+    def __init__(self):
+        """
+        """
+        QtCore.QAbstractTableModel.__init__(self)
+        self.jobs: List[RemoteJob] = list()
+        self.headers = ["Job id", "User", "Grid name", "Job Type", "Status"]
+
+    def clear(self):
+
+        self.jobs.clear()
+
+    def parse_data(self, data: List[Dict[str, Union[str, Dict[str, Any]]]]):
+        """
+        Parse the data from the server
+        :param data:
+        :return:
+        """
+        self.jobs.clear()
+        self.beginResetModel()
+        for job_data in data:
+            job = RemoteJob(data=job_data)
+            self.jobs.append(job)
+
+        self.endResetModel()
+
+    def flags(self, index: QtCore.QModelIndex):
+        """
+
+        :param index:
+        :return:
+        """
+        return QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
+
+    def rowCount(self, parent: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex] = ...) -> int:
+        """
+
+        :param parent:
+        :return:
+        """
+        return len(self.jobs)
+
+    def columnCount(self, parent: Union[QtCore.QModelIndex, QtCore.QPersistentModelIndex] = ...) -> int:
+        """
+
+        :param parent:
+        :return:
+        """
+        return len(self.headers)
+
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.ItemDataRole.DisplayRole) -> Any:
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.DisplayRole:
+
+            job = self.jobs[index.row()]
+
+            # "id_tag", "Grid name", "Job Type", "Status"
+            if index.column() == 0:
+                return job.id_tag
+            elif index.column() == 1:
+                return job.instruction.user
+            elif index.column() == 2:
+                return job.grid_name
+            elif index.column() == 3:
+                return job.instruction.operation.value
+            elif index.column() == 4:
+                return job.status.value
+            else:
+                return ""
+        return None
+
+    def setData(self, index, value, role=QtCore.Qt.ItemDataRole.DisplayRole):
+        """
+
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+        return None
+
+    def headerData(self,
+                   section: int,
+                   orientation: QtCore.Qt.Orientation,
+                   role=QtCore.Qt.ItemDataRole.DisplayRole):
+        """
+
+        :param section:
+        :param orientation:
+        :param role:
+        :return:
+        """
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                return self.headers[section]
+            # elif orientation == QtCore.Qt.Orientation.Vertical:
+            #     return self.jobs[section].id_tag
+
+        return None
 
 
 class ServerDriver(QThread):
@@ -108,6 +220,8 @@ class ServerDriver(QThread):
 
         self.logger = Logger()
 
+        self.data_model = JobsModel()
+
         self.__cancel__ = False
         self.__pause__ = False
 
@@ -128,6 +242,19 @@ class ServerDriver(QThread):
         self.__running__ = False
         self.logger = Logger()
 
+    def report_status(self, txt: str):
+        """
+
+        :param txt:
+        :return:
+        """
+        if self.status_func is not None:
+            self.status_func(txt)
+
+    def base_url(self):
+
+        return f"http://{self.url}:{self.port}"
+
     def is_running(self) -> bool:
         """
         Check if the server is running
@@ -142,7 +269,7 @@ class ServerDriver(QThread):
         """
         # Make a GET request to the root endpoint
         try:
-            response = requests.get(f"http://{self.url}:{self.port}/",
+            response = requests.get(f"{self.base_url()}/",
                                     headers={
                                         "API-Key": self.pwd
                                     },
@@ -164,31 +291,97 @@ class ServerDriver(QThread):
             self.logger.add_error(msg=f"General exception error", value=str(e))
             return False
 
-    def report_status(self, txt: str):
+    def get_jobs(self) -> bool:
         """
-
-        :param txt:
-        :return:
+        Try connecting to the server
+        :return: ok?
         """
-        if self.status_func is not None:
-            self.status_func(txt)
+        # Make a GET request to the root endpoint
+        try:
+            response = requests.get(f"{self.base_url()}/jobs_list",
+                                    headers={
+                                        "API-Key": self.pwd
+                                    },
+                                    timeout=2)
 
-    def send_data(self, circuit: MultiCircuit, instructions_json: Dict[str, Any]) -> None:
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Print the response body
+                # print("Response Body:", response.json())
+                self.data_model.parse_data(data=response.json())
+                return True
+            else:
+                # Print error message
+                self.logger.add_error(msg=f"Response error", value=response.text)
+                return False
+        except ConnectionError as e:
+            self.logger.add_error(msg=f"Connection error", value=str(e))
+            return False
+        except Exception as e:
+            self.logger.add_error(msg=f"General exception error", value=str(e))
+            return False
+
+    def send_data(self, circuit: MultiCircuit, instruction: RemoteInstruction) -> None:
         """
         
         :param circuit: 
-        :param instructions_json: 
+        :param instruction:
         :return: 
         """
         # websocket_url = f"ws://{self.url}:{self.port}/process_file"
-        websocket_url = f"http://{self.url}:{self.port}/upload"
+        websocket_url = f"{self.base_url()}/upload"
 
         if self.is_running():
-            model_data = gather_model_as_jsons_for_communication(circuit=circuit,
-                                                                 instructions_json=instructions_json)
+            model_data = gather_model_as_jsons_for_communication(circuit=circuit, instruction=instruction)
 
-            asyncio.get_event_loop().run_until_complete(send_json_data(json_data=model_data,
-                                                                       endpoint_url=websocket_url))
+            response = asyncio.get_event_loop().run_until_complete(send_json_data(json_data=model_data,
+                                                                                  endpoint_url=websocket_url))
+
+            self.get_jobs()
+
+    def delete_job(self, job_id: str, api_key: str) -> dict:
+        """
+        Delete a specific job by ID using the REST API.
+
+        :param job_id: The ID of the job to delete
+        :param api_key: The API key for authentication
+        :return: Response from the server
+        """
+        url = f"{self.base_url()}/jobs/{job_id}"
+        headers = {
+            "accept": "application/json",
+            "API-Key": api_key
+        }
+        response = requests.delete(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
+
+        self.get_jobs()
+
+    def cancel_job(self, job_id: str, api_key: str) -> dict:
+        """
+        Cancel a specific job by ID using the REST API.
+
+        :param job_id: The ID of the job to cancel
+        :param api_key: The API key for authentication
+        :return: Response from the server
+        """
+        url = f"{self.base_url()}/jobs/{job_id}/cancel"
+        headers = {
+            "accept": "application/json",
+            "API-Key": api_key
+        }
+        response = requests.post(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
+
+        self.get_jobs()
 
     def run(self) -> None:
         """
@@ -201,6 +394,10 @@ class ServerDriver(QThread):
         ok = self.server_connect()
 
         if ok:
+
+            # get the running jobs
+            self.get_jobs()
+
             while not self.__cancel__:
 
                 if not self.__pause__:
@@ -219,6 +416,7 @@ class ServerDriver(QThread):
 
                 # check if alive
                 ok = self.server_connect()
+
         else:
             # bad connection
             self.report_status("Could not connect")
@@ -226,6 +424,7 @@ class ServerDriver(QThread):
             self.done_signal.emit()
             return None
 
+        self.data_model.clear()
         self.report_status("Sync stop")
         self.__running__ = False
         self.done_signal.emit()

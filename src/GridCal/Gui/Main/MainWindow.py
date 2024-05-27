@@ -31,7 +31,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1194, 749)
+        mainWindow.resize(1393, 915)
         mainWindow.setBaseSize(QSize(0, 0))
         icon = QIcon()
         icon.addFile(u":/Program icon/GridCal_icon.svg", QSize(), QIcon.Normal, QIcon.Off)
@@ -2346,6 +2346,23 @@ class Ui_mainWindow(object):
         self.ntc_tab.setObjectName(u"ntc_tab")
         self.gridLayout_13 = QGridLayout(self.ntc_tab)
         self.gridLayout_13.setObjectName(u"gridLayout_13")
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.gridLayout_13.addItem(self.horizontalSpacer_6, 3, 4, 2, 1)
+
+        self.line_27 = QFrame(self.ntc_tab)
+        self.line_27.setObjectName(u"line_27")
+        palette12 = QPalette()
+        palette12.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette12.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette12.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_27.setPalette(palette12)
+        self.line_27.setFrameShadow(QFrame.Plain)
+        self.line_27.setLineWidth(4)
+        self.line_27.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_13.addWidget(self.line_27, 1, 0, 1, 4)
+
         self.groupBox_6 = QGroupBox(self.ntc_tab)
         self.groupBox_6.setObjectName(u"groupBox_6")
         self.groupBox_6.setFlat(False)
@@ -2378,10 +2395,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout_13.addWidget(self.groupBox_6, 3, 3, 2, 1)
 
-        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.gridLayout_13.addItem(self.horizontalSpacer_6, 3, 4, 2, 1)
-
         self.label_97 = QLabel(self.ntc_tab)
         self.label_97.setObjectName(u"label_97")
         self.label_97.setMinimumSize(QSize(24, 24))
@@ -2390,63 +2403,6 @@ class Ui_mainWindow(object):
         self.label_97.setScaledContents(True)
 
         self.gridLayout_13.addWidget(self.label_97, 0, 0, 1, 1)
-
-        self.label_96 = QLabel(self.ntc_tab)
-        self.label_96.setObjectName(u"label_96")
-        palette12 = QPalette()
-        palette12.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette12.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette12.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_96.setPalette(palette12)
-        self.label_96.setFont(font1)
-
-        self.gridLayout_13.addWidget(self.label_96, 0, 1, 1, 1)
-
-        self.line_27 = QFrame(self.ntc_tab)
-        self.line_27.setObjectName(u"line_27")
-        palette13 = QPalette()
-        palette13.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette13.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette13.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_27.setPalette(palette13)
-        self.line_27.setFrameShadow(QFrame.Plain)
-        self.line_27.setLineWidth(4)
-        self.line_27.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_13.addWidget(self.line_27, 1, 0, 1, 4)
-
-        self.groupBox_4 = QGroupBox(self.ntc_tab)
-        self.groupBox_4.setObjectName(u"groupBox_4")
-        self.gridLayout_20 = QGridLayout(self.groupBox_4)
-        self.gridLayout_20.setObjectName(u"gridLayout_20")
-        self.verticalSpacer_22 = QSpacerItem(20, 325, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.gridLayout_20.addItem(self.verticalSpacer_22, 5, 0, 1, 1)
-
-        self.label_30 = QLabel(self.groupBox_4)
-        self.label_30.setObjectName(u"label_30")
-
-        self.gridLayout_20.addWidget(self.label_30, 3, 0, 1, 1)
-
-        self.label_77 = QLabel(self.groupBox_4)
-        self.label_77.setObjectName(u"label_77")
-
-        self.gridLayout_20.addWidget(self.label_77, 1, 0, 1, 1)
-
-        self.ntcReportLoadingThresholdSpinBox = QSpinBox(self.groupBox_4)
-        self.ntcReportLoadingThresholdSpinBox.setObjectName(u"ntcReportLoadingThresholdSpinBox")
-        self.ntcReportLoadingThresholdSpinBox.setMaximum(9999)
-        self.ntcReportLoadingThresholdSpinBox.setValue(98)
-
-        self.gridLayout_20.addWidget(self.ntcReportLoadingThresholdSpinBox, 4, 0, 1, 1)
-
-        self.transferMethodComboBox = QComboBox(self.groupBox_4)
-        self.transferMethodComboBox.setObjectName(u"transferMethodComboBox")
-
-        self.gridLayout_20.addWidget(self.transferMethodComboBox, 2, 0, 1, 1)
-
-
-        self.gridLayout_13.addWidget(self.groupBox_4, 3, 0, 2, 2)
 
         self.groupBox_5 = QGroupBox(self.ntc_tab)
         self.groupBox_5.setObjectName(u"groupBox_5")
@@ -2534,8 +2490,54 @@ class Ui_mainWindow(object):
 
         self.gridLayout_13.addWidget(self.groupBox_5, 3, 2, 2, 1)
 
+        self.groupBox_4 = QGroupBox(self.ntc_tab)
+        self.groupBox_4.setObjectName(u"groupBox_4")
+        self.gridLayout_20 = QGridLayout(self.groupBox_4)
+        self.gridLayout_20.setObjectName(u"gridLayout_20")
+        self.verticalSpacer_22 = QSpacerItem(20, 325, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.gridLayout_20.addItem(self.verticalSpacer_22, 5, 0, 1, 1)
+
+        self.label_30 = QLabel(self.groupBox_4)
+        self.label_30.setObjectName(u"label_30")
+
+        self.gridLayout_20.addWidget(self.label_30, 3, 0, 1, 1)
+
+        self.label_77 = QLabel(self.groupBox_4)
+        self.label_77.setObjectName(u"label_77")
+
+        self.gridLayout_20.addWidget(self.label_77, 1, 0, 1, 1)
+
+        self.ntcReportLoadingThresholdSpinBox = QSpinBox(self.groupBox_4)
+        self.ntcReportLoadingThresholdSpinBox.setObjectName(u"ntcReportLoadingThresholdSpinBox")
+        self.ntcReportLoadingThresholdSpinBox.setMaximum(9999)
+        self.ntcReportLoadingThresholdSpinBox.setValue(98)
+
+        self.gridLayout_20.addWidget(self.ntcReportLoadingThresholdSpinBox, 4, 0, 1, 1)
+
+        self.transferMethodComboBox = QComboBox(self.groupBox_4)
+        self.transferMethodComboBox.setObjectName(u"transferMethodComboBox")
+
+        self.gridLayout_20.addWidget(self.transferMethodComboBox, 2, 0, 1, 1)
+
+
+        self.gridLayout_13.addWidget(self.groupBox_4, 3, 0, 2, 2)
+
+        self.label_96 = QLabel(self.ntc_tab)
+        self.label_96.setObjectName(u"label_96")
+        palette13 = QPalette()
+        palette13.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette13.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette13.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_96.setPalette(palette13)
+        self.label_96.setFont(font1)
+
+        self.gridLayout_13.addWidget(self.label_96, 0, 1, 1, 1)
+
         self.label_61 = QLabel(self.ntc_tab)
         self.label_61.setObjectName(u"label_61")
+        self.label_61.setMinimumSize(QSize(0, 0))
+        self.label_61.setMaximumSize(QSize(16777215, 16))
 
         self.gridLayout_13.addWidget(self.label_61, 2, 0, 1, 2)
 
@@ -4080,7 +4082,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1194, 22))
+        self.menuBar.setGeometry(QRect(0, 0, 1393, 22))
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")
         self.menuExport = QMenu(self.menuProject)
@@ -5021,14 +5023,6 @@ class Ui_mainWindow(object):
         self.atcThresholdSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Threshold used to discard insensitive branches", None))
 #endif // QT_CONFIG(tooltip)
         self.label_97.setText("")
-#if QT_CONFIG(tooltip)
-        self.label_96.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_96.setText(QCoreApplication.translate("mainWindow", u"Net transfer capacity", None))
-        self.groupBox_4.setTitle(QCoreApplication.translate("mainWindow", u"General", None))
-        self.label_30.setText(QCoreApplication.translate("mainWindow", u"Loading threshold to report", None))
-        self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
-        self.ntcReportLoadingThresholdSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
         self.groupBox_5.setTitle(QCoreApplication.translate("mainWindow", u"Optimization", None))
         self.label_26.setText("")
 #if QT_CONFIG(tooltip)
@@ -5063,6 +5057,14 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_231.setText(QCoreApplication.translate("mainWindow", u"Transmission reliability margin (TRM)", None))
         self.ntcLoadRuleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+        self.groupBox_4.setTitle(QCoreApplication.translate("mainWindow", u"General", None))
+        self.label_30.setText(QCoreApplication.translate("mainWindow", u"Loading threshold to report", None))
+        self.label_77.setText(QCoreApplication.translate("mainWindow", u"Transfer method", None))
+        self.ntcReportLoadingThresholdSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u"%", None))
+#if QT_CONFIG(tooltip)
+        self.label_96.setToolTip(QCoreApplication.translate("mainWindow", u"Select the solver in the OPF tab and the areas in the areas tab", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_96.setText(QCoreApplication.translate("mainWindow", u"Net transfer capacity", None))
         self.label_61.setText("")
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.ntc_tab), QCoreApplication.translate("mainWindow", u"Ntc", None))
 #if QT_CONFIG(tooltip)

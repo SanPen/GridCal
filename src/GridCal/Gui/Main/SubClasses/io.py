@@ -23,7 +23,7 @@ from PySide6 import QtWidgets
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit, get_system_user
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -34,10 +34,11 @@ from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
-from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 
 
 class IoMain(ConfigurationMain):
@@ -484,9 +485,8 @@ class IoMain(ConfigurationMain):
         """
 
         if self.server_driver.is_running():
-
-            self.server_driver.send_data(circuit=self.circuit,
-                                         instructions_json={"instruction": "open"})
+            instruction = RemoteInstruction(operation=SimulationTypes.NoSim)
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
 
         else:
             # declare the allowed file types
