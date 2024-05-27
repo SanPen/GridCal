@@ -161,7 +161,7 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
 
 def find_terms_connections(cgmes_terminal: Base,
                            calc_node_dict: Dict[str, gcdev.Bus],
-                           cn_dict: Dict[str, gcdev.ConnectivityNode]):
+                           cn_dict: Dict[str, gcdev.ConnectivityNode]) -> Tuple[gcdev.Bus, gcdev.ConnectivityNode]:
     """
 
     :param cgmes_terminal:
@@ -193,7 +193,7 @@ def find_connections(cgmes_elm: Base,
                      device_to_terminal_dict: Dict[str, List[Base]],
                      calc_node_dict: Dict[str, gcdev.Bus],
                      cn_dict: Dict[str, gcdev.ConnectivityNode],
-                     logger: DataLogger):
+                     logger: DataLogger) -> Tuple[List[gcdev.Bus], List[gcdev.ConnectivityNode]]:
     """
 
     :param cgmes_elm:
