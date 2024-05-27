@@ -231,6 +231,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         # add all the investments of the investment groups reflected in the combination
         inv_list: List[Investment] = list()
+
         for i, active in enumerate(combination):
             if active == 1:
                 inv_list += self.investments_by_group[i]
