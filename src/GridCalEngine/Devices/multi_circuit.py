@@ -509,19 +509,19 @@ class MultiCircuit:
         """
         self.time_profile = pd.to_datetime(arr, unit='s')
 
-    def get_snapshot_time_unix(self) -> int:
+    def get_snapshot_time_unix(self) -> float:
         """
         Get the unix representation of the snapshot time
-        :return: int
+        :return: float
         """
-        return int(self.snapshot_time.timestamp())
+        return self.snapshot_time.timestamp()
 
-    def set_snapshot_time_unix(self, val: int) -> None:
+    def set_snapshot_time_unix(self, val: float) -> None:
         """
         Convert unix datetime to python datetime
         :param val: seconds since 1970-01-01T00:00:00
         """
-        self.snapshot_time = pd.to_datetime(val * 1e9)
+        self.snapshot_time = dateslib.datetime.fromtimestamp(val)
 
     def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
         """
