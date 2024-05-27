@@ -1290,9 +1290,16 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # parse_shunts(cgmes_model, circuit, busbar_dict, logger)
     # parse_generators(cgmes_model, circuit, busbar_dict, logger)
 
+    # TODO: Assign the country in the buses and communities
     get_gcdev_countries(cgmes_model, gc_model)
+
+    # TODO: Assign the community in the buses and substations
     get_gcdev_community(cgmes_model, gc_model)
+
+    # TODO: Assign the substations in the buses and voltage levels
     get_gcdev_substations(cgmes_model, gc_model)
+
+    # TODO: Assign the voltage level in the buses, busbars and CN's
     vl_dict = get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
 
     cn_look_up = CnLookup(cgmes_model)
@@ -1309,6 +1316,7 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                                                  cn_look_up=cn_look_up,
                                                  logger=logger)
 
+    # TODO: Set Vnom to the connectivity nodes, alternativelly also the voltage_level
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,
                                            calc_node_dict=calc_node_dict,
