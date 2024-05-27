@@ -14,22 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import time
-
 import numpy as np
 from typing import Dict, List, Tuple, Union
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
-from GridCalEngine.Devices.multi_circuit import MultiCircuit, DeviceType
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
                                                     get_values_shunt,
                                                     get_pu_values_power_transformer, get_pu_values_power_transformer3w,
                                                     get_regulating_control, get_pu_values_power_transformer_end,
                                                     get_slack_id, find_object_by_idtag)
-from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.base import Base
 
@@ -267,7 +263,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             if slack_id == cgmes_elm.rdfid:
                 is_slack = True
 
-        volt_lev, substat = None, None
+        volt_lev, substat, country = None, None, None
         if cgmes_elm.ConnectivityNodeContainer:
             volt_lev = find_object_by_idtag(
                 object_list=gc_model.voltage_levels,
@@ -381,7 +377,6 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -454,7 +449,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: Logger object
     """
     # add generation technologies
@@ -571,7 +565,6 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -706,7 +699,6 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -994,7 +986,6 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -1044,7 +1035,8 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                 else:
                     op_rate = 9999  # Corrected
 
-                if (cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0
+                if (cgmes_elm.ratedCurrent is not None
+                        and cgmes_elm.ratedCurrent != 0.0
                         and cgmes_elm.BaseVoltage is not None):  # TODO
                     rated_current = np.round(
                         (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
@@ -1212,8 +1204,7 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
 
 
 def get_gcdev_countries(cgmes_model: CgmesCircuit,
-                        gcdev_model: MultiCircuit,
-                        ) -> None:
+                        gcdev_model: MultiCircuit) -> None:
     """
     Convert the CGMES GeoGrapicalRegions to gcdev Country
 
@@ -1235,8 +1226,7 @@ def get_gcdev_countries(cgmes_model: CgmesCircuit,
 
 
 def get_gcdev_community(cgmes_model: CgmesCircuit,
-                        gcdev_model: MultiCircuit,
-                        ) -> None:
+                        gcdev_model: MultiCircuit) -> None:
     """
     Convert the CGMES SubGeograpicalRegions to gcdev Community
 
