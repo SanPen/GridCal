@@ -388,6 +388,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -460,6 +461,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger: Logger object
     """
     # add generation technologies
@@ -576,6 +578,7 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -710,6 +713,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -821,6 +825,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     code=cgmes_elm.description,
                                                     name=cgmes_elm.name,
                                                     active=True,
+                                                    # bus0=,
                                                     bus1=calc_node_1,
                                                     bus2=calc_node_2,
                                                     bus3=calc_node_3,
@@ -874,7 +879,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.cn_from = cn_3
                     gcdev_elm.winding3.cn_to = cn_1
 
-                    gcdev_model.add_transformer3w(gcdev_elm)
+                    gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=False)
 
                 else:
                     logger.add_error(msg='Not exactly three terminals',
@@ -997,6 +1002,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
+    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -1046,8 +1052,7 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                 else:
                     op_rate = 9999  # Corrected
 
-                if (cgmes_elm.ratedCurrent is not None
-                        and cgmes_elm.ratedCurrent != 0.0
+                if (cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0
                         and cgmes_elm.BaseVoltage is not None):  # TODO
                     rated_current = np.round(
                         (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
@@ -1118,7 +1123,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
 
 def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
                              gcdev_model: MultiCircuit,
-                             logger: DataLogger) -> Dict[str, gcdev.VoltageLevel]:
+                             logger: DataLogger) -> None:
     """
     Convert the CGMES voltage levels to gcdev voltage levels
 
@@ -1126,7 +1131,6 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
     :param gcdev_model: gcdevCircuit
     :param logger:
     """
-    vl_dict = dict()
     for cgmes_elm in cgmes_model.cgmes_assets.VoltageLevel_list:
 
         gcdev_elm = gcdev.VoltageLevel(
@@ -1143,9 +1147,6 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
             gcdev_elm.substation = subs
 
         gcdev_model.add_voltage_level(gcdev_elm)
-        vl_dict[gcdev_elm.idtag] = gcdev_elm
-
-    return vl_dict
 
 
 def get_gcdev_busbars(cgmes_model: CgmesCircuit,
@@ -1197,8 +1198,8 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 cn = cn_look_up.get_busbar_cn(bb_id=cgmes_elm.uuid)
                 bus = cn_look_up.get_busbar_bus(bb_id=cgmes_elm.uuid)
 
-                if bus and cn:
-                    cn.default_bus = bus
+                # if bus and cn:
+                #     cn.default_bus = bus
 
                 gcdev_elm = gcdev.BusBar(
                     name=cgmes_elm.name,
