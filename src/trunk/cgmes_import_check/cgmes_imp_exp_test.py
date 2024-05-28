@@ -1,5 +1,6 @@
 import numpy as np
 import GridCalEngine.api as gc
+from GridCalEngine.IO import FileSave
 
 
 def compare_inputs(circuit_1, circuit_2, tol=1e-6):
@@ -139,11 +140,19 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
 
 
 # MODELO TYNDP
-gridcal_model_path = r"C:\Work\git_local\GridCal\src\tests\data\grids\IEEE57.gridcal"
+cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_base.zip"
 
-circuit_o = gc.open_file(gridcal_model_path)
+circuit_o = gc.open_file(cgmes_path)
+
+nc_o = gc.compile_numerical_circuit_at(circuit_o)
+
+# run power flow
 
 # export to CGMES
+# crate FileSave
+cgmes_export = FileSave()
+# boundary: micro grid Boundary
+# gc.save_file() from FileHandler
 
 # import the exported CGMES
 

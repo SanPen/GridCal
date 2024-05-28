@@ -345,6 +345,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
     """
     # dictionary relating the ConnectivityNode uuid to the gcdev ConnectivityNode
     cn_node_dict: Dict[str, gcdev.ConnectivityNode] = dict()
+    used_buses = set()
     for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
 
         bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
@@ -353,12 +354,18 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                              device=cgmes_elm,
                              device_class=cgmes_elm.tpe)
 
+        if bus in used_buses:
+            default_bus = None
+        else:
+            default_bus = bus
+            used_buses.add(bus)
+
         gcdev_elm = gcdev.ConnectivityNode(
             idtag=cgmes_elm.uuid,
             code=cgmes_elm.description,
             name=cgmes_elm.name,
             dc=False,
-            # default_bus=bus  # this is only set by the BusBar's
+            default_bus=default_bus
         )
 
         gcdev_model.connectivity_nodes.append(gcdev_elm)
@@ -1191,8 +1198,8 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 cn = cn_look_up.get_busbar_cn(bb_id=cgmes_elm.uuid)
                 bus = cn_look_up.get_busbar_bus(bb_id=cgmes_elm.uuid)
 
-                if bus and cn:
-                    cn.default_bus = bus
+                # if bus and cn:
+                #     cn.default_bus = bus
 
                 gcdev_elm = gcdev.BusBar(
                     name=cgmes_elm.name,

@@ -138,17 +138,17 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
         return 1
 
 
-# MODELO TYNDP
-raw_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\MODELO_TYNDP\TYNDP2024_2030NT_REE_v2.2.raw"
-cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\MODELO_TYNDP\modelo_tyndp.zip"
+# # MODELO TYNDP
+# raw_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\MODELO_TYNDP\TYNDP2024_2030NT_REE_v2.2.raw"
+# cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\MODELO_TYNDP\modelo_tyndp.zip"
 
 # IEEE 14
 # raw_path = r'C:\Work\git_local\GridCal\Grids_and_profiles\grids\IEEE 14 bus.raw'
 # cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\RAW_test_models\IEEE14_from_PF.zip"
-#
-# # micro_grid assembled
-# raw_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\micro_grid_assmb_base\micro_grid_assmb_v33.raw"
-# cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\micro_grid_assmb_base\micro_grid_assmb_base.zip"
+
+# micro_grid assembled
+raw_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_v33.raw"
+cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_base.zip"
 
 circuit_1 = gc.open_file(raw_path)
 circuit_1.buses.sort(key=lambda obj: obj.name)
@@ -166,14 +166,18 @@ circuit_2.buses.sort(key=lambda obj: obj.name)
 # circuit_2.lines.sort(key=lambda obj: obj.name)
 # circuit_2.transformers2w.sort(key=lambda obj: obj.name)
 
-# err, logger = circuit_1.compare_circuits(circuit_2, detailed_profile_comparison=False)
-# print(logger.to_df())
-# logger.to_df().to_csv('logger_comparison_microg.csv')
-# compare_inputs(circuit_1, circuit_2, tol=1e-3)
-# quit()
+# Compare MultiCircuits
+err, logger = circuit_1.compare_circuits(circuit_2, detailed_profile_comparison=False)
+print(logger.to_df())
+logger.to_df().to_csv('logger_comparison_microg.csv')
+compare_inputs(circuit_1, circuit_2, tol=1e-3)
 
 nc_1 = gc.compile_numerical_circuit_at(circuit_1)
 nc_2 = gc.compile_numerical_circuit_at(circuit_2)
+
+# TODO Compare Numerival Circuits
+log = nc_1.compare(nc_2)
+# same as above..
 
 # Compare Ybus: admittance matrix
 # nc_1.Ybus     # sparse

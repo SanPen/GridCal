@@ -522,37 +522,38 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
     for bus in multi_circuit_model.buses:
-        tn = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
-            target_uuid=bus.idtag
-        )
-        if tn is not None:
-            continue
-        object_template = cgmes_model.get_class_type("TopologicalNode")
-        tn = object_template(rdfid=form_rdfid(bus.idtag))
-        tn.name = bus.name
-        tn.shortName = bus.name
-        tn.description = bus.code
-        tn.BaseVoltage = find_object_by_vnom(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-            target_vnom=bus.Vnom
-        )
-
-        if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
-            vl = find_object_by_uuid(
+        if not bus.is_internal:
+            tn = find_object_by_uuid(
                 cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-                target_uuid=bus.voltage_level.idtag
+                object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+                target_uuid=bus.idtag
             )
-            tn.ConnectivityNodeContainer = vl
-            # link back
-            vl.TopologicalNode = tn
-        else:
-            print(f'Bus.voltage_level.idtag is None for {bus.name}')
+            if tn is not None:
+                continue
+            object_template = cgmes_model.get_class_type("TopologicalNode")
+            tn = object_template(rdfid=form_rdfid(bus.idtag))
+            tn.name = bus.name
+            tn.shortName = bus.name
+            tn.description = bus.code
+            tn.BaseVoltage = find_object_by_vnom(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                target_vnom=bus.Vnom
+            )
 
-        cgmes_model.add(tn)
+            if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
+                vl = find_object_by_uuid(
+                    cgmes_model=cgmes_model,
+                    object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                    target_uuid=bus.voltage_level.idtag
+                )
+                tn.ConnectivityNodeContainer = vl
+                # link back
+                vl.TopologicalNode = tn
+            else:
+                print(f'Bus.voltage_level.idtag is None for {bus.name}')
+
+            cgmes_model.add(tn)
 
     return
 
