@@ -802,7 +802,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # control_type: voltage or power control, ..
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
-            cgmes_syn.RegulatingControl = create_cgmes_regulating_control(cgmes_syn, cgmes_model)
+            cgmes_syn.RegulatingControl = create_cgmes_regulating_control(mc_elm, cgmes_model)
             cgmes_syn.RegulatingControl.mode: RegulatingControlModeKind.voltage
             cgmes_syn.RegulatingControl.RegulatingCondEq = cgmes_syn
             cgmes_syn.controlEnabled = True
