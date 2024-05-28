@@ -471,7 +471,8 @@ class NonlinearOPFResults:
         self.lam_p[bus_idx] = other.lam_p
         self.lam_q[bus_idx] = other.lam_q
 
-        self.nodal_capacity[ncap_idx] = other.nodal_capacity
+        if ncap_idx is not None:
+            self.nodal_capacity[ncap_idx] = other.nodal_capacity
 
         if acopf_mode == AcOpfMode.ACOPFslacks:
             self.sl_sf[il_idx] = other.sl_sf
@@ -986,14 +987,20 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx))
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc,
+                       ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
     for i, island in enumerate(islands):
 
-        # get the
-        (capacity_nodes_idx_org,
-         capacity_nodes_idx_isl) = remap_original_bus_indices(nbus=nc.nbus, orginal_bus_idx=capacity_nodes_idx)
+        if capacity_nodes_idx is not None:
+            # get the
+            (capacity_nodes_idx_org,
+             capacity_nodes_idx_isl) = remap_original_bus_indices(nbus=nc.nbus, orginal_bus_idx=capacity_nodes_idx)
+        else:
+            capacity_nodes_idx_org = None
+            capacity_nodes_idx_isl = None
 
+        # run the island ACOPF
         island_res = ac_optimal_power_flow(nc=island,
                                            opf_options=opf_options,
                                            pf_options=pf_options,

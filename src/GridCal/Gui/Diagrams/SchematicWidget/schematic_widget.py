@@ -3805,7 +3805,8 @@ class SchematicWidget(QSplitter):
         delta = 1e20
         locations_cache = dict()
 
-        while delta > 10:
+        for _ in range(100):
+        # while delta > 10:
 
             A = self.circuit.get_adjacent_matrix()
 
