@@ -162,8 +162,8 @@ def run_import_export_test(import_path: str | list[str], export_name: str, bound
     # CGMES model import to MultiCircuit
     circuit = gc.open_file(import_path)
     # Export
-    export_dir = os.path.join(os.path.curdir, "/export_result")
-    export_name = os.path.join(export_dir, export_name)
+    # export_dir = os.path.join(os.path.curdir, "/export_result")
+    # export_name = os.path.join(export_dir, export_name)
     options = create_file_save_options(boundary_zip_path)
     cgmes_export = FileSave(circuit=circuit,
                             file_name=export_name,
@@ -171,9 +171,10 @@ def run_import_export_test(import_path: str | list[str], export_name: str, bound
     cgmes_export.save_cgmes()
 
 
-# MODELO TYNDP
-cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_base.zip"
-boundary_path = ""
+cgmes_path = r"C:\WorkProjects\PycharmProjects\GridCal\src\tests\data\grids\CGMES_2_4_15\micro_grid_NL_T1.zip"
+boundary_path = r"C:\WorkProjects\PycharmProjects\GridCal\src\tests\data\grids\CGMES_2_4_15\ENTSOe_boundary_set.zip"
+export_name = r"C:\WorkProjects\PycharmProjects\GridCal\src\trunk\cgmes_import_check\export_result\micro_grid_NL_T1.zip"
+run_import_export_test(cgmes_path, export_name, boundary_path)
 # nc_o = gc.compile_numerical_circuit_at(circuit_o)
 
 # run power flow
