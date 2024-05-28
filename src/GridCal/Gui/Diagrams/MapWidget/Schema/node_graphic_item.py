@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
-from PySide6.QtWidgets import QApplication, QMenu
+from PySide6.QtWidgets import QApplication, QMenu, QGraphicsItem
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
@@ -79,6 +79,10 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
 
+        self.hovered = False
+        self.enabled = True
+        self.itemSelected = False
+
         # Create a pen with reduced line width
         self.change_pen_width(0.001)
 
@@ -91,8 +95,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # Assign color to the node
         self.setDefaultColor()
 
-        self.hovered = False
-        self.enabled = True
+
 
     def updateRealPos(self) -> None:
         """
@@ -168,33 +171,45 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                                function_ptr=self.SplitFunction)
 
                 add_menu_entry(menu=menu,
+                               text="Merge",
+                               icon_path="",
+                               function_ptr=self.MergeFunction)
+
+                add_menu_entry(menu=menu,
                                text="Remove",
                                icon_path="",
                                function_ptr=self.RemoveFunction)
 
                 menu.exec_(event.screenPos())
+            elif event.button() == Qt.LeftButton:
+                self.selectItem()
+
+    def selectItem(self):
+        if not self.itemSelected:
+            self.editor.selectedItems.append(self)
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        self.itemSelected = True
+
+    def deSelectItem(self):
+        self.itemSelected = False
+        self.setDefaultColor()
 
     def AddFunction(self):
-        """
-        Function to be called when Action 1 is selected.
-        """
         self.line_container.insert_new_node_at_position(index=self.index)
         # Implement the functionality for Action 1 here
         pass
 
     def SplitFunction(self):
-        """
-        Function to be called when Action 1 is selected.
-        """
         self.line_container.split_Line(index=self.index)
         # Implement the functionality for Action 1 here
         pass
 
     def RemoveFunction(self):
-        """
-        Function to be called when Action 1 is selected.
-        """
         # Implement the functionality for Action 1 here
+        pass
+
+    def MergeFunction(self):
+        self.editor.merge_lines()
         pass
 
     def mouseReleaseEvent(self, event):
@@ -204,11 +219,13 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.updateDiagram()
+        self.editor.diagram_scene.update()
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
+        self.editor.inItem = True
         self.hovered = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -217,6 +234,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
+        self.editor.inItem = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
@@ -243,7 +261,10 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        self.setNodeColor(self.colorInner, self.colorBorder)
+        if(self.itemSelected):
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        else:
+            self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self) -> QPointF:
         """

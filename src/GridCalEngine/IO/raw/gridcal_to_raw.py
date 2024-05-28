@@ -1,7 +1,9 @@
 import numpy as np
+from itertools import groupby
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator
+from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator, \
+    RawSwitchedShunt
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 
@@ -83,27 +85,45 @@ def get_psse_fixed_shunt(shunt: dev.Shunt) -> RawFixedShunt:
     return psse_shunt
 
 
+def get_psse_switched_shunt(shunt: dev.ControllableShunt) -> RawSwitchedShunt:
+    psse_switched_shunt = RawSwitchedShunt()
+    # TODO: Does the "I" need to be generated as an automatically incrementing number?
+    psse_switched_shunt.I = int(shunt.name.replace("Switched shunt ", ""))
+    psse_switched_shunt.STATUS = 1 if shunt.active else 0
+
+    if len(shunt.g_steps) > 0:
+        diff_list = np.insert(np.diff(shunt.g_steps), 0, shunt.g_steps[0])
+        aggregated_steps = [(sum(1 for _ in group), key) for key, group in groupby(diff_list)]
+
+        for index, aggregated_step in enumerate(aggregated_steps):
+            setattr(psse_switched_shunt, f'S{index + 1}', 1)
+            setattr(psse_switched_shunt, f'N{index + 1}', aggregated_step[0])
+            setattr(psse_switched_shunt, f'B{index + 1}', aggregated_step[1])
+
+    return psse_switched_shunt
+
+
 def get_psse_generator(generator: dev.Generator) -> RawGenerator:
-    psse_raw_generator = RawGenerator()
+    psse_generator = RawGenerator()
 
     i, id_ = generator.name.split("_", 1)
 
     # TODO: Can it be modified on the UI?
     #  Does the "I" need to be generated as an automatically incrementing number?
     #  Then how should the ID be generated?
-    psse_raw_generator.I = i
-    psse_raw_generator.ID = id_
+    psse_generator.I = i
+    psse_generator.ID = id_
 
-    psse_raw_generator.PG = generator.P
-    psse_raw_generator.VS = generator.Vset
-    psse_raw_generator.QB = generator.Qmin
-    psse_raw_generator.QT = generator.Qmax
-    psse_raw_generator.MBASE = generator.Snom
-    psse_raw_generator.PT = generator.Pmax
-    psse_raw_generator.PB = generator.Pmin
-    psse_raw_generator.STAT = 1 if generator.active else 0
+    psse_generator.PG = generator.P
+    psse_generator.VS = generator.Vset
+    psse_generator.QB = generator.Qmin
+    psse_generator.QT = generator.Qmax
+    psse_generator.MBASE = generator.Snom
+    psse_generator.PT = generator.Pmax
+    psse_generator.PB = generator.Pmin
+    psse_generator.STAT = 1 if generator.active else 0
 
-    return psse_raw_generator
+    return psse_generator
 
 
 def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
@@ -121,7 +141,8 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
 
     psse_circuit.fixed_shunts = [get_psse_fixed_shunt(shunt) for shunt in grid.shunts]
 
-    # TODO: convert switched shunts
+    psse_circuit.switched_shunts = [get_psse_switched_shunt(controllable_shunt) for controllable_shunt in
+                                    grid.controllable_shunts]
 
     psse_circuit.generators = [get_psse_generator(generator) for generator in grid.generators]
 

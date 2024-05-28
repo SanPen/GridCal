@@ -1222,10 +1222,11 @@ class DiagramsMain(CompiledArraysMain):
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
 
-                fname = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
+                f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
                 # call dialog to select the file
-                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
+                                                                                f_name, files_types)
 
                 if not (filename.endswith('.svg') or filename.endswith('.png')):
                     filename += ".svg"

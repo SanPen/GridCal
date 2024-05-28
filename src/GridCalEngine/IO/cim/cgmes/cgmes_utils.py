@@ -160,15 +160,6 @@ def get_pu_values_power_transformer3w(power_transformer, System_Sbase):
 #             list(power_transformer.PowerTransformerEnd)]
 
 
-def get_rate(power_transformer):
-    rating = 0
-    for winding in list(power_transformer.PowerTransformerEnd):
-        if winding.ratedS > rating:
-            rating = winding.ratedS
-
-    return rating
-
-
 # endregion
 
 # region PowerTransformerEnd
@@ -187,7 +178,8 @@ def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100)
     Get the per-unit values of the equivalent PI model
     :return: R, X, Gch, Bch
     """
-    if power_transformer_end.ratedS > 0 and power_transformer_end.ratedU > 0:
+    if (power_transformer_end.ratedS and power_transformer_end.ratedU and power_transformer_end.ratedS > 0 and
+            power_transformer_end.ratedU > 0):
         Zbase = (power_transformer_end.ratedU * power_transformer_end.ratedU) / power_transformer_end.ratedS
         Ybase = 1.0 / Zbase
         machine_to_sys = Sbase_system / power_transformer_end.ratedS

@@ -26,6 +26,7 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.random_eval import random_trial
 from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTypes
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec
 
@@ -84,8 +85,14 @@ def get_voltage_phase_score(voltage: CxVec, va_cost: Vec, va_max: Vec, va_min: V
 
 
 class InvestmentScores:
+    """
+    InvestmentScores
+    """
 
     def __init__(self):
+        """
+        Constructor
+        """
         self.capex_score: float = 0
         self.opex_score: float = 0.0
         self.losses_score: float = 0.0
@@ -99,6 +106,10 @@ class InvestmentScores:
 
     @property
     def financial_score(self) -> float:
+        """
+        Get the financial score: CAPEX + OPEX
+        :return: float
+        """
         return self.capex_score + self.opex_score
 
     def arr(self) -> Vec:
@@ -107,7 +118,8 @@ class InvestmentScores:
         :return: array of 2 values
         """
         # return np.array([self.electrical_score, self.financial_score])
-        return np.array([self.losses_score, self.overload_score, self.voltage_module_score, self.voltage_angle_score, self.financial_score])
+        return np.array([self.losses_score, self.overload_score, self.voltage_module_score, self.voltage_angle_score,
+                         self.financial_score])
 
 
 def power_flow_function(inv_list: List[Investment],
@@ -162,7 +174,7 @@ def power_flow_function(inv_list: List[Investment],
 
 class InvestmentsEvaluationDriver(DriverTemplate):
     name = 'Investments evaluation'
-    tpe = SimulationTypes.InvestmestsEvaluation_run
+    tpe = SimulationTypes.InvestmentsEvaluation_run
 
     def __init__(self,
                  grid: MultiCircuit,
@@ -186,6 +198,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # dimensions
         self.dim = len(self.grid.investments_groups)
+
+        # max iter
+        self.max_iter = options.max_eval
 
         # gather a dictionary of all the elements, this serves for the investments generation
         self.get_all_elements_dict = self.grid.get_all_elements_dict()
@@ -216,6 +231,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         # add all the investments of the investment groups reflected in the combination
         inv_list: List[Investment] = list()
+
         for i, active in enumerate(combination):
             if active == 1:
                 inv_list += self.investments_by_group[i]
@@ -270,7 +286,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                          combination=combination)
 
         # Report the progress
-        self.report_progress2(self.results.current_evaluation, self.options.max_eval)
+        self.report_progress2(self.results.current_evaluation, self.max_iter)
 
         return scores.arr()
 
@@ -288,15 +304,18 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
         """
-        # compile the snapshot
+        self.max_iter = len(self.grid.investments_groups) + 1
+
+        # declare the results
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=len(self.grid.investments_groups) + 1)
+                                                    max_eval=self.max_iter)
 
         # add baseline
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
         dim = len(self.grid.investments_groups)
 
+        # add one at a time
         for k in range(dim):
             self.report_text("Evaluating investment group {}...".format(k))
 
@@ -304,6 +323,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             combination[k] = 1
 
             self.objective_function(combination=combination)
+
+        # self.results.pareto_sort()
 
         self.report_done()
 
@@ -392,7 +413,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = int(round(self.dim)) # divide by 5 for ideal grid
+        pop_size = int(round(self.dim))  # if needed, divide by 5 for ideal grid
         n_partitions = int(round(pop_size))
 
         # compile the snapshot
@@ -419,6 +440,31 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.report_done()
 
+    def randomized_evaluation(self) -> None:
+        """
+        Run purely random evaluations, without any optimization
+        """
+        self.report_text("Randomly evaluating investments...")
+
+        # compile the snapshot
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+                                                    max_eval=self.options.max_eval * 2)
+
+        # add baseline
+        ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+
+        # optimize
+        X, obj_values = random_trial(
+            obj_func=self.objective_function,
+            n_var=self.dim,
+            n_obj=len(ret),
+            max_evals=self.options.max_eval,
+        )
+
+        self.results.set_best_combination(combination=X[:, 0])
+
+        self.report_done()
+
     def run(self) -> None:
         """
         run the QThread
@@ -437,6 +483,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         elif self.options.solver == InvestmentEvaluationMethod.NSGA3:
             self.optimized_evaluation_nsga3()
+
+        elif self.options.solver == InvestmentEvaluationMethod.Random:
+            self.randomized_evaluation()
 
         else:
             raise Exception('Unsupported method')

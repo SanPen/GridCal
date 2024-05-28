@@ -99,7 +99,7 @@ class GridNsga(ElementwiseProblem):
 def NSGA_3(obj_func,
            n_partitions: int = 100,
            n_var: int = 1,
-           n_obj=2,
+           n_obj: int = 2,
            max_evals: int = 30,
            pop_size: int = 1,
            crossover_prob: float = 0.05,
@@ -123,7 +123,7 @@ def NSGA_3(obj_func,
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=SkewedBinarySampling(), #UniformBinarySampling() for ideal grid
+                      sampling=SkewedBinarySampling(),  #UniformBinarySampling() for ideal grid
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                       mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4, repair=RoundingRepair()),
                       # selection=TournamentSelection(pressure=2),
@@ -137,4 +137,7 @@ def NSGA_3(obj_func,
                    verbose=True,
                    save_history=False)
 
+    import pandas as pd
+    dff = pd.DataFrame(res.F)
+    dff.to_excel('nsga.xlsx')
     return res.X, res.F

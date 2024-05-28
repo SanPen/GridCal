@@ -43,6 +43,9 @@ if __name__ == "__main__":
     for new_tr in new_trs:
         grid.add_transformer2w(new_tr)
 
+    for buses in grid.buses:
+        buses.Vmin = 0.95
+
     num_lines = len(grid.lines)
     nset_lines = int(num_lines / 2)  # number of investments
     for ii in range(nset_lines):

@@ -193,7 +193,7 @@ class RawSwitchedShunt(RawObject):
 
         if version >= 35:
             self.I, self.ID, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-                self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = data[0]
+                self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = field_values
 
             parse_dynamic_fields(
                 [
@@ -226,6 +226,12 @@ class RawSwitchedShunt(RawObject):
                     'N8', 'B8'
                 ],
                 dynamic_values)
+
+            # In this version, the RAW format does not support the S.
+            # S is set to 1 by default.
+            for i in range(1, 9):
+                if getattr(self, f"N{i}") != 0:
+                    setattr(self, f"S{i}", 1)
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 
