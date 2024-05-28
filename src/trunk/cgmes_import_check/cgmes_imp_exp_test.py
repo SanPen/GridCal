@@ -1,6 +1,11 @@
+import os
+
 import numpy as np
 import GridCalEngine.api as gc
 from GridCalEngine.IO import FileSave
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.file_handler import FileSavingOptions
+from GridCalEngine.enumerations import CGMESVersions
 
 
 def compare_inputs(circuit_1, circuit_2, tol=1e-6):
@@ -139,18 +144,43 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
         return 1
 
 
+def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
+    options = FileSavingOptions()
+    options.one_file_per_profile = True
+    options.cgmes_profiles = [cgmesProfile.EQ,
+                              cgmesProfile.OP,
+                              cgmesProfile.TP,
+                              cgmesProfile.SV,
+                              cgmesProfile.SSH]
+    options.cgmes_version = CGMESVersions.v2_4_15
+    options.cgmes_boundary_set = boundary_zip_path
+
+    return options
+
+
+def run_import_export_test(import_path: str | list[str], export_name: str, boundary_zip_path: str):
+    # CGMES model import to MultiCircuit
+    circuit = gc.open_file(import_path)
+    # Export
+    export_dir = os.path.join(os.path.curdir, "/export_result")
+    export_name = os.path.join(export_dir, export_name)
+    options = create_file_save_options(boundary_zip_path)
+    cgmes_export = FileSave(circuit=circuit,
+                            file_name=export_name,
+                            options=options)
+    cgmes_export.save_cgmes()
+
+
 # MODELO TYNDP
 cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_base.zip"
-
-circuit_o = gc.open_file(cgmes_path)
-
-nc_o = gc.compile_numerical_circuit_at(circuit_o)
+boundary_path = ""
+# nc_o = gc.compile_numerical_circuit_at(circuit_o)
 
 # run power flow
 
 # export to CGMES
 # crate FileSave
-cgmes_export = FileSave()
+
 # boundary: micro grid Boundary
 # gc.save_file() from FileHandler
 

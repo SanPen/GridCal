@@ -269,7 +269,6 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                 object_list=gc_model.voltage_levels,
                 target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
             )
-            country = None
             if volt_lev is None:
                 line_tpe = cgmes_model.cgmes_assets.class_dict.get("Line")
                 if not isinstance(cgmes_elm.ConnectivityNodeContainer, line_tpe):
@@ -347,7 +346,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
     for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
 
         bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
-
+        vnom, vl = None, None
         if bus is None:
             logger.add_error(msg='No Bus found',
                              device=cgmes_elm,
@@ -359,13 +358,17 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                 used_buses.add(bus)
             else:
                 default_bus = None
+            vnom = bus.Vnom
+            vl = bus.voltage_level
 
         gcdev_elm = gcdev.ConnectivityNode(
             idtag=cgmes_elm.uuid,
             code=cgmes_elm.description,
             name=cgmes_elm.name,
             dc=False,
-            default_bus=default_bus  # this is only set by the BusBar's
+            default_bus=default_bus,  # this is only set by the BusBar's
+            Vnom=vnom,
+            voltage_level=vl
         )
 
         gcdev_model.connectivity_nodes.append(gcdev_elm)
@@ -1291,16 +1294,13 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     # parse_shunts(cgmes_model, circuit, busbar_dict, logger)
     # parse_generators(cgmes_model, circuit, busbar_dict, logger)
 
-    # TODO: Assign the country in the buses and communities
     get_gcdev_countries(cgmes_model, gc_model)
 
-    # TODO: Assign the community in the buses and substations
+    # TODO: Assign the community in the buses
     get_gcdev_community(cgmes_model, gc_model)
 
-    # TODO: Assign the substations in the buses and voltage levels
     get_gcdev_substations(cgmes_model, gc_model)
 
-    # TODO: Assign the voltage level in the buses, busbars and CN's
     vl_dict = get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
 
     cn_look_up = CnLookup(cgmes_model)
@@ -1317,7 +1317,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                                                  cn_look_up=cn_look_up,
                                                  logger=logger)
 
-    # TODO: Set Vnom to the connectivity nodes, alternativelly also the voltage_level
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,
                                            calc_node_dict=calc_node_dict,
