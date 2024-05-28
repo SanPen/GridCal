@@ -1010,7 +1010,7 @@ class SchematicWidget(QSplitter):
 
                         # create the bus children
                         graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
+                            injections_by_tpe=inj_dev_by_cn.get(graphic_object.api_object.cn, dict())
                         )
 
                         graphic_object.change_size(w=location.w)
@@ -4428,13 +4428,13 @@ class SchematicWidget(QSplitter):
 
             generator_graphics.api_object.control_bus = sel_bus
 
-            if (yes_no_question("Do you want to set the profile?", "Set regulation bus")
+            if (yes_no_question(text="Do you want to set the profile?", title="Set regulation bus")
                     and self.circuit.has_time_series):
                 generator_graphics.api_object.control_bus_prof.fill(sel_bus)
 
         else:
-            error_msg("You need to select exactly one bus to be set as the generator regulation bus",
-                      "Set regulation bus")
+            error_msg(text="You need to select exactly one bus to be set as the generator regulation bus",
+                      title="Set regulation bus")
 
     def set_generator_control_cn(self, generator_graphics: GeneratorGraphicItem):
         """
