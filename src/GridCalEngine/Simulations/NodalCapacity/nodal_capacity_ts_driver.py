@@ -263,6 +263,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.voltage[it, :] = res.V
             self.results.Sbus[it, :] = res.S * Sbase
             self.results.bus_shadow_prices[it, :] = res.lam_p
+            self.results.nodal_capacity[it, :] = res.nodal_capacity
             # self.results.load_shedding = npa_res.load_shedding[0, :]
             # self.results.battery_power = npa_res.battery_p[0, :]
             # self.results.battery_energy = npa_res.battery_energy[0, :]

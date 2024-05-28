@@ -325,14 +325,12 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
 def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
                                  gcdev_model: MultiCircuit,
                                  calc_node_dict: Dict[str, gcdev.Bus],
-                                 vl_dict: Dict[str, gcdev.VoltageLevel],
                                  cn_look_up: CnLookup,
                                  logger: DataLogger) -> Dict[str, gcdev.ConnectivityNode]:
     """
     Convert the TopologicalNodes to CalculationNodes
     :param calc_node_dict: dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
              Dict[str, gcdev.Bus]
-    :param vl_dict: dictionary relating the VoltageLevel uuid to the VoltageLevel objects
     :param cgmes_model: CgmesCircuit
     :param gcdev_model: gcdevCircuit
     :param cn_look_up: CnLookUp
@@ -716,7 +714,6 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -1320,7 +1317,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     cn_dict = get_gcdev_connectivity_nodes(cgmes_model=cgmes_model,
                                            gcdev_model=gc_model,
                                            calc_node_dict=calc_node_dict,
-                                           vl_dict=vl_dict,
                                            cn_look_up=cn_look_up,
                                            logger=logger)
     cgmes_model.emit_progress(78)
@@ -1352,7 +1348,9 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
                          cn_dict=cn_dict,
                          device_to_terminal_dict=device_to_terminal_dict,
                          logger=logger)
+
     cgmes_model.emit_progress(86)
+
     get_gcdev_ac_lines(cgmes_model=cgmes_model,
                        gcdev_model=gc_model,
                        calc_node_dict=calc_node_dict,
