@@ -235,25 +235,26 @@ def case9():
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
     # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
     # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 14 zip costs.gridcal')
+    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
-                                               ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
-    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
-                      optimize_nodal_capacity=True,
-                      nodal_capacity_sign=-1.0,
-                      capacity_nodes_idx=np.array([10]))
-
-    # opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.LINEAR_OPF, ips_tolerance=1e-8,
-    #                                           ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
-    # res = run_linear_opf_ts(grid=grid,
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+    # res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
     #                         optimize_nodal_capacity=True,
-    #                         time_indices=None,
-    #                         nodal_capacity_sign=1.0,
-    #                         capacity_nodes_idx=np.array([11,12]))
+    #                         nodal_capacity_sign=-1.0,
+    #                         capacity_nodes_idx=np.array([10]))
+    #
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.LINEAR_OPF, ips_tolerance=1e-8,
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+    res = run_linear_opf_ts(grid=grid,
+                            optimize_nodal_capacity=True,
+                            time_indices=None,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10]))
     print('P nodal capacity: ', res.nodal_capacity_vars.P)
     print('P generators: ', res.gen_vars.p)
     print('P loads: ', res.load_vars.shedding)
@@ -461,7 +462,6 @@ def caseREE():
 
 
 def case_nodalcap():
-
     cwd = os.getcwd()
 
     # Go back two directories
