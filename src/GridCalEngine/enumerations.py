@@ -100,6 +100,7 @@ class InvestmentEvaluationMethod(Enum):
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
     NSGA3 = "NSGA3"
+    Random = "Random"
 
     def __str__(self):
         return self.value
@@ -1331,6 +1332,7 @@ class NodalCapacityMethod(Enum):
     """
     NonlinearOptimization = 'Nonlinear Optimization'
     LinearOptimization = 'Linear Optimization'
+    CPF = "Continuation power flow"
 
     def __str__(self):
         return self.value
@@ -1607,7 +1609,11 @@ class ResultTypes(Enum):
 
     # investments evaluation
     InvestmentsReportResults = 'Investments evaluation report'
-    InvestmentsParetoPlot = 'Pareto plot'
+    # InvestmentsParetoPlot1 = 'Pareto plot 1'
+    # InvestmentsParetoPlot2 = 'Pareto plot 2'
+    # InvestmentsParetoPlot3 = 'Pareto plot 3'
+    # InvestmentsParetoPlot4 = 'Pareto plot 4'
+    InvestmentsParetoPlot = 'Pareto plots'
     InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
@@ -1662,9 +1668,11 @@ class SimulationTypes(Enum):
     NodeGrouping_run = "Node groups"
     InputsAnalysis_run = 'Inputs Analysis'
     OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
-    InvestmestsEvaluation_run = 'Investments evaluation'
+    InvestmentsEvaluation_run = 'Investments evaluation'
     TopologyProcessor_run = 'Topology Processor'
     NodalCapacityTimeSeries_run = 'Nodal capacity time series'
+
+    NoSim = "No simulation"
 
     def __str__(self):
         return self.value
@@ -1681,5 +1689,34 @@ class SimulationTypes(Enum):
         """
         try:
             return SimulationTypes[s]
+        except KeyError:
+            return s
+
+
+class JobStatus(Enum):
+    """
+    Job status types
+    """
+    Done = 'Done'
+    Running = 'Running'
+    Failed = "Failed"
+    Waiting = "Waiting"
+    Cancelled = "Cancelled"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return JobStatus[s]
         except KeyError:
             return s

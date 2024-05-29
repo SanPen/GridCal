@@ -114,7 +114,7 @@ class NodalCapacityTimeSeriesResults(OptimalPowerFlowTimeSeriesResults):
 
         self.capacity_nodes_idx = capacity_nodes_idx if capacity_nodes_idx is not None else np.zeros(0, dtype=int)
 
-        self.nodal_capacity = np.zeros((nt, len(self.capacity_nodes_idx)), dtype=int)
+        self.nodal_capacity = np.zeros((nt, len(self.capacity_nodes_idx)), dtype=float)
 
         # hack the available results to add another entry
         self.available_results[ResultTypes.BusResults].append(ResultTypes.BusNodalCapacity)

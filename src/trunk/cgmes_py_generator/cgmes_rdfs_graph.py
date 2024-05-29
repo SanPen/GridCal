@@ -1,3 +1,5 @@
+import json
+
 import rdflib.term
 from rdflib import Graph, RDF, RDFS
 from pprint import pprint
@@ -13,6 +15,7 @@ if version == 2:
                   "RDFS/cgmes_v2_4_15/SteadyStateHypothesisProfileRDFSAugmented-v2_4_15-4Sep2020.rdf",
                   "RDFS/cgmes_v2_4_15/TopologyProfileRDFSAugmented-v2_4_15-4Sep2020.rdf",
                   "RDFS/cgmes_v2_4_15/GeographicalLocationProfileRDFSAugmented-v2_4_15-4Sep2020.rdf"]
+    assoc_json_path = "RDFS/cgmes_v2_4_15/cgmes_2_4_15_assoc_info.json"
 elif version == 3:
     # CGMESv3
     files_list = ["RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_EQ.rdf",
@@ -22,6 +25,7 @@ elif version == 3:
                   "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_OP.rdf",
                   "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SC.rdf",
                   "RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SSH.rdf", ]
+    assoc_json_path = "RDFS/cgmes_v3_0_0/cgmes_3_0_0_assoc_info.json"
 else:
     files_list = []
 
@@ -48,6 +52,26 @@ cgmes_class_list = []
 assoc_datatype_dict = dict()
 
 
+def get_assoc_dict():
+    with open(assoc_json_path, "r") as json_f:
+        json_dict = json.load(json_f)
+    formated_dict = dict()
+    c_list = json_dict.get("Class")
+    c_prop_list = json_dict.get("UsedAssociationEndRoleName")
+    i_prop_list = json_dict.get('InverseAssociationLabelName')
+
+    i = 0
+    for c_name in c_list:
+        if c_name not in all_class:
+            i += 1
+            continue
+        if c_name not in formated_dict:
+            formated_dict[c_name] = {}
+        formated_dict[c_name][c_prop_list[i]] = i_prop_list[i]
+        i += 1
+    return formated_dict
+
+
 def generate_cgmes_classes():
     from write_py import (write_py_for_class, write_class_list_and_dict, write_class_import, write_enums,
                           write_assoc_dict)
@@ -70,7 +94,8 @@ def generate_cgmes_classes():
         # Filtering classes that are in the scope
         if (label not in not_in_scope_list and (len(class_stereotypes) == 0 or
                                                 any(element in class_stereotypes for element in stereotype_filter) or
-                                                (len(class_stereotypes) == 1 and class_stereotypes[0] == "Description"))):
+                                                (len(class_stereotypes) == 1 and class_stereotypes[
+                                                    0] == "Description"))):
 
             all_class.append(label)
             print(label)
@@ -211,7 +236,7 @@ def generate_cgmes_classes():
     # Creating .py file for all the enums used
     write_enums()
     # Creating a dict for association types
-    write_assoc_dict(assoc_datatype_dict)
+    write_assoc_dict(get_assoc_dict())
 
     # print(f'\n ----------------------------------------------------- ')
     # print("\nALL CLASSES:")

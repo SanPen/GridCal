@@ -44,6 +44,7 @@ def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, flo
 class Transformer3W(EditableDevice):
 
     def __init__(self, idtag=None, code='', name='Branch',
+                 bus0: Union[None, Bus] = None,
                  bus1: Bus = None, bus2: Bus = None, bus3: Bus = None,
                  V1=10.0, V2=10.0, V3=10.0, active=True,
                  r12=0.0, r23=0.0, r31=0.0, x12=0.0, x23=0.0, x31=0.0,
@@ -54,6 +55,7 @@ class Transformer3W(EditableDevice):
         :param idtag: Unique identifier
         :param code: Secondary identifier
         :param name: name of the transformer
+        :param bus1: Bus 0, middle bus
         :param bus1: Bus 1
         :param bus2: Bus 2
         :param bus3: Bus 3
@@ -79,7 +81,12 @@ class Transformer3W(EditableDevice):
                                 code=code,
                                 device_type=DeviceType.Transformer3WDevice)
 
-        self.bus0 = Bus(name=name + '_bus', Vnom=1.0, xpos=x, ypos=y, is_internal=True)
+        if bus0 is None:
+            self.bus0 = Bus(name=name + '_bus', Vnom=1.0, xpos=x, ypos=y, is_internal=True)
+        else:
+            bus0.is_internal = True
+            bus0.Vnom = 1.0
+            self.bus0 = bus0
         self._bus1 = bus1
         self._bus2 = bus2
         self._bus3 = bus3

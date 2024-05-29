@@ -368,10 +368,11 @@ class Line(BranchParent):
         self.length = length
 
     def copyData(self, second_Line):
-        self.busfrom = second_Line.bus_from if second_Line.bus_from is not None else None
-        self.busto = second_Line.bus_to if second_Line.bus_to is not None else None
-        self.cnfrom = second_Line.cn_from
-        self.cnto = second_Line.cn_to
+        self.copy()
+        self.busfrom = getattr(second_Line, 'bus_from', None)
+        self.busto = getattr(second_Line, 'bus_to', None)
+        self.cnfrom = getattr(second_Line, 'cn_from', None)
+        self.cnto = getattr(second_Line, 'cn_to', None)
         self.name = second_Line.name
         self.idtag = second_Line.idtag
         self.code = second_Line.code
@@ -405,3 +406,16 @@ class Line(BranchParent):
         self.capex = second_Line.capex
         self.opex = second_Line.opex
         self.build_status = second_Line.build_status
+
+        # # Fetch all attributes from second_Line dynamically
+        # attributes = [attr for attr in dir(second_Line) if
+        #               not attr.startswith('__') and not callable(getattr(second_Line, attr))]
+        #
+        # # Using getattr to fetch each attribute, defaulting to None if not found
+        # for attr in attributes:
+        #     if not attr == 'locations':
+        #         try:
+        #             # Try setting the attribute, if it is writable
+        #             setattr(self, attr, getattr(second_Line, attr, None))
+        #         except AttributeError as e:
+        #             print(f"Cannot set protected attribute {attr}: {str(e)}")

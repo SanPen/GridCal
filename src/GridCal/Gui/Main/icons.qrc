@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/reactance.svg</file>
+    <file>icons/switch.svg</file>
+    <file>icons/server.svg</file>
     <file>icons/nodal_capacity.svg</file>
     <file>icons/spmat.svg</file>
     <file>icons/bus_bar_icon.svg</file>

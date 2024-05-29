@@ -23,7 +23,7 @@ if __name__ == "__main__":
     mvrsm_1 = InvestmentEvaluationMethod.MVRSM
 
     solvers = np.array([mvrsm_1, mvrsm_multi])
-    results_tpe_plot = ResultTypes.InvestmentsParetoPlot
+    results_tpe_plot = ResultTypes.InvestmentsParetoPlot4
     inv_results = []
 
     for i, solver in enumerate(solvers):

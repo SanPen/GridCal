@@ -646,11 +646,11 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
 
         if self.api_object.device_type == DeviceType.BusDevice:
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.get_areas(),
-                                   DeviceType.ZoneDevice.value: self.editor.circuit.get_zones(),
-                                   DeviceType.SubstationDevice.value: self.editor.circuit.get_substations(),
-                                   DeviceType.VoltageLevelDevice.value: self.editor.circuit.get_voltage_levels(),
-                                   DeviceType.CountryDevice.value: self.editor.circuit.get_countries()}
+            dictionary_of_lists = {DeviceType.AreaDevice: self.editor.circuit.get_areas(),
+                                   DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
+                                   DeviceType.SubstationDevice: self.editor.circuit.get_substations(),
+                                   DeviceType.VoltageLevelDevice: self.editor.circuit.get_voltage_levels(),
+                                   DeviceType.CountryDevice: self.editor.circuit.get_countries()}
 
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists=dictionary_of_lists)

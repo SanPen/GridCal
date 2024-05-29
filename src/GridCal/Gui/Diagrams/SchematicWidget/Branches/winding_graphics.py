@@ -37,7 +37,8 @@ class WindingGraphicItem(LineGraphicTemplateItem):
                  to_port: Union[BarTerminalItem, RoundTerminalItem, None],
                  editor: SchematicWidget,
                  width=5,
-                 api_object: Winding = None):
+                 api_object: Winding = None,
+                 draw_labels: bool = True):
         """
 
         :param from_port:
@@ -51,7 +52,8 @@ class WindingGraphicItem(LineGraphicTemplateItem):
                                          to_port=to_port,
                                          editor=editor,
                                          width=width,
-                                         api_object=api_object)
+                                         api_object=api_object,
+                                         draw_labels=draw_labels)
 
         self.parent_tr3_graphics_item = None
         self.winding_number = 0
