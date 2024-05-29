@@ -41,7 +41,7 @@ class ACDCConverterDCTerminal(DCBaseTerminal):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''Represents the normal network polarity condition. Depending on the converter configuration the value shall be set as follows:
-- For a monopole with two converter terminals use DCPolarityKind “positive” and “negative”.
-- For a bi-pole or symmetric monopole with three converter terminals use DCPolarityKind “positive”, “middle” and “negative”.''',
+- For a monopole with two converter terminals use DCPolarityKind ï¿½positiveï¿½ and ï¿½negativeï¿½.
+- For a bi-pole or symmetric monopole with three converter terminals use DCPolarityKind ï¿½positiveï¿½, ï¿½middleï¿½ and ï¿½negativeï¿½.''' ,
 			profiles=[]
 		)

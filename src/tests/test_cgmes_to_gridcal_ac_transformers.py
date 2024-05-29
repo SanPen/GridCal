@@ -14,13 +14,14 @@ from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 from GridCalEngine.data_logger import DataLogger
+from GridCalEngine.enumerations import CGMESVersions
 
 tn_test = TopologicalNode(rdfid="tn1")
 cn_test = ConnectivityNode(rdfid="cn1")
 
 
 def cgmes_object():
-    circuit = CgmesCircuit()
+    circuit = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     circuit.PowerTransformer_list = [PowerTransformer()]
     ptend = PowerTransformerEnd()
     ptend.BaseVoltage = BaseVoltage("a", "b")
@@ -71,7 +72,7 @@ def test_ac_transformers_one_power_transofmer_end_log_error():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
 
-    cgmes = CgmesCircuit()
+    cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     cgmes.PowerTransformer_list = [PowerTransformer()]
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.endNumber = 1
@@ -90,12 +91,12 @@ def test_ac_transformers_zero_calc_node_log_error():
     bus_data.Vnom = 10
     calc_node_dict["tn1"] = bus_data
 
-    cgmes = CgmesCircuit()
+    cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     cgmes.PowerTransformer_list = [PowerTransformer()]
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.endNumber = 1
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
-                                                                              power_transformer_end]
+    cgmes.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
+                                                          power_transformer_end]
 
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict, cn_dict_object(),
                               device_to_terminal_dict_object_2_terminals(),
@@ -110,7 +111,7 @@ def test_ac_transformers2w():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
 
-    cgmes = CgmesCircuit()
+    cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     cgmes.PowerTransformer_list = [PowerTransformer("a")]
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.ratedS = 1
@@ -127,8 +128,8 @@ def test_ac_transformers2w():
     power_transformer_end.endNumber = 1
     power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
     power_transformer_end.BaseVoltage.nominalVoltage = 100
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
-                                                                              power_transformer_end]
+    cgmes.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
+                                                          power_transformer_end]
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                               device_to_terminal_dict_object_2_terminals(), logger,
                               10)
@@ -173,7 +174,7 @@ def test_ac_transformers3w_only_two_terminals_log_error():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
 
-    cgmes = CgmesCircuit()
+    cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     cgmes.PowerTransformer_list = [PowerTransformer("a")]
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.ratedS = 1
@@ -204,7 +205,7 @@ def test_ac_transformers3w():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
 
-    cgmes = CgmesCircuit()
+    cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     power_transformer = PowerTransformer("a")
     power_transformer.name = "pt_name"
     cgmes.PowerTransformer_list = [power_transformer]

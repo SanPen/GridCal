@@ -36,7 +36,7 @@ class StamenTransportTiles(Tiles):
                          tiles_dir=tiles_dir,
                          http_proxy=http_proxy)
 
-    def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
+    def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.
 
         geo  tuple of geo coordinates (xgeo, ygeo)
@@ -46,9 +46,9 @@ class StamenTransportTiles(Tiles):
         Code taken from [http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames]
         """
 
-        lat_rad = math.radians(ygeo)
+        lat_rad = math.radians(latitude)
         n = 2.0 ** self.level
-        xtile = (xgeo + 180.0) / 360.0 * n
+        xtile = (longitude + 180.0) / 360.0 * n
         ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n
 
         return (xtile, ytile)

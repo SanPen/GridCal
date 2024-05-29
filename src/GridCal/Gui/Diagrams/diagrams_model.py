@@ -1,6 +1,22 @@
-from typing import Dict, List, Union, Any, Tuple, TYPE_CHECKING
-from PySide6 import QtCore, QtWidgets, QtGui
-from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import List, Union
+from PySide6 import QtCore, QtGui
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
@@ -12,7 +28,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
     # from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
     """
 
-    def __init__(self, list_of_diagrams: List[Union[DiagramEditorWidget, GridMapWidget]]):
+    def __init__(self, list_of_diagrams: List[Union[SchematicWidget, GridMapWidget]]):
         """
         Enumeration model
         :param list_of_diagrams: list of enumeration values to show
@@ -62,7 +78,7 @@ class DiagramsModel(QtCore.QAbstractListModel):
                 return diagram.name
             elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     return self.bus_branch_editor_icon
                 elif isinstance(diagram, GridMapWidget):
                     return self.map_editor_icon

@@ -117,6 +117,37 @@ class BusVars:
         return data
 
 
+class NodalCapacityVars:
+    """
+    Struct to store the nodal capacity related vars
+    """
+
+    def __init__(self, nt: int, n_elm: int):
+        """
+        BusVars structure
+        :param nt: Number of time steps
+        :param n_elm: Number of buses to optimize the capacity for
+        """
+        self.P = np.zeros((nt, n_elm), dtype=object)  # in per-unit power
+
+    def get_values(self, Sbase: float, model: LpModel) -> "NodalCapacityVars":
+        """
+        Return an instance of this class where the arrays content are not LP vars but their value
+        :return: BusVars
+        """
+        nt, n_elm = self.P.shape
+        data = NodalCapacityVars(nt=nt, n_elm=n_elm)
+
+        for t in range(nt):
+            for i in range(n_elm):
+                data.P[t, i] = model.get_value(self.P[t, i]) * Sbase
+
+        # format the arrays appropriately
+        data.P = data.P.astype(float, copy=False)
+
+        return data
+
+
 class LoadVars:
     """
     Struct to store the load related vars
@@ -543,7 +574,7 @@ class OpfVars:
     """
 
     def __init__(self, nt: int, nbus: int, ng: int, nb: int, nl: int, nbr: int, n_hvdc: int, n_fluid_node: int,
-                 n_fluid_path: int, n_fluid_inj: int):
+                 n_fluid_path: int, n_fluid_inj: int, n_cap_buses: int):
         """
         Constructor
         :param nt: number of time steps
@@ -567,10 +598,12 @@ class OpfVars:
         self.n_fluid_node = n_fluid_node
         self.n_fluid_path = n_fluid_path
         self.n_fluid_inj = n_fluid_inj
+        self.n_cap_buses = n_cap_buses
 
         self.acceptable_solution = False
 
         self.bus_vars = BusVars(nt=nt, n_elm=nbus)
+        self.nodal_capacity_vars = NodalCapacityVars(nt=nt, n_elm=n_cap_buses)
         self.load_vars = LoadVars(nt=nt, n_elm=nl)
         self.gen_vars = GenerationVars(nt=nt, n_elm=ng)
         self.batt_vars = BatteryVars(nt=nt, n_elm=nb)
@@ -597,8 +630,11 @@ class OpfVars:
                        n_hvdc=self.n_hvdc,
                        n_fluid_node=self.n_fluid_node,
                        n_fluid_path=self.n_fluid_path,
-                       n_fluid_inj=self.n_fluid_inj)
+                       n_fluid_inj=self.n_fluid_inj,
+                       n_cap_buses=self.n_cap_buses)
+
         data.bus_vars = self.bus_vars.get_values(Sbase, model)
+        data.nodal_capacity_vars = self.nodal_capacity_vars.get_values(Sbase, model)
         data.load_vars = self.load_vars.get_values(Sbase, model)
         data.gen_vars = self.gen_vars.get_values(Sbase=Sbase,
                                                  model=model,
@@ -631,7 +667,9 @@ def add_linear_generation_formulation(t: Union[int, None],
                                       unit_commitment: bool,
                                       ramp_constraints: bool,
                                       skip_generation_limits: bool,
-                                      all_generators_fixed: bool):
+                                      all_generators_fixed: bool,
+                                      vd: IntVec,
+                                      nodal_capacity_active: bool):
     """
     Add MIP generation formulation
     :param t: time step
@@ -644,17 +682,24 @@ def add_linear_generation_formulation(t: Union[int, None],
     :param ramp_constraints: formulate ramp constraints?
     :param skip_generation_limits: skip the generation limits?
     :param all_generators_fixed: All generators take their snapshot or profile values
-                                 instead of resorting to dispatcheable status
+                                 instead of resorting to dispatchable status
+    :param vd: slack indices
+    :param nodal_capacity_active: nodal capacity active?
     :return objective function
     """
     f_obj = 0.0
+
+    if nodal_capacity_active:
+        id_gen_nonvd = [i for i in range(gen_data_t.C_bus_elm.shape[1]) if i not in vd]
+    else:
+        id_gen_nonvd = []
 
     # add generation stuff
     for k in range(gen_data_t.nelm):
 
         gen_vars.cost[t, k] = 0.0
 
-        if gen_data_t.active[k]:
+        if gen_data_t.active[k] and k not in id_gen_nonvd:
 
             # declare active power var (limits will be applied later)
             gen_vars.p[t, k] = prob.add_var(-1e20, 1e20, join("gen_p_", [t, k], "_"))
@@ -813,13 +858,18 @@ def add_linear_battery_formulation(t: Union[int, None],
                 if unit_commitment:
 
                     # declare unit commitment vars
-                    batt_vars.starting_up[t, k] = prob.add_int(0, 1, join("bat_starting_up_", [t, k], "_"))
-                    batt_vars.producing[t, k] = prob.add_int(0, 1, join("bat_producing_", [t, k], "_"))
-                    batt_vars.shutting_down[t, k] = prob.add_int(0, 1, join("bat_shutting_down_", [t, k], "_"))
+                    batt_vars.starting_up[t, k] = prob.add_int(0, 1,
+                                                               join("bat_starting_up_", [t, k], "_"))
+
+                    batt_vars.producing[t, k] = prob.add_int(0, 1,
+                                                             join("bat_producing_", [t, k], "_"))
+
+                    batt_vars.shutting_down[t, k] = prob.add_int(0, 1,
+                                                                 join("bat_shutting_down_", [t, k], "_"))
 
                     # operational cost (linear...)
-                    f_obj += batt_data_t.cost_1[k] * batt_vars.p[t, k] + batt_data_t.cost_0[k] * batt_vars.producing[
-                        t, k]
+                    f_obj += (batt_data_t.cost_1[k] * batt_vars.p[t, k]
+                              + batt_data_t.cost_0[k] * batt_vars.producing[t, k])
 
                     # start-up cost
                     f_obj += batt_data_t.startup_cost[k] * batt_vars.starting_up[t, k]
@@ -827,30 +877,31 @@ def add_linear_battery_formulation(t: Union[int, None],
                     # power boundaries of the generator
                     if not skip_generation_limits:
                         prob.add_cst(
-                            cst=batt_vars.p[t, k] >= (
-                                    batt_data_t.availability[k] * batt_data_t.pmin[k] / Sbase * batt_vars.producing[
-                                t, k]),
+                            cst=(batt_vars.p[t, k] >= (batt_data_t.availability[k] * batt_data_t.pmin[k] /
+                                                       Sbase * batt_vars.producing[t, k])),
                             name=join("batt>=Pmin", [t, k], "_"))
+
                         prob.add_cst(
-                            cst=batt_vars.p[t, k] <= (
-                                    batt_data_t.availability[k] * batt_data_t.pmax[k] / Sbase * batt_vars.producing[
-                                t, k]),
+                            cst=(batt_vars.p[t, k] <= (batt_data_t.availability[k] * batt_data_t.pmax[k] /
+                                                       Sbase * batt_vars.producing[t, k])),
                             name=join("batt<=Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
                             prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
-                                    batt_vars.producing[t, k] - float(batt_data_t.active[k]),
+                                cst=(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
+                                     batt_vars.producing[t, k] - float(batt_data_t.active[k])),
                                 name=join("binary_alg1_", [t, k], "_"))
+
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                 name=join("binary_alg2_", [t, k], "_"))
                         else:
                             prob.add_cst(
-                                cst=batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
-                                    batt_vars.producing[t, k] - batt_vars.producing[t - 1, k],
+                                cst=(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
+                                     batt_vars.producing[t, k] - batt_vars.producing[t - 1, k]),
                                 name=join("binary_alg3_", [t, k], "_"))
+
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
                                 name=join("binary_alg4_", [t, k], "_"))
@@ -889,8 +940,8 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                 if t > 0:
                     # energy decreases / increases with power · dt
-                    prob.add_cst(cst=batt_vars.e[t, k] ==
-                                     batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k],
+                    prob.add_cst(cst=(batt_vars.e[t, k] ==
+                                      batt_vars.e[t - 1, k] + dt * batt_data_t.efficiency[k] * batt_vars.p[t, k]),
                                  name=join("batt_energy_", [t, k], "_"))
                 else:
                     # set the initial energy value
@@ -918,9 +969,9 @@ def add_linear_battery_formulation(t: Union[int, None],
 
                 elif p < 0:
                     # the negative sign is because P is already negative here
-                    batt_vars.shedding[t, k] = prob.add_var(0,
-                                                            -p,
-                                                            join("bat_shedding_", [t, k], "_"))
+                    batt_vars.shedding[t, k] = prob.add_var(lb=0,
+                                                            ub=-p,
+                                                            name=join("bat_shedding_", [t, k], "_"))
 
                     prob.add_cst(
                         cst=batt_vars.p[t, k] == batt_data_t.p[k] / Sbase + batt_vars.shedding[t, k],
@@ -939,6 +990,39 @@ def add_linear_battery_formulation(t: Union[int, None],
         else:
             # the generator is not available at time step
             batt_vars.p[t, k] = 0.0
+
+    return f_obj
+
+
+def add_nodal_capacity_formulation(t: Union[int, None],
+                                   nodal_capacity_vars: NodalCapacityVars,
+                                   nodal_capacity_sign: float,
+                                   capacity_nodes_idx: IntVec,
+                                   prob: LpModel):
+    """
+    Add MIP generation formulation
+    :param t: time step, if None we assume single time step
+    :param nodal_capacity_vars: NodalCapacityVars structure
+    :param nodal_capacity_sign:
+    :param capacity_nodes_idx: IntVec
+    :param prob: ORTools problem
+    :return objective function
+    """
+    f_obj = 0.0
+    for k, idx in enumerate(capacity_nodes_idx):
+        # assign load shedding variable
+        if nodal_capacity_sign < 0:
+            nodal_capacity_vars.P[t, k] = prob.add_var(lb=0.0,
+                                                       ub=9999.9,
+                                                       name=join("nodal_capacity_", [t, k], "_"))
+
+        else:
+            nodal_capacity_vars.P[t, k] = prob.add_var(lb=-9999.9,
+                                                       ub=0.0,
+                                                       name=join("nodal_capacity_", [t, k], "_"))
+
+        # minimize the load shedding
+        f_obj += 100 * nodal_capacity_sign * nodal_capacity_vars.P[t, k]
 
     return f_obj
 
@@ -1221,6 +1305,8 @@ def add_linear_node_balance(t_idx: int,
                             gen_vars: GenerationVars,
                             batt_vars: BatteryVars,
                             load_vars: LoadVars,
+                            nodal_capacity_vars: NodalCapacityVars,
+                            capacity_nodes_idx: IntVec,
                             prob: LpModel,
                             logger: Logger):
     """
@@ -1236,18 +1322,20 @@ def add_linear_node_balance(t_idx: int,
     :param gen_vars: GenerationVars
     :param batt_vars: BatteryVars
     :param load_vars: LoadVars
+    :param nodal_capacity_vars: NodalCapacityVars
+    :param capacity_nodes_idx: IntVec
     :param prob: LpModel
     :param logger: Logger
     """
     B = Bbus.tocsc()
 
     P_esp = bus_vars.branch_injections[t_idx, :]
-    P_esp += lpDot(generator_data.C_bus_elm.tocsc(),
-                   gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
-    P_esp += lpDot(battery_data.C_bus_elm.tocsc(),
-                   batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
-    P_esp += lpDot(load_data.C_bus_elm.tocsc(),
-                   load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+    P_esp += lpDot(generator_data.C_bus_elm.tocsc(), gen_vars.p[t_idx, :] - gen_vars.shedding[t_idx, :])
+    P_esp += lpDot(battery_data.C_bus_elm.tocsc(), batt_vars.p[t_idx, :] - batt_vars.shedding[t_idx, :])
+    P_esp += lpDot(load_data.C_bus_elm.tocsc(), load_vars.shedding[t_idx, :] - load_vars.p[t_idx, :])
+
+    if len(capacity_nodes_idx) > 0:
+        P_esp[capacity_nodes_idx] += nodal_capacity_vars.P[t_idx, :]
 
     # calculate the linear nodal injection
     bus_vars.Pcalc[t_idx, :] = lpDot(B, bus_vars.theta[t_idx, :])
@@ -1456,6 +1544,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       areas_to: List[Area] = None,
                       energy_0: Union[Vec, None] = None,
                       fluid_level_0: Union[Vec, None] = None,
+                      optimize_nodal_capacity: bool = False,
+                      nodal_capacity_sign: float = 1.0,
+                      capacity_nodes_idx: Union[IntVec, None] = None,
                       logger: Logger = Logger(),
                       progress_text: Union[None, Callable[[str], None]] = None,
                       progress_func: Union[None, Callable[[float], None]] = None,
@@ -1478,6 +1569,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param areas_to:
     :param energy_0:
     :param fluid_level_0: initial fluid level of the nodes
+    :param optimize_nodal_capacity: Optimize the nodal capacity? (optional)
+    :param nodal_capacity_sign: if > 0 the generation is maximized, if < 0 the load is maximized
+    :param capacity_nodes_idx: Array of bus indices to optimize their nodal capacity for
     :param logger: logger instance
     :param progress_text:
     :param progress_func:
@@ -1495,6 +1589,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
             pass
         else:
             time_indices = [None]
+
+    active_nodal_capacity = True
+    if capacity_nodes_idx is None:
+        active_nodal_capacity = False
+        capacity_nodes_idx = np.zeros(0, dtype=int)
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()
@@ -1520,7 +1619,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
     # declare structures of LP vars
     mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc,
-                       n_fluid_node=n_fluid_node, n_fluid_path=n_fluid_path, n_fluid_inj=n_fluid_inj)
+                       n_fluid_node=n_fluid_node, n_fluid_path=n_fluid_path, n_fluid_inj=n_fluid_inj,
+                       n_cap_buses=len(capacity_nodes_idx))
 
     # create the MIP problem object
     lp_model: LpModel = LpModel(solver_type)
@@ -1567,7 +1667,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    unit_commitment=unit_Commitment,
                                                    ramp_constraints=ramp_constraints,
                                                    skip_generation_limits=skip_generation_limits,
-                                                   all_generators_fixed=all_generators_fixed)
+                                                   all_generators_fixed=all_generators_fixed,
+                                                   vd=nc.vd,
+                                                   nodal_capacity_active=active_nodal_capacity)
 
         # formulate batteries --------------------------------------------------------------------------------------
         if local_t_idx == 0 and energy_0 is None:
@@ -1584,6 +1686,14 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                 ramp_constraints=ramp_constraints,
                                                 skip_generation_limits=skip_generation_limits,
                                                 energy_0=energy_0)
+
+        # formulate batteries --------------------------------------------------------------------------------------
+        if optimize_nodal_capacity:
+            f_obj += add_nodal_capacity_formulation(t=local_t_idx,
+                                                    nodal_capacity_vars=mip_vars.nodal_capacity_vars,
+                                                    nodal_capacity_sign=nodal_capacity_sign,
+                                                    capacity_nodes_idx=capacity_nodes_idx,
+                                                    prob=lp_model)
 
         # add emissions ------------------------------------------------------------------------------------------------
         if gen_emissions_rates_matrix.shape[0] > 0:
@@ -1632,6 +1742,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                     gen_vars=mip_vars.gen_vars,
                                     batt_vars=mip_vars.batt_vars,
                                     load_vars=mip_vars.load_vars,
+                                    nodal_capacity_vars=mip_vars.nodal_capacity_vars,
+                                    capacity_nodes_idx=capacity_nodes_idx,
                                     prob=lp_model,
                                     logger=logger)
 
@@ -1695,7 +1807,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
         # production equals demand -------------------------------------------------------------------------------------
         lp_model.add_cst(cst=(lp_model.sum(mip_vars.gen_vars.p[local_t_idx, :]) +
-                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) >=
+                              lp_model.sum(mip_vars.batt_vars.p[local_t_idx, :]) +
+                              lp_model.sum(mip_vars.nodal_capacity_vars.P[local_t_idx, :]) >=
                               mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
                                   local_t_idx].sum()),
                          name="satisfy_demand_at_{0}".format(local_t_idx))
@@ -1741,5 +1854,5 @@ def run_linear_opf_ts(grid: MultiCircuit,
     # add the model logger to the main logger
     logger += lp_model.logger
 
-    # lp_model.save_model('hydro_opf.lp')
+    # lp_model.save_model('nodal_opf.lp')
     return vars_v

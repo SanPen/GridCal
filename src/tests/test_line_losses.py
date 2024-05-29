@@ -35,8 +35,8 @@ def test_line_losses_1():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
 
     grid.add_bus(Bus0)
     grid.add_bus(Bus1)
@@ -117,9 +117,9 @@ def test_line_losses_2():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
-    Bus2 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
+    Bus2 = Bus(name="Bus1", Vnom=25)
 
     for b in Bus0, Bus1, Bus2:
         grid.add_bus(b)
@@ -201,8 +201,8 @@ def test_line_losses_3():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
 
     for b in Bus0, Bus1:
         grid.add_bus(b)

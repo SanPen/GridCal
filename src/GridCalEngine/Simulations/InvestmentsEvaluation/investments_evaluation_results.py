@@ -19,8 +19,9 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -35,6 +36,10 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         available_results = {
             ResultTypes.ReportsResults: [ResultTypes.InvestmentsReportResults, ],
             ResultTypes.SpecialPlots: [ResultTypes.InvestmentsParetoPlot,
+                                       # ResultTypes.InvestmentsParetoPlot1,
+                                       # ResultTypes.InvestmentsParetoPlot2,
+                                       # ResultTypes.InvestmentsParetoPlot3,
+                                       # ResultTypes.InvestmentsParetoPlot4,
                                        ResultTypes.InvestmentsIterationsPlot]
         }
 
@@ -54,8 +59,11 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses: Vec = np.zeros(max_eval, dtype=float)
         self._overload_score: Vec = np.zeros(max_eval, dtype=float)
         self._voltage_score: Vec = np.zeros(max_eval, dtype=float)
+        self._electrical: Vec = np.zeros(max_eval, dtype=float)
+        self._financial: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
+        self._best_combination: IntVec = np.zeros(max_eval, dtype=int)
 
         self.register(name='investment_groups_names', tpe=StrVec)
         self.register(name='_combinations', tpe=Vec)
@@ -64,8 +72,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='_losses', tpe=Vec)
         self.register(name='_overload_score', tpe=Vec)
         self.register(name='_voltage_score', tpe=Vec)
+        self.register(name='_electrical', tpe=Vec)
+        self.register(name='_financial', tpe=Vec)
         self.register(name='_f_obj', tpe=Vec)
         self.register(name='_index_names', tpe=Vec)
+        self.register(name='_best_combination', tpe=IntVec)
+
+        self.__eval_index: int = 0
+
+    @property
+    def current_evaluation(self) -> int:
+        return self.__eval_index
 
     @property
     def n_groups(self) -> int:
@@ -89,8 +106,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         """
         return self._index_names
 
-    def set_at(self, eval_idx, capex, opex, losses, overload_score, voltage_score, objective_function,
-               combination: IntVec, index_name: str) -> None:
+    def set_at(self, eval_idx,
+               capex: float,
+               opex: float,
+               losses: float,
+               overload_score: float,
+               voltage_score: float,
+               # electrical: float,
+               financial: float,
+               objective_function_sum: float,
+               combination: IntVec,
+               index_name: str) -> None:
         """
         Set the results at an investment group
         :param eval_idx: evaluation index
@@ -99,7 +125,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param losses:
         :param overload_score:
         :param voltage_score:
-        :param objective_function:
+        # :param electrical:
+        :param financial:
+        :param objective_function_sum:
         :param combination: vector of size (n_investment_groups) with ones in those investments used
         :param index_name: Name of the evaluation
         """
@@ -108,9 +136,90 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses[eval_idx] = losses
         self._overload_score[eval_idx] = overload_score
         self._voltage_score[eval_idx] = voltage_score
-        self._f_obj[eval_idx] = objective_function
+        # self._electrical[eval_idx] = electrical
+        self._financial[eval_idx] = financial
+        self._f_obj[eval_idx] = objective_function_sum
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
+
+    def get_objectives(self) -> Mat:
+        """
+        Returns the multi-objectives matrix
+        :return: Matrix (n_eval, n_dim)
+        """
+        return np.c_[
+            self._capex,
+            self._opex,
+            self._losses,
+            self._overload_score,
+            self._voltage_score
+        ]
+
+    def pareto_sort(self) -> None:
+        """
+        Pareto sort the results in place
+        """
+        y, x = non_dominated_sorting(y_values=self.get_objectives(),
+                                     x_values=self._combinations)
+
+        self._capex = y[:, 0]
+        self._opex = y[:, 1]
+        self._losses = y[:, 2]
+        self._overload_score = y[:, 3]
+        self._voltage_score = y[:, 4]
+
+        self._combinations = x
+
+    def add(self,
+            capex: float,
+            opex: float,
+            losses: float,
+            overload_score: float,
+            voltage_score: float,
+            # electrical: float,
+            financial: float,
+            objective_function_sum: float,
+            combination: IntVec) -> None:
+        """
+
+        :param capex:
+        :param opex:
+        :param losses:
+        :param overload_score:
+        :param voltage_score:
+        # :param electrical:
+        :param financial:
+        :param objective_function_sum:
+        :param combination:
+        :return:
+        """
+        if self.__eval_index < self.max_eval:
+            self.set_at(eval_idx=self.__eval_index,
+                        capex=capex,
+                        opex=opex,
+                        losses=losses,
+                        overload_score=overload_score,
+                        voltage_score=voltage_score,
+                        # electrical=electrical,
+                        financial=financial,
+                        objective_function_sum=objective_function_sum,
+                        combination=combination,
+                        index_name=f'Solution {self.__eval_index}')
+
+            self.__eval_index += 1
+        else:
+            print('Evaluation index out of range')
+
+    def set_best_combination(self, combination: IntVec) -> None:
+        """
+        Set the best combination of investment groups
+        :param combination: Vector of integers (0/1)
+        """
+        self._best_combination = combination
+
+    @property
+    def best_combination(self) -> IntVec:
+        return self._best_combination
 
     def mdl(self, result_type) -> "ResultsTable":
         """
@@ -123,17 +232,21 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         if result_type == ResultTypes.InvestmentsReportResults:
             labels = self._index_names
             columns = ["CAPEX (M€)",
-                       "OPEX (M€/yr)",
+                       "OPEX (M€)",
                        "Losses (MW)",
-                       "Overload cost (€)",
-                       "Voltage deviations cost (€)",
+                       "Overload cost (M€)",
+                       "Voltage cost (M€)",
+                       # "Total technical score (M€)",
+                       "Total financial score (M€)",
                        "Objective function"] + list(self.investment_groups_names)
             data = np.c_[
                 self._capex,
                 self._opex,
                 self._losses,
-                self._overload_score,
-                self._voltage_score,
+                self._overload_score / 1e6,
+                self._voltage_score / 1e6,
+                # self._electrical,
+                self._financial,
                 self._f_obj,
                 self._combinations
             ]
@@ -152,21 +265,57 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         elif result_type == ResultTypes.InvestmentsParetoPlot:
             labels = self._index_names
-            columns = ["CAPEX (M€) + OPEX (M€)", "Objective function"]
-            x = self._capex + self._opex
-            y = self._losses
-            data = np.c_[x, y]
+            columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)",
+                       "Voltage cost (M€)"]
+            data = np.c_[self._financial, self._losses + self._voltage_score + self._overload_score, self._losses, self._overload_score, self._voltage_score]
             y_label = ''
             title = ''
 
             plt.ion()
             color_norm = plt_colors.Normalize()
-            fig = plt.figure(figsize=(8, 6))
-            ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=self._f_obj, norm=color_norm)
-            ax3.set_xlabel('Investment cost (M€)')
-            ax3.set_ylabel('Technical cost (M€)')
-            plt.colorbar(sc3, fraction=0.05, label='Objective function')
+            fig, ax3 = plt.subplots(2, 2, figsize=(16, 12))
+
+            # Plot 1: Technical vs investment
+            sc1 = ax3[0, 0].scatter(self._financial, self._losses + self._voltage_score + self._overload_score,
+                                    c=self._f_obj, norm=color_norm)
+            ax3[0, 0].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[0, 0].set_ylabel('Technical cost (M€)', fontsize=10)
+            ax3[0, 0].set_title('Technical vs investment', fontsize=12)
+            ax3[0, 0].tick_params(axis='both', which='major', labelsize=8)
+            cbar1 = plt.colorbar(sc1, ax=ax3[0, 0], fraction=0.05)
+            cbar1.set_label('Objective function', fontsize=10)
+            cbar1.ax.tick_params(labelsize=8)
+
+            # Plot 2: Losses vs investment
+            sc2 = ax3[0, 1].scatter(self._financial, self._losses, c=self._f_obj, norm=color_norm)
+            ax3[0, 1].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[0, 1].set_ylabel('Losses cost (M€)', fontsize=10)
+            ax3[0, 1].set_title('Power losses vs investment', fontsize=12)
+            ax3[0, 1].tick_params(axis='both', which='major', labelsize=8)
+            cbar2 = plt.colorbar(sc2, ax=ax3[0, 1], fraction=0.05)
+            cbar2.set_label('Objective function', fontsize=10)
+            cbar2.ax.tick_params(labelsize=8)
+
+            # Plot 3: Overload vs investment
+            sc3 = ax3[1, 0].scatter(self._financial, self._overload_score, c=self._f_obj, norm=color_norm)
+            ax3[1, 0].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[1, 0].set_ylabel('Overload cost (M€)', fontsize=10)
+            ax3[1, 0].set_title('Branch overload vs investment', fontsize=12)
+            ax3[1, 0].tick_params(axis='both', which='major', labelsize=8)
+            cbar3 = plt.colorbar(sc3, ax=ax3[1, 0], fraction=0.05)
+            cbar3.set_label('Objective function', fontsize=10)
+            cbar3.ax.tick_params(labelsize=8)
+
+            # Plot 4: Undervoltage vs investment
+            sc4 = ax3[1, 1].scatter(self._financial, self._voltage_score, c=self._f_obj, norm=color_norm)
+            ax3[1, 1].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[1, 1].set_ylabel('Voltage cost (M€)', fontsize=10)
+            ax3[1, 1].set_title('Undervoltage vs investment', fontsize=12)
+            ax3[1, 1].tick_params(axis='both', which='major', labelsize=8)
+            cbar4 = plt.colorbar(sc4, ax=ax3[1, 1], fraction=0.05)
+            cbar4.set_label('Objective function', fontsize=10)
+            cbar4.ax.tick_params(labelsize=8)
+
             fig.suptitle(result_type.value)
             plt.tight_layout()
             plt.show()
@@ -181,6 +330,132 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 xlabel='',
                                 units=y_label)
 
+
+        # elif result_type == ResultTypes.InvestmentsParetoPlot1:
+        #     labels = self._index_names
+        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
+        #     columns = ["Investment cost (M€)", "Losses (M€)"]
+        #     data = np.c_[self._financial, self._losses]
+        #     y_label = ''
+        #     title = ''
+        #
+        #     plt.ion()
+        #     color_norm = plt_colors.Normalize()
+        #     fig = plt.figure(figsize=(8, 6))
+        #     ax3 = plt.subplot(1, 1, 1)
+        #     sc3 = ax3.scatter(self._financial, self._losses, c=self._f_obj, norm=color_norm)
+        #     ax3.set_xlabel('Investment cost (M€)')
+        #     ax3.set_ylabel('Losses cost (M€)')
+        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
+        #     fig.suptitle(result_type.value)
+        #     plt.tight_layout()
+        #     plt.show()
+        #
+        #     return ResultsTable(data=data,
+        #                         index=np.array(labels),
+        #                         idx_device_type=DeviceType.NoDevice,
+        #                         columns=np.array(columns),
+        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
+        #                         title=title,
+        #                         ylabel=y_label,
+        #                         xlabel='',
+        #                         units=y_label)
+        #
+        # elif result_type == ResultTypes.InvestmentsParetoPlot2:
+        #     labels = self._index_names
+        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
+        #     columns = ["Investment cost (M€)", "Overload cost (M€)"]
+        #     data = np.c_[self._financial, self._overload_score]
+        #     y_label = ''
+        #     title = ''
+        #
+        #     plt.ion()
+        #     color_norm = plt_colors.Normalize()
+        #     fig = plt.figure(figsize=(8, 6))
+        #     ax3 = plt.subplot(1, 1, 1)
+        #     sc3 = ax3.scatter(self._financial, self._overload_score, c=self._f_obj, norm=color_norm)
+        #     ax3.set_xlabel('Investment cost (M€)')
+        #     ax3.set_ylabel('Overload cost (M€)')
+        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
+        #     fig.suptitle(result_type.value)
+        #     plt.tight_layout()
+        #     plt.show()
+        #
+        #     return ResultsTable(data=data,
+        #                         index=np.array(labels),
+        #                         idx_device_type=DeviceType.NoDevice,
+        #                         columns=np.array(columns),
+        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
+        #                         title=title,
+        #                         ylabel=y_label,
+        #                         xlabel='',
+        #                         units=y_label)
+        #
+        # elif result_type == ResultTypes.InvestmentsParetoPlot3:
+        #     labels = self._index_names
+        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
+        #     columns = ["Investment cost (M€)", "Voltage cost (M€)"]
+        #     data = np.c_[self._financial, self._voltage_score]
+        #     y_label = ''
+        #     title = ''
+        #
+        #     plt.ion()
+        #     color_norm = plt_colors.Normalize()
+        #     fig = plt.figure(figsize=(8, 6))
+        #     ax3 = plt.subplot(1, 1, 1)
+        #     sc3 = ax3.scatter(self._financial, self._voltage_score, c=self._f_obj, norm=color_norm)
+        #     ax3.set_xlabel('Investment cost (M€)')
+        #     ax3.set_ylabel('Voltage cost (M€)')
+        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
+        #     fig.suptitle(result_type.value)
+        #     plt.tight_layout()
+        #     plt.show()
+        #
+        #     print(f"Result Type: {result_type}")
+        #     print(f"Data shape: {data.shape}")
+        #     print(f"Length of columns: {len(columns)}")
+        #     print(f"Length of index: {len(labels)}")
+        #
+        #     return ResultsTable(data=data,
+        #                         index=np.array(labels),
+        #                         idx_device_type=DeviceType.NoDevice,
+        #                         columns=np.array(columns),
+        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
+        #                         title=title,
+        #                         ylabel=y_label,
+        #                         xlabel='',
+        #                         units=y_label)
+        #
+        # elif result_type == ResultTypes.InvestmentsParetoPlot4:
+        #     labels = self._index_names
+        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
+        #     columns = ["Investment cost (M€)", "Technical cost (M€)"]
+        #     data = np.c_[self._financial, self._losses+self._voltage_score+self._overload_score]
+        #     y_label = ''
+        #     title = ''
+        #
+        #     plt.ion()
+        #     color_norm = plt_colors.Normalize()
+        #     fig = plt.figure(figsize=(8, 6))
+        #     ax3 = plt.subplot(1, 1, 1)
+        #     sc3 = ax3.scatter(self._financial, self._losses+self._voltage_score+self._overload_score, c=self._f_obj, norm=color_norm)
+        #     ax3.set_xlabel('Investment cost (M€)')
+        #     ax3.set_ylabel('Technical cost (M€)')
+        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
+        #     fig.suptitle(result_type.value)
+        #     plt.tight_layout()
+        #     plt.show()
+        #
+        #     return ResultsTable(data=data,
+        #                         index=np.array(labels),
+        #                         idx_device_type=DeviceType.NoDevice,
+        #                         columns=np.array(columns),
+        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
+        #                         title=title,
+        #                         ylabel=y_label,
+        #                         xlabel='',
+        #                         units=y_label)
+
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names
             columns = ["Iteration", "Objective function"]
@@ -194,7 +469,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
             ax3.plot(x, y, '.')
-            # plt.plot(iters, self.best_y[0:self.iter], 'r')
             ax3.set_xlabel('Iteration')
             ax3.set_ylabel('Objective')
             fig.suptitle(result_type.value)

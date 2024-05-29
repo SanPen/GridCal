@@ -37,3 +37,4 @@ if __name__ == "__main__":
     # os.environ["QT_QPA_PLATFORMTHEME"] = "qt5ct"  # this forces QT-only menus and look and feel
 
     runGridCal()
+

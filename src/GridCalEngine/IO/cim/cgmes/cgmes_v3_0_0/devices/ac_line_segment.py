@@ -31,6 +31,11 @@ class ACLineSegment(Conductor):
 		self.Clamp: Clamp | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.cut import Cut
 		self.Cut: Cut | None = None
+		self.b0ch: float = None
+		self.g0ch: float = None
+		self.r0: float = None
+		self.shortCircuitEndTemperature: float = None
+		self.x0: float = None
 
 		self.register_property(
 			name='bch',
@@ -78,5 +83,45 @@ class ACLineSegment(Conductor):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''Cuts applied to the line segment.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='b0ch',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.S,
+			description='''Imaginary part of admittance.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='g0ch',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.S,
+			description='''Factor by which voltage must be multiplied to give corresponding power lost from a circuit. Real part of admittance.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='r0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='shortCircuitEndTemperature',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.degC,
+			description='''Value of temperature in degrees Celsius.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='x0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
 			profiles=[]
 		)
