@@ -41,13 +41,36 @@ class UniformBinarySampling(Sampling):
 
 class SkewedBinarySampling(Sampling):
     def _do(self, problem, n_samples, **kwargs):
-        max_ones = int(problem.n_var * 0.1)
+        max_ones = int(problem.n_var * 1)
         num_ones = (np.linspace(0, 1, n_samples) ** 3 * max_ones).astype(int)
         num_ones[-1] = max_ones
         ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
-        # num_ones = np.logspace(0, problem.n_var, n_samples, dtype=int)
-        # num_ones[-1] = problem.n_var
-        # ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
+
+        # Fill ones_into_array randomly
+        for i, num in enumerate(num_ones):
+            ones_into_array[i, :num] = 1
+            np.random.shuffle(ones_into_array[i])
+
+        # # Add rows with only one '1'
+        # additional_rows = 100
+        # for _ in range(additional_rows):
+        #     row = np.zeros(problem.n_var, dtype=int)
+        #     row[np.random.randint(0, problem.n_var)] = 1
+        #     ones_into_array = np.vstack([ones_into_array, row])
+
+        return ones_into_array
+
+
+class QuadBinarySampling(Sampling):
+    def _do(self, problem, n_samples, **kwargs):
+        max_ones = int(problem.n_var * 1)
+        half_samples = n_samples // 2
+        # Adjust the num_ones calculation to create a distribution that is quadratic in the first half
+        num_ones = (np.linspace(0, 1, half_samples) * max_ones).astype(int)
+        # Fill the rest of the array with 0s quadratically
+        num_zeros = (np.linspace(1, 0, n_samples - half_samples) ** 3 * max_ones).astype(int)
+        num_ones = np.concatenate([num_ones, num_zeros])
+        ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
         # Fill ones_into_array randomly
         for i, num in enumerate(num_ones):
             ones_into_array[i, :num] = 1
