@@ -541,6 +541,12 @@ def get_nominal_voltage(topological_node, logger) -> float:
                              value=topological_node.BaseVoltage,
                              expected_value='object')
     else:
+        logger.add_error(msg='Missing refference',
+                         device=topological_node.rdfid,
+                         device_class=topological_node.tpe,
+                         device_property="BaseVoltage",
+                         value=topological_node.BaseVoltage,
+                         expected_value='object')
         return 0.0
 
 
