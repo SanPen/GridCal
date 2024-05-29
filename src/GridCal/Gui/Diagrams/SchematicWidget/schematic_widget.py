@@ -1223,6 +1223,14 @@ class SchematicWidget(QSplitter):
         """
         if graphic_object is not None:
             if graphic_object.scene() is not None:
+
+                # try to remove nexus and children
+                if isinstance(graphic_object,
+                              (BusGraphicItem, CnGraphicItem, BusBarGraphicItem, FluidNodeGraphicItem)):
+                    graphic_object.delete_all_connections()
+                    for g in graphic_object.shunt_children:
+                        self.remove_from_scene(g.nexus)
+
                 self.diagram_scene.removeItem(graphic_object)
             else:
                 warn(f"Null scene for {graphic_object}, was it deleted already?")

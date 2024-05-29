@@ -50,6 +50,17 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
+SHUNT_GRAPHICS = Union[
+    BatteryGraphicItem,
+    ShuntGraphicItem,
+    ExternalGridGraphicItem,
+    ControllableShuntGraphicItem,
+    LoadGraphicItem,
+    GeneratorGraphicItem,
+    StaticGeneratorGraphicItem,
+]
+
+
 class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
@@ -92,7 +103,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.w = w if w >= self.min_w else self.min_w
 
         # loads, shunts, generators, etc...
-        self.shunt_children = list()
+        self.shunt_children: List[SHUNT_GRAPHICS] = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -506,7 +517,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/delete_db.svg",
                        function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
 
-        add_menu_entry(menu, text='Remove from schematic and DB',
+        add_menu_entry(menu, text='Remove from schematic',
                        icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=False))
 
@@ -572,15 +583,15 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         if ask:
             ok = yes_no_question('Are you sure that you want to remove this bus',
-                                 'Remove bus from schamatic and DB')
+                                 'Remove bus from schamatic and DB' if delete_from_db else "Remove bus from schamatic")
         else:
             ok = True
 
         if ok:
-            self.delete_all_connections()
-
-            for g in self.shunt_children:
-                self.editor.remove_from_scene(g.nexus)
+            # self.delete_all_connections()
+            #
+            # for g in self.shunt_children:
+            #     self.editor.remove_from_scene(g.nexus)
 
             self.editor.remove_element(device=self.api_object,
                                        graphic_object=self,
