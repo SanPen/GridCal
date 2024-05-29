@@ -258,7 +258,7 @@ def case14_linear_vs_nonlinear():
 
     grid = gce.FileOpen(file_path).open()
 
-    # NOnlinear OPF
+    # Nonlinear OPF
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
                                               ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
@@ -267,6 +267,8 @@ def case14_linear_vs_nonlinear():
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([10, 11]))
 
+    print('Nonlinear P nodal capacity: ', res.nodal_capacity)
+
     # Linear OPF
     res = run_linear_opf_ts(grid=grid,
                             optimize_nodal_capacity=True,
@@ -274,11 +276,7 @@ def case14_linear_vs_nonlinear():
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([10, 11]))
 
-    print('P nodal capacity: ', res.nodal_capacity_vars.P)
-    print('P generators: ', res.gen_vars.p)
-    print('P loads: ', res.load_vars.shedding)
-    print('P slacks pos: ', res.branch_vars.flow_slacks_pos)
-    print('P slacks neg: ', res.branch_vars.flow_slacks_neg)
+    print('Linear P nodal capacity: ', res.nodal_capacity_vars.P)
     print('')
 
 
