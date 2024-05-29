@@ -14,7 +14,8 @@ if __name__ == "__main__":
     # absolute_path = os.path.abspath(
     #   os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
 
-    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
+    fname = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/investments/edited_IEEE 118 Bus - investments.gridcal')
     grid = FileOpen(fname).open()
 
     pf_options = sim.PowerFlowOptions()
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     #                                            pf_options=pf_options)
 
     options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Random,
-                                               max_eval=2 * len(grid.investments),
+                                               max_eval=80 * len(grid.investments),
                                                pf_options=pf_options)
 
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
