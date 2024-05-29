@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-
 data_rand = pd.read_excel("random_trial.xlsx")
 data_nsga = pd.read_csv("nsga.csv")
 data_indep = pd.read_csv("indep_all.csv")

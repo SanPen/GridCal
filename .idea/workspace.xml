@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Results now output multi-plot and one table for pareto">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Plot graphs, final parameters tuned">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/plot_solvers.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/plot_solvers.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,7 +151,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "204__investments__evaluation",
-    "last_opened_file_path": "C:/Work/git_local/GridCal/doc",
+    "last_opened_file_path": "/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/investments",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -171,11 +169,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/trunk/investments" />
       <recent name="C:\Work\git_local\GridCal\doc" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
       <recent name="$PROJECT_DIR$/src/tests/data/grids" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation" />
-      <recent name="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
@@ -1692,7 +1690,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="510" />
+    <option name="localTasksCounter" value="511" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1726,7 +1724,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="buse" />
     <MESSAGE value="bus idtag for new TopologicalNodes" />
     <MESSAGE value="new CGMES export functions" />
     <MESSAGE value="matrix comparisons first version" />
@@ -1751,7 +1748,8 @@
     <MESSAGE value="Added full-point plotting" />
     <MESSAGE value="Results for random evaluations" />
     <MESSAGE value="Results now output multi-plot and one table for pareto" />
-    <option name="LAST_COMMIT_MESSAGE" value="Results now output multi-plot and one table for pareto" />
+    <MESSAGE value="Plot graphs, final parameters tuned" />
+    <option name="LAST_COMMIT_MESSAGE" value="Plot graphs, final parameters tuned" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
