@@ -3,7 +3,7 @@ from itertools import groupby
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator, \
-    RawSwitchedShunt
+    RawSwitchedShunt, RawTransformer
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 
@@ -126,6 +126,51 @@ def get_psse_generator(generator: dev.Generator) -> RawGenerator:
     return psse_generator
 
 
+def get_psse_transformer2w(transformer: dev.Transformer2W) -> RawTransformer:
+    psse_transformer = RawTransformer()
+    psse_transformer.windings = 2
+
+    psse_transformer.idtag = transformer.idtag
+    psse_transformer.STAT = 1 if transformer.active else 0
+
+    psse_transformer.SBASE1_2 = transformer.Sn
+    psse_transformer.RATE1_1 = transformer.rate
+
+    i, j, ckt = transformer.code.split("_")
+
+    psse_transformer.I = i
+    psse_transformer.J = j
+    psse_transformer.CKT = ckt
+
+    return psse_transformer
+
+
+def get_psse_transformer3w(transformer: dev.Transformer3W) -> RawTransformer:
+    psse_transformer = RawTransformer()
+    psse_transformer.windings = 3
+
+    psse_transformer.idtag = transformer.idtag
+    psse_transformer.STAT = 1 if transformer.active else 0
+
+    psse_transformer.NAME = transformer.name
+    psse_transformer.RATE1_1 = transformer.rate12
+    psse_transformer.RATE2_1 = transformer.rate23
+    psse_transformer.RAte3_1 = transformer.rate31
+
+    psse_transformer.ANG1 = transformer.winding1.tap_phase
+    psse_transformer.ANG2 = transformer.winding2.tap_phase
+    psse_transformer.ANG3 = transformer.winding3.tap_phase
+
+    i, j, k, ckt = psse_transformer.code.split("_")
+
+    psse_transformer.I = i
+    psse_transformer.J = j
+    psse_transformer.K = k
+    psse_transformer.CKT = ckt
+
+    return psse_transformer
+
+
 def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     psse_circuit = PsseCircuit()
 
@@ -145,5 +190,8 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
                                     grid.controllable_shunts]
 
     psse_circuit.generators = [get_psse_generator(generator) for generator in grid.generators]
+
+    psse_circuit.transformers = [get_psse_transformer2w(transformer) for transformer in grid.transformers2w]
+    psse_circuit.transformers.extend(get_psse_transformer3w(transformer) for transformer in grid.transformers3w)
 
     return psse_circuit
