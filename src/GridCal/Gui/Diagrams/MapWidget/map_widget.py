@@ -341,6 +341,7 @@ class MapWidget(QWidget):
 
         self.pressed = False
         self.disableMove = False
+        self.inItem = False
         self.startHe = 360
         self.startWi = 240
 
@@ -348,9 +349,10 @@ class MapWidget(QWidget):
         initial_zoom_factor = 1
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
-        self.remapSchema()
 
         self.selTempDistance = 20
+
+        self.selectedItems = []
 
     def convertToQMouseEvent(self, sceneMouseEvent):
         # Get relevant information from QGraphicsSceneMouseEvent
@@ -395,6 +397,12 @@ class MapWidget(QWidget):
         if event.type() == QEvent.GraphicsSceneMousePress:
             self.pressed = True
             self.disableMove = False
+            b = event.button()
+            if b == Qt.RightButton:
+                if not self.inItem:
+                    for item in self.selectedItems:
+                        item.deSelectItem()
+                    self.selectedItems.clear()
 
         if event.type() == QEvent.GraphicsSceneMouseRelease:
             self.pressed = False
@@ -421,9 +429,9 @@ class MapWidget(QWidget):
             val = self.zoom_level(new_level, self.mouse_x, self.mouse_y)
             if val:
                 if event.delta() > 0:
-                    self.zoom_in()
+                    self.diagram_zoom_in()
                 else:
-                    self.zoom_out()
+                    self.diagram_zoom_out()
             else:
                 self.level = zoomInitial
                 val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
@@ -778,24 +786,21 @@ class MapWidget(QWidget):
 
         # self.centerSchema()
 
-    def zoom_in(self):
-        # Translate the scene to make the center point correspond to the origin
+    def diagram_zoom_in(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom * self.zoom_factor
         self.view.scale(self.zoom_factor, self.zoom_factor)
-        self.remapSchema()
 
-    def zoom_out(self):
-        # Translate the scene to make the center point correspond to the origin
+    def diagram_zoom_out(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom / self.zoom_factor
         self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
-        self.remapSchema()
-
-    def remapSchema(self):
-        a = 0
-        # if self.schema_zoom > 0 and self.schema_zoom < 22:
-        #     self.change_size_and_pen_width_all(0.5,0.5)
-        # if self.schema_zoom >= 22:
-        #     self.change_size_and_pen_width_all(0.2,0.5)
 
     def resizeEvent(self, event: QResizeEvent = None, updateDisplacement = True):
         """
@@ -907,7 +912,8 @@ class MapWidget(QWidget):
         painter.end()
 
     def normalize_key_after_drag(self, delta_x=None, delta_y=None):
-        """After drag, set "key" tile correctly.
+        """
+        After drag, set "key" tile correctly.
 
         delta_x  the X amount dragged (pixels), None if not dragged in X
         delta_y  the Y amount dragged (pixels), None if not dragged in Y
@@ -4068,3 +4074,34 @@ class MapWidget(QWidget):
         self.zoom_level_position(level, longitude, latitude)
 
         return old_tileset
+
+    def haversine_distance(self, lat1, lon1, lat2, lon2):
+        R = 6371  # Earth radius in kilometers
+        dLat = math.radians(lat2 - lat1)
+        dLon = math.radians(lon2 - lon1)
+        a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(math.radians(lat1)) * math.cos(
+            math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return R * c
+
+    def compare_options(self, it1, it2):
+        # Extract coordinates
+        first_last_lat, first_last_long = float(it1.line_container.api_object.locations.data[-1].lat), float(
+            it1.line_container.api_object.locations.data[-1].long)
+        second_first_lat, second_first_long = float(it2.line_container.api_object.locations.data[0].lat), float(
+            it2.line_container.api_object.locations.data[0].long)
+
+        # Calculate distances for both configurations
+        distance_1_to_2 = self.haversine_distance(first_last_lat, first_last_long, second_first_lat, second_first_long)
+
+        second_last_lat, second_last_long = float(it2.line_container.api_object.locations.data[-1].lat), float(
+            it2.line_container.api_object.locations.data[-1].long)
+        first_first_lat, first_first_long = float(it1.line_container.api_object.locations.data[0].lat), float(
+            it1.line_container.api_object.locations.data[0].long)
+
+        distance_2_to_1 = self.haversine_distance(second_last_lat, second_last_long, first_first_lat, first_first_long)
+
+        if distance_1_to_2 <= distance_2_to_1:
+            return it1, it2
+        else:
+            return it2, it1

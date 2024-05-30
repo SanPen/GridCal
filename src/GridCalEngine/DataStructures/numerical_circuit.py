@@ -251,15 +251,15 @@ class NumericalCircuit:
         # Internal variables filled on demand, to be ready to consume once computed
         # --------------------------------------------------------------------------------------------------------------
 
-        self.Vbus_: CxVec = None
-        self.Sbus_: CxVec = None
-        self.Ibus_: CxVec = None
-        self.YloadBus_: CxVec = None
-        self.Yshunt_from_devices_: CxVec = None
-        self.Bmax_bus_: Vec = None
-        self.Bmin_bus_: Vec = None
-        self.Qmax_bus_: Vec = None
-        self.Qmin_bus_: Vec = None
+        self.Vbus_: Union[None, CxVec] = None
+        self.Sbus_: Union[None, CxVec] = None
+        self.Ibus_: Union[None, CxVec] = None
+        self.YloadBus_: Union[None, CxVec] = None
+        self.Yshunt_from_devices_: Union[None, CxVec] = None
+        self.Bmax_bus_: Union[None, Vec] = None
+        self.Bmin_bus_: Union[None, Vec] = None
+        self.Qmax_bus_: Union[None, Vec] = None
+        self.Qmin_bus_: Union[None, Vec] = None
 
         # class that holds all the simulation indices
         self.simulation_indices_: Union[None, si.SimulationIndices] = None
@@ -290,15 +290,15 @@ class NumericalCircuit:
         this should be called after all modifications prior to the usage in any
         calculation
         """
-        self.Vbus_: CxVec = None
-        self.Sbus_: CxVec = None
-        self.Ibus_: CxVec = None
-        self.YloadBus_: CxVec = None
-        self.Yshunt_from_devices_: CxVec = None
-        self.Qmax_bus_: Vec = None
-        self.Qmin_bus_: Vec = None
-        self.Bmax_bus_: Vec = None
-        self.Bmin_bus_: Vec = None
+        self.Vbus_: Union[None, CxVec] = None
+        self.Sbus_: Union[None, CxVec] = None
+        self.Ibus_: Union[None, CxVec] = None
+        self.YloadBus_: Union[None, CxVec] = None
+        self.Yshunt_from_devices_: Union[None, CxVec] = None
+        self.Qmax_bus_: Union[None, Vec] = None
+        self.Qmin_bus_: Union[None, Vec] = None
+        self.Bmax_bus_: Union[None, Vec] = None
+        self.Bmin_bus_: Union[None, Vec] = None
 
         # Connectivity matrices
         self.conn_matrices_: Union[tp.ConnectivityMatrices, None] = None
@@ -452,7 +452,7 @@ class NumericalCircuit:
         Get a dictionary to map idtags to the structure they belong and the index
         :return: Dictionary relating an idtag to the structure and the index in it (Dict[idtag] -> (structure, index))
         """
-        structs_dict = dict()
+        structs_dict: Dict[str, Tuple[ALL_STRUCTS, int]] = dict()
 
         for struct_elm in self.get_structures_list():
 
@@ -463,9 +463,9 @@ class NumericalCircuit:
 
     def set_investments_status(self, investments_list: List[Investment], status: int) -> None:
         """
-        Set the status of a list of investmensts
+        Set the status of a list of investments
         :param investments_list: list of investments
-        :param status: status to set in the internal strctures
+        :param status: status to set in the internal structures
         """
 
         for inv in investments_list:

@@ -16,10 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
 import os
-import qdarktheme
 from typing import Dict, Union, Any
 from PySide6 import QtWidgets
 
+import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -108,9 +108,11 @@ class ConfigurationMain(ResultsMain):
 
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()
+
             qdarktheme.setup_theme(theme='dark',
                                    custom_colors=custom_colors,
                                    additional_qss="QToolTip {color: white; background-color: black; border: 0px; }")
+
             # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()
@@ -127,6 +129,7 @@ class ConfigurationMain(ResultsMain):
             qdarktheme.setup_theme(theme='light',
                                    custom_colors=custom_colors,
                                    additional_qss="QToolTip {color: black; background-color: white; border: 0px;}")
+
             # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()
@@ -275,6 +278,10 @@ class ConfigurationMain(ResultsMain):
 
                 "ntc_opt_consider_contingencies": self.ui.consider_ntc_contingencies_checkBox,
             },
+            "nodal_hosting_capacity": {
+                "method": self.ui.nodal_capacity_method_comboBox,
+                "sense": self.ui.nodal_capacity_sense_SpinBox
+            },
             "general": {
                 "base_power": self.ui.sbase_doubleSpinBox,
                 "frequency": self.ui.fbase_doubleSpinBox,
@@ -294,7 +301,8 @@ class ConfigurationMain(ResultsMain):
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox,
                 "current_boundary_set": self.current_boundary_set,
-                "cgmes_selected_version": self.ui.cgmes_version_comboBox
+                "cgmes_selected_version": self.ui.cgmes_version_comboBox,
+                "cgmes_single_profile_per_file": self.ui.cgmes_single_profile_per_file_checkBox
             }
         }
 
@@ -395,7 +403,9 @@ class ConfigurationMain(ResultsMain):
                 except json.decoder.JSONDecodeError as e:
                     print(e)
                     self.save_gui_config()
-                    print("Config file was erroneous, wrote a new one")
+                    print("GUI config file was erroneous, wrote a new one")
+
+
 
     def select_cgmes_boundary_set(self):
         """

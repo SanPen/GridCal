@@ -2,12 +2,14 @@ import os
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import NodalCapacityTimeSeriesDriver
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_options import NodalCapacityOptions
 import numpy as np
 import pandas as pd
 from GridCalEngine.enumerations import NodalCapacityMethod
+
 
 def example_3bus_acopf():
     """
@@ -234,13 +236,47 @@ def case9():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
+
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
                                               ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
-                      optimize_nodal_capacity=True,
-                      nodal_capacity_sign=1.0,
-                      capacity_nodes_idx=np.array([1]))
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                            optimize_nodal_capacity=True,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([5]))
+
+
+def case14_linear_vs_nonlinear():
+    """
+    IEEE14
+    """
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 14 zip costs.gridcal')
+
+    grid = gce.FileOpen(file_path).open()
+
+    # Nonlinear OPF
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                            optimize_nodal_capacity=True,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10, 11]))
+
+    print('Nonlinear P nodal capacity: ', res.nodal_capacity)
+
+    # Linear OPF
+    res = run_linear_opf_ts(grid=grid,
+                            optimize_nodal_capacity=True,
+                            time_indices=None,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10, 11]))
+
+    print('Linear P nodal capacity: ', res.nodal_capacity_vars.P)
     print('')
 
 
@@ -443,7 +479,6 @@ def caseREE():
 
 
 def case_nodalcap():
-
     cwd = os.getcwd()
 
     # Go back two directories
@@ -464,7 +499,7 @@ def case_nodalcap():
                                       nodal_capacity_sign=-1.0, method=NodalCapacityMethod.NonlinearOptimization)
     case = NodalCapacityTimeSeriesDriver(grid=grid, time_indices=np.array([0]), options=nc_options)
     case.run()
-    #run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
 if __name__ == '__main__':
@@ -472,7 +507,8 @@ if __name__ == '__main__':
     # case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
-    case9()
+    # case9()
+    case14_linear_vs_nonlinear()
     # case14()
     # case_gb()
     # case6ww()
@@ -480,5 +516,5 @@ if __name__ == '__main__':
     # case300()
     # casepegase13k()
     #  casehvdc()
-    #caseREE()
-    #case_nodalcap()
+    # caseREE()
+    # case_nodalcap()

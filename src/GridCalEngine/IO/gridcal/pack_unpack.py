@@ -26,7 +26,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType, TransformerControlType
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TransformerControlType)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -422,7 +422,7 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
 
 def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     """
-
+    Transform a MultiCircuit into a collection of Json files
     :param circuit:
     :return:
     """
@@ -455,6 +455,7 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
                     'snapshot_unix': circuit.get_snapshot_time_unix()}
 
     return data
+
 
 
 def search_property(template_elm: ALL_DEV_TYPES,

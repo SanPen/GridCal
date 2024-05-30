@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
-from typing import Tuple, Union
+from typing import Tuple, Union, TYPE_CHECKING
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.substation import Substation
@@ -27,6 +27,9 @@ from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.types import CONNECTION_TYPE
 
 
 class BranchParent(EditableDevice):
@@ -487,3 +490,66 @@ class BranchParent(EditableDevice):
             return self.bus_to.voltage_level
         else:
             return None
+
+    def get_from_and_to_objects(self,
+                                t_idx: Union[int, None] = None,
+                                logger: Logger = Logger(),
+                                prefer_node_breaker: bool = True) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
+        """
+        Get the from and to connection objects of the branch
+        :param t_idx: Time index (optional)
+        :param logger: Logger object
+        :param prefer_node_breaker: If true the connectivity nodes are examined first,
+                                    otherwise the buses are returned right away
+        :return: Object from, Object to, is it ok?
+        """
+
+        # Pick the right bus
+        bus_from = self.bus_from if t_idx is None else self.bus_from_prof[t_idx]
+        bus_to = self.bus_to if t_idx is None else self.bus_to_prof[t_idx]
+
+        if not prefer_node_breaker:
+            # if we're not preferrig node breaker, return the bus-branch buses whatever they may be
+            ok = bus_from is not None and bus_to is not None
+            return bus_from, bus_to, ok
+
+        else:
+            # Helper function to handle errors and return consistent output
+            def handle_error(message: str) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
+                """
+
+                :param message:
+                :return:
+                """
+                logger.add_error(msg=message, device=self.name)
+                return None, None, False
+
+            # Both cn_from and cn_to are provided
+            if self.cn_from is not None and self.cn_to is not None:
+                f = self.cn_from
+                t = self.cn_to
+                return f, t, True
+
+            # cn_from is provided, cn_to is not
+            if self.cn_from is not None:
+                f = self.cn_from
+                if bus_to is not None:
+                    t = bus_to
+                    return f, t, True
+                return handle_error("No to connection provided!")
+
+            # cn_to is provided, cn_from is not
+            if self.cn_to is not None:
+                t = self.cn_to
+                if bus_from is not None:
+                    f = bus_from
+                    return f, t, True
+                return handle_error("No from connection provided!")
+
+            # Both cn_from and cn_to are not provided
+            if bus_from is not None and bus_to is not None:
+                f = bus_from
+                t = bus_to
+                return f, t, True
+
+            return handle_error("Isolated branch!")

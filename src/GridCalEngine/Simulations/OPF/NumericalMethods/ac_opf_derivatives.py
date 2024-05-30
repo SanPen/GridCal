@@ -443,10 +443,11 @@ def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
-    _, _, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, slcap,  _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
+    _, _, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, slcap, _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                           M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
                                                                           nslcap=nslcap, acopf_mode=acopf_mode)
     # Obj. function:  Active power generation costs plus overloads and voltage deviation penalties
+
     fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
                    + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin))
                    + np.sum(nodal_capacity_sign * slcap))
@@ -498,9 +499,9 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
     S = V * np.conj(Ybus @ V)
     S_dispatch = Cg[:, ig] @ (Pg_dis + 1j * Qg_dis)  # Variable generation
     S_undispatch = Cg[:, nig] @ Sg_undis  # Fixed generation
-    dS = S + Sd - S_dispatch - S_undispatch   # Nodal power balance
-    if nslcap !=0:
-        dS[capacity_nodes_idx] += - nodal_capacity_sign * slcap # Nodal capacity slack addition
+    dS = S + Sd - S_dispatch - S_undispatch  # Nodal power balance
+    if nslcap != 0:
+        dS[capacity_nodes_idx] -= slcap # Nodal capacity slack generator addition
 
     for link in range(len(Pfdc)):
         dS[fdc[link]] += Pfdc[link]  # Variable DC links. Lossless model (Pdc_From = Pdc_To)
@@ -702,16 +703,16 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         # OBJECTIVE FUNCTION GRAD --------------------------------------------------------------------------------------
 
         fx = np.zeros(NV)
+        if nslcap == 0:
+            fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase * Sbase) + c1 * Sbase) * 1e-4
 
-        fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase * Sbase) + c1 * Sbase) * 1e-4
-
-        if acopf_mode == AcOpfMode.ACOPFslacks:
-            fx[npfvar: npfvar + M] = c_s
-            fx[npfvar + M: npfvar + 2 * M] = c_s
-            fx[npfvar + 2 * M: npfvar + 2 * M + npq] = c_v
-            fx[npfvar + 2 * M + npq: npfvar + 2 * M + 2 * npq] = c_v
-
-        fx[npfvar + nsl: npfvar + nsl + nslcap] = nodal_capacity_sign
+            if acopf_mode == AcOpfMode.ACOPFslacks:
+                fx[npfvar: npfvar + M] = c_s
+                fx[npfvar + M: npfvar + 2 * M] = c_s
+                fx[npfvar + 2 * M: npfvar + 2 * M + npq] = c_v
+                fx[npfvar + 2 * M + npq: npfvar + 2 * M + 2 * npq] = c_v
+        else:
+            fx[npfvar + nsl: npfvar + nsl + nslcap] = nodal_capacity_sign
 
         # EQUALITY CONSTRAINTS GRAD ------------------------------------------------------------------------------------
         """
@@ -792,7 +793,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
 
         if nslcap !=0:
             for idslcap, capbus in enumerate(capacity_nodes_idx):
-                Gslcap[capbus, idslcap] = - nodal_capacity_sign
+                Gslcap[capbus, idslcap] = -1
 
         GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gslcap, Gtapm, Gtapt, GSpfdc])
 
@@ -1000,13 +1001,14 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         assert compute_jac  # we must have the jacobian values to get into here
 
         # OBJECTIVE FUNCTION HESS --------------------------------------------------------------------------------------
-
-        fxx = diags((np.r_[
-            np.zeros(2 * N),
-            2 * c2 * (Sbase * Sbase),
-            np.zeros(Ng + nsl + nslcap + ntapm + ntapt + ndc)
-        ]) * 1e-4).tocsc()
-
+        if nslcap == 0:
+            fxx = diags((np.r_[
+                np.zeros(2 * N),
+                2 * c2 * (Sbase * Sbase),
+                np.zeros(Ng + nsl + nslcap + ntapm + ntapt + ndc)
+                ]) * 1e-4).tocsc()
+        else:
+            fxx = csc((NV, NV))
         # EQUALITY CONSTRAINTS HESS ------------------------------------------------------------------------------------
         '''
         The following matrix represents the structure of the hessian matrix for the equality constraints
