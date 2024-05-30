@@ -1229,7 +1229,7 @@ class SchematicWidget(QSplitter):
                               (BusGraphicItem, CnGraphicItem, BusBarGraphicItem, FluidNodeGraphicItem)):
                     graphic_object.delete_all_connections()
                     for g in graphic_object.shunt_children:
-                        self.remove_from_scene(g.nexus)
+                        self.diagram_scene.removeItem(g.nexus)
 
                 self.diagram_scene.removeItem(graphic_object)
             else:
