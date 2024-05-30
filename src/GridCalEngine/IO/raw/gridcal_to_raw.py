@@ -136,7 +136,7 @@ def get_psse_transformer2w(transformer: dev.Transformer2W) -> RawTransformer:
     psse_transformer.SBASE1_2 = transformer.Sn
     psse_transformer.RATE1_1 = transformer.rate
 
-    i, j, ckt = psse_transformer.code.split("_")
+    i, j, ckt = transformer.code.split("_")
 
     psse_transformer.I = i
     psse_transformer.J = j
