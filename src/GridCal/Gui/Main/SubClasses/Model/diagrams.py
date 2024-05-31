@@ -118,7 +118,8 @@ class DiagramsMain(CompiledArraysMain):
         register_matplotlib_converters()
 
         # --------------------------------------------------------------------------------------------------------------
-        self.ui.actionExport.triggered.connect(self.export_diagram)
+        self.ui.actionTakePicture.triggered.connect(self.take_picture)
+        self.ui.actionRecord_video.triggered.connect(self.record_video)
         self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_diagram_and_db)
         self.ui.actionDelete_from_the_diagram.triggered.connect(self.delete_selected_from_the_diagram)
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
@@ -769,11 +770,10 @@ class DiagramsMain(CompiledArraysMain):
 
             for diagram in self.diagram_widgets_list:
 
-                if isinstance(diagram, SchematicWidget):
-                    self.grid_colour_function(diagram=diagram, current_study=current_study, t_idx=t_idx)
-
-                elif isinstance(diagram, GridMapWidget):
-                    self.grid_colour_function(diagram=diagram, current_study=current_study, t_idx=t_idx)
+                if isinstance(diagram, (SchematicWidget, GridMapWidget)):
+                    self.grid_colour_function(diagram=diagram,
+                                              current_study=current_study,
+                                              t_idx=t_idx)
 
     def set_diagrams_list_view(self) -> None:
         """
@@ -1211,7 +1211,7 @@ class DiagramsMain(CompiledArraysMain):
         else:
             self.ui.db_step_label.setText("Snapshot")
 
-    def export_diagram(self):
+    def take_picture(self):
         """
         Save the schematic
         :return:
@@ -1226,18 +1226,70 @@ class DiagramsMain(CompiledArraysMain):
                 f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
                 # call dialog to select the file
-                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
+                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save image file',
                                                                                 f_name, files_types)
 
-                if not (filename.endswith('.svg') or filename.endswith('.png')):
-                    filename += ".svg"
-
                 if filename != "":
+                    if not (filename.endswith('.svg') or filename.endswith('.png')):
+                        filename += ".svg"
+
                     # save in factor * K
                     factor = self.ui.resolution_factor_spinBox.value()
                     w = 1920 * factor
                     h = 1080 * factor
-                    diagram.export(filename, w, h)
+                    diagram.take_picture(filename, w, h)
+
+    def record_video(self):
+        """
+        Save the schematic
+        :return:
+        """
+        if self.circuit.has_time_series:
+            diagram = self.get_selected_diagram_widget()
+            if diagram is not None:
+                if isinstance(diagram, (SchematicWidget, GridMapWidget)):
+
+                    # declare the allowed file types
+                    files_types = "MP4 (*.mp4);;"
+
+                    f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
+
+                    # call dialog to select the file
+                    filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save video file',
+                                                                                    f_name, files_types)
+
+                    if filename != "":
+                        if not filename.endswith('.mp4'):
+                            filename += ".mp4"
+
+                        fps = self.ui.fps_spinBox.value()
+                        start_idx = self.get_simulation_start()
+                        end_idx = self.get_simulation_end()
+                        current_study = self.ui.available_results_to_color_comboBox.currentText()
+
+                        # start recording...
+                        w, h = diagram.start_video_recording(fname=filename, fps=fps)
+
+                        # paint and capture
+                        for t_idx in range(start_idx, end_idx):
+
+                            self.grid_colour_function(diagram=diagram,
+                                                      current_study=current_study,
+                                                      t_idx=t_idx)
+
+                            diagram.capture_video_frame(w=w, h=h)
+
+                            print(f"Saving video {t_idx} / {end_idx}")
+
+                        # finalize
+                        diagram.end_video_recording()
+                        print(f"Recording saved to {filename}")
+
+            else:
+                info_msg("There is not diagram selected", "Record video")
+
+        else:
+            info_msg("There are no time series", "Record video")
 
     def set_xy_from_lat_lon(self):
         """
