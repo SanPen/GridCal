@@ -18,6 +18,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+import cv2
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
 from warnings import warn
@@ -577,9 +578,13 @@ class SchematicWidget(QSplitter):
         # current time index from the GUI (None or 0, 1, 2, ..., n-1)
         self._time_index: Union[None, int] = time_index
 
+        # video pointer
+        self._video: Union[None, cv2.VideoWriter] = None
+
         if diagram is not None:
             self.draw()
 
+        # -------------------------------------------------------------------------------------------------
         # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
 
     def set_time_index(self, time_index: Union[int, None]):
@@ -1245,10 +1250,7 @@ class SchematicWidget(QSplitter):
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            # try:
             self.remove_from_scene(graphic_object)
-            # except:
-            #     warn(f"Could not remove {graphic_object} from the scene")
 
         if propagate:
             if self.call_delete_db_element_func is not None:
@@ -2183,7 +2185,23 @@ class SchematicWidget(QSplitter):
                 bus.y = y[i]
             i += 1
 
-    def export(self, filename, w=1920, h=1080):
+    def get_image(self, w: int, h: int) -> QImage:
+        """
+
+        :param w:
+        :param h:
+        :return:
+        """
+        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        image.fill(Qt.transparent)
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.diagram_scene.render(painter)
+        painter.end()
+
+        return image
+
+    def take_picture(self, filename, w=1920, h=1080):
         """
         Save the grid to a png file
         """
@@ -4524,6 +4542,43 @@ class SchematicWidget(QSplitter):
         for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
             for key, widget in type_dict.items():
                 widget.enable_label_drawing()
+
+    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+        """
+        Save video
+        :param fname: file name
+        :param fps: frames per second
+        :returns width, height
+        """
+
+        w = self.width()
+        h = self.height()
+
+        self._video = cv2.VideoWriter(filename=fname,
+                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                      fps=fps,
+                                      frameSize=(w, h))
+
+        return w, h
+
+    def capture_video_frame(self, w: int, h: int):
+        """
+        Save the current state in a video frame
+        """
+
+        qimage = self.get_image(w=w, h=h)
+
+        ptr = qimage.convertToFormat(QImage.Format.Format_RGBA8888).constBits()
+
+        frame = np.array(ptr).reshape(h, w, 4)  # Copies the data
+
+        self._video.write(frame)
+
+    def end_video_recording(self) -> None:
+        """
+        End the video recording
+        """
+        self._video.release()
 
 
 def generate_schematic_diagram(buses: List[Bus],

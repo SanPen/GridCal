@@ -7887,7 +7887,7 @@
                      <string/>
                     </property>
                     <property name="pixmap">
-                     <pixmap resource="icons.qrc">:/Icons/icons/resize.svg</pixmap>
+                     <pixmap resource="icons.qrc">:/Icons/icons/picture.svg</pixmap>
                     </property>
                     <property name="scaledContents">
                      <bool>true</bool>
@@ -8045,6 +8045,36 @@
                    <widget class="QComboBox" name="plt_style_comboBox">
                     <property name="toolTip">
                      <string>MatPlotlib plot styles to choose from</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_149">
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_150">
+                    <property name="text">
+                     <string>Video FPS</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="fps_spinBox">
+                    <property name="suffix">
+                     <string> FPS</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>9999</number>
+                    </property>
+                    <property name="value">
+                     <number>30</number>
                     </property>
                    </widget>
                   </item>
@@ -8608,7 +8638,6 @@ QProgressBar::chunk{
       <iconset resource="icons.qrc">
        <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
      </property>
-     <addaction name="actionExport"/>
      <addaction name="actionExport_all_the_device_s_profiles"/>
      <addaction name="actionExport_contingencies"/>
      <addaction name="actionExport_all_results"/>
@@ -8740,8 +8769,10 @@ QProgressBar::chunk{
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
     <addaction name="actionCenter_view"/>
-    <addaction name="separator"/>
     <addaction name="actionSearchDiagram"/>
+    <addaction name="separator"/>
+    <addaction name="actionTakePicture"/>
+    <addaction name="actionRecord_video"/>
    </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
@@ -8841,13 +8872,13 @@ QProgressBar::chunk{
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionExport">
+  <action name="actionTakePicture">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
+     <normaloff>:/Icons/icons/picture.svg</normaloff>:/Icons/icons/picture.svg</iconset>
    </property>
    <property name="text">
-    <string>Schematic picture</string>
+    <string>Take picture</string>
    </property>
   </action>
   <action name="actionNew_project">
@@ -9880,6 +9911,18 @@ QProgressBar::chunk{
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+  </action>
+  <action name="actionRecord_video">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/record.svg</normaloff>:/Icons/icons/record.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Record video</string>
+   </property>
+   <property name="toolTip">
+    <string>Record video of the schematic</string>
    </property>
   </action>
  </widget>

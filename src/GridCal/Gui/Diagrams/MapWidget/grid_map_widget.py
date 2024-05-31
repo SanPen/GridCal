@@ -15,11 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union, List, Tuple
+import cv2
 import numpy as np
 from PySide6.QtWidgets import QWidget, QGraphicsItem
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from collections.abc import Callable
+from PySide6.QtGui import (QImage, QPainter)
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
@@ -114,6 +116,9 @@ class GridMapWidget(MapWidget):
 
         self.startHe = he
         self.startWi = wi
+
+        # video pointer
+        self._video: Union[None, cv2.VideoWriter] = None
 
         # draw
         self.draw()
@@ -718,6 +723,60 @@ class GridMapWidget(MapWidget):
                         weight = 0.5
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+
+    def get_image(self, w: int, h: int) -> QImage:
+        """
+
+        :param w:
+        :param h:
+        :return:
+        """
+        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        image.fill(Qt.transparent)
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.diagram_scene.render(painter)
+        painter.end()
+
+        return image
+
+    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+        """
+        Save video
+        :param fname: file name
+        :param fps: frames per second
+        :returns width, height
+        """
+
+        w = self.width()
+        h = self.height()
+
+        self._video = cv2.VideoWriter(filename=fname,
+                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                      fps=fps,
+                                      frameSize=(w, h))
+
+        return w, h
+
+    def capture_video_frame(self, w: int, h: int):
+        """
+        Save video frame
+        """
+
+        qimage = self.get_image(w=w, h=h)
+
+        ptr = qimage.convertToFormat(QImage.Format.Format_RGBA8888).constBits()
+
+        frame = np.array(ptr).reshape(h, w, 4)  # Copies the data
+
+        self._video.write(frame)
+
+    def end_video_recording(self):
+        """
+
+        :return:
+        """
+        self._video.release()
 
 
 def generate_map_diagram(substations: List[Substation],
