@@ -2185,27 +2185,28 @@ class SchematicWidget(QSplitter):
                 bus.y = y[i]
             i += 1
 
-    def get_image(self, w: int, h: int) -> QImage:
+    def get_image(self) -> Tuple[QImage, int, int]:
         """
-
-        :param w:
-        :param h:
-        :return:
+        get the current picture
+        :return: QImage, width, height
         """
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
         image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
         image.fill(Qt.transparent)
         painter = QPainter(image)
         painter.setRenderHint(QPainter.Antialiasing)
-        self.diagram_scene.render(painter)
+        self.editor_graphics_view.render(painter)
         painter.end()
 
-        return image
+        return image, w, h
 
-    def take_picture(self, filename, w=1920, h=1080):
+    def take_picture(self, filename):
         """
         Save the grid to a png file
         """
-
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
@@ -2213,7 +2214,8 @@ class SchematicWidget(QSplitter):
             image.fill(Qt.transparent)
             painter = QPainter(image)
             painter.setRenderHint(QPainter.Antialiasing)
-            self.diagram_scene.render(painter)
+            # self.diagram_scene.render(painter)
+            self.editor_graphics_view.render(painter)
             image.save(filename)
             painter.end()
 
@@ -2226,7 +2228,7 @@ class SchematicWidget(QSplitter):
             svg_gen.setDescription("An SVG drawing created by GridCal")
 
             painter = QPainter(svg_gen)
-            self.diagram_scene.render(painter)
+            self.editor_graphics_view.render(painter)
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
@@ -4551,8 +4553,8 @@ class SchematicWidget(QSplitter):
         :returns width, height
         """
 
-        w = self.width()
-        h = self.height()
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
 
         self._video = cv2.VideoWriter(filename=fname,
                                       fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
@@ -4561,19 +4563,33 @@ class SchematicWidget(QSplitter):
 
         return w, h
 
-    def capture_video_frame(self, w: int, h: int):
+    def capture_video_frame(self):
         """
         Save the current state in a video frame
-        :param w: width (px)
-        :param h: height (px)
         """
 
-        qimage = self.get_image(w=w, h=h)
+        image, w, h = self.get_image()
+        # qimage = QImage(w, h, QImage.Format_RGB32)
+        # qimage.fill(Qt.transparent)
+        # painter = QPainter(qimage)
+        # painter.setRenderHint(QPainter.Antialiasing)
+        # # self.diagram_scene.render(painter)
+        # self.render(painter)
+        # painter.end()
 
-        ptr = qimage.convertToFormat(QImage.Format.Format_RGB32).constBits()
+        # image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        # image.fill(Qt.transparent)
+        # painter = QPainter(image)
+        # painter.setRenderHint(QPainter.Antialiasing)
+        # self.editor_graphics_view.render(painter)
+        # image.save("temp.png")
+        # painter.end()
 
-        frame = np.array(ptr).reshape(h, w, 4)  # Copies the data
-        cv2.imshow("export", frame[..., -1])
+        # ptr = qimage.bits()
+        ptr = image.convertToFormat(QImage.Format.Format_RGB32).constBits()
+        # image = pixmap.toImage()
+        frame = np.array(ptr).reshape(h, w, 4).astype(np.uint8)
+        cv2.imshow("export", frame)
         self._video.write(frame)
 
     def end_video_recording(self) -> None:

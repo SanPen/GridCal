@@ -319,12 +319,14 @@ class DiagramsMain(CompiledArraysMain):
     def grid_colour_function(self,
                              diagram: Union[SchematicWidget, GridMapWidget],
                              current_study: str,
-                             t_idx: Union[None, int]) -> None:
+                             t_idx: Union[None, int],
+                             allow_popups: bool = True) -> None:
         """
         Colour the schematic or the map
         :param diagram: Diagram where the plotting is made
         :param current_study: current_study name
         :param t_idx: current time step (if None, the snapshot is taken)
+        :param allow_popups: if true, messages me pop up
         """
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
@@ -373,7 +375,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -407,7 +410,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -440,7 +444,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
 
@@ -505,7 +510,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -536,7 +542,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
 
@@ -570,7 +577,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.NodalCapacityTimeSeriesDriver.tpe.value:
 
@@ -630,7 +638,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -658,7 +667,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
 
@@ -687,7 +697,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -715,7 +726,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
@@ -743,7 +755,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             pass
@@ -1235,9 +1248,7 @@ class DiagramsMain(CompiledArraysMain):
 
                     # save in factor * K
                     factor = self.ui.resolution_factor_spinBox.value()
-                    w = 1920 * factor
-                    h = 1080 * factor
-                    diagram.take_picture(filename, w, h)
+                    diagram.take_picture(filename)
 
     def record_video(self):
         """
@@ -1268,16 +1279,17 @@ class DiagramsMain(CompiledArraysMain):
                         current_study = self.ui.available_results_to_color_comboBox.currentText()
 
                         # start recording...
-                        w, h = diagram.start_video_recording(fname=filename, fps=fps)
+                        diagram.start_video_recording(fname=filename, fps=fps)
 
                         # paint and capture
                         for t_idx in range(start_idx, end_idx):
 
                             self.grid_colour_function(diagram=diagram,
                                                       current_study=current_study,
-                                                      t_idx=t_idx)
+                                                      t_idx=t_idx,
+                                                      allow_popups=False)
 
-                            diagram.capture_video_frame(w=w, h=h)
+                            diagram.capture_video_frame()
 
                             print(f"Saving frame {t_idx} / {end_idx}")
 
