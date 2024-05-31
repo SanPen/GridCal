@@ -765,7 +765,7 @@ class GridMapWidget(MapWidget):
 
         qimage = self.get_image(w=w, h=h)
 
-        ptr = qimage.convertToFormat(QImage.Format.Format_RGBA8888).constBits()
+        ptr = qimage.convertToFormat(QImage.Format.Format_RGB32).constBits()
 
         frame = np.array(ptr).reshape(h, w, 4)  # Copies the data
 

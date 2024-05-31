@@ -4564,14 +4564,16 @@ class SchematicWidget(QSplitter):
     def capture_video_frame(self, w: int, h: int):
         """
         Save the current state in a video frame
+        :param w: width (px)
+        :param h: height (px)
         """
 
         qimage = self.get_image(w=w, h=h)
 
-        ptr = qimage.convertToFormat(QImage.Format.Format_RGBA8888).constBits()
+        ptr = qimage.convertToFormat(QImage.Format.Format_RGB32).constBits()
 
         frame = np.array(ptr).reshape(h, w, 4)  # Copies the data
-
+        cv2.imshow("export", frame[..., -1])
         self._video.write(frame)
 
     def end_video_recording(self) -> None:
@@ -4579,6 +4581,7 @@ class SchematicWidget(QSplitter):
         End the video recording
         """
         self._video.release()
+        cv2.destroyAllWindows()
 
 
 def generate_schematic_diagram(buses: List[Bus],

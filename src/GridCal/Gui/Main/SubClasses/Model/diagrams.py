@@ -1279,7 +1279,7 @@ class DiagramsMain(CompiledArraysMain):
 
                             diagram.capture_video_frame(w=w, h=h)
 
-                            print(f"Saving video {t_idx} / {end_idx}")
+                            print(f"Saving frame {t_idx} / {end_idx}")
 
                         # finalize
                         diagram.end_video_recording()
