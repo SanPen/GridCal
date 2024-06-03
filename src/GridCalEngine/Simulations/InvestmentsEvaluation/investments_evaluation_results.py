@@ -388,7 +388,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 xlabel='',
                                 units=y_label)
 
-        # Exemplar old separated plots
+
         # elif result_type == ResultTypes.InvestmentsParetoPlot1:
         #     labels = self._index_names
         #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
