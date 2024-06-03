@@ -3,7 +3,7 @@ from itertools import groupby
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator, \
-    RawSwitchedShunt, RawTransformer
+    RawSwitchedShunt, RawTransformer, RawBranch, RawVscDCLine, RawTwoTerminalDCLine, RawFACTS
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 
@@ -136,7 +136,7 @@ def get_psse_transformer2w(transformer: dev.Transformer2W) -> RawTransformer:
     psse_transformer.SBASE1_2 = transformer.Sn
     psse_transformer.RATE1_1 = transformer.rate
 
-    i, j, ckt = transformer.code.split("_")
+    i, j, ckt = transformer.code.split("_", 2)
 
     psse_transformer.I = i
     psse_transformer.J = j
@@ -161,7 +161,7 @@ def get_psse_transformer3w(transformer: dev.Transformer3W) -> RawTransformer:
     psse_transformer.ANG2 = transformer.winding2.tap_phase
     psse_transformer.ANG3 = transformer.winding3.tap_phase
 
-    i, j, k, ckt = psse_transformer.code.split("_")
+    i, j, k, ckt = psse_transformer.code.split("_", 3)
 
     psse_transformer.I = i
     psse_transformer.J = j
@@ -169,6 +169,72 @@ def get_psse_transformer3w(transformer: dev.Transformer3W) -> RawTransformer:
     psse_transformer.CKT = ckt
 
     return psse_transformer
+
+
+def get_psse_branch(line: dev.Line) -> RawBranch:
+    psse_branch = RawBranch()
+
+    i, j, ckt = line.code.split("_", 2)
+
+    psse_branch.I = i
+    psse_branch.J = j
+    psse_branch.CKT = ckt
+    psse_branch.NAME = line.name
+    psse_branch.R = line.R
+    psse_branch.X = line.X
+    psse_branch.B = line.B
+    psse_branch.ST = 1 if line.active else 0
+    psse_branch.idtag = line.idtag
+    psse_branch.LEN = line.length
+
+    return psse_branch
+
+
+def get_vsc_dc_line(hvdc_line: dev.HvdcLine) -> RawVscDCLine:
+    psse_vsc_dc_line = RawVscDCLine()
+    psse_vsc_dc_line.NAME = hvdc_line.name
+    psse_vsc_dc_line.ACSET1 = hvdc_line.Vset_f
+    psse_vsc_dc_line.ACSET2 = hvdc_line.Vset_t
+
+    return psse_vsc_dc_line
+
+
+def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine) -> RawTwoTerminalDCLine:
+    psse_two_terminal_dc_line = RawTwoTerminalDCLine()
+    psse_two_terminal_dc_line.NAME = hvdc_line.name
+
+    id_tag = hvdc_line.idtag[:-2] if hvdc_line.idtag.endswith("_1") else hvdc_line.idtag
+    ipr, ipi = id_tag.split("_", 2)
+
+    psse_two_terminal_dc_line.IPR = int(ipr)
+    psse_two_terminal_dc_line.IPI = int(ipi)
+
+    psse_two_terminal_dc_line.RDC = hvdc_line.r
+    psse_two_terminal_dc_line.ANMNR = np.rad2deg(hvdc_line.min_firing_angle_f)
+    psse_two_terminal_dc_line.ANMXR = np.rad2deg(hvdc_line.max_firing_angle_f)
+    psse_two_terminal_dc_line.ANMNI = np.rad2deg(hvdc_line.min_firing_angle_t)
+    psse_two_terminal_dc_line.ANMXI = np.rad2deg(hvdc_line.max_firing_angle_t)
+
+    return psse_two_terminal_dc_line
+
+
+def get_psse_facts(upfc: dev.UPFC) -> RawFACTS:
+    psse_facts = RawFACTS()
+    psse_facts.NAME = upfc.name
+
+    id_tag = upfc.idtag[:-2] if upfc.idtag.endswith("_1") else upfc.idtag
+    i, j = id_tag.split("_", 2)
+
+    psse_facts.I = int(i)
+    psse_facts.J = int(j)
+    psse_facts.SET1 = upfc.Rs
+    psse_facts.SHMX = 1 / upfc.Xsh if upfc.Xsh > 0 else 0.0
+    psse_facts.VSET = upfc.Vsh
+    psse_facts.PDES = upfc.Pfset
+    psse_facts.QDES = upfc.Qfset
+    psse_facts.IMX = upfc.rate - 1e-20
+
+    return psse_facts
 
 
 def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
@@ -191,7 +257,16 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
 
     psse_circuit.generators = [get_psse_generator(generator) for generator in grid.generators]
 
+    # TODO: Decide whether to convert Transformer2W into branches or a transformer.
     psse_circuit.transformers = [get_psse_transformer2w(transformer) for transformer in grid.transformers2w]
     psse_circuit.transformers.extend(get_psse_transformer3w(transformer) for transformer in grid.transformers3w)
+
+    psse_circuit.branches = [get_psse_branch(line) for line in grid.lines]
+
+    # TODO: Decide whether to convert hvdc_lines into vsc_dc_lines or two_terminal_dc_lines.
+    # psse_circuit.vsc_dc_lines = [get_vsc_dc_line(hvdc_line) for hvdc_line in grid.hvdc_lines]
+    psse_circuit.two_terminal_dc_lines = [get_psse_two_terminal_dc_line(hvdc_line) for hvdc_line in grid.hvdc_lines]
+
+    psse_circuit.facts = [get_psse_facts(upfc_device) for upfc_device in grid.upfc_devices]
 
     return psse_circuit
