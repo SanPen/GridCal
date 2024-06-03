@@ -178,7 +178,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
     def calculate_tech_score_magnitudes(self):
         """
-        Calculate the maximum magnitude of overload score and the magnitudes that appear most in losses and voltage scores
+        Calculate the max magnitude of overload score and the magnitudes that appear most in losses and voltage scores
         """
         if self.overload_mag:
             self.overload_max_magnitude = max(self.overload_mag)
