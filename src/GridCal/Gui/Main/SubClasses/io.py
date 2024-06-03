@@ -23,7 +23,7 @@ from PySide6 import QtWidgets
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.multi_circuit import MultiCircuit, get_system_user
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -34,10 +34,11 @@ from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
-from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
+from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 
 
 class IoMain(ConfigurationMain):
@@ -482,62 +483,68 @@ class IoMain(ConfigurationMain):
         """
         Save the circuit case to a file
         """
-        # declare the allowed file types
-        files_types = ("GridCal zip (*.gridcal);;"
-                       "GridCal HDF5 (*.gch5);;"
-                       "Excel (*.xlsx);;"
-                       "CGMES (*.zip);;"
-                       "CIM (*.xml);;"
-                       "Electrical Json V3 (*.ejson3);;"
-                       "Rawx (*.rawx);;"
-                       "Sqlite (*.sqlite);;")
 
-        if NEWTON_PA_AVAILABLE:
-            files_types += "Newton (*.newton);;"
+        if self.server_driver.is_running():
+            instruction = RemoteInstruction(operation=SimulationTypes.NoSim)
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
 
-        if PGM_AVAILABLE:
-            files_types += "PGM Json (*.pgm);;"
-
-        # call dialog to select the file
-        if self.project_directory is None:
-            self.project_directory = ''
-
-        # gather comments
-        self.circuit.comments = self.ui.comments_textEdit.toPlainText()
-
-        if self.file_name == '':
-            # if the global file_name is empty, ask where to save
-            fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
-
-            filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
-
-            if filename != '':
-
-                # if the user did not enter the extension, add it automatically
-                name, file_extension = os.path.splitext(filename)
-
-                extension = dict()
-                extension['Excel (*.xlsx)'] = '.xlsx'
-                extension['CIM (*.xml)'] = '.xml'
-                extension['CGMES (*.zip)'] = '.zip'
-                extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
-                extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
-                extension['GridCal zip (*.gridcal)'] = '.gridcal'
-                extension['PSSe rawx (*.rawx)'] = '.rawx'
-                extension['GridCal HDF5 (*.gch5)'] = '.gch5'
-                extension['Sqlite (*.sqlite)'] = '.sqlite'
-                extension['Newton (*.newton)'] = '.newton'
-                extension['PGM Json (*.pgm)'] = '.pgm'
-
-                if file_extension == '':
-                    filename = name + extension[type_selected]
-
-                # we were able to compose the file correctly, now save it
-                self.file_name = filename
-                self.save_file_now(self.file_name, type_selected=type_selected)
         else:
-            # save directly
-            self.save_file_now(self.file_name)
+            # declare the allowed file types
+            files_types = ("GridCal zip (*.gridcal);;"
+                           "GridCal HDF5 (*.gch5);;"
+                           "Excel (*.xlsx);;"
+                           "CGMES (*.zip);;"
+                           "CIM (*.xml);;"
+                           "Electrical Json V3 (*.ejson3);;"
+                           "Rawx (*.rawx);;"
+                           "Sqlite (*.sqlite);;")
+
+            if NEWTON_PA_AVAILABLE:
+                files_types += "Newton (*.newton);;"
+
+            if PGM_AVAILABLE:
+                files_types += "PGM Json (*.pgm);;"
+
+            # call dialog to select the file
+            if self.project_directory is None:
+                self.project_directory = ''
+
+            # gather comments
+            self.circuit.comments = self.ui.comments_textEdit.toPlainText()
+
+            if self.file_name == '':
+                # if the global file_name is empty, ask where to save
+                fname = os.path.join(self.project_directory, self.ui.grid_name_line_edit.text())
+
+                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
+
+                if filename != '':
+
+                    # if the user did not enter the extension, add it automatically
+                    name, file_extension = os.path.splitext(filename)
+
+                    extension = dict()
+                    extension['Excel (*.xlsx)'] = '.xlsx'
+                    extension['CIM (*.xml)'] = '.xml'
+                    extension['CGMES (*.zip)'] = '.zip'
+                    extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
+                    extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
+                    extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                    extension['PSSe rawx (*.rawx)'] = '.rawx'
+                    extension['GridCal HDF5 (*.gch5)'] = '.gch5'
+                    extension['Sqlite (*.sqlite)'] = '.sqlite'
+                    extension['Newton (*.newton)'] = '.newton'
+                    extension['PGM Json (*.pgm)'] = '.pgm'
+
+                    if file_extension == '':
+                        filename = name + extension[type_selected]
+
+                    # we were able to compose the file correctly, now save it
+                    self.file_name = filename
+                    self.save_file_now(self.file_name, type_selected=type_selected)
+            else:
+                # save directly
+                self.save_file_now(self.file_name)
 
     def get_file_save_options(self) -> filedrv.FileSavingOptions:
         """

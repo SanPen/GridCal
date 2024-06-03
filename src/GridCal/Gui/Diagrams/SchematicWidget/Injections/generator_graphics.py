@@ -30,6 +30,7 @@ from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
+from GridCal.Gui.GuiFunctions import add_menu_entry
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -344,53 +345,65 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         menu = QMenu()
         menu.addSection("Generator")
 
-        pe = menu.addAction('Active')
-        pe.setCheckable(True)
-        pe.setChecked(self.api_object.active)
-        pe.triggered.connect(self.enable_disable_toggle)
+        add_menu_entry(menu=menu,
+                       text="Active",
+                       icon_path="",
+                       function_ptr=self.enable_disable_toggle,
+                       checkeable=True,
+                       checked_value=self.api_object.active)
 
-        pc = menu.addAction('Voltage control')
-        pc.setCheckable(True)
-        pc.setChecked(self.api_object.is_controlled)
-        pc.triggered.connect(self.enable_disable_control_toggle)
+        add_menu_entry(menu=menu,
+                       text="Voltage control",
+                       icon_path="",
+                       function_ptr=self.enable_disable_control_toggle,
+                       checkeable=True,
+                       checked_value=self.api_object.is_controlled)
 
-        pa = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-        pa.setIcon(plot_icon)
-        pa.triggered.connect(self.plot)
+        add_menu_entry(menu=menu,
+                       text="Set regulation bus",
+                       icon_path="",
+                       function_ptr=self.set_regulation_bus)
 
-        pv = menu.addAction('Solar photovoltaic wizard')
-        pv_icon = QIcon()
-        pv_icon.addPixmap(QPixmap(":/Icons/icons/solar_power.svg"))
-        pv.setIcon(pv_icon)
-        pv.triggered.connect(self.solar_pv_wizard)
-
-        wp = menu.addAction('Wind farm wizard')
-        wp_icon = QIcon()
-        wp_icon.addPixmap(QPixmap(":/Icons/icons/wind_power.svg"))
-        wp.setIcon(wp_icon)
-        wp.triggered.connect(self.wind_farm_wizard)
+        add_menu_entry(menu=menu,
+                       text="Set regulation cn",
+                       icon_path="",
+                       function_ptr=self.set_regulation_cn)
 
         menu.addSeparator()
 
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
+        add_menu_entry(menu=menu,
+                       text="Plot profiles",
+                       icon_path=":/Icons/icons/plot.svg",
+                       function_ptr=self.plot)
 
-        cb = menu.addAction('Convert to battery')
-        batt_icon = QIcon()
-        batt_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
-        cb.setIcon(batt_icon)
-        cb.triggered.connect(self.to_battery)
+        menu.addSeparator()
 
-        rabf = menu.addAction('Change bus')
-        move_bus_icon = QIcon()
-        move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-        rabf.setIcon(move_bus_icon)
-        rabf.triggered.connect(self.change_bus)
+        add_menu_entry(menu=menu,
+                       text="Solar photovoltaic wizard",
+                       icon_path=":/Icons/icons/solar_power.svg",
+                       function_ptr=self.solar_pv_wizard)
+
+        add_menu_entry(menu=menu,
+                       text="Wind farm wizard",
+                       icon_path=":/Icons/icons/wind_power.svg",
+                       function_ptr=self.wind_farm_wizard)
+
+        menu.addSeparator()
+
+        add_menu_entry(menu=menu,
+                       text="Delete",
+                       icon_path=":/Icons/icons/delete3.svg",
+                       function_ptr=self.remove)
+
+        add_menu_entry(menu=menu,
+                       text="Convert to battery",
+                       icon_path=":/Icons/icons/add_batt.svg",
+                       function_ptr=self.to_battery)
+
+        add_menu_entry(menu=menu,
+                       text="Change bus",
+                       icon_path=":/Icons/icons/move_bus.svg",
+                       function_ptr=self.change_bus)
 
         menu.exec_(event.screenPos())
 
@@ -428,6 +441,34 @@ class GeneratorGraphicItem(InjectionTemplateGraphicItem):
         """
         if self.api_object is not None:
             self.api_object.is_controlled = not self.api_object.is_controlled
+
+    def set_regulation_bus(self):
+        """
+        Set regulation bus
+        :return:
+        """
+        self.editor.set_generator_control_bus(generator_graphics=self)
+
+    def set_regulation_cn(self):
+        """
+        Set regulation bus
+        :return:
+        """
+        self.editor.set_generator_control_cn(generator_graphics=self)
+
+    def clear_regulation_bus(self):
+        """
+
+        :return:
+        """
+        self.api_object.control_bus = None
+
+    def clear_regulation_cn(self):
+        """
+
+        :return:
+        """
+        self.api_object.control_cn = None
 
     def set_enable(self, val=True):
         """

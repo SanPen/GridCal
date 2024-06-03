@@ -22,13 +22,14 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
+from GridCal.Gui.Diagrams.MapWidget.Schema.node_template import NodeTemplate
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
     from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
 
 
-class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
+class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -54,7 +55,10 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem):
         :param lon:
         :param r:
         """
-        super().__init__(parent=parent)
+        # super().__init__(parent=parent)
+        NodeTemplate.__init__(self, lat=lat, lon=lon)
+        QtWidgets.QGraphicsEllipseItem.__init__(self, parent)
+
         parent.register_voltage_level(vl=self)
 
         self.lat = lat

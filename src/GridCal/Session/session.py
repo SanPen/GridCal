@@ -683,7 +683,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.InvestmestsEvaluation_run)
+        drv, results = self.get_driver_results(SimulationTypes.InvestmentsEvaluation_run)
         return results
 
     @property

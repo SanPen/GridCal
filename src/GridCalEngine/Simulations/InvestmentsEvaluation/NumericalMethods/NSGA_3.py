@@ -39,6 +39,23 @@ class UniformBinarySampling(Sampling):
         return ones_into_array
 
 
+class SkewedBinarySampling(Sampling):
+    def _do(self, problem, n_samples, **kwargs):
+        max_ones = int(problem.n_var * 0.1)
+        num_ones = (np.linspace(0, 1, n_samples) ** 3 * max_ones).astype(int)
+        num_ones[-1] = max_ones
+        ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
+        # num_ones = np.logspace(0, problem.n_var, n_samples, dtype=int)
+        # num_ones[-1] = problem.n_var
+        # ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
+        # Fill ones_into_array randomly
+        for i, num in enumerate(num_ones):
+            ones_into_array[i, :num] = 1
+            np.random.shuffle(ones_into_array[i])
+
+        return ones_into_array
+
+
 class BitflipMutation(Mutation):
 
     def _do(self, problem, x, **kwargs):
@@ -82,7 +99,7 @@ class GridNsga(ElementwiseProblem):
 def NSGA_3(obj_func,
            n_partitions: int = 100,
            n_var: int = 1,
-           n_obj=2,
+           n_obj: int = 2,
            max_evals: int = 30,
            pop_size: int = 1,
            crossover_prob: float = 0.05,
@@ -106,7 +123,7 @@ def NSGA_3(obj_func,
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=UniformBinarySampling(),
+                      sampling=SkewedBinarySampling(),  #UniformBinarySampling() for ideal grid
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                       mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4, repair=RoundingRepair()),
                       # selection=TournamentSelection(pressure=2),
@@ -120,4 +137,7 @@ def NSGA_3(obj_func,
                    verbose=True,
                    save_history=False)
 
+    import pandas as pd
+    dff = pd.DataFrame(res.F)
+    dff.to_excel('nsga.xlsx')
     return res.X, res.F

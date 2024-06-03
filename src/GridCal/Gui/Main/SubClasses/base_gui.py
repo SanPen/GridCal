@@ -226,6 +226,8 @@ class BaseMainGui(QMainWindow):
         self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
         self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
+        self.ui.grid_name_line_edit.textChanged.connect(self.change_circuit_name)
+
     def LOCK(self, val: bool = True) -> None:
         """
         Lock the interface to prevent new simulation launches
@@ -411,7 +413,8 @@ class BaseMainGui(QMainWindow):
                        self.delete_and_reduce_driver,
                        self.export_all_thread_object,
                        self.find_node_groups_driver,
-                       self.file_sync_thread]
+                       self.file_sync_thread,
+                       ]
         return all_threads
 
     def get_all_threads(self) -> List[GcThread]:
@@ -732,6 +735,13 @@ class BaseMainGui(QMainWindow):
         self.circuit.change_base(Sbase_new)
 
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
+
+    def change_circuit_name(self):
+        """
+
+        :return:
+        """
+        self.circuit.name = self.ui.grid_name_line_edit.text().strip()
 
     def add_default_catalogue(self) -> None:
         """

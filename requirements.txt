@@ -20,14 +20,16 @@ pyproj
 pyarrow >= 15
 fastparquet
 darkdetect
-pyqtdarktheme
+# pyqtdarktheme
 # qdarktheme
 nptyping
 windpowerlib
 pvlib
-hyperopt
 requests
 pytest >= 7.2.0
 rdflib
 pymoo
+fastapi
+uvicorn
+websockets
 setuptools

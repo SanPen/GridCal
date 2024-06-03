@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Simulations as sim
 from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes
@@ -18,8 +19,12 @@ if __name__ == "__main__":
 
     pf_options = sim.PowerFlowOptions()
 
-    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
-                                               max_eval=4 * len(grid.investments),
+    # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
+    #                                            max_eval=4 * len(grid.investments),
+    #                                            pf_options=pf_options)
+
+    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Random,
+                                               max_eval=2 * len(grid.investments),
                                                pf_options=pf_options)
 
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)

@@ -201,27 +201,30 @@ class TransformerEditor(QDialog):
 
         self.setWindowTitle('Transformer editor')
 
-    def filter_valid_templates(self, templates: List[TransformerType]):
+    def filter_valid_templates(self, templates: List[TransformerType], pu_range=0.1) -> List[TransformerType]:
         """
         Filter templates
-        :param templates:
-        :return:
+        :param templates: Complete list of templates
+        :param pu_range: range in per unit voltage for matching templates
+        :return: List[TransformerType]
         """
         if templates is None:
-            return None
+            return list()
 
         lst = list()
 
         Vf = self.transformer_obj.bus_from.Vnom
         Vt = self.transformer_obj.bus_to.Vnom
+        upper = 1.0 + pu_range
+        lower = 1.0 - pu_range
 
         for tpe in templates:
 
-            HV2 = tpe.HV * 1.01
-            HV1 = tpe.HV * 0.99
+            HV2 = tpe.HV * upper
+            HV1 = tpe.HV * lower
 
-            LV2 = tpe.LV * 1.01
-            LV1 = tpe.LV * 0.99
+            LV2 = tpe.LV * upper
+            LV1 = tpe.LV * lower
 
             # check that the voltages are within a 1% tolerance
             if (HV1 < Vf < HV2) or (LV1 < Vf < LV2):
