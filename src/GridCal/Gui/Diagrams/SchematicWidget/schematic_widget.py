@@ -4563,7 +4563,7 @@ class SchematicWidget(QSplitter):
 
         return w, h
 
-    def capture_video_frame(self):
+    def capture_video_frame(self) -> None:
         """
         Save the current state in a video frame
         """
@@ -4587,7 +4587,6 @@ class SchematicWidget(QSplitter):
 
         # ptr = qimage.bits()
         ptr = image.convertToFormat(QImage.Format.Format_RGB32).constBits()
-        # image = pixmap.toImage()
         frame = np.array(ptr).reshape(h, w, 4).astype(np.uint8)
         cv2.imshow("export", frame)
         self._video.write(frame)
