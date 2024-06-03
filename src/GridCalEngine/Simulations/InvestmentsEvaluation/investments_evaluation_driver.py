@@ -93,7 +93,7 @@ class InvestmentScores:
         """
         Constructor
         """
-        self.capex_score: float = 0
+        self.capex_score: float = 0.0
         self.opex_score: float = 0.0
         self.losses_score: float = 0.0
         self.overload_score: float = 0.0
