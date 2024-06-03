@@ -272,7 +272,7 @@ class RawCounter:
         n = grid.get_bus_number()
         self.bus_int_dict = {bus: i + 1 for i, bus in enumerate(grid.get_buses())}
         self.bus_dev_count_dict = {bus: 0 for bus in grid.get_buses()}
-        self.ckt_counter = lil_matrix((n, n), dtype=int)
+        self.ckt_counter = lil_matrix((n+1, n+1), dtype=int)
 
     def get_id(self, bus: dev.Bus) -> int:
         """
@@ -308,13 +308,18 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     psse_circuit = PsseCircuit()
 
     # create dictionaires
-    area_dict = {area: i + 1 for i, area in enumerate(grid.areas)}
-    zones_dict = {zone: i + 1 for i, zone in enumerate(grid.zones)}
+    area_dict: Dict[dev.Area, int] = dict()
+    zones_dict: Dict[dev.Zone, int] = dict()
 
     counter = RawCounter(grid=grid)
 
-    psse_circuit.areas = list(area_dict.values())
-    psse_circuit.zones = list(zones_dict.values())
+    for i, area in enumerate(grid.areas):
+        psse_circuit.areas.append(get_area(area=area, i=i+1))
+        area_dict[area] = i + 1
+
+    for i, zone in enumerate(grid.zones):
+        psse_circuit.zones.append(get_zone(zone=zone, i=i+1))
+        zones_dict[zone] = i + 1
 
     for bus in grid.buses:
         psse_circuit.buses.append(get_psse_bus(bus, area_dict, zones_dict))
