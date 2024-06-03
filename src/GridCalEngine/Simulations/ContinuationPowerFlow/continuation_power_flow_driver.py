@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
@@ -81,14 +81,14 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         """
         self.report_text('Running continuation power flow (lambda:' + "{0:.2f}".format(lmbda) + ')...')
 
-    def run(self):
+    def run_at(self, t_idx: Union[int, None] = None) -> ContinuationPowerFlowResults:
         """
         run the voltage collapse simulation
         @return:
         """
         self.tic()
         nc = compile_numerical_circuit_at(circuit=self.grid,
-                                          t_idx=None,
+                                          t_idx=t_idx,
                                           apply_temperature=self.pf_options.apply_temperature_correction,
                                           branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                           opf_results=self.opf_results)
@@ -161,3 +161,11 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                                islands[i].original_branch_idx)
 
         self.toc()
+        return self.results
+
+    def run(self):
+        """
+        run the voltage collapse simulation
+        @return:
+        """
+        self.run_at(t_idx=None)

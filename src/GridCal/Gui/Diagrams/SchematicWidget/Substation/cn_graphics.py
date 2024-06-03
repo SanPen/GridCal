@@ -379,11 +379,9 @@ class CnGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
 
         if self.api_object.device_type == DeviceType.ConnectivityNodeDevice:
-            dictionary_of_lists = {DeviceType.AreaDevice.value: self.editor.circuit.get_areas(),
-                                   DeviceType.ZoneDevice.value: self.editor.circuit.get_zones(),
-                                   DeviceType.SubstationDevice.value: self.editor.circuit.get_substations(),
-                                   DeviceType.VoltageLevelDevice.value: self.editor.circuit.get_voltage_levels(),
-                                   DeviceType.CountryDevice.value: self.editor.circuit.get_countries()}
+
+            dictionary_of_lists = {DeviceType.BusDevice: self.editor.circuit.get_buses(),
+                                   DeviceType.VoltageLevelDevice: self.editor.circuit.get_voltage_levels(), }
 
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists=dictionary_of_lists)

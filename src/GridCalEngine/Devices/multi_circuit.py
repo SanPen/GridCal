@@ -362,6 +362,7 @@ class MultiCircuit:
                 dev.BusBar(),
                 dev.ConnectivityNode(),
                 dev.Bus(),
+                dev.Switch()
             ],
             "Injections": [
                 dev.Generator(),
@@ -508,19 +509,19 @@ class MultiCircuit:
         """
         self.time_profile = pd.to_datetime(arr, unit='s')
 
-    def get_snapshot_time_unix(self) -> int:
+    def get_snapshot_time_unix(self) -> float:
         """
         Get the unix representation of the snapshot time
-        :return: int
+        :return: float
         """
-        return int(self.snapshot_time.timestamp())
+        return self.snapshot_time.timestamp()
 
-    def set_snapshot_time_unix(self, val: int) -> None:
+    def set_snapshot_time_unix(self, val: float) -> None:
         """
         Convert unix datetime to python datetime
         :param val: seconds since 1970-01-01T00:00:00
         """
-        self.snapshot_time = pd.to_datetime(val * 1e9)
+        self.snapshot_time = dateslib.datetime.fromtimestamp(val)
 
     def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
         """
@@ -1114,6 +1115,13 @@ class MultiCircuit:
         :return:
         """
         return len(self.hvdc_lines)
+
+    def get_vsc_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self.vsc_devices)
 
     def get_hvdc_names(self) -> StrVec:
         """
@@ -2276,185 +2284,183 @@ class MultiCircuit:
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
-    def delete_elements_by_type(self, obj: ALL_DEV_TYPES):
+    def delete_elements_by_type(self, obj: ALL_DEV_TYPES) -> None:
         """
         Get set of elements and their parent nodes
         :param obj: device object to delete
-        :return: List of elements, it raises an exception if the elements are unknown
+        :return: Nothing
         """
 
-        element_type = obj.device_type
-
-        if element_type == DeviceType.LoadDevice:
+        if obj.device_type == DeviceType.LoadDevice:
             self.loads.remove(obj)
 
-        elif element_type == DeviceType.StaticGeneratorDevice:
+        elif obj.device_type == DeviceType.StaticGeneratorDevice:
             self.static_generators.remove(obj)
 
-        elif element_type == DeviceType.GeneratorDevice:
+        elif obj.device_type == DeviceType.GeneratorDevice:
             self.generators.remove(obj)
 
-        elif element_type == DeviceType.BatteryDevice:
+        elif obj.device_type == DeviceType.BatteryDevice:
             self.batteries.remove(obj)
 
-        elif element_type == DeviceType.ShuntDevice:
+        elif obj.device_type == DeviceType.ShuntDevice:
             self.shunts.remove(obj)
 
-        elif element_type == DeviceType.ExternalGridDevice:
+        elif obj.device_type == DeviceType.ExternalGridDevice:
             self.external_grids.remove(obj)
 
-        elif element_type == DeviceType.CurrentInjectionDevice:
+        elif obj.device_type == DeviceType.CurrentInjectionDevice:
             self.current_injections.remove(obj)
 
-        elif element_type == DeviceType.ControllableShuntDevice:
+        elif obj.device_type == DeviceType.ControllableShuntDevice:
             self.controllable_shunts.remove(obj)
 
-        elif element_type == DeviceType.LineDevice:
-            return self.delete_line(obj)
+        elif obj.device_type == DeviceType.LineDevice:
+            self.delete_line(obj)
 
-        elif element_type == DeviceType.Transformer2WDevice:
-            return self.delete_transformer2w(obj)
+        elif obj.device_type == DeviceType.Transformer2WDevice:
+            self.delete_transformer2w(obj)
 
-        elif element_type == DeviceType.Transformer3WDevice:
-            return self.delete_transformer3w(obj)
+        elif obj.device_type == DeviceType.Transformer3WDevice:
+            self.delete_transformer3w(obj)
 
-        elif element_type == DeviceType.WindingDevice:
-            return self.delete_winding(obj)
+        elif obj.device_type == DeviceType.WindingDevice:
+            self.delete_winding(obj)
 
-        elif element_type == DeviceType.SeriesReactanceDevice:
-            return self.delete_series_reactance(obj)
+        elif obj.device_type == DeviceType.SeriesReactanceDevice:
+            self.delete_series_reactance(obj)
 
-        elif element_type == DeviceType.HVDCLineDevice:
-            return self.delete_hvdc_line(obj)
+        elif obj.device_type == DeviceType.HVDCLineDevice:
+            self.delete_hvdc_line(obj)
 
-        elif element_type == DeviceType.UpfcDevice:
-            return self.delete_upfc_converter(obj)
+        elif obj.device_type == DeviceType.UpfcDevice:
+            self.delete_upfc_converter(obj)
 
-        elif element_type == DeviceType.VscDevice:
-            return self.delete_vsc_converter(obj)
+        elif obj.device_type == DeviceType.VscDevice:
+            self.delete_vsc_converter(obj)
 
-        elif element_type == DeviceType.BusDevice:
-            return self.delete_bus(obj, delete_associated=True)
+        elif obj.device_type == DeviceType.BusDevice:
+            self.delete_bus(obj, delete_associated=True)
 
-        elif element_type == DeviceType.ConnectivityNodeDevice:
-            return self.delete_connectivity_node(obj)
+        elif obj.device_type == DeviceType.ConnectivityNodeDevice:
+            self.delete_connectivity_node(obj)
 
-        elif element_type == DeviceType.BranchGroupDevice:
-            return self.delete_branch_group(obj)
+        elif obj.device_type == DeviceType.BranchGroupDevice:
+            self.delete_branch_group(obj)
 
-        elif element_type == DeviceType.BusBarDevice:
-            return self.delete_bus_bar(obj)
+        elif obj.device_type == DeviceType.BusBarDevice:
+            self.delete_bus_bar(obj)
 
-        elif element_type == DeviceType.OverheadLineTypeDevice:
-            return self.delete_overhead_line(obj)
+        elif obj.device_type == DeviceType.OverheadLineTypeDevice:
+            self.delete_overhead_line(obj)
 
-        elif element_type == DeviceType.TransformerTypeDevice:
-            return self.delete_transformer_type(obj)
+        elif obj.device_type == DeviceType.TransformerTypeDevice:
+            self.delete_transformer_type(obj)
 
-        elif element_type == DeviceType.UnderGroundLineDevice:
-            return self.delete_underground_line(obj)
+        elif obj.device_type == DeviceType.UnderGroundLineDevice:
+            self.delete_underground_line(obj)
 
-        elif element_type == DeviceType.SequenceLineDevice:
-            return self.delete_sequence_line(obj)
+        elif obj.device_type == DeviceType.SequenceLineDevice:
+            self.delete_sequence_line(obj)
 
-        elif element_type == DeviceType.WireDevice:
-            return self.delete_wire(obj)
+        elif obj.device_type == DeviceType.WireDevice:
+            self.delete_wire(obj)
 
-        elif element_type == DeviceType.DCLineDevice:
-            return self.delete_dc_line(obj)
+        elif obj.device_type == DeviceType.DCLineDevice:
+            self.delete_dc_line(obj)
 
-        elif element_type == DeviceType.SubstationDevice:
-            return self.delete_substation(obj)
+        elif obj.device_type == DeviceType.SubstationDevice:
+            self.delete_substation(obj)
 
-        elif element_type == DeviceType.VoltageLevelDevice:
-            return self.delete_voltage_level(obj)
+        elif obj.device_type == DeviceType.VoltageLevelDevice:
+            self.delete_voltage_level(obj)
 
-        elif element_type == DeviceType.AreaDevice:
-            return self.delete_area(obj)
+        elif obj.device_type == DeviceType.AreaDevice:
+            self.delete_area(obj)
 
-        elif element_type == DeviceType.ZoneDevice:
-            return self.delete_zone(obj)
+        elif obj.device_type == DeviceType.ZoneDevice:
+            self.delete_zone(obj)
 
-        elif element_type == DeviceType.CountryDevice:
-            return self.delete_country(obj)
+        elif obj.device_type == DeviceType.CountryDevice:
+            self.delete_country(obj)
 
-        elif element_type == DeviceType.CommunityDevice:
-            return self.delete_community(obj)
+        elif obj.device_type == DeviceType.CommunityDevice:
+            self.delete_community(obj)
 
-        elif element_type == DeviceType.RegionDevice:
-            return self.delete_region(obj)
+        elif obj.device_type == DeviceType.RegionDevice:
+            self.delete_region(obj)
 
-        elif element_type == DeviceType.MunicipalityDevice:
-            return self.delete_municipality(obj)
+        elif obj.device_type == DeviceType.MunicipalityDevice:
+            self.delete_municipality(obj)
 
-        elif element_type == DeviceType.ContingencyDevice:
-            return self.delete_contingency(obj)
+        elif obj.device_type == DeviceType.ContingencyDevice:
+            self.delete_contingency(obj)
 
-        elif element_type == DeviceType.ContingencyGroupDevice:
-            return self.delete_contingency_group(obj)
+        elif obj.device_type == DeviceType.ContingencyGroupDevice:
+            self.delete_contingency_group(obj)
 
-        elif element_type == DeviceType.Technology:
-            return self.delete_technology(obj)
+        elif obj.device_type == DeviceType.Technology:
+            self.delete_technology(obj)
 
-        elif element_type == DeviceType.InvestmentDevice:
-            return self.delete_investment(obj)
+        elif obj.device_type == DeviceType.InvestmentDevice:
+            self.delete_investment(obj)
 
-        elif element_type == DeviceType.InvestmentsGroupDevice:
-            return self.delete_investment_groups(obj)
+        elif obj.device_type == DeviceType.InvestmentsGroupDevice:
+            self.delete_investment_groups(obj)
 
-        elif element_type == DeviceType.FuelDevice:
-            return self.delete_fuel(obj)
+        elif obj.device_type == DeviceType.FuelDevice:
+            self.delete_fuel(obj)
 
-        elif element_type == DeviceType.EmissionGasDevice:
-            return self.delete_emission_gas(obj)
+        elif obj.device_type == DeviceType.EmissionGasDevice:
+            self.delete_emission_gas(obj)
 
-        elif element_type == DeviceType.GeneratorTechnologyAssociation:
-            return self.delete_generator_technology(obj)
+        elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
+            self.delete_generator_technology(obj)
 
-        elif element_type == DeviceType.GeneratorFuelAssociation:
-            return self.delete_generator_fuel(obj)
+        elif obj.device_type == DeviceType.GeneratorFuelAssociation:
+            self.delete_generator_fuel(obj)
 
-        elif element_type == DeviceType.GeneratorEmissionAssociation:
-            return self.delete_generator_emission(obj)
+        elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
+            self.delete_generator_emission(obj)
 
-        elif element_type == DeviceType.FluidNodeDevice:
-            return self.delete_fluid_node(obj)
+        elif obj.device_type == DeviceType.FluidNodeDevice:
+            self.delete_fluid_node(obj)
 
-        elif element_type == DeviceType.FluidTurbineDevice:
-            return self.delete_fluid_turbine(obj)
+        elif obj.device_type == DeviceType.FluidTurbineDevice:
+            self.delete_fluid_turbine(obj)
 
-        elif element_type == DeviceType.FluidP2XDevice:
-            return self.delete_fluid_p2x(obj)
+        elif obj.device_type == DeviceType.FluidP2XDevice:
+            self.delete_fluid_p2x(obj)
 
-        elif element_type == DeviceType.FluidPumpDevice:
-            return self.delete_fluid_pump(obj)
+        elif obj.device_type == DeviceType.FluidPumpDevice:
+            self.delete_fluid_pump(obj)
 
-        elif element_type == DeviceType.FluidPathDevice:
-            return self.delete_fluid_path(obj)
+        elif obj.device_type == DeviceType.FluidPathDevice:
+            self.delete_fluid_path(obj)
 
-        elif element_type == DeviceType.PiMeasurementDevice:
-            return self.delete_pi_measurement(obj)
+        elif obj.device_type == DeviceType.PiMeasurementDevice:
+            self.delete_pi_measurement(obj)
 
-        elif element_type == DeviceType.QiMeasurementDevice:
-            return self.delete_qi_measurement(obj)
+        elif obj.device_type == DeviceType.QiMeasurementDevice:
+            self.delete_qi_measurement(obj)
 
-        elif element_type == DeviceType.PfMeasurementDevice:
-            return self.delete_pf_measurement(obj)
+        elif obj.device_type == DeviceType.PfMeasurementDevice:
+            self.delete_pf_measurement(obj)
 
-        elif element_type == DeviceType.QfMeasurementDevice:
-            return self.delete_qf_measurement(obj)
+        elif obj.device_type == DeviceType.QfMeasurementDevice:
+            self.delete_qf_measurement(obj)
 
-        elif element_type == DeviceType.VmMeasurementDevice:
-            return self.delete_vm_measurement(obj)
+        elif obj.device_type == DeviceType.VmMeasurementDevice:
+            self.delete_vm_measurement(obj)
 
-        elif element_type == DeviceType.IfMeasurementDevice:
-            return self.delete_if_measurement(obj)
+        elif obj.device_type == DeviceType.IfMeasurementDevice:
+            self.delete_if_measurement(obj)
 
-        elif element_type == DeviceType.ModellingAuthority:
-            return self.delete_modelling_authority(obj)
+        elif obj.device_type == DeviceType.ModellingAuthority:
+            self.delete_modelling_authority(obj)
 
         else:
-            raise Exception('Element type not understood ' + str(element_type))
+            raise Exception('Element type not understood ' + str(obj.device_type))
 
     def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
         """
@@ -2470,8 +2476,7 @@ class MultiCircuit:
 
         return data
 
-    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[
-        Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[str, Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -2941,7 +2946,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.windings.append(obj)
 
-    def add_transformer3w(self, obj: dev.Transformer3W):
+    def add_transformer3w(self, obj: dev.Transformer3W, add_middle_bus: bool = True):
         """
         Add a transformer object
         :param obj: Transformer3W instance
@@ -2950,7 +2955,8 @@ class MultiCircuit:
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
         self.transformers3w.append(obj)
-        self.add_bus(obj.bus0)  # add the middle transformer
+        if add_middle_bus:
+            self.add_bus(obj.bus0)  # add the middle transformer
         self.add_winding(obj.winding1)
         self.add_winding(obj.winding2)
         self.add_winding(obj.winding3)
@@ -3503,15 +3509,17 @@ class MultiCircuit:
         """
         return len(self.bus_bars)
 
-    def add_bus_bar(self, obj: dev.BusBar):
+    def add_bus_bar(self, obj: dev.BusBar, add_cn: bool = True):
         """
         Add Substation
         :param obj: BusBar object
+        :param add_cn: Add the internal CN of the BusBar?
         """
         self.bus_bars.append(obj)
 
         # add the internal connectivity node
-        self.add_connectivity_node(obj.cn)
+        if add_cn:
+            self.add_connectivity_node(obj.cn)
 
     def delete_bus_bar(self, obj: dev.BusBar):
         """
@@ -3582,12 +3590,16 @@ class MultiCircuit:
         """
         self.contingency_groups.append(obj)
 
-    def delete_contingency_group(self, obj):
+    def delete_contingency_group(self, obj: dev.ContingencyGroup):
         """
-        Delete zone
-        :param obj: index
+        Delete contingency group
+        :param obj: ContingencyGroup
         """
         self.contingency_groups.remove(obj)
+
+        to_del = [con for con in self.contingencies if con.group == obj]
+        for con in to_del:
+            self.delete_contingency(con)
 
     def get_contingency_group_names(self) -> List[str]:
         """
@@ -3640,12 +3652,16 @@ class MultiCircuit:
         """
         self.investments_groups.append(obj)
 
-    def delete_investment_groups(self, obj):
+    def delete_investment_groups(self, obj: dev.InvestmentsGroup):
         """
         Delete zone
         :param obj: index
         """
         self.investments_groups.remove(obj)
+
+        to_del = [invst for invst in self.investments if invst.group == obj]
+        for invst in to_del:
+            self.delete_investment(invst)
 
     def add_investment(self, obj: dev.Investment):
         """
@@ -3654,7 +3670,7 @@ class MultiCircuit:
         """
         self.investments.append(obj)
 
-    def delete_investment(self, obj):
+    def delete_investment(self, obj: dev.Investment):
         """
         Delete zone
         :param obj: index
@@ -5162,7 +5178,8 @@ class MultiCircuit:
 
         return groups
 
-    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+    def get_injection_devices_grouped_by_cn(self) -> Dict[
+        dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
         :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
@@ -6082,16 +6099,22 @@ class MultiCircuit:
 
     def process_topology_at(self,
                             t_idx: Union[int, None] = None,
-                            logger: Union[Logger, None] = None) -> tp.TopologyProcessorInfo:
+                            logger: Union[Logger, None] = None,
+                            debug: int = 0) -> tp.TopologyProcessorInfo:
         """
         Topology processor finding the Buses that calculate a certain node-breaker topology
         This function fill the bus pointers into the grid object, and adds any new bus required for simulation
         :param t_idx: Time index, None for the Snapshot
         :param logger: Logger object
+        :param debug: Debug level
         :return: TopologyProcessorInfo
         """
+
+        if logger is None:
+            logger = Logger()
+
         # --------------------------------------------------------------------------------------------------------------
-        # compose the candidate nodes (buses)
+        # Compose the candidate nodes (buses)
         # --------------------------------------------------------------------------------------------------------------
         process_info = tp.TopologyProcessorInfo()
 
@@ -6100,8 +6123,11 @@ class MultiCircuit:
 
             if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
                 # create a new candidate
-                candidate_bus = dev.Bus(f"Candidate from {cn.name}")
-                candidate_bus.code = cn.code  # for soft checking
+                candidate_bus = dev.Bus(name=f"Candidate from {cn.name}",
+                                        code=cn.code,  # for soft checking
+                                        Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
+                                        )
+
                 cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
                 process_info.add_new_candidate(candidate_bus)
             else:
@@ -6117,10 +6143,10 @@ class MultiCircuit:
         bus_active = process_info.get_candidate_active(t_idx=t_idx)
 
         # get a list of all branches
-        all_branches = self.get_branches() + self.get_switches()
+        all_branches = self.get_switches() + self.get_branches()
 
         # --------------------------------------------------------------------------------------------------------------
-        # create the connectivity matrices
+        # Create the connectivity matrices
         # --------------------------------------------------------------------------------------------------------------
         nbr = len(all_branches)
 
@@ -6132,14 +6158,6 @@ class MultiCircuit:
         # fill matrices approprietly
         for i, elm in enumerate(all_branches):
 
-            if elm.cn_from is not None:
-                f = process_info.get_candidate_pos_from_cn(elm.cn_from)
-                Cf[i, f] = 1
-
-            if elm.cn_to is not None:
-                t = process_info.get_candidate_pos_from_cn(elm.cn_to)
-                Ct[i, t] = 1
-
             if elm.device_type == DeviceType.SwitchDevice:
                 br_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
             else:
@@ -6147,30 +6165,53 @@ class MultiCircuit:
                 # the set of candidates to fuse into one
                 br_active[i] = 0
 
+            # if elm.cn_from is not None and elm.cn_to is not None:
+            #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
+            #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
+            f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
+            Cf[i, f] = br_active[i]
+            Ct[i, t] = br_active[i]
+
         # --------------------------------------------------------------------------------------------------------------
-        # compose the adjacency matrix from the connectivity information
+        # Compose the adjacency matrix from the connectivity information
         # --------------------------------------------------------------------------------------------------------------
         A = tp.get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
                                     C_branch_bus_t=Ct.tocsc(),
                                     branch_active=br_active,
                                     bus_active=bus_active)
 
-        # --------------------------------------------------------------------------------------------------------------
-        # perform the topology search, this will find candidate buses that reduce to be the same bus
-        # --------------------------------------------------------------------------------------------------------------
+        if debug >= 2:
+            candidate_names = process_info.get_candidate_names()
+            br_names = [br.name for br in all_branches]
+            C = Cf + Ct
+            df = pd.DataFrame(data=C.toarray(), columns=candidate_names, index=br_names)
+            print(df.replace(to_replace=0.0, value="-"))
 
+            print("A:")
+
+            df = pd.DataFrame(data=A.toarray(), columns=candidate_names, index=candidate_names)
+            print(df.replace(to_replace=0.0, value="-"))
+            print()
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Perform the topology search, this will find candidate buses that reduce to be the same bus
+        # --------------------------------------------------------------------------------------------------------------
         islands = tp.find_islands(adj=A, active=bus_active)  # each island is finally a single calculation element
 
+        if debug >= 1:
+            for i, island in enumerate(islands):
+                print(f"island {i}:", island)
+
         # --------------------------------------------------------------------------------------------------------------
-        # generate auxiliary structures that derive from the topology results
+        # Generate auxiliary structures that derive from the topology results
         # --------------------------------------------------------------------------------------------------------------
         final_buses = process_info.apply_results(islands=islands)
 
         # --------------------------------------------------------------------------------------------------------------
-        # apply the results to the grid object
+        # Apply the results to the grid object
         # --------------------------------------------------------------------------------------------------------------
 
-        # add any extra bus that may arise from the calculation
+        # Add any extra bus that may arise from the calculation
         grid_buses_set = {b for b in self.get_buses()}
         for bus_device in final_buses:
             if bus_device not in grid_buses_set:
@@ -6193,3 +6234,269 @@ class MultiCircuit:
 
         # return the TopologyProcessorInfo
         return process_info
+
+    def split_line(self,
+                   original_line: Union[dev.Line],
+                   position: float,
+                   extra_km: float):
+        """
+
+        :param original_line:
+        :param position:
+        :param extra_km:
+        :return:
+        """
+
+        # Each of the Branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
+
+        name = original_line.name + ' split'
+        mid_sub = dev.Substation(name=name,
+                                 area=original_line.bus_from.area,
+                                 zone=original_line.bus_from.zone,
+                                 country=original_line.bus_from.country)
+
+        mid_vl = dev.VoltageLevel(name=name, substation=mid_sub)
+
+        mid_bus = dev.Bus(name=name,
+                          Vnom=original_line.bus_from.Vnom,
+                          vmin=original_line.bus_from.Vmin,
+                          vmax=original_line.bus_from.Vmax,
+                          voltage_level=mid_vl,
+                          substation=mid_sub,
+                          area=original_line.bus_from.area,
+                          zone=original_line.bus_from.zone,
+                          country=original_line.bus_from.country)
+
+        position_a = position + (extra_km / original_line.length) if original_line.length > 0.0 else position
+
+        # create first split
+        br1 = dev.Line(name=original_line.name + ' split 1',
+                       bus_from=original_line.bus_from,
+                       bus_to=mid_bus,
+                       r=original_line.R * position_a,
+                       x=original_line.X * position_a,
+                       b=original_line.B * position_a,
+                       r0=original_line.R0 * position_a,
+                       x0=original_line.X0 * position_a,
+                       b0=original_line.B0 * position_a,
+                       r2=original_line.R2 * position_a,
+                       x2=original_line.X2 * position_a,
+                       b2=original_line.B2 * position_a,
+                       length=original_line.length * position_a,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        position_c = ((1.0 - position) + (extra_km / original_line.length)
+                      if original_line.length > 0.0 else (1.0 - position))
+
+        br2 = dev.Line(name=original_line.name + ' split 2',
+                       bus_from=mid_bus,
+                       bus_to=original_line.bus_to,
+                       r=original_line.R * position_c,
+                       x=original_line.X * position_c,
+                       b=original_line.B * position_c,
+                       r0=original_line.R0 * position_c,
+                       x0=original_line.X0 * position_c,
+                       b0=original_line.B0 * position_c,
+                       r2=original_line.R2 * position_c,
+                       x2=original_line.X2 * position_c,
+                       b2=original_line.B2 * position_c,
+                       length=original_line.length * position_c,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # deactivate the original line
+        original_line.active = False
+        original_line.active_prof.fill(False)
+
+        # add to gridcal the new 2 lines and the bus
+        self.add_substation(obj=mid_sub)
+        self.add_voltage_level(obj=mid_vl)
+        self.add_bus(mid_bus)
+        self.add_line(br1)
+        self.add_line(br2)
+
+        # add new stuff as new investment
+        inv_group = dev.InvestmentsGroup(name=original_line.name + ' split', category='Line split')
+        self.add_investments_group(inv_group)
+        self.add_investment(dev.Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+
+        # include the deactivation of the original line
+        self.add_investment(dev.Investment(name=original_line.name,
+                                           device_idtag=original_line.idtag,
+                                           status=False, group=inv_group))
+
+        return mid_sub, mid_vl, mid_bus, br1, br2
+
+    def split_line_int_out(self,
+                           original_line: Union[dev.Line],
+                           position: float,
+                           km_io: float):
+        """
+
+        :param original_line:
+        :param position:
+        :param km_io:
+        :return:
+        """
+
+        # Each of the Branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
+
+        # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+
+        B1 = dev.Bus(name=original_line.name + ' split bus 1',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        B2 = dev.Bus(name=original_line.name + ' split bus 2',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        mid_sub = dev.Substation(name=original_line.name + ' new bus',
+                                 area=original_line.bus_from.area,
+                                 zone=original_line.bus_from.zone,
+                                 country=original_line.bus_from.country)
+        mid_vl = dev.VoltageLevel(name=original_line.name + ' new bus',
+                                  substation=mid_sub)
+        B3 = dev.Bus(name=original_line.name + ' new bus',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     voltage_level=mid_vl,
+                     substation=mid_sub,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        # create first split
+        br1 = dev.Line(name=original_line.name + ' split 1',
+                       bus_from=original_line.bus_from,
+                       bus_to=B1,
+                       r=original_line.R * position,
+                       x=original_line.X * position,
+                       b=original_line.B * position,
+                       r0=original_line.R0 * position,
+                       x0=original_line.X0 * position,
+                       b0=original_line.B0 * position,
+                       r2=original_line.R2 * position,
+                       x2=original_line.X2 * position,
+                       b2=original_line.B2 * position,
+                       length=original_line.length * position,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        position_c = 1.0 - position
+        br2 = dev.Line(name=original_line.name + ' split 2',
+                       bus_from=B2,
+                       bus_to=original_line.bus_to,
+                       r=original_line.R * position_c,
+                       x=original_line.X * position_c,
+                       b=original_line.B * position_c,
+                       r0=original_line.R0 * position_c,
+                       x0=original_line.X0 * position_c,
+                       b0=original_line.B0 * position_c,
+                       r2=original_line.R2 * position_c,
+                       x2=original_line.X2 * position_c,
+                       b2=original_line.B2 * position_c,
+                       length=original_line.length * position_c,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # kilometers of the in/out appart from the original line
+        proportion_io = km_io / original_line.length
+
+        br3 = dev.Line(name=original_line.name + ' in',
+                       bus_from=B1,
+                       bus_to=B3,
+                       r=original_line.R * proportion_io,
+                       x=original_line.X * proportion_io,
+                       b=original_line.B * proportion_io,
+                       r0=original_line.R0 * proportion_io,
+                       x0=original_line.X0 * proportion_io,
+                       b0=original_line.B0 * proportion_io,
+                       r2=original_line.R2 * proportion_io,
+                       x2=original_line.X2 * proportion_io,
+                       b2=original_line.B2 * proportion_io,
+                       length=original_line.length * proportion_io,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        br4 = dev.Line(name=original_line.name + ' out',
+                       bus_from=B3,
+                       bus_to=B2,
+                       r=original_line.R * proportion_io,
+                       x=original_line.X * proportion_io,
+                       b=original_line.B * proportion_io,
+                       r0=original_line.R0 * proportion_io,
+                       x0=original_line.X0 * proportion_io,
+                       b0=original_line.B0 * proportion_io,
+                       r2=original_line.R2 * proportion_io,
+                       x2=original_line.X2 * proportion_io,
+                       b2=original_line.B2 * proportion_io,
+                       length=original_line.length * proportion_io,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # deactivate the original line
+        original_line.active = False
+        original_line.active_prof.fill(False)
+
+        # add to gridcal the new 2 lines and the bus
+        self.add_substation(obj=mid_sub)
+        self.add_voltage_level(obj=mid_vl)
+        self.add_bus(B1)
+        self.add_bus(B2)
+        self.add_bus(B3)
+        self.add_line(br1)
+        self.add_line(br2)
+        self.add_line(br3)
+        self.add_line(br4)
+
+        # add new stuff as new investment
+        inv_group = dev.InvestmentsGroup(name=original_line.name + ' in/out', category='Line in/out')
+        self.add_investments_group(inv_group)
+        self.add_investment(
+            dev.Investment(name=B1.name, device_idtag=B1.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=B2.name, device_idtag=B2.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=B3.name, device_idtag=B3.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br1.name, device_idtag=br1.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br2.name, device_idtag=br2.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br3.name, device_idtag=br3.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br4.name, device_idtag=br4.idtag, status=True, group=inv_group))
+
+        # include the deactivation of the original line
+        self.add_investment(dev.Investment(name=original_line.name,
+                                           device_idtag=original_line.idtag,
+                                           status=False, group=inv_group))
+
+        return mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4

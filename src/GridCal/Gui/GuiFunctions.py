@@ -1208,7 +1208,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                  editable=False,
                  transposed=False,
                  check_unique: Union[None, List[str]] = None,
-                 dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
+                 dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
         """
 
         :param objects: list of objects associated to the editor
@@ -1317,9 +1317,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
 
-            elif tpe.value in self.dictionary_of_lists.keys():
+            elif tpe in self.dictionary_of_lists:
                 # foreign key objects drop-down
-                objs = self.dictionary_of_lists[str(tpe.value)]
+                objs = self.dictionary_of_lists[tpe]
                 delegate = ComboDelegate(parent=self.parent,
                                          objects=[None] + objs,
                                          object_names=['None'] + [x.name for x in objs])
@@ -1539,7 +1539,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def copy_to_column(self, index):
+    def copy_to_column(self, index: QtCore.QModelIndex) -> None:
         """
         Copy the value pointed by the index to all the other cells in the column
         :param index: QModelIndex instance
@@ -2434,7 +2434,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 #         return True
 
 
-def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
+def get_list_model(lst: List[Union[str, ALL_DEV_TYPES]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
     Pass a list to a list model
     """

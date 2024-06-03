@@ -18,6 +18,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+import cv2
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
 from warnings import warn
@@ -37,8 +38,6 @@ from PySide6.QtSvg import QSvgGenerator
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Substation.substation import Substation
-from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Branches.line import Line
@@ -52,8 +51,6 @@ from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W, Winding
 from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
-from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
-from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -475,13 +472,16 @@ class SchematicWidget(QSplitter):
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, None],
                  default_bus_voltage: float = 10.0,
-                 time_index: Union[None, int] = None):
+                 time_index: Union[None, int] = None,
+                 prefer_node_breaker: bool = False,
+                 call_delete_db_element_func: Callable[["SchematicWidget", ALL_DEV_TYPES], None] = None):
         """
         Creates the Diagram Editor (DiagramEditorWidget)
         :param circuit: Circuit that is handling
         :param diagram: SchematicDiagram to use (optional)
         :param default_bus_voltage: Default bus voltages (kV)
         :param time_index: time index to represent
+        :param prefer_node_breaker:
         """
 
         QSplitter.__init__(self)
@@ -495,6 +495,14 @@ class SchematicWidget(QSplitter):
 
         # default_bus_voltage (kV)
         self.default_bus_voltage = default_bus_voltage
+
+        #
+        self.prefer_node_breaker: bool = prefer_node_breaker
+        self.logger: Logger = Logger()
+
+        # This function is meant to be a master delete function that is passed to each diagram
+        # so that when a diagram deletes an element, the element is deleted in all other diagrams
+        self.call_delete_db_element_func = call_delete_db_element_func
 
         # nodes distance "explosion" factor
         self.expand_factor = 1.1
@@ -570,9 +578,13 @@ class SchematicWidget(QSplitter):
         # current time index from the GUI (None or 0, 1, 2, ..., n-1)
         self._time_index: Union[None, int] = time_index
 
+        # video pointer
+        self._video: Union[None, cv2.VideoWriter] = None
+
         if diagram is not None:
             self.draw()
 
+        # -------------------------------------------------------------------------------------------------
         # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
 
     def set_time_index(self, time_index: Union[int, None]):
@@ -595,7 +607,7 @@ class SchematicWidget(QSplitter):
 
     def set_editor_model(self,
                          api_object: ALL_DEV_TYPES,
-                         dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
+                         dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
@@ -710,7 +722,7 @@ class SchematicWidget(QSplitter):
         :return:
         """
         if event.key() == Qt.Key_Delete:
-            self.delete_Selected()
+            self.delete_Selected_from_widget_and_db()
 
     def zoom_in(self, scale_factor: float = 1.15) -> None:
         """
@@ -824,18 +836,24 @@ class SchematicWidget(QSplitter):
         self.diagram = diagram
         self.draw()
 
-    def draw_additional_diagram(self, diagram: SchematicDiagram) -> None:
+    def draw_additional_diagram(self,
+                                diagram: SchematicDiagram,
+                                prefer_node_breaker: bool = False,
+                                logger: Logger = Logger()) -> None:
         """
         Draw a new diagram
         :param diagram: SchematicDiagram
+        :param prefer_node_breaker:
+        :param logger: Logger
         """
         inj_dev_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
         inj_dev_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
+        inj_dev_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
 
         # add node-like elements first
         for category, points_group in diagram.data.items():
 
-            if category == DeviceType.BusDevice.value:
+            if category == DeviceType.BusDevice.value and not prefer_node_breaker:
 
                 for idtag, location in points_group.locations.items():
 
@@ -950,34 +968,35 @@ class SchematicWidget(QSplitter):
                         # if location.api_object.bus is not None:
                         #     bus_dict[location.api_object.bus.idtag] = graphic_object
 
-            elif category == DeviceType.ConnectivityNodeDevice.value:
+            elif category == DeviceType.ConnectivityNodeDevice.value and prefer_node_breaker:
 
                 for idtag, location in points_group.locations.items():
 
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
+                    if not location.api_object.internal:
+                        # search for the api object, because it may be created already
+                        graphic_object = self.graphics_manager.query(elm=location.api_object)
 
-                    if graphic_object is None:
-                        # add the graphic object to the diagram view
-                        graphic_object = self.create_connectivity_node_graphics(node=location.api_object,
-                                                                                x=location.x,
-                                                                                y=location.y,
-                                                                                h=location.h,
-                                                                                w=location.w,
-                                                                                draw_labels=location.draw_labels)
-                        self.add_to_scene(graphic_object=graphic_object)
+                        if graphic_object is None:
+                            # add the graphic object to the diagram view
+                            graphic_object = self.create_connectivity_node_graphics(node=location.api_object,
+                                                                                    x=location.x,
+                                                                                    y=location.y,
+                                                                                    h=location.h,
+                                                                                    w=location.w,
+                                                                                    draw_labels=location.draw_labels)
+                            self.add_to_scene(graphic_object=graphic_object)
 
-                        # create the bus children
-                        graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
-                        )
+                            # create the bus children
+                            graphic_object.create_children_widgets(
+                                injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
+                            )
 
-                        # graphic_object.change_size(w=location.w)
+                            # graphic_object.change_size(w=location.w)
 
-                        # add buses reference for later
-                        self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                            # add buses reference for later
+                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
 
-            elif category == DeviceType.BusBarDevice.value:
+            elif category == DeviceType.BusBarDevice.value and prefer_node_breaker:
 
                 for idtag, location in points_group.locations.items():
 
@@ -996,7 +1015,7 @@ class SchematicWidget(QSplitter):
 
                         # create the bus children
                         graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_bus.get(location.api_object, dict())
+                            injections_by_tpe=inj_dev_by_cn.get(graphic_object.api_object.cn, dict())
                         )
 
                         graphic_object.change_size(w=location.w)
@@ -1014,170 +1033,66 @@ class SchematicWidget(QSplitter):
             if category == DeviceType.LineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = LineGraphicItem(from_port=from_port,
-                                                             to_port=to_port,
-                                                             editor=self,
-                                                             api_object=location.api_object,
-                                                             draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_line(branch=location.api_object,
+                                      draw_labels=location.draw_labels,
+                                      prefer_node_breaker=prefer_node_breaker,
+                                      logger=logger)
 
             elif category == DeviceType.DCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = DcLineGraphicItem(from_port=from_port,
-                                                               to_port=to_port,
-                                                               editor=self,
-                                                               api_object=location.api_object,
-                                                               draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_dc_line(branch=location.api_object,
+                                         draw_labels=location.draw_labels,
+                                         prefer_node_breaker=prefer_node_breaker,
+                                         logger=logger)
 
             elif category == DeviceType.HVDCLineDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = HvdcGraphicItem(from_port=from_port,
-                                                             to_port=to_port,
-                                                             editor=self,
-                                                             api_object=location.api_object,
-                                                             draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_hvdc(branch=location.api_object,
+                                      draw_labels=location.draw_labels,
+                                      prefer_node_breaker=prefer_node_breaker,
+                                      logger=logger)
 
             elif category == DeviceType.VscDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = VscGraphicItem(from_port=from_port,
-                                                            to_port=to_port,
-                                                            editor=self,
-                                                            api_object=location.api_object,
-                                                            draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_vsc(branch=location.api_object,
+                                     draw_labels=location.draw_labels,
+                                     prefer_node_breaker=prefer_node_breaker,
+                                     logger=logger)
 
             elif category == DeviceType.UpfcDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = UpfcGraphicItem(from_port=from_port,
-                                                             to_port=to_port,
-                                                             editor=self,
-                                                             api_object=location.api_object,
-                                                             draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_upfc(branch=location.api_object,
+                                      draw_labels=location.draw_labels,
+                                      prefer_node_breaker=prefer_node_breaker,
+                                      logger=logger)
 
             elif category == DeviceType.Transformer2WDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = TransformerGraphicItem(from_port=from_port,
-                                                                    to_port=to_port,
-                                                                    editor=self,
-                                                                    api_object=location.api_object,
-                                                                    draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_transformer(branch=location.api_object,
+                                             draw_labels=location.draw_labels,
+                                             prefer_node_breaker=prefer_node_breaker,
+                                             logger=logger)
 
             elif category == DeviceType.SeriesReactanceDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = SeriesReactanceGraphicItem(from_port=from_port,
-                                                                        to_port=to_port,
-                                                                        editor=self,
-                                                                        api_object=location.api_object,
-                                                                        draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_series_reactance(branch=location.api_object,
+                                                  draw_labels=location.draw_labels,
+                                                  prefer_node_breaker=prefer_node_breaker,
+                                                  logger=logger)
 
             elif category == DeviceType.SwitchDevice.value:
 
                 for idtag, location in points_group.locations.items():
-
-                    # search for the api object, because it may be created already
-                    graphic_object = self.graphics_manager.query(elm=location.api_object)
-
-                    if graphic_object is None:
-
-                        from_port, to_port = self.find_ports(branch=location.api_object)
-                        if from_port is not None and to_port is not None:
-                            graphic_object = SwitchGraphicItem(from_port=from_port,
-                                                               to_port=to_port,
-                                                               editor=self,
-                                                               api_object=location.api_object,
-                                                               draw_labels=location.draw_labels)
-                            self.add_to_scene(graphic_object=graphic_object)
-
-                            graphic_object.redraw()
-                            self.graphics_manager.add_device(elm=location.api_object, graphic=graphic_object)
+                    self.add_api_switch(branch=location.api_object,
+                                        draw_labels=location.draw_labels,
+                                        prefer_node_breaker=prefer_node_breaker,
+                                        logger=logger)
 
             elif category == DeviceType.WindingDevice.value:
 
@@ -1199,7 +1114,9 @@ class SchematicWidget(QSplitter):
 
                     if graphic_object is None:
 
-                        from_port, to_port = self.find_ports(branch=location.api_object)
+                        from_port, to_port = self.find_ports(branch=location.api_object,
+                                                             prefer_node_breaker=prefer_node_breaker,
+                                                             logger=logger)
                         if from_port is not None and to_port is not None:
                             graphic_object = FluidPathGraphicItem(from_port=from_port,
                                                                   to_port=to_port,
@@ -1225,7 +1142,9 @@ class SchematicWidget(QSplitter):
         """
         Draw the stored diagram
         """
-        self.draw_additional_diagram(diagram=self.diagram)
+        self.draw_additional_diagram(diagram=self.diagram,
+                                     prefer_node_breaker=self.prefer_node_breaker,
+                                     logger=self.logger)
 
     def expand_diagram_from_bus(self, root_bus: Bus) -> None:
         """
@@ -1236,7 +1155,9 @@ class SchematicWidget(QSplitter):
                                               root_bus=root_bus,
                                               max_level=1)
 
-        self.draw_additional_diagram(diagram=extra_diagram)
+        self.draw_additional_diagram(diagram=extra_diagram,
+                                     prefer_node_breaker=self.prefer_node_breaker,
+                                     logger=self.logger)
 
     @property
     def name(self):
@@ -1307,36 +1228,54 @@ class SchematicWidget(QSplitter):
         """
         if graphic_object is not None:
             if graphic_object.scene() is not None:
+
+                # try to remove nexus and children
+                if isinstance(graphic_object,
+                              (BusGraphicItem, CnGraphicItem, BusBarGraphicItem, FluidNodeGraphicItem)):
+                    graphic_object.delete_all_connections()
+                    for g in graphic_object.shunt_children:
+                        self.diagram_scene.removeItem(g.nexus)
+
                 self.diagram_scene.removeItem(graphic_object)
             else:
                 warn(f"Null scene for {graphic_object}, was it deleted already?")
 
-    def delete_diagram_element(self, device: ALL_DEV_TYPES) -> None:
+    def delete_diagram_element(self, device: ALL_DEV_TYPES, propagate: bool = True) -> None:
         """
         Delete device from the diagram registry
         :param device: EditableDevice
+        :param propagate: Propagate the delete to other diagrams?
         """
         self.diagram.delete_device(device=device)
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            # try:
             self.remove_from_scene(graphic_object)
-            # except:
-            #     warn(f"Could not remove {graphic_object} from the scene")
+
+        if propagate:
+            if self.call_delete_db_element_func is not None:
+                self.call_delete_db_element_func(self, device)
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
-                       graphic_object: Union[QGraphicsItem, None] = None) -> None:
+                       graphic_object: Union[QGraphicsItem, None] = None,
+                       delete_from_db: bool = False) -> None:
         """
         Remove device from the diagram and the database
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
+        :param delete_from_db: Delete the element also from the database?
         """
 
         if device is not None:
-            self.delete_diagram_element(device=device)
-            self.circuit.delete_elements_by_type(obj=device)
+            self.delete_diagram_element(device=device, propagate=delete_from_db)
+
+            if delete_from_db:
+                try:
+                    self.circuit.delete_elements_by_type(obj=device)
+                except ValueError as e:
+                    print("SchamaticWidget.remove_element", e)
+
         elif graphic_object is not None:
             self.remove_from_scene(graphic_object)
         else:
@@ -1380,7 +1319,26 @@ class SchematicWidget(QSplitter):
                     lst.append((idx, bus, graphic_object))
         return lst
 
-    def delete_Selected(self) -> None:
+    def get_selected_cn(self) -> List[Tuple[int, ConnectivityNode, CnGraphicItem]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, ConnectivityNode, Union[CnGraphicItem, None]]] = list()
+        cn_graphic_dict = self.graphics_manager.get_device_type_dict(DeviceType.ConnectivityNodeDevice)
+
+        cn_dict: Dict[str: Tuple[int, ConnectivityNode]] = {b.idtag: (i, b)
+                                                            for i, b in
+                                                            enumerate(self.circuit.get_connectivity_nodes())}
+
+        for idtag, graphic_object in cn_graphic_dict.items():
+            if isinstance(graphic_object, CnGraphicItem):
+                if graphic_object.isSelected():
+                    idx, bus = cn_dict[idtag]
+                    lst.append((idx, bus, graphic_object))
+        return lst
+
+    def delete_Selected_from_widget_and_db(self) -> None:
         """
         Delete the selected items from the diagram
         """
@@ -1388,7 +1346,7 @@ class SchematicWidget(QSplitter):
         selected = self.get_selected()
 
         if len(selected) > 0:
-            reply = QMessageBox.question(self, 'Delete',
+            reply = QMessageBox.question(self, 'Delete objects from the diagram and the DB',
                                          'Are you sure that you want to delete the selected elements?',
                                          QMessageBox.StandardButton.Yes,
                                          QMessageBox.StandardButton.No)
@@ -1397,7 +1355,30 @@ class SchematicWidget(QSplitter):
 
                 # remove the buses (from the schematic and the circuit)
                 for bus, graphic_obj in selected:
-                    self.remove_element(device=bus, graphic_object=graphic_obj)
+                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=True)
+            else:
+                pass
+        else:
+            info_msg('Choose some elements from the schematic', 'Delete')
+
+    def delete_Selected_from_widget(self) -> None:
+        """
+        Delete the selected items from the diagram
+        """
+        # get the selected buses
+        selected = self.get_selected()
+
+        if len(selected) > 0:
+            reply = QMessageBox.question(self, 'Delete objects from the diagram',
+                                         'Are you sure that you want to delete the selected elements?',
+                                         QMessageBox.StandardButton.Yes,
+                                         QMessageBox.StandardButton.No)
+
+            if reply == QMessageBox.StandardButton.Yes.value:
+
+                # remove the buses (from the schematic and the circuit)
+                for bus, graphic_obj in selected:
+                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=False)
             else:
                 pass
         else:
@@ -1900,45 +1881,37 @@ class SchematicWidget(QSplitter):
         max_x = -sys.maxsize
         max_y = -sys.maxsize
 
-        if len(self.diagram_scene.selectedItems()) > 0:
+        check_selected_only = len(self.diagram_scene.selectedItems()) > 0
 
-            # expand selection
-            for item in self.diagram_scene.selectedItems():
-                if type(item) is BusGraphicItem:
-                    x = item.pos().x() * factor
-                    y = item.pos().y() * factor
-                    item.setPos(QPointF(x, y))
+        for dev_tpe in [DeviceType.BusDevice,
+                        DeviceType.BusBarDevice,
+                        DeviceType.ConnectivityNodeDevice,
+                        DeviceType.FluidNodeDevice,
+                        DeviceType.Transformer3WDevice]:
 
+            graphic_objects_dict = self.graphics_manager.graphic_dict.get(dev_tpe, dict())
+
+            for key, item in graphic_objects_dict.items():
+                x = item.pos().x() * factor
+                y = item.pos().y() * factor
+                item.setPos(QPointF(x, y))
+
+                if check_selected_only:
+                    if item.isSelected():
+                        max_x = max(max_x, x)
+                        min_x = min(min_x, x)
+                        max_y = max(max_y, y)
+                        min_y = min(min_y, y)
+                    else:
+                        pass
+                else:
                     max_x = max(max_x, x)
                     min_x = min(min_x, x)
                     max_y = max(max_y, y)
                     min_y = min(min_y, y)
 
-                    # apply changes to the diagram coordinates
-                    location = self.diagram.query_point(item.api_object)
-                    if location:
-                        location.x = x
-                        location.y = y
-
-        else:
-
-            # expand all
-            for item in self.diagram_scene.items():
-                if type(item) is BusGraphicItem:
-                    x = item.pos().x() * factor
-                    y = item.pos().y() * factor
-                    item.setPos(QPointF(x, y))
-
-                    max_x = max(max_x, x)
-                    min_x = min(min_x, x)
-                    max_y = max(max_y, y)
-                    min_y = min(min_y, y)
-
-                    # apply changes to the diagram coordinates
-                    location = self.diagram.query_point(item.api_object)
-                    if location:
-                        location.x = x
-                        location.y = y
+                # apply changes to the diagram coordinates
+                self.diagram.update_xy(api_object=item.api_object, x=x, y=y)
 
         # set the limits of the view
         self.set_limits(min_x, max_x, min_y, max_y)
@@ -1955,7 +1928,11 @@ class SchematicWidget(QSplitter):
         """
         self.apply_expansion_factor(1.0 / self.expand_factor)
 
-    def set_limits(self, min_x: int, max_x: Union[float, int], min_y: Union[float, int], max_y: int,
+    def set_limits(self,
+                   min_x: int,
+                   max_x: Union[float, int],
+                   min_y: Union[float, int],
+                   max_y: int,
                    margin_factor: float = 0.1) -> None:
         """
         Set the picture limits
@@ -1969,8 +1946,8 @@ class SchematicWidget(QSplitter):
         dy = max_y - min_y
         mx = margin_factor * dx
         my = margin_factor * dy
-        h = dy + 2 * my + 80
-        w = dx + 2 * mx + 80
+        h = dy + 2 * my + 120
+        w = dx + 2 * mx + 120
         self.diagram_scene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
 
     def set_boundaries(self, min_x, min_y, width, height):
@@ -1994,14 +1971,16 @@ class SchematicWidget(QSplitter):
         :param margin_factor:
         :param elements: list of API
         """
-        tpes = [BusGraphicItem, FluidNodeGraphicItem, CnGraphicItem, BusBarGraphicItem, Transformer3WGraphicItem]
+        node_like_types = [BusGraphicItem, FluidNodeGraphicItem, CnGraphicItem,
+                           BusBarGraphicItem, Transformer3WGraphicItem]
+
         min_x = sys.maxsize
         min_y = sys.maxsize
         max_x = -sys.maxsize
         max_y = -sys.maxsize
         if elements is None:
             for item in self.diagram_scene.items():
-                if type(item) in tpes:
+                if type(item) in node_like_types:
                     x = item.pos().x()
                     y = item.pos().y()
 
@@ -2011,7 +1990,7 @@ class SchematicWidget(QSplitter):
                     min_y = min(min_y, y)
         else:
             for item in self.diagram_scene.items():
-                if type(item) in tpes:
+                if type(item) in node_like_types:
 
                     if item.api_object in elements:
                         x = item.pos().x()
@@ -2119,7 +2098,7 @@ class SchematicWidget(QSplitter):
         Automatic layout of the nodes
         """
 
-        nx_graph, buses_graphic_objects = self.diagram.build_graph()
+        nx_graph, node_like_api_objects = self.diagram.build_graph()
 
         layout_algorithms_dict = dict()
         layout_algorithms_dict['circular_layout'] = nx.circular_layout
@@ -2146,16 +2125,17 @@ class SchematicWidget(QSplitter):
             pos = nx.spring_layout(nx_graph, iterations=100, scale=10)
 
         # assign the positions to the graphical objects of the nodes
-        for i, bus in enumerate(buses_graphic_objects):
+        for i, bus in enumerate(node_like_api_objects):
             loc = self.diagram.query_point(bus)
             graphic_object = self.graphics_manager.query(elm=bus)
 
-            x, y = pos[i] * 500
+            if graphic_object is not None:
+                x, y = pos[i] * 500
 
-            # apply changes to the API objects
-            loc.x = x
-            loc.y = y
-            graphic_object.set_position(x, y)
+                # apply changes to the API objects
+                loc.x = x
+                loc.y = y
+                graphic_object.set_position(x, y)
 
         self.center_nodes()
 
@@ -2205,11 +2185,28 @@ class SchematicWidget(QSplitter):
                 bus.y = y[i]
             i += 1
 
-    def export(self, filename, w=1920, h=1080):
+    def get_image(self) -> Tuple[QImage, int, int]:
+        """
+        get the current picture
+        :return: QImage, width, height
+        """
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
+        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        image.fill(Qt.transparent)
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.editor_graphics_view.render(painter)
+        painter.end()
+
+        return image, w, h
+
+    def take_picture(self, filename):
         """
         Save the grid to a png file
         """
-
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
@@ -2217,7 +2214,8 @@ class SchematicWidget(QSplitter):
             image.fill(Qt.transparent)
             painter = QPainter(image)
             painter.setRenderHint(QPainter.Antialiasing)
-            self.diagram_scene.render(painter)
+            # self.diagram_scene.render(painter)
+            self.editor_graphics_view.render(painter)
             image.save(filename)
             painter.end()
 
@@ -2230,7 +2228,7 @@ class SchematicWidget(QSplitter):
             svg_gen.setDescription("An SVG drawing created by GridCal")
 
             painter = QPainter(svg_gen)
-            self.diagram_scene.render(painter)
+            self.editor_graphics_view.render(painter)
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
@@ -2307,7 +2305,7 @@ class SchematicWidget(QSplitter):
                    cn: ConnectivityNode,
                    injections_by_tpe: Dict[DeviceType, List[ALL_DEV_TYPES]],
                    x0: Union[int, None] = None,
-                   y0: Union[int, None] = None) -> BusGraphicItem:
+                   y0: Union[int, None] = None) -> CnGraphicItem:
         """
         Add API bus to the diagram
         :param cn: Bus instance
@@ -2398,272 +2396,311 @@ class SchematicWidget(QSplitter):
         else:
             return port
 
-    def find_ports(self, branch: BRANCH_TYPES) -> Tuple[OPTIONAL_PORT, OPTIONAL_PORT]:
+    def find_ports(self,
+                   branch: BRANCH_TYPES,
+                   prefer_node_breaker: bool,
+                   logger: Logger) -> Tuple[OPTIONAL_PORT, OPTIONAL_PORT]:
         """
         Find the preferred set of ports for drawing
         :param branch: some API branch
+        :param prefer_node_breaker:
+        :param logger:
         :return: OPTIONAL_PORT, OPTIONAL_PORT
         """
 
-        from_port = self.find_port(port=None, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=None, bus=branch.bus_to, cn=branch.cn_to)
+        obj_from, obj_to, is_ok = branch.get_from_and_to_objects(t_idx=None,
+                                                                 logger=logger,
+                                                                 prefer_node_breaker=prefer_node_breaker)
+
+        # Bus provided, search its graphics
+        bus_graphic0 = self.graphics_manager.query_preferring_busbars(obj_from)
+        if bus_graphic0 is None:
+            # could not find any graphics :(
+            from_port = None
+        else:
+            # the from bu is found, return its terminal
+            from_port = bus_graphic0.get_terminal()
+
+        # Bus provided, search its graphics
+        bus_graphic1 = self.graphics_manager.query_preferring_busbars(obj_to)
+        if bus_graphic1 is None:
+            # could not find any graphics :(
+            to_port = None
+        else:
+            # the from bu is found, return its terminal
+            to_port = bus_graphic1.get_terminal()
+
+        # from_port = self.find_port(port=None, bus=branch.bus_from, cn=branch.cn_from)
+        # to_port = self.find_port(port=None, bus=branch.bus_to, cn=branch.cn_to)
 
         return from_port, to_port
 
-    def add_api_line(self, branch: Line,
-                     from_port: OPTIONAL_PORT = None,
-                     to_port: OPTIONAL_PORT = None) -> Union[None, LineGraphicItem]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        :return LineGraphicItem or None
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-            graphic_object = LineGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print(f"Branch's {branch.name} buses were not found in the diagram :(")
-            return None
-
-    def add_api_line_between_fluid_graphics(self, branch: Line,
-                                            from_port: OPTIONAL_PORT = None,
-                                            to_port: OPTIONAL_PORT = None) -> Union[LineGraphicItem, None]:
-        """
-        add API branch to the Scene
-
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-            graphic_object = LineGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print(f"Branch's {branch.name} buses were not found in the diagram :(")
-            return None
-
-    def add_api_dc_line(self, branch: DcLine,
-                        from_port: OPTIONAL_PORT = None,
-                        to_port: OPTIONAL_PORT = None) -> Union[DcLineGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = DcLineGraphicItem(from_port=from_port,
-                                               to_port=to_port,
-                                               editor=self,
-                                               api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_hvdc(self, branch: HvdcLine,
-                     from_port: OPTIONAL_PORT = None,
-                     to_port: OPTIONAL_PORT = None) -> Union[HvdcGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = HvdcGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_vsc(self, branch: VSC,
-                    from_port: OPTIONAL_PORT = None,
-                    to_port: OPTIONAL_PORT = None) -> Union[VscGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = VscGraphicItem(from_port=from_port,
-                                            to_port=to_port,
-                                            editor=self,
-                                            api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_upfc(self, branch: UPFC,
-                     from_port: OPTIONAL_PORT = None,
-                     to_port: OPTIONAL_PORT = None) -> Union[UpfcGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = UpfcGraphicItem(from_port=from_port,
-                                             to_port=to_port,
-                                             editor=self,
-                                             api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_series_reactance(self, branch: SeriesReactance,
-                                 from_port: OPTIONAL_PORT = None,
-                                 to_port: OPTIONAL_PORT = None) -> Union[SeriesReactanceGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = SeriesReactanceGraphicItem(from_port=from_port,
-                                                        to_port=to_port,
-                                                        editor=self,
-                                                        api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_transformer(self, branch: Transformer2W,
-                            from_port: OPTIONAL_PORT = None,
-                            to_port: OPTIONAL_PORT = None) -> Union[TransformerGraphicItem, None]:
-        """
-        add API branch to the Scene
-        :param branch: Branch instance
-        :param from_port: Connection port from (optional)
-        :param to_port: Connection port to (optional)
-        """
-
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
-
-        if from_port and to_port:
-
-            graphic_object = TransformerGraphicItem(from_port=from_port,
-                                                    to_port=to_port,
-                                                    editor=self,
-                                                    api_object=branch)
-
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
-
-    def add_api_switch(self, branch: Switch,
+    def add_api_branch(self,
+                       branch: BRANCH_TYPES,
+                       new_graphic_func: Callable[[Union[BarTerminalItem, RoundTerminalItem],
+                                                   Union[BarTerminalItem, RoundTerminalItem, None],
+                                                   "SchematicWidget",
+                                                   int,
+                                                   BRANCH_TYPES,
+                                                   bool], BRANCH_GRAPHICS],
                        from_port: OPTIONAL_PORT = None,
-                       to_port: OPTIONAL_PORT = None) -> Union[SwitchGraphicItem, None]:
+                       to_port: OPTIONAL_PORT = None,
+                       prefer_node_breaker: bool = False,
+                       draw_labels: bool = True,
+                       logger: Logger = Logger()) -> Union[TransformerGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param new_graphic_func: New graphic object to use if needed
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param draw_labels: Draw labels by default?
+        :param logger: Logger
+        """
+
+        # search for the api object, because it may be created already
+        graphic_object = self.graphics_manager.query(elm=branch)
+
+        if graphic_object is None:
+
+            if from_port is None and to_port is None:
+                from_port, to_port = self.find_ports(branch=branch,
+                                                     prefer_node_breaker=prefer_node_breaker,
+                                                     logger=logger)
+
+            if from_port is not None and to_port is not None and (from_port != to_port):
+
+                # Create new graphics object
+                graphic_object = new_graphic_func(from_port,
+                                                  to_port,
+                                                  self,
+                                                  5,
+                                                  branch,
+                                                  draw_labels)
+
+                self.add_to_scene(graphic_object=graphic_object)
+
+                graphic_object.redraw()
+                self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
+                                            draw_labels=graphic_object.draw_labels,
+                                            graphic_object=graphic_object)
+                return graphic_object
+            else:
+                # print("Branch's ports were not found in the diagram :(")
+                logger.add_warning(msg="Branch's ports were not found in the diagram",
+                                   device=branch.name)
+                return None
+
+        else:
+            return graphic_object
+
+    def add_api_line(self,
+                     branch: Line,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None,
+                     draw_labels: bool = True,
+                     prefer_node_breaker: bool = False,
+                     logger: Logger = Logger()) -> Union[LineGraphicItem, None]:
         """
         add API branch to the Scene
         :param branch: Branch instance
         :param from_port: Connection port from (optional)
         :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: LineGraphicItem or None
         """
 
-        from_port = self.find_port(port=from_port, bus=branch.bus_from, cn=branch.cn_from)
-        to_port = self.find_port(port=to_port, bus=branch.bus_to, cn=branch.cn_to)
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=LineGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
 
-        if from_port and to_port:
+    def add_api_dc_line(self,
+                        branch: DcLine,
+                        from_port: OPTIONAL_PORT = None,
+                        to_port: OPTIONAL_PORT = None,
+                        draw_labels: bool = True,
+                        prefer_node_breaker: bool = False,
+                        logger: Logger = Logger()) -> Union[DcLineGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: DcLineGraphicItem or None
+        """
 
-            graphic_object = SwitchGraphicItem(from_port=from_port,
-                                               to_port=to_port,
-                                               editor=self,
-                                               api_object=branch)
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=DcLineGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
 
-            graphic_object.redraw()
-            self.update_diagram_element(device=branch, x=0, y=0, w=0, h=0, r=0,
-                                        draw_labels=graphic_object.draw_labels,
-                                        graphic_object=graphic_object)
-            return graphic_object
-        else:
-            print("Branch's buses were not found in the diagram :(")
-            return None
+    def add_api_hvdc(self,
+                     branch: HvdcLine,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None,
+                     draw_labels: bool = True,
+                     prefer_node_breaker: bool = False,
+                     logger: Logger = Logger()) -> Union[HvdcGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=HvdcGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_vsc(self,
+                    branch: VSC,
+                    from_port: OPTIONAL_PORT = None,
+                    to_port: OPTIONAL_PORT = None,
+                    draw_labels: bool = True,
+                    prefer_node_breaker: bool = False,
+                    logger: Logger = Logger()) -> Union[VscGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=VscGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_upfc(self,
+                     branch: UPFC,
+                     from_port: OPTIONAL_PORT = None,
+                     to_port: OPTIONAL_PORT = None,
+                     draw_labels: bool = True,
+                     prefer_node_breaker: bool = False,
+                     logger: Logger = Logger()) -> Union[UpfcGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=UpfcGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_series_reactance(self,
+                                 branch: SeriesReactance,
+                                 from_port: OPTIONAL_PORT = None,
+                                 to_port: OPTIONAL_PORT = None,
+                                 draw_labels: bool = True,
+                                 prefer_node_breaker: bool = False,
+                                 logger: Logger = Logger()) -> Union[SeriesReactanceGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: SeriesReactanceGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=SeriesReactanceGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_transformer(self,
+                            branch: Transformer2W,
+                            from_port: OPTIONAL_PORT = None,
+                            to_port: OPTIONAL_PORT = None,
+                            draw_labels: bool = True,
+                            prefer_node_breaker: bool = False,
+                            logger: Logger = Logger()) -> Union[TransformerGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        :return: TransformerGraphicItem or None
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=TransformerGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
+
+    def add_api_switch(self,
+                       branch: Switch,
+                       from_port: OPTIONAL_PORT = None,
+                       to_port: OPTIONAL_PORT = None,
+                       draw_labels: bool = True,
+                       prefer_node_breaker: bool = False,
+                       logger: Logger = Logger()) -> Union[SwitchGraphicItem, None]:
+        """
+        add API branch to the Scene
+        :param branch: Branch instance
+        :param from_port: Connection port from (optional)
+        :param to_port: Connection port to (optional)
+        :param draw_labels: Draw labels?
+        :param prefer_node_breaker: Prefer node breaker representation?
+        :param logger: Logger
+        """
+
+        return self.add_api_branch(branch=branch,
+                                   new_graphic_func=SwitchGraphicItem,
+                                   from_port=from_port,
+                                   to_port=to_port,
+                                   prefer_node_breaker=prefer_node_breaker,
+                                   draw_labels=draw_labels,
+                                   logger=logger)
 
     def add_api_transformer_3w(self, elm: Transformer3W):
         """
@@ -2775,7 +2812,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_hvdc(branch=hvdc,
                                            from_port=line_graphic.get_terminal_from(),
-                                           to_port=line_graphic.get_terminal_to())
+                                           to_port=line_graphic.get_terminal_to(),
+                                           draw_labels=line_graphic.draw_labels,
+                                           prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2800,7 +2839,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_transformer(branch=transformer,
                                                   from_port=line_graphic.get_terminal_from(),
-                                                  to_port=line_graphic.get_terminal_to())
+                                                  to_port=line_graphic.get_terminal_to(),
+                                                  draw_labels=line_graphic.draw_labels,
+                                                  prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2826,7 +2867,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_vsc(branch=vsc,
                                           from_port=line_graphic.get_terminal_from(),
-                                          to_port=line_graphic.get_terminal_to())
+                                          to_port=line_graphic.get_terminal_to(),
+                                          draw_labels=line_graphic.draw_labels,
+                                          prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2851,7 +2894,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_upfc(branch=upfc,
                                            from_port=line_graphic.get_terminal_from(),
-                                           to_port=line_graphic.get_terminal_to())
+                                           to_port=line_graphic.get_terminal_to(),
+                                           draw_labels=line_graphic.draw_labels,
+                                           prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2876,7 +2921,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_series_reactance(branch=series_reactance,
                                                        from_port=line_graphic.get_terminal_from(),
-                                                       to_port=line_graphic.get_terminal_to())
+                                                       to_port=line_graphic.get_terminal_to(),
+                                                       draw_labels=line_graphic.draw_labels,
+                                                       prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2901,7 +2948,9 @@ class SchematicWidget(QSplitter):
         # add device to the schematic
         graphic_object = self.add_api_switch(branch=switch,
                                              from_port=line_graphic.get_terminal_from(),
-                                             to_port=line_graphic.get_terminal_to())
+                                             to_port=line_graphic.get_terminal_to(),
+                                             draw_labels=line_graphic.draw_labels,
+                                             prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2931,9 +2980,11 @@ class SchematicWidget(QSplitter):
         line = self.circuit.convert_fluid_path_to_line(element)
 
         # add device to the schematic
-        graphic_object = self.add_api_line_between_fluid_graphics(branch=line,
-                                                                  from_port=fl_from.get_terminal(),
-                                                                  to_port=fl_to.get_terminal())
+        graphic_object = self.add_api_line(branch=line,
+                                           from_port=fl_from.get_terminal(),
+                                           to_port=fl_to.get_terminal(),
+                                           draw_labels=True,
+                                           prefer_node_breaker=self.prefer_node_breaker)
         self.add_to_scene(graphic_object)
 
         # update position
@@ -2972,13 +3023,15 @@ class SchematicWidget(QSplitter):
             elm: ALL_DEV_TYPES,
             injections_by_bus: Union[None, Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]] = None,
             injections_by_fluid_node: Union[None, Dict[FluidNode, Dict[DeviceType, List[FLUID_TYPES]]]] = None,
+            injections_by_cn: Union[None, Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]] = None,
             logger: Logger = Logger()):
         """
 
         :param elm:
         :param injections_by_bus:
         :param injections_by_fluid_node:
-        :param logger: Logger
+        :param injections_by_cn:
+        :param logger:
         :return:
         """
 
@@ -3004,6 +3057,22 @@ class SchematicWidget(QSplitter):
                 graphic_obj = self.add_api_fluid_node(node=elm,
                                                       injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
+            elif isinstance(elm, ConnectivityNode):
+
+                if injections_by_cn is None:
+                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
+
+                graphic_obj = self.add_api_cn(cn=elm,
+                                              injections_by_tpe=injections_by_cn.get(elm, dict()))
+
+            elif isinstance(elm, BusBar):
+
+                if injections_by_cn is None:
+                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
+
+                graphic_obj = self.add_api_busbar(bus=elm,
+                                                  injections_by_tpe=injections_by_cn.get(elm.cn, dict()))
+
             elif isinstance(elm, Line):
                 graphic_obj = self.add_api_line(elm)
 
@@ -3018,6 +3087,12 @@ class SchematicWidget(QSplitter):
 
             elif isinstance(elm, HvdcLine):
                 graphic_obj = self.add_api_hvdc(elm)
+
+            elif isinstance(elm, SeriesReactance):
+                graphic_obj = self.add_api_series_reactance(elm)
+
+            elif isinstance(elm, Switch):
+                graphic_obj = self.add_api_switch(elm)
 
             elif isinstance(elm, VSC):
                 graphic_obj = self.add_api_vsc(elm)
@@ -3789,7 +3864,8 @@ class SchematicWidget(QSplitter):
         delta = 1e20
         locations_cache = dict()
 
-        while delta > 10:
+        for _ in range(100):
+            # while delta > 10:
 
             A = self.circuit.get_adjacent_matrix()
 
@@ -4134,110 +4210,35 @@ class SchematicWidget(QSplitter):
         """
 
         if 0.0 < position < 1.0:
+            original_line = line_graphics.api_object
+            mid_sub, mid_vl, mid_bus, br1, br2 = self.circuit.split_line(original_line=original_line,
+                                                                         position=position,
+                                                                         extra_km=extra_km)
 
-            # Each of the Branches will have the proportional impedance
-            # Bus_from           Middle_bus            Bus_To
-            # o----------------------o--------------------o
-            #   >-------- x -------->|
-            #   (x: distance measured in per unit (0~1)
-            line = line_graphics.api_object
-            name = line.name + ' split'
-            mid_sub = Substation(name=name,
-                                 area=line.bus_from.area,
-                                 zone=line.bus_from.zone,
-                                 country=line.bus_from.country)
-            mid_vl = VoltageLevel(name=name, substation=mid_sub)
-            mid_bus = Bus(name=name,
-                          Vnom=line.bus_from.Vnom,
-                          vmin=line.bus_from.Vmin,
-                          vmax=line.bus_from.Vmax,
-                          voltage_level=mid_vl,
-                          substation=mid_sub,
-                          area=line.bus_from.area,
-                          zone=line.bus_from.zone,
-                          country=line.bus_from.country)
-
-            bus_f_graphics_data = self.diagram.query_point(line.bus_from)
-            bus_t_graphics_data = self.diagram.query_point(line.bus_to)
-            bus_f_graphic_obj = self.graphics_manager.query(line.bus_from)
-            bus_t_graphic_obj = self.graphics_manager.query(line.bus_to)
+            bus_f_graphics_data = self.diagram.query_point(original_line.bus_from)
+            bus_t_graphics_data = self.diagram.query_point(original_line.bus_to)
+            bus_f_graphic_obj = self.graphics_manager.query(original_line.bus_from)
+            bus_t_graphic_obj = self.graphics_manager.query(original_line.bus_to)
 
             if bus_f_graphics_data is None:
-                error_msg(f"{line.bus_from} was not found in the diagram")
+                error_msg(f"{original_line.bus_from} was not found in the diagram")
                 return None
             if bus_t_graphics_data is None:
-                error_msg(f"{line.bus_to} was not found in the diagram")
+                error_msg(f"{original_line.bus_to} was not found in the diagram")
                 return None
             if bus_f_graphic_obj is None:
-                error_msg(f"{line.bus_from} was not found in the graphics manager")
+                error_msg(f"{original_line.bus_from} was not found in the graphics manager")
                 return None
             if bus_t_graphic_obj is None:
-                error_msg(f"{line.bus_to} was not found in the graphics manager")
+                error_msg(f"{original_line.bus_to} was not found in the graphics manager")
                 return None
 
             # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
             middle_bus_x = int(bus_f_graphics_data.x + (bus_t_graphics_data.x - bus_f_graphics_data.x) * position)
             middle_bus_y = int(bus_f_graphics_data.y + (bus_t_graphics_data.y - bus_f_graphics_data.y) * position)
 
-            position_a = position + (extra_km / line.length) if line.length > 0.0 else position
-
-            # create first split
-            br1 = Line(name=line.name + ' split 1',
-                       bus_from=line.bus_from,
-                       bus_to=mid_bus,
-                       r=line.R * position_a,
-                       x=line.X * position_a,
-                       b=line.B * position_a,
-                       r0=line.R0 * position_a,
-                       x0=line.X0 * position_a,
-                       b0=line.B0 * position_a,
-                       r2=line.R2 * position_a,
-                       x2=line.X2 * position_a,
-                       b2=line.B2 * position_a,
-                       length=line.length * position_a,
-                       rate=line.rate,
-                       contingency_factor=line.contingency_factor,
-                       protection_rating_factor=line.protection_rating_factor)
-
-            position_c = (1.0 - position) + (extra_km / line.length) if line.length > 0.0 else (1.0 - position)
-            br2 = Line(name=line.name + ' split 2',
-                       bus_from=mid_bus,
-                       bus_to=line.bus_to,
-                       r=line.R * position_c,
-                       x=line.X * position_c,
-                       b=line.B * position_c,
-                       r0=line.R0 * position_c,
-                       x0=line.X0 * position_c,
-                       b0=line.B0 * position_c,
-                       r2=line.R2 * position_c,
-                       x2=line.X2 * position_c,
-                       b2=line.B2 * position_c,
-                       length=line.length * position_c,
-                       rate=line.rate,
-                       contingency_factor=line.contingency_factor,
-                       protection_rating_factor=line.protection_rating_factor)
-
-            # deactivate the original line
-            line_graphics.api_object.active = False
-            line_graphics.api_object.active_prof.fill(False)
+            # disable the original graphic
             line_graphics.set_enable(False)
-
-            # add to gridcal the new 2 lines and the bus
-            self.circuit.add_bus(mid_bus)
-            self.circuit.add_line(br1)
-            self.circuit.add_line(br2)
-
-            # add new stuff as new investment
-            inv_group = InvestmentsGroup(name=line.name + ' split', category='Line split')
-            self.circuit.add_investments_group(inv_group)
-            self.circuit.add_investment(Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
-            self.circuit.add_investment(Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
-            self.circuit.add_investment(Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
-
-            # include the deactivation of the original line
-            self.circuit.add_investment(Investment(name=line_graphics.api_object.name,
-                                                   device_idtag=line_graphics.api_object.idtag,
-                                                   status=False, group=inv_group))
 
             # add to the schematic the new 2 lines and the bus
             middle_bus_graphics = self.add_api_bus(bus=mid_bus,
@@ -4324,28 +4325,31 @@ class SchematicWidget(QSplitter):
                             create_extra_nodes = yes_no_question(text="Add extra buses?", title=title)
 
                             if create_extra_nodes:
-                                # Each of the Branches will have the proportional impedance
-                                # Bus_from           Middle_bus            Bus_To
-                                # o----------------------o--------------------o
-                                #   >-------- x -------->|
-                                #   (x: distance measured in per unit (0~1)
-                                line = line_graphics.api_object
-                                bus_f_graphics_data = self.diagram.query_point(line.bus_from)
-                                bus_t_graphics_data = self.diagram.query_point(line.bus_to)
-                                bus_f_graphic_obj = self.graphics_manager.query(line.bus_from)
-                                bus_t_graphic_obj = self.graphics_manager.query(line.bus_to)
+
+                                original_line = line_graphics.api_object
+
+                                (mid_sub, mid_vl,
+                                 B1, B2, B3,
+                                 br1, br2, br3, br4) = self.circuit.split_line_int_out(original_line=original_line,
+                                                                                       position=position,
+                                                                                       km_io=dlg2.value)
+
+                                bus_f_graphics_data = self.diagram.query_point(original_line.bus_from)
+                                bus_t_graphics_data = self.diagram.query_point(original_line.bus_to)
+                                bus_f_graphic_obj = self.graphics_manager.query(original_line.bus_from)
+                                bus_t_graphic_obj = self.graphics_manager.query(original_line.bus_to)
 
                                 if bus_f_graphics_data is None:
-                                    error_msg(f"{line.bus_from} was not found in the diagram")
+                                    error_msg(f"{original_line.bus_from} was not found in the diagram")
                                     return None
                                 if bus_t_graphics_data is None:
-                                    error_msg(f"{line.bus_to} was not found in the diagram")
+                                    error_msg(f"{original_line.bus_to} was not found in the diagram")
                                     return None
                                 if bus_f_graphic_obj is None:
-                                    error_msg(f"{line.bus_from} was not found in the graphics manager")
+                                    error_msg(f"{original_line.bus_from} was not found in the graphics manager")
                                     return None
                                 if bus_t_graphic_obj is None:
-                                    error_msg(f"{line.bus_to} was not found in the graphics manager")
+                                    error_msg(f"{original_line.bus_to} was not found in the graphics manager")
                                     return None
 
                                 # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
@@ -4354,148 +4358,8 @@ class SchematicWidget(QSplitter):
                                 mid_y = bus_f_graphics_data.y + (
                                         bus_t_graphics_data.y - bus_f_graphics_data.y) * position
 
-                                B1 = Bus(name=line.name + ' split bus 1',
-                                         Vnom=line.bus_from.Vnom,
-                                         vmin=line.bus_from.Vmin,
-                                         vmax=line.bus_from.Vmax,
-                                         area=line.bus_from.area,
-                                         zone=line.bus_from.zone,
-                                         country=line.bus_from.country)
-
-                                B2 = Bus(name=line.name + ' split bus 2',
-                                         Vnom=line.bus_from.Vnom,
-                                         vmin=line.bus_from.Vmin,
-                                         vmax=line.bus_from.Vmax,
-                                         area=line.bus_from.area,
-                                         zone=line.bus_from.zone,
-                                         country=line.bus_from.country)
-
-                                mid_sub = Substation(name=line.name + ' new bus',
-                                                     area=line.bus_from.area,
-                                                     zone=line.bus_from.zone,
-                                                     country=line.bus_from.country)
-                                mid_vl = VoltageLevel(name=line.name + ' new bus',
-                                                      substation=mid_sub)
-                                B3 = Bus(name=line.name + ' new bus',
-                                         Vnom=line.bus_from.Vnom,
-                                         vmin=line.bus_from.Vmin,
-                                         vmax=line.bus_from.Vmax,
-                                         voltage_level=mid_vl,
-                                         substation=mid_sub,
-                                         area=line.bus_from.area,
-                                         zone=line.bus_from.zone,
-                                         country=line.bus_from.country)
-
-                                # create first split
-                                br1 = Line(name=line.name + ' split 1',
-                                           bus_from=line.bus_from,
-                                           bus_to=B1,
-                                           r=line.R * position,
-                                           x=line.X * position,
-                                           b=line.B * position,
-                                           r0=line.R0 * position,
-                                           x0=line.X0 * position,
-                                           b0=line.B0 * position,
-                                           r2=line.R2 * position,
-                                           x2=line.X2 * position,
-                                           b2=line.B2 * position,
-                                           length=line.length * position,
-                                           rate=line.rate,
-                                           contingency_factor=line.contingency_factor,
-                                           protection_rating_factor=line.protection_rating_factor)
-
-                                position_c = 1.0 - position
-                                br2 = Line(name=line.name + ' split 2',
-                                           bus_from=B2,
-                                           bus_to=line.bus_to,
-                                           r=line.R * position_c,
-                                           x=line.X * position_c,
-                                           b=line.B * position_c,
-                                           r0=line.R0 * position_c,
-                                           x0=line.X0 * position_c,
-                                           b0=line.B0 * position_c,
-                                           r2=line.R2 * position_c,
-                                           x2=line.X2 * position_c,
-                                           b2=line.B2 * position_c,
-                                           length=line.length * position_c,
-                                           rate=line.rate,
-                                           contingency_factor=line.contingency_factor,
-                                           protection_rating_factor=line.protection_rating_factor)
-
-                                # kilometers of the in/out appart from the original line
-                                km_io = dlg2.value
-                                proportion_io = km_io / line.length
-
-                                br3 = Line(name=line.name + ' in',
-                                           bus_from=B1,
-                                           bus_to=B3,
-                                           r=line.R * proportion_io,
-                                           x=line.X * proportion_io,
-                                           b=line.B * proportion_io,
-                                           r0=line.R0 * proportion_io,
-                                           x0=line.X0 * proportion_io,
-                                           b0=line.B0 * proportion_io,
-                                           r2=line.R2 * proportion_io,
-                                           x2=line.X2 * proportion_io,
-                                           b2=line.B2 * proportion_io,
-                                           length=line.length * proportion_io,
-                                           rate=line.rate,
-                                           contingency_factor=line.contingency_factor,
-                                           protection_rating_factor=line.protection_rating_factor)
-
-                                br4 = Line(name=line.name + ' out',
-                                           bus_from=B3,
-                                           bus_to=B2,
-                                           r=line.R * proportion_io,
-                                           x=line.X * proportion_io,
-                                           b=line.B * proportion_io,
-                                           r0=line.R0 * proportion_io,
-                                           x0=line.X0 * proportion_io,
-                                           b0=line.B0 * proportion_io,
-                                           r2=line.R2 * proportion_io,
-                                           x2=line.X2 * proportion_io,
-                                           b2=line.B2 * proportion_io,
-                                           length=line.length * proportion_io,
-                                           rate=line.rate,
-                                           contingency_factor=line.contingency_factor,
-                                           protection_rating_factor=line.protection_rating_factor)
-
                                 # deactivate the original line
-                                line_graphics.api_object.active = False
-                                line_graphics.api_object.active_prof.fill(False)
                                 line_graphics.set_enable(False)
-
-                                # add to gridcal the new 2 lines and the bus
-                                self.circuit.add_bus(B1)
-                                self.circuit.add_bus(B2)
-                                self.circuit.add_bus(B3)
-                                self.circuit.add_line(br1)
-                                self.circuit.add_line(br2)
-                                self.circuit.add_line(br3)
-                                self.circuit.add_line(br4)
-
-                                # add new stuff as new investment
-                                inv_group = InvestmentsGroup(name=line.name + ' in/out', category='Line in/out')
-                                self.circuit.add_investments_group(inv_group)
-                                self.circuit.add_investment(
-                                    Investment(name=B1.name, device_idtag=B1.idtag, status=True, group=inv_group))
-                                self.circuit.add_investment(
-                                    Investment(name=B2.name, device_idtag=B2.idtag, status=True, group=inv_group))
-                                self.circuit.add_investment(
-                                    Investment(name=B3.name, device_idtag=B3.idtag, status=True, group=inv_group))
-                                self.circuit.add_investment(
-                                    Investment(name=br1.name, device_idtag=br1.idtag, status=True, group=inv_group))
-                                self.circuit.add_investment(
-                                    Investment(name=br2.name, device_idtag=br2.idtag, status=True, group=inv_group))
-                                self.circuit.add_investment(
-                                    Investment(name=br3.name, device_idtag=br3.idtag, status=True, group=inv_group))
-                                self.circuit.add_investment(
-                                    Investment(name=br4.name, device_idtag=br4.idtag, status=True, group=inv_group))
-
-                                # include the deactivation of the original line
-                                self.circuit.add_investment(Investment(name=line_graphics.api_object.name,
-                                                                       device_idtag=line_graphics.api_object.idtag,
-                                                                       status=False, group=inv_group))
 
                                 # add to the schematic the new 2 lines and the bus
                                 B1_graphics = self.add_api_bus(bus=B1,
@@ -4609,6 +4473,62 @@ class SchematicWidget(QSplitter):
             warning_msg("you must select the origin and destination buses!",
                         title='Change bus')
 
+    def set_generator_control_bus(self, generator_graphics: GeneratorGraphicItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param generator_graphics
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            generator_graphics.api_object.control_bus = sel_bus
+
+            if (yes_no_question(text="Do you want to set the profile?", title="Set regulation bus")
+                    and self.circuit.has_time_series):
+                generator_graphics.api_object.control_bus_prof.fill(sel_bus)
+
+        else:
+            error_msg(text="You need to select exactly one bus to be set as the generator regulation bus",
+                      title="Set regulation bus")
+
+    def set_generator_control_cn(self, generator_graphics: GeneratorGraphicItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param generator_graphics
+        """
+
+        idx_bus_list = self.get_selected_cn()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            generator_graphics.api_object.control_cn = sel_bus
+
+        else:
+            error_msg("You need to select exactly one bus to be set as the generator regulation connectivity node",
+                      "Set regulation connectivity node")
+
+    def set_branch_control_bus(self, line_graphics: LineGraphicTemplateItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param line_graphics
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 2:
+
+            # detect the bus and its combinations
+            if idx_bus_list[0][1] == line_graphics.api_object.bus_from:
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
+
     def disable_all_results_tags(self):
         """
         Disable all results' tags in this diagram
@@ -4625,25 +4545,79 @@ class SchematicWidget(QSplitter):
             for key, widget in type_dict.items():
                 widget.enable_label_drawing()
 
+    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+        """
+        Save video
+        :param fname: file name
+        :param fps: frames per second
+        :returns width, height
+        """
 
-def generate_bus_branch_diagram(buses: List[Bus],
-                                busbars: List[BusBar],
-                                connecivity_nodes: List[ConnectivityNode],
-                                lines: List[Line],
-                                dc_lines: List[DcLine],
-                                transformers2w: List[Transformer2W],
-                                transformers3w: List[Transformer3W],
-                                windings: List[Winding],
-                                hvdc_lines: List[HvdcLine],
-                                vsc_devices: List[VSC],
-                                upfc_devices: List[UPFC],
-                                series_reactances: List[SeriesReactance],
-                                fluid_nodes: List[FluidNode],
-                                fluid_paths: List[FluidPath],
-                                explode_factor=1.0,
-                                prog_func: Union[Callable, None] = None,
-                                text_func: Union[Callable, None] = None,
-                                name='Bus branch diagram') -> SchematicDiagram:
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
+
+        self._video = cv2.VideoWriter(filename=fname,
+                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                      fps=fps,
+                                      frameSize=(w, h))
+
+        return w, h
+
+    def capture_video_frame(self) -> None:
+        """
+        Save the current state in a video frame
+        """
+
+        image, w, h = self.get_image()
+        # qimage = QImage(w, h, QImage.Format_RGB32)
+        # qimage.fill(Qt.transparent)
+        # painter = QPainter(qimage)
+        # painter.setRenderHint(QPainter.Antialiasing)
+        # # self.diagram_scene.render(painter)
+        # self.render(painter)
+        # painter.end()
+
+        # image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        # image.fill(Qt.transparent)
+        # painter = QPainter(image)
+        # painter.setRenderHint(QPainter.Antialiasing)
+        # self.editor_graphics_view.render(painter)
+        # image.save("temp.png")
+        # painter.end()
+
+        # ptr = qimage.bits()
+        ptr = image.convertToFormat(QImage.Format.Format_RGB32).constBits()
+        frame = np.array(ptr).reshape(h, w, 4).astype(np.uint8)
+        cv2.imshow("export", frame)
+        self._video.write(frame)
+
+    def end_video_recording(self) -> None:
+        """
+        End the video recording
+        """
+        self._video.release()
+        cv2.destroyAllWindows()
+
+
+def generate_schematic_diagram(buses: List[Bus],
+                               busbars: List[BusBar],
+                               connecivity_nodes: List[ConnectivityNode],
+                               lines: List[Line],
+                               dc_lines: List[DcLine],
+                               transformers2w: List[Transformer2W],
+                               transformers3w: List[Transformer3W],
+                               windings: List[Winding],
+                               hvdc_lines: List[HvdcLine],
+                               vsc_devices: List[VSC],
+                               upfc_devices: List[UPFC],
+                               series_reactances: List[SeriesReactance],
+                               switches: List[Switch],
+                               fluid_nodes: List[FluidNode],
+                               fluid_paths: List[FluidPath],
+                               explode_factor=1.0,
+                               prog_func: Union[Callable, None] = None,
+                               text_func: Union[Callable, None] = None,
+                               name='Bus branch diagram') -> SchematicDiagram:
     """
     Add a elements to the schematic scene
     :param buses: list of Bus objects
@@ -4658,6 +4632,7 @@ def generate_bus_branch_diagram(buses: List[Bus],
     :param vsc_devices: list Vsc objects
     :param upfc_devices: List of UPFC devices
     :param series_reactances: List of SeriesReactance
+    :param switches: List of Switch
     :param fluid_nodes: List of FluidNode
     :param fluid_paths: List of FluidPath
     :param explode_factor: factor of "explosion": Separation of the nodes factor
@@ -4690,190 +4665,76 @@ def generate_bus_branch_diagram(buses: List[Bus],
             y = int(bus.y * explode_factor)
             diagram.set_point(device=bus, location=GraphicLocation(x=x, y=y, h=bus.h, w=bus.w))
 
-    # --------------------------------------------------------------------------------------------------------------
+    def add_devices_list(cls: str, dev_lst: List[ALL_DEV_TYPES]):
+        """
 
-    if text_func is not None:
-        text_func('Creating schematic busbars devices')
+        :param cls:
+        :param dev_lst:
+        """
+        if text_func is not None:
+            text_func(f'Adding {cls} devices to the diagram')
 
-    nn = len(busbars)
-    for i, elm in enumerate(busbars):
+        nn = len(dev_lst)
+        for i, elm in enumerate(dev_lst):
 
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
+            if prog_func is not None:
+                prog_func((i + 1) / nn * 100.0)
 
-        diagram.set_point(device=elm, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-
-    if text_func is not None:
-        text_func('Creating schematic connectivity nodes devices')
-
-    nn = len(connecivity_nodes)
-    for i, elm in enumerate(connecivity_nodes):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        if not elm.internal:
             diagram.set_point(device=elm, location=GraphicLocation())
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic fluid nodes devices')
 
-    nn = len(fluid_nodes)
-    for i, elm in enumerate(fluid_nodes):
+    add_devices_list(cls="busbars", dev_lst=busbars)
+    add_devices_list(cls="connecivity_nodes", dev_lst=connecivity_nodes)
+    add_devices_list(cls="fluid_nodes", dev_lst=fluid_nodes)
+    add_devices_list(cls="transformers3w", dev_lst=transformers3w)
 
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=elm, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic line devices')
-
-    nn = len(lines)
-    for i, branch in enumerate(lines):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
+    add_devices_list(cls="lines", dev_lst=lines)
+    add_devices_list(cls="dc_lines", dev_lst=dc_lines)
+    add_devices_list(cls="transformers2w", dev_lst=transformers2w)
+    add_devices_list(cls="series_reactances", dev_lst=series_reactances)
+    add_devices_list(cls="switches", dev_lst=switches)
+    add_devices_list(cls="windings", dev_lst=windings)
+    add_devices_list(cls="hvdc_lines", dev_lst=hvdc_lines)
+    add_devices_list(cls="vsc_devices", dev_lst=vsc_devices)
+    add_devices_list(cls="upfc_devices", dev_lst=upfc_devices)
+    add_devices_list(cls="fluid_paths", dev_lst=fluid_paths)
 
     # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic line devices')
-
-    nn = len(dc_lines)
-    for i, branch in enumerate(dc_lines):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic transformer devices')
-
-    nn = len(transformers2w)
-    for i, branch in enumerate(transformers2w):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic series reactances devices')
-
-    nn = len(series_reactances)
-    for i, branch in enumerate(series_reactances):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic transformer3w devices')
-
-    nn = len(transformers3w)
-    for i, elm in enumerate(transformers3w):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        x = int(elm.x * explode_factor)
-        y = int(elm.y * explode_factor)
-        diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
-        diagram.set_point(device=elm.winding1, location=GraphicLocation())
-        diagram.set_point(device=elm.winding2, location=GraphicLocation())
-        diagram.set_point(device=elm.winding3, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic winding devices')
-
-    nn = len(windings)
-    for i, branch in enumerate(windings):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic HVDC devices')
-
-    nn = len(hvdc_lines)
-    for i, branch in enumerate(hvdc_lines):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic VSC devices')
-
-    nn = len(vsc_devices)
-    for i, branch in enumerate(vsc_devices):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic UPFC devices')
-
-    nn = len(upfc_devices)
-    for i, branch in enumerate(upfc_devices):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=branch, location=GraphicLocation())
-
-    # --------------------------------------------------------------------------------------------------------------
-    if text_func is not None:
-        text_func('Creating schematic fluid paths devices')
-
-    nn = len(fluid_paths)
-    for i, elm in enumerate(fluid_paths):
-
-        if prog_func is not None:
-            prog_func((i + 1) / nn * 100.0)
-
-        diagram.set_point(device=elm, location=GraphicLocation())
+    # if text_func is not None:
+    #     text_func('Creating schematic transformer3w devices')
+    #
+    # nn = len(transformers3w)
+    # for i, elm in enumerate(transformers3w):
+    #
+    #     if prog_func is not None:
+    #         prog_func((i + 1) / nn * 100.0)
+    #
+    #     x = int(elm.x * explode_factor)
+    #     y = int(elm.y * explode_factor)
+    #     diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
+    #     diagram.set_point(device=elm.winding1, location=GraphicLocation())
+    #     diagram.set_point(device=elm.winding2, location=GraphicLocation())
+    #     diagram.set_point(device=elm.winding3, location=GraphicLocation())
 
     return diagram
 
 
-def get_devices_to_expand(circuit: MultiCircuit,
-                          root_bus: Bus,
-                          max_level: int = 1
-                          ) -> Tuple[List[Bus],
-                                     List[BusBar],
-                                     List[ConnectivityNode],
-                                     List[Line],
-                                     List[DcLine],
-                                     List[Transformer2W],
-                                     List[Transformer3W],
-                                     List[Winding],
-                                     List[HvdcLine],
-                                     List[VSC],
-                                     List[UPFC],
-                                     List[SeriesReactance],
-                                     List[FluidNode],
-                                     List[FluidPath]]:
+def get_devices_to_expand(circuit: MultiCircuit, root_bus: Bus, max_level: int = 1) -> Tuple[List[Bus],
+List[BusBar],
+List[ConnectivityNode],
+List[Line],
+List[DcLine],
+List[Transformer2W],
+List[Transformer3W],
+List[Winding],
+List[HvdcLine],
+List[VSC],
+List[UPFC],
+List[SeriesReactance],
+List[Switch],
+List[FluidNode],
+List[FluidPath]]:
     """
     get lists of devices to expand given a root bus
     :param circuit: MultiCircuit
@@ -4935,6 +4796,7 @@ def get_devices_to_expand(circuit: MultiCircuit,
     vsc_converters: List[VSC] = list()
     upfc_devices: List[UPFC] = list()
     series_reactances: List[SeriesReactance] = list()
+    switches: List[Switch] = list()
     fluid_paths: List[FluidPath] = list()
 
     for obj in selected_branches:
@@ -4965,19 +4827,32 @@ def get_devices_to_expand(circuit: MultiCircuit,
         elif obj.device_type == DeviceType.UpfcDevice:
             upfc_devices.append(obj)
 
+        elif obj.device_type == DeviceType.SeriesReactanceDevice:
+            series_reactances.append(obj)
+
+        elif obj.device_type == DeviceType.SwitchDevice:
+            switches.append(obj)
+
         else:
             raise Exception('Unrecognized branch type ' + obj.device_type.value)
 
-    return (list(buses), list(busbars), list(cns), lines, dc_lines, transformers2w, transformers3w, windings, hvdc_lines,
-            vsc_converters, upfc_devices, series_reactances, list(fluid_nodes), fluid_paths)
+    return (list(buses), list(busbars), list(cns), lines, dc_lines, transformers2w, transformers3w,
+            windings, hvdc_lines, vsc_converters, upfc_devices, series_reactances, switches,
+            list(fluid_nodes), fluid_paths)
 
 
-def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int = 1):
+def make_vecinity_diagram(circuit: MultiCircuit,
+                          root_bus: Bus,
+                          max_level: int = 1,
+                          prog_func: Union[Callable, None] = None,
+                          text_func: Union[Callable, None] = None):
     """
     Create a vecinity diagram
     :param circuit: MultiCircuit
     :param root_bus: Bus
     :param max_level: max expansion level
+    :param prog_func:
+    :param text_func:
     :return:
     """
 
@@ -4985,28 +4860,29 @@ def make_vecinity_diagram(circuit: MultiCircuit, root_bus: Bus, max_level: int =
      lines, dc_lines, transformers2w,
      transformers3w, windings, hvdc_lines,
      vsc_converters, upfc_devices,
-     series_reactances,
+     series_reactances, switches,
      fluid_nodes, fluid_paths) = get_devices_to_expand(circuit=circuit, root_bus=root_bus, max_level=max_level)
 
     # Draw schematic subset
-    diagram = generate_bus_branch_diagram(buses=list(buses),
-                                          busbars=busbars,
-                                          connecivity_nodes=cns,
-                                          lines=lines,
-                                          dc_lines=dc_lines,
-                                          transformers2w=transformers2w,
-                                          transformers3w=transformers3w,
-                                          windings=windings,
-                                          hvdc_lines=hvdc_lines,
-                                          vsc_devices=vsc_converters,
-                                          upfc_devices=upfc_devices,
-                                          series_reactances=series_reactances,
-                                          fluid_nodes=list(fluid_nodes),
-                                          fluid_paths=fluid_paths,
-                                          explode_factor=1.0,
-                                          prog_func=None,
-                                          text_func=print,
-                                          name=root_bus.name + 'vecinity')
+    diagram = generate_schematic_diagram(buses=list(buses),
+                                         busbars=busbars,
+                                         connecivity_nodes=cns,
+                                         lines=lines,
+                                         dc_lines=dc_lines,
+                                         transformers2w=transformers2w,
+                                         transformers3w=transformers3w,
+                                         windings=windings,
+                                         hvdc_lines=hvdc_lines,
+                                         vsc_devices=vsc_converters,
+                                         upfc_devices=upfc_devices,
+                                         series_reactances=series_reactances,
+                                         switches=switches,
+                                         fluid_nodes=list(fluid_nodes),
+                                         fluid_paths=fluid_paths,
+                                         explode_factor=1.0,
+                                         prog_func=prog_func,
+                                         text_func=text_func,
+                                         name=root_bus.name + 'vecinity')
 
     return diagram
 
