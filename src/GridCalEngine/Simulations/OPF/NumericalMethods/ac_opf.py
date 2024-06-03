@@ -525,6 +525,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[gen_nondisp_idx]
     rates = nc.rates / Sbase  # Line loading limits. If the grid is not well conditioned, add constant value (i.e. +100)
+    #rates[np.array([239,1215,3237,3238,3285,3292,3467,3293,3294])]*=1.5
+
     Va_max = nc.bus_data.angle_max  # This limits are not really used as of right now.
     Va_min = nc.bus_data.angle_min
 
@@ -575,7 +577,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
         c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
-        c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
+        c_v = 1000 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
@@ -729,6 +731,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Sf = result.structs.Sf
     St = result.structs.St
     loading = np.abs(Sf) / (rates + 1e-9)
+
+    if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
+        overloads_sf = (np.power(np.power(rates, 2) + sl_sf, 0.5) - rates)*Sbase
+        overloads_st = (np.power(np.power(rates, 2) + sl_st, 0.5) - rates)*Sbase
+
+    else:
+        pass
+
     hvdc_power = nc.hvdc_data.Pset.copy()
     hvdc_power[hvdc_disp_idx] = Pfdc
     hvdc_loading = hvdc_power / (nc.hvdc_data.rate + 1e-9)
@@ -832,19 +842,19 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
         if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
             for k in range(n_br_mon):
-                if sl_sf[k] > opf_options.ips_tolerance:
-                    logger.add_warning('Branch overload in the from sense',
+                if overloads_sf[k] > opf_options.ips_tolerance * Sbase:
+                    logger.add_warning('Branch overload in the from sense (MVA)',
                                        device=str(br_mon_idx[k]),
                                        device_property="Slack",
-                                       value=str(sl_sf[k]),
-                                       expected_value=f'< {opf_options.ips_tolerance}')
+                                       value=str(overloads_sf[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance*Sbase}')
 
-                if sl_st[k] > opf_options.ips_tolerance:
-                    logger.add_warning('Branch overload in the to sense',
+                if overloads_st[k] > opf_options.ips_tolerance * Sbase:
+                    logger.add_warning('Branch overload in the to sense (MVA)',
                                        device=str(br_mon_idx[k]),
                                        device_property="Slack",
-                                       value=str(sl_st[k]),
-                                       expected_value=f'< {opf_options.ips_tolerance}')
+                                       value=str(overloads_st[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance*Sbase}')
 
             for i in range(npq):
                 if sl_vmax[i] > opf_options.ips_tolerance:
