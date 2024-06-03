@@ -1275,7 +1275,7 @@ def object_histogram_analysis(circuit: MultiCircuit,
 
     if n > 0:
         k = int(np.round(math.sqrt(p)))
-        axs = [None] * (p + 1)
+        axs = np.empty(p + 1, dtype=object)
 
         for j in range(p):
             x = vals[:, j]
@@ -1318,4 +1318,4 @@ def object_histogram_analysis(circuit: MultiCircuit,
             ax.set_ylabel("X")
             axs[p] = ax
 
-    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    fig.tight_layout(rect=(0, 0.03, 1, 0.95))
