@@ -3,7 +3,7 @@ from itertools import groupby
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator, \
-    RawSwitchedShunt, RawTransformer
+    RawSwitchedShunt, RawTransformer, RawBranch
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 
@@ -50,7 +50,7 @@ def get_psse_load(load: dev.Load) -> RawLoad:
     # TODO: Can it be modified on the UI?
     #  Does the "I" need to be generated as an automatically incrementing number?
     #  Then how should the ID be generated?
-    i, id_ = load.name.split("_", 1)
+    i, id_ = load.name.split("@", 1)
 
     psse_load.I = i
     psse_load.ID = id_
@@ -69,7 +69,7 @@ def get_psse_load(load: dev.Load) -> RawLoad:
 def get_psse_fixed_shunt(shunt: dev.Shunt) -> RawFixedShunt:
     psse_shunt = RawFixedShunt()
 
-    i, id_ = shunt.name.split("_", 1)
+    i, id_ = shunt.name.split("@", 1)
 
     # TODO: Can it be modified on the UI?
     #  Does the "I" need to be generated as an automatically incrementing number?
@@ -106,7 +106,7 @@ def get_psse_switched_shunt(shunt: dev.ControllableShunt) -> RawSwitchedShunt:
 def get_psse_generator(generator: dev.Generator) -> RawGenerator:
     psse_generator = RawGenerator()
 
-    i, id_ = generator.name.split("_", 1)
+    i, id_ = generator.name.split("@", 1)
 
     # TODO: Can it be modified on the UI?
     #  Does the "I" need to be generated as an automatically incrementing number?
@@ -170,6 +170,21 @@ def get_psse_transformer3w(transformer: dev.Transformer3W) -> RawTransformer:
 
     return psse_transformer
 
+def get_psse_branch(branch: dev.Line) -> RawBranch:
+    psse_branch = RawBranch()
+    psse_branch.I = branch.bus_from
+    psse_branch.J = branch.bus_to
+
+    psse_branch.CKT = branch.idtag
+    psse_branch.R = branch.R
+    psse_branch.X = branch.X
+    psse_branch.B = branch.B 
+    psse_branch.NAME = branch.name
+    psse_branch.ST = 1
+    psse_branch.LEN = branch.length
+
+    return psse_branch
+
 
 def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     psse_circuit = PsseCircuit()
@@ -179,10 +194,12 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
 
     psse_circuit.areas = list(area_dict.values())
     psse_circuit.zones = list(zones_dict.values())
-
+    
     psse_circuit.buses = [get_psse_bus(bus, area_dict, zones_dict) for bus in grid.buses]
 
     psse_circuit.loads = [get_psse_load(load) for load in grid.loads]
+
+    psse_circuit.branches = [get_psse_branch(line) for line in grid.lines]
 
     psse_circuit.fixed_shunts = [get_psse_fixed_shunt(shunt) for shunt in grid.shunts]
 
