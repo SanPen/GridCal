@@ -388,7 +388,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 xlabel='',
                                 units=y_label)
 
-
+        # Exemplar old separated plots
         # elif result_type == ResultTypes.InvestmentsParetoPlot1:
         #     labels = self._index_names
         #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
@@ -404,101 +404,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         #     sc3 = ax3.scatter(self._financial, self._losses, c=self._f_obj, norm=color_norm)
         #     ax3.set_xlabel('Investment cost (M€)')
         #     ax3.set_ylabel('Losses cost (M€)')
-        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
-        #     fig.suptitle(result_type.value)
-        #     plt.tight_layout()
-        #     plt.show()
-        #
-        #     return ResultsTable(data=data,
-        #                         index=np.array(labels),
-        #                         idx_device_type=DeviceType.NoDevice,
-        #                         columns=np.array(columns),
-        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
-        #                         title=title,
-        #                         ylabel=y_label,
-        #                         xlabel='',
-        #                         units=y_label)
-        #
-        # elif result_type == ResultTypes.InvestmentsParetoPlot2:
-        #     labels = self._index_names
-        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
-        #     columns = ["Investment cost (M€)", "Overload cost (M€)"]
-        #     data = np.c_[self._financial, self._overload_score]
-        #     y_label = ''
-        #     title = ''
-        #
-        #     plt.ion()
-        #     color_norm = plt_colors.Normalize()
-        #     fig = plt.figure(figsize=(8, 6))
-        #     ax3 = plt.subplot(1, 1, 1)
-        #     sc3 = ax3.scatter(self._financial, self._overload_score, c=self._f_obj, norm=color_norm)
-        #     ax3.set_xlabel('Investment cost (M€)')
-        #     ax3.set_ylabel('Overload cost (M€)')
-        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
-        #     fig.suptitle(result_type.value)
-        #     plt.tight_layout()
-        #     plt.show()
-        #
-        #     return ResultsTable(data=data,
-        #                         index=np.array(labels),
-        #                         idx_device_type=DeviceType.NoDevice,
-        #                         columns=np.array(columns),
-        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
-        #                         title=title,
-        #                         ylabel=y_label,
-        #                         xlabel='',
-        #                         units=y_label)
-        #
-        # elif result_type == ResultTypes.InvestmentsParetoPlot3:
-        #     labels = self._index_names
-        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
-        #     columns = ["Investment cost (M€)", "Voltage cost (M€)"]
-        #     data = np.c_[self._financial, self._voltage_score]
-        #     y_label = ''
-        #     title = ''
-        #
-        #     plt.ion()
-        #     color_norm = plt_colors.Normalize()
-        #     fig = plt.figure(figsize=(8, 6))
-        #     ax3 = plt.subplot(1, 1, 1)
-        #     sc3 = ax3.scatter(self._financial, self._voltage_score, c=self._f_obj, norm=color_norm)
-        #     ax3.set_xlabel('Investment cost (M€)')
-        #     ax3.set_ylabel('Voltage cost (M€)')
-        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
-        #     fig.suptitle(result_type.value)
-        #     plt.tight_layout()
-        #     plt.show()
-        #
-        #     print(f"Result Type: {result_type}")
-        #     print(f"Data shape: {data.shape}")
-        #     print(f"Length of columns: {len(columns)}")
-        #     print(f"Length of index: {len(labels)}")
-        #
-        #     return ResultsTable(data=data,
-        #                         index=np.array(labels),
-        #                         idx_device_type=DeviceType.NoDevice,
-        #                         columns=np.array(columns),
-        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
-        #                         title=title,
-        #                         ylabel=y_label,
-        #                         xlabel='',
-        #                         units=y_label)
-        #
-        # elif result_type == ResultTypes.InvestmentsParetoPlot4:
-        #     labels = self._index_names
-        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
-        #     columns = ["Investment cost (M€)", "Technical cost (M€)"]
-        #     data = np.c_[self._financial, self._losses+self._voltage_score+self._overload_score]
-        #     y_label = ''
-        #     title = ''
-        #
-        #     plt.ion()
-        #     color_norm = plt_colors.Normalize()
-        #     fig = plt.figure(figsize=(8, 6))
-        #     ax3 = plt.subplot(1, 1, 1)
-        #     sc3 = ax3.scatter(self._financial, self._losses+self._voltage_score+self._overload_score, c=self._f_obj, norm=color_norm)
-        #     ax3.set_xlabel('Investment cost (M€)')
-        #     ax3.set_ylabel('Technical cost (M€)')
         #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
         #     fig.suptitle(result_type.value)
         #     plt.tight_layout()
