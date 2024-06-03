@@ -317,7 +317,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             else:
                 self.losses_scale = 1
                 self.voltage_scale = 1
-            print(self.losses_scale)
 
             columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)", "Voltage cost (M€)"]
             data = np.c_[self._financial, self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score, self._losses, self._overload_score, self._voltage_score]
