@@ -490,6 +490,13 @@ class LinearMultiContingencies:
         # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
 
+    def get_contingency_group_names(self) -> List[str]:
+        """
+        Returns a list of of the names of the used contingency groups
+        :return:
+        """
+        return [elm.name for elm in self.contingency_groups_used]
+
     def compute(self,
                 lodf: Mat,
                 ptdf: Mat,

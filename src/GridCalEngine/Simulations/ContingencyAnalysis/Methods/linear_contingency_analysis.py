@@ -38,8 +38,6 @@ def linear_contingency_analysis(grid: MultiCircuit,
     Run N-1 simulation in series with HELM, non-linear solution
     :param grid: MultiCircuit
     :param options: ContingencyAnalysisOptions
-    :param contingency_groups_used: List f contingency groups, because it can be
-                                    filtered and not match the list in the circuit
     :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
@@ -63,7 +61,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                          branch_names=numerical_circuit.branch_names,
                                          bus_names=numerical_circuit.bus_names,
                                          bus_types=numerical_circuit.bus_types,
-                                         con_names=grid.get_contingency_group_names())
+                                         con_names=linear_multiple_contingencies.get_contingency_group_names())
 
     linear_analysis = LinearAnalysis(numerical_circuit=numerical_circuit,
                                      distributed_slack=options.lin_options.distribute_slack,

@@ -64,7 +64,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                          branch_names=numerical_circuit.branch_names,
                                          bus_names=numerical_circuit.bus_names,
                                          bus_types=numerical_circuit.bus_types,
-                                         con_names=grid.get_contingency_group_names())
+                                         con_names=linear_multiple_contingencies.get_contingency_group_names())
 
     # get contingency groups dictionary
     cg_dict = grid.get_contingency_group_dict()

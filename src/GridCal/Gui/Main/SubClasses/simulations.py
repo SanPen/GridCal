@@ -426,30 +426,37 @@ class SimulationsMain(TimeEventsMain):
         # get the filter mode
         filter_mode = self.contingency_filter_modes_dict[self.ui.contingency_filter_by_comboBox.currentText()]
 
-        # get the selection indices
-        idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
-
         if filter_mode == ContingencyFilteringMethods.All:
             # no filtering, we're safe
             return self.circuit.get_contingency_groups()
 
         elif filter_mode == ContingencyFilteringMethods.Country:
+
             if self.circuit.get_country_number() > 0:
-                return self.circuit.filter_contingencies_by(filter_elements=self.circuit.get_countries()[idx])
+                # get the selection indices
+                idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
+                elements = self.circuit.get_countries()
+                return self.circuit.filter_contingencies_by(filter_elements=[elements[i] for i in idx])
             else:
                 # default to returning all groups, since it's safer
                 return self.circuit.get_contingency_groups()
 
         elif filter_mode == ContingencyFilteringMethods.Area:
             if self.circuit.get_area_number() > 0:
-                return self.circuit.filter_contingencies_by(filter_elements=self.circuit.get_areas()[idx])
+                # get the selection indices
+                idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
+                elements = self.circuit.get_areas()
+                return self.circuit.filter_contingencies_by(filter_elements=[elements[i] for i in idx])
             else:
                 # default to returning all groups, since it's safer
                 return self.circuit.get_contingency_groups()
 
         elif filter_mode == ContingencyFilteringMethods.Zone:
             if self.circuit.get_zone_number() > 0:
-                return self.circuit.filter_contingencies_by(filter_elements=self.circuit.get_zones()[idx])
+                # get the selection indices
+                idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
+                elements = self.circuit.get_areas()
+                return self.circuit.filter_contingencies_by(filter_elements=[elements[i] for i in idx])
             else:
                 # default to returning all groups, since it's safer
                 return self.circuit.get_contingency_groups()
@@ -2737,4 +2744,3 @@ class SimulationsMain(TimeEventsMain):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
-
