@@ -534,12 +534,14 @@ class LinearMultiContingencies:
     LinearMultiContingencies
     """
 
-    def __init__(self, grid: MultiCircuit):
+    def __init__(self, grid: MultiCircuit, contingency_groups_used: List[ContingencyGroup]):
         """
         Constructor
         :param grid: MultiCircuit
         """
         self.grid: MultiCircuit = grid
+
+        self.contingency_groups_used = contingency_groups_used
 
         # auxiliary structures
         self.__contingency_group_dict = grid.get_contingency_group_dict()
@@ -550,7 +552,7 @@ class LinearMultiContingencies:
         self.contingency_indices = list()
 
         # for each contingency group
-        for ic, contingency_group in enumerate(self.grid.contingency_groups):
+        for ic, contingency_group in enumerate(self.contingency_groups_used):
             self.contingency_indices.append(ContingencyIndices(contingency_group=contingency_group,
                                                                contingency_group_dict=self.__contingency_group_dict,
                                                                branches_dict=self.__branches_dict,
@@ -572,7 +574,7 @@ class LinearMultiContingencies:
         :param ptdf: original PTDF matrix (nbr, nbus)
         :param ptdf_threshold: threshold to discard values
         :param lodf_threshold: Threshold for LODF conversion to sparse
-        :param prepare_for_srap: if we are going to check with SRAP conditions, we must add the PTDF factors
+        :param prepare_for_srap:
         :return: None
         """
 

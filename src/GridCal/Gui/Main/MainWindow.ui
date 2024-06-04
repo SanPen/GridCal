@@ -4768,7 +4768,7 @@
                      </size>
                     </property>
                     <property name="toolTip">
-                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Filter contingencies by area&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This option allows you to only consider the contingencies that fall in ceratain areas. &lt;/p&gt;&lt;p&gt;This is highly discouraged.&lt;/p&gt;&lt;p&gt;To select all contingencies, select all the areas here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Filter contingencies&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This option allows you to only consider the contingencies that fall in ceratain groupings such as Area, Zone or Country. The filtering is performed based on the information stored in the Buses.&lt;/p&gt;&lt;p&gt;This is highly discouraged. We trully advise you to not to filter the contingencies and select All Contingencies. Use this feature at your own risk.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                    </widget>
                   </item>
@@ -8876,6 +8876,7 @@ QProgressBar::chunk{
    <addaction name="actionSave"/>
    <addaction name="actionEnable_server_mode"/>
    <addaction name="separator"/>
+   <addaction name="actionInputs_analysis"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionLinearAnalysis"/>
    <addaction name="actionAdd_selected_to_contingency"/>
@@ -8884,7 +8885,6 @@ QProgressBar::chunk{
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
    <addaction name="separator"/>
-   <addaction name="actionATC"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
    <addaction name="actionNodal_capacity"/>
    <addaction name="actionOPF"/>
@@ -8905,7 +8905,6 @@ QProgressBar::chunk{
    <addaction name="actionDelete_selected"/>
    <addaction name="actionDelete_from_the_diagram"/>
    <addaction name="separator"/>
-   <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
   </widget>
   <action name="actionOpen_file">

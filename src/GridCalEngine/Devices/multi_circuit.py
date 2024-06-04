@@ -734,6 +734,13 @@ class MultiCircuit:
         """
         return len(self.contingencies)
 
+    def get_contingency_groups(self) -> List[dev.ContingencyGroup]:
+        """
+        Get contingency_groups
+        :return:List[dev.ContingencyGroup]
+        """
+        return self.contingency_groups
+
     def get_dimensions(self):
         """
         Get the three dimensions of the circuit: number of buses, number of Branches, number of time steps
@@ -6500,3 +6507,57 @@ class MultiCircuit:
                                            status=False, group=inv_group))
 
         return mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4
+
+    def get_buses_by(self, filter_elements: List[Union[dev.Area, dev.Country, dev.Zone]]) -> List[dev.Bus]:
+        """
+        Get a list of buses that can be found in the list of Areas | Zones | Countries
+        :param filter_elements: list of Areas | Zones | Countries
+        :return: list of buses
+        """
+        data: List[dev.Bus] = list()
+
+        for bus in self.buses:
+
+            if bus.area in filter_elements or bus.zone in filter_elements or bus.country in filter_elements:
+                data.append(bus)
+
+        return data
+
+    def filter_contingencies_by(self,
+                                filter_elements: List[Union[dev.Area, dev.Country, dev.Zone]]
+                                ) -> List[dev.ContingencyGroup]:
+        """
+
+        :param filter_elements: list of zones, areas or countries
+        :return:
+        """
+
+        # declare the reults
+        filtered_groups: Set[dev.ContingencyGroup] = set()
+
+        # get a dictionary of all objects
+        all_devices = self.get_all_elements_dict()
+
+        # get the buses that match the filtering
+        buses = self.get_buses_by(filter_elements=filter_elements)
+
+        for contingency in self.contingencies:
+
+            if contingency.group not in filtered_groups:
+
+                # get the contingency device
+                contingency_device = all_devices.get(contingency.device_idtag, None)
+
+                if contingency_device is not None:
+
+                    if hasattr(contingency_device, "bus_from"):
+                        # it is likely a branch
+                        if contingency_device.bus_from in buses or contingency_device.bus_to in buses:
+                            filtered_groups.add(contingency.group)
+
+                    elif hasattr(contingency_device, "bus"):
+                        # it is likely an injection
+                        if contingency_device.bus in buses:
+                            filtered_groups.add(contingency.group)
+
+        return list(filtered_groups)

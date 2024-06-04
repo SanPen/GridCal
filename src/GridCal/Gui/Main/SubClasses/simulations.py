@@ -41,7 +41,8 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod)
+                                        BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
+                                        ContingencyFilteringMethods)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -185,6 +186,18 @@ class SimulationsMain(TimeEventsMain):
             lst.append(method.value)
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
 
+        # contingency filtering modes
+        con_filters = [ContingencyFilteringMethods.All,
+                       ContingencyFilteringMethods.Country,
+                       ContingencyFilteringMethods.Area,
+                       ContingencyFilteringMethods.Zone]
+        self.contingency_filter_modes_dict = OrderedDict()
+        con_filter_vals = list()
+        for con_filter in con_filters:
+            self.contingency_filter_modes_dict[con_filter.value] = con_filter
+            con_filter_vals.append(con_filter.value)
+        self.ui.contingency_filter_by_comboBox.setModel(gf.get_list_model(con_filter_vals))
+
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
 
@@ -223,6 +236,7 @@ class SimulationsMain(TimeEventsMain):
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
+        self.ui.contingency_filter_by_comboBox.currentTextChanged.connect(self.modify_contingency_filter_mode)
 
     def get_simulations(self):
         """
@@ -372,7 +386,76 @@ class SimulationsMain(TimeEventsMain):
             self.ui.solver_comboBox.setCurrentIndex(0)
 
         else:
-            raise Exception('Unsupported engine' + str(eng.value))
+            raise Exception('Unsupported engine ' + str(eng.value))
+
+    def modify_contingency_filter_mode(self) -> None:
+        """
+        Modify the objects
+        """
+        filter_mode = self.contingency_filter_modes_dict[self.ui.contingency_filter_by_comboBox.currentText()]
+
+        if filter_mode == ContingencyFilteringMethods.All:
+            mdl = None
+
+        elif filter_mode == ContingencyFilteringMethods.Country:
+            mdl = gf.get_list_model(lst=[elm.name for elm in self.circuit.get_countries()],
+                                    checks=True,
+                                    check_value=True)
+
+        elif filter_mode == ContingencyFilteringMethods.Area:
+            mdl = gf.get_list_model(lst=[elm.name for elm in self.circuit.get_areas()],
+                                    checks=True,
+                                    check_value=True)
+
+        elif filter_mode == ContingencyFilteringMethods.Zone:
+            mdl = gf.get_list_model(lst=[elm.name for elm in self.circuit.get_zones()],
+                                    checks=True,
+                                    check_value=True)
+
+        else:
+            raise Exception('Unsupported ContingencyFilteringMethod ' + str(filter_mode.value))
+
+        self.ui.contingency_group_filter_listView.setModel(mdl)
+
+    def get_contingency_groups_matching_the_filter(self) -> List[dev.ContingencyGroup]:
+        """
+        Get the list of contingencies that match the group
+        :return:
+        """
+
+        # get the filter mode
+        filter_mode = self.contingency_filter_modes_dict[self.ui.contingency_filter_by_comboBox.currentText()]
+
+        # get the selection indices
+        idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
+
+        if filter_mode == ContingencyFilteringMethods.All:
+            # no filtering, we're safe
+            return self.circuit.get_contingency_groups()
+
+        elif filter_mode == ContingencyFilteringMethods.Country:
+            if self.circuit.get_country_number() > 0:
+                return self.circuit.filter_contingencies_by(filter_elements=self.circuit.get_countries()[idx])
+            else:
+                # default to returning all groups, since it's safer
+                return self.circuit.get_contingency_groups()
+
+        elif filter_mode == ContingencyFilteringMethods.Area:
+            if self.circuit.get_area_number() > 0:
+                return self.circuit.filter_contingencies_by(filter_elements=self.circuit.get_areas()[idx])
+            else:
+                # default to returning all groups, since it's safer
+                return self.circuit.get_contingency_groups()
+
+        elif filter_mode == ContingencyFilteringMethods.Zone:
+            if self.circuit.get_zone_number() > 0:
+                return self.circuit.filter_contingencies_by(filter_elements=self.circuit.get_zones()[idx])
+            else:
+                # default to returning all groups, since it's safer
+                return self.circuit.get_contingency_groups()
+
+        else:
+            raise Exception('Unsupported ContingencyFilteringMethod ' + str(filter_mode.value))
 
     def valid_time_series(self):
         """
@@ -1032,7 +1115,8 @@ class SimulationsMain(TimeEventsMain):
             srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
             detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
             contingency_deadband=self.ui.contingency_deadband_SpinBox.value(),
-            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
+            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()],
+            contingency_groups=self.get_contingency_groups_matching_the_filter()
         )
 
         return options
@@ -1052,11 +1136,9 @@ class SimulationsMain(TimeEventsMain):
 
                     self.LOCK()
 
-                    linear_multiple_contingencies = sim.LinearMultiContingencies(grid=self.circuit)
-
                     drv = sim.ContingencyAnalysisDriver(grid=self.circuit,
                                                         options=self.get_contingency_options(),
-                                                        linear_multiple_contingencies=linear_multiple_contingencies,
+                                                        linear_multiple_contingencies=None,  # it will be coputed inside
                                                         engine=self.get_preferred_engine())
 
                     self.session.run(drv,
@@ -2653,3 +2735,4 @@ class SimulationsMain(TimeEventsMain):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
+

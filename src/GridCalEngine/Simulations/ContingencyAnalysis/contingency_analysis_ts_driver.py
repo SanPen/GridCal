@@ -104,11 +104,12 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             clustering_results=self.clustering_results
         )
 
-        linear_multiple_contingencies = LinearMultiContingencies(grid=self.grid)
+        # linear_multiple_contingencies = LinearMultiContingencies(grid=self.grid)
 
         cdriver = ContingencyAnalysisDriver(grid=self.grid,
                                             options=self.options,
-                                            linear_multiple_contingencies=linear_multiple_contingencies)
+                                            linear_multiple_contingencies=None  # it is computed inside
+                                            )
 
         if self.options.contingency_method == ContingencyMethod.PTDF:
             linear = LinearAnalysisTimeSeriesDriver(

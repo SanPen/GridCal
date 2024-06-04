@@ -33,11 +33,10 @@ options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       engine=en.ContingencyMethod.PowerFlow,
                                       pf_options=pf_options)
 
-linear_multiple_contingencies = LinearMultiContingencies(grid=main_circuit)
-
 simulation = ContingencyAnalysisDriver(grid=main_circuit,
                                        options=options_,
-                                       linear_multiple_contingencies=linear_multiple_contingencies)
+                                       linear_multiple_contingencies=None  # it is computed inside
+                                       )
 
 simulation.run()
 

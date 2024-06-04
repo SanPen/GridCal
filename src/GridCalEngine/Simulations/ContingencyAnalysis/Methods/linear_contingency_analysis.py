@@ -15,7 +15,9 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
+from GridCalEngine.Devices import ContingencyGroup
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
@@ -36,6 +38,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
     Run N-1 simulation in series with HELM, non-linear solution
     :param grid: MultiCircuit
     :param options: ContingencyAnalysisOptions
+    :param contingency_groups_used: List f contingency groups, because it can be
+                                    filtered and not match the list in the circuit
     :param linear_multiple_contingencies: LinearMultiContingencies
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
@@ -49,12 +53,11 @@ def linear_contingency_analysis(grid: MultiCircuit,
     # set the numerical circuit
     numerical_circuit = compile_numerical_circuit_at(grid, t_idx=t)
 
-    calc_branches = grid.get_branches_wo_hvdc()
-
+    # get areas info
     area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
 
     # declare the results
-    results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
+    results = ContingencyAnalysisResults(ncon=len(linear_multiple_contingencies.contingency_groups_used),
                                          nbr=numerical_circuit.nbr,
                                          nbus=numerical_circuit.nbus,
                                          branch_names=numerical_circuit.branch_names,
@@ -117,7 +120,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                contingency_flows=c_flow,
                                contingency_loadings=c_loading,
                                contingency_idx=ic,
-                               contingency_group=grid.contingency_groups[ic],
+                               contingency_group=linear_multiple_contingencies.contingency_groups_used[ic],
                                using_srap=options.use_srap,
                                srap_ratings=numerical_circuit.branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
@@ -137,7 +140,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
         # report progress
         if t is None:
             if calling_class is not None:
-                calling_class.report_text(f'Contingency group: {grid.contingency_groups[ic].name}')
+                calling_class.report_text(f'Contingency group: {linear_multiple_contingencies.contingency_groups_used[ic].name}')
                 calling_class.report_progress2(ic, len(linear_multiple_contingencies.multi_contingencies))
 
     results.lodf = linear_analysis.LODF
