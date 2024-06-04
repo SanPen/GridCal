@@ -21,7 +21,7 @@ import warnings
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Callable, Set
+from typing import List, Dict, Tuple, Union, Any, Set
 from uuid import getnode as get_mac, uuid4
 import datetime as dateslib
 import networkx as nx
@@ -6523,27 +6523,31 @@ class MultiCircuit:
 
         return data
 
-    def filter_contingencies_by(self,
-                                filter_elements: List[Union[dev.Area, dev.Country, dev.Zone]]
-                                ) -> List[dev.ContingencyGroup]:
+    def get_contingency_groups_in(self,
+                                  grouping_elements: List[Union[dev.Area, dev.Country, dev.Zone]]
+                                  ) -> List[dev.ContingencyGroup]:
         """
-
-        :param filter_elements: list of zones, areas or countries
-        :return:
+        Get a filtered set of ContingencyGroups
+        :param grouping_elements: list of zones, areas or countries where to locate the contingencies
+        :return: Sorted group filtered ContingencyGroup elements
         """
 
         # declare the reults
-        filtered_groups: Set[dev.ContingencyGroup] = set()
+        filtered_groups_idx: Set[int] = set()
+
+        group2index = {g: i for i, g in enumerate(self.contingency_groups)}
 
         # get a dictionary of all objects
         all_devices = self.get_all_elements_dict()
 
         # get the buses that match the filtering
-        buses = self.get_buses_by(filter_elements=filter_elements)
+        buses = self.get_buses_by(filter_elements=grouping_elements)
 
         for contingency in self.contingencies:
 
-            if contingency.group not in filtered_groups:
+            group_idx = group2index[contingency.group]
+
+            if group_idx not in filtered_groups_idx:
 
                 # get the contingency device
                 contingency_device = all_devices.get(contingency.device_idtag, None)
@@ -6553,11 +6557,11 @@ class MultiCircuit:
                     if hasattr(contingency_device, "bus_from"):
                         # it is likely a branch
                         if contingency_device.bus_from in buses or contingency_device.bus_to in buses:
-                            filtered_groups.add(contingency.group)
+                            filtered_groups_idx.add(group_idx)
 
                     elif hasattr(contingency_device, "bus"):
                         # it is likely an injection
                         if contingency_device.bus in buses:
-                            filtered_groups.add(contingency.group)
+                            filtered_groups_idx.add(group_idx)
 
-        return list(filtered_groups)
+        return [self.contingency_groups[i] for i in sorted(filtered_groups_idx)]

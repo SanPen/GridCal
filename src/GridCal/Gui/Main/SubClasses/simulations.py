@@ -436,7 +436,7 @@ class SimulationsMain(TimeEventsMain):
                 # get the selection indices
                 idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
                 elements = self.circuit.get_countries()
-                return self.circuit.filter_contingencies_by(filter_elements=[elements[i] for i in idx])
+                return self.circuit.get_contingency_groups_in(grouping_elements=[elements[i] for i in idx])
             else:
                 # default to returning all groups, since it's safer
                 return self.circuit.get_contingency_groups()
@@ -446,7 +446,7 @@ class SimulationsMain(TimeEventsMain):
                 # get the selection indices
                 idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
                 elements = self.circuit.get_areas()
-                return self.circuit.filter_contingencies_by(filter_elements=[elements[i] for i in idx])
+                return self.circuit.get_contingency_groups_in(grouping_elements=[elements[i] for i in idx])
             else:
                 # default to returning all groups, since it's safer
                 return self.circuit.get_contingency_groups()
@@ -456,7 +456,7 @@ class SimulationsMain(TimeEventsMain):
                 # get the selection indices
                 idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
                 elements = self.circuit.get_areas()
-                return self.circuit.filter_contingencies_by(filter_elements=[elements[i] for i in idx])
+                return self.circuit.get_contingency_groups_in(grouping_elements=[elements[i] for i in idx])
             else:
                 # default to returning all groups, since it's safer
                 return self.circuit.get_contingency_groups()
