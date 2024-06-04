@@ -30,7 +30,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 # declare the contingency options
 options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       Pf=None,
-                                      engine=en.ContingencyMethod.PowerFlow,
+                                      contingency_method=en.ContingencyMethod.PowerFlow,
                                       pf_options=pf_options)
 
 simulation = ContingencyAnalysisDriver(grid=main_circuit,

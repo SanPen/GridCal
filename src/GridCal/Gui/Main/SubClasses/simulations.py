@@ -160,7 +160,7 @@ class SimulationsMain(TimeEventsMain):
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
         self.contingency_engines_dict[ContingencyMethod.PowerFlow.value] = ContingencyMethod.PowerFlow
-        self.contingency_engines_dict[ContingencyMethod.OptimalPowerFlow.value] = ContingencyMethod.OptimalPowerFlow
+        # self.contingency_engines_dict[ContingencyMethod.OptimalPowerFlow.value] = ContingencyMethod.OptimalPowerFlow
         self.contingency_engines_dict[ContingencyMethod.PTDF.value] = ContingencyMethod.PTDF
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
@@ -1115,7 +1115,7 @@ class SimulationsMain(TimeEventsMain):
             srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
             detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
             contingency_deadband=self.ui.contingency_deadband_SpinBox.value(),
-            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()],
+            contingency_method=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()],
             contingency_groups=self.get_contingency_groups_matching_the_filter()
         )
 
@@ -1138,7 +1138,7 @@ class SimulationsMain(TimeEventsMain):
 
                     drv = sim.ContingencyAnalysisDriver(grid=self.circuit,
                                                         options=self.get_contingency_options(),
-                                                        linear_multiple_contingencies=None,  # it will be coputed inside
+                                                        linear_multiple_contingencies=None,  # it initializes inside
                                                         engine=self.get_preferred_engine())
 
                     self.session.run(drv,
@@ -1849,6 +1849,7 @@ class SimulationsMain(TimeEventsMain):
         zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
         pf_options = self.get_selected_power_flow_options()
         consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
+        contingency_groups_used = self.get_contingency_groups_matching_the_filter()
         skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
         lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
         maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
@@ -1895,6 +1896,7 @@ class SimulationsMain(TimeEventsMain):
                                               mip_solver=mip_solver,
                                               power_flow_options=pf_options,
                                               consider_contingencies=consider_contingencies,
+                                              contingency_groups_used=contingency_groups_used,
                                               skip_generation_limits=skip_generation_limits,
                                               lodf_tolerance=lodf_tolerance,
                                               maximize_flows=maximize_flows,

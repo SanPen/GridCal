@@ -39,7 +39,7 @@ class ContingencyAnalysisOptions:
                  srap_rever_to_nominal_rating: bool = False,
                  detailed_massive_report: bool = False,
                  contingency_deadband: float = 0.0,
-                 engine=ContingencyMethod.PowerFlow,
+                 contingency_method=ContingencyMethod.PowerFlow,
                  contingency_groups: Union[List[ContingencyGroup], None] = None):
         """
         ContingencyAnalysisOptions
@@ -57,7 +57,7 @@ class ContingencyAnalysisOptions:
                                              Otherwise the objective rating is the contingency rating.
         :param detailed_massive_report: If checked, a massive posibly intractable report is generated.
         :param contingency_deadband: Deadband to report contingencies
-        :param engine: ContingencyEngine to use (PowerFlow, PTDF, ...)
+        :param contingency_method: ContingencyEngine to use (PowerFlow, PTDF, ...)
         :param contingency_groups: List of contingencies to use, if None all will be used
         """
 
@@ -65,7 +65,7 @@ class ContingencyAnalysisOptions:
 
         self.Pf: Vec = Pf
 
-        self.contingency_method = engine
+        self.contingency_method = contingency_method
 
         self.pf_options = pf_options
 
