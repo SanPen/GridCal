@@ -3590,12 +3590,16 @@ class MultiCircuit:
         """
         self.contingency_groups.append(obj)
 
-    def delete_contingency_group(self, obj):
+    def delete_contingency_group(self, obj: dev.ContingencyGroup):
         """
-        Delete zone
-        :param obj: index
+        Delete contingency group
+        :param obj: ContingencyGroup
         """
         self.contingency_groups.remove(obj)
+
+        to_del = [con for con in self.contingencies if con.group == obj]
+        for con in to_del:
+            self.delete_contingency(con)
 
     def get_contingency_group_names(self) -> List[str]:
         """
@@ -3648,12 +3652,16 @@ class MultiCircuit:
         """
         self.investments_groups.append(obj)
 
-    def delete_investment_groups(self, obj):
+    def delete_investment_groups(self, obj: dev.InvestmentsGroup):
         """
         Delete zone
         :param obj: index
         """
         self.investments_groups.remove(obj)
+
+        to_del = [invst for invst in self.investments if invst.group == obj]
+        for invst in to_del:
+            self.delete_investment(invst)
 
     def add_investment(self, obj: dev.Investment):
         """
@@ -3662,7 +3670,7 @@ class MultiCircuit:
         """
         self.investments.append(obj)
 
-    def delete_investment(self, obj):
+    def delete_investment(self, obj: dev.Investment):
         """
         Delete zone
         :param obj: index

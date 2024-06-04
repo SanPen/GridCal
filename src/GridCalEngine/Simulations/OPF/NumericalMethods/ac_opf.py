@@ -620,9 +620,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
-                           1.0)  # Cost squared since the slack is also squared
-        c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
+        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
+        c_v = 1000 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
@@ -778,6 +777,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Sf = result.structs.Sf
     St = result.structs.St
     loading = np.abs(Sf) / (rates + 1e-9)
+
+    if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
+        overloads_sf = (np.power(np.power(rates, 2) + sl_sf, 0.5) - rates)*Sbase
+        overloads_st = (np.power(np.power(rates, 2) + sl_st, 0.5) - rates)*Sbase
+
+    else:
+        pass
+
     hvdc_power = nc.hvdc_data.Pset.copy()
     hvdc_power[hvdc_disp_idx] = Pfdc
     hvdc_loading = hvdc_power / (nc.hvdc_data.rate + 1e-9)
@@ -787,9 +794,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tap_phase[k_tau] = tapt
     Pcost = np.zeros(nc.ngen)
     Pcost[gen_disp_idx] = c0 + c1 * Pg[gen_disp_idx] + c2 * np.power(Pg[gen_disp_idx], 2.0)
-
     Pcost[gen_nondisp_idx] = c0n + c1n * np.real(Sg_undis) + c2n * np.power(np.real(Sg_undis), 2.0)
-
     nodal_capacity = slcap * Sbase
 
     if opf_options.verbose > 0:
@@ -885,19 +890,19 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
         if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
             for k in range(n_br_mon):
-                if sl_sf[k] > opf_options.ips_tolerance:
-                    logger.add_warning('Branch overload in the from sense',
+                if overloads_sf[k] > opf_options.ips_tolerance * Sbase:
+                    logger.add_warning('Branch overload in the from sense (MVA)',
                                        device=str(br_mon_idx[k]),
                                        device_property="Slack",
-                                       value=str(sl_sf[k]),
-                                       expected_value=f'< {opf_options.ips_tolerance}')
+                                       value=str(overloads_sf[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance*Sbase}')
 
-                if sl_st[k] > opf_options.ips_tolerance:
-                    logger.add_warning('Branch overload in the to sense',
+                if overloads_st[k] > opf_options.ips_tolerance * Sbase:
+                    logger.add_warning('Branch overload in the to sense (MVA)',
                                        device=str(br_mon_idx[k]),
                                        device_property="Slack",
-                                       value=str(sl_st[k]),
-                                       expected_value=f'< {opf_options.ips_tolerance}')
+                                       value=str(overloads_st[k]),
+                                       expected_value=f'< {opf_options.ips_tolerance*Sbase}')
 
             for i in range(npq):
                 if sl_vmax[i] > opf_options.ips_tolerance:
