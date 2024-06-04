@@ -192,11 +192,11 @@ def get_load_data(circuit: MultiCircuit,
                             logger.add_error('Different set points', elm.bus.name, elm.Vm, Vbus[i])
 
         if time_series:
-            data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
+            data.S[ii] += complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
             data.active[ii] = elm.active_prof[t_idx]
 
         else:
-            data.S[ii] = complex(elm.P, elm.Q)
+            data.S[ii] += complex(elm.P, elm.Q)
             data.active[ii] = elm.active
 
         data.C_bus_elm[i, ii] = 1
@@ -217,12 +217,12 @@ def get_load_data(circuit: MultiCircuit,
         data.b_max[ii] = elm.Bmax
 
         if time_series:
-            data.Y[ii] = complex(elm.G_at(t_idx), elm.B_at(t_idx))
+            data.Y[ii] += complex(elm.G_at(t_idx), elm.B_at(t_idx))
             data.active[ii] = elm.active_prof[t_idx]
             data.cost[ii] = elm.Cost_prof[t_idx]
 
         else:
-            data.Y[ii] = complex(elm.G, elm.B)
+            data.Y[ii] += complex(elm.G, elm.B)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
@@ -240,12 +240,12 @@ def get_load_data(circuit: MultiCircuit,
         data.mttr[ii] = elm.mttr
 
         if time_series:
-            data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+            data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
             data.active[ii] = elm.active_prof[t_idx]
             data.cost[ii] = elm.Cost_prof[t_idx]
 
         else:
-            data.I[ii] = complex(elm.Ir, elm.Ii)
+            data.I[ii] += complex(elm.Ir, elm.Ii)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 

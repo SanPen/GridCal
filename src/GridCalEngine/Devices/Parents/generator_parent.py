@@ -104,10 +104,10 @@ class GeneratorParent(InjectionParent):
         self.Pmax = Pmax
 
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
-                      editable=False, profile_name="control_bus_prof")
+                      editable=True, profile_name="control_bus_prof")
 
         self.register(key='control_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Control connectivity node', editable=False)
+                      definition='Control connectivity node', editable=True)
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Pmin', units='MW', tpe=float, definition='Minimum active power. Used in OPF.')
         self.register(key='Pmax', units='MW', tpe=float, definition='Maximum active power. Used in OPF.')

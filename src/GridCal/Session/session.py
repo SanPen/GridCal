@@ -62,7 +62,6 @@ from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import ResultTypes, SimulationTypes
 from GridCalEngine.basic_structures import Logger
-
 from GridCal.Session.results_model import ResultsModel
 
 DRIVER_OBJECTS = Union[
@@ -684,7 +683,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.InvestmestsEvaluation_run)
+        drv, results = self.get_driver_results(SimulationTypes.InvestmentsEvaluation_run)
         return results
 
     @property

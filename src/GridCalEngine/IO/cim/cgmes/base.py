@@ -152,8 +152,9 @@ class Base:
             if prop is not None:
                 setattr(self, prop_name, prop_value)
             else:
-                logger.add_error("Missing object property", device_class=self.tpe, device_property=prop_name,
-                                 device=self.rdfid)
+                if not self.boundary_set:
+                    logger.add_error("Missing object property", device_class=self.tpe, device_property=prop_name,
+                                     device=self.rdfid)
 
     def __repr__(self):
         return self.rdfid
@@ -192,28 +193,21 @@ class Base:
         :param attr_name:
         :return:
         """
-        if obj.tpe in self.references_to_me.keys():
+        if obj.tpe in self.references_to_me:
             self.references_to_me[obj.tpe].add(obj)
         else:
             self.references_to_me[obj.tpe] = {obj}
         if attr_name is None:
             return
-        if isinstance(getattr(self, attr_name), list):
-            tmp_list = {obj}
-            tmp_list.update(set(getattr(self, attr_name)))
-            if len(tmp_list) > 1:
-                setattr(self, attr_name, list(tmp_list))
-            else:
-                setattr(self, attr_name, list(tmp_list)[0])
+        current_value = getattr(self, attr_name)
+
+        if current_value is None:
+            setattr(self, attr_name, obj)
+        elif isinstance(current_value, list):
+            current_value.append(obj)
         else:
-            if getattr(self, attr_name) is None:
-                setattr(self, attr_name, obj)
-            else:
-                tmp_list = {obj, getattr(self, attr_name)}
-                if len(tmp_list) > 1:
-                    setattr(self, attr_name, list(tmp_list))
-                else:
-                    setattr(self, attr_name, list(tmp_list)[0])
+            setattr(self, attr_name, [current_value, obj])
+
 
     def register_property(self, name: str,
                           class_type: object,

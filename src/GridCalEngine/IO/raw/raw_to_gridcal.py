@@ -186,7 +186,7 @@ def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logge
     return elm
 
 
-def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger: Logger):
+def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger: Logger) -> dev.ControllableShunt:
     """
     Return Newton Load object
     Returns:
@@ -202,16 +202,27 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
     if vv == 0:
         logger.add_error('Voltage equal to zero in shunt conversion', name)
 
-    g = 0.0
     if psse_elm.MODSW in [1, 2]:
         b = psse_elm.BINIT * psse_elm.RMPCT / 100.0
     else:
         b = psse_elm.BINIT
 
-    elm = dev.Shunt(name='Switched shunt ' + name,
-                    G=g, B=b,
-                    active=bool(psse_elm.STAT),
-                    code=name)
+    elm = dev.ControllableShunt(name='Switched shunt ' + name,
+                                active=bool(psse_elm.STAT),
+                                code=name)
+
+    n_list = []
+    b_list = []
+
+    for i in range(1, 9):
+        s = getattr(psse_elm, f"S{i}")
+        n = getattr(psse_elm, f"N{i}")
+
+        if s == 1:
+            n_list.append(n)
+            b_list.append(getattr(psse_elm, f"B{i}"))
+
+    elm.set_blocks(n_list, b_list)
 
     return elm
 
@@ -777,7 +788,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         if psse_shunt.I in psse_bus_dict:
             bus = psse_bus_dict[psse_shunt.I]
             api_obj = get_gridcal_shunt_switched(psse_shunt, bus, logger)
-            circuit.add_shunt(bus, api_obj)
+            circuit.add_controllable_shunt(bus, api_obj)
         else:
             logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
 
@@ -787,6 +798,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         api_obj = get_gridcal_generator(psse_gen, logger)
 
         circuit.add_generator(bus, api_obj)
+        api_obj.is_controlled = psse_gen.WMOD == 0 or psse_gen.WMOD == 1
 
     # Go through Branches
     branches_already_there = set()

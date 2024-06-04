@@ -17,11 +17,12 @@
 import os.path
 import sys
 
-import qdarktheme
-from PySide6 import QtWidgets
+# import qdarktheme
+from PySide6 import QtWidgets, QtGui
 
 from GridCal.Gui.Main.MainWindow import QApplication
 from GridCal.Gui.Main.SubClasses.Scripting.scripting import ScriptingMain
+import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCal.__version__ import __GridCal_VERSION__
 
 __author__ = 'Santiago Peñate Vera'
@@ -81,13 +82,27 @@ class MainGUI(ScriptingMain):
 
         self.clear_results()
 
-        self.load_gui_config()
+        self.load_all_config()
 
         self.add_complete_bus_branch_diagram()
         self.add_map_diagram()
         self.set_diagram_widget(self.diagram_widgets_list[0])
 
-    def closeEvent(self, event):
+    def save_all_config(self) -> None:
+        """
+        Save all configuration files needed
+        """
+        self.save_gui_config()
+        self.save_server_config()
+
+    def load_all_config(self) -> None:
+        """
+        Load all configuration files needed
+        """
+        self.load_gui_config()
+        self.load_server_config()
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """
         Close event
         :param event:
@@ -101,17 +116,17 @@ class MainGUI(ScriptingMain):
 
             if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 # save config regardless
-                self.save_gui_config()
+                self.save_all_config()
                 self.stop_all_threads()
                 event.accept()
             else:
                 # save config regardless
-                self.save_gui_config()
+                self.save_all_config()
                 event.ignore()
         else:
             # no buses so exit
             # save config regardless
-            self.save_gui_config()
+            self.save_all_config()
             self.stop_all_threads()
             event.accept()
 
@@ -121,7 +136,9 @@ def runGridCal() -> None:
     Main function to run the GUI
     :return:
     """
+    # if hasattr(qdarktheme, 'enable_hi_dpi'):
     qdarktheme.enable_hi_dpi()
+
     app = QApplication(sys.argv)
     # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
 

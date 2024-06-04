@@ -596,9 +596,17 @@ class LinearMultiContingencies:
                                    branch_contingency_indices=contingency_indices.branch_contingency_indices)
                 L = lodf[:, contingency_indices.branch_contingency_indices]
 
-                # Compute LODF for the multiple failure MLODF[k, βδ]
-                mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
-                                             threshold=lodf_threshold)
+
+
+                try:
+                    # Compute LODF for the multiple failure MLODF[k, βδ]
+                    mlodf_factors = dense_to_csc(mat=L @ np.linalg.inv(M),
+                                                 threshold=lodf_threshold)
+
+                except np.linalg.LinAlgError:
+                    # Done to capture antenna when computing multiples contingencies
+                    mlodf_factors = dense_to_csc(mat=L @ np.linalg.pinv(M),
+                                                 threshold=lodf_threshold)
 
                 if len(contingency_indices.bus_contingency_indices) > 0:
                     # this is PTDF[k, i]

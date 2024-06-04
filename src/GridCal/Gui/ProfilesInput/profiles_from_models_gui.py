@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'profiles_from_models_gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -52,7 +52,7 @@ class Ui_Dialog(object):
 
         self.horizontalLayout_6.addWidget(self.deleteModelsButton)
 
-        self.horizontalSpacer_5 = QSpacerItem(725, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_5 = QSpacerItem(725, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_6.addItem(self.horizontalSpacer_5)
 
@@ -92,7 +92,7 @@ class Ui_Dialog(object):
 
         self.horizontalLayout_8.addWidget(self.matchUsingCodeCheckBox)
 
-        self.horizontalSpacer_6 = QSpacerItem(814, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_6 = QSpacerItem(814, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer_6)
 

@@ -38,11 +38,13 @@ from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.Devices.Branches.switch import Switch
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
+from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -329,9 +331,19 @@ class SeriesReactanceSymbol(VscSymbol):
     UpfcSymbol
     """
 
-    def __init__(self, parent, pen_width, h=48, w=48):
+    def __init__(self, parent, pen_width, h=30, w=30):
         VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
-                           icon_route=":/Icons/icons/to_series_reactance.svg")
+                           icon_route=":/Icons/icons/reactance.svg")
+
+
+class SwitchSymbol(VscSymbol):
+    """
+    UpfcSymbol
+    """
+
+    def __init__(self, parent, pen_width, h=30, w=30):
+        VscSymbol.__init__(self, parent=parent, pen_width=pen_width, h=h, w=w,
+                           icon_route=":/Icons/icons/switch.svg")
 
 
 class HvdcSymbol(QGraphicsRectItem):
@@ -454,6 +466,8 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
             self.symbol = HvdcSymbol(parent=self, pen_width=width, h=30, w=30)
         elif isinstance(api_object, SeriesReactance):
             self.symbol = SeriesReactanceSymbol(parent=self, pen_width=width, h=30, w=30)
+        elif isinstance(api_object, Switch):
+            self.symbol = SwitchSymbol(parent=self, pen_width=width, h=30, w=30)
         else:
             self.symbol = None
 
@@ -571,8 +585,13 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         :param event:
         :return:
         """
-        if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object)
+        if self.api_object is not None:           
+            
+            self.editor.set_editor_model(api_object=self.api_object,
+                                         dictionary_of_lists={
+                                             DeviceType.BusDevice: self.editor.circuit.get_buses(),
+                                             DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
+                                         })
 
     def remove_widget(self):
         """
@@ -684,7 +703,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         self._to_port.update()
         self._to_port.get_parent().setZValue(0)
 
-    def unregister_port_from(self):
+    def unregister_port_from(self) -> None:
         """
 
         :return:
@@ -692,7 +711,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         if self._from_port:
             self._from_port.delete_hosting_connection(graphic_obj=self)
 
-    def unregister_port_to(self):
+    def unregister_port_to(self) -> None:
         """
 
         :return:

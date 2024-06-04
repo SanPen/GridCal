@@ -19,8 +19,9 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
 from collections import Counter
 
 
@@ -136,7 +137,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param combination: vector of size (n_investment_groups) with ones in those investments used
         :param index_name: Name of the evaluation
         """
-
         self._capex[eval_idx] = capex
         self._opex[eval_idx] = opex
         self._losses[eval_idx] = losses
@@ -208,6 +208,35 @@ class InvestmentsEvaluationResults(ResultsTemplate):
     def calculate_magnitude(self, value):
         return int(np.floor(np.log10(np.abs(value)))) if value != 0 else 0
 
+
+    def get_objectives(self) -> Mat:
+        """
+        Returns the multi-objectives matrix
+        :return: Matrix (n_eval, n_dim)
+        """
+        return np.c_[
+            self._capex,
+            self._opex,
+            self._losses,
+            self._overload_score,
+            self._voltage_score
+        ]
+
+    def pareto_sort(self) -> None:
+        """
+        Pareto sort the results in place
+        """
+        y, x = non_dominated_sorting(y_values=self.get_objectives(),
+                                     x_values=self._combinations)
+
+        self._capex = y[:, 0]
+        self._opex = y[:, 1]
+        self._losses = y[:, 2]
+        self._overload_score = y[:, 3]
+        self._voltage_score = y[:, 4]
+
+        self._combinations = x
+
     def add(self,
             capex: float,
             opex: float,
@@ -246,7 +275,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                         index_name=f'Solution {self.__eval_index}')
 
             self.__eval_index += 1
-
         else:
             print('Evaluation index out of range')
 
@@ -270,7 +298,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         """
 
         if result_type == ResultTypes.InvestmentsReportResults:
-
             labels = self._index_names
             columns = ["CAPEX (M€)",
                        "OPEX (M€)",
@@ -291,7 +318,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                 self._f_obj,
                 self._combinations
             ]
-
             y_label = ''
             title = ''
 

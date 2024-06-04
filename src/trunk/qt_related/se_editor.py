@@ -1,7 +1,8 @@
 import sys
-from PySide2.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QGraphicsEllipseItem, QApplication
-from PySide2.QtGui import QBrush, QPen, QPainter
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QGraphicsEllipseItem, \
+    QApplication
+from PySide6.QtGui import QBrush, QPen, QPainter
+from PySide6.QtCore import Qt
 import math
 
 
@@ -9,6 +10,7 @@ class DeviceMarker(QGraphicsRectItem):
     """
 
     """
+
     def __init__(self, x, y, size, scale, parent):
         QGraphicsRectItem.__init__(self, x, y, size, size, parent=parent)
         self.d = size
@@ -53,6 +55,7 @@ class VoltageLevelCircle(QGraphicsEllipseItem):
     """
 
     """
+
     def __init__(self, xc, yc, d, parent):
         """
 
@@ -140,8 +143,6 @@ class Node(QGraphicsRectItem):
             dev.set_centered_position(x, y)
 
 
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
@@ -163,7 +164,7 @@ if __name__ == '__main__':
 
     view = QGraphicsView(scene)
     view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
-    view.setViewportUpdateMode(QGraphicsView.BoundingRectViewportUpdate)
+    view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
     view.show()
 
-    app.exec_()
+    app.exec()
