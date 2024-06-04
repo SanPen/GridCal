@@ -1536,7 +1536,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                       skip_generation_limits: bool = False,
                       consider_contingencies: bool = False,
-                      contingency_groups_used: List[ContingencyGroup] = (),
+                      contingency_groups_used: Union[List[ContingencyGroup], None] = None,
                       unit_Commitment: bool = False,
                       ramp_constraints: bool = False,
                       all_generators_fixed: bool = False,
@@ -1566,18 +1566,18 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param ramp_constraints: Formulate ramp constraints?
     :param all_generators_fixed: All generators take their snapshot or profile values
                                  instead of resorting to dispatcheable status
-    :param lodf_threshold:
-    :param maximize_inter_area_flow:
-    :param areas_from:
-    :param areas_to:
-    :param energy_0:
+    :param lodf_threshold: LODF threshold value to consider contingencies
+    :param maximize_inter_area_flow: Maximize the inter-area flow?
+    :param areas_from: Array of areas "from"
+    :param areas_to: Array of areas "to"
+    :param energy_0: Vector of initial energy for batteries (size: Number of batteries)
     :param fluid_level_0: initial fluid level of the nodes
     :param optimize_nodal_capacity: Optimize the nodal capacity? (optional)
     :param nodal_capacity_sign: if > 0 the generation is maximized, if < 0 the load is maximized
     :param capacity_nodes_idx: Array of bus indices to optimize their nodal capacity for
     :param logger: logger instance
-    :param progress_text:
-    :param progress_func:
+    :param progress_text: Text progress callback
+    :param progress_func: Numerical progress callback
     :param export_model_fname: Export the model into LP and MPS?
     :return: OpfVars
     """
@@ -1597,6 +1597,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     if capacity_nodes_idx is None:
         active_nodal_capacity = False
         capacity_nodes_idx = np.zeros(0, dtype=int)
+
+    if contingency_groups_used is None:
+        contingency_groups_used = grid.get_contingency_groups()
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()
