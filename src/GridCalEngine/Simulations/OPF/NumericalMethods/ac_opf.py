@@ -621,7 +621,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
         c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
-        c_v = 1000 * (nc.bus_data.cost_v[pq] + 0.1)
+        c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
@@ -779,8 +779,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     loading = np.abs(Sf) / (rates + 1e-9)
 
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
-        overloads_sf = (np.power(np.power(rates, 2) + sl_sf, 0.5) - rates)*Sbase
-        overloads_st = (np.power(np.power(rates, 2) + sl_st, 0.5) - rates)*Sbase
+        overloads_sf = (np.power(np.power(rates[br_mon_idx], 2) + sl_sf, 0.5) - rates[br_mon_idx])*Sbase
+        overloads_st = (np.power(np.power(rates[br_mon_idx], 2) + sl_st, 0.5) - rates[br_mon_idx])*Sbase
 
     else:
         pass
