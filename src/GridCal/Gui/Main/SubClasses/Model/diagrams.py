@@ -1420,7 +1420,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
                 names = [elm.type_name + ": " + elm.name for elm in selected]
-                group_text = "Contingency " + str(len(self.circuit.contingency_groups))
+                group_text = "Contingency " + str(len(self.circuit.get_contingency_groups()))
                 self.contingency_checks_diag = CheckListDialogue(objects_list=names,
                                                                  title="Add contingency",
                                                                  ask_for_group_name=True,
@@ -1459,7 +1459,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
 
-                group_name = "Investment " + str(len(self.circuit.contingency_groups))
+                group_name = "Investment " + str(len(self.circuit.get_contingency_groups()))
 
                 # launch selection dialogue to add/remove from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]

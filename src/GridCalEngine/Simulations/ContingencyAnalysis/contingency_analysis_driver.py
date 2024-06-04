@@ -62,9 +62,9 @@ class ContingencyAnalysisDriver(DriverTemplate):
         # Set or create the LinearMultiContingencies
         if linear_multiple_contingencies is None:
             if options is None:
-                contingency_groups_used = grid.contingency_groups
+                contingency_groups_used = grid.get_contingency_groups()
             else:
-                contingency_groups_used = (grid.contingency_groups
+                contingency_groups_used = (grid.get_contingency_groups()
                                            if options.contingency_groups is None
                                            else options.contingency_groups)
 

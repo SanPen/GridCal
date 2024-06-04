@@ -69,7 +69,7 @@ def test_linear_contingency():
     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
     linear_analysis.run()
     linear_multi_contingency = LinearMultiContingencies(grid=main_circuit,
-                                                        contingency_groups_used=main_circuit.contingency_groups)
+                                                        contingency_groups_used=main_circuit.get_contingency_groups())
     linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
     options = ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=ContingencyMethod.PTDF)
