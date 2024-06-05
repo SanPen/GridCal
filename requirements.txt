@@ -32,4 +32,5 @@ pymoo
 fastapi
 uvicorn
 websockets
+opencv-python
 setuptools

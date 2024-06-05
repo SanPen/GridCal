@@ -791,7 +791,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # cgmes_syn.aggregate is optional, not exported
         if mc_elm.bus.is_slack:
             cgmes_syn.referencePriority = 1
-            cgmes_gen.normalPF = 1
+            cgmes_gen.normalPF = 1  # in gridcal the participation factor is the cost
         else:
             cgmes_syn.referencePriority = 0
             cgmes_gen.normalPF = 0

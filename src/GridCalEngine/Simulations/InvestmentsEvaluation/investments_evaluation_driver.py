@@ -413,7 +413,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = int(round(self.dim))  # if needed, divide by 5 for ideal grid
+        pop_size = int(round(self.dim*3))  # if needed, divide by 5 for ideal grid
         n_partitions = int(round(pop_size))
 
         # compile the snapshot

@@ -798,6 +798,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
         api_obj = get_gridcal_generator(psse_gen, logger)
 
         circuit.add_generator(bus, api_obj)
+        api_obj.is_controlled = psse_gen.WMOD == 0 or psse_gen.WMOD == 1
 
     # Go through Branches
     branches_already_there = set()

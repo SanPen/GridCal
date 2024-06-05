@@ -119,7 +119,8 @@ class DiagramsMain(CompiledArraysMain):
 
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionExport.triggered.connect(self.export_diagram)
-        self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_schematic)
+        self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_diagram_and_db)
+        self.ui.actionDelete_from_the_diagram.triggered.connect(self.delete_selected_from_the_diagram)
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
         self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
@@ -1294,14 +1295,24 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, SchematicWidget):
                 diagram.clear_big_bus_markers()
 
-    def delete_selected_from_the_schematic(self):
+    def delete_selected_from_the_diagram(self):
         """
-        Prompt to delete the selected buses from the schematic
+        Prompt to delete the selected buses from the current diagram
         """
 
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected()
+            diagram_widget.delete_Selected_from_widget()
+        else:
+            pass
+
+    def delete_selected_from_the_diagram_and_db(self):
+        """
+        Prompt to delete the selected elements from the current diagram and database
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, SchematicWidget):
+            diagram_widget.delete_Selected_from_widget_and_db()
         else:
             pass
 
@@ -1618,4 +1629,7 @@ class DiagramsMain(CompiledArraysMain):
             if diagram != caller:
                 diagram.delete_diagram_element(device=api_obj, propagate=False)
 
-        self.circuit.delete_elements_by_type(obj=api_obj)
+        try:
+            self.circuit.delete_elements_by_type(obj=api_obj)
+        except ValueError as e:
+            print(e)

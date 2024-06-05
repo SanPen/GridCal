@@ -717,7 +717,7 @@ class SchematicWidget(QSplitter):
         :return:
         """
         if event.key() == Qt.Key_Delete:
-            self.delete_Selected()
+            self.delete_Selected_from_widget_and_db()
 
     def zoom_in(self, scale_factor: float = 1.15) -> None:
         """
@@ -1223,6 +1223,14 @@ class SchematicWidget(QSplitter):
         """
         if graphic_object is not None:
             if graphic_object.scene() is not None:
+
+                # try to remove nexus and children
+                if isinstance(graphic_object,
+                              (BusGraphicItem, CnGraphicItem, BusBarGraphicItem, FluidNodeGraphicItem)):
+                    graphic_object.delete_all_connections()
+                    for g in graphic_object.shunt_children:
+                        self.diagram_scene.removeItem(g.nexus)
+
                 self.diagram_scene.removeItem(graphic_object)
             else:
                 warn(f"Null scene for {graphic_object}, was it deleted already?")
@@ -1248,16 +1256,24 @@ class SchematicWidget(QSplitter):
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
-                       graphic_object: Union[QGraphicsItem, None] = None) -> None:
+                       graphic_object: Union[QGraphicsItem, None] = None,
+                       delete_from_db: bool = False) -> None:
         """
         Remove device from the diagram and the database
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
+        :param delete_from_db: Delete the element also from the database?
         """
 
         if device is not None:
-            self.delete_diagram_element(device=device)
-            self.circuit.delete_elements_by_type(obj=device)
+            self.delete_diagram_element(device=device, propagate=delete_from_db)
+
+            if delete_from_db:
+                try:
+                    self.circuit.delete_elements_by_type(obj=device)
+                except ValueError as e:
+                    print("SchamaticWidget.remove_element", e)
+
         elif graphic_object is not None:
             self.remove_from_scene(graphic_object)
         else:
@@ -1320,7 +1336,7 @@ class SchematicWidget(QSplitter):
                     lst.append((idx, bus, graphic_object))
         return lst
 
-    def delete_Selected(self) -> None:
+    def delete_Selected_from_widget_and_db(self) -> None:
         """
         Delete the selected items from the diagram
         """
@@ -1328,7 +1344,7 @@ class SchematicWidget(QSplitter):
         selected = self.get_selected()
 
         if len(selected) > 0:
-            reply = QMessageBox.question(self, 'Delete',
+            reply = QMessageBox.question(self, 'Delete objects from the diagram and the DB',
                                          'Are you sure that you want to delete the selected elements?',
                                          QMessageBox.StandardButton.Yes,
                                          QMessageBox.StandardButton.No)
@@ -1337,7 +1353,30 @@ class SchematicWidget(QSplitter):
 
                 # remove the buses (from the schematic and the circuit)
                 for bus, graphic_obj in selected:
-                    self.remove_element(device=bus, graphic_object=graphic_obj)
+                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=True)
+            else:
+                pass
+        else:
+            info_msg('Choose some elements from the schematic', 'Delete')
+
+    def delete_Selected_from_widget(self) -> None:
+        """
+        Delete the selected items from the diagram
+        """
+        # get the selected buses
+        selected = self.get_selected()
+
+        if len(selected) > 0:
+            reply = QMessageBox.question(self, 'Delete objects from the diagram',
+                                         'Are you sure that you want to delete the selected elements?',
+                                         QMessageBox.StandardButton.Yes,
+                                         QMessageBox.StandardButton.No)
+
+            if reply == QMessageBox.StandardButton.Yes.value:
+
+                # remove the buses (from the schematic and the circuit)
+                for bus, graphic_obj in selected:
+                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=False)
             else:
                 pass
         else:
@@ -1905,8 +1944,8 @@ class SchematicWidget(QSplitter):
         dy = max_y - min_y
         mx = margin_factor * dx
         my = margin_factor * dy
-        h = dy + 2 * my + 80
-        w = dx + 2 * mx + 80
+        h = dy + 2 * my + 120
+        w = dx + 2 * mx + 120
         self.diagram_scene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
 
     def set_boundaries(self, min_x, min_y, width, height):
@@ -2410,7 +2449,7 @@ class SchematicWidget(QSplitter):
                                                      prefer_node_breaker=prefer_node_breaker,
                                                      logger=logger)
 
-            if from_port and to_port:
+            if from_port is not None and to_port is not None and (from_port != to_port):
 
                 # Create new graphics object
                 graphic_object = new_graphic_func(from_port,
@@ -3806,7 +3845,7 @@ class SchematicWidget(QSplitter):
         locations_cache = dict()
 
         for _ in range(100):
-        # while delta > 10:
+            # while delta > 10:
 
             A = self.circuit.get_adjacent_matrix()
 

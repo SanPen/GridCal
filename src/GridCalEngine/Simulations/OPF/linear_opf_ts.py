@@ -140,7 +140,7 @@ class NodalCapacityVars:
 
         for t in range(nt):
             for i in range(n_elm):
-                data.P[t, i] = model.get_value(self.P[t, i])
+                data.P[t, i] = model.get_value(self.P[t, i]) * Sbase
 
         # format the arrays appropriately
         data.P = data.P.astype(float, copy=False)
@@ -667,7 +667,9 @@ def add_linear_generation_formulation(t: Union[int, None],
                                       unit_commitment: bool,
                                       ramp_constraints: bool,
                                       skip_generation_limits: bool,
-                                      all_generators_fixed: bool):
+                                      all_generators_fixed: bool,
+                                      vd: IntVec,
+                                      nodal_capacity_active: bool):
     """
     Add MIP generation formulation
     :param t: time step
@@ -680,17 +682,24 @@ def add_linear_generation_formulation(t: Union[int, None],
     :param ramp_constraints: formulate ramp constraints?
     :param skip_generation_limits: skip the generation limits?
     :param all_generators_fixed: All generators take their snapshot or profile values
-                                 instead of resorting to dispatcheable status
+                                 instead of resorting to dispatchable status
+    :param vd: slack indices
+    :param nodal_capacity_active: nodal capacity active?
     :return objective function
     """
     f_obj = 0.0
+
+    if nodal_capacity_active:
+        id_gen_nonvd = [i for i in range(gen_data_t.C_bus_elm.shape[1]) if i not in vd]
+    else:
+        id_gen_nonvd = []
 
     # add generation stuff
     for k in range(gen_data_t.nelm):
 
         gen_vars.cost[t, k] = 0.0
 
-        if gen_data_t.active[k]:
+        if gen_data_t.active[k] and k not in id_gen_nonvd:
 
             # declare active power var (limits will be applied later)
             gen_vars.p[t, k] = prob.add_var(-1e20, 1e20, join("gen_p_", [t, k], "_"))
@@ -1013,7 +1022,7 @@ def add_nodal_capacity_formulation(t: Union[int, None],
                                                        name=join("nodal_capacity_", [t, k], "_"))
 
         # minimize the load shedding
-        f_obj += 10 * nodal_capacity_sign * nodal_capacity_vars.P[t, k]
+        f_obj += 100 * nodal_capacity_sign * nodal_capacity_vars.P[t, k]
 
     return f_obj
 
@@ -1581,7 +1590,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
         else:
             time_indices = [None]
 
+    active_nodal_capacity = True
     if capacity_nodes_idx is None:
+        active_nodal_capacity = False
         capacity_nodes_idx = np.zeros(0, dtype=int)
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
@@ -1656,7 +1667,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                                    unit_commitment=unit_Commitment,
                                                    ramp_constraints=ramp_constraints,
                                                    skip_generation_limits=skip_generation_limits,
-                                                   all_generators_fixed=all_generators_fixed)
+                                                   all_generators_fixed=all_generators_fixed,
+                                                   vd=nc.vd,
+                                                   nodal_capacity_active=active_nodal_capacity)
 
         # formulate batteries --------------------------------------------------------------------------------------
         if local_t_idx == 0 and energy_0 is None:

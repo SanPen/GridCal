@@ -233,32 +233,50 @@ def case9():
 
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
-    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
-    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
-                                               ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
     res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
-                      optimize_nodal_capacity=True,
-                      nodal_capacity_sign=-1.0,
-                      capacity_nodes_idx=np.array([10]))
+                            optimize_nodal_capacity=True,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([5]))
 
-    # opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.LINEAR_OPF, ips_tolerance=1e-8,
-    #                                           ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
-    # res = run_linear_opf_ts(grid=grid,
-    #                         optimize_nodal_capacity=True,
-    #                         time_indices=None,
-    #                         nodal_capacity_sign=1.0,
-    #                         capacity_nodes_idx=np.array([11,12]))
-    print('P nodal capacity: ', res.nodal_capacity_vars.P)
-    print('P generators: ', res.gen_vars.p)
-    print('P loads: ', res.load_vars.shedding)
-    print('P slacks pos: ', res.branch_vars.flow_slacks_pos)
-    print('P slacks neg: ', res.branch_vars.flow_slacks_neg)
+
+def case14_linear_vs_nonlinear():
+    """
+    IEEE14
+    """
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 14 zip costs.gridcal')
+
+    grid = gce.FileOpen(file_path).open()
+
+    # Nonlinear OPF
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                            optimize_nodal_capacity=True,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10, 11]))
+
+    print('Nonlinear P nodal capacity: ', res.nodal_capacity)
+
+    # Linear OPF
+    res = run_linear_opf_ts(grid=grid,
+                            optimize_nodal_capacity=True,
+                            time_indices=None,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10, 11]))
+
+    print('Linear P nodal capacity: ', res.nodal_capacity_vars.P)
     print('')
 
 
@@ -484,48 +502,13 @@ def case_nodalcap():
     # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
-def compare_costs():
-    cwd = os.getcwd()
-
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
-    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 14 zip costs.gridcal')
-    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 30 Bus.gridcal')
-    # file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 118 Bus - ntc_areas.gridcal')
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'ACTIVSg500 + VSC.gridcal')
-    grid = gce.FileOpen(file_path).open()
-
-    # OPF
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
-                                              acopf_mode=AcOpfMode.ACOPFstd, ips_tolerance=1e-8)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
-
-    print('-------------')
-    print(f'Total optimized generation cost: {sum(res.Pcost)}')
-    print('-------------')
-
-    # OPF with set powers
-    for gen in grid.generators:
-        if not gen.bus.is_slack:
-            gen.enabled_dispatch = False
-
-    opf_options2 = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
-                                               acopf_mode=AcOpfMode.ACOPFslacks, ips_tolerance=1e-8)
-    res2 = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options2, plot_error=True, pf_init=True)
-
-    print('-------------')
-    print(f'Total non-optimized generation cost: {sum(res2.Pcost)}')
-    print('-------------')
-
-    print('')
-
-
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
+    case14_linear_vs_nonlinear()
     # case14()
     # case_gb()
     # case6ww()
@@ -535,4 +518,3 @@ if __name__ == '__main__':
     #  casehvdc()
     # caseREE()
     # case_nodalcap()
-    compare_costs()

@@ -50,6 +50,17 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
+SHUNT_GRAPHICS = Union[
+    BatteryGraphicItem,
+    ShuntGraphicItem,
+    ExternalGridGraphicItem,
+    ControllableShuntGraphicItem,
+    LoadGraphicItem,
+    GeneratorGraphicItem,
+    StaticGeneratorGraphicItem,
+]
+
+
 class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
@@ -92,7 +103,7 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         self.w = w if w >= self.min_w else self.min_w
 
         # loads, shunts, generators, etc...
-        self.shunt_children = list()
+        self.shunt_children: List[SHUNT_GRAPHICS] = list()
 
         # Enabled for short circuit
         self.sc_enabled = [False, False, False, False]
@@ -395,99 +406,161 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         # LL = 'LL'
         # LLG = 'LLG'
 
-        dc = menu.addAction('Is a DC bus')
-        dc_icon = QIcon()
-        dc_icon.addPixmap(QPixmap(":/Icons/icons/dc.svg"))
-        dc.setIcon(dc_icon)
-        dc.setCheckable(True)
-        dc.setChecked(self.api_object.is_dc)
-        dc.triggered.connect(self.enable_disable_dc)
+        add_menu_entry(menu=menu,
+                       text="Is a DC bus",
+                       icon_path=":/Icons/icons/dc.svg",
+                       function_ptr=self.enable_disable_dc,
+                       checkeable=True,
+                       checked_value=self.api_object.is_dc)
 
-        pl = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-        pl.setIcon(plot_icon)
-        pl.triggered.connect(self.plot_profiles)
+        add_menu_entry(menu=menu,
+                       text="Plot profiles",
+                       icon_path=":/Icons/icons/plot.svg",
+                       function_ptr=self.plot_profiles)
 
-        arr = menu.addAction('Arrange')
-        arr_icon = QIcon()
-        arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
-        arr.setIcon(arr_icon)
-        arr.triggered.connect(self.arrange_children)
 
-        ra5 = menu.addAction('Assign active state to profile')
-        ra5_icon = QIcon()
-        ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-        ra5.setIcon(ra5_icon)
-        ra5.triggered.connect(self.assign_status_to_profile)
+        # arr = menu.addAction('Arrange')
+        # arr_icon = QIcon()
+        # arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
+        # arr.setIcon(arr_icon)
+        # arr.triggered.connect(self.arrange_children)
+        #
+        # ra5 = menu.addAction('Assign active state to profile')
+        # ra5_icon = QIcon()
+        # ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+        # ra5.setIcon(ra5_icon)
+        # ra5.triggered.connect(self.assign_status_to_profile)
+        #
+        # ra3 = menu.addAction('Delete all the connections')
+        # del2_icon = QIcon()
+        # del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
+        # ra3.setIcon(del2_icon)
+        # ra3.triggered.connect(self.delete_all_connections)
+        #
+        # da = menu.addAction('Delete')
+        # del_icon = QIcon()
+        # del_icon.addPixmap(QPixmap(":/Icons/icons/delete_db.svg"))
+        # da.setIcon(del_icon)
+        # da.triggered.connect(self.remove)
+        #
+        # re = menu.addAction('Expand schematic')
+        # re_icon = QIcon()
+        # re_icon.addPixmap(QPixmap(":/Icons/icons/grid_icon.svg"))
+        # re.setIcon(re_icon)
+        # re.triggered.connect(self.expand_diagram_from_bus)
+        #
+        # menu.addSection("Add")
+        #
+        # al = menu.addAction('Load')
+        # al_icon = QIcon()
+        # al_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
+        # al.setIcon(al_icon)
+        # al.triggered.connect(self.add_load)
+        #
+        # ac_i = menu.addAction('Current injection')
+        # ac_i_icon = QIcon()
+        # ac_i_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
+        # ac_i.setIcon(ac_i_icon)
+        # ac_i.triggered.connect(self.add_current_injection)
+        #
+        # ash = menu.addAction('Shunt')
+        # ash_icon = QIcon()
+        # ash_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
+        # ash.setIcon(ash_icon)
+        # ash.triggered.connect(self.add_shunt)
+        #
+        # acsh = menu.addAction('Controllable shunt')
+        # acsh_icon = QIcon()
+        # acsh_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
+        # acsh.setIcon(acsh_icon)
+        # acsh.triggered.connect(self.add_controllable_shunt)
+        #
+        # acg = menu.addAction('Generator')
+        # acg_icon = QIcon()
+        # acg_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
+        # acg.setIcon(acg_icon)
+        # acg.triggered.connect(self.add_generator)
+        #
+        # asg = menu.addAction('Static generator')
+        # asg_icon = QIcon()
+        # asg_icon.addPixmap(QPixmap(":/Icons/icons/add_stagen.svg"))
+        # asg.setIcon(asg_icon)
+        # asg.triggered.connect(self.add_static_generator)
+        #
+        # ab = menu.addAction('Battery')
+        # ab_icon = QIcon()
+        # ab_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
+        # ab.setIcon(ab_icon)
+        # ab.triggered.connect(self.add_battery)
+        #
+        # aeg = menu.addAction('External grid')
+        # aeg_icon = QIcon()
+        # aeg_icon.addPixmap(QPixmap(":/Icons/icons/add_external_grid.svg"))
+        # aeg.setIcon(aeg_icon)
+        # aeg.triggered.connect(self.add_external_grid)
 
-        ra3 = menu.addAction('Delete all the connections')
-        del2_icon = QIcon()
-        del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
-        ra3.setIcon(del2_icon)
-        ra3.triggered.connect(self.delete_all_connections)
+        add_menu_entry(menu,
+                       text='Arrange',
+                       icon_path=":/Icons/icons/automatic_layout.svg",
+                       function_ptr=self.arrange_children)
 
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
+        add_menu_entry(menu,
+                       text='Assign active state to profile',
+                       icon_path=":/Icons/icons/assign_to_profile.svg",
+                       function_ptr=self.assign_status_to_profile)
 
-        re = menu.addAction('Expand schematic')
-        re_icon = QIcon()
-        re_icon.addPixmap(QPixmap(":/Icons/icons/grid_icon.svg"))
-        re.setIcon(re_icon)
-        re.triggered.connect(self.expand_diagram_from_bus)
+        add_menu_entry(menu, text='Delete all the connections',
+                       icon_path=":/Icons/icons/delete_conn.svg",
+                       function_ptr=self.delete_all_connections)
+
+        add_menu_entry(menu, text='Remove from schematic and DB',
+                       icon_path=":/Icons/icons/delete_db.svg",
+                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=True))
+
+        add_menu_entry(menu, text='Remove from schematic',
+                       icon_path=":/Icons/icons/delete_schematic.svg",
+                       function_ptr=lambda: self.remove_from_widget_and_db(ask=True, delete_from_db=False))
+
+        add_menu_entry(menu, text='Expand schematic',
+                       icon_path=":/Icons/icons/grid_icon.svg",
+                       function_ptr=self.expand_diagram_from_bus)
 
         menu.addSection("Add")
 
-        al = menu.addAction('Load')
-        al_icon = QIcon()
-        al_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
-        al.setIcon(al_icon)
-        al.triggered.connect(self.add_load)
+        # Actions under the "Add" section
+        add_menu_entry(menu, text='Load',
+                       icon_path=":/Icons/icons/add_load.svg",
+                       function_ptr=self.add_load)
 
-        ac_i = menu.addAction('Current injection')
-        ac_i_icon = QIcon()
-        ac_i_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
-        ac_i.setIcon(ac_i_icon)
-        ac_i.triggered.connect(self.add_current_injection)
+        add_menu_entry(menu, text='Current injection',
+                       icon_path=":/Icons/icons/add_load.svg",
+                       function_ptr=self.add_current_injection)
 
-        ash = menu.addAction('Shunt')
-        ash_icon = QIcon()
-        ash_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
-        ash.setIcon(ash_icon)
-        ash.triggered.connect(self.add_shunt)
+        add_menu_entry(menu, text='Shunt',
+                       icon_path=":/Icons/icons/add_shunt.svg",
+                       function_ptr=self.add_shunt)
 
-        acsh = menu.addAction('Controllable shunt')
-        acsh_icon = QIcon()
-        acsh_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
-        acsh.setIcon(acsh_icon)
-        acsh.triggered.connect(self.add_controllable_shunt)
+        add_menu_entry(menu,
+                       text='Controllable shunt',
+                       icon_path=":/Icons/icons/add_shunt.svg",
+                       function_ptr=self.add_controllable_shunt)
 
-        acg = menu.addAction('Generator')
-        acg_icon = QIcon()
-        acg_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
-        acg.setIcon(acg_icon)
-        acg.triggered.connect(self.add_generator)
+        add_menu_entry(menu, text='Generator',
+                       icon_path=":/Icons/icons/add_gen.svg",
+                       function_ptr=self.add_generator)
 
-        asg = menu.addAction('Static generator')
-        asg_icon = QIcon()
-        asg_icon.addPixmap(QPixmap(":/Icons/icons/add_stagen.svg"))
-        asg.setIcon(asg_icon)
-        asg.triggered.connect(self.add_static_generator)
+        add_menu_entry(menu, text='Static generator',
+                       icon_path=":/Icons/icons/add_stagen.svg",
+                       function_ptr=self.add_static_generator)
 
-        ab = menu.addAction('Battery')
-        ab_icon = QIcon()
-        ab_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
-        ab.setIcon(ab_icon)
-        ab.triggered.connect(self.add_battery)
+        add_menu_entry(menu, text='Battery',
+                       icon_path=":/Icons/icons/add_batt.svg",
+                       function_ptr=self.add_battery)
 
-        aeg = menu.addAction('External grid')
-        aeg_icon = QIcon()
-        aeg_icon.addPixmap(QPixmap(":/Icons/icons/add_external_grid.svg"))
-        aeg.setIcon(aeg_icon)
-        aeg.triggered.connect(self.add_external_grid)
+        add_menu_entry(menu,
+                       text='External grid',
+                       icon_path=":/Icons/icons/add_external_grid.svg",
+                       function_ptr=self.add_external_grid)
 
         menu.exec_(event.screenPos())
 
@@ -503,23 +576,26 @@ class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         """
         self._terminal.remove_all_connections()
 
-    def remove(self, ask: bool = True) -> None:
+    def remove_from_widget_and_db(self, ask: bool = True, delete_from_db: bool = True) -> None:
         """
         Remove this element
         @return:
         """
         if ask:
-            ok = yes_no_question('Are you sure that you want to remove this bus', 'Remove bus')
+            ok = yes_no_question('Are you sure that you want to remove this bus',
+                                 'Remove bus from schamatic and DB' if delete_from_db else "Remove bus from schamatic")
         else:
             ok = True
 
         if ok:
-            self.delete_all_connections()
+            # self.delete_all_connections()
+            #
+            # for g in self.shunt_children:
+            #     self.editor.remove_from_scene(g.nexus)
 
-            for g in self.shunt_children:
-                self.editor.remove_from_scene(g.nexus)
-
-            self.editor.remove_element(device=self.api_object, graphic_object=self)
+            self.editor.remove_element(device=self.api_object,
+                                       graphic_object=self,
+                                       delete_from_db=delete_from_db)
 
     def update_color(self):
         """

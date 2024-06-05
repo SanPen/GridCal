@@ -250,6 +250,11 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
         voltage = v_dict.get(cgmes_elm.uuid, None)
         nominal_voltage = get_nominal_voltage(topological_node=cgmes_elm,
                                               logger=logger)
+        if nominal_voltage == 0:
+            logger.add_error(msg='Nominal voltage is 0. :(',
+                             device=cgmes_elm.rdfid,
+                             device_class=cgmes_elm.tpe,
+                             device_property="nominalVoltage")
 
         if voltage is not None and nominal_voltage is not None:
             vm = voltage[0] / nominal_voltage
@@ -344,7 +349,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
     for cgmes_elm in cgmes_model.cgmes_assets.ConnectivityNode_list:
 
         bus = calc_node_dict.get(cgmes_elm.TopologicalNode.uuid, None)
-        vnom, vl = None, None
+        vnom, vl = 10, None
         if bus is None:
             logger.add_error(msg='No Bus found',
                              device=cgmes_elm,

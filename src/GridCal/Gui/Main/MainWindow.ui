@@ -8730,6 +8730,7 @@ QProgressBar::chunk{
      <addaction name="actionSelect_buses_by_zone"/>
      <addaction name="actionSelect_buses_by_country"/>
      <addaction name="separator"/>
+     <addaction name="actionDelete_from_the_diagram"/>
      <addaction name="actionDelete_selected"/>
     </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
@@ -8811,6 +8812,7 @@ QProgressBar::chunk{
    <addaction name="actionCenter_view"/>
    <addaction name="actionAutoatic_layout"/>
    <addaction name="actionDelete_selected"/>
+   <addaction name="actionDelete_from_the_diagram"/>
    <addaction name="separator"/>
    <addaction name="actionInputs_analysis"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
@@ -9139,16 +9141,16 @@ QProgressBar::chunk{
   <action name="actionDelete_selected">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/delete3.svg</normaloff>:/Icons/icons/delete3.svg</iconset>
+     <normaloff>:/Icons/icons/delete_db.svg</normaloff>:/Icons/icons/delete_db.svg</iconset>
    </property>
    <property name="text">
     <string>Delete selected objects from the db</string>
    </property>
    <property name="toolTip">
-    <string>Delete selected objects</string>
+    <string>Delete selected objects from the diagrams and the database</string>
    </property>
    <property name="shortcut">
-    <string>Del</string>
+    <string>Ctrl+Del</string>
    </property>
   </action>
   <action name="actionLinearAnalysis">
@@ -9866,6 +9868,18 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Enable server mode</string>
+   </property>
+  </action>
+  <action name="actionDelete_from_the_diagram">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/delete_schematic.svg</normaloff>:/Icons/icons/delete_schematic.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete selected from the diagram</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
    </property>
   </action>
  </widget>

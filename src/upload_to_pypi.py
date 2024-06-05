@@ -10,6 +10,28 @@ from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 from GridCal.__version__ import __GridCal_VERSION__
 from GridCalServer.__version__ import __GridCalServer_VERSION__
 from gridcal_packaging import publish
+from GridCal.Gui.update_gui_common import convert_resource_file, convert_ui_file
+
+
+def update_gui_to_make_sure():
+    # pyrcc5 icons.qrc -o icons_rc.py
+    # pyuic5 -x MainWindow.ui -o MainWindow.py
+
+    rcc_cmd = 'pyside6-rcc'
+    uic_cmd = 'pyside6-uic'
+
+    if os.name == 'nt':
+        rcc_cmd += '.exe'
+        uic_cmd += '.exe'
+
+    # define the path to MAIN
+    __here__ = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(__here__, 'GridCal', 'Gui', 'Main')
+
+    convert_resource_file(source=os.path.join(path, 'icons.qrc'), rcc_cmd=rcc_cmd)
+
+    for f in ['MainWindow.ui', 'ConsoleLog.ui']:
+        convert_ui_file(source=os.path.join(path, f), uic_cmd=uic_cmd)
 
 
 def check_versions() -> bool:
@@ -25,6 +47,8 @@ def check_versions() -> bool:
 
 
 if __name__ == "__main__":
+
+    update_gui_to_make_sure()
 
     if check_versions():
 
