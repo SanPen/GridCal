@@ -23,7 +23,7 @@ from scipy.sparse import csc_matrix, diags, csr_matrix
 from GridCalEngine.basic_structures import IntVec, Vec, Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.types import BRANCH_TYPES
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
 @nb.njit(cache=True)

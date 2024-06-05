@@ -32,7 +32,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
 from GridCalEngine.data_logger import DataLogger
 import GridCalEngine.Devices as dev
-from GridCalEngine.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import DeviceType

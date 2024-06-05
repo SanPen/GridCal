@@ -20,7 +20,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import BoolVec, Mat
 from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, FilterSubject,
                                                      is_numeric, parse_expression)
-from GridCalEngine.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 def object_extract(elm: ALL_DEV_TYPES, args: List[str]) -> Any:

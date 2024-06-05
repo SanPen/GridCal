@@ -25,7 +25,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.types import DRIVER_OBJECTS, RESULTS_OBJECTS
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.IO.gridcal.json_parser import save_json_file_v3
 from GridCalEngine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons

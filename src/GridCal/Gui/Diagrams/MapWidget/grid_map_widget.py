@@ -31,12 +31,12 @@ from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
-from GridCalEngine.types import BRANCH_TYPES
+from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
-from GridCalEngine.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 

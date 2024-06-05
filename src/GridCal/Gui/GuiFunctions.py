@@ -30,7 +30,7 @@ from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, Base
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
-from GridCalEngine.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 class TreeDelegate(QtWidgets.QItemDelegate):

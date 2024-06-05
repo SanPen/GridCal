@@ -20,7 +20,7 @@ import numpy as np
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
-from GridCalEngine.types import BRANCH_TYPES
+from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.basic_structures import IntVec, Logger
 from GridCalEngine.enumerations import DeviceType
 from scipy.sparse import lil_matrix

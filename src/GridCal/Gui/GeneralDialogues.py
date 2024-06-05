@@ -21,7 +21,7 @@ from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.GuiFunctions import ObjectsModel, get_list_model, get_checked_indices
 
 

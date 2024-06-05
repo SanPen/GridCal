@@ -39,7 +39,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics
                                                                                          ControllableShunt)
 
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.types import INJECTION_DEVICE_TYPES
+from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

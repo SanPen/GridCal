@@ -38,7 +38,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.types import DRIVER_OBJECTS, RESULTS_OBJECTS
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
