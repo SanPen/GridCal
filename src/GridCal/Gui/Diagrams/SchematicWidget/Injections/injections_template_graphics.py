@@ -22,7 +22,7 @@ from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import GenericDBWidget
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
+from GridCalEngine.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget

@@ -26,7 +26,7 @@ import GridCalEngine.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 from GridCalEngine.Topology.detect_substations import detect_substations
 from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg

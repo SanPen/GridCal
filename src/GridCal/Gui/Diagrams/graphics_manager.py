@@ -18,7 +18,7 @@
 from typing import List, Dict, Union
 from warnings import warn
 
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem

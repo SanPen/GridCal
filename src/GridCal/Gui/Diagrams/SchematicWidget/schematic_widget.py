@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout
                                QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.busbar import BusBar
@@ -56,7 +56,7 @@ from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import DeviceType, SimulationTypes
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.types import BRANCH_TYPES
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem

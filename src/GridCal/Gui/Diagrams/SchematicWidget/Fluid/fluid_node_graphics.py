@@ -26,7 +26,7 @@ from GridCalEngine.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, Flui
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.Devices.types import FLUID_TYPES
+from GridCalEngine.types import FLUID_TYPES
 
 from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, FONT_SCALE, GenericDBWidget
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem

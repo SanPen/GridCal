@@ -21,7 +21,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from GridCalEngine.enumerations import ResultTypes, DeviceType
 from GridCalEngine.basic_structures import StrVec, Mat, Vec
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 
 
 class ResultsTable:

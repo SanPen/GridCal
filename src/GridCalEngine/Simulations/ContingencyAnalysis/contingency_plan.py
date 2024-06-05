@@ -21,7 +21,7 @@ from typing import List, Tuple
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency import Contingency, ContingencyGroup
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.types import BRANCH_TYPES
 import GridCalEngine.Devices as dev
 
 

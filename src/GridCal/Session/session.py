@@ -61,58 +61,9 @@ from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import ResultTypes, SimulationTypes
+from GridCalEngine.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 from GridCalEngine.basic_structures import Logger
 from GridCal.Session.results_model import ResultsModel
-
-DRIVER_OBJECTS = Union[
-    AvailableTransferCapacityDriver,
-    AvailableTransferCapacityTimeSeriesDriver,
-    ContingencyAnalysisDriver,
-    ContingencyAnalysisTimeSeriesDriver,
-    ContinuationPowerFlowDriver,
-    LinearAnalysisDriver,
-    LinearAnalysisTimeSeriesDriver,
-    OptimalPowerFlowDriver,
-    OptimalPowerFlowTimeSeriesDriver,
-    PowerFlowDriver,
-    PowerFlowTimeSeriesDriver,
-    ShortCircuitDriver,
-    StochasticPowerFlowDriver,
-    ClusteringDriver,
-    CascadingDriver,
-    SigmaAnalysisDriver,
-    OptimalNetTransferCapacityDriver,
-    OptimalNetTransferCapacityTimeSeriesDriver,
-    NodeGroupsDriver,
-    InputsAnalysisDriver,
-    InvestmentsEvaluationDriver,
-    TopologyProcessorDriver,
-    NodalCapacityTimeSeriesDriver
-]
-
-RESULTS_OBJECTS = Union[
-    AvailableTransferCapacityResults,
-    AvailableTransferCapacityTimeSeriesResults,
-    ContingencyAnalysisResults,
-    ContingencyAnalysisTimeSeriesResults,
-    ContinuationPowerFlowResults,
-    LinearAnalysisResults,
-    LinearAnalysisTimeSeriesResults,
-    OptimalPowerFlowResults,
-    OptimalPowerFlowTimeSeriesResults,
-    PowerFlowResults,
-    PowerFlowTimeSeriesResults,
-    ShortCircuitResults,
-    StochasticPowerFlowResults,
-    ClusteringResults,
-    CascadingResults,
-    SigmaAnalysisResults,
-    OptimalNetTransferCapacityResults,
-    OptimalNetTransferCapacityTimeSeriesResults,
-    InputsAnalysisResults,
-    InvestmentsEvaluationResults,
-    NodalCapacityTimeSeriesResults
-]
 
 
 class GcThread(QThread):

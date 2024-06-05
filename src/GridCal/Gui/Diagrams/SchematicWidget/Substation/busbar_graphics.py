@@ -42,8 +42,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics
     ControllableShunt)
 
 from GridCalEngine.enumerations import DeviceType, FaultType
-from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
-from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
+from GridCalEngine.types import INJECTION_DEVICE_TYPES
 from GridCalEngine.Devices.Substation.busbar import BusBar
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

@@ -20,11 +20,11 @@ from typing import TYPE_CHECKING, List, Union
 import logging
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPen, QBrush
+from PySide6.QtGui import QColor, QPen
 from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 from GridCalEngine.Devices import LineLocation
 from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.types import BRANCH_TYPES
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.enumerations import DeviceType
 

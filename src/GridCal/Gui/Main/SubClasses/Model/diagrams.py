@@ -30,7 +30,7 @@ import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import SimulationTypes
 
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,

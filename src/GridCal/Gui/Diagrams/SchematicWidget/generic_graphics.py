@@ -18,10 +18,10 @@ from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 import darkdetect
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtWidgets import (QPushButton, QGraphicsLineItem, QGraphicsItem, QVBoxLayout, QGraphicsPolygonItem,
-                               QDialog, QGraphicsRectItem, QGraphicsEllipseItem)
+from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem,
+                               QGraphicsRectItem, QGraphicsEllipseItem)
 from PySide6.QtGui import QColor
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget

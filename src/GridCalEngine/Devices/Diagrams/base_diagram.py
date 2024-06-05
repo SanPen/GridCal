@@ -24,7 +24,7 @@ from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DiagramType, DeviceType
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 
 
 class PointsGroup:

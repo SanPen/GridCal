@@ -24,7 +24,7 @@ from GridCalEngine.IO.raw.devices import (RawArea, RawZone, RawBus, RawLoad, Raw
                                           RawTwoTerminalDCLine, RawFACTS)
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.types import BRANCH_TYPES
 
 
 def get_area(area: dev.Area, i: int) -> RawArea:

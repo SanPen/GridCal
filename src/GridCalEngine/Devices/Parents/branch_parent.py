@@ -29,7 +29,7 @@ from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
 
 if TYPE_CHECKING:
-    from GridCalEngine.Devices.types import CONNECTION_TYPE
+    from GridCalEngine.types import CONNECTION_TYPE
 
 
 class BranchParent(EditableDevice):

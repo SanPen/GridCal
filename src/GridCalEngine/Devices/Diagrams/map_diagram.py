@@ -18,7 +18,7 @@ from typing import Dict, Union
 from GridCalEngine.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType
 from GridCalEngine.basic_structures import Logger
 

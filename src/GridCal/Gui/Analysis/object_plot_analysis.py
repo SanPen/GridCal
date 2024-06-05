@@ -33,7 +33,7 @@ from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
 from GridCalEngine.Devices.Injections.load import Load
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 
 
 class GridErrorLog:

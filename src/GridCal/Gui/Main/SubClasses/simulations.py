@@ -38,6 +38,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
@@ -238,15 +239,15 @@ class SimulationsMain(TimeEventsMain):
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
         self.ui.contingency_filter_by_comboBox.currentTextChanged.connect(self.modify_contingency_filter_mode)
 
-    def get_simulations(self):
+    def get_simulations(self) -> List[DRIVER_OBJECTS]:
         """
         Get all threads that have to do with simulation
-        :return: list of simulation threads
+        :return: list of simulation driver objects
         """
 
         all_threads = list(self.session.drivers.values())
 
-        # # set the threads so that the diagram scene objects can plot them
+        # set the threads so that the diagram scene objects can plot them
         for diagram in self.diagram_widgets_list:
             if isinstance(diagram, SchematicWidget):
                 diagram.set_results_to_plot(all_threads)

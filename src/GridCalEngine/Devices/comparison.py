@@ -17,7 +17,7 @@
 
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.types import ALL_DEV_TYPES
 
 
 class PropertyConflict:
