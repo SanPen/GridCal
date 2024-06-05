@@ -727,26 +727,23 @@ class GridMapWidget(MapWidget):
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
 
-    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+    def get_image(self) -> Tuple[QImage, int, int]:
         """
         get the current picture
-        :param transparent:
         :return: QImage, width, height
         """
         w = self.width()
         h = self.height()
 
-        if transparent:
-            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-            image.fill(Qt.transparent)
-        else:
-            image = QImage(w, h, QImage.Format_RGB32)
-            image.fill(Qt.white)
-
-        painter = QPainter(image)
-        painter.setRenderHint(QPainter.Antialiasing)
-        self.diagram_scene.render(painter)
-        painter.end()
+        # image = QImage(w, h, QImage.Format_RGB32)
+        # image.fill(Qt.white)
+        #
+        # painter = QPainter(image)
+        # painter.setRenderHint(QPainter.Antialiasing)
+        # # self.view.render(painter)  # self.view stores the grid widgets
+        # self.render(painter)
+        # painter.end()
+        image = self.grab()
 
         return image, w, h
 
@@ -799,7 +796,7 @@ class GridMapWidget(MapWidget):
         Save video frame
         """
 
-        image, w, h = self.get_image(transparent=False)
+        image, w, h = self.get_image()
 
         # convert picture using the memory
         # we need to remove the alpha channel, otherwise the video frame is not saved
