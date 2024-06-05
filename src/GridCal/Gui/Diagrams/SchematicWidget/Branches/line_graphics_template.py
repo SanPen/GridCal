@@ -44,6 +44,7 @@ from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
+from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -584,8 +585,13 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         :param event:
         :return:
         """
-        if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object)
+        if self.api_object is not None:           
+            
+            self.editor.set_editor_model(api_object=self.api_object,
+                                         dictionary_of_lists={
+                                             DeviceType.BusDevice: self.editor.circuit.get_buses(),
+                                             DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
+                                         })
 
     def remove_widget(self):
         """
@@ -697,7 +703,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         self._to_port.update()
         self._to_port.get_parent().setZValue(0)
 
-    def unregister_port_from(self):
+    def unregister_port_from(self) -> None:
         """
 
         :return:
@@ -705,7 +711,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         if self._from_port:
             self._from_port.delete_hosting_connection(graphic_obj=self)
 
-    def unregister_port_to(self):
+    def unregister_port_to(self) -> None:
         """
 
         :return:

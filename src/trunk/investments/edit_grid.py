@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     new_lines = []
     for line in grid.lines:
-        new_line = line.copy()
+        new_line = line.copy(forced_new_idtag=True)
         new_line.active = False
         # new_line.B = 0
         # new_line.R = 0
@@ -36,12 +36,15 @@ if __name__ == "__main__":
 
     new_trs = []
     for transformer in grid.transformers2w:
-        new_tr = transformer.copy()
+        new_tr = transformer.copy(forced_new_idtag=True)
         new_tr.active = False
         new_trs.append(new_tr)
 
     for new_tr in new_trs:
         grid.add_transformer2w(new_tr)
+
+    for buses in grid.buses:
+        buses.Vmin = 0.95
 
     num_lines = len(grid.lines)
     nset_lines = int(num_lines / 2)  # number of investments

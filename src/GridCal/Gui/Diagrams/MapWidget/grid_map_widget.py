@@ -14,12 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import os
 from typing import Union, List, Tuple
+import cv2
 import numpy as np
 from PySide6.QtWidgets import QWidget, QGraphicsItem
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize, QRect
 from PySide6.QtGui import QColor
 from collections.abc import Callable
+from PySide6.QtGui import (QImage, QPainter)
+from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
@@ -114,6 +118,9 @@ class GridMapWidget(MapWidget):
 
         self.startHe = he
         self.startWi = wi
+
+        # video pointer
+        self._video: Union[None, cv2.VideoWriter] = None
 
         # draw
         self.draw()
@@ -349,7 +356,6 @@ class GridMapWidget(MapWidget):
 
         better_first.line_container.disable_line()
         better_second.line_container.disable_line()
-
 
     def create_line(self, api_object: BRANCH_TYPES, original: bool = True) -> MapTemplateLine:
         """
@@ -666,7 +672,8 @@ class GridMapWidget(MapWidget):
                     color = QColor(r, g, b, a)
                     style = Qt.SolidLine
                     if use_flow_based_width:
-                        weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
+                        weight = int(
+                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
                         weight = 0.5
 
@@ -716,11 +723,95 @@ class GridMapWidget(MapWidget):
                     color = QColor(r, g, b, a)
                     style = Qt.SolidLine
                     if use_flow_based_width:
-                        weight = int(np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
+                        weight = int(
+                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
                         weight = 0.5
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+
+    def get_image(self) -> Tuple[QImage, int, int]:
+        """
+        get the current picture
+        :return: QImage, width, height
+        """
+        w = self.width()
+        h = self.height()
+
+        # image = QImage(w, h, QImage.Format_RGB32)
+        # image.fill(Qt.white)
+        #
+        # painter = QPainter(image)
+        # painter.setRenderHint(QPainter.Antialiasing)
+        # # self.view.render(painter)  # self.view stores the grid widgets
+        # self.render(painter)
+        # painter.end()
+        image = self.grab()
+
+        return image, w, h
+
+    def take_picture(self, filename: str):
+        """
+        Save the grid to a png file
+        """
+        name, extension = os.path.splitext(filename.lower())
+
+        if extension == '.png':
+            image, _, _ = self.get_image(transparent=True)
+            image.save(filename)
+
+        elif extension == '.svg':
+            w = self.width()
+            h = self.height()
+            svg_gen = QSvgGenerator()
+            svg_gen.setFileName(filename)
+            svg_gen.setSize(QSize(w, h))
+            svg_gen.setViewBox(QRect(0, 0, w, h))
+            svg_gen.setTitle("Electrical grid schematic")
+            svg_gen.setDescription("An SVG drawing created by GridCal")
+
+            painter = QPainter(svg_gen)
+            self.render(painter)
+            painter.end()
+        else:
+            raise Exception('Extension ' + str(extension) + ' not supported :(')
+
+    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+        """
+        Save video
+        :param fname: file name
+        :param fps: frames per second
+        :returns width, height
+        """
+
+        w = self.width()
+        h = self.height()
+
+        self._video = cv2.VideoWriter(filename=fname,
+                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                      fps=fps,
+                                      frameSize=(w, h))
+
+        return w, h
+
+    def capture_video_frame(self):
+        """
+        Save video frame
+        """
+
+        image, w, h = self.get_image()
+
+        # convert picture using the memory
+        # we need to remove the alpha channel, otherwise the video frame is not saved
+        frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
+        self._video.write(frame)
+
+    def end_video_recording(self):
+        """
+
+        :return:
+        """
+        self._video.release()
 
 
 def generate_map_diagram(substations: List[Substation],

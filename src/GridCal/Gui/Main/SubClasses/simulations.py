@@ -121,12 +121,15 @@ class SimulationsMain(TimeEventsMain):
 
         # opf solvers dictionary
         self.nodal_capacity_methods_dict = OrderedDict()
-        self.nodal_capacity_methods_dict[
-            NodalCapacityMethod.LinearOptimization.value] = NodalCapacityMethod.LinearOptimization
-        self.nodal_capacity_methods_dict[
-            NodalCapacityMethod.NonlinearOptimization.value] = NodalCapacityMethod.NonlinearOptimization
+
+        for val in [NodalCapacityMethod.LinearOptimization,
+                    NodalCapacityMethod.NonlinearOptimization,
+                    NodalCapacityMethod.CPF]:
+            self.nodal_capacity_methods_dict[val.value] = val
+
         self.ui.nodal_capacity_method_comboBox.setModel(
-            gf.get_list_model(list(self.nodal_capacity_methods_dict.keys())))
+            gf.get_list_model(list(self.nodal_capacity_methods_dict.keys()))
+        )
 
         # branch types for reduction
         mdl = gf.get_list_model([DeviceType.LineDevice.value,
@@ -474,7 +477,8 @@ class SimulationsMain(TimeEventsMain):
             SimulationTypes.NodeGrouping_run.value: ':/Icons/icons/ml.svg',
             SimulationTypes.ContinuationPowerFlow_run.value: ':/Icons/icons/continuation_power_flow.svg',
             SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg',
-            SimulationTypes.InvestmestsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
+            SimulationTypes.InvestmentsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
+            SimulationTypes.NodalCapacityTimeSeries_run.value: ':/Icons/icons/nodal_capacity.svg',
         }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
@@ -2339,7 +2343,7 @@ class SimulationsMain(TimeEventsMain):
 
             if len(self.circuit.investments_groups) > 0:
 
-                if not self.session.is_this_running(SimulationTypes.InvestmestsEvaluation_run):
+                if not self.session.is_this_running(SimulationTypes.InvestmentsEvaluation_run):
 
                     # evaluation method
                     method = self.investment_evaluation_method_dict[
@@ -2359,7 +2363,7 @@ class SimulationsMain(TimeEventsMain):
                                      post_func=self.post_run_investments_evaluation,
                                      prog_func=self.ui.progressBar.setValue,
                                      text_func=self.ui.progress_label.setText)
-                    self.add_simulation(SimulationTypes.InvestmestsEvaluation_run)
+                    self.add_simulation(SimulationTypes.InvestmentsEvaluation_run)
                     self.LOCK()
 
                 else:
@@ -2379,7 +2383,7 @@ class SimulationsMain(TimeEventsMain):
 
         # update the results in the circuit structures
         if results is not None:
-            self.remove_simulation(SimulationTypes.InvestmestsEvaluation_run)
+            self.remove_simulation(SimulationTypes.InvestmentsEvaluation_run)
 
             self.ui.progress_label.setText('Colouring investments evaluation results in the grid...')
             QtGui.QGuiApplication.processEvents()

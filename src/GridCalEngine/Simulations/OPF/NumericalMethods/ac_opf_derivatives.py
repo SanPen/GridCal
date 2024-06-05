@@ -443,16 +443,14 @@ def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
-    _, _, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, slcap,  _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
+    _, _, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, slcap, _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
                                                                           M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
                                                                           nslcap=nslcap, acopf_mode=acopf_mode)
     # Obj. function:  Active power generation costs plus overloads and voltage deviation penalties
-    if nslcap !=0:
-        fval = np.sum(nodal_capacity_sign * slcap)
 
-    else:
-        fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
-                       + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin)))
+    fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
+                   + np.sum(c_s * (sl_sf + sl_st)) + np.sum(c_v * (sl_vmax + sl_vmin))
+                   + np.sum(nodal_capacity_sign * slcap))
 
     return fval
 
@@ -501,8 +499,8 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
     S = V * np.conj(Ybus @ V)
     S_dispatch = Cg[:, ig] @ (Pg_dis + 1j * Qg_dis)  # Variable generation
     S_undispatch = Cg[:, nig] @ Sg_undis  # Fixed generation
-    dS = S + Sd - S_dispatch - S_undispatch   # Nodal power balance
-    if nslcap !=0:
+    dS = S + Sd - S_dispatch - S_undispatch  # Nodal power balance
+    if nslcap != 0:
         dS[capacity_nodes_idx] -= slcap # Nodal capacity slack generator addition
 
     for link in range(len(Pfdc)):

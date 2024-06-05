@@ -19,8 +19,10 @@ from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
+from collections import Counter
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -54,11 +56,23 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses: Vec = np.zeros(max_eval, dtype=float)
         self._overload_score: Vec = np.zeros(max_eval, dtype=float)
         self._voltage_score: Vec = np.zeros(max_eval, dtype=float)
-        self._electrical: Vec = np.zeros(max_eval, dtype=float)
         self._financial: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
         self._best_combination: IntVec = np.zeros(max_eval, dtype=int)
+
+        self.overload_mag = []
+        self.losses_mag = []
+        self.voltage_mag = []
+
+        self.overload_max_magnitude = None
+        self.losses_majority_magnitude = None
+        self.voltage_majority_magnitude = None
+        self.calculate_magnitude(value=0)
+        self.calculate_tech_score_magnitudes()
+
+        self.losses_scale = None
+        self.voltage_scale = None
 
         self.register(name='investment_groups_names', tpe=StrVec)
         self.register(name='_combinations', tpe=Vec)
@@ -67,7 +81,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='_losses', tpe=Vec)
         self.register(name='_overload_score', tpe=Vec)
         self.register(name='_voltage_score', tpe=Vec)
-        self.register(name='_electrical', tpe=Vec)
         self.register(name='_financial', tpe=Vec)
         self.register(name='_f_obj', tpe=Vec)
         self.register(name='_index_names', tpe=Vec)
@@ -107,7 +120,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                losses: float,
                overload_score: float,
                voltage_score: float,
-               electrical: float,
                financial: float,
                objective_function_sum: float,
                combination: IntVec,
@@ -120,7 +132,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param losses:
         :param overload_score:
         :param voltage_score:
-        :param electrical:
         :param financial:
         :param objective_function_sum:
         :param combination: vector of size (n_investment_groups) with ones in those investments used
@@ -131,11 +142,100 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses[eval_idx] = losses
         self._overload_score[eval_idx] = overload_score
         self._voltage_score[eval_idx] = voltage_score
-        self._electrical[eval_idx] = electrical
         self._financial[eval_idx] = financial
         self._f_obj[eval_idx] = objective_function_sum
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
+
+    def scaling_factor_losses(self, overload_max_magnitude, losses_majority_magnitudes) -> float:
+        """
+        Calculate the scaling factor based on the difference in magnitude between overload and losses magnitudes.
+        """
+        losses_scale = None
+        if losses_majority_magnitudes is not None:
+            magnitude_diff_losses = overload_max_magnitude - losses_majority_magnitudes
+            if magnitude_diff_losses >= 0:
+                losses_scale = 10 ** magnitude_diff_losses
+            else:
+                losses_scale = 1.0 / (10 ** abs(magnitude_diff_losses))
+
+        return losses_scale
+
+    def scaling_factor_voltage(self, overload_max_magnitude, voltage_majority_magnitudes) -> float:
+        """
+        Calculate the scaling factor based on the difference in magnitude between overload and voltage magnitudes.
+        """
+        voltage_scale = None
+
+        if voltage_majority_magnitudes is not None:
+            magnitude_diff_voltage = overload_max_magnitude - voltage_majority_magnitudes - 1
+            if magnitude_diff_voltage >= 0:
+                voltage_scale = 10 ** magnitude_diff_voltage
+            else:
+                voltage_scale = 1.0 / (10 ** abs(magnitude_diff_voltage))
+
+        return voltage_scale
+
+    def calculate_tech_score_magnitudes(self):
+        """
+        Calculate the max magnitude of overload score and the magnitudes that appear most in losses and voltage scores
+        """
+        if self.overload_mag:
+            self.overload_max_magnitude = max(self.overload_mag)
+        else:
+            self.overload_max_magnitude = None
+
+        if self.losses_mag:
+            losses_magnitude_counts = Counter(self.losses_mag)
+            losses_max_count = max(losses_magnitude_counts.values())
+            losses_majority_magnitudes = [magnitude for magnitude, count in losses_magnitude_counts.items() if
+                                          count == losses_max_count]
+            self.losses_majority_magnitude = max(losses_majority_magnitudes)
+        else:
+            self.losses_majority_magnitude = None
+
+        if self.voltage_mag:
+            voltage_magnitude_counts = Counter(self.voltage_mag)
+            voltage_max_count = max(voltage_magnitude_counts.values())
+            voltage_majority_magnitudes = [magnitude for magnitude, count in voltage_magnitude_counts.items() if
+                                           count == voltage_max_count]
+            self.voltage_majority_magnitude = max(voltage_majority_magnitudes)
+        else:
+            self.voltage_majority_magnitude = None
+
+        return self.overload_max_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
+
+    def calculate_magnitude(self, value):
+        return int(np.floor(np.log10(np.abs(value)))) if value != 0 else 0
+
+
+    def get_objectives(self) -> Mat:
+        """
+        Returns the multi-objectives matrix
+        :return: Matrix (n_eval, n_dim)
+        """
+        return np.c_[
+            self._capex,
+            self._opex,
+            self._losses,
+            self._overload_score,
+            self._voltage_score
+        ]
+
+    def pareto_sort(self) -> None:
+        """
+        Pareto sort the results in place
+        """
+        y, x = non_dominated_sorting(y_values=self.get_objectives(),
+                                     x_values=self._combinations)
+
+        self._capex = y[:, 0]
+        self._opex = y[:, 1]
+        self._losses = y[:, 2]
+        self._overload_score = y[:, 3]
+        self._voltage_score = y[:, 4]
+
+        self._combinations = x
 
     def add(self,
             capex: float,
@@ -143,7 +243,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             losses: float,
             overload_score: float,
             voltage_score: float,
-            electrical: float,
             financial: float,
             objective_function_sum: float,
             combination: IntVec) -> None:
@@ -154,12 +253,15 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param losses:
         :param overload_score:
         :param voltage_score:
-        :param electrical:
         :param financial:
         :param objective_function_sum:
         :param combination:
         :return:
         """
+        self.overload_mag.append(self.calculate_magnitude(overload_score))
+        self.losses_mag.append(self.calculate_magnitude(losses))
+        self.voltage_mag.append(self.calculate_magnitude(voltage_score))
+
         if self.__eval_index < self.max_eval:
             self.set_at(eval_idx=self.__eval_index,
                         capex=capex,
@@ -167,7 +269,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                         losses=losses,
                         overload_score=overload_score,
                         voltage_score=voltage_score,
-                        electrical=electrical,
                         financial=financial,
                         objective_function_sum=objective_function_sum,
                         combination=combination,
@@ -212,7 +313,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                 self._losses,
                 self._overload_score / 1e6,
                 self._voltage_score / 1e6,
-                self._electrical,
+                self._losses + self._voltage_score + self._overload_score,
                 self._financial,
                 self._f_obj,
                 self._combinations
@@ -232,19 +333,73 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         elif result_type == ResultTypes.InvestmentsParetoPlot:
             labels = self._index_names
-            columns = ["Investment cost (M€)", "Technical cost (M€)"]
-            data = np.c_[self._financial, self._electrical]
+
+            # Scale losses and voltage scores to match overload score, creating smooth Pareto curve
+            overload_score = np.sum(self._overload_score)
+            if overload_score != 0:
+                self.calculate_tech_score_magnitudes()
+                self.losses_scale = self.scaling_factor_losses(self.overload_max_magnitude, self.losses_majority_magnitude)
+                self.voltage_scale = self.scaling_factor_voltage(self.overload_max_magnitude, self.voltage_majority_magnitude)
+            else:
+                self.losses_scale = 1
+                self.voltage_scale = 1
+
+            columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)", "Voltage cost (M€)"]
+            data = np.c_[self._financial, self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score, self._losses, self._overload_score, self._voltage_score]
             y_label = ''
             title = ''
 
             plt.ion()
             color_norm = plt_colors.Normalize()
-            fig = plt.figure(figsize=(8, 6))
-            ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(self._financial, self._electrical, c=self._f_obj, norm=color_norm)
-            ax3.set_xlabel('Investment cost (M€)')
-            ax3.set_ylabel('Technical cost (M€)')
-            plt.colorbar(sc3, fraction=0.05, label='Objective function')
+            fig, ax3 = plt.subplots(2, 2, figsize=(16, 12))
+
+            # Match magnitude of technical score with investment score
+            technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
+            max_x_order_of_magnitude = self.calculate_magnitude(max(self._financial))
+            max_y_order_of_magnitude = self.calculate_magnitude(max(self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score))
+            order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
+            scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
+
+            # Plot 1: Technical vs investment
+            sc1 = ax3[0, 0].scatter(self._financial, scaled_technical_score, c=self._f_obj, norm=color_norm)
+            ax3[0, 0].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[0, 0].set_ylabel('Technical cost (M€)', fontsize=10)
+            ax3[0, 0].set_title('Technical vs investment', fontsize=12)
+            ax3[0, 0].tick_params(axis='both', which='major', labelsize=8)
+            cbar1 = plt.colorbar(sc1, ax=ax3[0, 0], fraction=0.05)
+            cbar1.set_label('Objective function', fontsize=10)
+            cbar1.ax.tick_params(labelsize=8)
+
+            # Plot 2: Losses vs investment
+            sc2 = ax3[0, 1].scatter(self._financial, self._losses, c=self._f_obj, norm=color_norm)
+            ax3[0, 1].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[0, 1].set_ylabel('Losses cost (M€)', fontsize=10)
+            ax3[0, 1].set_title('Power losses vs investment', fontsize=12)
+            ax3[0, 1].tick_params(axis='both', which='major', labelsize=8)
+            cbar2 = plt.colorbar(sc2, ax=ax3[0, 1], fraction=0.05)
+            cbar2.set_label('Objective function', fontsize=10)
+            cbar2.ax.tick_params(labelsize=8)
+
+            # Plot 3: Overload vs investment
+            sc3 = ax3[1, 0].scatter(self._financial, self._overload_score, c=self._f_obj, norm=color_norm)
+            ax3[1, 0].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[1, 0].set_ylabel('Overload cost (M€)', fontsize=10)
+            ax3[1, 0].set_title('Branch overload vs investment', fontsize=12)
+            ax3[1, 0].tick_params(axis='both', which='major', labelsize=8)
+            cbar3 = plt.colorbar(sc3, ax=ax3[1, 0], fraction=0.05)
+            cbar3.set_label('Objective function', fontsize=10)
+            cbar3.ax.tick_params(labelsize=8)
+
+            # Plot 4: Undervoltage vs investment
+            sc4 = ax3[1, 1].scatter(self._financial, self._voltage_score, c=self._f_obj, norm=color_norm)
+            ax3[1, 1].set_xlabel('Investment cost (M€)', fontsize=10)
+            ax3[1, 1].set_ylabel('Voltage cost (M€)', fontsize=10)
+            ax3[1, 1].set_title('Undervoltage vs investment', fontsize=12)
+            ax3[1, 1].tick_params(axis='both', which='major', labelsize=8)
+            cbar4 = plt.colorbar(sc4, ax=ax3[1, 1], fraction=0.05)
+            cbar4.set_label('Objective function', fontsize=10)
+            cbar4.ax.tick_params(labelsize=8)
+
             fig.suptitle(result_type.value)
             plt.tight_layout()
             plt.show()
@@ -258,6 +413,37 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 ylabel=y_label,
                                 xlabel='',
                                 units=y_label)
+
+
+        # elif result_type == ResultTypes.InvestmentsParetoPlot1:
+        #     labels = self._index_names
+        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
+        #     columns = ["Investment cost (M€)", "Losses (M€)"]
+        #     data = np.c_[self._financial, self._losses]
+        #     y_label = ''
+        #     title = ''
+        #
+        #     plt.ion()
+        #     color_norm = plt_colors.Normalize()
+        #     fig = plt.figure(figsize=(8, 6))
+        #     ax3 = plt.subplot(1, 1, 1)
+        #     sc3 = ax3.scatter(self._financial, self._losses, c=self._f_obj, norm=color_norm)
+        #     ax3.set_xlabel('Investment cost (M€)')
+        #     ax3.set_ylabel('Losses cost (M€)')
+        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
+        #     fig.suptitle(result_type.value)
+        #     plt.tight_layout()
+        #     plt.show()
+        #
+        #     return ResultsTable(data=data,
+        #                         index=np.array(labels),
+        #                         idx_device_type=DeviceType.NoDevice,
+        #                         columns=np.array(columns),
+        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
+        #                         title=title,
+        #                         ylabel=y_label,
+        #                         xlabel='',
+        #                         units=y_label)
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names

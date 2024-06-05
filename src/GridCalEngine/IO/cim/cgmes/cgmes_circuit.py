@@ -32,22 +32,16 @@ from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import CGMESVersions
 
 
-def find_attribute(referenced_object: Base,
-                   obj: Base,
+def find_attribute(obj: Base,
                    property_name: str,
-                   association_inverse_dict: Dict[str, str]):
-    prop_dict = association_inverse_dict.get(obj.tpe, None)
-    if prop_dict:
-        inverse_prop_name = prop_dict.get(property_name, None)
-        if inverse_prop_name and hasattr(referenced_object, inverse_prop_name):
-            return inverse_prop_name
-    return None
+                   association_inverse_dict: Dict[Tuple[str, str], str]):
+    return association_inverse_dict.get((obj.tpe, property_name))
 
 
 def find_references(elements_by_type: Dict[str, List[Base]],
                     all_objects_dict: Dict[str, Base],
                     all_objects_dict_boundary: Union[Dict[str, Base], None],
-                    association_inverse_dict: Dict[str, str],
+                    association_inverse_dict: Dict[Tuple[str, str], str],
                     class_dict: Dict[str, Base],
                     logger: DataLogger,
                     mark_used: bool) -> None:
@@ -64,10 +58,8 @@ def find_references(elements_by_type: Dict[str, List[Base]],
     :param association_inverse_dict: Containing the name of the attributes which associate with each other.
     """
     added_from_the_boundary_set = list()
-
     # Store dictionary values in local variables
     elements_by_type_items = elements_by_type.items()
-
     # find cross-references
     for class_name, elements in elements_by_type_items:
         for element in elements:  # for every element of the type
@@ -137,31 +129,13 @@ def find_references(elements_by_type: Dict[str, List[Base]],
 
                                 # set the referenced object in the property
                                 setattr(element, property_name, referenced_object)
-
                                 # register the inverse reference
-                                ref_attribute = find_attribute(referenced_object=referenced_object,
-                                                               obj=element,
+                                ref_attribute = find_attribute(obj=element,
                                                                property_name=property_name,
                                                                association_inverse_dict=association_inverse_dict)
                                 if ref_attribute is not None:
                                     referenced_object.add_reference(element, ref_attribute)
 
-                                # check that the type matches the expected type
-                                # if cim_prop.class_type in [ConnectivityNodeContainer, Base]:
-                                #     # the container class is too generic...
-                                #     pass
-                                # else:
-                                #     if not isinstance(referenced_object, cim_prop.class_type) and \
-                                #             cim_prop.class_type != EquipmentContainer:
-                                #         # if the class specification does not match but the
-                                #         # required type is also not a generic polymorphic object ...
-                                #         cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">", "")
-                                #         logger.add_error(msg='Object type different from expected',
-                                #                          device=element.rdfid,
-                                #                          device_class=class_name,
-                                #                          device_property=property_name,
-                                #                          value=referenced_object.tpe,
-                                #                          expected_value=cls)
                             else:
 
                                 # I want to know that it was not found
@@ -205,32 +179,13 @@ def find_references(elements_by_type: Dict[str, List[Base]],
 
                                     # set the referenced object in the property
                                     referenced_object_list.add(referenced_object)
-
                                     # register the inverse reference
-                                    ref_attribute = find_attribute(referenced_object=referenced_object,
-                                                                   obj=element,
+                                    ref_attribute = find_attribute(obj=element,
                                                                    property_name=property_name,
                                                                    association_inverse_dict=association_inverse_dict)
                                     if ref_attribute is not None:
                                         referenced_object.add_reference(element, ref_attribute)
 
-                                    # check that the type matches the expected type
-                                    # if cim_prop.class_type in [ConnectivityNodeContainer, Base]:
-                                    #     # the container class is too generic...
-                                    #     pass
-                                    # else:
-                                    #     if not isinstance(referenced_object, cim_prop.class_type) and \
-                                    #             cim_prop.class_type != EquipmentContainer:
-                                    #         # if the class specification does not match but the
-                                    #         # required type is also not a generic polymorphic object ...
-                                    #         cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">",
-                                    #                                                                                "")
-                                    #         logger.add_error(msg='Object type different from expected',
-                                    #                          device=element.rdfid,
-                                    #                          device_class=class_name,
-                                    #                          device_property=property_name,
-                                    #                          value=referenced_object.tpe,
-                                    #                          expected_value=cls)
                                 else:
 
                                     # I want to know that it was not found
@@ -274,13 +229,6 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                     else:
                         pass
 
-            # check the object rules
-            # todo: is it Ok?
-            # if isinstance(element, LoadResponseCharacteristic):
-            #     check_load_response_characteristic(load_response_characteristic=element, logger=logger)
-            # else:
-            #     check(logger=logger)
-
     # modify the elements_by_type here adding the elements from the boundary set
     # all_elements_dict was modified in the previous loop
     for referenced_object in added_from_the_boundary_set:
@@ -309,8 +257,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
     :param logger:DataLogger
     :return: None
     """
-    import time
-    start = time.time()
     for class_name, objects_dict in data.items():
 
         objects_list = list()
@@ -339,9 +285,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                 logger.add_error("Class not recognized", device_class=class_name)
 
         elements_by_type[class_name] = objects_list
-    endt = time.time()
-    print("data to object: ", endt - start, "sec")
-    start = time.time()
     # replace refferences by actual objects
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
@@ -350,8 +293,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                     class_dict=class_dict,
                     logger=logger,
                     mark_used=True)
-    endt = time.time()
-    print("find references: ", endt - start, "sec")
 
 
 def is_valid_cgmes(cgmes_version) -> bool:

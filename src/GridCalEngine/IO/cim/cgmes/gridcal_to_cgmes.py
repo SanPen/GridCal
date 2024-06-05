@@ -128,7 +128,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
 
     for fm in fm_list:
         fm.scenarioTime = scenariotime
-        if modelingauthorityset != "":  # TODO if 2.4 than no need in SV in 3.0 we need all
+        if modelingauthorityset != "":
             fm.modelingAuthoritySet = modelingauthorityset
         current_time = datetime.utcnow()
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -174,6 +174,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
     fm_list[1].profile = profile_uris.get("SSH")
     fm_list[2].profile = profile_uris.get("TP")
     fm_list[3].profile = profile_uris.get("SV")
+    if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:  # if 2.4 than no need in SV in 3.0 we need all
+        fm_list[3].modelingAuthoritySet = None
 
     # DependentOn
     eqbd_id = ""
@@ -520,37 +522,38 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
     for bus in multi_circuit_model.buses:
-        tn = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
-            target_uuid=bus.idtag
-        )
-        if tn is not None:
-            continue
-        object_template = cgmes_model.get_class_type("TopologicalNode")
-        tn = object_template(rdfid=form_rdfid(bus.idtag))
-        tn.name = bus.name
-        tn.shortName = bus.name
-        tn.description = bus.code
-        tn.BaseVoltage = find_object_by_vnom(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
-            target_vnom=bus.Vnom
-        )
-
-        if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
-            vl = find_object_by_uuid(
+        if not bus.is_internal:
+            tn = find_object_by_uuid(
                 cgmes_model=cgmes_model,
-                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-                target_uuid=bus.voltage_level.idtag
+                object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
+                target_uuid=bus.idtag
             )
-            tn.ConnectivityNodeContainer = vl
-            # link back
-            vl.TopologicalNode = tn
-        else:
-            print(f'Bus.voltage_level.idtag is None for {bus.name}')
+            if tn is not None:
+                continue
+            object_template = cgmes_model.get_class_type("TopologicalNode")
+            tn = object_template(rdfid=form_rdfid(bus.idtag))
+            tn.name = bus.name
+            tn.shortName = bus.name
+            tn.description = bus.code
+            tn.BaseVoltage = find_object_by_vnom(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
+                target_vnom=bus.Vnom
+            )
 
-        cgmes_model.add(tn)
+            if bus.voltage_level is not None and cgmes_model.cgmes_assets.VoltageLevel_list:  # VoltageLevel
+                vl = find_object_by_uuid(
+                    cgmes_model=cgmes_model,
+                    object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                    target_uuid=bus.voltage_level.idtag
+                )
+                tn.ConnectivityNodeContainer = vl
+                # link back
+                vl.TopologicalNode = tn
+            else:
+                print(f'Bus.voltage_level.idtag is None for {bus.name}')
+
+            cgmes_model.add(tn)
 
     return
 
@@ -788,7 +791,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # cgmes_syn.aggregate is optional, not exported
         if mc_elm.bus.is_slack:
             cgmes_syn.referencePriority = 1
-            cgmes_gen.normalPF = 1
+            cgmes_gen.normalPF = 1  # in gridcal the participation factor is the cost
         else:
             cgmes_syn.referencePriority = 0
             cgmes_gen.normalPF = 0
@@ -799,7 +802,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # control_type: voltage or power control, ..
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
-            cgmes_syn.RegulatingControl = create_cgmes_regulating_control(cgmes_syn, cgmes_model)
+            cgmes_syn.RegulatingControl = create_cgmes_regulating_control(mc_elm, cgmes_model)
             cgmes_syn.RegulatingControl.mode: RegulatingControlModeKind.voltage
             cgmes_syn.RegulatingControl.RegulatingCondEq = cgmes_syn
             cgmes_syn.controlEnabled = True
@@ -879,7 +882,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cm_transformer, cgmes_model, logger),
                                     create_cgmes_terminal(mc_elm.bus_to, cm_transformer, cgmes_model, logger)]
         cm_transformer.aggregate = False  # what is this?
-        # cm_transformer.EquipmentContainer: can be obtained only if the data is stored in MultiCircuit as well
+        cm_transformer.EquipmentContainer = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.Substation_list,
+            target_uuid=mc_elm.bus_from.substation.idtag
+        )
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
@@ -945,6 +952,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
+
+        cm_transformer.EquipmentContainer = find_object_by_uuid(
+            cgmes_model=cgmes_model,
+            object_list=cgmes_model.cgmes_assets.Substation_list,
+            target_uuid=mc_elm.bus1.substation.idtag
+        )
 
         pte1 = object_template()
         pte1.PowerTransformer = cm_transformer

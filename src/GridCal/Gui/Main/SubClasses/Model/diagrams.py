@@ -118,8 +118,10 @@ class DiagramsMain(CompiledArraysMain):
         register_matplotlib_converters()
 
         # --------------------------------------------------------------------------------------------------------------
-        self.ui.actionExport.triggered.connect(self.export_diagram)
-        self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_schematic)
+        self.ui.actionTakePicture.triggered.connect(self.take_picture)
+        self.ui.actionRecord_video.triggered.connect(self.record_video)
+        self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_diagram_and_db)
+        self.ui.actionDelete_from_the_diagram.triggered.connect(self.delete_selected_from_the_diagram)
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
         self.ui.actionSet_schematic_positions_from_GPS_coordinates.triggered.connect(self.set_xy_from_lat_lon)
         self.ui.actionSetSelectedBusCountry.triggered.connect(lambda: self.set_selected_bus_property('country'))
@@ -301,25 +303,33 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         if self.circuit.has_time_series:
-            self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
-                                                                       max_value=self.simulation_end_index,
-                                                                       time_array=self.circuit.time_profile)
+            if self.circuit.get_time_number() > 0:
+                self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
+                                                                           max_value=self.simulation_end_index,
+                                                                           time_array=self.circuit.time_profile)
 
-            self.start_end_dialogue_window.setModal(True)
-            self.start_end_dialogue_window.exec()
+                self.start_end_dialogue_window.setModal(True)
+                self.start_end_dialogue_window.exec()
 
-            if self.start_end_dialogue_window.is_accepted:
-                self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
-                                       en=self.start_end_dialogue_window.end_value)
+                if self.start_end_dialogue_window.is_accepted:
+                    self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
+                                           en=self.start_end_dialogue_window.end_value)
+            else:
+                info_msg("Empty time series :/")
         else:
             info_msg("There are no time series :/")
 
-    def grid_colour_function(self, plot_function, current_study: str, t_idx: Union[None, int]) -> None:
+    def grid_colour_function(self,
+                             diagram: Union[SchematicWidget, GridMapWidget],
+                             current_study: str,
+                             t_idx: Union[None, int],
+                             allow_popups: bool = True) -> None:
         """
         Colour the schematic or the map
-        :param plot_function: function pointer to the function doing the plotting
+        :param diagram: Diagram where the plotting is made
         :param current_study: current_study name
         :param t_idx: current time step (if None, the snapshot is taken)
+        :param allow_popups: if true, messages me pop up
         """
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
@@ -341,34 +351,35 @@ class DiagramsMain(CompiledArraysMain):
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.Sbus,
-                                     bus_active=bus_active,
-                                     Sf=results.Sf,
-                                     St=results.St,
-                                     voltages=results.voltage,
-                                     loadings=np.abs(results.loading),
-                                     types=results.bus_types,
-                                     losses=results.losses,
-                                     br_active=br_active,
-                                     hvdc_Pf=results.hvdc_Pf,
-                                     hvdc_Pt=results.hvdc_Pt,
-                                     hvdc_losses=results.hvdc_losses,
-                                     hvdc_loading=results.hvdc_loading,
-                                     hvdc_active=hvdc_active,
-                                     ma=results.tap_module,
-                                     theta=results.tap_angle,
-                                     Beq=results.Beq,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=results.Sbus,
+                                              bus_active=bus_active,
+                                              Sf=results.Sf,
+                                              St=results.St,
+                                              voltages=results.voltage,
+                                              loadings=np.abs(results.loading),
+                                              types=results.bus_types,
+                                              losses=results.losses,
+                                              br_active=br_active,
+                                              hvdc_Pf=results.hvdc_Pf,
+                                              hvdc_Pt=results.hvdc_Pt,
+                                              hvdc_losses=results.hvdc_losses,
+                                              hvdc_loading=results.hvdc_loading,
+                                              hvdc_active=hvdc_active,
+                                              ma=results.tap_module,
+                                              theta=results.tap_angle,
+                                              Beq=results.Beq,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -378,31 +389,32 @@ class DiagramsMain(CompiledArraysMain):
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.S[t_idx, :],
-                                     bus_active=bus_active,
-                                     Sf=results.Sf[t_idx, :],
-                                     St=results.St[t_idx, :],
-                                     voltages=results.voltage[t_idx, :],
-                                     loadings=np.abs(results.loading[t_idx, :]),
-                                     types=results.bus_types,
-                                     losses=results.losses[t_idx, :],
-                                     br_active=br_active,
-                                     hvdc_Pf=results.hvdc_Pf[t_idx, :],
-                                     hvdc_Pt=results.hvdc_Pt[t_idx, :],
-                                     hvdc_losses=results.hvdc_losses[t_idx, :],
-                                     hvdc_loading=results.hvdc_loading[t_idx, :],
-                                     hvdc_active=hvdc_active,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=results.S[t_idx, :],
+                                              bus_active=bus_active,
+                                              Sf=results.Sf[t_idx, :],
+                                              St=results.St[t_idx, :],
+                                              voltages=results.voltage[t_idx, :],
+                                              loadings=np.abs(results.loading[t_idx, :]),
+                                              types=results.bus_types,
+                                              losses=results.losses[t_idx, :],
+                                              br_active=br_active,
+                                              hvdc_Pf=results.hvdc_Pf[t_idx, :],
+                                              hvdc_Pt=results.hvdc_Pt[t_idx, :],
+                                              hvdc_losses=results.hvdc_losses[t_idx, :],
+                                              hvdc_loading=results.hvdc_loading[t_idx, :],
+                                              hvdc_active=hvdc_active,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -412,63 +424,65 @@ class DiagramsMain(CompiledArraysMain):
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.Sbus[t_idx, :],
-                                     bus_active=bus_active,
-                                     Sf=results.Sf[t_idx, :],
-                                     St=results.St[t_idx, :],
-                                     voltages=results.voltages[t_idx, :],
-                                     types=results.bus_types,
-                                     loadings=np.abs(results.loading[t_idx, :]),
-                                     br_active=br_active,
-                                     hvdc_Pf=None,
-                                     hvdc_Pt=None,
-                                     hvdc_losses=None,
-                                     hvdc_loading=None,
-                                     hvdc_active=None,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=results.Sbus[t_idx, :],
+                                              bus_active=bus_active,
+                                              Sf=results.Sf[t_idx, :],
+                                              St=results.St[t_idx, :],
+                                              voltages=results.voltages[t_idx, :],
+                                              types=results.bus_types,
+                                              loadings=np.abs(results.loading[t_idx, :]),
+                                              br_active=br_active,
+                                              hvdc_Pf=None,
+                                              hvdc_Pt=None,
+                                              hvdc_losses=None,
+                                              hvdc_loading=None,
+                                              hvdc_active=None,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
-            if t_idx is None:
-                results: sim.StochasticPowerFlowResults = self.session.get_results(
-                    SimulationTypes.StochasticPowerFlow)
-                bus_active = [bus.active for bus in self.circuit.buses]
-                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.S_points.mean(axis=0),
-                                     types=results.bus_types,
-                                     voltages=results.V_points.mean(axis=0),
-                                     bus_active=bus_active,
-                                     loadings=np.abs(results.loading_points).mean(axis=0),
-                                     Sf=results.Sbr_points.mean(axis=0),
-                                     St=-results.Sbr_points.mean(axis=0),
-                                     br_active=br_active,
-                                     hvdc_Pf=None,
-                                     hvdc_Pt=None,
-                                     hvdc_losses=None,
-                                     hvdc_loading=None,
-                                     hvdc_active=None,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
-            else:
-                info_msg(f"{current_study} only has values for the snapshot")
+            # the time is not relevant in this study
+
+            results: sim.StochasticPowerFlowResults = self.session.get_results(
+                SimulationTypes.StochasticPowerFlow
+            )
+            bus_active = [bus.active for bus in self.circuit.buses]
+            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+
+            return diagram.colour_results(buses=buses,
+                                          branches=branches,
+                                          hvdc_lines=hvdc_lines,
+                                          Sbus=results.S_points.mean(axis=0),
+                                          types=results.bus_types,
+                                          voltages=results.V_points.mean(axis=0),
+                                          bus_active=bus_active,
+                                          loadings=np.abs(results.loading_points).mean(axis=0),
+                                          Sf=results.Sbr_points.mean(axis=0),
+                                          St=-results.Sbr_points.mean(axis=0),
+                                          br_active=br_active,
+                                          hvdc_Pf=None,
+                                          hvdc_Pt=None,
+                                          hvdc_losses=None,
+                                          hvdc_loading=None,
+                                          hvdc_active=None,
+                                          use_flow_based_width=use_flow_based_width,
+                                          min_branch_width=min_branch_width,
+                                          max_branch_width=max_branch_width,
+                                          min_bus_width=min_bus_width,
+                                          max_bus_width=max_bus_width,
+                                          cmap=cmap)
 
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             if t_idx is None:
@@ -476,30 +490,31 @@ class DiagramsMain(CompiledArraysMain):
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.Sbus1,
-                                     bus_active=bus_active,
-                                     Sf=results.Sf1,
-                                     St=results.St1,
-                                     voltages=results.voltage1,
-                                     types=results.bus_types,
-                                     loadings=results.loading1,
-                                     br_active=br_active,
-                                     hvdc_Pf=None,
-                                     hvdc_Pt=None,
-                                     hvdc_losses=None,
-                                     hvdc_loading=None,
-                                     hvdc_active=None,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=results.Sbus1,
+                                              bus_active=bus_active,
+                                              Sf=results.Sf1,
+                                              St=results.St1,
+                                              voltages=results.voltage1,
+                                              types=results.bus_types,
+                                              loadings=results.loading1,
+                                              br_active=br_active,
+                                              hvdc_Pf=None,
+                                              hvdc_Pt=None,
+                                              hvdc_losses=None,
+                                              hvdc_loading=None,
+                                              hvdc_active=None,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -508,29 +523,30 @@ class DiagramsMain(CompiledArraysMain):
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.Sbus,
-                                     voltages=results.voltage,
-                                     bus_active=bus_active,
-                                     loadings=results.loading,
-                                     types=results.bus_types,
-                                     Sf=results.Sf,
-                                     St=results.St,
-                                     br_active=br_active,
-                                     hvdc_Pf=results.hvdc_Pf,
-                                     hvdc_Pt=-results.hvdc_Pf,
-                                     hvdc_loading=results.hvdc_loading,
-                                     hvdc_active=hvdc_active,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=results.Sbus,
+                                              voltages=results.voltage,
+                                              bus_active=bus_active,
+                                              loadings=results.loading,
+                                              types=results.bus_types,
+                                              Sf=results.Sf,
+                                              St=results.St,
+                                              br_active=br_active,
+                                              hvdc_Pf=results.hvdc_Pf,
+                                              hvdc_Pt=-results.hvdc_Pf,
+                                              hvdc_loading=results.hvdc_loading,
+                                              hvdc_active=hvdc_active,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
 
@@ -542,29 +558,61 @@ class DiagramsMain(CompiledArraysMain):
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     voltages=results.voltage[t_idx, :],
-                                     Sbus=results.Sbus[t_idx, :],
-                                     types=results.bus_types,
-                                     bus_active=bus_active,
-                                     Sf=results.Sf[t_idx, :],
-                                     St=results.St[t_idx, :],
-                                     loadings=np.abs(results.loading[t_idx, :]),
-                                     br_active=br_active,
-                                     hvdc_Pf=results.hvdc_Pf[t_idx, :],
-                                     hvdc_Pt=-results.hvdc_Pf[t_idx, :],
-                                     hvdc_loading=results.hvdc_loading[t_idx, :],
-                                     hvdc_active=hvdc_active,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              voltages=results.voltage[t_idx, :],
+                                              Sbus=results.Sbus[t_idx, :],
+                                              types=results.bus_types,
+                                              bus_active=bus_active,
+                                              Sf=results.Sf[t_idx, :],
+                                              St=results.St[t_idx, :],
+                                              loadings=np.abs(results.loading[t_idx, :]),
+                                              br_active=br_active,
+                                              hvdc_Pf=results.hvdc_Pf[t_idx, :],
+                                              hvdc_Pt=-results.hvdc_Pf[t_idx, :],
+                                              hvdc_loading=results.hvdc_loading[t_idx, :],
+                                              hvdc_active=hvdc_active,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
+
+        elif current_study == sim.NodalCapacityTimeSeriesDriver.tpe.value:
+
+            t_idx2 = 0 if t_idx is None else t_idx
+
+            results: sim.NodalCapacityTimeSeriesResults = self.session.nodal_capacity_optimization_ts
+            bus_active = [bus.active_prof[t_idx2] for bus in self.circuit.buses]
+            br_active = [br.active_prof[t_idx2] for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.hvdc_lines]
+
+            return diagram.colour_results(buses=buses,
+                                          branches=branches,
+                                          hvdc_lines=hvdc_lines,
+                                          voltages=results.voltage[t_idx2, :],
+                                          Sbus=results.Sbus[t_idx2, :],
+                                          types=results.bus_types,
+                                          bus_active=bus_active,
+                                          Sf=results.Sf[t_idx2, :],
+                                          St=results.St[t_idx2, :],
+                                          loadings=np.abs(results.loading[t_idx2, :]),
+                                          br_active=br_active,
+                                          hvdc_Pf=results.hvdc_Pf[t_idx2, :],
+                                          hvdc_Pt=-results.hvdc_Pf[t_idx2, :],
+                                          hvdc_loading=results.hvdc_loading[t_idx2, :],
+                                          hvdc_active=hvdc_active,
+                                          use_flow_based_width=use_flow_based_width,
+                                          min_branch_width=min_branch_width,
+                                          max_branch_width=max_branch_width,
+                                          min_bus_width=min_bus_width,
+                                          max_bus_width=max_bus_width,
+                                          cmap=cmap)
 
         elif current_study == sim.LinearAnalysisDriver.tpe.value:
             if t_idx is None:
@@ -574,26 +622,27 @@ class DiagramsMain(CompiledArraysMain):
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
                 voltage = np.ones(self.circuit.get_bus_number())
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     voltages=voltage,
-                                     Sbus=results.Sbus,
-                                     types=results.bus_types,
-                                     bus_active=bus_active,
-                                     Sf=results.Sf,
-                                     St=-results.Sf,
-                                     loadings=results.loading,
-                                     br_active=br_active,
-                                     loading_label='Loading',
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              voltages=voltage,
+                                              Sbus=results.Sbus,
+                                              types=results.bus_types,
+                                              bus_active=bus_active,
+                                              Sf=results.Sf,
+                                              St=-results.Sf,
+                                              loadings=results.loading,
+                                              br_active=br_active,
+                                              loading_label='Loading',
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -603,25 +652,26 @@ class DiagramsMain(CompiledArraysMain):
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.S[t_idx],
-                                     voltages=results.voltage[t_idx],
-                                     types=results.bus_types,
-                                     bus_active=bus_active,
-                                     Sf=results.Sf[t_idx],
-                                     St=-results.Sf[t_idx],
-                                     loadings=np.abs(results.loading[t_idx]),
-                                     br_active=br_active,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=results.S[t_idx],
+                                              voltages=results.voltage[t_idx],
+                                              types=results.bus_types,
+                                              bus_active=bus_active,
+                                              Sf=results.Sf[t_idx],
+                                              St=-results.Sf[t_idx],
+                                              loadings=np.abs(results.loading[t_idx]),
+                                              br_active=br_active,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
 
@@ -632,25 +682,26 @@ class DiagramsMain(CompiledArraysMain):
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
                 con_idx = 0
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=results.Sbus[con_idx, :],
-                                     voltages=results.voltage[con_idx, :],
-                                     types=results.bus_types,
-                                     bus_active=bus_active,
-                                     Sf=results.Sf[con_idx, :],
-                                     St=-results.Sf[con_idx, :],
-                                     loadings=np.abs(results.loading[con_idx, :]),
-                                     br_active=br_active,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=results.Sbus[con_idx, :],
+                                              voltages=results.voltage[con_idx, :],
+                                              types=results.bus_types,
+                                              bus_active=bus_active,
+                                              Sf=results.Sf[con_idx, :],
+                                              St=-results.Sf[con_idx, :],
+                                              loadings=np.abs(results.loading[con_idx, :]),
+                                              br_active=br_active,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -660,25 +711,26 @@ class DiagramsMain(CompiledArraysMain):
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     voltages=np.ones(results.nbus, dtype=complex),
-                                     Sbus=results.S[t_idx, :],
-                                     types=results.bus_types,
-                                     bus_active=bus_active,
-                                     Sf=results.max_flows[t_idx, :],
-                                     St=-results.max_flows[t_idx, :],
-                                     loadings=np.abs(results.max_loading[t_idx]),
-                                     br_active=br_active,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              voltages=np.ones(results.nbus, dtype=complex),
+                                              Sbus=results.S[t_idx, :],
+                                              types=results.bus_types,
+                                              bus_active=bus_active,
+                                              Sf=results.max_flows[t_idx, :],
+                                              St=-results.max_flows[t_idx, :],
+                                              loadings=np.abs(results.max_loading[t_idx]),
+                                              br_active=br_active,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
@@ -689,24 +741,25 @@ class DiagramsMain(CompiledArraysMain):
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
-                return plot_function(buses=buses,
-                                     branches=branches,
-                                     hvdc_lines=hvdc_lines,
-                                     Sbus=np.zeros(nbus, dtype=complex),
-                                     voltages=np.ones(nbus, dtype=complex),
-                                     bus_active=bus_active,
-                                     Sf=np.zeros(nbr, dtype=complex),
-                                     St=np.zeros(nbr, dtype=complex),
-                                     loadings=np.zeros(nbr, dtype=complex),
-                                     br_active=br_active,
-                                     use_flow_based_width=use_flow_based_width,
-                                     min_branch_width=min_branch_width,
-                                     max_branch_width=max_branch_width,
-                                     min_bus_width=min_bus_width,
-                                     max_bus_width=max_bus_width,
-                                     cmap=cmap)
+                return diagram.colour_results(buses=buses,
+                                              branches=branches,
+                                              hvdc_lines=hvdc_lines,
+                                              Sbus=np.zeros(nbus, dtype=complex),
+                                              voltages=np.ones(nbus, dtype=complex),
+                                              bus_active=bus_active,
+                                              Sf=np.zeros(nbr, dtype=complex),
+                                              St=np.zeros(nbr, dtype=complex),
+                                              loadings=np.zeros(nbr, dtype=complex),
+                                              br_active=br_active,
+                                              use_flow_based_width=use_flow_based_width,
+                                              min_branch_width=min_branch_width,
+                                              max_branch_width=max_branch_width,
+                                              min_bus_width=min_bus_width,
+                                              max_bus_width=max_bus_width,
+                                              cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             pass
@@ -733,13 +786,8 @@ class DiagramsMain(CompiledArraysMain):
 
             for diagram in self.diagram_widgets_list:
 
-                if isinstance(diagram, SchematicWidget):
-                    self.grid_colour_function(plot_function=diagram.colour_results,
-                                              current_study=current_study,
-                                              t_idx=t_idx)
-
-                elif isinstance(diagram, GridMapWidget):
-                    self.grid_colour_function(plot_function=diagram.colour_results,
+                if isinstance(diagram, (SchematicWidget, GridMapWidget)):
+                    self.grid_colour_function(diagram=diagram,
                                               current_study=current_study,
                                               t_idx=t_idx)
 
@@ -1179,32 +1227,84 @@ class DiagramsMain(CompiledArraysMain):
         else:
             self.ui.db_step_label.setText("Snapshot")
 
-    def export_diagram(self):
+    def take_picture(self):
         """
         Save the schematic
         :return:
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
+            if isinstance(diagram, (SchematicWidget, GridMapWidget)):
 
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
 
-                fname = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
+                f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
                 # call dialog to select the file
-                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', fname, files_types)
-
-                if not (filename.endswith('.svg') or filename.endswith('.png')):
-                    filename += ".svg"
+                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save image file',
+                                                                                f_name, files_types)
 
                 if filename != "":
+                    if not (filename.endswith('.svg') or filename.endswith('.png')):
+                        filename += ".svg"
+
                     # save in factor * K
                     factor = self.ui.resolution_factor_spinBox.value()
-                    w = 1920 * factor
-                    h = 1080 * factor
-                    diagram.export(filename, w, h)
+                    diagram.take_picture(filename)
+
+    def record_video(self):
+        """
+        Save the schematic
+        :return:
+        """
+        if self.circuit.has_time_series:
+            diagram = self.get_selected_diagram_widget()
+            if diagram is not None:
+                if isinstance(diagram, (SchematicWidget, GridMapWidget)):
+
+                    # declare the allowed file types
+                    files_types = "MP4 (*.mp4);;"
+
+                    f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
+
+                    # call dialog to select the file
+                    filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save video file',
+                                                                                    f_name, files_types)
+
+                    if filename != "":
+                        if not filename.endswith('.mp4'):
+                            filename += ".mp4"
+
+                        fps = self.ui.fps_spinBox.value()
+                        start_idx = self.get_simulation_start()
+                        end_idx = self.get_simulation_end()
+                        current_study = self.ui.available_results_to_color_comboBox.currentText()
+
+                        # start recording...
+                        diagram.start_video_recording(fname=filename, fps=fps)
+
+                        # paint and capture
+                        for t_idx in range(start_idx, end_idx):
+
+                            self.grid_colour_function(diagram=diagram,
+                                                      current_study=current_study,
+                                                      t_idx=t_idx,
+                                                      allow_popups=False)
+
+                            diagram.capture_video_frame()
+
+                            print(f"Saving frame {t_idx} / {end_idx}")
+
+                        # finalize
+                        diagram.end_video_recording()
+                        print(f"Recording saved to {filename}")
+
+            else:
+                info_msg("There is not diagram selected", "Record video")
+
+        else:
+            info_msg("There are no time series", "Record video")
 
     def set_xy_from_lat_lon(self):
         """
@@ -1262,14 +1362,24 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram, SchematicWidget):
                 diagram.clear_big_bus_markers()
 
-    def delete_selected_from_the_schematic(self):
+    def delete_selected_from_the_diagram(self):
         """
-        Prompt to delete the selected buses from the schematic
+        Prompt to delete the selected buses from the current diagram
         """
 
         diagram_widget = self.get_selected_diagram_widget()
         if isinstance(diagram_widget, SchematicWidget):
-            diagram_widget.delete_Selected()
+            diagram_widget.delete_Selected_from_widget()
+        else:
+            pass
+
+    def delete_selected_from_the_diagram_and_db(self):
+        """
+        Prompt to delete the selected elements from the current diagram and database
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+        if isinstance(diagram_widget, SchematicWidget):
+            diagram_widget.delete_Selected_from_widget_and_db()
         else:
             pass
 
@@ -1586,4 +1696,7 @@ class DiagramsMain(CompiledArraysMain):
             if diagram != caller:
                 diagram.delete_diagram_element(device=api_obj, propagate=False)
 
-        self.circuit.delete_elements_by_type(obj=api_obj)
+        try:
+            self.circuit.delete_elements_by_type(obj=api_obj)
+        except ValueError as e:
+            print(e)

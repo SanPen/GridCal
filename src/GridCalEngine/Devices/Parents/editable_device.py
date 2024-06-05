@@ -352,8 +352,8 @@ class EditableDevice:
             obj = getattr(self, name)
             if properties.tpe in [str, float, int, bool]:
                 data.append(obj)
-            elif properties.tpe == DeviceType.GeneratorQCurve:
-                data.append(obj.str())
+            # elif properties.tpe == DeviceType.GeneratorQCurve:
+            #     data.append(obj.str())
             else:
                 # if the object is not of a primary type, get the idtag instead
                 if hasattr(obj, 'idtag'):
@@ -654,7 +654,7 @@ class EditableDevice:
         """
         return getattr(self, prop.profile_name)
 
-    def copy(self):
+    def copy(self, forced_new_idtag: bool = False):
         """
         Create a deep copy of this object
         """
@@ -662,12 +662,12 @@ class EditableDevice:
 
         try:
             new_obj = tpe(name=self.name,
-                          idtag=self.idtag,
+                          idtag=uuid.uuid4().hex if forced_new_idtag else self.idtag,
                           code=self.code,
                           device_type=self.device_type)
         except TypeError:
             new_obj = tpe(name=self.name,
-                          idtag=self.idtag,
+                          idtag=uuid.uuid4().hex if forced_new_idtag else self.idtag,
                           code=self.code)
 
         for prop_name, value in self.__dict__.items():

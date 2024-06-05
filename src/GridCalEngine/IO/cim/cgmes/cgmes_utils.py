@@ -22,6 +22,24 @@ from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapChan
 import numpy as np
 
 
+def find_object_by_idtag(object_list, target_idtag):
+    """
+    Finds an object with the specified idtag
+     in the given object_list from a Multi Circuit.
+
+    Args:
+        object_list (list[MyObject]): List of MyObject instances.
+        target_idtag (str): The uuid to search for.
+
+    Returns:
+        MyObject or None: The found object or None if not found.
+    """
+    for obj in object_list:
+        if obj.idtag == target_idtag:
+            return obj
+    return None
+
+
 def get_slack_id(machines):
     """
 
@@ -38,16 +56,15 @@ def get_slack_id(machines):
 
 
 # region PowerTransformer
-def get_windings_number(power_transformer):
-    """
-    Get the number of windings
-    :return: # number of associated windings
-    """
-    # todo: No reference for this method
-    try:
-        return len(power_transformer.references_to_me['PowerTransformerEnd'])
-    except KeyError:
-        return 0
+# def get_windings_number(power_transformer):
+#     """
+#     Get the number of windings
+#     :return: # number of associated windings
+#     """
+#     try:
+#         return len(power_transformer.references_to_me['PowerTransformerEnd'])
+#     except KeyError:
+#         return 0
 
 
 # def get_windings(power_transformer) -> List["PowerTransformerEnd"]:
@@ -134,23 +151,13 @@ def get_pu_values_power_transformer3w(power_transformer, System_Sbase):
     return r12, r23, r31, x12, x23, x31
 
 
-def get_voltages(power_transformer):
-    """
-
-    :return:
-    """
-    # todo: is it unnecessary? Referenced only in cimparser
-    return [get_voltage_power_transformer_end(x) for x in
-            list(power_transformer.PowerTransformerEnd)]  # TODO logger?
-
-
-def get_rate(power_transformer):
-    rating = 0
-    for winding in list(power_transformer.PowerTransformerEnd):
-        if winding.ratedS > rating:
-            rating = winding.ratedS
-
-    return rating
+# def get_voltages(power_transformer):
+#     """
+#
+#     :return:
+#     """
+#     return [get_voltage_power_transformer_end(x) for x in
+#             list(power_transformer.PowerTransformerEnd)]
 
 
 # endregion
@@ -171,7 +178,8 @@ def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100)
     Get the per-unit values of the equivalent PI model
     :return: R, X, Gch, Bch
     """
-    if power_transformer_end.ratedS > 0 and power_transformer_end.ratedU > 0:
+    if (power_transformer_end.ratedS and power_transformer_end.ratedU and power_transformer_end.ratedS > 0 and
+            power_transformer_end.ratedU > 0):
         Zbase = (power_transformer_end.ratedU * power_transformer_end.ratedU) / power_transformer_end.ratedS
         Ybase = 1.0 / Zbase
         machine_to_sys = Sbase_system / power_transformer_end.ratedS
@@ -251,7 +259,7 @@ def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: fl
             X = ac_line_segment.x / Zbase
             G = ac_line_segment.gch / Ybase if ac_line_segment.gch is not None else 0
             B = ac_line_segment.bch / Ybase if ac_line_segment.bch is not None else 0
-            if hasattr(ac_line_segment,"r0"):
+            if hasattr(ac_line_segment, "r0"):
                 R0 = ac_line_segment.r0 / Zbase if ac_line_segment.r0 is not None else 0
                 X0 = ac_line_segment.x0 / Zbase if ac_line_segment.x0 is not None else 0
                 G0 = ac_line_segment.g0ch / Ybase if ac_line_segment.g0ch is not None else 0
@@ -329,10 +337,10 @@ def get_values_shunt(shunt,
             # Ybase = 1.0 / Zbase
 
             # at this point g, b are the complete values for all the line length
-            G = shunt.gPerSection * (Vnom * Vnom)
-            B = shunt.bPerSection * (Vnom * Vnom)
-            G0 = shunt.g0PerSection * (Vnom * Vnom)
-            B0 = shunt.b0PerSection * (Vnom * Vnom)
+            G = shunt.gPerSection * (Vnom * Vnom) if shunt.gPerSection is not None else 0
+            B = shunt.bPerSection * (Vnom * Vnom) if shunt.bPerSection is not None else 0
+            G0 = shunt.g0PerSection * (Vnom * Vnom) if shunt.g0PerSection is not None else 0
+            B0 = shunt.b0PerSection * (Vnom * Vnom) if shunt.b0PerSection is not None else 0
 
         else:
             G = 0
@@ -388,7 +396,6 @@ def get_voltage_terminal(terminal, logger: DataLogger):
 #     Get the associated TopologicalNode instances
 #     :return: list of TopologicalNode instances
 #     """
-#     # todo: referenced only from cim16
 #     try:
 #         terms = busbar_section.references_to_me['Terminal']
 #         return [TopologicalNode for term in terms]
@@ -401,7 +408,6 @@ def get_voltage_terminal(terminal, logger: DataLogger):
 #     Get the first TopologicalNode found
 #     :return: first TopologicalNode found
 #     """
-#     # todo: referenced only from cim16
 #     try:
 #         terms = busbar_section.references_to_me['Terminal']
 #         for term in terms:
@@ -413,24 +419,23 @@ def get_voltage_terminal(terminal, logger: DataLogger):
 # endregion
 
 # region Dipole (IdentifiedObject)
-def get_topological_nodes_dipole(identified_object) -> Tuple:
-    """
-    Get the TopologyNodes of this branch
-    :return: (TopologyNodes, TopologyNodes) or (None, None)
-    """
-    # todo
-    try:
-        terminals = list(identified_object.references_to_me['Terminal'])
-
-        if len(terminals) == 2:
-            n1 = terminals[0].TopologicalNode
-            n2 = terminals[1].TopologicalNode
-            return n1, n2
-        else:
-            return None, None
-
-    except KeyError:
-        return None, None
+# def get_topological_nodes_dipole(identified_object) -> Tuple:
+#     """
+#     Get the TopologyNodes of this branch
+#     :return: (TopologyNodes, TopologyNodes) or (None, None)
+#     """
+#     try:
+#         terminals = list(identified_object.references_to_me['Terminal'])
+#
+#         if len(terminals) == 2:
+#             n1 = terminals[0].TopologicalNode
+#             n2 = terminals[1].TopologicalNode
+#             return n1, n2
+#         else:
+#             return None, None
+#
+#     except KeyError:
+#         return None, None
 
 
 # def get_buses_dipole(identified_object) -> Tuple:
@@ -438,52 +443,50 @@ def get_topological_nodes_dipole(identified_object) -> Tuple:
 #     Get the associated bus
 #     :return: (BusbarSection, BusbarSection) or (None, None)
 #     """
-#     # todo: not referenced
 #     t1, t2 = get_topological_nodes_dipole(identified_object)
 #     b1 = get_bus_topological_node(t1) if t1 is not None else None
 #     b2 = get_bus_topological_node(t1) if t2 is not None else None
 #     return b1, b2
 
 
-def get_nodes_dipole(identified_object) -> Tuple:
-    """
-    Get the TopologyNodes of this branch
-    :return: two TopologyNodes or nothing
-    """
-    # todo: not referenced
-    try:
-        terminals = list(identified_object.references_to_me['Terminal'])
-
-        if len(terminals) == 2:
-            n1 = terminals[0].TopologicalNode
-            n2 = terminals[1].TopologicalNode
-            return n1, n2
-        else:
-            return None, None
-
-    except KeyError:
-        return None, None
+# def get_nodes_dipole(identified_object) -> Tuple:
+#     """
+#     Get the TopologyNodes of this branch
+#     :return: two TopologyNodes or nothing
+#     """
+#     try:
+#         terminals = list(identified_object.references_to_me['Terminal'])
+#
+#         if len(terminals) == 2:
+#             n1 = terminals[0].TopologicalNode
+#             n2 = terminals[1].TopologicalNode
+#             return n1, n2
+#         else:
+#             return None, None
+#
+#     except KeyError:
+#         return None, None
 
 
 # endregion
 
 # region MonoPole(ConductingEquipment)
-def get_topological_node_monopole(conducting_equipment):
-    """
-    Get the TopologyNodes of this branch
-    :return: two TopologyNodes or nothing
-    """
-    try:
-        terminals = list(conducting_equipment.references_to_me['Terminal'])
-
-        if len(terminals) == 1:
-            n1 = terminals[0].TopologicalNode
-            return n1
-        else:
-            return None
-
-    except KeyError:
-        return None
+# def get_topological_node_monopole(conducting_equipment):
+#     """
+#     Get the TopologyNodes of this branch
+#     :return: two TopologyNodes or nothing
+#     """
+#     try:
+#         terminals = list(conducting_equipment.references_to_me['Terminal'])
+#
+#         if len(terminals) == 1:
+#             n1 = terminals[0].TopologicalNode
+#             return n1
+#         else:
+#             return None
+#
+#     except KeyError:
+#         return None
 
 
 # def get_bus_monopole(conducting_equipment):
@@ -495,7 +498,7 @@ def get_topological_node_monopole(conducting_equipment):
 #     if tp is None:
 #         return None
 #     else:
-#         return get_bus_topological_node(tp)  # todo: is it ok?
+#         return get_bus_topological_node(tp)
 
 
 # def get_dict(conducting_equipment):
@@ -504,9 +507,9 @@ def get_topological_node_monopole(conducting_equipment):
 #     :return: Dictionary
 #     """
 #     tp = get_topological_node_monopole(conducting_equipment)
-#     bus = get_bus_topological_node(tp) if tp is not None else None  # todo: is it ok?
+#     bus = get_bus_topological_node(tp) if tp is not None else None
 #
-#     d = conducting_equipment.get_dict()  # todo: check it
+#     d = conducting_equipment.get_dict()
 #     d['TopologicalNode'] = '' if tp is None else tp.uuid
 #     d['BusbarSection'] = '' if bus is None else bus.uuid
 #     return d
@@ -515,9 +518,8 @@ def get_topological_node_monopole(conducting_equipment):
 # endregion
 
 # region ConformLoad, NonConformLoad(EnergyConsumer)
-def get_pq(energy_consumer):
-    # todo: referenced only from cim16
-    return energy_consumer.p, energy_consumer.q
+# def get_pq(energy_consumer):
+#     return energy_consumer.p, energy_consumer.q
 
 
 # endregion
@@ -539,6 +541,12 @@ def get_nominal_voltage(topological_node, logger) -> float:
                              value=topological_node.BaseVoltage,
                              expected_value='object')
     else:
+        logger.add_error(msg='Missing refference',
+                         device=topological_node.rdfid,
+                         device_class=topological_node.tpe,
+                         device_property="BaseVoltage",
+                         value=topological_node.BaseVoltage,
+                         expected_value='object')
         return 0.0
 
 
@@ -550,7 +558,7 @@ def get_nominal_voltage(topological_node, logger) -> float:
 #     try:
 #         terms = topological_node.references_to_me['Terminal']
 #         for term in terms:
-#             if isinstance(ConductingEquipment, BusbarSection):  # TODO check the old code
+#             if isinstance(ConductingEquipment, BusbarSection):
 #                 return ConductingEquipment
 #
 #     except KeyError:
@@ -565,7 +573,6 @@ def get_nominal_voltage(topological_node, logger) -> float:
 #     Get the TopologyNodes of this branch
 #     :return: two TopologyNodes or nothing
 #     """
-#     # todo: not referenced
 #     try:
 #         terminals = list(switch.references_to_me['Terminal'])
 #
@@ -582,107 +589,107 @@ def get_nominal_voltage(topological_node, logger) -> float:
 
 # endregion
 
-def check(logger: DataLogger):
-    """
-    Check specific OCL rules
-    :param logger: Logger instance
-    :return: true is ok false otherwise
-    """
-    return True
+# def check(logger: DataLogger):
+#     """
+#     Check specific OCL rules
+#     :param logger: Logger instance
+#     :return: true is ok false otherwise
+#     """
+#     return True
 
 
 # region LoadResponseCharacteristic(IdentifiedObject)
-def check_load_response_characteristic(load_response_characteristic, logger: DataLogger):
-    """
-    Check OCL rules
-    :param load_response_characteristic:
-    :param logger:
-    :return:
-    """
-    err_counter = 0
-    if load_response_characteristic.exponentModel:
-        if load_response_characteristic.pVoltageExponent not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: pVoltageExponent not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of pVoltageExponent")
-
-        if load_response_characteristic.qVoltageExponent not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: qVoltageExponent not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of qVoltageExponent")
-    else:
-        if load_response_characteristic.pConstantCurrent not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: pConstantCurrent not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of pConstantCurrent")
-
-        if load_response_characteristic.pConstantPower not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: pConstantPower not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of pConstantPower")
-
-        if load_response_characteristic.pConstantImpedance not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: pConstantImpedance not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of pConstantImpedance")
-
-        if load_response_characteristic.qConstantCurrent not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: qConstantCurrent not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of qConstantCurrent")
-
-        if load_response_characteristic.qConstantPower not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: qConstantPower not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of qConstantPower")
-
-        if load_response_characteristic.qConstantImpedance not in load_response_characteristic.parsed_properties.keys():
-            err_counter += 1
-            logger.add_error(msg="OCL rule violation: qConstantImpedance not specified",
-                             device=load_response_characteristic.rdfid,
-                             device_class="LoadResponseCharacteristic",
-                             expected_value="Existence of qConstantImpedance")
-
-        # p_factor = 0
-        # p_factor += load_response_characteristic.pConstantImpedance if load_response_characteristic.pConstantImpedance != ''
-        # p_factor = load_response_characteristic.pConstantImpedance + load_response_characteristic.pConstantCurrent + load_response_characteristic.pConstantPower
-        # q_factor = load_response_characteristic.qConstantImpedance + load_response_characteristic.qConstantCurrent + load_response_characteristic.qConstantPower
-        # if not np.isclose(p_factor, 1):
-        #     err_counter += 1
-        #     logger.add_error(msg="pConstantImpedance + pConstantCurrent + pConstantPower different from 1",
-        #                      device=load_response_characteristic.rdfid,
-        #                      device_class="LoadResponseCharacteristic",
-        #                      expected_value="1.0")
-        #
-        # if not np.isclose(q_factor, 1):
-        #     err_counter += 1
-        #     logger.add_error(msg="qConstantImpedance + qConstantCurrent + qConstantPower different from 1",
-        #                      device=load_response_characteristic.rdfid,
-        #                      device_class="LoadResponseCharacteristic",
-        #                      expected_value="1.0")
-
-    return err_counter == 0
+# def check_load_response_characteristic(load_response_characteristic, logger: DataLogger):
+#     """
+#     Check OCL rules
+#     :param load_response_characteristic:
+#     :param logger:
+#     :return:
+#     """
+#     err_counter = 0
+#     if load_response_characteristic.exponentModel:
+#         if load_response_characteristic.pVoltageExponent not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: pVoltageExponent not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of pVoltageExponent")
+#
+#         if load_response_characteristic.qVoltageExponent not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: qVoltageExponent not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of qVoltageExponent")
+#     else:
+#         if load_response_characteristic.pConstantCurrent not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: pConstantCurrent not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of pConstantCurrent")
+#
+#         if load_response_characteristic.pConstantPower not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: pConstantPower not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of pConstantPower")
+#
+#         if load_response_characteristic.pConstantImpedance not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: pConstantImpedance not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of pConstantImpedance")
+#
+#         if load_response_characteristic.qConstantCurrent not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: qConstantCurrent not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of qConstantCurrent")
+#
+#         if load_response_characteristic.qConstantPower not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: qConstantPower not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of qConstantPower")
+#
+#         if load_response_characteristic.qConstantImpedance not in load_response_characteristic.parsed_properties.keys():
+#             err_counter += 1
+#             logger.add_error(msg="OCL rule violation: qConstantImpedance not specified",
+#                              device=load_response_characteristic.rdfid,
+#                              device_class="LoadResponseCharacteristic",
+#                              expected_value="Existence of qConstantImpedance")
+#
+#         # p_factor = 0
+#         # p_factor += load_response_characteristic.pConstantImpedance if load_response_characteristic.pConstantImpedance != ''
+#         # p_factor = load_response_characteristic.pConstantImpedance + load_response_characteristic.pConstantCurrent + load_response_characteristic.pConstantPower
+#         # q_factor = load_response_characteristic.qConstantImpedance + load_response_characteristic.qConstantCurrent + load_response_characteristic.qConstantPower
+#         # if not np.isclose(p_factor, 1):
+#         #     err_counter += 1
+#         #     logger.add_error(msg="pConstantImpedance + pConstantCurrent + pConstantPower different from 1",
+#         #                      device=load_response_characteristic.rdfid,
+#         #                      device_class="LoadResponseCharacteristic",
+#         #                      expected_value="1.0")
+#         #
+#         # if not np.isclose(q_factor, 1):
+#         #     err_counter += 1
+#         #     logger.add_error(msg="qConstantImpedance + qConstantCurrent + qConstantPower different from 1",
+#         #                      device=load_response_characteristic.rdfid,
+#         #                      device_class="LoadResponseCharacteristic",
+#         #                      expected_value="1.0")
+#
+#     return err_counter == 0
 
 
 # endregion
 
-# region BaseVoltage(IdentifiedObject)
-def base_voltage_to_str(base_voltage):
-    return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
+# # region BaseVoltage(IdentifiedObject)
+# def base_voltage_to_str(base_voltage):
+#     return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
 
 
 # endregion
@@ -690,7 +697,6 @@ def base_voltage_to_str(base_voltage):
 def get_regulating_control(cgmes_elm,
                            cgmes_enums,
                            logger: DataLogger):
-
     if cgmes_elm.RegulatingControl is not None:
 
         if cgmes_elm.RegulatingControl.enabled:
@@ -769,4 +775,4 @@ def get_regulating_control(cgmes_elm,
                            value='None',
                            expected_value='BaseVoltage')
 
-    return v_set, is_controlled   # control_node, control_mode
+    return v_set, is_controlled  # control_node, control_mode

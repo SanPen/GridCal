@@ -123,7 +123,9 @@ class InjectionTemplateGraphicItem(GenericDBWidget, QGraphicsItemGroup):
         """
         self.editor.set_editor_model(api_object=self.api_object,
                                      dictionary_of_lists={
-                                         DeviceType.GeneratorDevice.value: self.editor.circuit.get_generators(),
+                                         DeviceType.GeneratorDevice: self.editor.circuit.get_generators(),
+                                         DeviceType.BusDevice: self.editor.circuit.get_buses(),
+                                         DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
                                      })
 
     def change_bus(self):

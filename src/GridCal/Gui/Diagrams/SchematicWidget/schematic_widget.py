@@ -18,6 +18,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+import cv2
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
 from warnings import warn
@@ -577,9 +578,13 @@ class SchematicWidget(QSplitter):
         # current time index from the GUI (None or 0, 1, 2, ..., n-1)
         self._time_index: Union[None, int] = time_index
 
+        # video pointer
+        self._video: Union[None, cv2.VideoWriter] = None
+
         if diagram is not None:
             self.draw()
 
+        # -------------------------------------------------------------------------------------------------
         # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
 
     def set_time_index(self, time_index: Union[int, None]):
@@ -602,7 +607,7 @@ class SchematicWidget(QSplitter):
 
     def set_editor_model(self,
                          api_object: ALL_DEV_TYPES,
-                         dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
+                         dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
@@ -717,7 +722,7 @@ class SchematicWidget(QSplitter):
         :return:
         """
         if event.key() == Qt.Key_Delete:
-            self.delete_Selected()
+            self.delete_Selected_from_widget_and_db()
 
     def zoom_in(self, scale_factor: float = 1.15) -> None:
         """
@@ -1010,7 +1015,7 @@ class SchematicWidget(QSplitter):
 
                         # create the bus children
                         graphic_object.create_children_widgets(
-                            injections_by_tpe=inj_dev_by_cn.get(location.api_object, dict())
+                            injections_by_tpe=inj_dev_by_cn.get(graphic_object.api_object.cn, dict())
                         )
 
                         graphic_object.change_size(w=location.w)
@@ -1223,6 +1228,14 @@ class SchematicWidget(QSplitter):
         """
         if graphic_object is not None:
             if graphic_object.scene() is not None:
+
+                # try to remove nexus and children
+                if isinstance(graphic_object,
+                              (BusGraphicItem, CnGraphicItem, BusBarGraphicItem, FluidNodeGraphicItem)):
+                    graphic_object.delete_all_connections()
+                    for g in graphic_object.shunt_children:
+                        self.diagram_scene.removeItem(g.nexus)
+
                 self.diagram_scene.removeItem(graphic_object)
             else:
                 warn(f"Null scene for {graphic_object}, was it deleted already?")
@@ -1237,10 +1250,7 @@ class SchematicWidget(QSplitter):
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            # try:
             self.remove_from_scene(graphic_object)
-            # except:
-            #     warn(f"Could not remove {graphic_object} from the scene")
 
         if propagate:
             if self.call_delete_db_element_func is not None:
@@ -1248,16 +1258,24 @@ class SchematicWidget(QSplitter):
 
     def remove_element(self,
                        device: ALL_DEV_TYPES,
-                       graphic_object: Union[QGraphicsItem, None] = None) -> None:
+                       graphic_object: Union[QGraphicsItem, None] = None,
+                       delete_from_db: bool = False) -> None:
         """
         Remove device from the diagram and the database
         :param device: EditableDevice
         :param graphic_object: optionally provide the graphics object associated
+        :param delete_from_db: Delete the element also from the database?
         """
 
         if device is not None:
-            self.delete_diagram_element(device=device)
-            self.circuit.delete_elements_by_type(obj=device)
+            self.delete_diagram_element(device=device, propagate=delete_from_db)
+
+            if delete_from_db:
+                try:
+                    self.circuit.delete_elements_by_type(obj=device)
+                except ValueError as e:
+                    print("SchamaticWidget.remove_element", e)
+
         elif graphic_object is not None:
             self.remove_from_scene(graphic_object)
         else:
@@ -1301,7 +1319,26 @@ class SchematicWidget(QSplitter):
                     lst.append((idx, bus, graphic_object))
         return lst
 
-    def delete_Selected(self) -> None:
+    def get_selected_cn(self) -> List[Tuple[int, ConnectivityNode, CnGraphicItem]]:
+        """
+        Get the selected buses
+        :return:
+        """
+        lst: List[Tuple[int, ConnectivityNode, Union[CnGraphicItem, None]]] = list()
+        cn_graphic_dict = self.graphics_manager.get_device_type_dict(DeviceType.ConnectivityNodeDevice)
+
+        cn_dict: Dict[str: Tuple[int, ConnectivityNode]] = {b.idtag: (i, b)
+                                                            for i, b in
+                                                            enumerate(self.circuit.get_connectivity_nodes())}
+
+        for idtag, graphic_object in cn_graphic_dict.items():
+            if isinstance(graphic_object, CnGraphicItem):
+                if graphic_object.isSelected():
+                    idx, bus = cn_dict[idtag]
+                    lst.append((idx, bus, graphic_object))
+        return lst
+
+    def delete_Selected_from_widget_and_db(self) -> None:
         """
         Delete the selected items from the diagram
         """
@@ -1309,7 +1346,7 @@ class SchematicWidget(QSplitter):
         selected = self.get_selected()
 
         if len(selected) > 0:
-            reply = QMessageBox.question(self, 'Delete',
+            reply = QMessageBox.question(self, 'Delete objects from the diagram and the DB',
                                          'Are you sure that you want to delete the selected elements?',
                                          QMessageBox.StandardButton.Yes,
                                          QMessageBox.StandardButton.No)
@@ -1318,7 +1355,30 @@ class SchematicWidget(QSplitter):
 
                 # remove the buses (from the schematic and the circuit)
                 for bus, graphic_obj in selected:
-                    self.remove_element(device=bus, graphic_object=graphic_obj)
+                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=True)
+            else:
+                pass
+        else:
+            info_msg('Choose some elements from the schematic', 'Delete')
+
+    def delete_Selected_from_widget(self) -> None:
+        """
+        Delete the selected items from the diagram
+        """
+        # get the selected buses
+        selected = self.get_selected()
+
+        if len(selected) > 0:
+            reply = QMessageBox.question(self, 'Delete objects from the diagram',
+                                         'Are you sure that you want to delete the selected elements?',
+                                         QMessageBox.StandardButton.Yes,
+                                         QMessageBox.StandardButton.No)
+
+            if reply == QMessageBox.StandardButton.Yes.value:
+
+                # remove the buses (from the schematic and the circuit)
+                for bus, graphic_obj in selected:
+                    self.remove_element(device=bus, graphic_object=graphic_obj, delete_from_db=False)
             else:
                 pass
         else:
@@ -1886,8 +1946,8 @@ class SchematicWidget(QSplitter):
         dy = max_y - min_y
         mx = margin_factor * dx
         my = margin_factor * dy
-        h = dy + 2 * my + 80
-        w = dx + 2 * mx + 80
+        h = dy + 2 * my + 120
+        w = dx + 2 * mx + 120
         self.diagram_scene.setSceneRect(QRectF(min_x - mx, min_y - my, w, h))
 
     def set_boundaries(self, min_x, min_y, width, height):
@@ -2125,23 +2185,42 @@ class SchematicWidget(QSplitter):
                 bus.y = y[i]
             i += 1
 
-    def export(self, filename, w=1920, h=1080):
+    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+        """
+        get the current picture
+        :param transparent: Set a transparent background
+        :return: QImage, width, height
+        """
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
+
+        if transparent:
+            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+            image.fill(Qt.transparent)
+        else:
+            image = QImage(w, h, QImage.Format_RGB32)
+            image.fill(Qt.white)
+
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.editor_graphics_view.render(painter)
+        painter.end()
+
+        return image, w, h
+
+    def take_picture(self, filename: str):
         """
         Save the grid to a png file
         """
-
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-            image.fill(Qt.transparent)
-            painter = QPainter(image)
-            painter.setRenderHint(QPainter.Antialiasing)
-            self.diagram_scene.render(painter)
+            image, _, _ = self.get_image(transparent=True)
             image.save(filename)
-            painter.end()
 
         elif extension == '.svg':
+            w = self.editor_graphics_view.width()
+            h = self.editor_graphics_view.height()
             svg_gen = QSvgGenerator()
             svg_gen.setFileName(filename)
             svg_gen.setSize(QSize(w, h))
@@ -2150,7 +2229,7 @@ class SchematicWidget(QSplitter):
             svg_gen.setDescription("An SVG drawing created by GridCal")
 
             painter = QPainter(svg_gen)
-            self.diagram_scene.render(painter)
+            self.editor_graphics_view.render(painter)
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
@@ -2391,7 +2470,7 @@ class SchematicWidget(QSplitter):
                                                      prefer_node_breaker=prefer_node_breaker,
                                                      logger=logger)
 
-            if from_port and to_port:
+            if from_port is not None and to_port is not None and (from_port != to_port):
 
                 # Create new graphics object
                 graphic_object = new_graphic_func(from_port,
@@ -3786,7 +3865,8 @@ class SchematicWidget(QSplitter):
         delta = 1e20
         locations_cache = dict()
 
-        while delta > 10:
+        for _ in range(100):
+            # while delta > 10:
 
             A = self.circuit.get_adjacent_matrix()
 
@@ -4394,6 +4474,62 @@ class SchematicWidget(QSplitter):
             warning_msg("you must select the origin and destination buses!",
                         title='Change bus')
 
+    def set_generator_control_bus(self, generator_graphics: GeneratorGraphicItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param generator_graphics
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            generator_graphics.api_object.control_bus = sel_bus
+
+            if (yes_no_question(text="Do you want to set the profile?", title="Set regulation bus")
+                    and self.circuit.has_time_series):
+                generator_graphics.api_object.control_bus_prof.fill(sel_bus)
+
+        else:
+            error_msg(text="You need to select exactly one bus to be set as the generator regulation bus",
+                      title="Set regulation bus")
+
+    def set_generator_control_cn(self, generator_graphics: GeneratorGraphicItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param generator_graphics
+        """
+
+        idx_bus_list = self.get_selected_cn()
+
+        if len(idx_bus_list) == 1:
+
+            # detect the bus and its combinations
+            idx, sel_bus, sel_bus_graphic_item = idx_bus_list[0]
+
+            generator_graphics.api_object.control_cn = sel_bus
+
+        else:
+            error_msg("You need to select exactly one bus to be set as the generator regulation connectivity node",
+                      "Set regulation connectivity node")
+
+    def set_branch_control_bus(self, line_graphics: LineGraphicTemplateItem):
+        """
+        change the from or to bus of the nbranch with another selected bus
+        :param line_graphics
+        """
+
+        idx_bus_list = self.get_selected_buses()
+
+        if len(idx_bus_list) == 2:
+
+            # detect the bus and its combinations
+            if idx_bus_list[0][1] == line_graphics.api_object.bus_from:
+                idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
+
     def disable_all_results_tags(self):
         """
         Disable all results' tags in this diagram
@@ -4409,6 +4545,42 @@ class SchematicWidget(QSplitter):
         for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
             for key, widget in type_dict.items():
                 widget.enable_label_drawing()
+
+    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+        """
+        Save video
+        :param fname: file name
+        :param fps: frames per second
+        :returns width, height
+        """
+
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
+
+        self._video = cv2.VideoWriter(filename=fname,
+                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                      fps=fps,
+                                      frameSize=(w, h))
+
+        return w, h
+
+    def capture_video_frame(self) -> None:
+        """
+        Save the current state in a video frame
+        """
+
+        image, w, h = self.get_image(transparent=False)
+
+        # convert picture using the memory
+        # we need to remove the alpha channel, otherwise the video frame is not saved
+        frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
+        self._video.write(frame)
+
+    def end_video_recording(self) -> None:
+        """
+        End the video recording
+        """
+        self._video.release()
 
 
 def generate_schematic_diagram(buses: List[Bus],

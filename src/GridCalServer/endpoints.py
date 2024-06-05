@@ -16,12 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 import json
+from typing import Dict
 from hashlib import sha256
-from fastapi import FastAPI, WebSocket, Header, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Header, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from starlette.responses import StreamingResponse
-from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCalEngine.IO.gridcal.pack_unpack import parse_gridcal_data, gather_model_as_jsons
+from GridCalEngine.IO.gridcal.remote import RemoteInstruction, RemoteJob
+from GridCalEngine.IO.gridcal.pack_unpack import parse_gridcal_data
 
 app = FastAPI()
 
@@ -31,6 +32,8 @@ __connections__ = set()
 # GC_FOLDER = get_create_gridcal_folder()
 # GC_SERVER_FILE = os.path.join(GC_FOLDER, "server_config.json")
 SECRET_KEY = ""
+
+JOBS_LIST: Dict[str, RemoteJob] = dict()
 
 
 def verify_api_key(api_key: str = Header(None)):
@@ -71,6 +74,7 @@ async def stream_load_json(json_data):
     :param json_data:
     :return:
     """
+
     async def generate():
         """
 
@@ -80,13 +84,26 @@ async def stream_load_json(json_data):
     return StreamingResponse(generate())
 
 
-async def process_json_data(json_data):
+async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     """
-
-    :param json_data:
+    Action called on the upload
+    :param json_data: the grid info generated with 'gather_model_as_jsons_for_communication'
     """
     circuit = parse_gridcal_data(data=json_data)
     print(f'Circuit loaded alright nbus{circuit.get_bus_number()}, nbr{circuit.get_branch_number()}')
+
+    if 'instruction' in json_data:
+        instruction = RemoteInstruction(data=json_data['instruction'])
+
+        job = RemoteJob(grid=circuit, instruction=instruction)
+
+        # register the job
+        JOBS_LIST[job.id_tag] = job
+
+        print("Job data\n", job.get_data())
+
+    else:
+        print('No Instruction found\n\n', json_data)
 
 
 @app.post("/upload/")
@@ -103,51 +120,46 @@ async def upload_json_background(json_data: dict, background_tasks: BackgroundTa
     return {"message": "JSON data streaming initiated"}
 
 
-@app.websocket("/process_file")
-async def process_file(websocket: WebSocket):
+@app.get("/jobs_list")
+async def jobs_list():
     """
-
-    :param websocket:
-    :return:
+    Root
+    :return: string
     """
-    await websocket.accept()
+    return [job.get_data() for id_tag, job in JOBS_LIST.items()]
 
-    # Receive JSON data
-    # Buffer to accumulate received chunks
-    json_buffer = b""
 
-    # Receive JSON data in chunks
-    async for chunk in websocket.iter_bytes():
-        json_buffer += chunk
-        # Check if the end of JSON data is reached (e.g., by checking for a delimiter)
-        # Here, we assume that the end of JSON data is marked by an empty chunk
-        if not chunk:
-            break
+@app.delete("/jobs/{job_id}")
+async def delete_job(job_id: str):
+    """
+    Delete a specific job by ID
+    :param job_id: The ID of the job to delete
+    :return: A message indicating the result
+    """
+    if job_id in JOBS_LIST:
+        del JOBS_LIST[job_id]
+        return {"message": f"Job {job_id} deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Job not found")
 
-    # Deserialize the JSON data
-    try:
-        print("start: ", json_buffer[0:5].decode(encoding='utf-8'))
-        print("end: ", json_buffer[-5:].decode(encoding='utf-8'))
-        json_data = json.loads(json_buffer.decode(encoding='utf-8'))
 
-        json_ok = True
-    except json.decoder.JSONDecodeError as e:
-        print("Json parse error:", e)
-        json_ok = False
-        json_data = dict()
+@app.post("/jobs/{job_id}/cancel")
+async def cancel_job(job_id: str):
+    """
+    Cancel a specific job by ID
+    :param job_id: The ID of the job to cancel
+    :return: A message indicating the result
+    """
+    job = JOBS_LIST.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
 
-    if json_ok:
-        if "sender_id" in json_data:
-
-            circuit = parse_gridcal_data(data=json_data)
-            print('Circuit loaded alright')
-
-            # await websocket.send_text("File and JSON data received successfully")
-        else:
-            print("No sender_id found")
+    job.cancel()
+    return {"message": f"Job {job_id} canceled successfully"}
 
 
 if __name__ == "__main__":
     import uvicorn
 
+    # uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="key.pem", ssl_certfile="cert.pem")
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -509,19 +509,19 @@ class MultiCircuit:
         """
         self.time_profile = pd.to_datetime(arr, unit='s')
 
-    def get_snapshot_time_unix(self) -> int:
+    def get_snapshot_time_unix(self) -> float:
         """
         Get the unix representation of the snapshot time
-        :return: int
+        :return: float
         """
-        return int(self.snapshot_time.timestamp())
+        return self.snapshot_time.timestamp()
 
-    def set_snapshot_time_unix(self, val: int) -> None:
+    def set_snapshot_time_unix(self, val: float) -> None:
         """
         Convert unix datetime to python datetime
         :param val: seconds since 1970-01-01T00:00:00
         """
-        self.snapshot_time = pd.to_datetime(val * 1e9)
+        self.snapshot_time = dateslib.datetime.fromtimestamp(val)
 
     def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
         """
@@ -2476,8 +2476,7 @@ class MultiCircuit:
 
         return data
 
-    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[
-        Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[str, Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -2947,7 +2946,7 @@ class MultiCircuit:
             obj.create_profiles(self.time_profile)
         self.windings.append(obj)
 
-    def add_transformer3w(self, obj: dev.Transformer3W):
+    def add_transformer3w(self, obj: dev.Transformer3W, add_middle_bus: bool = True):
         """
         Add a transformer object
         :param obj: Transformer3W instance
@@ -2956,7 +2955,8 @@ class MultiCircuit:
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
         self.transformers3w.append(obj)
-        self.add_bus(obj.bus0)  # add the middle transformer
+        if add_middle_bus:
+            self.add_bus(obj.bus0)  # add the middle transformer
         self.add_winding(obj.winding1)
         self.add_winding(obj.winding2)
         self.add_winding(obj.winding3)
@@ -3590,12 +3590,16 @@ class MultiCircuit:
         """
         self.contingency_groups.append(obj)
 
-    def delete_contingency_group(self, obj):
+    def delete_contingency_group(self, obj: dev.ContingencyGroup):
         """
-        Delete zone
-        :param obj: index
+        Delete contingency group
+        :param obj: ContingencyGroup
         """
         self.contingency_groups.remove(obj)
+
+        to_del = [con for con in self.contingencies if con.group == obj]
+        for con in to_del:
+            self.delete_contingency(con)
 
     def get_contingency_group_names(self) -> List[str]:
         """
@@ -3648,12 +3652,16 @@ class MultiCircuit:
         """
         self.investments_groups.append(obj)
 
-    def delete_investment_groups(self, obj):
+    def delete_investment_groups(self, obj: dev.InvestmentsGroup):
         """
         Delete zone
         :param obj: index
         """
         self.investments_groups.remove(obj)
+
+        to_del = [invst for invst in self.investments if invst.group == obj]
+        for invst in to_del:
+            self.delete_investment(invst)
 
     def add_investment(self, obj: dev.Investment):
         """
@@ -3662,7 +3670,7 @@ class MultiCircuit:
         """
         self.investments.append(obj)
 
-    def delete_investment(self, obj):
+    def delete_investment(self, obj: dev.Investment):
         """
         Delete zone
         :param obj: index
@@ -6115,8 +6123,11 @@ class MultiCircuit:
 
             if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
                 # create a new candidate
-                candidate_bus = dev.Bus(f"Candidate from {cn.name}")
-                candidate_bus.code = cn.code  # for soft checking
+                candidate_bus = dev.Bus(name=f"Candidate from {cn.name}",
+                                        code=cn.code,  # for soft checking
+                                        Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
+                                        )
+
                 cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
                 process_info.add_new_candidate(candidate_bus)
             else:

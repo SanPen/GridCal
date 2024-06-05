@@ -38,7 +38,7 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_opti
 
 class InvestmentsEvaluationDriver(DriverTemplate):
     name = 'Investments evaluation'
-    tpe = SimulationTypes.InvestmestsEvaluation_run
+    tpe = SimulationTypes.InvestmentsEvaluation_run
 
     def __init__(self, grid: MultiCircuit,
                  options: InvestmentsEvaluationOptions):
