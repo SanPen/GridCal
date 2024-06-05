@@ -123,6 +123,15 @@ class MapTemplateLine:
         for conector in self.segments_list:
             conector.update_endings()
 
+    def end_update(self) -> None:
+        """
+
+        :return:
+        """
+
+        for conector in self.segments_list:
+            conector.end_update()
+
     def draw_all(self) -> None:
         """
 
@@ -198,8 +207,7 @@ class MapTemplateLine:
             # Assuming Connector takes (scene, node1, node2) as arguments
             segment_graphic_object = Segment(first=elm1, second=elm2)
 
-            elm1.needsUpdateFirst = True
-            elm2.needsUpdateSecond = True
+            elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
 
             # register the segment in the line

@@ -384,6 +384,9 @@ class GridMapWidget(MapWidget):
             for idtag, graphic_object in dev_dict.items():
                 graphic_object.update_connectors()
 
+            for idtag, graphic_object in dev_dict.items():
+                graphic_object.end_update()
+
     def create_substation(self,
                           api_object: Substation,
                           lat: float, lon: float,
