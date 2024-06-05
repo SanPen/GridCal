@@ -303,16 +303,19 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         if self.circuit.has_time_series:
-            self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
-                                                                       max_value=self.simulation_end_index,
-                                                                       time_array=self.circuit.time_profile)
+            if self.circuit.get_time_number() > 0:
+                self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
+                                                                           max_value=self.simulation_end_index,
+                                                                           time_array=self.circuit.time_profile)
 
-            self.start_end_dialogue_window.setModal(True)
-            self.start_end_dialogue_window.exec()
+                self.start_end_dialogue_window.setModal(True)
+                self.start_end_dialogue_window.exec()
 
-            if self.start_end_dialogue_window.is_accepted:
-                self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
-                                       en=self.start_end_dialogue_window.end_value)
+                if self.start_end_dialogue_window.is_accepted:
+                    self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
+                                           en=self.start_end_dialogue_window.end_value)
+            else:
+                info_msg("Empty time series :/")
         else:
             info_msg("There are no time series :/")
 
@@ -1232,7 +1235,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
+            if isinstance(diagram, (SchematicWidget, GridMapWidget)):
 
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"

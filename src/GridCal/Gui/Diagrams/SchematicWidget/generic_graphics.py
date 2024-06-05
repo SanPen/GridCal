@@ -35,6 +35,7 @@ except ImportError:
 ACTIVE = {'style': Qt.SolidLine,
           'color': Qt.white if IS_DARK else Qt.black,
           'text': Qt.white if IS_DARK else Qt.black,
+          'backgound': Qt.black if IS_DARK else Qt.white,
           'fluid': QColor(0, 170, 212, 255)}
 
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
@@ -59,6 +60,10 @@ def set_light_mode() -> None:
     IS_DARK = False
     ACTIVE['color'] = Qt.black
     ACTIVE['text'] = Qt.black
+
+
+def is_dark_mode() -> bool:
+    return IS_DARK
 
 
 if IS_DARK:
@@ -171,6 +176,7 @@ class GenericDBWidget:
     """
     Generic DataBase Widget
     """
+
     def __init__(self,
                  parent,
                  api_object: ALL_DEV_TYPES,
@@ -254,5 +260,3 @@ class GenericDBWidget:
         :return:
         """
         self.draw_labels = not self.draw_labels
-
-

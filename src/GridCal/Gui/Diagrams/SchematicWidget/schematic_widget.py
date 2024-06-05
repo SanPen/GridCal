@@ -2185,41 +2185,43 @@ class SchematicWidget(QSplitter):
                 bus.y = y[i]
             i += 1
 
-    def get_image(self) -> Tuple[QImage, int, int]:
+    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
         """
         get the current picture
+        :param transparent: Set a transparent background
         :return: QImage, width, height
         """
         w = self.editor_graphics_view.width()
         h = self.editor_graphics_view.height()
-        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-        image.fill(Qt.transparent)
+
+        if transparent:
+            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+            image.fill(Qt.transparent)
+        else:
+            image = QImage(w, h, QImage.Format_RGB32)
+            image.fill(ACTIVE['backgound'])
+
         painter = QPainter(image)
         painter.setRenderHint(QPainter.Antialiasing)
         self.editor_graphics_view.render(painter)
         painter.end()
+        # image = self.editor_graphics_view.grab().toImage()
 
         return image, w, h
 
-    def take_picture(self, filename):
+    def take_picture(self, filename: str):
         """
         Save the grid to a png file
         """
-        w = self.editor_graphics_view.width()
-        h = self.editor_graphics_view.height()
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-            image.fill(Qt.transparent)
-            painter = QPainter(image)
-            painter.setRenderHint(QPainter.Antialiasing)
-            # self.diagram_scene.render(painter)
-            self.editor_graphics_view.render(painter)
+            image, _, _ = self.get_image(transparent=False)
             image.save(filename)
-            painter.end()
 
         elif extension == '.svg':
+            w = self.editor_graphics_view.width()
+            h = self.editor_graphics_view.height()
             svg_gen = QSvgGenerator()
             svg_gen.setFileName(filename)
             svg_gen.setSize(QSize(w, h))
@@ -3448,6 +3450,7 @@ class SchematicWidget(QSplitter):
         """
         ACTIVE['color'] = Qt.white
         ACTIVE['text'] = Qt.white
+        ACTIVE['backgound'] = Qt.black
         self.recolour_mode()
 
     def set_light_mode(self) -> None:
@@ -3457,6 +3460,7 @@ class SchematicWidget(QSplitter):
         """
         ACTIVE['color'] = Qt.black
         ACTIVE['text'] = Qt.black
+        ACTIVE['backgound'] = Qt.white
         self.recolour_mode()
 
     def colour_results(self,
@@ -4568,27 +4572,11 @@ class SchematicWidget(QSplitter):
         Save the current state in a video frame
         """
 
-        image, w, h = self.get_image()
-        # qimage = QImage(w, h, QImage.Format_RGB32)
-        # qimage.fill(Qt.transparent)
-        # painter = QPainter(qimage)
-        # painter.setRenderHint(QPainter.Antialiasing)
-        # # self.diagram_scene.render(painter)
-        # self.render(painter)
-        # painter.end()
+        image, w, h = self.get_image(transparent=False)
 
-        # image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-        # image.fill(Qt.transparent)
-        # painter = QPainter(image)
-        # painter.setRenderHint(QPainter.Antialiasing)
-        # self.editor_graphics_view.render(painter)
-        # image.save("temp.png")
-        # painter.end()
-
-        # ptr = qimage.bits()
-        ptr = image.convertToFormat(QImage.Format.Format_RGB32).constBits()
-        frame = np.array(ptr).reshape(h, w, 4).astype(np.uint8)
-        cv2.imshow("export", frame)
+        # convert picture using the memory
+        # we need to remove the alpha channel, otherwise the video frame is not saved
+        frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
         self._video.write(frame)
 
     def end_video_recording(self) -> None:
@@ -4596,7 +4584,6 @@ class SchematicWidget(QSplitter):
         End the video recording
         """
         self._video.release()
-        cv2.destroyAllWindows()
 
 
 def generate_schematic_diagram(buses: List[Bus],
