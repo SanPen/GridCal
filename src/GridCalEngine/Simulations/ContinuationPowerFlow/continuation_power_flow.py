@@ -38,7 +38,7 @@ class CpfNumericResults:
     CpfNumericResults
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.V = list()
         self.Sbus = list()
         self.lmbda = list()
@@ -74,7 +74,7 @@ class CpfNumericResults:
         self.normF.append(normf)
         self.success.append(converged)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.V)
 
 
@@ -710,7 +710,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 bus_types = types_new
                 Sbus = Scalc.real + 1j * Qnew
 
-                Sxfr = Sbus_target - Sbus  # TODO: really?
+                Sxfr = Sbus_target - Sbus
 
                 vd, pq, pv, pqpv = compile_types(Pbus=Sbus.real, types=types_new)
             else:
