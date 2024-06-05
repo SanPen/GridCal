@@ -1123,7 +1123,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
 
 def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
                              gcdev_model: MultiCircuit,
-                             logger: DataLogger) -> None:
+                             logger: DataLogger) -> Dict[str, gcdev.VoltageLevel]:
     """
     Convert the CGMES voltage levels to gcdev voltage levels
 
@@ -1131,6 +1131,9 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
     :param gcdev_model: gcdevCircuit
     :param logger:
     """
+    # dictionary relating the VoltageLevel idtag to the gcdev VoltageLevel
+    volt_lev_dict: Dict[str, gcdev.VoltageLevel] = dict()
+
     for cgmes_elm in cgmes_model.cgmes_assets.VoltageLevel_list:
 
         gcdev_elm = gcdev.VoltageLevel(
@@ -1147,7 +1150,9 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
             gcdev_elm.substation = subs
 
         gcdev_model.add_voltage_level(gcdev_elm)
+        volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
 
+    return volt_lev_dict
 
 def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                       gcdev_model: MultiCircuit,
