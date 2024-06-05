@@ -2199,12 +2199,13 @@ class SchematicWidget(QSplitter):
             image.fill(Qt.transparent)
         else:
             image = QImage(w, h, QImage.Format_RGB32)
-            image.fill(Qt.white)
+            image.fill(ACTIVE['backgound'])
 
         painter = QPainter(image)
         painter.setRenderHint(QPainter.Antialiasing)
         self.editor_graphics_view.render(painter)
         painter.end()
+        # image = self.editor_graphics_view.grab().toImage()
 
         return image, w, h
 
@@ -2215,7 +2216,7 @@ class SchematicWidget(QSplitter):
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image, _, _ = self.get_image(transparent=True)
+            image, _, _ = self.get_image(transparent=False)
             image.save(filename)
 
         elif extension == '.svg':
@@ -3449,6 +3450,7 @@ class SchematicWidget(QSplitter):
         """
         ACTIVE['color'] = Qt.white
         ACTIVE['text'] = Qt.white
+        ACTIVE['backgound'] = Qt.black
         self.recolour_mode()
 
     def set_light_mode(self) -> None:
@@ -3458,6 +3460,7 @@ class SchematicWidget(QSplitter):
         """
         ACTIVE['color'] = Qt.black
         ACTIVE['text'] = Qt.black
+        ACTIVE['backgound'] = Qt.white
         self.recolour_mode()
 
     def colour_results(self,

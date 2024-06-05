@@ -746,7 +746,7 @@ class GridMapWidget(MapWidget):
         # # self.view.render(painter)  # self.view stores the grid widgets
         # self.render(painter)
         # painter.end()
-        image = self.grab()
+        image = self.grab().toImage()
 
         return image, w, h
 
