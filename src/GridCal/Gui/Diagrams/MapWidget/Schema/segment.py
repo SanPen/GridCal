@@ -41,6 +41,7 @@ class Segment(QGraphicsLineItem):
         self.set_line_color(color)
         self.update_endings()
         self.needsUpdate = True
+        self.setZValue(0)
 
     def set_line_color(self, color: QColor) -> None:
         """

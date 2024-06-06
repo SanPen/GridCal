@@ -145,7 +145,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             super().mouseMoveEvent(event)
             if self.hovered and self.enabled:
                 self.updatePosition()
-                # self.updateDiagram()  # always update
 
     def mousePressEvent(self, event):
         """
@@ -261,7 +260,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Implement the functionality for Action 1 here
-        pass
+        self.editor.removeNode(self)
 
     def MergeFunction(self):
         """

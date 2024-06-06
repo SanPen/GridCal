@@ -87,7 +87,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
-
+        self.setZValue(1)
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
     def register_voltage_level(self, vl: VoltageLevelGraphicItem):
@@ -220,6 +220,9 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Function to be called when Action 1 is selected.
         """
+
+        self.editor.removeSubstation(self)
+
         # Implement the functionality for Action 1 here
         pass
 
