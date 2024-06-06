@@ -757,7 +757,7 @@ class GridMapWidget(MapWidget):
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image, _, _ = self.get_image(transparent=True)
+            image, _, _ = self.get_image()
             image.save(filename)
 
         elif extension == '.svg':

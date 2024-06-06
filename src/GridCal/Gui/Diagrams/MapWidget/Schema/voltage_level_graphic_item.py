@@ -15,9 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-import numpy as np
-from typing import Union, TYPE_CHECKING, Tuple
-from PySide6.QtWidgets import QApplication
+from typing import TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
@@ -94,6 +92,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
     def updatePosition(self):
         """
 
+        :return:
         """
         real_position = self.pos()
         center_point = self.getPos()
@@ -104,11 +103,14 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
     def updateDiagram(self):
         """
 
+        :return:
         """
         real_position = self.pos()
         center_point = self.getPos()
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
                                            y=center_point.y() + real_position.y())
+
+        print(f'Updating VL position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
@@ -130,6 +132,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
+        self.updateDiagram()  # always update
 
     def mouseReleaseEvent(self, event):
         """
@@ -137,6 +140,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         """
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
+        self.updateDiagram()  # always update
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
