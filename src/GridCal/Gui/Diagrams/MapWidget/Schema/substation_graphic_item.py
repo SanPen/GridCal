@@ -116,8 +116,6 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.x = center_point.x() + real_position.x()
         self.y = center_point.y() + real_position.y()
         self.needsUpdate = True
-        self.updateDiagram()
-
     def updateDiagram(self):
         """
 

@@ -115,8 +115,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
         if self.enabled:
             self.updateRealPos()
-            self.needsUpdateFirst = True
-            self.needsUpdateSecond = True
+            self.needsUpdate = True
             self.line_container.update_connectors()
 
     def updateDiagram(self):

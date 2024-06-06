@@ -92,6 +92,9 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     circuit = parse_gridcal_data(data=json_data)
     print(f'Circuit loaded alright nbus{circuit.get_bus_number()}, nbr{circuit.get_branch_number()}')
 
+    # with open("mi_red.json", "w") as f:
+    #     f.write(json.dumps(json_data, indent=4))
+
     if 'instruction' in json_data:
         instruction = RemoteInstruction(data=json_data['instruction'])
 

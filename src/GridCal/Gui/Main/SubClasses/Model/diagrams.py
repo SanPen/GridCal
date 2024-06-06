@@ -303,16 +303,19 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         if self.circuit.has_time_series:
-            self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
-                                                                       max_value=self.simulation_end_index,
-                                                                       time_array=self.circuit.time_profile)
+            if self.circuit.get_time_number() > 0:
+                self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
+                                                                           max_value=self.simulation_end_index,
+                                                                           time_array=self.circuit.time_profile)
 
-            self.start_end_dialogue_window.setModal(True)
-            self.start_end_dialogue_window.exec()
+                self.start_end_dialogue_window.setModal(True)
+                self.start_end_dialogue_window.exec()
 
-            if self.start_end_dialogue_window.is_accepted:
-                self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
-                                       en=self.start_end_dialogue_window.end_value)
+                if self.start_end_dialogue_window.is_accepted:
+                    self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
+                                           en=self.start_end_dialogue_window.end_value)
+            else:
+                info_msg("Empty time series :/")
         else:
             info_msg("There are no time series :/")
 
@@ -703,7 +706,8 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
-                    SimulationTypes.ContingencyAnalysisTS_run)
+                    SimulationTypes.ContingencyAnalysisTS_run
+                )
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -1231,7 +1235,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
+            if isinstance(diagram, (SchematicWidget, GridMapWidget)):
 
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
@@ -1420,7 +1424,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
                 names = [elm.type_name + ": " + elm.name for elm in selected]
-                group_text = "Contingency " + str(len(self.circuit.contingency_groups))
+                group_text = "Contingency " + str(len(self.circuit.get_contingency_groups()))
                 self.contingency_checks_diag = CheckListDialogue(objects_list=names,
                                                                  title="Add contingency",
                                                                  ask_for_group_name=True,
@@ -1459,7 +1463,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
 
-                group_name = "Investment " + str(len(self.circuit.contingency_groups))
+                group_name = "Investment " + str(len(self.circuit.get_contingency_groups()))
 
                 # launch selection dialogue to add/remove from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]

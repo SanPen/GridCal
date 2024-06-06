@@ -60,12 +60,13 @@ class Segment(QGraphicsLineItem):
         """
 
         # Get the positions of the first and second objects
-        if self.first.needsUpdateFirst or self.second.needsUpdateSecond:
+        if self.first.needsUpdate or self.second.needsUpdate:
             first_pos = self.first.getRealPos()
             second_pos = self.second.getRealPos()
 
             # Set the line's starting and ending points
             self.setLine(first_pos[0], first_pos[1], second_pos[0], second_pos[1])
 
-            self.first.needsUpdateFirst = False
-            self.second.needsUpdateSecond = False
+    def end_update(self) -> None:
+        self.first.needsUpdate = False
+        self.second.needsUpdate = False
