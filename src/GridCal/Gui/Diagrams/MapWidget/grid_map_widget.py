@@ -357,6 +357,46 @@ class GridMapWidget(MapWidget):
         better_first.line_container.disable_line()
         better_second.line_container.disable_line()
 
+    def removeNode(self, node: NodeGraphicItem):
+        """
+        Removes node from diagram and scene
+        :param node: Node to remove
+        """
+
+        nod = self.graphics_manager.delete_device(node.api_object)
+        self.diagram_scene.removeItem(nod)
+        nod.line_container.removeNode(node)
+
+    pass
+
+    def removeSubstation(self, substation: SubstationGraphicItem):
+        """
+        Removes node from diagram and scene
+        :param node: Node to remove
+        """
+        sub = self.graphics_manager.delete_device(substation.api_object)
+        self.diagram_scene.removeItem(sub)
+
+        br_types = [DeviceType.LineDevice, DeviceType.HVDCLineDevice]
+
+        for ty in br_types:
+            lins = self.graphics_manager.get_device_type_list(ty)
+            for lin in lins:
+                if lin.api_object.get_substation_from() == substation.api_object or lin.api_object.get_substation_to() == substation.api_object:
+                    self.removeLine(lin)
+    pass
+
+    def removeLine(self, line: MapTemplateLine):
+        """
+        Removes line from diagram and scene
+        :param line: Line to remove
+        """
+        lin = self.graphics_manager.delete_device(line.api_object)
+        for seg in lin.segments_list:
+            self.diagram_scene.removeItem(seg)
+
+    pass
+
     def create_line(self, api_object: BRANCH_TYPES, original: bool = True) -> MapTemplateLine:
         """
         Adds a line with the nodes and segments

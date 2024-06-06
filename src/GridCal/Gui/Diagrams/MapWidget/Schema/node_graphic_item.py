@@ -205,6 +205,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
     def RemoveFunction(self):
         # Implement the functionality for Action 1 here
+        self.editor.removeNode(self)
         pass
 
     def MergeFunction(self):

@@ -176,6 +176,20 @@ class MapTemplateLine:
         # second pass: create the segments
         self.redraw_segments()
 
+    def removeNode(self, node: NodeGraphicItem):
+
+        for seg in self.segments_list:
+            if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
+                self.editor.diagram_scene.removeItem(seg)
+
+        self.nodes_list.remove(node)
+
+        for nod in self.nodes_list:
+            if nod.index > node.index:
+                nod.index = nod.index - 1
+
+        self.redraw_segments()
+
     def redraw_segments(self) -> None:
         """
         Draw all segments in the line
