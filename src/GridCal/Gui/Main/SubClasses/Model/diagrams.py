@@ -1066,8 +1066,9 @@ class DiagramsMain(CompiledArraysMain):
         # set other default properties of the diagram
         diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
         diagram.start_level = 5
-        diagram.longitude = -15.41
-        diagram.latitude = 40.11
+
+        # diagram.longitude = -15.41
+        # diagram.latitude = 40.11
 
         # create the map widget
         map_widget = GridMapWidget(parent=None,
@@ -1287,7 +1288,6 @@ class DiagramsMain(CompiledArraysMain):
 
                         # paint and capture
                         for t_idx in range(start_idx, end_idx):
-
                             self.grid_colour_function(diagram=diagram,
                                                       current_study=current_study,
                                                       t_idx=t_idx,

@@ -965,4 +965,7 @@ def generate_map_diagram(substations: List[Substation],
                                                                longitude=loc.long,
                                                                altitude=loc.alt))
 
+    # find the diagram cented and set it internally
+    diagram.set_center()
+
     return diagram
