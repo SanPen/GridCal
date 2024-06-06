@@ -22,11 +22,10 @@ from typing import Union, List, Any, Dict
 
 from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes, create_cgmes_headers
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
-from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
-
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.IO.gridcal.json_parser import save_json_file_v3
 from GridCalEngine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons
@@ -61,7 +60,7 @@ class FileSavingOptions:
 
     def __init__(self,
                  cgmes_boundary_set: str = "",
-                 simulation_drivers: List[DriverTemplate] = None,
+                 simulation_drivers: List[DRIVER_OBJECTS] = None,
                  sessions_data: List[DriverToSave] = None,
                  dictionary_of_json_files: Dict[str, Dict[str, Any]] = None,
                  cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
@@ -82,7 +81,7 @@ class FileSavingOptions:
 
         self.cgmes_boundary_set: str = cgmes_boundary_set
 
-        self.simulation_drivers = simulation_drivers if simulation_drivers else list()
+        self.simulation_drivers: List[DRIVER_OBJECTS] = simulation_drivers if simulation_drivers else list()
 
         self.sessions_data: List[DriverToSave] = sessions_data if sessions_data else list()
 

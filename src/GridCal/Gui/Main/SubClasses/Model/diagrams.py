@@ -118,7 +118,8 @@ class DiagramsMain(CompiledArraysMain):
         register_matplotlib_converters()
 
         # --------------------------------------------------------------------------------------------------------------
-        self.ui.actionExport.triggered.connect(self.export_diagram)
+        self.ui.actionTakePicture.triggered.connect(self.take_picture)
+        self.ui.actionRecord_video.triggered.connect(self.record_video)
         self.ui.actionDelete_selected.triggered.connect(self.delete_selected_from_the_diagram_and_db)
         self.ui.actionDelete_from_the_diagram.triggered.connect(self.delete_selected_from_the_diagram)
         self.ui.actionTry_to_fix_buses_location.triggered.connect(self.try_to_fix_buses_location)
@@ -302,28 +303,33 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         if self.circuit.has_time_series:
-            self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
-                                                                       max_value=self.simulation_end_index,
-                                                                       time_array=self.circuit.time_profile)
+            if self.circuit.get_time_number() > 0:
+                self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
+                                                                           max_value=self.simulation_end_index,
+                                                                           time_array=self.circuit.time_profile)
 
-            self.start_end_dialogue_window.setModal(True)
-            self.start_end_dialogue_window.exec()
+                self.start_end_dialogue_window.setModal(True)
+                self.start_end_dialogue_window.exec()
 
-            if self.start_end_dialogue_window.is_accepted:
-                self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
-                                       en=self.start_end_dialogue_window.end_value)
+                if self.start_end_dialogue_window.is_accepted:
+                    self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
+                                           en=self.start_end_dialogue_window.end_value)
+            else:
+                info_msg("Empty time series :/")
         else:
             info_msg("There are no time series :/")
 
     def grid_colour_function(self,
                              diagram: Union[SchematicWidget, GridMapWidget],
                              current_study: str,
-                             t_idx: Union[None, int]) -> None:
+                             t_idx: Union[None, int],
+                             allow_popups: bool = True) -> None:
         """
         Colour the schematic or the map
         :param diagram: Diagram where the plotting is made
         :param current_study: current_study name
         :param t_idx: current time step (if None, the snapshot is taken)
+        :param allow_popups: if true, messages me pop up
         """
         use_flow_based_width = self.ui.branch_width_based_on_flow_checkBox.isChecked()
         min_branch_width = self.ui.min_branch_size_spinBox.value()
@@ -372,7 +378,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -406,7 +413,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContinuationPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -439,7 +447,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.StochasticPowerFlowDriver.tpe.value:
 
@@ -504,7 +513,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             if t_idx is None:
@@ -535,7 +545,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.OptimalPowerFlowTimeSeriesDriver.tpe.value:
 
@@ -569,7 +580,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.NodalCapacityTimeSeriesDriver.tpe.value:
 
@@ -629,7 +641,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.LinearAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
@@ -657,7 +670,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisDriver.tpe.value:
 
@@ -686,12 +700,14 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
-                    SimulationTypes.ContingencyAnalysisTS_run)
+                    SimulationTypes.ContingencyAnalysisTS_run
+                )
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -714,7 +730,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} does not have values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} does not have values for the snapshot")
 
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
@@ -742,7 +759,8 @@ class DiagramsMain(CompiledArraysMain):
                                               max_bus_width=max_bus_width,
                                               cmap=cmap)
             else:
-                info_msg(f"{current_study} only has values for the snapshot")
+                if allow_popups:
+                    info_msg(f"{current_study} only has values for the snapshot")
 
         elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             pass
@@ -769,11 +787,10 @@ class DiagramsMain(CompiledArraysMain):
 
             for diagram in self.diagram_widgets_list:
 
-                if isinstance(diagram, SchematicWidget):
-                    self.grid_colour_function(diagram=diagram, current_study=current_study, t_idx=t_idx)
-
-                elif isinstance(diagram, GridMapWidget):
-                    self.grid_colour_function(diagram=diagram, current_study=current_study, t_idx=t_idx)
+                if isinstance(diagram, (SchematicWidget, GridMapWidget)):
+                    self.grid_colour_function(diagram=diagram,
+                                              current_study=current_study,
+                                              t_idx=t_idx)
 
     def set_diagrams_list_view(self) -> None:
         """
@@ -1211,14 +1228,14 @@ class DiagramsMain(CompiledArraysMain):
         else:
             self.ui.db_step_label.setText("Snapshot")
 
-    def export_diagram(self):
+    def take_picture(self):
         """
         Save the schematic
         :return:
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
+            if isinstance(diagram, (SchematicWidget, GridMapWidget)):
 
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
@@ -1226,18 +1243,69 @@ class DiagramsMain(CompiledArraysMain):
                 f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
                 # call dialog to select the file
-                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
+                filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save image file',
                                                                                 f_name, files_types)
 
-                if not (filename.endswith('.svg') or filename.endswith('.png')):
-                    filename += ".svg"
-
                 if filename != "":
+                    if not (filename.endswith('.svg') or filename.endswith('.png')):
+                        filename += ".svg"
+
                     # save in factor * K
                     factor = self.ui.resolution_factor_spinBox.value()
-                    w = 1920 * factor
-                    h = 1080 * factor
-                    diagram.export(filename, w, h)
+                    diagram.take_picture(filename)
+
+    def record_video(self):
+        """
+        Save the schematic
+        :return:
+        """
+        if self.circuit.has_time_series:
+            diagram = self.get_selected_diagram_widget()
+            if diagram is not None:
+                if isinstance(diagram, (SchematicWidget, GridMapWidget)):
+
+                    # declare the allowed file types
+                    files_types = "MP4 (*.mp4);;"
+
+                    f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
+
+                    # call dialog to select the file
+                    filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save video file',
+                                                                                    f_name, files_types)
+
+                    if filename != "":
+                        if not filename.endswith('.mp4'):
+                            filename += ".mp4"
+
+                        fps = self.ui.fps_spinBox.value()
+                        start_idx = self.get_simulation_start()
+                        end_idx = self.get_simulation_end()
+                        current_study = self.ui.available_results_to_color_comboBox.currentText()
+
+                        # start recording...
+                        diagram.start_video_recording(fname=filename, fps=fps)
+
+                        # paint and capture
+                        for t_idx in range(start_idx, end_idx):
+
+                            self.grid_colour_function(diagram=diagram,
+                                                      current_study=current_study,
+                                                      t_idx=t_idx,
+                                                      allow_popups=False)
+
+                            diagram.capture_video_frame()
+
+                            print(f"Saving frame {t_idx} / {end_idx}")
+
+                        # finalize
+                        diagram.end_video_recording()
+                        print(f"Recording saved to {filename}")
+
+            else:
+                info_msg("There is not diagram selected", "Record video")
+
+        else:
+            info_msg("There are no time series", "Record video")
 
     def set_xy_from_lat_lon(self):
         """
@@ -1356,7 +1424,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
                 names = [elm.type_name + ": " + elm.name for elm in selected]
-                group_text = "Contingency " + str(len(self.circuit.contingency_groups))
+                group_text = "Contingency " + str(len(self.circuit.get_contingency_groups()))
                 self.contingency_checks_diag = CheckListDialogue(objects_list=names,
                                                                  title="Add contingency",
                                                                  ask_for_group_name=True,
@@ -1395,7 +1463,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
 
-                group_name = "Investment " + str(len(self.circuit.contingency_groups))
+                group_name = "Investment " + str(len(self.circuit.get_contingency_groups()))
 
                 # launch selection dialogue to add/remove from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]

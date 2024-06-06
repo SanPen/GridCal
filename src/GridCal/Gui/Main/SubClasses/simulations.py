@@ -38,10 +38,12 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
-                                        BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod)
+                                        BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
+                                        ContingencyFilteringMethods)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -159,7 +161,7 @@ class SimulationsMain(TimeEventsMain):
         # reactive power controls
         self.contingency_engines_dict = OrderedDict()
         self.contingency_engines_dict[ContingencyMethod.PowerFlow.value] = ContingencyMethod.PowerFlow
-        self.contingency_engines_dict[ContingencyMethod.OptimalPowerFlow.value] = ContingencyMethod.OptimalPowerFlow
+        # self.contingency_engines_dict[ContingencyMethod.OptimalPowerFlow.value] = ContingencyMethod.OptimalPowerFlow
         self.contingency_engines_dict[ContingencyMethod.PTDF.value] = ContingencyMethod.PTDF
         self.ui.contingencyEngineComboBox.setModel(gf.get_list_model(list(self.contingency_engines_dict.keys())))
 
@@ -184,6 +186,18 @@ class SimulationsMain(TimeEventsMain):
             self.investment_evaluation_method_dict[method.value] = method
             lst.append(method.value)
         self.ui.investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))
+
+        # contingency filtering modes
+        con_filters = [ContingencyFilteringMethods.All,
+                       ContingencyFilteringMethods.Country,
+                       ContingencyFilteringMethods.Area,
+                       ContingencyFilteringMethods.Zone]
+        self.contingency_filter_modes_dict = OrderedDict()
+        con_filter_vals = list()
+        for con_filter in con_filters:
+            self.contingency_filter_modes_dict[con_filter.value] = con_filter
+            con_filter_vals.append(con_filter.value)
+        self.ui.contingency_filter_by_comboBox.setModel(gf.get_list_model(con_filter_vals))
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
@@ -223,16 +237,17 @@ class SimulationsMain(TimeEventsMain):
 
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
+        self.ui.contingency_filter_by_comboBox.currentTextChanged.connect(self.modify_contingency_filter_mode)
 
-    def get_simulations(self):
+    def get_simulations(self) -> List[DRIVER_OBJECTS]:
         """
         Get all threads that have to do with simulation
-        :return: list of simulation threads
+        :return: list of simulation driver objects
         """
 
         all_threads = list(self.session.drivers.values())
 
-        # # set the threads so that the diagram scene objects can plot them
+        # set the threads so that the diagram scene objects can plot them
         for diagram in self.diagram_widgets_list:
             if isinstance(diagram, SchematicWidget):
                 diagram.set_results_to_plot(all_threads)
@@ -372,7 +387,83 @@ class SimulationsMain(TimeEventsMain):
             self.ui.solver_comboBox.setCurrentIndex(0)
 
         else:
-            raise Exception('Unsupported engine' + str(eng.value))
+            raise Exception('Unsupported engine ' + str(eng.value))
+
+    def modify_contingency_filter_mode(self) -> None:
+        """
+        Modify the objects
+        """
+        filter_mode = self.contingency_filter_modes_dict[self.ui.contingency_filter_by_comboBox.currentText()]
+
+        if filter_mode == ContingencyFilteringMethods.All:
+            mdl = None
+
+        elif filter_mode == ContingencyFilteringMethods.Country:
+            mdl = gf.get_list_model(lst=[elm.name for elm in self.circuit.get_countries()],
+                                    checks=True,
+                                    check_value=True)
+
+        elif filter_mode == ContingencyFilteringMethods.Area:
+            mdl = gf.get_list_model(lst=[elm.name for elm in self.circuit.get_areas()],
+                                    checks=True,
+                                    check_value=True)
+
+        elif filter_mode == ContingencyFilteringMethods.Zone:
+            mdl = gf.get_list_model(lst=[elm.name for elm in self.circuit.get_zones()],
+                                    checks=True,
+                                    check_value=True)
+
+        else:
+            raise Exception('Unsupported ContingencyFilteringMethod ' + str(filter_mode.value))
+
+        self.ui.contingency_group_filter_listView.setModel(mdl)
+
+    def get_contingency_groups_matching_the_filter(self) -> List[dev.ContingencyGroup]:
+        """
+        Get the list of contingencies that match the group
+        :return:
+        """
+
+        # get the filter mode
+        filter_mode = self.contingency_filter_modes_dict[self.ui.contingency_filter_by_comboBox.currentText()]
+
+        if filter_mode == ContingencyFilteringMethods.All:
+            # no filtering, we're safe
+            return self.circuit.get_contingency_groups()
+
+        elif filter_mode == ContingencyFilteringMethods.Country:
+
+            if self.circuit.get_country_number() > 0:
+                # get the selection indices
+                idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
+                elements = self.circuit.get_countries()
+                return self.circuit.get_contingency_groups_in(grouping_elements=[elements[i] for i in idx])
+            else:
+                # default to returning all groups, since it's safer
+                return self.circuit.get_contingency_groups()
+
+        elif filter_mode == ContingencyFilteringMethods.Area:
+            if self.circuit.get_area_number() > 0:
+                # get the selection indices
+                idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
+                elements = self.circuit.get_areas()
+                return self.circuit.get_contingency_groups_in(grouping_elements=[elements[i] for i in idx])
+            else:
+                # default to returning all groups, since it's safer
+                return self.circuit.get_contingency_groups()
+
+        elif filter_mode == ContingencyFilteringMethods.Zone:
+            if self.circuit.get_zone_number() > 0:
+                # get the selection indices
+                idx = gf.get_checked_indices(self.ui.contingency_group_filter_listView.model())
+                elements = self.circuit.get_areas()
+                return self.circuit.get_contingency_groups_in(grouping_elements=[elements[i] for i in idx])
+            else:
+                # default to returning all groups, since it's safer
+                return self.circuit.get_contingency_groups()
+
+        else:
+            raise Exception('Unsupported ContingencyFilteringMethod ' + str(filter_mode.value))
 
     def valid_time_series(self):
         """
@@ -1032,7 +1123,8 @@ class SimulationsMain(TimeEventsMain):
             srap_rever_to_nominal_rating=self.ui.srap_revert_to_nominal_rating_checkBox.isChecked(),
             detailed_massive_report=self.ui.contingency_detailed_massive_report_checkBox.isChecked(),
             contingency_deadband=self.ui.contingency_deadband_SpinBox.value(),
-            engine=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()]
+            contingency_method=self.contingency_engines_dict[self.ui.contingencyEngineComboBox.currentText()],
+            contingency_groups=self.get_contingency_groups_matching_the_filter()
         )
 
         return options
@@ -1052,11 +1144,9 @@ class SimulationsMain(TimeEventsMain):
 
                     self.LOCK()
 
-                    linear_multiple_contingencies = sim.LinearMultiContingencies(grid=self.circuit)
-
                     drv = sim.ContingencyAnalysisDriver(grid=self.circuit,
                                                         options=self.get_contingency_options(),
-                                                        linear_multiple_contingencies=linear_multiple_contingencies,
+                                                        linear_multiple_contingencies=None,  # it initializes inside
                                                         engine=self.get_preferred_engine())
 
                     self.session.run(drv,
@@ -1767,6 +1857,7 @@ class SimulationsMain(TimeEventsMain):
         zonal_grouping = self.opf_zonal_groups[self.ui.opfZonalGroupByComboBox.currentText()]
         pf_options = self.get_selected_power_flow_options()
         consider_contingencies = self.ui.considerContingenciesOpfCheckBox.isChecked()
+        contingency_groups_used = self.get_contingency_groups_matching_the_filter()
         skip_generation_limits = self.ui.skipOpfGenerationLimitsCheckBox.isChecked()
         lodf_tolerance = self.ui.opfContingencyToleranceSpinBox.value()
         maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
@@ -1813,6 +1904,7 @@ class SimulationsMain(TimeEventsMain):
                                               mip_solver=mip_solver,
                                               power_flow_options=pf_options,
                                               consider_contingencies=consider_contingencies,
+                                              contingency_groups_used=contingency_groups_used,
                                               skip_generation_limits=skip_generation_limits,
                                               lodf_tolerance=lodf_tolerance,
                                               maximize_flows=maximize_flows,

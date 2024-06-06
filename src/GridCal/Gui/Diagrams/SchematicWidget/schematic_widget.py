@@ -18,6 +18,7 @@ import sys
 import os
 import numpy as np
 import pandas as pd
+import cv2
 from typing import List, Dict, Union, Tuple
 from collections.abc import Callable
 from warnings import warn
@@ -577,9 +578,13 @@ class SchematicWidget(QSplitter):
         # current time index from the GUI (None or 0, 1, 2, ..., n-1)
         self._time_index: Union[None, int] = time_index
 
+        # video pointer
+        self._video: Union[None, cv2.VideoWriter] = None
+
         if diagram is not None:
             self.draw()
 
+        # -------------------------------------------------------------------------------------------------
         # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
 
     def set_time_index(self, time_index: Union[int, None]):
@@ -1245,10 +1250,7 @@ class SchematicWidget(QSplitter):
         graphic_object: QGraphicsItem = self.graphics_manager.delete_device(device=device)
 
         if graphic_object is not None:
-            # try:
             self.remove_from_scene(graphic_object)
-            # except:
-            #     warn(f"Could not remove {graphic_object} from the scene")
 
         if propagate:
             if self.call_delete_db_element_func is not None:
@@ -2183,23 +2185,43 @@ class SchematicWidget(QSplitter):
                 bus.y = y[i]
             i += 1
 
-    def export(self, filename, w=1920, h=1080):
+    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+        """
+        get the current picture
+        :param transparent: Set a transparent background
+        :return: QImage, width, height
+        """
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
+
+        if transparent:
+            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+            image.fill(Qt.transparent)
+        else:
+            image = QImage(w, h, QImage.Format_RGB32)
+            image.fill(ACTIVE['backgound'])
+
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.editor_graphics_view.render(painter)
+        painter.end()
+        # image = self.editor_graphics_view.grab().toImage()
+
+        return image, w, h
+
+    def take_picture(self, filename: str):
         """
         Save the grid to a png file
         """
-
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-            image.fill(Qt.transparent)
-            painter = QPainter(image)
-            painter.setRenderHint(QPainter.Antialiasing)
-            self.diagram_scene.render(painter)
+            image, _, _ = self.get_image(transparent=False)
             image.save(filename)
-            painter.end()
 
         elif extension == '.svg':
+            w = self.editor_graphics_view.width()
+            h = self.editor_graphics_view.height()
             svg_gen = QSvgGenerator()
             svg_gen.setFileName(filename)
             svg_gen.setSize(QSize(w, h))
@@ -2208,7 +2230,7 @@ class SchematicWidget(QSplitter):
             svg_gen.setDescription("An SVG drawing created by GridCal")
 
             painter = QPainter(svg_gen)
-            self.diagram_scene.render(painter)
+            self.editor_graphics_view.render(painter)
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
@@ -3428,6 +3450,7 @@ class SchematicWidget(QSplitter):
         """
         ACTIVE['color'] = Qt.white
         ACTIVE['text'] = Qt.white
+        ACTIVE['backgound'] = Qt.black
         self.recolour_mode()
 
     def set_light_mode(self) -> None:
@@ -3437,6 +3460,7 @@ class SchematicWidget(QSplitter):
         """
         ACTIVE['color'] = Qt.black
         ACTIVE['text'] = Qt.black
+        ACTIVE['backgound'] = Qt.white
         self.recolour_mode()
 
     def colour_results(self,
@@ -4524,6 +4548,42 @@ class SchematicWidget(QSplitter):
         for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
             for key, widget in type_dict.items():
                 widget.enable_label_drawing()
+
+    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+        """
+        Save video
+        :param fname: file name
+        :param fps: frames per second
+        :returns width, height
+        """
+
+        w = self.editor_graphics_view.width()
+        h = self.editor_graphics_view.height()
+
+        self._video = cv2.VideoWriter(filename=fname,
+                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                      fps=fps,
+                                      frameSize=(w, h))
+
+        return w, h
+
+    def capture_video_frame(self) -> None:
+        """
+        Save the current state in a video frame
+        """
+
+        image, w, h = self.get_image(transparent=False)
+
+        # convert picture using the memory
+        # we need to remove the alpha channel, otherwise the video frame is not saved
+        frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
+        self._video.write(frame)
+
+    def end_video_recording(self) -> None:
+        """
+        End the video recording
+        """
+        self._video.release()
 
 
 def generate_schematic_diagram(buses: List[Bus],
