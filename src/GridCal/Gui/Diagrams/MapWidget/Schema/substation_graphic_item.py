@@ -144,8 +144,6 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             self.updatePosition()
             self.editor.update_connectors()
 
-            # self.updateDiagram()  # always update
-
     def mousePressEvent(self, event):
         """
         Event handler for mouse press events.
