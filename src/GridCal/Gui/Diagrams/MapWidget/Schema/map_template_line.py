@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Union
 
 import logging
-
+from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPen
 from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
@@ -174,6 +174,20 @@ class MapTemplateLine:
                 self.register_new_node(node=graphic_obj)
 
         # second pass: create the segments
+        self.redraw_segments()
+
+    def removeNode(self, node: NodeGraphicItem):
+
+        for seg in self.segments_list:
+            if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
+                self.editor.diagram_scene.removeItem(seg)
+
+        self.nodes_list.remove(node)
+
+        for nod in self.nodes_list:
+            if nod.index > node.index:
+                nod.index = nod.index - 1
+
         self.redraw_segments()
 
     def redraw_segments(self) -> None:
@@ -375,3 +389,18 @@ class MapTemplateLine:
             node.enabled = False
         for line in self.segments_list:
             line.set_line_color(Qt.gray)
+
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        menu = QMenu()
+
+        # add_menu_entry(menu=menu,
+        #                text="Remove",
+        #                icon_path="",
+        #                function_ptr=self.RemoveFunction)
+
+        menu.exec_(event.screenPos())

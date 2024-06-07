@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
-from PySide6.QtWidgets import QApplication, QMenu, QGraphicsItem
+from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
@@ -95,8 +95,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # Assign color to the node
         self.setDefaultColor()
 
-
-
     def updateRealPos(self) -> None:
         """
 
@@ -129,7 +127,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
                                            y=center_point.y() + real_position.y())
 
-        # print(f'Updating node position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
+        print(f'Updating node position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
@@ -157,59 +155,11 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         if self.enabled:
             self.editor.disableMove = True
             if event.button() == Qt.RightButton:
-                menu = QMenu()
-
-                add_menu_entry(menu=menu,
-                               text="Add",
-                               icon_path="",
-                               function_ptr=self.AddFunction)
-
-                add_menu_entry(menu=menu,
-                               text="Split",
-                               icon_path="",
-                               function_ptr=self.SplitFunction)
-
-                add_menu_entry(menu=menu,
-                               text="Merge",
-                               icon_path="",
-                               function_ptr=self.MergeFunction)
-
-                add_menu_entry(menu=menu,
-                               text="Remove",
-                               icon_path="",
-                               function_ptr=self.RemoveFunction)
-
-                menu.exec_(event.screenPos())
+                pass
             elif event.button() == Qt.LeftButton:
                 self.selectItem()
 
-    def selectItem(self):
-        if not self.itemSelected:
-            self.editor.selectedItems.append(self)
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        self.itemSelected = True
-
-    def deSelectItem(self):
-        self.itemSelected = False
-        self.setDefaultColor()
-
-    def AddFunction(self):
-        self.line_container.insert_new_node_at_position(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
-
-    def SplitFunction(self):
-        self.line_container.split_Line(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
-
-    def RemoveFunction(self):
-        # Implement the functionality for Action 1 here
-        pass
-
-    def MergeFunction(self):
-        self.editor.merge_lines()
-        pass
+        self.updateDiagram()  # always update
 
     def mouseReleaseEvent(self, event):
         """
@@ -238,6 +188,88 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
 
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
+        """
+        Event handler for context menu events.
+        :param event:
+        :return:
+        """
+        menu = QMenu()
+
+        add_menu_entry(menu=menu,
+                       text="Add",
+                       icon_path="",
+                       function_ptr=self.AddFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Split",
+                       icon_path="",
+                       function_ptr=self.SplitFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Merge",
+                       icon_path="",
+                       function_ptr=self.MergeFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Remove",
+                       icon_path="",
+                       function_ptr=self.RemoveFunction)
+
+        menu.exec_(event.screenPos())
+
+    def selectItem(self):
+        """
+
+        :return:
+        """
+        if not self.itemSelected:
+            self.editor.selectedItems.append(self)
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        self.itemSelected = True
+
+    def deSelectItem(self):
+        """
+
+        :return:
+        """
+        self.itemSelected = False
+        self.setDefaultColor()
+
+    def AddFunction(self):
+        """
+
+        :return:
+        """
+        self.line_container.insert_new_node_at_position(index=self.index)
+        # Implement the functionality for Action 1 here
+        pass
+
+    def SplitFunction(self):
+        """
+
+        :return:
+        """
+        self.line_container.split_Line(index=self.index)
+        # Implement the functionality for Action 1 here
+        pass
+
+    def RemoveFunction(self):
+        """
+
+        :return:
+        """
+        # Implement the functionality for Action 1 here
+        self.editor.removeNode(self)
+
+    def MergeFunction(self):
+        """
+
+        :return:
+        """
+        self.editor.merge_lines()
+        pass
+
     def setNodeColor(self, inner_color: QColor, border_color: QColor = None) -> None:
         """
 
@@ -260,7 +292,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        if(self.itemSelected):
+        if self.itemSelected:
             self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
         else:
             self.setNodeColor(self.colorInner, self.colorBorder)

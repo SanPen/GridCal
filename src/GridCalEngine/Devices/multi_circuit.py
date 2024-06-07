@@ -1483,6 +1483,10 @@ class MultiCircuit:
         :param obj: VoltageLevel instance
         """
 
+        for elm in self.buses:
+            if elm.voltage_level == obj:
+                elm.voltage_level = None
+
         self.voltage_levels.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
@@ -3228,6 +3232,12 @@ class MultiCircuit:
         :return:
         """
         self.generators.remove(obj)
+        for dev_lst in [self.generators_technologies,
+                        self.generators_fuels,
+                        self.generators_emissions]:
+            for elm in dev_lst:
+                if elm.generator == obj:
+                    elm.generator = None
 
     def add_static_generator(self,
                              bus: Union[None, dev.Bus] = None,
@@ -3501,6 +3511,10 @@ class MultiCircuit:
             if elm.substation == obj:
                 elm.substation = None
 
+        for elm in self.voltage_levels:
+            if elm.substation == obj:
+                elm.substation = None
+
         self.substations.remove(obj)
 
     def get_bus_bars(self) -> List[dev.BusBar]:
@@ -3578,6 +3592,14 @@ class MultiCircuit:
         :param obj: Area
         """
         for elm in self.buses:
+            if elm.area == obj:
+                elm.area = None
+
+        for elm in self.substations:
+            if elm.area == obj:
+                elm.area = None
+
+        for elm in self.zones:
             if elm.area == obj:
                 elm.area = None
 
@@ -3708,6 +3730,10 @@ class MultiCircuit:
             if elm.zone == obj:
                 elm.zone = None
 
+        for elm in self.substations:
+            if elm.zone == obj:
+                elm.zone = None
+
         self.zones.remove(obj)
 
     def get_countries(self) -> List[dev.Country]:
@@ -3736,6 +3762,14 @@ class MultiCircuit:
         :param obj: index
         """
         for elm in self.buses:
+            if elm.country == obj:
+                elm.country = None
+
+        for elm in self.substations:
+            if elm.country == obj:
+                elm.country = None
+
+        for elm in self.communities:
             if elm.country == obj:
                 elm.country = None
 
@@ -3841,6 +3875,14 @@ class MultiCircuit:
         :param obj: Community instance
         """
 
+        for elm in self.substations:
+            if elm.community == obj:
+                elm.community = None
+
+        for elm in self.regions:
+            if elm.community == obj:
+                elm.community = None
+
         self.communities.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
@@ -3892,6 +3934,10 @@ class MultiCircuit:
         :param obj: Region instance
         """
 
+        for elm in self.municipalities:
+            if elm.region == obj:
+                elm.region = None
+
         self.regions.remove(obj)
 
     # ----------------------------------------------------------------------------------------------------------------------
@@ -3942,6 +3988,10 @@ class MultiCircuit:
         Add a Municipality object
         :param obj: Municipality instance
         """
+
+        for elm in self.substations:
+            if elm.municipality == obj:
+                elm.municipality = None
 
         self.municipalities.remove(obj)
 
