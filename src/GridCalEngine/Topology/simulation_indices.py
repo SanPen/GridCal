@@ -675,9 +675,10 @@ class SimulationIndicesV2:
         if len(ref) > 1:    # there are more than one slacks!
             maxpos = list()
             for r in ref:
-                maxpos.append(np.where(generator_buses == r))
+                maxpos.append(np.where(generator_buses == r)[0][0])
             mx = max(Snomgen[maxpos])
-            i = ref[np.where(max(Snomgen[maxpos]) == mx)]
+            # i = ref[np.where(max(Snomgen[maxpos]) == mx)]
+            i = ref[np.where(Snomgen[maxpos] == mx)[0]]
 
             # delete the rest of generators from ref and put them in the pv list
             newpv = np.delete(ref, np.where(ref == i)[0])
@@ -688,6 +689,9 @@ class SimulationIndicesV2:
 
         no_slack = np.concatenate((pq, pv, pvr))
         no_slack.sort()
+
+        # Let's check if slack node is controlling its own node voltage
+
 
         # Let's check if pq nodes have their voltage controlled so that they are converted to pqv
         for i in pq:
