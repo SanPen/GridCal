@@ -29,9 +29,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added tests">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Change http -&gt; https">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/TileProviders/blue_marble.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/TileProviders/blue_marble.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -633,8 +632,8 @@
     </configuration>
     <list>
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python.testlpl" />
       <item itemvalue="Python.update_gui_file" />
+      <item itemvalue="Python.testlpl" />
       <item itemvalue="Python tests.Nosetests in test_ptdf.py" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
@@ -1327,13 +1326,6 @@
       <workItem from="1715344744479" duration="2798000" />
       <workItem from="1715677789415" duration="3835000" />
     </task>
-    <task id="LOCAL-00314" summary="Some more refactoring of missing imports">
-      <created>1656760923750</created>
-      <option name="number" value="00314" />
-      <option name="presentableId" value="LOCAL-00314" />
-      <option name="project" value="LOCAL" />
-      <updated>1656760923751</updated>
-    </task>
     <task id="LOCAL-00315" summary="refactoring changes">
       <created>1656838027113</created>
       <option name="number" value="00315" />
@@ -1670,7 +1662,14 @@
       <option name="project" value="LOCAL" />
       <updated>1717581577357</updated>
     </task>
-    <option name="localTasksCounter" value="530" />
+    <task id="LOCAL-00530" summary="Change http -&gt; https">
+      <created>1717754439890</created>
+      <option name="number" value="00530" />
+      <option name="presentableId" value="LOCAL-00530" />
+      <option name="project" value="LOCAL" />
+      <updated>1717754439890</updated>
+    </task>
+    <option name="localTasksCounter" value="531" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1731,7 +1730,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactored the test_ptdf to avoid import *" />
     <MESSAGE value="Fixed the contingencies memory usage" />
     <MESSAGE value="Added the probability index to the contingency run" />
     <MESSAGE value="Enforce types h" />
@@ -1756,7 +1754,8 @@
     <MESSAGE value="Capture antenna in contingencies" />
     <MESSAGE value="My GUI" />
     <MESSAGE value="Added tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added tests" />
+    <MESSAGE value="Change http -&gt; https" />
+    <option name="LAST_COMMIT_MESSAGE" value="Change http -&gt; https" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2215,7 +2214,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>815</line>
+          <line>855</line>
           <option name="timeStamp" value="1627" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2250,7 +2249,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py</url>
-          <line>6142</line>
+          <line>6192</line>
           <option name="timeStamp" value="1638" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

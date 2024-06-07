@@ -30,7 +30,7 @@ class BlueMarbleTiles(tiles_net.Tiles):
                          tile_height=256,
                          tiles_dir=tiles_dir,
                          max_lru=10000,
-                         servers=['https://s3.amazonaws.com', ],
+                         servers=['http://s3.amazonaws.com', ],
                          url_path='/com.modestmaps.bluemarble/{Z}-r{Y}-c{X}.jpg',
                          max_server_requests=2,
                          http_proxy=http_proxy)
