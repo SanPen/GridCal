@@ -1,8 +1,19 @@
 import sys
+from typing import Tuple
+import cv2
+import numpy as np
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsItem, QGraphicsRectItem, QGraphicsEllipseItem, \
     QApplication
 from PySide6.QtGui import QBrush, QPen, QPainter
 from PySide6.QtCore import Qt
+from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
+                            QDataStream, QModelIndex)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
+                           QContextMenuEvent)
+from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
+                               QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
+                               QGraphicsItem, QWidget)
 import math
 
 
@@ -83,6 +94,9 @@ class VoltageLevelCircle(QGraphicsEllipseItem):
 
 
 class Node(QGraphicsRectItem):
+    """
+    Substation node
+    """
 
     def __init__(self, x, y, size, inner_scale=1.0, opacity=0.8):
         QGraphicsRectItem.__init__(self, x, y, size, size)
@@ -143,28 +157,122 @@ class Node(QGraphicsRectItem):
             dev.set_centered_position(x, y)
 
 
+class MyApp(QGraphicsView):
+    """
+    Main application class
+    """
+    def __init__(self) -> None:
+        """
+        Constructor of the app
+        """
+        QGraphicsView.__init__(self)
+
+        # Defining a scene rect of 400x200, with it's origin at 0,0.
+        # If we don't set this on creation, we can set it later with .setSceneRect
+        self.scene = QGraphicsScene(0, 0, 600, 500)
+
+        self.node = Node(x=0, y=0, size=200)
+
+        sc = 0.6
+        self.node.add_circle(sc)
+        for _ in range(6):
+            self.node.add_device_marker(scale=0.2, scale2=sc + 0.3)
+
+        self.node.setOpacity(0.8)
+        self.node.setPos(200, 200)
+
+        self.scene.addItem(self.node)
+
+        # self.view = QGraphicsView(self.scene)
+        self.setScene(self.scene)
+        self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+        self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
+
+        # view.show()
+        self._video = None
+
+    def mousePressEvent(self, QMouseEvent):
+
+        self.record_video()
+
+    def record_video(self):
+        """
+        Record video
+        :return:
+        """
+        print("Recording video...")
+        self.start_video_recording(fname="se_vide.mp4", fps=2)
+        n_frames = 100
+        for i in range(n_frames):
+            self.capture_video_frame()
+            print(f"frame {i + 1} / {n_frames}")
+
+        self.end_video_recording()
+
+    def get_image(self) -> Tuple[QImage, int, int]:
+        """
+        get the current picture
+        :return: QImage, width, height
+        """
+        w = int(self.scene.width())
+        h = int(self.scene.height())
+        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        image.fill(Qt.transparent)
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.scene.render(painter)
+        painter.end()
+
+        return image, w, h
+
+    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+        """
+        Save video
+        :param fname: file name
+        :param fps: frames per second
+        :returns width, height
+        """
+
+        w = int(self.scene.width())
+        h = int(self.scene.height())
+
+        self._video = cv2.VideoWriter(filename=fname,
+                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                      fps=fps,
+                                      frameSize=(w, h))
+
+        return w, h
+
+    def capture_video_frame(self) -> None:
+        """
+        Save the current state in a video frame
+        """
+
+        w = int(self.scene.width())
+        h = int(self.scene.height())
+        image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
+        image.fill(Qt.transparent)
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.scene.render(painter)
+        painter.end()
+
+        # ptr = qimage.bits()
+        ptr = image.convertToFormat(QImage.Format.Format_RGB32).constBits()
+        frame = np.array(ptr).reshape(h, w, 4)
+        cv2.imshow("export", frame)
+        self._video.write(frame)
+
+    def end_video_recording(self) -> None:
+        """
+        End the video recording
+        """
+        self._video.release()
+        cv2.destroyAllWindows()
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
-    # Defining a scene rect of 400x200, with it's origin at 0,0.
-    # If we don't set this on creation, we can set it later with .setSceneRect
-    scene = QGraphicsScene(0, 0, 600, 500)
-
-    node = Node(x=0, y=0, size=200)
-
-    sc = 0.6
-    node.add_circle(sc)
-    for _ in range(6):
-        node.add_device_marker(scale=0.2, scale2=sc + 0.3)
-
-    node.setOpacity(0.8)
-    node.setPos(200, 200)
-
-    scene.addItem(node)
-
-    view = QGraphicsView(scene)
-    view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
-    view.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.BoundingRectViewportUpdate)
-    view.show()
-
+    window = MyApp()
+    window.show()
     app.exec()

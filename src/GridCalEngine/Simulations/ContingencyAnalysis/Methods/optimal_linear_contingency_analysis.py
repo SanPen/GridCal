@@ -64,13 +64,13 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
     # Tengo que pasar el F, el T, el bus_area_indices y el area_names
 
     # declare the results
-    results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
+    results = ContingencyAnalysisResults(ncon=len(linear_multiple_contingencies.contingency_groups_used),
                                          nbr=numerical_circuit.nbr,
                                          nbus=numerical_circuit.nbus,
                                          branch_names=numerical_circuit.branch_names,
                                          bus_names=numerical_circuit.bus_names,
                                          bus_types=numerical_circuit.bus_types,
-                                         con_names=grid.get_contingency_group_names())
+                                         con_names=linear_multiple_contingencies.get_contingency_group_names())
 
     linear_analysis = LinearAnalysis(numerical_circuit=numerical_circuit,
                                      distributed_slack=options.lin_options.distribute_slack,
@@ -110,6 +110,7 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
                                  zonal_grouping=opf_options.zonal_grouping,
                                  skip_generation_limits=False,
                                  consider_contingencies=True,
+                                 contingency_groups_used=linear_multiple_contingencies.contingency_groups_used,
                                  unit_Commitment=False,
                                  ramp_constraints=False,
                                  all_generators_fixed=True,
@@ -146,7 +147,7 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
                                contingency_flows=c_flow,
                                contingency_loadings=c_loading,
                                contingency_idx=ic,
-                               contingency_group=grid.contingency_groups[ic],
+                               contingency_group=linear_multiple_contingencies.contingency_groups_used[ic],
                                using_srap=options.use_srap,
                                srap_ratings=numerical_circuit.branch_data.protection_rates,
                                srap_max_power=options.srap_max_power,
@@ -165,7 +166,7 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
         # report progress
         if t is None:
             if calling_class is not None:
-                calling_class.report_text(f'Contingency group: {grid.contingency_groups[ic].name}')
+                calling_class.report_text(f'Contingency group: {linear_multiple_contingencies.contingency_groups_used[ic].name}')
                 calling_class.report_progress2(ic, len(linear_multiple_contingencies.multi_contingencies))
 
     results.lodf = linear_analysis.LODF

@@ -35,14 +35,12 @@ class NodeTemplate:
     """
 
     def __init__(self,
-                 needsUpdateFirst: bool = True,
-                 needsUpdateSecond: bool = True,
+                 needsUpdate: bool = True,
                  lat: float = 0.0,
                  lon: float = 0.0):
         """
         """
-        self.needsUpdateFirst: bool = needsUpdateFirst
-        self.needsUpdateSecond: bool = needsUpdateSecond
+        self.needsUpdate: bool = needsUpdate
         self.lat = lat
         self.lon = lon
 

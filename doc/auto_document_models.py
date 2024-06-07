@@ -17,7 +17,7 @@ def get_cgmes_data_frames():
     info = dict()
     circuit = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
 
-    for class_name, class_type in circuit.class_dict.items():
+    for class_name, class_type in circuit.cgmes_assets.class_dict.items():
 
         cls = class_type("", class_name)
 

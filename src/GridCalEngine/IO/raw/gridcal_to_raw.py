@@ -1,14 +1,39 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+from typing import Dict
 from itertools import groupby
-
+from scipy.sparse import lil_matrix
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.raw.devices import RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator, \
-    RawSwitchedShunt, RawTransformer
+from GridCalEngine.IO.raw.devices import (RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator,
+                                          RawSwitchedShunt, RawTransformer, RawBranch, RawVscDCLine,
+                                          RawTwoTerminalDCLine, RawFACTS)
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
 def get_area(area: dev.Area, i: int) -> RawArea:
+    """
+
+    :param area:
+    :param i:
+    :return:
+    """
     result = RawArea()
     result.ARNAME = area.name
     result.I = i
@@ -16,13 +41,28 @@ def get_area(area: dev.Area, i: int) -> RawArea:
 
 
 def get_zone(zone: dev.Zone, i: int) -> RawZone:
+    """
+
+    :param zone:
+    :param i:
+    :return:
+    """
     result = RawZone()
     result.ZONAME = zone.name
     result.I = i
     return result
 
 
-def get_psse_bus(bus: dev.Bus, area_dict, zones_dict) -> RawBus:
+def get_psse_bus(bus: dev.Bus,
+                 area_dict: Dict[dev.Area, int],
+                 zones_dict: Dict[dev.Zone, int]) -> RawBus:
+    """
+
+    :param bus:
+    :param area_dict:
+    :param zones_dict:
+    :return:
+    """
     psse_bus = RawBus()
     psse_bus.NAME = bus.name
     psse_bus.BASKV = bus.Vnom
@@ -44,16 +84,18 @@ def get_psse_bus(bus: dev.Bus, area_dict, zones_dict) -> RawBus:
     return psse_bus
 
 
-def get_psse_load(load: dev.Load) -> RawLoad:
+def get_psse_load(load: dev.Load, bus_dict: Dict[dev.Bus, int], id_number: int) -> RawLoad:
+    """
+
+    :param load:
+    :param bus_dict:
+    :param id_number:
+    :return:
+    """
     psse_load = RawLoad()
 
-    # TODO: Can it be modified on the UI?
-    #  Does the "I" need to be generated as an automatically incrementing number?
-    #  Then how should the ID be generated?
-    i, id_ = load.name.split("_", 1)
-
-    psse_load.I = i
-    psse_load.ID = id_
+    psse_load.I = bus_dict[load.bus]
+    psse_load.ID = id_number
 
     psse_load.YP = load.G
     psse_load.YQ = load.B
@@ -66,16 +108,18 @@ def get_psse_load(load: dev.Load) -> RawLoad:
     return psse_load
 
 
-def get_psse_fixed_shunt(shunt: dev.Shunt) -> RawFixedShunt:
+def get_psse_fixed_shunt(shunt: dev.Shunt, bus_dict: Dict[dev.Bus, int], id_number: int) -> RawFixedShunt:
+    """
+
+    :param shunt:
+    :param bus_dict:
+    :param id_number:
+    :return:
+    """
     psse_shunt = RawFixedShunt()
 
-    i, id_ = shunt.name.split("_", 1)
-
-    # TODO: Can it be modified on the UI?
-    #  Does the "I" need to be generated as an automatically incrementing number?
-    #  Then how should the ID be generated?
-    psse_shunt.I = i
-    psse_shunt.ID = id_
+    psse_shunt.I = bus_dict[shunt.bus]
+    psse_shunt.ID = id_number
 
     psse_shunt.GL = shunt.G
     psse_shunt.BL = shunt.B
@@ -85,10 +129,16 @@ def get_psse_fixed_shunt(shunt: dev.Shunt) -> RawFixedShunt:
     return psse_shunt
 
 
-def get_psse_switched_shunt(shunt: dev.ControllableShunt) -> RawSwitchedShunt:
+def get_psse_switched_shunt(shunt: dev.ControllableShunt, bus_dict: Dict[dev.Bus, int]) -> RawSwitchedShunt:
+    """
+
+    :param shunt:
+    :param bus_dict:
+    :return:
+    """
     psse_switched_shunt = RawSwitchedShunt()
-    # TODO: Does the "I" need to be generated as an automatically incrementing number?
-    psse_switched_shunt.I = int(shunt.name.replace("Switched shunt ", ""))
+
+    psse_switched_shunt.I = bus_dict[shunt.bus]
     psse_switched_shunt.STATUS = 1 if shunt.active else 0
 
     if len(shunt.g_steps) > 0:
@@ -103,16 +153,18 @@ def get_psse_switched_shunt(shunt: dev.ControllableShunt) -> RawSwitchedShunt:
     return psse_switched_shunt
 
 
-def get_psse_generator(generator: dev.Generator) -> RawGenerator:
+def get_psse_generator(generator: dev.Generator, bus_dict: Dict[dev.Bus, int], id_number: int) -> RawGenerator:
+    """
+
+    :param generator:
+    :param bus_dict:
+    :param id_number:
+    :return:
+    """
     psse_generator = RawGenerator()
 
-    i, id_ = generator.name.split("_", 1)
-
-    # TODO: Can it be modified on the UI?
-    #  Does the "I" need to be generated as an automatically incrementing number?
-    #  Then how should the ID be generated?
-    psse_generator.I = i
-    psse_generator.ID = id_
+    psse_generator.I = bus_dict[generator.bus]
+    psse_generator.ID = id_number
 
     psse_generator.PG = generator.P
     psse_generator.VS = generator.Vset
@@ -126,7 +178,14 @@ def get_psse_generator(generator: dev.Generator) -> RawGenerator:
     return psse_generator
 
 
-def get_psse_transformer2w(transformer: dev.Transformer2W) -> RawTransformer:
+def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bus, int], ckt: int) -> RawTransformer:
+    """
+
+    :param transformer:
+    :param bus_dict:
+    :param ckt:
+    :return:
+    """
     psse_transformer = RawTransformer()
     psse_transformer.windings = 2
 
@@ -136,16 +195,22 @@ def get_psse_transformer2w(transformer: dev.Transformer2W) -> RawTransformer:
     psse_transformer.SBASE1_2 = transformer.Sn
     psse_transformer.RATE1_1 = transformer.rate
 
-    i, j, ckt = transformer.code.split("_")
+    # i, j, ckt = transformer.code.split("_", 2)
 
-    psse_transformer.I = i
-    psse_transformer.J = j
+    psse_transformer.I = bus_dict[transformer.bus_from]
+    psse_transformer.J = bus_dict[transformer.bus_to]
     psse_transformer.CKT = ckt
 
     return psse_transformer
 
 
-def get_psse_transformer3w(transformer: dev.Transformer3W) -> RawTransformer:
+def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bus, int]) -> RawTransformer:
+    """
+
+    :param transformer:
+    :param bus_dict:
+    :return:
+    """
     psse_transformer = RawTransformer()
     psse_transformer.windings = 3
 
@@ -161,37 +226,218 @@ def get_psse_transformer3w(transformer: dev.Transformer3W) -> RawTransformer:
     psse_transformer.ANG2 = transformer.winding2.tap_phase
     psse_transformer.ANG3 = transformer.winding3.tap_phase
 
-    i, j, k, ckt = psse_transformer.code.split("_")
+    i, j, k, ckt = psse_transformer.code.split("_", 3)
 
-    psse_transformer.I = i
-    psse_transformer.J = j
-    psse_transformer.K = k
+    psse_transformer.I = bus_dict[transformer.bus1]
+    psse_transformer.J = bus_dict[transformer.bus2]
+    psse_transformer.K = bus_dict[transformer.bus3]
     psse_transformer.CKT = ckt
 
     return psse_transformer
 
 
+def get_psse_branch(branch: dev.Line, bus_dict: Dict[dev.Bus, int], ckt: int) -> RawBranch:
+    """
+
+    :param branch:
+    :param bus_dict:
+    :param ckt:
+    :return:
+    """
+    psse_branch = RawBranch()
+
+    # i, j, ckt = line.code.split("_", 2)
+
+    psse_branch.I = bus_dict[branch.bus_from]
+    psse_branch.J = bus_dict[branch.bus_to]
+
+    psse_branch.CKT = ckt
+
+    psse_branch.NAME = branch.name
+    psse_branch.R = branch.R
+    psse_branch.X = branch.X
+    psse_branch.B = branch.B
+    psse_branch.ST = 1 if branch.active else 0
+    psse_branch.idtag = branch.idtag
+    psse_branch.LEN = branch.length
+
+    return psse_branch
+
+
+def get_vsc_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> RawVscDCLine:
+    """
+
+    :param hvdc_line:
+    :param bus_dict:
+    :return:
+    """
+    psse_vsc_dc_line = RawVscDCLine()
+    psse_vsc_dc_line.NAME = hvdc_line.name
+    psse_vsc_dc_line.ACSET1 = hvdc_line.Vset_f
+    psse_vsc_dc_line.ACSET2 = hvdc_line.Vset_t
+
+    return psse_vsc_dc_line
+
+
+def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> RawTwoTerminalDCLine:
+    """
+
+    :param hvdc_line:
+    :param bus_dict:
+    :return:
+    """
+    psse_two_terminal_dc_line = RawTwoTerminalDCLine()
+    psse_two_terminal_dc_line.NAME = hvdc_line.name
+
+    id_tag = hvdc_line.idtag[:-2] if hvdc_line.idtag.endswith("_1") else hvdc_line.idtag
+    ipr, ipi = id_tag.split("_", 2)
+
+    psse_two_terminal_dc_line.IPR = int(ipr)
+    psse_two_terminal_dc_line.IPI = int(ipi)
+
+    psse_two_terminal_dc_line.RDC = hvdc_line.r
+    psse_two_terminal_dc_line.ANMNR = np.rad2deg(hvdc_line.min_firing_angle_f)
+    psse_two_terminal_dc_line.ANMXR = np.rad2deg(hvdc_line.max_firing_angle_f)
+    psse_two_terminal_dc_line.ANMNI = np.rad2deg(hvdc_line.min_firing_angle_t)
+    psse_two_terminal_dc_line.ANMXI = np.rad2deg(hvdc_line.max_firing_angle_t)
+
+    return psse_two_terminal_dc_line
+
+
+def get_psse_facts(upfc: dev.UPFC, bus_dict: Dict[dev.Bus, int]) -> RawFACTS:
+    """
+
+    :param upfc:
+    :param bus_dict:
+    :return:
+    """
+    psse_facts = RawFACTS()
+    psse_facts.NAME = upfc.name
+
+    id_tag = upfc.idtag[:-2] if upfc.idtag.endswith("_1") else upfc.idtag
+    # i, j = id_tag.split("_", 2)
+
+    psse_facts.I = bus_dict[upfc.bus_from]
+    psse_facts.J = bus_dict[upfc.bus_to]
+    psse_facts.SET1 = upfc.Rs
+    psse_facts.SHMX = 1 / upfc.Xsh if upfc.Xsh > 0 else 0.0
+    psse_facts.VSET = upfc.Vsh
+    psse_facts.PDES = upfc.Pfset
+    psse_facts.QDES = upfc.Qfset
+    psse_facts.IMX = upfc.rate - 1e-20
+
+    return psse_facts
+
+
+class RawCounter:
+    """
+    Items to count stuff for the raw files
+    """
+
+    def __init__(self, grid: MultiCircuit):
+        """
+        Constructor
+        :param grid: MultiCircuit
+        """
+        n = grid.get_bus_number()
+        self.bus_int_dict = {bus: i + 1 for i, bus in enumerate(grid.get_buses())}
+        self.bus_dev_count_dict = {bus: 0 for bus in grid.get_buses()}
+        self.ckt_counter = lil_matrix((n + 1, n + 1), dtype=int)
+
+    def get_id(self, bus: dev.Bus) -> int:
+        """
+        Query the dictionary for the internal number and increase that number for the next time
+        :param bus: Bus
+        :return: integer
+        """
+        id_number = self.bus_dev_count_dict[bus] + 1
+        self.bus_dev_count_dict[bus] = id_number
+        return id_number
+
+    def get_ckt(self, branch: BRANCH_TYPES) -> int:
+        """
+        Count the circuit number in the PSSe sense
+        :param branch: some branch
+        :return: CKT
+        """
+        i = self.bus_int_dict[branch.bus_from]
+        j = self.bus_int_dict[branch.bus_to]
+        ckt = self.ckt_counter[i, j]
+        ckt2 = ckt + 1
+        self.ckt_counter[i, j] = ckt2
+        self.ckt_counter[j, i] = ckt2
+        return ckt2
+
+
 def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
+    """
+    Convert MultiCircuit to PSSeCircuit
+    :param grid: MultiCircuit
+    :return: PsseCircuit
+    """
     psse_circuit = PsseCircuit()
 
-    area_dict = {area: get_area(area, index + 1) for index, area in enumerate(grid.areas)}
-    zones_dict = {zone: get_zone(zone, index + 1) for index, zone in enumerate(grid.zones)}
+    # create dictionaires
+    area_dict: Dict[dev.Area, int] = dict()
+    zones_dict: Dict[dev.Zone, int] = dict()
 
-    psse_circuit.areas = list(area_dict.values())
-    psse_circuit.zones = list(zones_dict.values())
+    counter = RawCounter(grid=grid)
 
-    psse_circuit.buses = [get_psse_bus(bus, area_dict, zones_dict) for bus in grid.buses]
+    for i, area in enumerate(grid.areas):
+        psse_circuit.areas.append(get_area(area=area, i=i + 1))
+        area_dict[area] = i + 1
 
-    psse_circuit.loads = [get_psse_load(load) for load in grid.loads]
+    for i, zone in enumerate(grid.zones):
+        psse_circuit.zones.append(get_zone(zone=zone, i=i + 1))
+        zones_dict[zone] = i + 1
 
-    psse_circuit.fixed_shunts = [get_psse_fixed_shunt(shunt) for shunt in grid.shunts]
+    for bus in grid.buses:
+        psse_circuit.buses.append(get_psse_bus(bus, area_dict, zones_dict))
 
-    psse_circuit.switched_shunts = [get_psse_switched_shunt(controllable_shunt) for controllable_shunt in
-                                    grid.controllable_shunts]
+    for load in grid.loads:
+        psse_circuit.loads.append(get_psse_load(load=load,
+                                                bus_dict=counter.bus_int_dict,
+                                                id_number=counter.get_id(load.bus)))
 
-    psse_circuit.generators = [get_psse_generator(generator) for generator in grid.generators]
+    for generator in grid.generators:
+        psse_circuit.generators.append(get_psse_generator(generator=generator,
+                                                          bus_dict=counter.bus_int_dict,
+                                                          id_number=counter.get_id(generator.bus)))
 
-    psse_circuit.transformers = [get_psse_transformer2w(transformer) for transformer in grid.transformers2w]
-    psse_circuit.transformers.extend(get_psse_transformer3w(transformer) for transformer in grid.transformers3w)
+    for shunt in grid.shunts:
+        psse_circuit.fixed_shunts.append(get_psse_fixed_shunt(shunt=shunt,
+                                                              bus_dict=counter.bus_int_dict,
+                                                              id_number=counter.get_id(shunt.bus)))
+
+    for controllable_shunt in grid.controllable_shunts:
+        psse_circuit.switched_shunts.append(get_psse_switched_shunt(shunt=controllable_shunt,
+                                                                    bus_dict=counter.bus_int_dict))
+
+    for line in grid.lines:
+        psse_circuit.branches.append(get_psse_branch(branch=line,
+                                                     bus_dict=counter.bus_int_dict,
+                                                     ckt=counter.get_ckt(branch=line)))
+
+    for transformer in grid.transformers2w:
+        psse_circuit.transformers.append(get_psse_transformer2w(transformer=transformer,
+                                                                bus_dict=counter.bus_int_dict,
+                                                                ckt=counter.get_ckt(branch=transformer)))
+
+    for transformer in grid.transformers3w:
+        psse_circuit.transformers.append(get_psse_transformer3w(transformer=transformer,
+                                                                bus_dict=counter.bus_int_dict))
+
+    # TODO: Decide whether to convert hvdc_lines into vsc_dc_lines or two_terminal_dc_lines.
+    for hvdc_line in grid.hvdc_lines:
+        psse_circuit.vsc_dc_lines.append(get_vsc_dc_line(hvdc_line,
+                                                         bus_dict=counter.bus_int_dict))
+
+    for hvdc_line in grid.hvdc_lines:
+        psse_circuit.two_terminal_dc_lines.append(get_psse_two_terminal_dc_line(hvdc_line,
+                                                                                bus_dict=counter.bus_int_dict))
+
+    for upfc_device in grid.upfc_devices:
+        psse_circuit.facts.append(get_psse_facts(upfc_device,
+                                                 bus_dict=counter.bus_int_dict))
 
     return psse_circuit

@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
-from PySide6.QtWidgets import QApplication, QMenu
+from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.GuiFunctions import add_menu_entry
@@ -87,7 +87,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
-
+        self.setZValue(1)
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
     def register_voltage_level(self, vl: VoltageLevelGraphicItem):
@@ -107,25 +107,28 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         for i, vl_graphics in enumerate(sorted_objects):
             vl_graphics.setZValue(i)
 
-    def updatePosition(self):
+    def updatePosition(self) -> None:
         """
-
+        
+        :return: 
         """
         real_position = self.pos()
         center_point = self.getPos()
         self.x = center_point.x() + real_position.x()
         self.y = center_point.y() + real_position.y()
         self.needsUpdate = True
-        self.updateDiagram()
 
     def updateDiagram(self):
         """
-
+        
+        :return: 
         """
         real_position = self.pos()
         center_point = self.getPos()
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
                                            y=center_point.y() + real_position.y())
+
+        print(f'Updating SE position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
@@ -147,25 +150,55 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
-        if event.button() == Qt.RightButton:
-            menu = QMenu()
+        self.updateDiagram()  # always update
 
-            add_menu_entry(menu=menu,
-                           text="New",
-                           icon_path="",
-                           function_ptr=self.NewFunction)
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
+        """
+        Event handler for mouse release events.
+        """
+        super().mouseReleaseEvent(event)
+        self.editor.disableMove = True
+        self.updateDiagram()  # always update
 
-            add_menu_entry(menu=menu,
-                           text="Copy",
-                           icon_path="",
-                           function_ptr=self.CopyFunction)
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        """
+        Event handler for when the mouse enters the item.
+        """
+        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
+        self.hovered = True
+        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
-            add_menu_entry(menu=menu,
-                           text="Remove",
-                           icon_path="",
-                           function_ptr=self.RemoveFunction)
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        """
+        Event handler for when the mouse leaves the item.
+        """
+        self.hovered = False
+        self.setDefaultColor()
+        QApplication.instance().restoreOverrideCursor()
 
-            menu.exec_(event.screenPos())
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
+        """
+
+        :param event:
+        """
+        menu = QMenu()
+
+        add_menu_entry(menu=menu,
+                       text="New",
+                       icon_path="",
+                       function_ptr=self.NewFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Copy",
+                       icon_path="",
+                       function_ptr=self.CopyFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Remove",
+                       icon_path="",
+                       function_ptr=self.RemoveFunction)
+
+        menu.exec_(event.screenPos())
 
     def NewFunction(self):
         """
@@ -185,31 +218,11 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Function to be called when Action 1 is selected.
         """
+
+        self.editor.removeSubstation(self)
+
         # Implement the functionality for Action 1 here
         pass
-
-    def mouseReleaseEvent(self, event):
-        """
-        Event handler for mouse release events.
-        """
-        super().mouseReleaseEvent(event)
-        self.editor.disableMove = True
-
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        """
-        Event handler for when the mouse enters the item.
-        """
-        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
-        self.hovered = True
-        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
-
-    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        """
-        Event handler for when the mouse leaves the item.
-        """
-        self.hovered = False
-        self.setDefaultColor()
-        QApplication.instance().restoreOverrideCursor()
 
     def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
@@ -227,7 +240,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             pen.setColor(border_color)
             self.setPen(pen)
 
-    def setDefaultColor(self):
+    def setDefaultColor(self) -> None:
         """
 
         :return:

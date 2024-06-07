@@ -19,7 +19,7 @@ main_circuit = FileOpen(fname).open()
 options_ = ContingencyAnalysisOptions(
     use_provided_flows=False,
     Pf=None,
-    engine=en.ContingencyMethod.PowerFlow,
+    contingency_method=en.ContingencyMethod.PowerFlow,
     pf_options=PowerFlowOptions(),
 )
 

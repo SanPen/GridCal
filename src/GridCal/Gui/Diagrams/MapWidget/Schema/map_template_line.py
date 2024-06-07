@@ -18,9 +18,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Union
 
 import logging
-
+from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPen, QBrush
+from PySide6.QtGui import QColor, QPen
 from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
 from GridCalEngine.Devices import LineLocation
 from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
@@ -123,6 +123,15 @@ class MapTemplateLine:
         for conector in self.segments_list:
             conector.update_endings()
 
+    def end_update(self) -> None:
+        """
+
+        :return:
+        """
+
+        for conector in self.segments_list:
+            conector.end_update()
+
     def draw_all(self) -> None:
         """
 
@@ -167,6 +176,20 @@ class MapTemplateLine:
         # second pass: create the segments
         self.redraw_segments()
 
+    def removeNode(self, node: NodeGraphicItem):
+
+        for seg in self.segments_list:
+            if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
+                self.editor.diagram_scene.removeItem(seg)
+
+        self.nodes_list.remove(node)
+
+        for nod in self.nodes_list:
+            if nod.index > node.index:
+                nod.index = nod.index - 1
+
+        self.redraw_segments()
+
     def redraw_segments(self) -> None:
         """
         Draw all segments in the line
@@ -198,8 +221,7 @@ class MapTemplateLine:
             # Assuming Connector takes (scene, node1, node2) as arguments
             segment_graphic_object = Segment(first=elm1, second=elm2)
 
-            elm1.needsUpdateFirst = True
-            elm2.needsUpdateSecond = True
+            elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
 
             # register the segment in the line
@@ -367,3 +389,18 @@ class MapTemplateLine:
             node.enabled = False
         for line in self.segments_list:
             line.set_line_color(Qt.gray)
+
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        menu = QMenu()
+
+        # add_menu_entry(menu=menu,
+        #                text="Remove",
+        #                icon_path="",
+        #                function_ptr=self.RemoveFunction)
+
+        menu.exec_(event.screenPos())

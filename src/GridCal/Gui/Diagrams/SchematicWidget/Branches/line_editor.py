@@ -223,7 +223,7 @@ class LineEditor(QDialog):
 
             self.line.R = np.round(R / Zbase, 6)
             self.line.X = np.round(X / Zbase, 6)
-            self.line.B = np.round(B / Ybase, 6)
+            self.line.B = np.round(B * 1e-6 / Ybase, 6)
             old_rate = float(self.line.rate)
             new_rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
             self.line.rate = new_rate

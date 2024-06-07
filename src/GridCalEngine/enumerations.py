@@ -1720,3 +1720,31 @@ class JobStatus(Enum):
             return JobStatus[s]
         except KeyError:
             return s
+
+
+class ContingencyFilteringMethods(Enum):
+    """
+    Contingency filtering methods
+    """
+    All = "All contingencies"
+    Country = "Country"
+    Zone = "Zone"
+    Area = "Area"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ContingencyFilteringMethods[s]
+        except KeyError:
+            return s
