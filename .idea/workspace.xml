@@ -29,8 +29,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Capture antenna in contingencies">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added tests">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/TileProviders/blue_marble.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/TileProviders/blue_marble.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +59,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="battery_sitting" />
+        <entry key="$PROJECT_DIR$" value="devel_con_filter" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -72,6 +73,14 @@
       <filtered-out-file-type name="TAG" />
       <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
     </file-type-list>
+  </component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="recentNewPullRequestHead">
+      <RepoCoordinatesHolder>
+        <option name="owner" value="SanPen" />
+        <option name="repository" value="GridCal" />
+      </RepoCoordinatesHolder>
+    </option>
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/requirements.txt" root0="FORCE_HIGHLIGHTING" />
@@ -169,11 +178,11 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\ReposGit\github\fernpos\GridCal5\src\tests\data\grids" />
       <recent name="C:\Users\eroot\PycharmProjects\GridCal\Grids_and_profiles\grids" />
       <recent name="$PROJECT_DIR$/src/GridCal" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine" />
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
     </key>
   </component>
   <component name="RunManager" selected="Python.ExecuteGridCal">
@@ -623,9 +632,9 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.testlpl" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.Nosetests in test_ptdf.py" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
@@ -1318,20 +1327,6 @@
       <workItem from="1715344744479" duration="2798000" />
       <workItem from="1715677789415" duration="3835000" />
     </task>
-    <task id="LOCAL-00312" summary="implemented sparse profiles in the json v3 export">
-      <created>1656757347766</created>
-      <option name="number" value="00312" />
-      <option name="presentableId" value="LOCAL-00312" />
-      <option name="project" value="LOCAL" />
-      <updated>1656757347774</updated>
-    </task>
-    <task id="LOCAL-00313" summary="moved the Gui package out as GridCalGui and refactored all that was necessary">
-      <created>1656759710081</created>
-      <option name="number" value="00313" />
-      <option name="presentableId" value="LOCAL-00313" />
-      <option name="project" value="LOCAL" />
-      <updated>1656759710081</updated>
-    </task>
     <task id="LOCAL-00314" summary="Some more refactoring of missing imports">
       <created>1656760923750</created>
       <option name="number" value="00314" />
@@ -1661,7 +1656,21 @@
       <option name="project" value="LOCAL" />
       <updated>1717162335039</updated>
     </task>
-    <option name="localTasksCounter" value="528" />
+    <task id="LOCAL-00528" summary="My GUI">
+      <created>1717162910205</created>
+      <option name="number" value="00528" />
+      <option name="presentableId" value="LOCAL-00528" />
+      <option name="project" value="LOCAL" />
+      <updated>1717162910205</updated>
+    </task>
+    <task id="LOCAL-00529" summary="Added tests">
+      <created>1717581577357</created>
+      <option name="number" value="00529" />
+      <option name="presentableId" value="LOCAL-00529" />
+      <option name="project" value="LOCAL" />
+      <updated>1717581577357</updated>
+    </task>
+    <option name="localTasksCounter" value="530" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1705,10 +1714,23 @@
         </entry>
       </map>
     </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="User">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="*" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="More types in the power flow worker" />
-    <MESSAGE value="Improved types" />
     <MESSAGE value="Refactored the test_ptdf to avoid import *" />
     <MESSAGE value="Fixed the contingencies memory usage" />
     <MESSAGE value="Added the probability index to the contingency run" />
@@ -1732,7 +1754,9 @@
     <MESSAGE value="Fixed the calling to the nodal capacity" />
     <MESSAGE value="Added extra lines to catalog" />
     <MESSAGE value="Capture antenna in contingencies" />
-    <option name="LAST_COMMIT_MESSAGE" value="Capture antenna in contingencies" />
+    <MESSAGE value="My GUI" />
+    <MESSAGE value="Added tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added tests" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2191,7 +2215,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py</url>
-          <line>780</line>
+          <line>815</line>
           <option name="timeStamp" value="1627" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2226,7 +2250,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py</url>
-          <line>6127</line>
+          <line>6142</line>
           <option name="timeStamp" value="1638" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2241,7 +2265,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/NodalCapacity/nodal_capacity_ts_driver.py</url>
-          <line>314</line>
+          <line>315</line>
           <option name="timeStamp" value="1653" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2251,17 +2275,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>607</line>
+          <line>542</line>
           <option name="timeStamp" value="1656" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>602</line>
+          <line>537</line>
           <option name="timeStamp" value="1657" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/LinearFactors/linear_analysis.py</url>
-          <line>610</line>
+          <line>545</line>
           <option name="timeStamp" value="1658" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2288,6 +2312,21 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py</url>
           <line>253</line>
           <option name="timeStamp" value="1663" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Tiles/tiles.py</url>
+          <line>87</line>
+          <option name="timeStamp" value="1684" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Tiles/tiles.py</url>
+          <line>144</line>
+          <option name="timeStamp" value="1686" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Tiles/tiles.py</url>
+          <line>140</line>
+          <option name="timeStamp" value="1687" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
