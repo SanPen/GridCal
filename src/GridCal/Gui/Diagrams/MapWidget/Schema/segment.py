@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPen, QColor
+from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtWidgets import QGraphicsLineItem
 from GridCalEngine.Devices.types import BRANCH_TYPES
@@ -57,6 +57,9 @@ class Segment(QGraphicsLineItem):
         self.update_endings()
         self.needsUpdate = True
         self.setZValue(0)
+
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
 
     @property
     def api_object(self) -> BRANCH_TYPES:

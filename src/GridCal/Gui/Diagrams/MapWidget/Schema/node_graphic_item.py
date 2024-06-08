@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEven
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QBrush, QColor
+from PySide6.QtGui import QBrush, QColor, QCursor
 
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
@@ -78,6 +78,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
+
+        self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.hovered = False
         self.enabled = True
