@@ -24,6 +24,7 @@ from collections.abc import Callable
 from warnings import warn
 import networkx as nx
 import pyproj
+from matplotlib import pyplot as plt
 
 from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
                             QDataStream, QModelIndex)
@@ -53,7 +54,7 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
-from GridCalEngine.Simulations.driver_template import DriverTemplate
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.enumerations import DeviceType, SimulationTypes
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Devices.types import BRANCH_TYPES
@@ -83,7 +84,7 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
-from matplotlib import pyplot as plt
+
 
 BRANCH_GRAPHICS = Union[
     LineGraphicItem,
@@ -523,7 +524,7 @@ class SchematicWidget(QSplitter):
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = SchematicScene(parent=self)  # scene to add to the QGraphicsView
 
-        self.results_dictionary = dict()
+        self.results_dictionary: Dict[SimulationTypes, DRIVER_OBJECTS] = dict()
 
         self.editor_graphics_view = CustomGraphicsView(self.diagram_scene, parent=self)
 
@@ -2274,7 +2275,7 @@ class SchematicWidget(QSplitter):
                        bus: BusBar,
                        injections_by_tpe: Dict[DeviceType, List[ALL_DEV_TYPES]],
                        x0: Union[int, None] = None,
-                       y0: Union[int, None] = None) -> BusGraphicItem:
+                       y0: Union[int, None] = None) -> BusBarGraphicItem:
         """
         Add API bus to the diagram
         :param bus: Bus instance
@@ -3928,7 +3929,7 @@ class SchematicWidget(QSplitter):
 
         return min_x, max_x, min_y, max_y
 
-    def set_results_to_plot(self, all_threads: List[DriverTemplate]):
+    def set_results_to_plot(self, all_threads: List[DRIVER_OBJECTS]):
         """
 
         :param all_threads:

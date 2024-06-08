@@ -15,9 +15,11 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict
 import cv2
 import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
 from PySide6.QtWidgets import QWidget, QGraphicsItem
 from PySide6.QtCore import Qt, QSize, QRect
 from PySide6.QtGui import QColor
@@ -37,8 +39,9 @@ from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.enumerations import DeviceType, SimulationTypes
 
 from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
 from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
@@ -49,6 +52,8 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager, ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
+from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 
 
 class GridMapWidget(MapWidget):
@@ -60,6 +65,7 @@ class GridMapWidget(MapWidget):
                  longitude: float,
                  latitude: float,
                  name: str,
+                 circuit: MultiCircuit,
                  diagram: Union[None, MapDiagram] = None,
                  call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None):
         """
@@ -86,12 +92,17 @@ class GridMapWidget(MapWidget):
         # object to handle the relation between the graphic widgets and the database objects
         self.graphics_manager = GraphicsManager()
 
+        # pointer to the circuit
+        self.circuit: MultiCircuit = circuit
+
         # diagram to store the DB objects locations
         self.diagram: MapDiagram = MapDiagram(name=name,
                                               tile_source=tile_src.TilesetName,
                                               start_level=start_level,
                                               longitude=longitude,
                                               latitude=latitude) if diagram is None else diagram
+
+        self.results_dictionary: Dict[SimulationTypes, DRIVER_OBJECTS] = dict()
 
         # This function is meant to be a master delete function that is passed to each diagram
         # so that when a diagram deletes an element, the element is deleted in all other diagrams
@@ -320,7 +331,10 @@ class GridMapWidget(MapWidget):
         return graphic_object
 
     def merge_lines(self):
+        """
 
+        :return:
+        """
         if len(self.selectedItems) < 2:
             return 0
 
@@ -371,8 +385,9 @@ class GridMapWidget(MapWidget):
 
     def removeSubstation(self, substation: SubstationGraphicItem):
         """
-        Removes node from diagram and scene
-        :param node: Node to remove
+
+        :param substation:
+        :return:
         """
         sub = self.graphics_manager.delete_device(substation.api_object)
         self.diagram_scene.removeItem(sub)
@@ -553,6 +568,202 @@ class GridMapWidget(MapWidget):
         for idtag, graphic_object in dev_dict.items():
             graphic_object.resize(new_radius)
             graphic_object.change_pen_width(pen_width)
+
+    def set_results_to_plot(self, all_threads: List[DRIVER_OBJECTS]):
+        """
+
+        :param all_threads:
+        :return:
+        """
+        self.results_dictionary = {thr.tpe: thr for thr in all_threads if thr is not None}
+
+    def plot_branch(self, i: int, api_object: BRANCH_TYPES):
+        """
+        Plot branch results
+        :param i: branch index (not counting HVDC lines because those are not real Branches)
+        :param api_object: API object
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        ax_2 = fig.add_subplot(212)
+
+        # set time
+        x = self.circuit.get_time_array()
+        x_cl = x
+
+        if x is not None:
+            if len(x) > 0:
+
+                p = np.arange(len(x)).astype(float) / len(x)
+
+                # search available results
+                power_data = dict()
+                loading_data = dict()
+                loading_st_data = None
+                loading_clustering_data = None
+                power_clustering_data = None
+
+                for key, driver in self.results_dictionary.items():
+                    if hasattr(driver, 'results'):
+                        if driver.results is not None:
+                            if key == SimulationTypes.PowerFlowTimeSeries_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                            elif key == SimulationTypes.LinearAnalysis_TS_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                            # elif key == SimulationTypes.NetTransferCapacityTS_run:
+                            #     power_data[key.value] = driver.results.atc[:, i]
+                            #     atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
+                            #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
+
+                            elif key == SimulationTypes.ContingencyAnalysisTS_run:
+                                power_data[key.value] = driver.results.max_flows.real[:, i]
+                                loading_data[key.value] = np.sort(
+                                    np.abs(driver.results.max_loading.real[:, i] * 100.0))
+
+                            elif key == SimulationTypes.OPFTimeSeries_run:
+                                power_data[key.value] = driver.results.Sf.real[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+
+                            elif key == SimulationTypes.StochasticPowerFlow:
+                                loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
+
+                # add the rating
+                # power_data['Rates+'] = api_object.rate_prof
+                # power_data['Rates-'] = -api_object.rate_prof
+
+                # loading
+                if len(loading_data.keys()):
+                    df = pd.DataFrame(data=loading_data, index=p)
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                if loading_st_data is not None:
+                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
+                    df = pd.DataFrame(data=loading_st_data,
+                                      index=p_st,
+                                      columns=[SimulationTypes.StochasticPowerFlow.value])
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                # power
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
+
+    def plot_hvdc_branch(self, i: int, api_object: HvdcLine):
+        """
+        HVDC branch
+        :param i: index of the object
+        :param api_object: HvdcGraphicItem
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        # ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2 = fig.add_subplot(212)
+
+        # set time
+        x = self.circuit.time_profile
+        x_cl = x
+
+        if x is not None:
+            if len(x) > 0:
+
+                p = np.arange(len(x)).astype(float) / len(x)
+
+                # search available results
+                power_data = dict()
+                loading_data = dict()
+
+                for key, driver in self.results_dictionary.items():
+                    if hasattr(driver, 'results'):
+                        if driver.results is not None:
+                            if key == SimulationTypes.PowerFlowTimeSeries_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.LinearAnalysis_TS_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                            elif key == SimulationTypes.OPFTimeSeries_run:
+                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
+                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+
+                # add the rating
+                # power_data['Rates+'] = api_object.rate_prof
+                # power_data['Rates-'] = -api_object.rate_prof
+
+                # loading
+                if len(loading_data.keys()):
+                    df = pd.DataFrame(data=loading_data, index=p)
+                    ax_1.set_title('Probability x < value', fontsize=14)
+                    ax_1.set_ylabel('Loading [%]', fontsize=11)
+                    df.plot(ax=ax_1)
+
+                # power
+                if len(power_data.keys()):
+                    df = pd.DataFrame(data=power_data, index=x)
+                    ax_2.set_title('Power', fontsize=14)
+                    ax_2.set_ylabel('Power [MW]', fontsize=11)
+                    df.plot(ax=ax_2)
+                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
+
+    def set_rate_to_profile(self, api_object: ALL_DEV_TYPES):
+        """
+
+        :param api_object:
+        """
+        if api_object is not None:
+            if api_object.rate_prof.size():
+                quit_msg = (f"{api_object.name}\nAre you sure that you want to overwrite the "
+                            f"rates profile with the snapshot value?")
+                if yes_no_question(text=quit_msg, title='Set the ratings profile'):
+                    api_object.rate_prof.fill(api_object.rate)
+
+    def set_active_status_to_profile(self, api_object: ALL_DEV_TYPES, override_question=False):
+        """
+
+        :param api_object:
+        :param override_question:
+        :return:
+        """
+        if api_object is not None:
+            if api_object.active_prof.size():
+                if not override_question:
+                    quit_msg = (f"{api_object.name}\nAre you sure that you want to overwrite the "
+                                f"active profile with the snapshot value?")
+                    ok = yes_no_question(text=quit_msg, title='Overwrite the active profile')
+                else:
+                    ok = True
+
+                if ok:
+                    if api_object.active:
+                        api_object.active_prof.fill(True)
+                    else:
+                        api_object.active_prof.fill(False)
 
     def colour_results(self,
                        buses: List[Bus],

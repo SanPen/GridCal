@@ -1,5 +1,5 @@
 
-Pypy
+Pypi
 Indirectamente a través de python -m pip
 
 Blue marble maps tile provider:

@@ -1035,6 +1035,7 @@ class DiagramsMain(CompiledArraysMain):
                                            longitude=diagram.longitude,
                                            latitude=diagram.latitude,
                                            name=diagram.name,
+                                           circuit=self.circuit,
                                            diagram=diagram)
 
                 # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
@@ -1077,6 +1078,7 @@ class DiagramsMain(CompiledArraysMain):
                                    longitude=diagram.longitude,
                                    latitude=diagram.latitude,
                                    name=diagram.name,
+                                   circuit=self.circuit,
                                    diagram=diagram,
                                    call_delete_db_element_func=self.call_delete_db_element)
 
