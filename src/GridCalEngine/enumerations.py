@@ -921,7 +921,7 @@ class DeviceType(Enum):
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
     BranchGroupDevice = 'Branch group'
-    LambdaDevice = "Loading from the base situation ($\lambda$)"
+    LambdaDevice = r"Loading from the base situation ($\lambda$)"
 
     PiMeasurementDevice = 'Pi Measurement'
     QiMeasurementDevice = 'Qi Measurement'
