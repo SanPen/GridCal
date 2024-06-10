@@ -60,14 +60,13 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :param r:
         :param draw_labels:
         """
-
+        QtWidgets.QGraphicsRectItem.__init__(self)
         NodeTemplate.__init__(self,
                               api_object=api_object,
                               editor=editor,
                               draw_labels=draw_labels,
                               lat=lat,
                               lon=lon)
-        QtWidgets.QGraphicsRectItem.__init__(self)
 
         self.lat = lat
         self.lon = lon

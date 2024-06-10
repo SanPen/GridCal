@@ -55,13 +55,13 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :param lon:
         :param r:
         """
+        QtWidgets.QGraphicsRectItem.__init__(self)
         NodeTemplate.__init__(self,
                               api_object=api_object,
                               editor=editor,
                               draw_labels=draw_labels,
                               lat=lat,
                               lon=lon)
-        QtWidgets.QGraphicsRectItem.__init__(self)
 
         self.editor: GridMapWidget = editor  # re assign for the types to be clear
 

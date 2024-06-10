@@ -79,6 +79,13 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param diagram:
         :param call_delete_db_element_func:
         """
+        MapWidget.__init__(self,
+                           parent=None,
+                           tile_src=tile_src,
+                           start_level=start_level,
+                           zoom_callback=self.zoom_callback,
+                           position_callback=self.position_callback)
+
         BaseDiagramWidget.__init__(self,
                                    circuit=circuit,
                                    diagram=MapDiagram(name=name,
@@ -88,13 +95,6 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                                                       latitude=latitude) if diagram is None else diagram,
                                    time_index=0,
                                    call_delete_db_element_func=call_delete_db_element_func)
-
-        MapWidget.__init__(self,
-                           parent=None,
-                           tile_src=tile_src,
-                           start_level=start_level,
-                           zoom_callback=self.zoom_callback,
-                           position_callback=self.position_callback)
 
         # Any representation on the map must be done after this Goto Function
         self.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)

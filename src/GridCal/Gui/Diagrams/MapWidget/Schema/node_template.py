@@ -31,9 +31,9 @@ class NodeTemplate(GenericDiagramWidget):
     """
 
     def __init__(self,
-                 api_object: ALL_DEV_TYPES,
-                 editor: Union[SchematicWidget, MapWidget],
-                 draw_labels: bool,
+                 api_object: ALL_DEV_TYPES = None,
+                 editor: Union[SchematicWidget, MapWidget, None] = None,
+                 draw_labels: bool = True,
                  needsUpdate: bool = True,
                  lat: float = 0.0,
                  lon: float = 0.0):
