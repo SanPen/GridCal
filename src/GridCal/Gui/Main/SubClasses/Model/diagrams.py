@@ -157,9 +157,8 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
 
         # sliders
-        # self.ui.diagram_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
+        self.ui.diagram_step_slider.sliderReleased.connect(self.colour_diagrams)
         self.ui.diagram_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
-        # self.ui.db_step_slider.sliderReleased.connect(self.objects_time_slider_change)
         self.ui.db_step_slider.valueChanged.connect(self.objects_time_slider_change)
 
         # spinbox change
@@ -290,9 +289,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
-                diagram.zoom_out()
-            elif isinstance(diagram, GridMapWidget):
+            if isinstance(diagram, Union[SchematicWidget, GridMapWidget]):
                 diagram.zoom_out()
             else:
                 print("zoom_out: Unsupported diagram type")
@@ -778,7 +775,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
-
+        print("Colour!")
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
@@ -1029,12 +1026,12 @@ class DiagramsMain(CompiledArraysMain):
                 tile_source = self.tile_sources.get(diagram.tile_source, defualt_tile_source)
 
                 # create the map widget
-                map_widget = GridMapWidget(parent=None,
-                                           tile_src=tile_source,
+                map_widget = GridMapWidget(tile_src=tile_source,
                                            start_level=diagram.start_level,
                                            longitude=diagram.longitude,
                                            latitude=diagram.latitude,
                                            name=diagram.name,
+                                           circuit=self.circuit,
                                            diagram=diagram)
 
                 # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
@@ -1066,16 +1063,17 @@ class DiagramsMain(CompiledArraysMain):
         # set other default properties of the diagram
         diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
         diagram.start_level = 5
-        diagram.longitude = -15.41
-        diagram.latitude = 40.11
+
+        # diagram.longitude = -15.41
+        # diagram.latitude = 40.11
 
         # create the map widget
-        map_widget = GridMapWidget(parent=None,
-                                   tile_src=tile_source,
+        map_widget = GridMapWidget(tile_src=tile_source,
                                    start_level=diagram.start_level,
                                    longitude=diagram.longitude,
                                    latitude=diagram.latitude,
                                    name=diagram.name,
+                                   circuit=self.circuit,
                                    diagram=diagram,
                                    call_delete_db_element_func=self.call_delete_db_element)
 
@@ -1287,7 +1285,6 @@ class DiagramsMain(CompiledArraysMain):
 
                         # paint and capture
                         for t_idx in range(start_idx, end_idx):
-
                             self.grid_colour_function(diagram=diagram,
                                                       current_study=current_study,
                                                       t_idx=t_idx,

@@ -15,9 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-import numpy as np
-from typing import Union, TYPE_CHECKING, Tuple
-from PySide6.QtWidgets import QApplication
+from typing import TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
@@ -46,7 +44,8 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
                  api_object: VoltageLevel,
                  lat: float,
                  lon: float,
-                 r: float = 20.0):
+                 r: float = 20.0,
+                 draw_labels: bool = True):
         """
 
         :param editor:
@@ -55,9 +54,13 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         :param lon:
         :param r:
         """
-        # super().__init__(parent=parent)
-        NodeTemplate.__init__(self, lat=lat, lon=lon)
         QtWidgets.QGraphicsEllipseItem.__init__(self, parent)
+        NodeTemplate.__init__(self,
+                              api_object=api_object,
+                              editor=editor,
+                              draw_labels=draw_labels,
+                              lat=lat,
+                              lon=lon)
 
         parent.register_voltage_level(vl=self)
 
@@ -67,10 +70,9 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         self.x = x
         self.y = y
         self.radius = r
-        self.draw_labels = True
 
-        self.editor: GridMapWidget = editor
-        self.api_object: VoltageLevel = api_object
+        # self.editor: GridMapWidget = editor
+        # self.api_object: VoltageLevel = api_object
 
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
@@ -94,6 +96,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
     def updatePosition(self):
         """
 
+        :return:
         """
         real_position = self.pos()
         center_point = self.getPos()
@@ -104,11 +107,14 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
     def updateDiagram(self):
         """
 
+        :return:
         """
         real_position = self.pos()
         center_point = self.getPos()
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
                                            y=center_point.y() + real_position.y())
+
+        print(f'Updating VL position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
@@ -130,6 +136,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
+        self.updateDiagram()  # always update
 
     def mouseReleaseEvent(self, event):
         """
@@ -137,6 +144,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         """
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
+        self.updateDiagram()  # always update
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """

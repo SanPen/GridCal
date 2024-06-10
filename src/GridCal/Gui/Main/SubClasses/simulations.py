@@ -26,6 +26,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
@@ -249,7 +250,7 @@ class SimulationsMain(TimeEventsMain):
 
         # set the threads so that the diagram scene objects can plot them
         for diagram in self.diagram_widgets_list:
-            if isinstance(diagram, SchematicWidget):
+            if isinstance(diagram, (SchematicWidget, MapWidget)):
                 diagram.set_results_to_plot(all_threads)
 
         return all_threads

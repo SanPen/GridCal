@@ -166,8 +166,8 @@ class GraphicsManager:
     def query_preferring_busbars(self, elm: ALL_DEV_TYPES) -> Union[None, ALL_GRAPHICS]:
         """
         Because some connectivity nodes are graphically substituted by BusBars, we need to do this
-        :param elm:
-        :return:
+        :param elm: Any device
+        :return: Any graphic element if found, None otherwise
         """
         if isinstance(elm, ConnectivityNode):
             bb = self.cn_to_busbar_dict.get(elm, None)

@@ -16,11 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from PySide6.QtCore import QPointF
 from PySide6.QtGui import QPen, QIcon, QPixmap
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
 from GridCalEngine.Devices.Fluid.fluid_p2x import FluidP2x
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 

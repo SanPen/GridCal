@@ -16,11 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
-from PySide6.QtWidgets import QApplication, QMenu, QGraphicsItem
+from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QBrush, QColor
+from PySide6.QtGui import QBrush, QColor, QCursor
 
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
@@ -48,7 +48,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                  lat: float,
                  lon: float,
                  index: int,
-                 r: float = 0.006):
+                 r: float = 0.006,
+                 draw_labels: bool = True):
         """
 
         :param editor:
@@ -57,27 +58,33 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :param lat:
         :param lon:
         :param r:
+        :param draw_labels:
         """
-        NodeTemplate.__init__(self, lat=lat, lon=lon)
         QtWidgets.QGraphicsRectItem.__init__(self)
+        NodeTemplate.__init__(self,
+                              api_object=api_object,
+                              editor=editor,
+                              draw_labels=draw_labels,
+                              lat=lat,
+                              lon=lon)
 
         self.lat = lat
         self.lon = lon
-        x, y = editor.to_x_y(lat=lat, lon=lon)
-        self.x = x
-        self.y = y
+        self.x, self.y = editor.to_x_y(lat=lat, lon=lon)
         self.radius = r
         self.draw_labels = True
 
-        self.editor: GridMapWidget = editor
+        # self.editor: GridMapWidget = editor
         self.line_container: MapTemplateLine = line_container
-        self.api_object: LineLocation = api_object
+        # self.api_object: LineLocation = api_object
         self.index = index
 
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
+
+        self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.hovered = False
         self.enabled = True
@@ -94,8 +101,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
         # Assign color to the node
         self.setDefaultColor()
-
-
 
     def updateRealPos(self) -> None:
         """
@@ -129,7 +134,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
                                            y=center_point.y() + real_position.y())
 
-        # print(f'Updating node position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
+        print(f'Updating node position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
@@ -157,59 +162,11 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         if self.enabled:
             self.editor.disableMove = True
             if event.button() == Qt.RightButton:
-                menu = QMenu()
-
-                add_menu_entry(menu=menu,
-                               text="Add",
-                               icon_path="",
-                               function_ptr=self.AddFunction)
-
-                add_menu_entry(menu=menu,
-                               text="Split",
-                               icon_path="",
-                               function_ptr=self.SplitFunction)
-
-                add_menu_entry(menu=menu,
-                               text="Merge",
-                               icon_path="",
-                               function_ptr=self.MergeFunction)
-
-                add_menu_entry(menu=menu,
-                               text="Remove",
-                               icon_path="",
-                               function_ptr=self.RemoveFunction)
-
-                menu.exec_(event.screenPos())
+                pass
             elif event.button() == Qt.LeftButton:
                 self.selectItem()
 
-    def selectItem(self):
-        if not self.itemSelected:
-            self.editor.selectedItems.append(self)
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        self.itemSelected = True
-
-    def deSelectItem(self):
-        self.itemSelected = False
-        self.setDefaultColor()
-
-    def AddFunction(self):
-        self.line_container.insert_new_node_at_position(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
-
-    def SplitFunction(self):
-        self.line_container.split_Line(index=self.index)
-        # Implement the functionality for Action 1 here
-        pass
-
-    def RemoveFunction(self):
-        # Implement the functionality for Action 1 here
-        pass
-
-    def MergeFunction(self):
-        self.editor.merge_lines()
-        pass
+        self.updateDiagram()  # always update
 
     def mouseReleaseEvent(self, event):
         """
@@ -238,6 +195,88 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
 
+    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
+        """
+        Event handler for context menu events.
+        :param event:
+        :return:
+        """
+        menu = QMenu()
+
+        add_menu_entry(menu=menu,
+                       text="Add",
+                       icon_path="",
+                       function_ptr=self.AddFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Split",
+                       icon_path="",
+                       function_ptr=self.SplitFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Merge",
+                       icon_path="",
+                       function_ptr=self.MergeFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Remove",
+                       icon_path="",
+                       function_ptr=self.RemoveFunction)
+
+        menu.exec_(event.screenPos())
+
+    def selectItem(self):
+        """
+
+        :return:
+        """
+        if not self.itemSelected:
+            self.editor.selectedItems.append(self)
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        self.itemSelected = True
+
+    def deSelectItem(self):
+        """
+
+        :return:
+        """
+        self.itemSelected = False
+        self.setDefaultColor()
+
+    def AddFunction(self):
+        """
+
+        :return:
+        """
+        self.line_container.insert_new_node_at_position(index=self.index)
+        # Implement the functionality for Action 1 here
+        pass
+
+    def SplitFunction(self):
+        """
+
+        :return:
+        """
+        self.line_container.split_Line(index=self.index)
+        # Implement the functionality for Action 1 here
+        pass
+
+    def RemoveFunction(self):
+        """
+
+        :return:
+        """
+        # Implement the functionality for Action 1 here
+        self.editor.removeNode(self)
+
+    def MergeFunction(self):
+        """
+
+        :return:
+        """
+        self.editor.merge_lines()
+        pass
+
     def setNodeColor(self, inner_color: QColor, border_color: QColor = None) -> None:
         """
 
@@ -260,7 +299,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        if(self.itemSelected):
+        if self.itemSelected:
             self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
         else:
             self.setNodeColor(self.colorInner, self.colorBorder)

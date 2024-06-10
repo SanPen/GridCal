@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6 import QtWidgets, QtGui
 from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt, DeviceType
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
