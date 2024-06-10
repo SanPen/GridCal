@@ -123,10 +123,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         
         :return: 
         """
-        real_position = self.pos()
-        center_point = self.getPos()
-        lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
-                                           y=center_point.y() + real_position.y())
+        lat, long = self.editor.to_lat_lon(self.x, self.y)
 
         print(f'Updating SE position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
