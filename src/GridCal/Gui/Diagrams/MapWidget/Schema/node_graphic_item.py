@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEven
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QBrush, QColor
+from PySide6.QtGui import QBrush, QColor, QCursor
 
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
@@ -48,7 +48,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                  lat: float,
                  lon: float,
                  index: int,
-                 r: float = 0.006):
+                 r: float = 0.006,
+                 draw_labels: bool = True):
         """
 
         :param editor:
@@ -57,27 +58,33 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :param lat:
         :param lon:
         :param r:
+        :param draw_labels:
         """
-        NodeTemplate.__init__(self, lat=lat, lon=lon)
         QtWidgets.QGraphicsRectItem.__init__(self)
+        NodeTemplate.__init__(self,
+                              api_object=api_object,
+                              editor=editor,
+                              draw_labels=draw_labels,
+                              lat=lat,
+                              lon=lon)
 
         self.lat = lat
         self.lon = lon
-        x, y = editor.to_x_y(lat=lat, lon=lon)
-        self.x = x
-        self.y = y
+        self.x, self.y = editor.to_x_y(lat=lat, lon=lon)
         self.radius = r
         self.draw_labels = True
 
-        self.editor: GridMapWidget = editor
+        # self.editor: GridMapWidget = editor
         self.line_container: MapTemplateLine = line_container
-        self.api_object: LineLocation = api_object
+        # self.api_object: LineLocation = api_object
         self.index = index
 
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
+
+        self.setCursor(QCursor(Qt.PointingHandCursor))
 
         self.hovered = False
         self.enabled = True

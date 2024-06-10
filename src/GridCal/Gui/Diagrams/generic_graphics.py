@@ -25,6 +25,7 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+    from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 
 try:
     IS_DARK = darkdetect.theme() == "Dark"
@@ -63,6 +64,10 @@ def set_light_mode() -> None:
 
 
 def is_dark_mode() -> bool:
+    """
+
+    :return:
+    """
     return IS_DARK
 
 
@@ -172,7 +177,7 @@ class Line(QGraphicsLineItem):
         return super(QGraphicsLineItem, self).itemChange(change, value)
 
 
-class GenericDBWidget:
+class GenericDiagramWidget:
     """
     Generic DataBase Widget
     """
@@ -180,7 +185,7 @@ class GenericDBWidget:
     def __init__(self,
                  parent,
                  api_object: ALL_DEV_TYPES,
-                 editor: SchematicWidget,
+                 editor: Union[SchematicWidget, MapWidget],
                  draw_labels: bool):
         """
         Constructor
@@ -194,7 +199,7 @@ class GenericDBWidget:
 
         self.api_object: ALL_DEV_TYPES = api_object
 
-        self.editor: SchematicWidget = editor
+        self.editor: Union[SchematicWidget, MapWidget] = editor
 
         self._draw_labels: bool = draw_labels
 

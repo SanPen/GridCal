@@ -34,3 +34,4 @@ uvicorn
 websockets
 opencv-python
 setuptools
+packaging

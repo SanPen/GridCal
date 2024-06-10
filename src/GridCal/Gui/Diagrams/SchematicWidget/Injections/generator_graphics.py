@@ -17,14 +17,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import numpy as np
-from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, QPointF
-from PySide6.QtGui import QPen, QIcon, QPixmap, QFont
+from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex
+from PySide6.QtGui import QPen, QFont
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QDialog, QTableView, QVBoxLayout, QHBoxLayout,
                                QPushButton, QSplitter, QFrame, QSpacerItem, QSizePolicy)
 from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.basic_structures import Mat, Vec
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.Diagrams.SchematicWidget.matplotlibwidget import MatplotlibWidget
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
