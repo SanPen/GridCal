@@ -1181,16 +1181,7 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
 
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
-    def update_label_drwaing_status(self, device: ALL_DEV_TYPES, draw_labels: bool) -> None:
-        """
-        Update the label drawing flag
-        :param device: Any database device
-        :param draw_labels: Draw labels?
-        """
-        location = self.diagram.query_point(device=device)
 
-        if location is not None:
-            location.draw_labels = draw_labels
 
     def add_to_scene(self, graphic_object: QGraphicsItem = None) -> None:
         """

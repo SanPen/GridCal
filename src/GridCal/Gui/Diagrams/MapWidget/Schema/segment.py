@@ -43,9 +43,9 @@ class Segment(QGraphicsLineItem):
         :param first: NodeGraphicItem
         :param second: NodeGraphicItem
         """
-        super().__init__()
-        self.first = first
-        self.second = second
+        QGraphicsLineItem.__init__(self)
+        self.first: NodeGraphicItem = first
+        self.second: NodeGraphicItem = second
         self.container: MapTemplateLine = container
         self.draw_labels = True
 

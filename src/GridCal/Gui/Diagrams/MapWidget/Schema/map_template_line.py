@@ -27,6 +27,8 @@ from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.enumerations import DeviceType
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
+
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
@@ -35,20 +37,28 @@ if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class MapTemplateLine:
+class MapTemplateLine(GenericDiagramWidget):
     """
     Represents a polyline in the map
     """
 
-    def __init__(self, editor: GridMapWidget, api_object: BRANCH_TYPES):
+    def __init__(self,
+                 editor: GridMapWidget,
+                 api_object: BRANCH_TYPES,
+                 draw_labels: bool = True):
         """
 
         :param editor:
         :param api_object:
         """
-        # self.Parent = parent
-        self.editor = editor
-        self.api_object = api_object
+        GenericDiagramWidget.__init__(self,
+                                      parent=None,
+                                      api_object=api_object,
+                                      editor=editor,
+                                      draw_labels=draw_labels)
+
+        self.editor: GridMapWidget = editor  # re assign to make clear the editor type
+
         self.nodes_list: List[NodeGraphicItem] = list()
         self.segments_list: List[Segment] = list()
         self.enabled = True

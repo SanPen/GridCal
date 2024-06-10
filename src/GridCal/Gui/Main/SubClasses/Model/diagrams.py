@@ -157,9 +157,8 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
 
         # sliders
-        # self.ui.diagram_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
+        self.ui.diagram_step_slider.sliderReleased.connect(self.colour_diagrams)
         self.ui.diagram_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
-        # self.ui.db_step_slider.sliderReleased.connect(self.objects_time_slider_change)
         self.ui.db_step_slider.valueChanged.connect(self.objects_time_slider_change)
 
         # spinbox change
@@ -776,7 +775,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
-
+        print("Colour!")
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()

@@ -331,8 +331,8 @@ class BaseDiagramWidget:
 
     def draw_diagram(self, diagram: Union[SchematicDiagram, MapDiagram]) -> None:
         """
-
-        :param diagram:
+        Draw the diagram
+        :param diagram: Map or schematic diagram
         """
         pass
 
@@ -431,15 +431,15 @@ class BaseDiagramWidget:
 
     def get_picture_width(self) -> int:
         """
-
-        :return:
+        Width
+        :return: width in pixels
         """
         return 0
 
     def get_picture_height(self) -> int:
         """
-
-        :return:
+        Height
+        :return: height in pixels
         """
         return 0
 
@@ -454,7 +454,7 @@ class BaseDiagramWidget:
     def take_picture(self, filename: str):
         """
         Save the grid to a png file
-        :param filename:
+        :param filename: Picture file name
         """
         pass
 
@@ -490,7 +490,17 @@ class BaseDiagramWidget:
 
     def end_video_recording(self):
         """
-
-        :return:
+        Finalize video recording
         """
         self._video.release()
+
+    def update_label_drwaing_status(self, device: ALL_DEV_TYPES, draw_labels: bool) -> None:
+        """
+        Update the label drawing flag
+        :param device: Any database device
+        :param draw_labels: Draw labels?
+        """
+        location = self.diagram.query_point(device=device)
+
+        if location is not None:
+            location.draw_labels = draw_labels
