@@ -210,19 +210,15 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :return:
         """
 
-        level, longitude, latitude = self.get_level_and_position()
-
-        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+        sx, sy = self.to_x_y(self.startLat, self.startLon)
 
         he = self.view.height()
         wi = self.view.width()
 
-        node_gen_dx = self.startWi - wi
-        node_gen_dy = self.startHe - he
+        node_gen_dx = sx + (self.startWi - wi) / 2
+        node_gen_dy = sy + (self.startHe - he) / 2
 
-        lon, lat = self.view_to_geo(xview=x - node_gen_dx / 2, yview=y - node_gen_dy / 2)
-
-        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+        lon, lat = self.view_to_geo(xview=x - node_gen_dx, yview=y - node_gen_dy)
 
         return lat, lon
 
@@ -233,11 +229,6 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param lon:
         :return:
         """
-
-        level, longitude, latitude = self.get_level_and_position()
-
-        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
-
         he = self.view.height()
         wi = self.view.width()
 
@@ -248,8 +239,6 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         x = x + node_gen_dx / 2
         y = y + node_gen_dy / 2
-
-        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return x, y
 
