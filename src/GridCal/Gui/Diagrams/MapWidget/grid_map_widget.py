@@ -42,16 +42,15 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 
-from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
-from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
+from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
-from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 
 
@@ -277,7 +276,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
     def create_node(self,
-                    line_container: MapTemplateLine,
+                    line_container: MapLineContainer,
                     api_object: LineLocation,
                     lat: float, lon: float, index: int) -> NodeGraphicItem:
         """
@@ -375,7 +374,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
     pass
 
-    def removeLine(self, line: MapTemplateLine):
+    def removeLine(self, line: MapLineContainer):
         """
         Removes line from diagram and scene
         :param line: Line to remove
@@ -386,14 +385,14 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
     pass
 
-    def add_api_line(self, api_object: BRANCH_TYPES, original: bool = True) -> MapTemplateLine:
+    def add_api_line(self, api_object: BRANCH_TYPES, original: bool = True) -> MapLineContainer:
         """
         Adds a line with the nodes and segments
         :param api_object: Any branch type from the database
         :param original:
         :return: MapTemplateLine
         """
-        line_container = MapTemplateLine(editor=self, api_object=api_object)
+        line_container = MapLineContainer(editor=self, api_object=api_object)
 
         line_container.original = original
 
@@ -738,7 +737,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
             for i, branch in enumerate(branches):
 
                 # try to find the diagram object of the DB object
-                graphic_object: MapTemplateLine = self.graphics_manager.query(branch)
+                graphic_object: MapLineContainer = self.graphics_manager.query(branch)
 
                 if graphic_object:
 
@@ -789,7 +788,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
             for i, branch in enumerate(hvdc_lines):
 
                 # try to find the diagram object of the DB object
-                graphic_object: MapTemplateLine = self.graphics_manager.query(branch)
+                graphic_object: MapLineContainer = self.graphics_manager.query(branch)
 
                 if graphic_object:
 

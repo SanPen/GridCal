@@ -21,7 +21,7 @@ import logging
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPen
-from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCalEngine.Devices import LineLocation
 from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
 from GridCalEngine.Devices.types import BRANCH_TYPES
@@ -31,13 +31,13 @@ from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-    from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
-    from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class MapTemplateLine(GenericDiagramWidget):
+class MapLineContainer(GenericDiagramWidget):
     """
     Represents a polyline in the map
     """
@@ -60,7 +60,7 @@ class MapTemplateLine(GenericDiagramWidget):
         self.editor: GridMapWidget = editor  # re assign to make clear the editor type
 
         self.nodes_list: List[NodeGraphicItem] = list()
-        self.segments_list: List[Segment] = list()
+        self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
         self.original = True
 
@@ -103,7 +103,7 @@ class MapTemplateLine(GenericDiagramWidget):
         """
         self.nodes_list.append(node)
 
-    def add_segment(self, segment: Segment):
+    def add_segment(self, segment: MapLineSegment):
         """
         Add segment
         :param segment: Connector
@@ -229,9 +229,9 @@ class MapTemplateLine(GenericDiagramWidget):
             elm1 = connection_elements[i - 1]
             elm2 = connection_elements[i]
             # Assuming Connector takes (scene, node1, node2) as arguments
-            segment_graphic_object = Segment(first=elm1,
-                                             second=elm2,
-                                             container=self)
+            segment_graphic_object = MapLineSegment(first=elm1,
+                                                    second=elm2,
+                                                    container=self)
 
             elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
