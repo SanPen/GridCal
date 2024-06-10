@@ -45,7 +45,8 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                  api_object: Substation,
                  lat: float,
                  lon: float,
-                 r: float = 20.0):
+                 r: float = 20.0,
+                 draw_labels: bool = True):
         """
 
         :param editor:
@@ -54,20 +55,21 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :param lon:
         :param r:
         """
-        NodeTemplate.__init__(self, lat=lat, lon=lon)
+        NodeTemplate.__init__(self,
+                              api_object=api_object,
+                              editor=editor,
+                              draw_labels=draw_labels,
+                              lat=lat,
+                              lon=lon)
         QtWidgets.QGraphicsRectItem.__init__(self)
+
+        self.editor: GridMapWidget = editor  # re assign for the types to be clear
 
         self.setRect(0.0, 0.0, r, r)
         self.lat = lat
         self.lon = lon
-        x, y = editor.to_x_y(lat=lat, lon=lon)
-        self.x = x
-        self.y = y
+        self.x, self.y = editor.to_x_y(lat=lat, lon=lon)
         self.radius = r
-        self.draw_labels = True
-
-        self.editor: GridMapWidget = editor
-        self.api_object: Substation = api_object
 
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item

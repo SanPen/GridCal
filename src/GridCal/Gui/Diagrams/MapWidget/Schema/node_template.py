@@ -15,31 +15,36 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import Tuple, TYPE_CHECKING
-from PySide6.QtWidgets import QApplication, QMenu
-from GridCal.Gui.GuiFunctions import add_menu_entry
-from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QBrush, QColor
-
-from GridCalEngine.Devices.Branches.line_locations import LineLocation
-from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
+from typing import Union, TYPE_CHECKING
+from PySide6.QtCore import QPointF
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
+    from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+    from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 
 
-class NodeTemplate:
+class NodeTemplate(GenericDiagramWidget):
     """
     Node Template
     """
 
     def __init__(self,
+                 api_object: ALL_DEV_TYPES,
+                 editor: Union[SchematicWidget, MapWidget],
+                 draw_labels: bool,
                  needsUpdate: bool = True,
                  lat: float = 0.0,
                  lon: float = 0.0):
         """
         """
+        GenericDiagramWidget.__init__(self,
+                                      parent=None,
+                                      api_object=api_object,
+                                      editor=editor,
+                                      draw_labels=draw_labels)
+
         self.needsUpdate: bool = needsUpdate
         self.lat = lat
         self.lon = lon
@@ -52,4 +57,8 @@ class NodeTemplate:
         return self.lon != 0.0 and self.lat != 0.0
 
     def getRealPos(self):
+        """
+
+        :return:
+        """
         return QPointF(0, 0)

@@ -23,7 +23,7 @@ from PySide6.QtWidgets import QGraphicsLineItem
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
 
 if TYPE_CHECKING:

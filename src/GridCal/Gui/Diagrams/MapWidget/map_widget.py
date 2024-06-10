@@ -161,13 +161,12 @@ class MapWidget(QWidget):
     BoxSelectPenWidth = 2
 
     def __init__(self,
-                 parent: QWidget,
+                 parent: Union[None, QWidget],
                  tile_src: Tiles,
                  start_level: int,
                  zoom_callback: Callable[[int], None],
-                 position_callback: Callable[[float, float], None],
-                 **kwargs):
-        """Initialize the pySlipQt widget.
+                 position_callback: Callable[[float, float], None]):
+        """Initialize the widget.
 
         parent       the GUI parent widget
         tile_src     a Tiles object, source of tiles
@@ -175,7 +174,7 @@ class MapWidget(QWidget):
         kwargs       keyword args passed through to the underlying QLabel
         """
 
-        super().__init__(parent, **kwargs)  # inherit all parent object setup
+        QWidget.__init__(self, parent)  # inherit all parent object setup
 
         # remember the tile source object
         self.tile_src = tile_src

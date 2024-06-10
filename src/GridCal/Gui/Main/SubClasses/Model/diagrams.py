@@ -290,9 +290,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, SchematicWidget):
-                diagram.zoom_out()
-            elif isinstance(diagram, GridMapWidget):
+            if isinstance(diagram, Union[SchematicWidget, GridMapWidget]):
                 diagram.zoom_out()
             else:
                 print("zoom_out: Unsupported diagram type")
@@ -1029,8 +1027,7 @@ class DiagramsMain(CompiledArraysMain):
                 tile_source = self.tile_sources.get(diagram.tile_source, defualt_tile_source)
 
                 # create the map widget
-                map_widget = GridMapWidget(parent=None,
-                                           tile_src=tile_source,
+                map_widget = GridMapWidget(tile_src=tile_source,
                                            start_level=diagram.start_level,
                                            longitude=diagram.longitude,
                                            latitude=diagram.latitude,
@@ -1072,8 +1069,7 @@ class DiagramsMain(CompiledArraysMain):
         # diagram.latitude = 40.11
 
         # create the map widget
-        map_widget = GridMapWidget(parent=None,
-                                   tile_src=tile_source,
+        map_widget = GridMapWidget(tile_src=tile_source,
                                    start_level=diagram.start_level,
                                    longitude=diagram.longitude,
                                    latitude=diagram.latitude,

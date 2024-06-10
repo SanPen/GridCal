@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
                                QGraphicsEllipseItem, QGraphicsSceneMouseEvent, QGraphicsTextItem)
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDBWidget
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDiagramWidget
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
@@ -427,7 +427,7 @@ class HvdcSymbol(QGraphicsRectItem):
         self.setTransform(transform)
 
 
-class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
+class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
     """
     LineGraphicItem
     """
@@ -450,7 +450,7 @@ class LineGraphicTemplateItem(GenericDBWidget, QGraphicsLineItem):
         :param arrow_size:
         :param draw_labels:
         """
-        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=draw_labels)
+        GenericDiagramWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=draw_labels)
         QGraphicsLineItem.__init__(self)
 
         if isinstance(api_object, Transformer2W):

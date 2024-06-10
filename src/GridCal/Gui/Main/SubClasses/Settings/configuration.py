@@ -23,7 +23,7 @@ import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
 
 
 def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],

@@ -368,8 +368,8 @@ class MapTemplateLine:
                 api_obj.long = self.nodes_list[idx].lon
                 idx = idx + 1
 
-            l1 = self.editor.create_line(ln1, original=False)
-            l2 = self.editor.create_line(ln2, original=False)
+            l1 = self.editor.add_api_line(ln1, original=False)
+            l2 = self.editor.add_api_line(ln2, original=False)
 
             self.disable_line()
 

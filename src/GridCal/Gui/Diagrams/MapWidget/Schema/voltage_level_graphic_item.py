@@ -44,7 +44,8 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
                  api_object: VoltageLevel,
                  lat: float,
                  lon: float,
-                 r: float = 20.0):
+                 r: float = 20.0,
+                 draw_labels: bool = True):
         """
 
         :param editor:
@@ -54,7 +55,12 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         :param r:
         """
         # super().__init__(parent=parent)
-        NodeTemplate.__init__(self, lat=lat, lon=lon)
+        NodeTemplate.__init__(self,
+                              api_object=api_object,
+                              editor=editor,
+                              draw_labels=draw_labels,
+                              lat=lat,
+                              lon=lon)
         QtWidgets.QGraphicsEllipseItem.__init__(self, parent)
 
         parent.register_voltage_level(vl=self)
@@ -67,8 +73,8 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         self.radius = r
         self.draw_labels = True
 
-        self.editor: GridMapWidget = editor
-        self.api_object: VoltageLevel = api_object
+        # self.editor: GridMapWidget = editor
+        # self.api_object: VoltageLevel = api_object
 
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
