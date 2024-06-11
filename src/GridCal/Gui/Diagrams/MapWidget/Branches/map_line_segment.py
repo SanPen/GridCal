@@ -52,7 +52,9 @@ class MapLineSegment(QGraphicsLineItem):
         self.style = Qt.SolidLine
         self.color = Qt.blue
         self.width = 1
-        # self.setScale(0.01)
+        self.lineWidth = 3
+        self.scaleSegment = self.lineWidth
+        self.setScale(self.scaleSegment)
 
         self.set_colour(self.color, self.width, self.style)
         self.update_endings()
@@ -95,18 +97,19 @@ class MapLineSegment(QGraphicsLineItem):
         # self.arrow_to_1.set_colour(color, w, style)
         # self.arrow_to_2.set_colour(color, w, style)
 
-    def update_endings(self) -> None:
+    def update_endings(self, force = False) -> None:
         """
         Update the endings of this segment
         """
 
         # Get the positions of the first and second objects
-        if self.first.needsUpdate or self.second.needsUpdate:
+        if self.first.needsUpdate or self.second.needsUpdate or force:
             first_pos = self.first.getRealPos()
             second_pos = self.second.getRealPos()
 
             # Set the line's starting and ending points
-            self.setLine(first_pos[0], first_pos[1], second_pos[0], second_pos[1])
+            self.setLine(first_pos[0] / self.scaleSegment, first_pos[1] / self.scaleSegment,
+                         second_pos[0] / self.scaleSegment, second_pos[1] / self.scaleSegment)
 
     def end_update(self) -> None:
         """

@@ -92,6 +92,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
+        self.setZValue(1)
 
     def updatePosition(self):
         """
