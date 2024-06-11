@@ -23,8 +23,8 @@ from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor, QCursor
 
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
-from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
-from GridCal.Gui.Diagrams.MapWidget.Schema.node_template import NodeTemplate
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
+from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
@@ -43,7 +43,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
     def __init__(self,
                  editor: GridMapWidget,
-                 line_container: MapTemplateLine,
+                 line_container: MapLineContainer,
                  api_object: LineLocation,
                  lat: float,
                  lon: float,
@@ -75,7 +75,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.draw_labels = True
 
         # self.editor: GridMapWidget = editor
-        self.line_container: MapTemplateLine = line_container
+        self.line_container: MapLineContainer = line_container
         # self.api_object: LineLocation = api_object
         self.index = index
 
