@@ -44,7 +44,9 @@ class NumericPowerFlowResults:
                  Yf: Union[CscMat, None] = None,
                  Yt: Union[CscMat, None] = None,
                  iterations=0,
-                 elapsed=0.0):
+                 elapsed=0.0,
+                 vsc_results=None,
+                 contTrafo_results=None):
         """
         Object to store the results returned by a numeric power flow routine
         :param V: Voltage vector
@@ -73,6 +75,8 @@ class NumericPowerFlowResults:
         self.iterations = iterations
         self.elapsed = elapsed
         self.method = None
+        self.vsc_results = vsc_results
+        self.contTrafo_results = contTrafo_results
 
 
 class PowerFlowResults(ResultsTemplate):
@@ -300,8 +304,20 @@ class PowerFlowResults(ResultsTemplate):
 
         self.convergence_reports += results.convergence_reports
 
+        # GENERALISED PF
         if generalised_pf:
-            self.voltage = results.voltage.copy()
+            if results.converged:
+                self.voltage = results.voltage.copy()
+                self.Sbus = results.Sbus.copy()
+                self.Sf = results.Sf.copy()
+                self.St = results.St.copy()
+                self.If = results.If.copy()
+                self.Vbranch = results.Vbranch.copy()
+                self.loading = results.loading.copy()
+                self.losses = results.losses.copy()
+            else:
+                pass
+        
 
     def get_report_dataframe(self, island_idx=0):
         """

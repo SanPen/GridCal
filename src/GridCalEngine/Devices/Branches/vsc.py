@@ -22,7 +22,7 @@ from typing import List, Tuple
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import ConverterControlType, BuildStatus
+from GridCalEngine.enumerations import ConverterControlType, BuildStatus, GpfControlType
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
@@ -46,7 +46,13 @@ class VSC(BranchParent):
                  protection_rating_factor: float = 1.4,
                  contingency_enabled=True, monitor_loading=True,
                  r0=0.0001, x0=0.05, r2=0.0001, x2=0.05,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned, 
+                 gpf_ctrl1_elm=None,
+                 gpf_ctrl1_mode=None,
+                 gpf_ctrl1_val=0.0,
+                 gpf_ctrl2_elm=None,
+                 gpf_ctrl2_mode=None,
+                 gpf_ctrl2_val=0.0):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -174,6 +180,14 @@ class VSC(BranchParent):
         self.alpha2 = alpha2
         self.alpha3 = alpha3
 
+        ## GENERALISED PF
+        self.gpf_ctrl1_elm = gpf_ctrl1_elm
+        self.gpf_ctrl1_mode = gpf_ctrl1_mode
+        self.gpf_ctrl1_val = gpf_ctrl1_val
+        self.gpf_ctrl2_elm = gpf_ctrl2_elm
+        self.gpf_ctrl2_mode = gpf_ctrl2_mode
+        self.gpf_ctrl2_val = gpf_ctrl2_val
+
         self.register(key='R', units='p.u.', tpe=float, definition='Resistive positive sequence losses.',
                       old_names=['R1'])
         self.register(key='X', units='p.u.', tpe=float, definition='Magnetic positive sequence losses.',
@@ -215,6 +229,15 @@ class VSC(BranchParent):
         self.register(key='Qac_set', units='MVAr', tpe=float, definition='AC Reactive power set point.')
         self.register(key='Vac_set', units='p.u.', tpe=float, definition='AC voltage set point.')
         self.register(key='Vdc_set', units='p.u.', tpe=float, definition='DC voltage set point.')
+        ## GENERALISED PF
+        self.register(key='gpf_ctrl1_elm', units='', tpe=str, definition='Generalised PF control 1 element pointer.')
+        self.register(key='gpf_ctrl1_mode', units='', tpe=GpfControlType, definition='Generalised PF control 1 mode.')
+        self.register(key='gpf_ctrl1_val', units='', tpe=float, definition='Generalised PF control 1 value.')
+        self.register(key='gpf_ctrl2_elm', units='', tpe=str, definition='Generalised PF control 2 element pointer.')
+        self.register(key='gpf_ctrl2_mode', units='', tpe=GpfControlType, definition='Generalised PF control 2 mode.')
+        self.register(key='gpf_ctrl2_val', units='', tpe=float, definition='Generalised PF control 2 value.')
+
+
 
     def get_weight(self):
         """

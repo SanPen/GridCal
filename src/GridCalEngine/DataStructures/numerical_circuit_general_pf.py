@@ -220,6 +220,8 @@ class NumericalCircuit:
         self.fluid_p2x_data: ds.FluidP2XData = ds.FluidP2XData(nelm=nfluidp2x)
         self.fluid_path_data: ds.FluidPathData = ds.FluidPathData(nelm=nfluidpath)
 
+        self.control_data: ds.ControlData = ds.ControlData()
+
         # --------------------------------------------------------------------------------------------------------------
         # Internal variables filled on demand, to be ready to consume once computed
         # --------------------------------------------------------------------------------------------------------------
@@ -840,7 +842,7 @@ class NumericalCircuit:
         :return: SimulationIndices
         """
         # find the matching islands
-        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=False, isolateACDC = True)
+        adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=False, isolateACDC = False)
         idx_islands = tp.find_islands(adj=adj, active=self.bus_data.active)
 
         return si.SimulationIndices2(bus_types=self.bus_data.bus_types,
@@ -853,6 +855,8 @@ class NumericalCircuit:
                                     gen_data=self.generator_data,
                                     vsc_data=self.vsc_data,
                                     bus_data = self.bus_data,
+                                    controllable_trafo_data = self.controllable_trafo_data,
+                                    branch_data = self.branch_data,
                                     adj = adj,
                                     idx_islands=idx_islands,
                                     Sbase = self.Sbase)
@@ -1710,6 +1714,519 @@ class NumericalCircuit:
             self.simulation_indices_ = self.get_simulation_indices()
 
         return self.simulation_indices_.un_mod_kdx
+    
+
+
+    ### GENERALISED PF 2
+    @property
+    def gpf_kn_volt_idx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) voltage 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_volt_idx
+    
+    @property
+    def gpf_kn_angle_idx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) angle 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_angle_idx
+    
+    @property
+    def gpf_kn_pzip_gen_idx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) PZIP 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pzip_gen_idx
+    
+    @property
+    def gpf_kn_qzip_gen_idx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) QZIP 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qzip_gen_idx
+    
+    @property
+    def gpf_kn_pfrom_vsc_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) P from VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pfrom_vsc_kdx
+    
+    @property
+    def gpf_kn_pto_vsc_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) P to VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pto_vsc_kdx
+    
+    @property
+    def gpf_kn_qto_vsc_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) Q to VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qto_vsc_kdx
+    
+    @property
+    def gpf_kn_pfrom_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) P from TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pfrom_trafo_kdx
+    
+    @property
+    def gpf_kn_pto_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) P to TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pto_trafo_kdx
+    
+    @property
+    def gpf_kn_qfrom_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) Q from TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qfrom_trafo_kdx
+    
+    @property
+    def gpf_kn_qto_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) Q to TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qto_trafo_kdx
+    
+    @property
+    def gpf_kn_mod_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) mod TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_mod_trafo_kdx
+    
+    @property
+    def gpf_kn_tau_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) tau TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_tau_trafo_kdx
+    
+    @property
+    def gpf_kn_pfrom_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) P from passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pfrom_passive_kdx
+    
+    @property
+    def gpf_kn_qfrom_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) Q from passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qfrom_passive_kdx
+    
+    @property
+    def gpf_kn_pto_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) P to passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pto_passive_kdx
+    
+    @property
+    def gpf_kn_qto_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of known (controlled) Q to passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qto_passive_kdx
+    
+    @property
+    def gpf_kn_volt_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) voltage 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_volt_setpoints
+    
+    @property
+    def gpf_kn_angle_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) angle 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_angle_setpoints
+    
+    @property
+    def gpf_kn_pzip_gen_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) PZIP 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pzip_gen_setpoints
+    
+    @property
+    def gpf_kn_qzip_gen_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) QZIP 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qzip_gen_setpoints
+    
+    @property
+    def gpf_kn_pfrom_vsc_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) P from VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pfrom_vsc_setpoints
+    
+    @property
+    def gpf_kn_pto_vsc_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) P to VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pto_vsc_setpoints
+    
+    @property
+    def gpf_kn_qto_vsc_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) Q to VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qto_vsc_setpoints
+    
+    @property
+    def gpf_kn_pfrom_trafo_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) P from TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pfrom_trafo_setpoints
+    
+    @property
+    def gpf_kn_pto_trafo_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) P to TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pto_trafo_setpoints
+    
+    @property
+    def gpf_kn_qfrom_trafo_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) Q from TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qfrom_trafo_setpoints
+    
+    @property
+    def gpf_kn_qto_trafo_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) Q to TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qto_trafo_setpoints
+    
+    @property
+    def gpf_kn_mod_trafo_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) mod TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_mod_trafo_setpoints
+    
+    @property
+    def gpf_kn_tau_trafo_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) tau TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_tau_trafo_setpoints
+    
+    @property
+    def gpf_kn_pfrom_passive_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) P from passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pfrom_passive_setpoints
+    
+    @property
+    def gpf_kn_qfrom_passive_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) Q from passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qfrom_passive_setpoints
+    
+    @property
+    def gpf_kn_pto_passive_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) P to passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_pto_passive_setpoints
+    
+    @property
+    def gpf_kn_qto_passive_setpoints(self):
+        """
+        (Generalised PF 2) Setpoints of known (controlled) Q to passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_kn_qto_passive_setpoints
+    
+    @property
+    def gpf_un_volt_idx(self):
+        """
+        (Generalised PF 2) Indices buses of unknown voltage 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_volt_idx
+    
+    @property
+    def gpf_un_angle_idx(self):
+        """
+        (Generalised PF 2) Indices buses of unknown angle 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_angle_idx
+    
+    @property
+    def gpf_un_pzip_gen_idx(self):
+        """
+        (Generalised PF 2) Indices buses of unknown PZIP 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_pzip_gen_idx
+
+    @property
+    def gpf_un_qzip_gen_idx(self):
+        """
+        (Generalised PF 2) Indices buses of unknown QZIP 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_qzip_gen_idx
+
+    @property
+    def gpf_un_pfrom_vsc_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown P from VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_pfrom_vsc_kdx
+
+    @property
+    def gpf_un_pto_vsc_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown P to VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_pto_vsc_kdx
+
+    @property
+    def gpf_un_qto_vsc_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown Q to VSCs 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_qto_vsc_kdx
+
+    @property
+    def gpf_un_pfrom_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown P from TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_pfrom_trafo_kdx
+
+    @property
+    def gpf_un_pto_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown P to TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_pto_trafo_kdx
+
+    @property
+    def gpf_un_qfrom_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown Q from TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_qfrom_trafo_kdx
+
+    @property
+    def gpf_un_qto_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown Q to TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_qto_trafo_kdx
+
+    @property
+    def gpf_un_mod_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown mod TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_mod_trafo_kdx
+
+    @property
+    def gpf_un_tau_trafo_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown tau TRAFOS 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_tau_trafo_kdx
+
+    @property
+    def gpf_un_pfrom_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown P from passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_pfrom_passive_kdx
+
+    @property
+    def gpf_un_qfrom_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown Q from passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_qfrom_passive_kdx
+
+    @property
+    def gpf_un_pto_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown P to passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_pto_passive_kdx
+
+    @property
+    def gpf_un_qto_passive_kdx(self):
+        """
+        (Generalised PF 2) Indices of unknown Q to passive branches 
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.gpf_un_qto_passive_kdx
 
 
     @property
@@ -2281,19 +2798,13 @@ class NumericalCircuit:
 
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,
-                           consider_hvdc_as_island_links: bool = False,
-                           generalised_pf: Union[bool, None] = False) -> List["NumericalCircuit"]:
+                           consider_hvdc_as_island_links: bool = False) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
         :return: List[NumericCircuit]
         """
-        if generalised_pf:
-            circuit_islands = list()    
-            circuit_islands.append(self)
-            return circuit_islands
-
         # find the matching islands
         adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
         idx_islands = tp.find_islands(adj=adj, active=self.bus_data.active)
@@ -2429,6 +2940,11 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                             opf_results=opf_results,
                                             branch_data = nc.branch_data)
     
+    # print('(numerical_circuit_general_pf.py) nc.vsc_data.name_to_idx' , nc.vsc_data.name_to_idx)
+    # print('(numerical_circuit_general_pf.py) nc.vsc_data.gpf_ctrl1_mode' , nc.vsc_data.gpf_ctrl1_mode)
+    # print('(numerical_circuit_general_pf.py) nc.vsc_data.gpf_ctrl2_mode' , nc.vsc_data.gpf_ctrl1_elm)
+    # print('(numerical_circuit_general_pf.py) nc.vsc_data.gpf_ctrl3_mode' , nc.vsc_data.gpf_ctrl1_val)
+        
     nc.controllable_trafo_data = gc_compiler2.get_controllable_trafo_data(circuit=circuit,
                                                                             t_idx=t_idx,
                                                                             time_series=time_series,
@@ -2436,7 +2952,66 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                                             bus_types=nc.bus_data.bus_types,
                                                                             opf_results=opf_results,
                                                                             branch_data = nc.branch_data)
-    
+ 
+
+
+    #print all the names to idx for me to check from bus, branch, vsc, controllable_trafo, generator
+    # print('(numerical_circuit_general_pf.py) nc.bus_data.name_to_idx' , nc.bus_data.name_to_idx)
+    # print('(numerical_circuit_general_pf.py) nc.branch_data.name_to_idx' , nc.branch_data.name_to_idx)
+    # print('(numerical_circuit_general_pf.py) nc.vsc_data.name_to_idx' , nc.vsc_data.name_to_idx)
+    # print('(numerical_circuit_general_pf.py) nc.controllable_trafo_data.name_to_idx' , nc.controllable_trafo_data.name_to_idx)
+    # print('(numerical_circuit_general_pf.py) nc.generator_data.name_to_idx' , nc.generator_data.name_to_idx)
+
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_volt_idx" , nc.gpf_un_volt_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_angle_idx" , nc.gpf_un_angle_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_pzip_gen_idx" , nc.gpf_un_pzip_gen_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_qzip_gen_idx" , nc.gpf_un_qzip_gen_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_pfrom_vsc_kdx" , nc.gpf_un_pfrom_vsc_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_pto_vsc_kdx" , nc.gpf_un_pto_vsc_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_qto_vsc_kdx" , nc.gpf_un_qto_vsc_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_pfrom_trafo_kdx" , nc.gpf_un_pfrom_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_pto_trafo_kdx" , nc.gpf_un_pto_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_qfrom_trafo_kdx" , nc.gpf_un_qfrom_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_qto_trafo_kdx" , nc.gpf_un_qto_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_mod_trafo_kdx" , nc.gpf_un_mod_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_tau_trafo_kdx" , nc.gpf_un_tau_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_pfrom_passive_kdx" , nc.gpf_un_pfrom_passive_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_qfrom_passive_kdx" , nc.gpf_un_qfrom_passive_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_pto_passive_kdx" , nc.gpf_un_pto_passive_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_un_qto_passive_kdx" , nc.gpf_un_qto_passive_kdx)
+
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_volt_idx" , nc.gpf_kn_volt_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_angle_idx" , nc.gpf_kn_angle_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pzip_gen_idx" , nc.gpf_kn_pzip_gen_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qzip_gen_idx" , nc.gpf_kn_qzip_gen_idx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pfrom_vsc_kdx" , nc.gpf_kn_pfrom_vsc_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pto_vsc_kdx" , nc.gpf_kn_pto_vsc_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qto_vsc_kdx" , nc.gpf_kn_qto_vsc_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pfrom_trafo_kdx" , nc.gpf_kn_pfrom_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pto_trafo_kdx" , nc.gpf_kn_pto_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qfrom_trafo_kdx" , nc.gpf_kn_qfrom_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qto_trafo_kdx" , nc.gpf_kn_qto_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_mod_trafo_kdx" , nc.gpf_kn_mod_trafo_kdx)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_tau_trafo_kdx" , nc.gpf_kn_tau_trafo_kdx)
+    print("(numerical_circuit_general_pf.py) nc.gpf_kn_pfrom_passive_kdx" , nc.gpf_kn_pfrom_passive_kdx)
+    print("(numerical_circuit_general_pf.py) nc.gpf_kn_qfrom_passive_kdx" , nc.gpf_kn_qfrom_passive_kdx)
+    print("(numerical_circuit_general_pf.py) nc.gpf_kn_pto_passive_kdx" , nc.gpf_kn_pto_passive_kdx)
+    print("(numerical_circuit_general_pf.py) nc.gpf_kn_qto_passive_kdx" , nc.gpf_kn_qto_passive_kdx)
+
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_volt_setpoints" , nc.gpf_kn_volt_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_angle_setpoints" , nc.gpf_kn_angle_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pzip_gen_setpoints" , nc.gpf_kn_pzip_gen_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qzip_gen_setpoints" , nc.gpf_kn_qzip_gen_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pfrom_vsc_setpoints" , nc.gpf_kn_pfrom_vsc_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pto_vsc_setpoints" , nc.gpf_kn_pto_vsc_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qto_vsc_setpoints" , nc.gpf_kn_qto_vsc_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pfrom_trafo_setpoints" , nc.gpf_kn_pfrom_trafo_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_pto_trafo_setpoints" , nc.gpf_kn_pto_trafo_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qfrom_trafo_setpoints" , nc.gpf_kn_qfrom_trafo_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_qto_trafo_setpoints" , nc.gpf_kn_qto_trafo_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_mod_trafo_setpoints" , nc.gpf_kn_mod_trafo_setpoints)
+    # print("(numerical_circuit_general_pf.py) nc.gpf_kn_tau_trafo_setpoints" , nc.gpf_kn_tau_trafo_setpoints)
+
 
     if len(circuit.fluid_nodes) > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,

@@ -207,7 +207,7 @@ def linn5bus_example2():
 
     # grid.add_transformer2w(tr1)`
     # pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1)
 
     results = gce.power_flow(grid, options=pf_options)
 
@@ -335,7 +335,7 @@ def ieee5bus_example():
     file_path = 'Grids_and_profiles/grids/IEEE 5 Bus.xlsx'
     grid = gce.FileOpen(file_path).open()
     assert grid is not None
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, generalised_pf=True)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1)
 
     results = gce.power_flow(grid, options=pf_options)
 
@@ -344,6 +344,266 @@ def ieee5bus_example():
     print(results.get_branch_df())
     print("Error:", results.error)
 
+
+def fumbexample():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'Grids_and_profiles/grids/fubm_caseHVDC_vt.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def fumbexample_w_ourControls():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/fubm_caseHVDC_vt_wControls.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def ieee5_w_ourControls():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/IEEE 5 Bus_wControls.xlsx'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def simple2bus_wOurControls():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/simple2bus.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def doubleVSCsystem():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/doubleVSCsystem.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def simple3busacdc_wOurControls():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridcal_models/simple3busacdc.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def threebusacdc():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/3busacdc.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def simple3busacdc():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/3busacdc_simple.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def complex6bus():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/complex6bus.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def simple3busacdc_controllingPower_wtrafo():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/3busacdc_simple_powerControl_wtrafo.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def newthing():
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/newthing.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10, max_iter=15)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def simple3busacdc_controllingPower_notrafo():
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/3busacdc_simple_powerControl_notrafo.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10, max_iter=15)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def simple3busac_pure():
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/3busAC.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def simple4busacdc_wTrafo():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/4busacdc_wTrafo.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def simple4busacdc_wControllableTrafo():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/4busacdc_wControllableTrafo.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def simple4busacdc_wControllableTrafo_remoteControl():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/4busacdc_wControllableTrafo_remote.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def simple4busacdc_pure():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/4busacdc.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def simple3busacdc_controllingPower():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gpf_testers/3busacdc_simple_powerControl.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
 
 def case14_example():
     # file_path = 'C:/Users/raiya/Desktop/gridcal_models/14bus_shunt.gridcal'
@@ -1086,22 +1346,30 @@ def compare_results():
 
 
 if __name__ == '__main__':
-    # example_3bus_acopf()
-    # case_3bus()
-    # linn5bus_example() #not using gpf
-    # linn5bus_example2() #converges True and accurate to normal Ac pf
-    # pegase_example89() #Converges True
-    # ieee5bus_example() #converges True
-    # case14_example_noshunt() #converges true
-    # case14_example() #converges True
-    # acdc2bus_example() #converges True
-    # acdc4bus_example() #converges true
+    # ieee5_w_ourControls()
+    # simple2bus_wOurControls() #converges true
+    # threebusacdc()  # does not converge
+    # simple3busacdc() #converges true DO NOT TOUCH
+    # simple3busacdc_controllingPower() #converges true, but only if you do Power to and not power from
+    # simple3busacdc_controllingPower_notrafo() #converges true only with tolerance 1e-5 and higher
+    # simple3busacdc_controllingPower_wtrafo() #does not converge, but this always does not converge for some reason, must be a tolerance issue
+    # simple3busac_pure() #converges true
+    # simple4busacdc_pure() #converges true
+    # simple4busacdc_wTrafo() #converged true because it is seen as an inactive device
+    # simple4busacdc_wControllableTrafo() #converges true when controlling the powers across the transformer, lessons learnt, when you are controlling a branch power, if you try a setpont that goes agaisnt the natural flow of power ie from slack to load, youll have a hard time converging
+    simple4busacdc_wControllableTrafo_remoteControl()
+    # complex6bus() #converges true
+
+
+    # doubleVSCsystem()
+
     
-    compare_results()
+    # compare_results()
     
     # acdc10_example() #converges true but there is a HVDC Link so it doesnt make sense to converge
     # fubm_caseHVDC_vt()
-    # fubm_caseHVDC_vt_normalNR()
+    # fubm_caseHVDC_vt_normalNR()clear
+
     # acdc3bus_example() #problem with the control
     # pegase2k_example() #runs super slow and does not converge
 

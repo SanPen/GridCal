@@ -72,6 +72,17 @@ class VscData:
         self.Vdc_set: Vec = np.zeros(nelm, dtype=float)
 
 
+        # GENERALISED PF
+        self.gpf_ctrl1_elm: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl1_mode: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl1_val: Vec = np.zeros(nelm, dtype=float)
+        self.gpf_ctrl2_elm: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl2_mode: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl2_val: Vec = np.zeros(nelm, dtype=float)
+
+        self.name_to_idx: dict = dict()
+
+
     def update_loading(self, Pbus: Vec, Vbus: Vec, Sbase: float):
         """
         Calculate loading and losses for each VSC based on current power and voltage levels.

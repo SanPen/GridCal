@@ -1025,6 +1025,39 @@ class HelperFunctions:
         return Vdc_isControlled, Vac_isControlled, Pdc_isControlled, Pac_isControlled, Qac_isControlled
 
 
+    @staticmethod
+    def acdc_3bus():
+        grid = MultiCircuitRaiyan()
+        grid.change_base(1000)
+
+        bus0 = gce.Bus('Bus 0')
+        grid.add_bus(bus0)
+        grid.add_load(bus0, gce.Load('load 0', P=300, Q=100))
+
+        gen0_control1 = ControlRaiyan(grid, bus0, "Voltage", 1.01)
+        gen0_control2 = ControlRaiyan(grid, bus0, "Angle", 0.0)
+        gen0 = GeneratorRaiyan('Some random generator 0', gen0_control1, gen0_control2, vset=1.0, Pmin=0, Pmax=1000,
+                            Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
+        grid.add_generator(bus0, gen0)
+
+        bus1 = gce.Bus('Bus 1')
+        grid.add_bus(bus1)
+
+        line01 = gce.Line(bus0, bus1, 'line 0-1', r=0.1, x=0.3, b=0.0)
+        grid.add_line(line01)
+
+        bus2 = gce.Bus('Bus 2')
+        bus2.is_dc = True
+        load2 = gce.Load('load 2', P=200, Q=0)
+        grid.add_bus(bus2)
+        grid.add_load(bus2, load2)
+
+        VSC1_control1 = ControlRaiyan(grid, bus2, "Voltage", 1.0)
+        VSC1_control2 = ControlRaiyan(grid, bus1, "Voltage", 0.999)
+        vsc1 = VSC_Series(bus1, bus2, 'VSC 1-2', 0.1, {'Qt': 0.05, 'Vmf': 1.00}, VSC1_control1, VSC1_control2)
+        grid.add_vsc(vsc1)
+
+        return grid
 
     @staticmethod
     def acdc_5bus():
@@ -1032,7 +1065,7 @@ class HelperFunctions:
         grid.change_base(1000)
 
 
-        bus1 = gce.Bus('Bus 1', vnom=20)
+        bus1 = gce.Bus('Bus 1')
         grid.add_bus(bus1)
         gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.01)
         gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
@@ -1041,23 +1074,23 @@ class HelperFunctions:
         
 
         grid.add_generator(bus1, gen1)
-        bus2 = gce.Bus('Bus 2', vnom=20)
+        bus2 = gce.Bus('Bus 2')
         grid.add_bus(bus2)
         grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
 
         line12 = gce.Line(bus1, bus2, 'line 1-2', r=0.1, x=0.3, b=0.0)
         grid.add_line(line12)
 
-        bus3 = gce.Bus('Bus 3', vnom=20)
+        bus3 = gce.Bus('Bus 3')
         bus3.is_dc = True
         grid.add_bus(bus3)
 
-        bus4 = gce.Bus('Bus 4', vnom=20)
+        bus4 = gce.Bus('Bus 4')
         bus4.is_dc = True
         grid.add_bus(bus4)
         grid.add_load(bus4, gce.Load('load 2', P=300, Q=0))
 
-        bus5 = gce.Bus('Bus 5', vnom=20)
+        bus5 = gce.Bus('Bus 5')
         bus5.is_dc = True
         grid.add_bus(bus5)
 
@@ -1391,7 +1424,7 @@ class HelperFunctions:
         grid = MultiCircuitRaiyan()
         grid.change_base(1000)
 
-        bus1 = gce.Bus('Bus 1', vnom=20)
+        bus1 = gce.Bus('Bus 1')
         grid.add_bus(bus1)
         gen1_control1 = ControlRaiyan(grid, bus1, "Voltage", 1.01)
         gen1_control2 = ControlRaiyan(grid, bus1, "Angle", 0.0)
@@ -1399,11 +1432,11 @@ class HelperFunctions:
                             Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0)
 
         grid.add_generator(bus1, gen1)
-        bus2 = gce.Bus('Bus 2', vnom=20)
+        bus2 = gce.Bus('Bus 2')
         grid.add_bus(bus2)
         grid.add_load(bus2, gce.Load('load 2', P=300, Q=100))
 
-        bus3 = gce.Bus('Bus 3', vnom=20)
+        bus3 = gce.Bus('Bus 3')
         grid.add_bus(bus3)  
         grid.add_load(bus3, gce.Load('load 3', P=200, Q=50))
 
@@ -2850,6 +2883,14 @@ def compute_fx_raiyan(Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, mod
         fx.append(Sto.real - p_to[controllable_trafo_tobus[i]])
         fx.append(Sfrom.imag - q_from[controllable_trafo_frombus[i]])
         fx.append(Sto.imag - q_to[controllable_trafo_tobus[i]])
+        print("Voltage From:" + str(V[controllable_trafo_frombus[i]]))
+        print("Voltage To:" + str(V[controllable_trafo_tobus[i]]))
+        print("Modulation:" + str(modulations[controllable_trafo_frombus[i]]))
+        print("Tau:" + str(taus[controllable_trafo_frombus[i]]))
+        print("Trafo Active Power From:" + str(Sfrom.real - p_from[controllable_trafo_frombus[i]]))
+        print("Trafo Active Power To:" + str(Sto.real - p_to[controllable_trafo_tobus[i]]))
+        print("Trafo Reactive Power From:" + str(Sfrom.imag - q_from[controllable_trafo_frombus[i]]))
+        print("Trafo Reactive Power To:" + str(Sto.imag - q_to[controllable_trafo_tobus[i]]))
 
         listOfFuncs.append("Trafo Active Power From:" + str(controllable_trafo_frombus[i]))
         listOfFuncs.append("Trafo Active Power From:" + str(controllable_trafo_frombus[i]))
@@ -3191,9 +3232,10 @@ if __name__ == '__main__':
     # grid_ = HelperFunctions.ieee14_example()      #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.pure_dc_3bus()        #converges true
     # grid_ = HelperFunctions.pure_ac_2bus()        #converges true
-    # grid_ = HelperFunctions.pure_ac_3bus_trafo()  #converges true, your trafo is not broken maybe?
+    grid_ = HelperFunctions.pure_ac_3bus_trafo()  #converges true, your trafo is not broken maybe?
     # grid_ = HelperFunctions.acdc_5bus()           #converges true 
-    grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
+    # grid_ = HelperFunctions.acdc_3bus() 
+    # grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
     # grid_ = HelperFunctions.acdc_10buswoTrafo()
     # grid_ = HelperFunctions.linn5bus_example2()
     # grid_ = HelperFunctions.bus14_example()

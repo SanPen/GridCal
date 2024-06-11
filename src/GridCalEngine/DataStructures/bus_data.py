@@ -48,6 +48,9 @@ class BusData:
 
         self.original_idx: IntVec = np.zeros(nbus, dtype=int)
 
+        ## GENERALISED PF
+        self.name_to_idx: dict = dict()
+
     def slice(self, elm_idx: IntVec) -> "BusData":
         """
         Slice this data structure

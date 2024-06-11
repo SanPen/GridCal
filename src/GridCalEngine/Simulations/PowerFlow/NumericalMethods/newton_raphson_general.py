@@ -69,7 +69,9 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     Split the AC and DC subsystems
     '''
     Ybus = nc.Ybus
-    Ybus = isolate_AC_DC(nc, nc.Ybus)    
+    # Ybus = isolate_AC_DC(nc, nc.Ybus) # not needed anymore since i do not treat the vscs as a branch anymore, you should just be seeing passive branches in here i believe    
+    print("(newton_raphson_general.py) Ybus")
+    print(Ybus.todense())
 
     '''
     Remove the generator powers from S0
@@ -91,156 +93,109 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     Va0 = np.angle(V0)
 
     '''
-    Using known values, update setpoints
+    Initialising more specific from and to powers
     '''
-    Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = update_setpoints(nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
-    p_zip = update_zips(nc.nbus, p_zip, nc.kn_pzip_idx, nc.kn_pzip_setpoints)
-    q_zip = update_zips(nc.nbus, q_zip, nc.kn_qzip_idx, nc.kn_qzip_setpoints)
+    p_from_vsc = np.zeros(nc.vsc_data.nelm)
+    p_to_vsc = np.zeros(nc.vsc_data.nelm)
+    q_to_vsc = np.zeros(nc.vsc_data.nelm)
+    p_zip_gen = np.zeros(nc.generator_data.nelm)
+    q_zip_gen = np.zeros(nc.generator_data.nelm)
+    p_from_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
+    q_from_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
+    p_to_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
+    q_to_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
+    # you might want to think about moving the modulatiosn and taus down here, it does not make sense for them to be length bus, does it
+    tapMod_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
+    tapAng_contrTrafo = np.zeros(nc.controllable_trafo_data.nelm)
 
 
-    '''
-    Create unknowns vector
-    '''
-    x0 = var2x(nc)
-    logger = Logger()
 
-    ret: ConvexMethodResult = newton_raphson(func=pf_function_raiyan,
-                                                func_args=(Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, Ybus, nc),
-                                                x0=x0,
-                                                tol=pf_options.tolerance,
-                                                max_iter=pf_options.max_iter,
-                                                trust=pf_options.trust_radius,
-                                                verbose=pf_options.verbose,
-                                                logger= logger)
+    '''
+    GPF ver 2
+    '''
+    # if len(nc.dc_indices) > 0:
+    if (True):
+        Vm0, Va0 = update_bus_setpoints(nc, Vm0, Va0)
+        p_from_vsc, p_to_vsc, q_to_vsc = update_vsc_setpoints(nc, p_from_vsc, p_to_vsc, q_to_vsc)
+        p_zip_gen, q_zip_gen = update_gen_setpoints(nc, p_zip_gen, q_zip_gen)
+        p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = update_contTrafo_setpoints(nc, p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)
+
+        _x0 = var2x_gpf2(nc)
+
+        logger = Logger()
+
+        ret: ConvexMethodResult = newton_raphson(func=pf_function_gpf2,
+                                                    func_args=(Vm0, Va0, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, Ybus, nc),
+                                                    x0=_x0,
+                                                    tol=pf_options.tolerance,
+                                                    max_iter=pf_options.max_iter,
+                                                    # max_iter = 3,
+                                                    trust=pf_options.trust_radius,
+                                                    verbose=pf_options.verbose,
+                                                    logger= logger)
+        
+        # update setpoints
+        Vm0, Va0 = update_bus_setpoints(nc, Vm0, Va0)
+        p_from_vsc, p_to_vsc, q_to_vsc = update_vsc_setpoints(nc, p_from_vsc, p_to_vsc, q_to_vsc)
+        p_zip_gen, q_zip_gen = update_gen_setpoints(nc, p_zip_gen, q_zip_gen)
+        p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = update_contTrafo_setpoints(nc, p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)
+
+    else:
+        Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = update_setpoints(nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
+        p_zip = update_zips(nc.nbus, p_zip, nc.kn_pzip_idx, nc.kn_pzip_setpoints)
+        q_zip = update_zips(nc.nbus, q_zip, nc.kn_qzip_idx, nc.kn_qzip_setpoints)
+
+
+        '''
+        Create unknowns vector
+        '''
+        x0 = var2x(nc)
+        logger = Logger()
+
+        ret: ConvexMethodResult = newton_raphson(func=pf_function_raiyan,
+                                                    func_args=(Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, Ybus, nc),
+                                                    x0=x0,
+                                                    tol=pf_options.tolerance,
+                                                    max_iter=pf_options.max_iter,
+                                                    trust=pf_options.trust_radius,
+                                                    verbose=pf_options.verbose,
+                                                    logger= logger)
 
     # Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus  = update_setpoints(known_dict, nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
-    Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = update_setpoints(nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
-    p_zip = update_zips(nc.nbus, p_zip, nc.kn_pzip_idx, nc.kn_pzip_setpoints)
-    q_zip = update_zips(nc.nbus, q_zip, nc.kn_qzip_idx, nc.kn_qzip_setpoints)
+        Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = update_setpoints(nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
+        p_zip = update_zips(nc.nbus, p_zip, nc.kn_pzip_idx, nc.kn_pzip_setpoints)
+        q_zip = update_zips(nc.nbus, q_zip, nc.kn_qzip_idx, nc.kn_qzip_setpoints)
+    
+
+
+
     V = Vm0 * np.exp(1j * Va0)
-    Scalc = compute_power(Ybus, V)
-
-    # print("(newton_raphson_general.py) p_zip after running algo")
-    # print(p_zip)
-
-    # print("(newton_raphson_general.py) q_zip after running algo")
-    # print(q_zip)
+    Sbus = compute_zip_power(S0, I0, Y0, V)
 
 
-    # print("(newton_raphson_general.py) after compile information")
-    # print("(newton_raphson_general.py) nc.ac_indices", nc.ac_indices)
-    # print("(newton_raphson_general.py) nc.dc_indices", nc.dc_indices)
+    C_gen = nc.generator_data.C_bus_elm
+    Cfrom_vsc = nc.vsc_data.C_vsc_bus_f.transpose() #transpose becasue we want shape (nbus, nelm)
+    Cto_vsc = nc.vsc_data.C_vsc_bus_t.transpose() #transpose becasue we want shape (nbus, nelm)
+    Cfrom_contTrafo = nc.controllable_trafo_data.C_branch_bus_f.transpose() #transpose becasue we want shape (nbus, nelm)
+    Cto_contTrafo = nc.controllable_trafo_data.C_branch_bus_t.transpose() #transpose becasue we want shape (nbus, nelm)
 
-    # print("(newton_raphson_general.py) vsc data")
-    # print("(newton_raphson_general.py) nc.vsc_data.F", nc.vsc_data.F)
-    # print("(newton_raphson_general.py) nc.vsc_data.T", nc.vsc_data.T)
+    # p_to_overall = Cto_vsc @ p_to_vsc + Cto_contTrafo @ p_to_contTrafo
+    # p_from_overall = Cfrom_contTrafo @ p_from_contTrafo + Cfrom_vsc @ p_from_vsc
+    # q_to_overall = Cto_vsc @ q_to_vsc + Cto_contTrafo @ q_to_contTrafo
+    # q_from_overall = Cfrom_contTrafo @ q_from_contTrafo
 
-    # print("(newton_raphson_general.py) nc.vsc_data.branch_index", nc.vsc_data.branch_index)
+    # p_to_vsc_at_bus = Cto_vsc @ p_to_vsc
+    # q_to_vsc_at_bus = Cto_vsc @ q_to_vsc
+    # p_from_vsc_at_bus = Cfrom_vsc @ p_from_vsc
 
-    # print("(newton_raphson_general.py) nc.kn_volt_idx")
-    # print(nc.kn_volt_idx)
-    # print(nc.kn_volt_setpoints)
 
-    # print("(newton_raphson_general.py) nc.kn_angle_idx")
-    # print(nc.kn_angle_idx)
-    # print(nc.kn_angle_setpoints)
+    C_gen = nc.generator_data.C_bus_elm
+    p_zip_overall = C_gen @ p_zip_gen
+    q_zip_overall = C_gen @ q_zip_gen
 
-    # print("(newton_raphson_general.py) nc.kn_pzip_idx")
-    # print(nc.kn_pzip_idx)
-    # print(nc.kn_pzip_setpoints)
-
-    # print("(newton_raphson_general.py) create_gen_connection_matrix")
-    # print(create_zip2bus_connection_matrix(nc.nbus, nc.kn_pzip_idx))
-    # print("active power contribution to the bus", np.dot(create_zip2bus_connection_matrix(nc.nbus, nc.kn_pzip_idx), nc.kn_pzip_setpoints))
-
-    # print("(newton_raphson_general.py) reactive power matrix")
-    # print(create_zip2bus_connection_matrix(nc.nbus, nc.kn_qzip_idx))
-    # print("reactive power contribution to the bus", np.dot(create_zip2bus_connection_matrix(nc.nbus, nc.kn_qzip_idx), nc.kn_qzip_setpoints))
-
-    # print("(newton_raphson_general.py) nc.kn_qzip_idx")
-    # print(nc.kn_qzip_idx)
-    # print("(newton_raphson_general.py) nc.kn_qzip_setpoints")
-    # print(nc.kn_qzip_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_pfrom_kdx")
-    # print(nc.kn_pfrom_kdx)
-    # print("(newton_raphson_general.py) nc.kn_pfrom_setpoints")
-    # print(nc.kn_pfrom_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_qfrom_kdx")
-    # print(nc.kn_qfrom_kdx)
-    # print("(newton_raphson_general.py) nc.kn_qfrom_setpoints")
-    # print(nc.kn_qfrom_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_pto_kdx")
-    # print(nc.kn_pto_kdx)
-    # print("(newton_raphson_general.py) nc.kn_pto_setpoints")
-    # print(nc.kn_pto_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_qto_kdx")
-    # print(nc.kn_qto_kdx)
-    # print("(newton_raphson_general.py) nc.kn_qto_setpoints")
-    # print(nc.kn_qto_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_tau_kdx")
-    # print(nc.kn_tau_kdx)
-    # print("(newton_raphson_general.py) nc.kn_tau_setpoints")
-    # print(nc.kn_tau_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_mod_kdx")
-    # print(nc.kn_mod_kdx)
-    # print("(newton_raphson_general.py) nc.kn_mod_setpoints")
-    # print(nc.kn_mod_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_passive_pfrom_kdx")
-    # print(nc.kn_passive_pfrom_kdx)
-    # print("(newton_raphson_general.py) nc.kn_passive_pfrom_setpoints")
-    # print(nc.kn_passive_pfrom_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_passive_qfrom_kdx")
-    # print(nc.kn_passive_qfrom_kdx)
-    # print("(newton_raphson_general.py) nc.kn_passive_qfrom_setpoints")
-    # print(nc.kn_passive_qfrom_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_passive_pto_kdx")
-    # print(nc.kn_passive_pto_kdx)
-    # print("(newton_raphson_general.py) nc.kn_passive_pto_setpoints")
-    # print(nc.kn_passive_pto_setpoints)
-
-    # print("(newton_raphson_general.py) nc.kn_passive_qto_kdx")
-    # print(nc.kn_passive_qto_kdx)
-    # print("(newton_raphson_general.py) nc.kn_passive_qto_setpoints")
-    # print(nc.kn_passive_qto_setpoints)
-
-    # print("(newton_raphson_general.py) nc.un_volt_idx")
-    # print(nc.un_volt_idx)
-
-    # print("(newton_raphson_general.py) nc.un_angle_idx")
-    # print(nc.un_angle_idx)
-
-    # print("(newton_raphson_general.py) nc.un_pzip_idx")
-    # print(nc.un_pzip_idx)
-
-    # print("(newton_raphson_general.py) nc.un_qzip_idx")
-    # print(nc.un_qzip_idx)
-
-    # print("(newton_raphson_general.py) nc.un_pfrom_kdx")
-    # print(nc.un_pfrom_kdx)
-
-    # print("(newton_raphson_general.py) nc.un_qfrom_kdx")
-    # print(nc.un_qfrom_kdx)
-
-    # print("(newton_raphson_general.py) nc.un_pto_kdx")
-    # print(nc.un_pto_kdx)
-
-    # print("(newton_raphson_general.py) nc.un_qto_kdx")
-    # print(nc.un_qto_kdx)
-
-    # print("(newton_raphson_general.py) nc.un_tau_kdx")
-    # print(nc.un_tau_kdx)
-
-    # print("(newton_raphson_general.py) nc.un_mod_kdx")
-    # print(nc.un_mod_kdx)    
+    newPcalc = Sbus.real  - p_zip_overall
+    newQCalc = Sbus.imag  - q_zip_overall
+    newScalc = newPcalc + 1j * newQCalc
 
     end = time.time()
     elapsed = end - start
@@ -252,7 +207,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
 
 
     results = NumericPowerFlowResults(V=V, converged=ret.converged, norm_f=ret.error,
-                                   Scalc=Scalc)
+                                   Scalc=newScalc, vsc_results=(p_from_vsc, p_to_vsc, q_to_vsc), contTrafo_results=(p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo))
     
     results.converged = ret.converged
     return results
@@ -357,6 +312,36 @@ def remove_gen_from_zip(S0: CxVec,
     return S0
 
 
+def isolate_active_branches(nc, Ybus) -> csc_matrix:
+    _matrix = Ybus.copy()
+    n = _matrix.shape[0]  # Assuming Ybus is square, ofc it is 
+    for i in range(nc.vsc_data.nelm):
+        # Get indices for the buses
+        from_idx = nc.vsc_data.F[i]
+        to_idx = nc.vsc_data.T[i]
+        _z1 = _matrix[from_idx, to_idx]
+        _z2 = _matrix[to_idx, from_idx]
+        _matrix[from_idx, to_idx] = 0
+        _matrix[to_idx, from_idx] = 0
+        #minus off _z1 and _z2 from the diagonals
+        _matrix[from_idx, from_idx] += _z1
+        _matrix[to_idx, to_idx] += _z2
+
+    for i in range(nc.controllable_trafo_data.nelm):
+        # Get indices for the buses
+        from_idx = nc.controllable_trafo_data.F[i]
+        to_idx = nc.controllable_trafo_data.T[i]
+        _z1 = _matrix[from_idx, to_idx]
+        _z2 = _matrix[to_idx, from_idx]
+        _matrix[from_idx, to_idx] = 0
+        _matrix[to_idx, from_idx] = 0
+        #minus off _z1 and _z2 from the diagonals
+        _matrix[from_idx, from_idx] += _z1
+        _matrix[to_idx, to_idx] += _z2
+
+    return _matrix
+
+
 def isolate_AC_DC(nc, Ybus) -> csc_matrix:
     """
     Isolates the AC and DC components of a power nc within its admittance matrix.
@@ -451,6 +436,61 @@ def p2q(p, pf):
     """
     return p * np.tan(np.arccos(pf))
 
+def update_bus_setpoints(nc, Vm0, Va0):
+    Vm0 = np.asarray(Vm0)
+    Va0 = np.asarray(Va0)
+
+    Vm0[nc.gpf_kn_volt_idx] = nc.gpf_kn_volt_setpoints
+    Va0[nc.gpf_kn_angle_idx] = nc.gpf_kn_angle_setpoints
+
+    return Vm0, Va0
+
+
+def update_vsc_setpoints(nc, p_from_vsc, p_to_vsc, q_to_vsc):
+    p_from_vsc = np.asarray(p_from_vsc)
+    p_to_vsc = np.asarray(p_to_vsc)
+    q_to_vsc = np.asarray(q_to_vsc)
+
+    p_from_vsc[nc.gpf_kn_pfrom_vsc_kdx] = nc.gpf_kn_pfrom_vsc_setpoints
+    p_to_vsc[nc.gpf_kn_pto_vsc_kdx] = nc.gpf_kn_pto_vsc_setpoints
+    q_to_vsc[nc.gpf_kn_qto_vsc_kdx] = nc.gpf_kn_qto_vsc_setpoints
+
+    return p_from_vsc, p_to_vsc, q_to_vsc
+
+
+def update_gen_setpoints(nc, pzip_gen, qzip_gen):
+    #divide the setpoints by Sbase
+
+    pzip_gen = np.asarray(pzip_gen)
+    qzip_gen = np.asarray(qzip_gen)
+
+    pzip_gen /= nc.Sbase
+    qzip_gen /= nc.Sbase
+
+    pzip_gen[nc.gpf_kn_pzip_gen_idx] = nc.gpf_kn_pzip_gen_setpoints
+    qzip_gen[nc.gpf_kn_qzip_gen_idx] = nc.gpf_kn_qzip_gen_setpoints
+
+    return pzip_gen, qzip_gen
+
+def update_contTrafo_setpoints(nc, p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo):
+    p_from_contTrafo = np.asarray(p_from_contTrafo)
+    q_from_contTrafo = np.asarray(q_from_contTrafo)
+    p_to_contTrafo = np.asarray(p_to_contTrafo)
+    q_to_contTrafo = np.asarray(q_to_contTrafo)
+    tapMod_contTrafo = np.asarray(tapMod_contTrafo)
+    tapAng_contrTrafo = np.asarray(tapAng_contrTrafo)
+
+    p_from_contTrafo[nc.gpf_kn_pfrom_trafo_kdx] = nc.gpf_kn_pfrom_trafo_setpoints
+    q_from_contTrafo[nc.gpf_kn_qfrom_trafo_kdx] = nc.gpf_kn_qfrom_trafo_setpoints
+    p_to_contTrafo[nc.gpf_kn_pto_trafo_kdx] = nc.gpf_kn_pto_trafo_setpoints
+    q_to_contTrafo[nc.gpf_kn_qto_trafo_kdx] = nc.gpf_kn_qto_trafo_setpoints
+    tapMod_contTrafo[nc.gpf_kn_mod_trafo_kdx] = nc.gpf_kn_mod_trafo_setpoints
+    tapAng_contrTrafo[nc.gpf_kn_tau_trafo_kdx] = nc.gpf_kn_tau_trafo_setpoints
+
+    return p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo
+
+
+
 
 def update_setpoints(nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose=0):
     """
@@ -519,6 +559,42 @@ def update_setpoints(nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip
 
     return Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus
 
+def pf_function_gpf2(x: Vec,
+                compute_jac: bool,
+                #the args below
+                Vm0, 
+                Va0, 
+                S0, 
+                I0, 
+                Y0, 
+                p_from_vsc, 
+                p_to_vsc, 
+                q_to_vsc, 
+                p_zip_gen,
+                q_zip_gen, 
+                p_from_contTrafo, 
+                p_to_contTrafo, 
+                q_from_contTrafo, 
+                q_to_contTrafo, 
+                tapMod_contTrafo, 
+                tapAng_contrTrafo, 
+                Ybus, 
+                nc):
+    
+
+    Vm, Va, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = x2var_gpf2(x, nc, Vm0, Va0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)
+    V = Vm * np.exp(1j * Va)
+
+    g = compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc)
+    # print("(newton_raphson_general.py) g", g)
+
+    if compute_jac:
+        Gx = compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc)
+    else:
+        Gx = None
+
+    return ConvexFunctionResult(f=g, J=Gx)
+
 def pf_function_raiyan(x: Vec,
                 compute_jac: bool,
                 # these are the args:
@@ -554,6 +630,123 @@ def pf_function_raiyan(x: Vec,
     return ConvexFunctionResult(f=g, J=Gx)
 
 
+def compute_trafo_power(Cfrom_contTrafo, Cto_contTrafo, p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo):
+    p_from_contTrafo_at_bus = Cfrom_contTrafo @ p_from_contTrafo
+    q_from_contTrafo_at_bus = Cfrom_contTrafo @ q_from_contTrafo
+    p_to_contTrafo_at_bus = Cto_contTrafo @ p_to_contTrafo
+    q_to_contTrafo_at_bus = Cto_contTrafo @ q_to_contTrafo
+
+    return p_from_contTrafo_at_bus, q_from_contTrafo_at_bus, p_to_contTrafo_at_bus, q_to_contTrafo_at_bus
+
+def compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc):
+    """
+    Compose the power flow function
+    :param V:
+    :param Ybus:
+    :param S0:
+    :param I0:
+    :param Y0:
+    :param Vm:
+    :param pq:
+    :param pvpq:
+    :return:
+    """
+    Sbus = compute_zip_power(S0, I0, Y0, V)
+    Scalc = compute_power(Ybus, V)
+    ac_idx = nc.ac_indices
+    dc_idx = nc.dc_indices
+    vsc_frombus_idx = nc.vsc_data.F
+    vsc_tobus_idx = nc.vsc_data.T
+    contTrafo_frombus_idx = nc.controllable_trafo_data.F
+    contTrafo_tobus_idx = nc.controllable_trafo_data.T
+
+    # print("(newton_raphson_general.py) compute_fx_gpf2 Sbus", Sbus)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 Scalc", Scalc)
+
+    C_gen = nc.generator_data.C_bus_elm
+    Cfrom_vsc = nc.vsc_data.C_vsc_bus_f.transpose() #transpose becasue we want shape (nbus, nelm)
+    Cto_vsc = nc.vsc_data.C_vsc_bus_t.transpose() #transpose becasue we want shape (nbus, nelm)
+    Cfrom_contTrafo = nc.controllable_trafo_data.C_branch_bus_f.transpose() #transpose becasue we want shape (nbus, nelm)
+    Cto_contTrafo = nc.controllable_trafo_data.C_branch_bus_t.transpose() #transpose becasue we want shape (nbus, nelm)
+
+    p_to_overall = Cto_vsc @ p_to_vsc + Cto_contTrafo @ p_to_contTrafo
+    p_from_overall = Cfrom_contTrafo @ p_from_contTrafo + Cfrom_vsc @ p_from_vsc
+    q_to_overall = Cto_vsc @ q_to_vsc + Cto_contTrafo @ q_to_contTrafo
+    q_from_overall = Cfrom_contTrafo @ q_from_contTrafo
+
+    p_to_vsc_at_bus = Cto_vsc @ p_to_vsc
+    q_to_vsc_at_bus = Cto_vsc @ q_to_vsc
+    p_from_vsc_at_bus = Cfrom_vsc @ p_from_vsc
+
+    # p_from_contTrafo_at_bus, q_from_contTrafo_at_bus, p_to_contTrafo_at_bus, q_to_contTrafo_at_bus = compute_trafo_power(Cfrom_contTrafo, Cto_contTrafo, p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo)
+
+    p_zip_overall = C_gen @ p_zip_gen
+    q_zip_overall = C_gen @ q_zip_gen
+
+    #controllable trafo stuff
+    v_from_contTrafo = V[nc.controllable_trafo_data.F]
+    v_to_contTrafo = V[nc.controllable_trafo_data.T]
+
+    # print("(newton_raphson_general.py) compute_fx_gpf2 p_to_overall", p_to_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 p_from_overall", p_from_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 q_to_overall", q_to_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 q_from_overall", q_from_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 p_zip_overall", p_zip_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 q_zip_overall", q_zip_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 q_zip_gen", q_zip_gen)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 p_to_vsc_at_bus", p_to_vsc_at_bus)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 q_to_vsc_at_bus", q_to_vsc_at_bus)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 p_from_vsc_at_bus", p_from_vsc_at_bus)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 Sbus", Sbus)
+    # print("(newton_raphson_general.py) compute_fx_gpf2 Scalc", Scalc)
+
+
+    nvsc = nc.vsc_data.nelm
+    ncontrTrafo = nc.controllable_trafo_data.nelm
+    npassivePfromSet = len(nc.gpf_kn_pfrom_passive_kdx)
+    npassivePtoSet = len(nc.gpf_kn_pto_passive_kdx)
+    npassiveQfromSet = len(nc.gpf_kn_qfrom_passive_kdx)
+    npassiveQtoSet = len(nc.gpf_kn_qto_passive_kdx)
+    
+    passivePfromSetpoints = nc.gpf_kn_pfrom_passive_setpoints
+    passivePtoSetpoints = nc.gpf_kn_pto_passive_setpoints
+    passiveQfromSetpoints = nc.gpf_kn_qfrom_passive_setpoints
+    passiveQtoSetpoints = nc.gpf_kn_qto_passive_setpoints
+
+    passivePfromSetFromBus = nc.branch_data.F[nc.gpf_kn_pfrom_passive_kdx]
+    passivePtoSetFromBus = nc.branch_data.F[nc.gpf_kn_pto_passive_kdx]
+    passiveQfromSetFromBus = nc.branch_data.F[nc.gpf_kn_qfrom_passive_kdx]
+    passiveQtoSetFromBus = nc.branch_data.F[nc.gpf_kn_qto_passive_kdx]
+
+    passivePfromSetToBus = nc.branch_data.T[nc.gpf_kn_pfrom_passive_kdx]
+    passivePtoSetToBus = nc.branch_data.T[nc.gpf_kn_pto_passive_kdx]
+    passiveQfromSetToBus = nc.branch_data.T[nc.gpf_kn_qfrom_passive_kdx]
+    passiveQtoSetToBus = nc.branch_data.T[nc.gpf_kn_qto_passive_kdx]
+
+    passivePfromSetYbus = Ybus[passivePfromSetFromBus, passivePfromSetToBus]
+    passivePtoSetYbus = Ybus[passivePtoSetFromBus, passivePtoSetToBus]
+    passiveQfromSetYbus = Ybus[passiveQfromSetFromBus, passiveQfromSetToBus]
+    passiveQtoSetYbus = Ybus[passiveQtoSetFromBus, passiveQtoSetToBus]
+
+
+
+
+
+    g = compute_fx_gpf2_raiyan(Scalc, Sbus, V, ac_idx, dc_idx, vsc_frombus_idx, vsc_tobus_idx, 
+                               p_to_overall, p_from_overall, q_to_overall, q_from_overall, 
+                               p_zip_overall, q_zip_overall, 
+                               p_to_vsc_at_bus, q_to_vsc_at_bus, p_from_vsc_at_bus, 
+                               p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, 
+                               v_from_contTrafo, v_to_contTrafo, contTrafo_frombus_idx, contTrafo_tobus_idx, nvsc, ncontrTrafo,
+                               npassivePfromSet, npassivePtoSet, npassiveQfromSet, npassiveQtoSet,
+                               passivePfromSetpoints, passivePtoSetpoints, passiveQfromSetpoints, passiveQtoSetpoints,
+                                 passivePfromSetFromBus, passivePtoSetFromBus, passiveQfromSetFromBus, passiveQtoSetFromBus,
+                                    passivePfromSetToBus, passivePtoSetToBus, passiveQfromSetToBus, passiveQtoSetToBus,
+                                    passivePfromSetYbus, passivePtoSetYbus, passiveQfromSetYbus, passiveQtoSetYbus)
+    
+    return g
+
+
 def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc) -> Vec:
     """
     Compose the power flow function
@@ -577,6 +770,325 @@ def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip,
     g = compute_fx_raiyan(ac_indices, dc_indices, vsc_data_from, vsc_data_to, Scalc, Sbus, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, V)
     return g
 
+def compute_gx_symbolic_dcpowerbalance_v(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_va(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_pzip(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_qzip(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_pfrom_vsc(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_pto_vsc(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_qto_vsc(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_pfrom_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_pto_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_qfrom_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_qto_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_mod_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance_tau_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count):
+    pass
+
+def compute_gx_symbolic_acpowerbalance(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_contTrafo(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_vsc(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_passive_pfrom(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_passive_pto(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_passive_qfrom(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_passive_qto(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    pass
+
+def compute_gx_symbolic_dcpowerbalance(x, V, g, Ybus, S0, I0, Y0, nc, col_count):
+    partial_j = np.zeros((len(x), nc.dc_indices), dtype=float)
+    row_count = 0
+
+    if len(nc.gpf_un_volt_idx) > 0:
+        partial_j[:, row_count:] = compute_gx_symbolic_dcpowerbalance_v(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        row_count += len(nc.gpf_un_volt_idx)
+    
+    if len(nc.gpf_un_angle_idx) > 0:
+        compute_gx_symbolic_dcpowerbalance_va(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_angle_idx)
+    
+    if len(nc.gpf_un_pzip_gen_idx) > 0:
+        compute_gx_symbolic_dcpowerbalance_pzip(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_pzip_gen_idx)
+
+    if len(nc.gpf_un_qzip_gen_idx) > 0:
+        compute_gx_symbolic_dcpowerbalance_qzip(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_qzip_gen_idx)
+
+    if len(nc.gpf_un_pfrom_vsc_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_pfrom_vsc(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_pfrom_vsc_kdx)
+    
+    if len(nc.gpf_un_pto_vsc_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_pto_vsc(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_pto_vsc_kdx)
+
+    if len(nc.gpf_un_qto_vsc_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_qto_vsc(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_qto_vsc_kdx)
+
+    if len(nc.gpf_un_pfrom_trafo_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_pfrom_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_pfrom_trafo_kdx)
+
+    if len(nc.gpf_un_pto_trafo_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_pto_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_pto_trafo_kdx)
+
+    if len(nc.gpf_un_qfrom_trafo_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_qfrom_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_qfrom_trafo_kdx)
+
+    if len(nc.gpf_un_qto_trafo_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_qto_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_qto_trafo_kdx)
+
+    if len(nc.gpf_un_mod_trafo_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_mod_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_mod_trafo_kdx)
+
+    if len(nc.gpf_un_tau_trafo_kdx) > 0:
+        compute_gx_symbolic_dcpowerbalance_tau_trafo(x, V, g, Ybus, S0, I0, Y0, nc, partial_j, row_count)
+        row_count += len(nc.gpf_un_tau_trafo_kdx)
+
+
+
+
+def compute_gx_gpf_symbolic(x, V, g, Ybus, S0, I0, Y0, nc):
+    J = np.zeros((len(x), len(x)), dtype=float)
+    col_count = 0
+    if nc.dc_indices > 0:
+        J[:, col_count:] = compute_gx_symbolic_dcpowerbalance(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.dc_indices
+    if nc.ac_indices > 0:
+        J[:, col_count:] = compute_gx_symbolic_acpowerbalance(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.ac_indices
+    if nc.vsc_data.nelm > 0:
+        J[:, col_count:] = compute_gx_symbolic_vsc(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.vsc_data.nelm
+
+    if nc.controllable_trafo_data.nelm > 0:
+        J[:, col_count:] = compute_gx_symbolic_contTrafo(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.controllable_trafo_data.nelm
+
+    if nc.gpf_kn_pfrom_passive_kdx > 0:
+        J[:, col_count:] = compute_gx_symbolic_passive_pfrom(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.gpf_kn_pfrom_passive_kdx
+
+    if nc.gpf_kn_pto_passive_kdx > 0:
+        J[:, col_count:] = compute_gx_symbolic_passive_pto(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.gpf_kn_pto_passive_kdx
+
+    if nc.gpf_kn_qfrom_passive_kdx > 0:
+        J[:, col_count:] = compute_gx_symbolic_passive_qfrom(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.gpf_kn_qfrom_passive_kdx
+
+    if nc.gpf_kn_qto_passive_kdx > 0 :
+        J[:, col_count:] = compute_gx_symbolic_passive_qto(x, V, g, Ybus, S0, I0, Y0, nc, col_count)
+        col_count += nc.gpf_kn_qto_passive_kdx
+
+    return J
+
+
+
+def compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc):
+    """
+    Compute the Jacobian matrix for the power flow function
+    :param V:
+    :param g:
+    :param Ybus:
+    :param S0:
+    :param I0:
+    :param Y0:
+    :param Vm:
+    :param pq:
+    :param pvpq:
+    :return:
+    """
+    delta = 1e-7
+    x1 = x.copy()
+    J = np.zeros((len(x), len(x)), dtype=float)
+    Vm = np.abs(V)
+    Va = np.angle(V)
+
+
+    for i in range(len(x)):
+        '''
+        Make a deepcopy and alter the ith element
+        '''
+        x1 = np.array(x.copy())
+        Vm_after = np.array(Vm.copy())
+        Va_after = np.array(Va.copy())
+        p_from_vsc_after = np.array(p_from_vsc.copy())
+        p_to_vsc_after = np.array(p_to_vsc.copy())
+        q_to_vsc_after = np.array(q_to_vsc.copy())
+        p_zip_gen_after = np.array(p_zip_gen.copy())
+        q_zip_gen_after = np.array(q_zip_gen.copy())
+        p_from_contTrafo_after = np.array(p_from_contTrafo.copy())
+        p_to_contTrafo_after = np.array(p_to_contTrafo.copy())
+        q_from_contTrafo_after = np.array(q_from_contTrafo.copy())
+        q_to_contTrafo_after = np.array(q_to_contTrafo.copy())
+        tapMod_contTrafo_after = np.array(tapMod_contTrafo.copy())
+        tapAng_contrTrafo_after = np.array(tapAng_contrTrafo.copy())
+        x1[i] += delta
+        # print(f"(newton_raphson_general.py) altered x1:{x1}")
+
+        '''
+        Put the unknowns back into their vectors
+        '''
+        Vm_after, Va_after, p_from_vsc_after, p_to_vsc_after, q_to_vsc_after, p_zip_gen_after, q_zip_gen_after, p_from_contTrafo_after, p_to_contTrafo_after, q_from_contTrafo_after, q_to_contTrafo_after, tapMod_contTrafo_after, tapAng_contrTrafo_after  = x2var_gpf2(x1, nc, Vm_after, Va_after, p_from_vsc_after, p_to_vsc_after, q_to_vsc_after, p_zip_gen_after, q_zip_gen_after, p_from_contTrafo_after, p_to_contTrafo_after, q_from_contTrafo_after, q_to_contTrafo_after, tapMod_contTrafo_after, tapAng_contrTrafo_after)
+        
+        '''
+        Print the afters
+        '''
+        # print("(newton_raphson_general.py) Vm_after: ", Vm_after)
+        # print("(newton_raphson_general.py) Va_after: ", Va_after)
+        # print("(newton_raphson_general.py) p_to_vsc_after: ", p_to_vsc_after)
+        # print("(newton_raphson_general.py) p_from_vsc_after: ", p_from_vsc_after)
+        # print("(newton_raphson_general.py) q_to_vsc_after: ", q_to_vsc_after)
+        # print("(newton_raphson_general.py) p_zip_gen_after: ", p_zip_gen_after)
+        # print("(newton_raphson_general.py) q_zip_gen_after: ", q_zip_gen_after)
+        # print("(newton_raphson_general.py) p_from_contTrafo_after: ", p_from_contTrafo_after)
+        # print("(newton_raphson_general.py) p_to_contTrafo_after: ", p_to_contTrafo_after)
+        # print("(newton_raphson_general.py) q_from_contTrafo_after: ", q_from_contTrafo_after)
+        # print("(newton_raphson_general.py) q_to_contTrafo_after: ", q_to_contTrafo_after)
+        # print("(newton_raphson_general.py) tapMod_contTrafo_after: ", tapMod_contTrafo_after)
+        # print("(newton_raphson_general.py) tapAng_contrTrafo_after: ", tapAng_contrTrafo_after)
+        
+        
+        '''
+        Calculate powers
+        '''
+        V = Vm_after * np.exp(1j * Va_after)
+        Sbus = compute_zip_power(S0, I0, Y0, Vm_after)
+        Scalc = compute_power(Ybus, V)
+
+        '''
+        Prepare the indices
+        '''
+        ac_idx = nc.ac_indices
+        dc_idx = nc.dc_indices
+        vsc_frombus_idx = nc.vsc_data.F
+        vsc_tobus_idx = nc.vsc_data.T
+        contTrafo_frombus_idx = nc.controllable_trafo_data.F
+        contTrafo_tobus_idx = nc.controllable_trafo_data.T
+
+        C_gen = nc.generator_data.C_bus_elm
+        Cfrom_vsc = nc.vsc_data.C_vsc_bus_f.transpose() #transpose becasue we want shape (nbus, nelm)
+        Cto_vsc = nc.vsc_data.C_vsc_bus_t.transpose() #transpose becasue we want shape (nbus, nelm)
+        Cfrom_contTrafo = nc.controllable_trafo_data.C_branch_bus_f.transpose() #transpose becasue we want shape (nbus, nelm)
+        Cto_contTrafo = nc.controllable_trafo_data.C_branch_bus_t.transpose() #transpose becasue we want shape (nbus, nelm)
+
+        p_to_overall = Cto_vsc @ p_to_vsc_after + Cto_contTrafo @ p_to_contTrafo_after
+        p_from_overall = Cfrom_contTrafo @ p_from_contTrafo_after + Cfrom_vsc @ p_from_vsc_after
+        q_to_overall = Cto_vsc @ q_to_vsc_after + Cto_contTrafo @ q_to_contTrafo_after
+        q_from_overall = Cfrom_contTrafo @ q_from_contTrafo_after   
+
+        p_to_vsc_at_bus = Cto_vsc @ p_to_vsc_after
+        q_to_vsc_at_bus = Cto_vsc @ q_to_vsc_after
+        p_from_vsc_at_bus = Cfrom_vsc @ p_from_vsc_after
+
+        p_zip_overall = C_gen @ p_zip_gen_after
+        q_zip_overall = C_gen @ q_zip_gen_after
+
+        # print("(newton_raphson_general.py) p_to_overall: ", p_to_overall)
+        # print("(newton_raphson_general.py) p_from_overall: ", p_from_overall)
+        # print("(newton_raphson_general.py) q_to_overall: ", q_to_overall)
+        # print("(newton_raphson_general.py) q_from_overall: ", q_from_overall)
+        # print("(newton_raphson_general.py) p_zip_overall: ", p_zip_overall)
+        # print("(newton_raphson_general.py) q_zip_overall: ", q_zip_overall)
+        # print("(newton_raphson_general.py) p_to_vsc_at_bus: ", p_to_vsc_at_bus)
+        # print("(newton_raphson_general.py) q_to_vsc_at_bus: ", q_to_vsc_at_bus)
+        # print("(newton_raphson_general.py) p_from_vsc_at_bus: ", p_from_vsc_at_bus)
+
+        v_from_contTrafo = V[nc.controllable_trafo_data.F]
+        v_to_contTrafo = V[nc.controllable_trafo_data.T]
+
+        nvsc = nc.vsc_data.nelm
+        ncontrTrafo = nc.controllable_trafo_data.nelm
+        npassivePfromSet = len(nc.gpf_kn_pfrom_passive_kdx)
+        npassivePtoSet = len(nc.gpf_kn_pto_passive_kdx)
+        npassiveQfromSet = len(nc.gpf_kn_qfrom_passive_kdx)
+        npassiveQtoSet = len(nc.gpf_kn_qto_passive_kdx)
+        
+        passivePfromSetpoints = nc.gpf_kn_pfrom_passive_setpoints
+        passivePtoSetpoints = nc.gpf_kn_pto_passive_setpoints
+        passiveQfromSetpoints = nc.gpf_kn_qfrom_passive_setpoints
+        passiveQtoSetpoints = nc.gpf_kn_qto_passive_setpoints
+
+        passivePfromSetFromBus = nc.branch_data.F[nc.gpf_kn_pfrom_passive_kdx]
+        passivePtoSetFromBus = nc.branch_data.F[nc.gpf_kn_pto_passive_kdx]
+        passiveQfromSetFromBus = nc.branch_data.F[nc.gpf_kn_qfrom_passive_kdx]
+        passiveQtoSetFromBus = nc.branch_data.F[nc.gpf_kn_qto_passive_kdx]
+
+        passivePfromSetToBus = nc.branch_data.T[nc.gpf_kn_pfrom_passive_kdx]
+        passivePtoSetToBus = nc.branch_data.T[nc.gpf_kn_pto_passive_kdx]
+        passiveQfromSetToBus = nc.branch_data.T[nc.gpf_kn_qfrom_passive_kdx]
+        passiveQtoSetToBus = nc.branch_data.T[nc.gpf_kn_qto_passive_kdx]
+
+        passivePfromSetYbus = Ybus[passivePfromSetFromBus, passivePfromSetToBus]
+        passivePtoSetYbus = Ybus[passivePtoSetFromBus, passivePtoSetToBus]
+        passiveQfromSetYbus = Ybus[passiveQfromSetFromBus, passiveQfromSetToBus]
+        passiveQtoSetYbus = Ybus[passiveQtoSetFromBus, passiveQtoSetToBus]
+
+        '''
+        Get the difference in the vectors and append to J
+        '''
+        fx_altered = compute_fx_gpf2_raiyan(Scalc, Sbus, V, ac_idx , dc_idx , vsc_frombus_idx, vsc_tobus_idx, 
+                                            p_to_overall, p_from_overall, q_to_overall, q_from_overall, 
+                                            p_zip_overall, q_zip_overall, p_to_vsc_at_bus, q_to_vsc_at_bus, 
+                                            p_from_vsc_at_bus, p_from_contTrafo_after, q_from_contTrafo_after, p_to_contTrafo_after, q_to_contTrafo_after, tapMod_contTrafo_after, tapAng_contrTrafo_after, 
+                                            v_from_contTrafo, v_to_contTrafo, contTrafo_frombus_idx, contTrafo_tobus_idx, nvsc, ncontrTrafo,
+                               npassivePfromSet, npassivePtoSet, npassiveQfromSet, npassiveQtoSet,
+                               passivePfromSetpoints, passivePtoSetpoints, passiveQfromSetpoints, passiveQtoSetpoints,
+                                 passivePfromSetFromBus, passivePtoSetFromBus, passiveQfromSetFromBus, passiveQtoSetFromBus,
+                                    passivePfromSetToBus, passivePtoSetToBus, passiveQfromSetToBus, passiveQtoSetToBus,
+                                    passivePfromSetYbus, passivePtoSetYbus, passiveQfromSetYbus, passiveQtoSetYbus)
+        # print(f"(newton_raphson_general.py) original g: ", g)
+        # print(f"(newton_raphson_general.py) altered g: ", fx_altered)
+        diff = (fx_altered - g) / delta
+        # print(f"(newton_raphson_general.py) diff w altered x{i}: ", diff)
+        J[:, i] = diff
+
+    print("(newton_raphson_general.py) J: ")
+    print(J)
+
+    return csr_matrix((J), shape=(len(x), len(x))).tocsc()
 
 
 def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc) -> CscMat:
@@ -632,6 +1144,178 @@ def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zi
     # print(J)
 
     return csr_matrix((J), shape=(len(x), len(x))).tocsc()
+
+
+# @nb.jit(nopython=True)
+def compute_fx_gpf2_raiyan(Scalc, Sbus, V, ac_indices, dc_indices, vsc_frombus_idx, vsc_tobus_idx, 
+                           p_to_overall, p_from_overall, q_to_overall, q_from_overall, 
+                           p_zip_overall, q_zip_overall, 
+                           p_to_vsc_at_bus, q_to_vsc_at_bus, p_from_vsc_at_bus, 
+                           p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, 
+                           v_from_contTrafo, v_to_contTrafo, contTrafo_frombus_idx, contTrafo_tobus_idx, nvsc, ncontrTrafo,
+                               npassivePfromSet, npassivePtoSet, npassiveQfromSet, npassiveQtoSet,
+                               passivePfromSetpoints, passivePtoSetpoints, passiveQfromSetpoints, passiveQtoSetpoints,
+                                 passivePfromSetFromBus, passivePtoSetFromBus, passiveQfromSetFromBus, passiveQtoSetFromBus,
+                                    passivePfromSetToBus, passivePtoSetToBus, passiveQfromSetToBus, passiveQtoSetToBus,
+                                    passivePfromSetYbus, passivePtoSetYbus, passiveQfromSetYbus, passiveQtoSetYbus):
+    """
+    Compute the NR-like error function using properties from the network configuration object (nc),
+    incorporating conditions to ensure operations are only performed when relevant data is present.
+    :param nc: Network configuration object containing indices and other data.
+    :param Scalc: Calculated power injections as a numpy array.
+    :param Sbus: Specified power injections as a numpy array.
+    :return: Error vector as a numpy array.
+    """
+    a = 0.00010000
+    b = 0.01500000
+    c = 0.20000000
+    y_series = 1.0 / (0.0 + 0.1 * 1j) 
+    y_shunt = 0.0
+
+    fx = []
+    fx_names = []
+
+    #print the Scalc and Sbus and the p_to_overall, p_from_overall, p_zip_overall
+    # print("(newton_raphson_general.py) compute_fx_gpf2_raiyan Scalc: ", Scalc)
+    # print("(newton_raphson_general.py) compute_fx_gpf2_raiyan Sbus: ", Sbus)
+    # print("(newton_raphson_general.py) compute_fx_gpf2_raiyan p_to_overall: ", p_to_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2_raiyan p_from_overall: ", p_from_overall)
+    # print("(newton_raphson_general.py) compute_fx_gpf2_raiyan p_zip_overall: ", p_zip_overall)
+
+
+    # Check and compute DC bus active power balance if there are any DC buses
+    if dc_indices.size > 0:
+        dc_active_power_balance = Scalc[dc_indices].real - Sbus[dc_indices].real + p_to_overall[dc_indices] + p_from_overall[dc_indices] - p_zip_overall[dc_indices]
+        #if anyone in dc_active_power_balance is greater than 100, print it
+        for i in range(len(dc_active_power_balance)):
+            if dc_active_power_balance[i] > 100:
+            # if True:
+                print(f"dc_active_power_balance[{i}]: ", dc_active_power_balance[i])
+
+        fx.extend(dc_active_power_balance)
+        fx_names.append(f"DC Active Power Balance Bus {dc_indices}")
+
+    # Check and compute AC bus active and reactive power balance if there are any AC buses
+    if ac_indices.size > 0:
+        ac_active_power_balance = Scalc[ac_indices].real - Sbus[ac_indices].real + p_to_overall[ac_indices] + p_from_overall[ac_indices] - p_zip_overall[ac_indices]
+        ac_reactive_power_balance = Scalc[ac_indices].imag - Sbus[ac_indices].imag + q_to_overall[ac_indices] + q_from_overall[ac_indices] - q_zip_overall[ac_indices]
+        fx.extend(ac_active_power_balance)
+        # if anyone in ac_active_power_balance is greater than 100, print it
+        for i in range(len(ac_active_power_balance)):
+            if ac_active_power_balance[i] > 100:
+                print(f"ac active power balance at bus {i} is high: ", ac_active_power_balance[i])
+                # print(f"Scalc", Scalc.real)
+                # print(f"V abs", np.abs(V))
+                # print(f"V angle", np.angle(V))
+                # print(f"Sbus", Sbus.real)
+                # print(f"p_to_overall", p_to_overall)
+                # print(f"p_from_overall", p_from_overall)
+                # print(f"p_zip_overall", p_zip_overall)
+        fx_names.append(f"AC Active Power Balance Bus {ac_indices}")
+        fx.extend(ac_reactive_power_balance)
+        # if anyone in ac_reactive_power_balance is greater than 100, print it
+        for i in range(len(ac_reactive_power_balance)):
+            if ac_reactive_power_balance[i] > 100:
+                print(f"ac reactive power balance at bus {i} is high: ", ac_reactive_power_balance[i])
+                # print(f"Scalc", Scalc.imag)
+                # print(f"V abs", np.abs(V))
+                # print(f"V angle", np.angle(V))
+                # print(f"Sbus", Sbus.imag)
+                # print(f"q_to_overall", q_to_overall)
+                # print(f"q_from_overall", q_from_overall)
+                # print(f"q_zip_overall", q_zip_overall)
+
+
+        fx_names.append(f"AC Reactive Power Balance Bus {ac_indices}")
+
+    # VSC active power balance, check if there are VSC buses
+    if nvsc > 0:
+        Vm = np.abs(V)
+        vsc_current = ((p_to_vsc_at_bus[vsc_tobus_idx]**2 + q_to_vsc_at_bus[vsc_tobus_idx]**2)**0.5) / Vm[vsc_tobus_idx]
+        vsc_losses = (a + b * vsc_current + c * vsc_current**2)
+        vsc_active_power_balance = vsc_losses - p_to_vsc_at_bus[vsc_tobus_idx] - p_from_vsc_at_bus[vsc_frombus_idx]
+        fx.extend(vsc_active_power_balance)
+        # if anyone in vsc_active_power_balance is greater than 100, print it
+        for i in range(len(vsc_active_power_balance)):
+            if vsc_active_power_balance[i] > 100:
+                print(f"vsc_active_power_balance[{i}]: ", vsc_active_power_balance[i])
+                print(f"p_to_vsc_at_bus[{vsc_tobus_idx[i]}]: ", p_to_vsc_at_bus[vsc_tobus_idx[i]])
+                print(f"q_to_vsc_at_bus[{vsc_tobus_idx[i]}]: ", q_to_vsc_at_bus[vsc_tobus_idx[i]])
+                print(f"p_from_vsc_at_bus[{vsc_frombus_idx[i]}]: ", p_from_vsc_at_bus[vsc_frombus_idx[i]])
+                #print losses
+                print(f"vsc_current[{i}]: ", vsc_current[i])
+                print(f"vsc_losses[{i}]: ", vsc_losses[i])
+                print(f"vsc_active_power_balance[{i}]: ", vsc_active_power_balance[i])
+
+        fx_names.append(f"VSC Active Power Balance Bus {vsc_tobus_idx}")
+
+
+    if ncontrTrafo > 0:
+        Vm = np.abs(V)
+        vm_from_contTrafo = np.abs(v_from_contTrafo)
+        vm_to_contTrafo = np.abs(v_to_contTrafo)
+        _a = (vm_from_contTrafo**2) * (np.conj(y_series) + np.conj(y_shunt)) / tapMod_contTrafo**2
+        _b = v_from_contTrafo * np.conj(v_to_contTrafo) * np.conj(y_series) / (tapMod_contTrafo * np.exp(1j * tapAng_contrTrafo))
+        Sfrom = _a - _b
+        _c = (vm_to_contTrafo**2) * (np.conj(y_series) + np.conj(y_shunt))
+        _d = v_to_contTrafo * np.conj(v_from_contTrafo) * np.conj(y_series) / (tapMod_contTrafo * np.exp(-1j * tapAng_contrTrafo))
+        Sto = _c - _d
+        fx.extend(Sfrom.real - p_from_contTrafo)
+        fx.extend(Sto.real - p_to_contTrafo)
+        fx.extend(Sfrom.imag - q_from_contTrafo)
+        fx.extend(Sto.imag - q_to_contTrafo)
+        # print("(newton_raphson_general.py) vm_from_contTrafo", vm_from_contTrafo)
+        # print("(newton_raphson_general.py) vm_to_contTrafo", vm_to_contTrafo)
+        # print("(newton_raphson_general.py) tapMod_contTrafo", tapMod_contTrafo)
+        # print("(newton_raphson_general.py) tapAng_contrTrafo", tapAng_contrTrafo)
+        # print("(newton_raphson_general.py) Sfrom.real - p_from_contTrafo: ", Sfrom.real - p_from_contTrafo)
+        # print("(newton_raphson_general.py) Sto.real - p_to_contTrafo: ", Sto.real - p_to_contTrafo)
+        # print("(newton_raphson_general.py) Sfrom.imag - q_from_contTrafo: ", Sfrom.imag - q_from_contTrafo)
+        # print("(newton_raphson_general.py) Sto.imag - q_to_contTrafo: ", Sto.imag - q_to_contTrafo)
+
+        #append the names
+        fx_names.append(f"Transformer From Active Power Balance Bus {contTrafo_frombus_idx}")
+        fx_names.append(f"Transformer To Active Power Balance Bus {contTrafo_tobus_idx}")
+        fx_names.append(f"Transformer From Reactive Power Balance Bus {contTrafo_frombus_idx}")
+        fx_names.append(f"Transformer To Reactive Power Balance Bus {contTrafo_tobus_idx}")
+
+        '''
+        # right what are we going to do here, we need to form four equations
+        _a = Vm[controllable_trafo_frombus[i]]**2 * (np.conj(controllable_trafo_yseries[i]) + np.conj(controllable_trafo_yshunt[i])) / modulations[controllable_trafo_frombus[i]]**2
+        _b = V[controllable_trafo_frombus[i]] * np.conj(V[controllable_trafo_tobus[i]]) * np.conj(controllable_trafo_yseries[i]) / (modulations[controllable_trafo_frombus[i]] * np.exp(1j * taus[controllable_trafo_frombus[i]]))
+        Sfrom =  _a - _b
+        _c = Vm[controllable_trafo_tobus[i]]**2 * (np.conj(controllable_trafo_yseries[i]) + np.conj(controllable_trafo_yshunt[i]))
+        _d = V[controllable_trafo_tobus[i]] * np.conj(V[controllable_trafo_frombus[i]]) * np.conj(controllable_trafo_yseries[i]) / (modulations[controllable_trafo_frombus[i]] * np.exp(-1j * taus[controllable_trafo_frombus[i]]))
+        Sto = _c - _d
+
+        fx.append(Sfrom.real - p_from[controllable_trafo_frombus[i]])
+        fx.append(Sto.real - p_to[controllable_trafo_tobus[i]])
+        fx.append(Sfrom.imag - q_from[controllable_trafo_frombus[i]])
+        fx.append(Sto.imag - q_to[controllable_trafo_tobus[i]])
+        
+        '''
+
+
+    if npassivePfromSet > 0:
+        fx.append(float(passivePfromSetpoints - (V[passivePfromSetFromBus] * (V[passivePfromSetToBus] - V[passivePfromSetFromBus]) * np.conj(passivePfromSetYbus)).real))
+        fx_names.append(f"Passive P From Setpoints {passivePfromSetFromBus} to {passivePfromSetToBus}")
+    
+    if npassivePtoSet > 0:
+        fx.append(float(passivePtoSetpoints - (V[passivePtoSetFromBus] * (V[passivePtoSetToBus] - V[passivePtoSetFromBus]) * np.conj(passivePtoSetYbus)).real))
+        fx_names.append(f"Passive P To Setpoints {passivePtoSetFromBus} to {passivePtoSetToBus}")
+    
+    if npassiveQfromSet > 0:
+        fx.append(float(passiveQfromSetpoints - (V[passiveQfromSetFromBus] * (V[passiveQfromSetToBus] - V[passiveQfromSetFromBus]) * np.conj(passiveQfromSetYbus)).imag))
+        fx_names.append(f"Passive Q From Setpoints {passiveQfromSetFromBus} to {passiveQfromSetToBus}")
+
+    if npassiveQtoSet > 0:
+        fx.append(float(passiveQtoSetpoints - (V[passiveQtoSetFromBus] * (V[passiveQtoSetToBus] - V[passiveQtoSetFromBus]) * np.conj(passiveQtoSetYbus)).imag))
+        fx_names.append(f"Passive Q To Setpoints {passiveQtoSetFromBus} to {passiveQtoSetToBus}")
+
+    # print("(newton_raphson_general.py) compute_fx_gpf2_raiyan fx_names: ", fx_names)
+    # print("(newton_raphson_general.py) compute_fx_gpf2_raiyan fx: ", fx)
+
+    return np.array(fx)
 
 
 
@@ -692,6 +1376,69 @@ def compute_fx_raiyan(ac_indices, dc_indices, vsc_data_from, vsc_data_to, Scalc,
     #     fx.extend(Sto.imag - q_to[nc.controllable_trafo_tobus])
 
     return np.array(fx)
+
+
+def x2var_gpf2(x, nc, Vm0, Va0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo):
+    # print("(newton_raphson_general.py) x2var_gpf2 x: ", x)
+
+    a = 0          
+    x_volt = x[a:a + len(nc.gpf_un_volt_idx)]
+    a += len(nc.gpf_un_volt_idx)
+    x_angle = x[a:a + len(nc.gpf_un_angle_idx)]
+    a += len(nc.gpf_un_angle_idx) 
+    x_pzip_gen = x[a:a + len(nc.gpf_un_pzip_gen_idx)]
+    a += len(nc.gpf_un_pzip_gen_idx)
+    x_qzip_gen = x[a:a + len(nc.gpf_un_qzip_gen_idx)]
+    a += len(nc.gpf_un_qzip_gen_idx)
+    x_pfrom_vsc = x[a:a + len(nc.gpf_un_pfrom_vsc_kdx)]
+    a += len(nc.gpf_un_pfrom_vsc_kdx)
+    x_pto_vsc = x[a:a + len(nc.gpf_un_pto_vsc_kdx)]
+    a += len(nc.gpf_un_pto_vsc_kdx)
+    x_qto_vsc = x[a:a + len(nc.gpf_un_qto_vsc_kdx)]
+    a += len(nc.gpf_un_qto_vsc_kdx)
+    x_pfrom_contTrafo = x[a:a + len(nc.gpf_un_pfrom_trafo_kdx)]
+    a += len(nc.gpf_un_pfrom_trafo_kdx)
+    x_qfrom_contTrafo = x[a:a + len(nc.gpf_un_qfrom_trafo_kdx)]
+    a += len(nc.gpf_un_qfrom_trafo_kdx)
+    x_pto_contTrafo = x[a:a + len(nc.gpf_un_pto_trafo_kdx)]
+    a += len(nc.gpf_un_pto_trafo_kdx)
+    x_qto_contTrafo = x[a:a + len(nc.gpf_un_qto_trafo_kdx)]
+    a += len(nc.gpf_un_qto_trafo_kdx)
+    x_mod_contTrafo = x[a:a + len(nc.gpf_un_mod_trafo_kdx)]
+    a += len(nc.gpf_un_mod_trafo_kdx)
+    x_tau_contTrafo = x[a:a + len(nc.gpf_un_tau_trafo_kdx)]
+    a += len(nc.gpf_un_tau_trafo_kdx)
+    
+    Vm0[nc.gpf_un_volt_idx] = x_volt
+    Va0[nc.gpf_un_angle_idx] = x_angle
+    p_zip_gen[nc.gpf_un_pzip_gen_idx] = x_pzip_gen
+    q_zip_gen[nc.gpf_un_qzip_gen_idx] = x_qzip_gen
+    p_from_vsc[nc.gpf_un_pfrom_vsc_kdx] = x_pfrom_vsc
+    p_to_vsc[nc.gpf_un_pto_vsc_kdx] = x_pto_vsc
+    q_to_vsc[nc.gpf_un_qto_vsc_kdx] = x_qto_vsc
+    p_from_contTrafo[nc.gpf_un_pfrom_trafo_kdx] = x_pfrom_contTrafo
+    q_from_contTrafo[nc.gpf_un_qfrom_trafo_kdx] = x_qfrom_contTrafo
+    p_to_contTrafo[nc.gpf_un_pto_trafo_kdx] = x_pto_contTrafo
+    q_to_contTrafo[nc.gpf_un_qto_trafo_kdx] = x_qto_contTrafo
+    tapMod_contTrafo[nc.gpf_un_mod_trafo_kdx] = x_mod_contTrafo
+    tapAng_contrTrafo[nc.gpf_un_tau_trafo_kdx] = x_tau_contTrafo
+
+    # print("(newton_raphson_general.py) x2var_gpf2 Va0: ", Va0)
+    # print("(newton_raphson_general.py) x2var_gpf2 Vm0: ", Vm0)
+    # print("(newton_raphson_general.py) x2var_gpf2 p_from_vsc: ", p_from_vsc)
+    # print("(newton_raphson_general.py) x2var_gpf2 p_to_vsc: ", p_to_vsc)
+    # print("(newton_raphson_general.py) x2var_gpf2 q_to_vsc: ", q_to_vsc)
+    # print("(newton_raphson_general.py) x2var_gpf2 p_zip_gen: ", p_zip_gen)
+    # print("(newton_raphson_general.py) x2var_gpf2 q_zip_gen: ", q_zip_gen)
+    # print("(newton_raphson_general.py) x2var_gpf2 p_from_contTrafo: ", p_from_contTrafo)
+    # print("(newton_raphson_general.py) x2var_gpf2 p_to_contTrafo: ", p_to_contTrafo)
+    # print("(newton_raphson_general.py) x2var_gpf2 q_from_contTrafo: ", q_from_contTrafo)
+    # print("(newton_raphson_general.py) x2var_gpf2 q_to_contTrafo: ", q_to_contTrafo)
+    # print("(newton_raphson_general.py) x2var_gpf2 tapMod_contTrafo: ", tapMod_contTrafo)
+    # print("(newton_raphson_general.py) x2var_gpf2 tapAng_contrTrafo: ", tapAng_contrTrafo)
+
+    
+    return Vm0, Va0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo
 
 
 
@@ -839,6 +1586,93 @@ def var2x(nc: NumericalCircuit):
 
     return x
 
+
+def var2x_gpf2(nc: NumericalCircuit, verbose = 1):
+    """
+    Generates an initial state vector 'x' for a numerical circuit simulation,
+    with each element set to a default value based on the type of variable.
+
+    The state vector is constructed by concatenating default values for different
+    types of variables such as voltage, angle, power injections, and control settings.
+    The indices for each type are first deduplicated to ensure uniqueness.
+
+    Parameters:
+    nc : NumericalCircuit
+        An object representing the numerical circuit, which holds indices for various
+        types of variables like voltage, angle, power (p and q), and controls (modulation and tau).
+
+    Returns:
+    list
+        A list of floats representing the initial state vector where:
+        - Voltage magnitudes are set to 1.0
+        - Voltage angles, power injections (p and q from/to), are set to 0.0
+        - Modulation indices are set to 1.0
+        - Time constants (tau) are set to 0.0
+
+    The lengths of each section of the vector correspond to the number of unique indices
+    for each variable type in the circuit.
+    """
+
+    x = []
+    x_names = []
+    x.extend([1.0] * len(nc.gpf_un_volt_idx))
+    x.extend([0.0] * len(nc.gpf_un_angle_idx))
+    x.extend([0.0] * len(nc.gpf_un_pzip_gen_idx))
+    x.extend([0.0] * len(nc.gpf_un_qzip_gen_idx))
+    x.extend([0.0] * len(nc.gpf_un_pfrom_vsc_kdx))
+    x.extend([0.0] * len(nc.gpf_un_pto_vsc_kdx))
+    x.extend([0.0] * len(nc.gpf_un_qto_vsc_kdx))
+    x.extend([0.0] * len(nc.gpf_un_pfrom_trafo_kdx))
+    x.extend([0.0] * len(nc.gpf_un_qfrom_trafo_kdx))
+    x.extend([0.0] * len(nc.gpf_un_pto_trafo_kdx))
+    x.extend([0.0] * len(nc.gpf_un_qto_trafo_kdx))
+    x.extend([1.0] * len(nc.gpf_un_mod_trafo_kdx))
+    x.extend([0.0] * len(nc.gpf_un_tau_trafo_kdx))
+
+    if verbose:
+        for i in range (len(nc.gpf_un_volt_idx)):
+            x_names.append(f"Vm_{nc.gpf_un_volt_idx[i]}")
+
+        for i in range (len(nc.gpf_un_angle_idx)):
+            x_names.append(f"Va_{nc.gpf_un_angle_idx[i]}")
+
+        for i in range (len(nc.gpf_un_pzip_gen_idx)):
+            x_names.append(f"Pzip_{nc.gpf_un_pzip_gen_idx[i]}")
+
+        for i in range (len(nc.gpf_un_qzip_gen_idx)):
+            x_names.append(f"Qzip_{nc.gpf_un_qzip_gen_idx[i]}")
+
+        for i in range (len(nc.gpf_un_pfrom_vsc_kdx)):
+            x_names.append(f"Pfrom_vsc_{nc.gpf_un_pfrom_vsc_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_pto_vsc_kdx)):
+            x_names.append(f"Pto_vsc_{nc.gpf_un_pto_vsc_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_qto_vsc_kdx)):
+            x_names.append(f"Qto_vsc_{nc.gpf_un_qto_vsc_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_pfrom_trafo_kdx)):
+            x_names.append(f"Pfrom_trafo_{nc.gpf_un_pfrom_trafo_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_qfrom_trafo_kdx)):
+            x_names.append(f"Qfrom_trafo_{nc.gpf_un_qfrom_trafo_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_pto_trafo_kdx)):
+            x_names.append(f"Pto_trafo_{nc.gpf_un_pto_trafo_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_qto_trafo_kdx)):
+            x_names.append(f"Qto_trafo_{nc.gpf_un_qto_trafo_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_mod_trafo_kdx)):
+            x_names.append(f"Mod_trafo_{nc.gpf_un_mod_trafo_kdx[i]}")
+
+        for i in range (len(nc.gpf_un_tau_trafo_kdx)):
+            x_names.append(f"Tau_trafo_{nc.gpf_un_tau_trafo_kdx[i]}")
+
+        print("(newton_raphson_general.py) var2x_gpf2 x_names: ", x_names)
+        print("(newton_raphson_general.py) var2x_gpf2 x: ", x)
+
+    return x
 
 
 def remove_duplicates(arr):

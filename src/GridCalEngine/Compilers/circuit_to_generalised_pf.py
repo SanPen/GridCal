@@ -46,7 +46,10 @@ def get_bus_data(circuit: MultiCircuit,
 
     substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
 
+    bus_index_dict: Dict[str, int] = dict()
+
     for i, bus in enumerate(circuit.buses):
+        bus_index_dict[bus.name] = i  # associate the NAME to the index
 
         # bus parameters
         bus_data.names[i] = bus.name
@@ -77,6 +80,8 @@ def get_bus_data(circuit: MultiCircuit,
             bus_data.active[i] = bus.active_prof[t_idx]
         else:
             bus_data.active[i] = bus.active
+
+    bus_data.name_to_idx = bus_index_dict.copy()
 
     return bus_data
 
@@ -326,12 +331,17 @@ def get_generator_data(circuit: MultiCircuit,
                             nbus=len(circuit.buses))
 
     gen_index_dict: Dict[str, int] = dict()
+    gen_name_to_idx: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
 
         gen_index_dict[elm.idtag] = k  # associate the idtag to the index
+        gen_name_to_idx[elm.name] = k  # associate the name to the index
 
         i = bus_dict[elm.bus]
         data.bus_idx[k] = i
+
+        if elm.bus.is_dc:
+            data.is_at_dc_bus[k] = 1
 
         data.names[k] = elm.name
         data.idtag[k] = elm.idtag
@@ -359,6 +369,15 @@ def get_generator_data(circuit: MultiCircuit,
         data.dispatchable[k] = elm.enabled_dispatch
         data.pmax[k] = elm.Pmax
         data.pmin[k] = elm.Pmin
+
+
+        data.gpf_ctrl1_elm[k] = elm.gpf_ctrl1_elm
+        data.gpf_ctrl1_mode[k] = elm.gpf_ctrl1_mode
+        data.gpf_ctrl1_val[k] = elm.gpf_ctrl1_val
+        data.gpf_ctrl2_elm[k] = elm.gpf_ctrl2_elm
+        data.gpf_ctrl2_mode[k] = elm.gpf_ctrl2_mode
+        data.gpf_ctrl2_val[k] = elm.gpf_ctrl2_val
+
 
         if time_series:
 
@@ -429,6 +448,8 @@ def get_generator_data(circuit: MultiCircuit,
             data.qmax[k] = elm.Qmax
 
         data.C_bus_elm[i, k] = 1
+
+    data.name_to_idx = gen_name_to_idx.copy()
 
     return data, gen_index_dict
 
@@ -600,9 +621,13 @@ def get_branch_data(circuit: MultiCircuit,
                          nbus=circuit.get_bus_number())
 
     ii = 0
+    branch_index_dict: Dict[str, int] = dict()
+
 
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
+
+        branch_index_dict[elm.name] = i  # associate the idtag to the index
 
         # generic stuff
         data.names[i] = elm.name
@@ -668,6 +693,10 @@ def get_branch_data(circuit: MultiCircuit,
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
+
+
+        branch_index_dict[elm.name] = ii  # associate the NAME to the index
+
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -717,93 +746,10 @@ def get_branch_data(circuit: MultiCircuit,
 
         ii += 1
 
-    # 2-winding transformers
-    for i, elm in enumerate(circuit.transformers2w):
-
-        # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        if time_series:
-            data.active[ii] = elm.active_prof[t_idx]
-            data.rates[ii] = elm.rate_prof[t_idx]
-            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-            data.overload_cost[ii] = elm.Cost_prof[t_idx]
-        else:
-            data.active[ii] = elm.active
-            data.rates[ii] = elm.rate
-            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
-            data.overload_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.R[ii] = elm.R
-        data.X[ii] = elm.X
-        data.G[ii] = elm.G
-        data.B[ii] = elm.B
-
-        data.R0[ii] = elm.R0
-        data.X0[ii] = elm.X0
-        data.G0[ii] = elm.G0
-        data.B0[ii] = elm.B0
-
-        data.R2[ii] = elm.R2
-        data.X2[ii] = elm.X2
-        data.G2[ii] = elm.G2
-        data.B2[ii] = elm.B2
-
-        data.conn[ii] = elm.conn
-
-        if time_series:
-            if opf_results is not None:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
-            else:
-                data.tap_module[ii] = elm.tap_module_prof[t_idx]
-                data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
-        else:
-            if opf_results is not None:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = opf_results.phase_shift[ii]
-            else:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = elm.tap_phase
-
-        data.tap_module_min[ii] = elm.tap_module_min
-        data.tap_module_max[ii] = elm.tap_module_max
-        data.tap_angle_min[ii] = elm.tap_phase_min
-        data.tap_angle_max[ii] = elm.tap_phase_max
-
-        data.Pfset[ii] = elm.Pset
-
-        data.control_mode[ii] = elm.control_mode
-        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
-
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
-
-        if not use_stored_guess:
-            if elm.control_mode == TransformerControlType.V:
-                Vbus[t] = elm.vset
-
-            elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
-                Vbus[t] = elm.vset
-
-        ii += 1
-
     # windings
     for i, elm in enumerate(circuit.windings):
+
+        branch_index_dict[elm.name] = ii  # associate the NAME to the index
 
         if elm.bus_from is not None and elm.bus_to is not None:
             # generic stuff
@@ -890,14 +836,25 @@ def get_branch_data(circuit: MultiCircuit,
         else:
             logger.add_error("Ill connected winding", device=elm.idtag)
 
-    # VSC
+    # # VSC
     for i, elm in enumerate(circuit.vsc_devices):
+        data.names[ii] = elm.name
+        ii += 1
+
+    # 2-winding transformers
+    for i, elm in enumerate(circuit.transformers2w):
+        data.names[ii] = elm.name
+        #if controllable trafo, treat as active controllable trafo
+        if elm.gpf_ctrl1_elm is not None and elm.gpf_ctrl2_elm is not None:
+            continue
+
+        branch_index_dict[elm.idtag] = ii  # associate the idtag to the index
 
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
 
-        data.names[ii] = elm.name
+        
         data.idtag[ii] = elm.idtag
 
         data.mttf[ii] = elm.mttf
@@ -923,80 +880,64 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.R[ii] = elm.R
         data.X[ii] = elm.X
+        data.G[ii] = elm.G
+        data.B[ii] = elm.B
 
         data.R0[ii] = elm.R0
         data.X0[ii] = elm.X0
+        data.G0[ii] = elm.G0
+        data.B0[ii] = elm.B0
 
         data.R2[ii] = elm.R2
         data.X2[ii] = elm.X2
+        data.G2[ii] = elm.G2
+        data.B2[ii] = elm.B2
 
-        data.G0sw[ii] = elm.G0sw
-        data.Beq[ii] = elm.Beq
-        data.tap_module[ii] = elm.tap_module
-        data.tap_module_max[ii] = elm.tap_module_max
-        data.tap_module_min[ii] = elm.tap_module_min
-        data.alpha1[ii] = elm.alpha1
-        data.alpha2[ii] = elm.alpha2
-        data.alpha3[ii] = elm.alpha3
-        data.k[ii] = elm.k  # 0.8660254037844386  # sqrt(3)/2 (do not confuse with k droop)
+        data.conn[ii] = elm.conn
 
         if time_series:
             if opf_results is not None:
+                data.tap_module[ii] = elm.tap_module
                 data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
             else:
-                data.tap_angle[ii] = elm.tap_phase
+                data.tap_module[ii] = elm.tap_module_prof[t_idx]
+                data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
         else:
             if opf_results is not None:
+                data.tap_module[ii] = elm.tap_module
                 data.tap_angle[ii] = opf_results.phase_shift[ii]
             else:
+                data.tap_module[ii] = elm.tap_module
                 data.tap_angle[ii] = elm.tap_phase
 
+        data.tap_module_min[ii] = elm.tap_module_min
+        data.tap_module_max[ii] = elm.tap_module_max
         data.tap_angle_min[ii] = elm.tap_phase_min
         data.tap_angle_max[ii] = elm.tap_phase_max
-        data.Pfset[ii] = elm.Pdc_set
-        data.Qtset[ii] = elm.Qac_set
-        data.Kdp[ii] = elm.kdp
-        data.vf_set[ii] = elm.Vac_set
-        data.vt_set[ii] = elm.Vdc_set
+
+        data.Pfset[ii] = elm.Pset
+
         data.control_mode[ii] = elm.control_mode
+        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
+
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
-        '''
-        type_0_free = '0:Free'
-        type_I_1 = '1:Vac'
-        type_I_2 = '2:Pdc+Qac'
-        type_I_3 = '3:Pdc+Vac'
-        type_II_4 = '4:Vdc+Qac'
-        type_II_5 = '5:Vdc+Vac'
-        type_III_6 = '6:Droop+Qac'
-        type_III_7 = '7:Droop+Vac'
-        '''
-
         if not use_stored_guess:
-            if elm.control_mode == ConverterControlType.type_I_1:  # 1a:Vac
-                Vbus[t] = elm.Vac_set
+            if elm.control_mode == TransformerControlType.V:
+                Vbus[t] = elm.vset
 
-            elif elm.control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-                Vbus[t] = elm.Vac_set
-
-            elif elm.control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-                Vbus[f] = elm.Vdc_set
-
-            elif elm.control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-                Vbus[f] = elm.Vdc_set
-                Vbus[t] = elm.Vac_set
-
-            elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
-                Vbus[t] = elm.Vac_set
-
-            elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
-                Vbus[f] = elm.Vdc_set
+            elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
+                Vbus[t] = elm.vset
 
         ii += 1
 
+
     # UPFC
     for i, elm in enumerate(circuit.upfc_devices):
+
+        branch_index_dict[elm.name] = ii  # associate the idtag to the index
+
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -1048,6 +989,10 @@ def get_branch_data(circuit: MultiCircuit,
 
     # Series reactance
     for i, elm in enumerate(circuit.series_reactances):
+
+        branch_index_dict[elm.name] = ii  # associate the idtag to the index
+
+
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -1103,6 +1048,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.X2[ii] = elm.X2
         ii += 1
 
+    data.name_to_idx = branch_index_dict.copy()
+
     return data
 
 
@@ -1113,15 +1060,114 @@ def get_controllable_trafo_data(circuit: MultiCircuit,
                                 time_series: bool = False,
                                 opf_results: Union[OptimalPowerFlowResults, None] = None,
                                 branch_data: ds.BranchData = None) -> ds.ControllableTrafoData:
-    # Get first the number of all 2w trafos
-    trafos_2w_all = circuit.get_transformers2w()
-    #iterate over all 2w trafos and see if the control_mode is Control
-    # for i, elm in enumerate(trafos_2w_all):
-    #     if elm.control_mode == TransformerControlType.control:
-    #         trafos_2w_control.append(elm)
+    
+    nelm = 0
+    for i, elm in enumerate(circuit.transformers2w):
+        if elm.gpf_ctrl1_elm is None and elm.gpf_ctrl2_elm is None:
+            continue
+        nelm += 1
 
-    data = ds.ControllableTrafoData(nelm=len(trafos_2w_all),
-                                    nbus=circuit.get_bus_number())
+    data = ds.ControllableTrafoData(nelm=nelm, nbus=circuit.get_bus_number())
+    
+    controllable_trafo_dict: Dict[str, int] = dict()
+
+    ii = 0
+    
+    # 2-winding transformers
+    for i, elm in enumerate(circuit.transformers2w):
+
+        #if the trafo does not have any control targets, skip
+        if elm.gpf_ctrl1_elm is None and elm.gpf_ctrl2_elm is None:
+            continue
+
+        controllable_trafo_dict[elm.name] = ii  # associate the idtag to the index
+
+        # generic stuff
+        f = bus_dict[elm.bus_from]
+        t = bus_dict[elm.bus_to]
+
+        data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
+
+        # GENERALISED PF
+        data.gpf_ctrl1_elm[ii] = elm.gpf_ctrl1_elm
+        data.gpf_ctrl1_mode[ii] = elm.gpf_ctrl1_mode
+        data.gpf_ctrl1_val[ii] = elm.gpf_ctrl1_val
+        data.gpf_ctrl2_elm[ii] = elm.gpf_ctrl2_elm
+        data.gpf_ctrl2_mode[ii] = elm.gpf_ctrl2_mode
+        data.gpf_ctrl2_val[ii] = elm.gpf_ctrl2_val
+
+
+
+        if time_series:
+            data.active[ii] = elm.active_prof[t_idx]
+            data.rates[ii] = elm.rate_prof[t_idx]
+            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
+            data.overload_cost[ii] = elm.Cost_prof[t_idx]
+        else:
+            data.active[ii] = elm.active
+            data.rates[ii] = elm.rate
+            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
+            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
+            data.overload_cost[ii] = elm.Cost
+
+        data.C_branch_bus_f[ii, f] = 1
+        data.C_branch_bus_t[ii, t] = 1
+        data.F[ii] = f
+        data.T[ii] = t
+
+        data.R[ii] = elm.R
+        data.X[ii] = elm.X
+        data.G[ii] = elm.G
+        data.B[ii] = elm.B
+
+        data.R0[ii] = elm.R0
+        data.X0[ii] = elm.X0
+        data.G0[ii] = elm.G0
+        data.B0[ii] = elm.B0
+
+        data.R2[ii] = elm.R2
+        data.X2[ii] = elm.X2
+        data.G2[ii] = elm.G2
+        data.B2[ii] = elm.B2
+
+        data.conn[ii] = elm.conn
+
+        if time_series:
+            if opf_results is not None:
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
+            else:
+                data.tap_module[ii] = elm.tap_module_prof[t_idx]
+                data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
+        else:
+            if opf_results is not None:
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = opf_results.phase_shift[ii]
+            else:
+                data.tap_module[ii] = elm.tap_module
+                data.tap_angle[ii] = elm.tap_phase
+
+        data.tap_module_min[ii] = elm.tap_module_min
+        data.tap_module_max[ii] = elm.tap_module_max
+        data.tap_angle_min[ii] = elm.tap_phase_min
+        data.tap_angle_max[ii] = elm.tap_phase_max
+
+        data.Pfset[ii] = elm.Pset
+
+        data.control_mode[ii] = elm.control_mode
+        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
+
+        data.contingency_enabled[ii] = int(elm.contingency_enabled)
+        data.monitor_loading[ii] = int(elm.monitor_loading)
+
+        ii += 1
+
+    data.name_to_idx = controllable_trafo_dict.copy()
     
     return data
 
@@ -1144,14 +1190,19 @@ def get_vsc_data(circuit: MultiCircuit,
     """
     data = ds.VscData(nelm=circuit.get_vsc_number(), nbus=circuit.get_bus_number())
 
+    vsc_dict_idtag2idx: Dict[str, int] = dict()
+
     for i, elm in enumerate(circuit.vsc_devices):
 
+        vsc_dict_idtag2idx[elm.name] = i  # associate the idtag to the index
+
         # find the index of the same idtag in the branch data
-        idtag_index = None
-        for index, value in enumerate(branch_data.idtag):
-            if value == elm.idtag:
-                idtag_index = index
-        data.branch_index[i] = idtag_index
+        # idtag_index = None
+        # for index, value in enumerate(branch_data.idtag):
+        #     if value == elm.idtag:
+        #         idtag_index = index
+        
+        # data.branch_index[i] = idtag_index
 
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -1196,6 +1247,15 @@ def get_vsc_data(circuit: MultiCircuit,
         data.Qac_set[i] = elm.Qac_set
         data.Vac_set[i] = elm.Vac_set
         data.Vdc_set[i] = elm.Vdc_set
+
+        data.gpf_ctrl1_elm[i] = elm.gpf_ctrl1_elm
+        data.gpf_ctrl1_mode[i] = elm.gpf_ctrl1_mode
+        data.gpf_ctrl1_val[i] = elm.gpf_ctrl1_val
+        data.gpf_ctrl2_elm[i] = elm.gpf_ctrl2_elm
+        data.gpf_ctrl2_mode[i] = elm.gpf_ctrl2_mode
+        data.gpf_ctrl2_val[i] = elm.gpf_ctrl2_val
+
+    data.name_to_idx = vsc_dict_idtag2idx.copy()
 
 
     return data

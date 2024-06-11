@@ -20,7 +20,7 @@ import numpy as np
 import numba as nb
 import pandas as pd
 from typing import Union, Tuple, List
-from GridCalEngine.enumerations import TransformerControlType, ConverterControlType, BusMode
+from GridCalEngine.enumerations import TransformerControlType, ConverterControlType, BusMode, GpfControlType
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 from GridCalEngine.exceptions import ControlLengthError, ControlNotImplementedError
 
@@ -540,6 +540,8 @@ class SimulationIndices2:
                  gen_data,
                  vsc_data,
                  bus_data,
+                 controllable_trafo_data,
+                 branch_data,
                  adj,
                  idx_islands,
                  Sbase):
@@ -562,6 +564,14 @@ class SimulationIndices2:
         self.ac: IntVec = np.where(dc_bus == False)[0]
         self.dc: IntVec = np.where(dc_bus != False)[0]
 
+        # Generators at AC and DC indices
+        self.gen_ac: IntVec = np.where(gen_data.is_at_dc_bus == False)[0]
+        self.gen_dc: IntVec = np.where(gen_data.is_at_dc_bus != False)[0]
+
+        # Lines AC or DC
+        self.branch_ac: IntVec = np.where(branch_data.dc == False)[0]
+        self.branch_dc: IntVec = np.where(branch_data.dc != False)[0]
+        
         # bus type indices
         self.pq: IntVec = np.zeros(0, dtype=int)
         self.pqv: IntVec = np.zeros(0, dtype=int)
@@ -623,6 +633,12 @@ class SimulationIndices2:
 
         # (old Vtmabus) indices of the buses where Vt is controlled by ma
         self.i_vt_m: IntVec = np.zeros(0, dtype=int)
+
+
+
+
+
+
 
         # (Generalised PF) indices of the buses where voltage is known (controlled)
         self.kn_volt_idx: IntVec = np.zeros(0, dtype=int)
@@ -738,14 +754,192 @@ class SimulationIndices2:
         # (Generalised PF) indices of the branches where modulation is unknown
         self.un_mod_kdx: IntVec = np.zeros(0, dtype=int)
 
+
+
+        ###### Generalised PF 2 ######
+
+        # (Generalised PF 2)  indices of the buses where voltage is known (controlled)
+        self.gpf_kn_volt_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the buses where angle is known (controlled)
+        self.gpf_kn_angle_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Pzip is known (controlled)
+        self.gpf_kn_pzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Qzip is known (controlled)
+        self.gpf_kn_qzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pto is known (controlled)
+        self.gpf_kn_pto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Qto is known (controlled)
+        self.gpf_kn_qto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pto is known (controlled)
+        self.gpf_kn_pto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qfrom is known (controlled)
+        self.gpf_kn_qfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qto is known (controlled)
+        self.gpf_kn_qto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap module is known (controlled)
+        self.gpf_kn_mod_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap angle is known (controlled)
+        self.gpf_kn_tau_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the passive branches where Pfrom are known (controlled)
+        self.gpf_kn_pfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the branches where Qfrom are known (controlled)
+        self.gpf_kn_qfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the branches where Pto are known (controlled)
+        self.gpf_kn_pto_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the branches where Qto are known (controlled)
+        self.gpf_kn_qto_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+
+
+
+        # (Generalised PF 2) SETPOINTS of the buses where voltage is known (controlled)
+        self.gpf_kn_volt_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the buses where angle is known (controlled)
+        self.gpf_kn_angle_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the GENERATORS, not buses, where Pzip is known (controlled)
+        self.gpf_kn_pzip_gen_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the GENERATORS, not buses, where Qzip is known (controlled)
+        self.gpf_kn_qzip_gen_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the VSCs where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_vsc_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the VSCs where Pto is known (controlled)
+        self.gpf_kn_pto_vsc_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the VSCs where Qto is known (controlled)
+        self.gpf_kn_qto_vsc_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Pto is known (controlled)
+        self.gpf_kn_pto_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Qfrom is known (controlled)
+        self.gpf_kn_qfrom_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Qto is known (controlled)
+        self.gpf_kn_qto_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where tap module is known (controlled)
+        self.gpf_kn_mod_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where tap angle is known (controlled)
+        self.gpf_kn_tau_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the passive branches where Pfrom are known (controlled)
+        self.gpf_kn_pfrom_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the branches where Qfrom are known (controlled)
+        self.gpf_kn_qfrom_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the branches where Pto are known (controlled)
+        self.gpf_kn_pto_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the branches where Qto are known (controlled)
+        self.gpf_kn_qto_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+
+
+
+        # (Generalised PF 2) indices of the buses where voltage is UNKNOWN
+        self.gpf_un_volt_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the buses where angle is UNKNOWN
+        self.gpf_un_angle_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Pzip is UNKNOWN
+        self.gpf_un_pzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Qzip is UNKNOWN
+        self.gpf_un_qzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pfrom is UNKNOWN
+        self.gpf_un_pfrom_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pto is UNKNOWN
+        self.gpf_un_pto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Qto is UNKNOWN
+        self.gpf_un_qto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pfrom is UNKNOWN
+        self.gpf_un_pfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pto is UNKNOWN
+        self.gpf_un_pto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qfrom is UNKNOWN
+        self.gpf_un_qfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qto is UNKNOWN
+        self.gpf_un_qto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap module is UNKNOWN
+        self.gpf_un_mod_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap angle is UNKNOWN
+        self.gpf_un_tau_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Pfrom are UNKNOWN
+        self.gpf_un_pfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Qfrom are UNKNOWN
+        self.gpf_un_qfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Pto are UNKNOWN
+        self.gpf_un_pto_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Qto are UNKNOWN
+        self.gpf_un_qto_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+
+        self.gen_data = gen_data
+        self.vsc_data = vsc_data
+        self.bus_data = bus_data
+        self.controllable_trafo_data = controllable_trafo_data
+        self.branch_data = branch_data
+
+
         # determine the bus indices
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
         # determine the branch indices
         self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
-        # (Generalised PF) determine the indices and setpoints
-        self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0)
+        
+        #GENERALISED PF: quick fix, when pure AC system, run the old one.
+        if len(self.dc) == 0:
+            # (Generalised PF) determine the indices and setpoints
+            self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0)
+
+        # else:
+            # (Generalised PF 2) determine the indices and setpoints 
+        self.compile_control_indices_generalised_pf2(Sbase, gen_data, vsc_data, bus_data, controllable_trafo_data, branch_data, adj, idx_islands, verbose = 1)
 
     def recompile_types(self,
                         bus_types: IntVec,
@@ -760,6 +954,237 @@ class SimulationIndices2:
 
         # determine the bus indices
         self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
+
+    def compile_control_indices_generalised_pf2(self, Sbase, gen_data, vsc_data, bus_data, controllable_trafo_data, branch_data, adj, idx_islands, verbose = 1):
+        print("(simulation_indices.py) compile_control_indices_generalised_pf2")
+
+        # for the buses we do this, thats fine, now we do the generators
+        self.gpf_un_volt_idx = np.append(self.gpf_un_volt_idx, self.ac)
+        self.gpf_un_volt_idx = np.append(self.gpf_un_volt_idx, self.dc)
+        self.gpf_un_angle_idx = np.append(self.gpf_un_angle_idx, self.ac)
+
+        #for the generators
+        self.gpf_un_pzip_gen_idx = np.append(self.gpf_un_pzip_gen_idx, self.gen_ac)
+        self.gpf_un_pzip_gen_idx = np.append(self.gpf_un_pzip_gen_idx, self.gen_dc)
+        self.gpf_un_qzip_gen_idx = np.append(self.gpf_un_qzip_gen_idx, self.gen_ac)
+        
+        #for the vscs
+        self.gpf_un_pfrom_vsc_kdx = np.append(self.gpf_un_pfrom_vsc_kdx, np.arange(vsc_data.nelm))
+        self.gpf_un_pto_vsc_kdx = np.append(self.gpf_un_pto_vsc_kdx, np.arange(vsc_data.nelm))
+        self.gpf_un_qto_vsc_kdx = np.append(self.gpf_un_qto_vsc_kdx, np.arange(vsc_data.nelm))
+
+        #for the controllable trafos
+        self.gpf_un_pfrom_trafo_kdx = np.append(self.gpf_un_pfrom_trafo_kdx, np.arange(controllable_trafo_data.nelm))
+        self.gpf_un_pto_trafo_kdx = np.append(self.gpf_un_pto_trafo_kdx, np.arange(controllable_trafo_data.nelm))
+        self.gpf_un_qfrom_trafo_kdx = np.append(self.gpf_un_qfrom_trafo_kdx, np.arange(controllable_trafo_data.nelm))
+        self.gpf_un_qto_trafo_kdx = np.append(self.gpf_un_qto_trafo_kdx, np.arange(controllable_trafo_data.nelm))
+        self.gpf_un_mod_trafo_kdx = np.append(self.gpf_un_mod_trafo_kdx, np.arange(controllable_trafo_data.nelm))
+        self.gpf_un_tau_trafo_kdx = np.append(self.gpf_un_tau_trafo_kdx, np.arange(controllable_trafo_data.nelm))
+
+        #lets iterate through all the controls now starting from the controls we get from the generators
+        for k in range(gen_data.nelm):
+            if k in self.gen_ac:
+                self.check_control_type(gen_data.gpf_ctrl1_mode[k], gen_data.gpf_ctrl1_elm[k], gen_data.gpf_ctrl1_val[k], gen_data.names[k])
+                self.check_control_type(gen_data.gpf_ctrl2_mode[k], gen_data.gpf_ctrl2_elm[k], gen_data.gpf_ctrl2_val[k], gen_data.names[k])
+            else:
+                self.check_control_type(gen_data.gpf_ctrl1_mode[k], gen_data.gpf_ctrl1_elm[k], gen_data.gpf_ctrl1_val[k], gen_data.names[k])
+
+        #lets iterate through all the controls now starting from the controls we get from the VSCs
+        for k in range(vsc_data.nelm):
+            self.check_control_type(vsc_data.gpf_ctrl1_mode[k], vsc_data.gpf_ctrl1_elm[k], vsc_data.gpf_ctrl1_val[k], vsc_data.names[k])
+            self.check_control_type(vsc_data.gpf_ctrl2_mode[k], vsc_data.gpf_ctrl2_elm[k], vsc_data.gpf_ctrl2_val[k], vsc_data.names[k])
+
+        #lets iterate through all the controls now starting from the controls we get from the controllable trafos
+        for k in range(controllable_trafo_data.nelm):
+            self.check_control_type(controllable_trafo_data.gpf_ctrl1_mode[k], controllable_trafo_data.gpf_ctrl1_elm[k], controllable_trafo_data.gpf_ctrl1_val[k], controllable_trafo_data.names[k])
+            self.check_control_type(controllable_trafo_data.gpf_ctrl2_mode[k], controllable_trafo_data.gpf_ctrl2_elm[k], controllable_trafo_data.gpf_ctrl2_val[k], controllable_trafo_data.names[k])
+
+
+        dict_known_idx = {"Voltage": self.gpf_kn_volt_idx, "Angle": self.gpf_kn_angle_idx}
+        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 0)
+        self.check_unknowns_vs_equations(verbose = 1)
+    
+
+    def check_unknowns_vs_equations(self, verbose = 1):
+        if verbose:
+            # Create a dictionary with the data
+            data = {
+                "Type": ["AC Bus", "DC Bus", "VSC", "Controllable Trafo", "Total"],
+                "Number of Instances": [len(self.ac), len(self.dc), self.vsc_data.nelm, self.controllable_trafo_data.nelm, ""],
+                "Number of Equations": [len(self.ac)*2, len(self.dc), (self.vsc_data.nelm)*3, (self.controllable_trafo_data.nelm)*4, len(self.ac)*2 + len(self.dc) + (self.vsc_data.nelm) + (self.controllable_trafo_data.nelm)*4]
+            }
+
+            # Create the DataFrame
+            df = pd.DataFrame(data)
+
+            # Print the DataFrame
+            print(df)
+
+
+        if verbose == 1:
+            # Initialize the data for the DataFrame
+            data = {
+                "Type": ["Voltage", "Angle", "Pzip Gen", "Qzip Gen", "Pfrom VSC", "Pto VSC", "Qto VSC", "Pfrom Trafo", "Pto Trafo", "Qfrom Trafo" , "Qto Trafo", "Modulation Trafo", "Tau Trafo", "Pfrom Passive", "Qfrom Passive", "Pto Passive", "Qto Passive", "Total"],
+                "Number of Unknowns": [
+                    len(self.gpf_un_volt_idx),
+                    len(self.gpf_un_angle_idx),
+                     len(self.gpf_un_pzip_gen_idx),
+                     len(self.gpf_un_qzip_gen_idx),
+                     len(self.gpf_un_pfrom_vsc_kdx),
+                     len(self.gpf_un_pto_vsc_kdx),
+                     len(self.gpf_un_qto_vsc_kdx),
+                     len(self.gpf_un_pfrom_trafo_kdx),
+                     len(self.gpf_un_pto_trafo_kdx),
+                     len(self.gpf_un_qfrom_trafo_kdx),
+                     len(self.gpf_un_qto_trafo_kdx),
+                     len(self.gpf_un_mod_trafo_kdx),
+                     len(self.gpf_un_tau_trafo_kdx),
+                        len(self.gpf_un_pfrom_passive_kdx),
+                        len(self.gpf_un_qfrom_passive_kdx),
+                        len(self.gpf_un_pto_passive_kdx),
+                        len(self.gpf_un_qto_passive_kdx),
+                     len(self.gpf_un_volt_idx) + len(self.gpf_un_angle_idx) + len(self.gpf_un_pzip_gen_idx) + len(self.gpf_un_qzip_gen_idx) + len(self.gpf_un_pfrom_vsc_kdx) + len(self.gpf_un_pto_vsc_kdx) + len(self.gpf_un_qto_vsc_kdx) + len(self.gpf_un_pfrom_trafo_kdx) + len(self.gpf_un_pto_trafo_kdx) + len(self.gpf_un_qfrom_trafo_kdx) + len(self.gpf_un_qto_trafo_kdx) + len(self.gpf_un_mod_trafo_kdx) + len(self.gpf_un_tau_trafo_kdx)]
+            }
+
+            # Create the DataFrame
+            df = pd.DataFrame(data)
+
+            # Print the DataFrame
+            print(df)
+            
+    def check_control_type(self, control_mode, elm_name, control_setpoint, master_name):
+        elm_index = None
+        if elm_name in self.bus_data.name_to_idx.keys():
+            elm_index = self.bus_data.name_to_idx[elm_name]
+            if elm_index in self.ac:
+                assert control_mode == GpfControlType.type_Va or control_mode == GpfControlType.type_Vm, f"{master_name} is specifiying {control_mode} for {elm_name}. Control mode for AC bus must be either Va or Vm"
+            else:
+                assert control_mode == GpfControlType.type_Vm, f"{master_name} is specifiying {control_mode} for {elm_name}. Control mode for DC bus can only be Vm"
+
+            if control_mode == GpfControlType.type_Vm:
+                self.gpf_kn_volt_idx = np.append(self.gpf_kn_volt_idx, elm_index)
+                self.gpf_kn_volt_setpoints = np.append(self.gpf_kn_volt_setpoints, control_setpoint)
+                self.gpf_un_volt_idx = np.delete(self.gpf_un_volt_idx, np.where(self.gpf_un_volt_idx == elm_index))
+
+            elif control_mode == GpfControlType.type_Va:
+                self.gpf_kn_angle_idx = np.append(self.gpf_kn_angle_idx, elm_index)
+                self.gpf_kn_angle_setpoints = np.append(self.gpf_kn_angle_setpoints, control_setpoint)
+                self.gpf_un_angle_idx = np.delete(self.gpf_un_angle_idx, np.where(self.gpf_un_angle_idx == elm_index))
+
+            else:
+                raise ValueError(f"Control mode {control_mode} not supported")
+            
+        elif elm_name in self.gen_data.name_to_idx.keys():
+            elm_index = self.gen_data.name_to_idx[elm_name]
+            if elm_index in self.gen_ac:
+                assert control_mode == GpfControlType.type_Pzip or control_mode == GpfControlType.type_Qzip, f"{master_name} is specifiying {control_mode} for {elm_name}. Control mode for AC generator must be either Pzip or Qzip"
+            else:
+                assert control_mode == GpfControlType.type_Pzip, f"{master_name} is specifiying {control_mode} for {elm_name}. Control mode for DC generator can only be Pzip"
+
+            if control_mode == GpfControlType.type_Pzip:
+                self.gpf_kn_pzip_gen_idx = np.append(self.gpf_kn_pzip_gen_idx, elm_index)
+                self.gpf_kn_pzip_gen_setpoints = np.append(self.gpf_kn_pzip_gen_setpoints, control_setpoint)
+                self.gpf_un_pzip_gen_idx = np.delete(self.gpf_un_pzip_gen_idx, np.where(self.gpf_un_pzip_gen_idx == elm_index))
+
+            elif control_mode == GpfControlType.type_Qzip:
+                self.gpf_kn_qzip_gen_idx = np.append(self.gpf_kn_qzip_gen_idx, elm_index)
+                self.gpf_kn_qzip_gen_setpoints = np.append(self.gpf_kn_qzip_gen_setpoints, control_setpoint)
+                self.gpf_un_qzip_gen_idx = np.delete(self.gpf_un_qzip_gen_idx, np.where(self.gpf_un_qzip_gen_idx == elm_index))
+
+        elif elm_name in self.vsc_data.name_to_idx.keys():
+            elm_index = self.vsc_data.name_to_idx[elm_name]
+            assert control_mode == GpfControlType.type_Pf or control_mode == GpfControlType.type_Pt or control_mode == GpfControlType.type_Qt, f"VSC {master_name} is specifiying {control_mode} for {elm_name}. Control mode for VSC must be either Pf or Pt or Qt"
+
+            if control_mode == GpfControlType.type_Pf:
+                self.gpf_kn_pfrom_vsc_kdx = np.append(self.gpf_kn_pfrom_vsc_kdx, elm_index)
+                self.gpf_kn_pfrom_vsc_setpoints = np.append(self.gpf_kn_pfrom_vsc_setpoints, control_setpoint)
+                self.gpf_un_pfrom_vsc_kdx = np.delete(self.gpf_un_pfrom_vsc_kdx, np.where(self.gpf_un_pfrom_vsc_kdx == elm_index))
+
+            elif control_mode == GpfControlType.type_Pt:
+                self.gpf_kn_pto_vsc_kdx = np.append(self.gpf_kn_pto_vsc_kdx, elm_index)
+                self.gpf_kn_pto_vsc_setpoints = np.append(self.gpf_kn_pto_vsc_setpoints, control_setpoint)
+                self.gpf_un_pto_vsc_kdx = np.delete(self.gpf_un_pto_vsc_kdx, np.where(self.gpf_un_pto_vsc_kdx == elm_index))
+
+            elif control_mode == GpfControlType.type_Qt:
+                self.gpf_kn_qto_vsc_kdx = np.append(self.gpf_kn_qto_vsc_kdx, elm_index)
+                self.gpf_kn_qto_vsc_setpoints = np.append(self.gpf_kn_qto_vsc_setpoints, control_setpoint)
+                self.gpf_un_qto_vsc_kdx = np.delete(self.gpf_un_qto_vsc_kdx, np.where(self.gpf_un_qto_vsc_kdx == elm_index))
+
+            else:
+                raise ValueError(f"Control mode {control_mode} not supported")
+
+        elif elm_name in self.controllable_trafo_data.name_to_idx.keys():
+            elm_index = self.controllable_trafo_data.name_to_idx[elm_name]
+            assert control_mode == GpfControlType.type_Pf or control_mode == GpfControlType.type_Pt or control_mode == GpfControlType.type_Qf or control_mode == GpfControlType.type_Qt or control_mode == GpfControlType.type_TapMod or control_mode == GpfControlType.type_TapAng, f"{master_name} is specifiying {control_mode} for {elm_name}. Control mode for controllable trafo must be either Pf or Pt or Qf or Qt or mod or tau"
+
+            if control_mode == GpfControlType.type_Pf:
+                self.gpf_kn_pfrom_trafo_kdx = np.append(self.gpf_kn_pfrom_trafo_kdx, elm_index)
+                self.gpf_kn_pfrom_trafo_setpoints = np.append(self.gpf_kn_pfrom_trafo_setpoints, control_setpoint)
+                self.gpf_un_pfrom_trafo_kdx = np.delete(self.gpf_un_pfrom_trafo_kdx, np.where(self.gpf_un_pfrom_trafo_kdx == elm_index))
+            
+            elif control_mode == GpfControlType.type_Pt:
+                self.gpf_kn_pto_trafo_kdx = np.append(self.gpf_kn_pto_trafo_kdx, elm_index)
+                self.gpf_kn_pto_trafo_setpoints = np.append(self.gpf_kn_pto_trafo_setpoints, control_setpoint)
+                self.gpf_un_pto_trafo_kdx = np.delete(self.gpf_un_pto_trafo_kdx, np.where(self.gpf_un_pto_trafo_kdx == elm_index))
+
+            elif control_mode == GpfControlType.type_Qf:
+                self.gpf_kn_qfrom_trafo_kdx = np.append(self.gpf_kn_qfrom_trafo_kdx, elm_index)
+                self.gpf_kn_qfrom_trafo_setpoints = np.append(self.gpf_kn_qfrom_trafo_setpoints, control_setpoint)
+                self.gpf_un_qfrom_trafo_kdx = np.delete(self.gpf_un_qfrom_trafo_kdx, np.where(self.gpf_un_qfrom_trafo_kdx == elm_index))
+
+            elif control_mode == GpfControlType.type_Qt:
+                self.gpf_kn_qto_trafo_kdx = np.append(self.gpf_kn_qto_trafo_kdx, elm_index)
+                self.gpf_kn_qto_trafo_setpoints = np.append(self.gpf_kn_qto_trafo_setpoints, control_setpoint)
+                self.gpf_un_qto_trafo_kdx = np.delete(self.gpf_un_qto_trafo_kdx, np.where(self.gpf_un_qto_trafo_kdx == elm_index))
+
+            elif control_mode == GpfControlType.type_TapMod:
+                self.gpf_kn_mod_trafo_kdx = np.append(self.gpf_kn_mod_trafo_kdx, elm_index)
+                self.gpf_kn_mod_trafo_setpoints = np.append(self.gpf_kn_mod_trafo_setpoints, control_setpoint)
+                self.gpf_un_mod_trafo_kdx = np.delete(self.gpf_un_mod_trafo_kdx, np.where(self.gpf_un_mod_trafo_kdx == elm_index))
+
+            elif control_mode == GpfControlType.type_TapAng:
+                self.gpf_kn_tau_trafo_kdx = np.append(self.gpf_kn_tau_trafo_kdx, elm_index)
+                self.gpf_kn_tau_trafo_setpoints = np.append(self.gpf_kn_tau_trafo_setpoints, control_setpoint)
+                self.gpf_un_tau_trafo_kdx = np.delete(self.gpf_un_tau_trafo_kdx, np.where(self.gpf_un_tau_trafo_kdx == elm_index))
+
+            else:
+                raise ValueError(f"Control mode {control_mode} not supported")
+
+
+        elif elm_name in self.branch_data.name_to_idx.keys():
+            elm_index = self.branch_data.name_to_idx[elm_name]
+            if elm_index in self.branch_ac:
+                assert control_mode == GpfControlType.type_Pf or control_mode == GpfControlType.type_Qf or control_mode == GpfControlType.type_Pt or control_mode == GpfControlType.type_Qt, f"{master_name} is specifiying {control_mode} for {elm_name}. Control mode for AC passive branch must be either Pf or Qf or Pt or Qt"
+            else:
+                assert control_mode == GpfControlType.type_Pf or control_mode == GpfControlType.type_Pt, f"{master_name} is specifiying {control_mode} for {elm_name}. Control mode for DC branch can only be Pf or Pt"
+
+            if control_mode == GpfControlType.type_Pf:
+                self.gpf_kn_pfrom_passive_kdx = np.append(self.gpf_kn_pfrom_passive_kdx, elm_index)
+                self.gpf_kn_pfrom_passive_setpoints = np.append(self.gpf_kn_pfrom_passive_setpoints, control_setpoint)
+
+            elif control_mode == GpfControlType.type_Qf:
+                self.gpf_kn_qfrom_passive_kdx = np.append(self.gpf_kn_qfrom_passive_kdx, elm_index)
+                self.gpf_kn_qfrom_passive_setpoints = np.append(self.gpf_kn_qfrom_passive_setpoints, control_setpoint)
+
+            elif control_mode == GpfControlType.type_Pt:
+                self.gpf_kn_pto_passive_kdx = np.append(self.gpf_kn_pto_passive_kdx, elm_index)
+                self.gpf_kn_pto_passive_setpoints = np.append(self.gpf_kn_pto_passive_setpoints, control_setpoint)
+
+            elif control_mode == GpfControlType.type_Qt:
+                self.gpf_kn_qto_passive_kdx = np.append(self.gpf_kn_qto_passive_kdx, elm_index)
+                self.gpf_kn_qto_passive_setpoints = np.append(self.gpf_kn_qto_passive_setpoints, control_setpoint)
+
+            else:
+                raise ValueError(f"Control mode {control_mode} not supported")
+
+
+
+        else:
+            raise ValueError(f"Element name {elm_name} does not exist in the network")
+
+
+
+
 
     def compile_control_indices_generalised_pf(self, Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0):
 
@@ -1030,7 +1455,7 @@ class SimulationIndices2:
             print(df)
 
         
-        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 0, strict = 1)
+        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 0)
 
         self.kn_volt_idx = dict_known_idx["Voltage"]
         self.kn_angle_idx = dict_known_idx["Angle"]

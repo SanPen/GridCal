@@ -76,6 +76,7 @@ def solve(circuit: NumericalCircuit,
     """
 
     if options.retry_with_other_methods:
+        print("(power_flow_worker.py) options.retry_with_other_methods: ", options.retry_with_other_methods)
         if circuit.any_control:
             solver_list = [SolverType.NR,
                            SolverType.LM,
@@ -218,6 +219,23 @@ def solve(circuit: NumericalCircuit,
                                  max_it=options.max_iter)
 
         # Newton-Raphson (full)
+        elif solver_type == SolverType.GENERALISED:
+            print("(power_flow_worker.py) elif solver_type == SolverType.GENERALISED: ")
+            solution = pflw.NR_LS_GENERAL(nc=circuit,
+                                        V0=V0,
+                                        S0=S0,
+                                        I0=I0,
+                                        Y0=Y0,
+                                        tolerance=options.tolerance,
+                                        max_iter=options.max_iter,
+                                        acceleration_parameter=options.backtracking_parameter,
+                                        mu_0=options.trust_radius,
+                                        control_q=options.control_Q,
+                                        pf_options=options)
+
+
+
+        # Newton-Raphson (full)
         elif solver_type == SolverType.NR:
             if options.generalised_pf:
                 solution = pflw.NR_LS_GENERAL(nc=circuit,
@@ -231,6 +249,7 @@ def solve(circuit: NumericalCircuit,
                                            mu_0=options.trust_radius,
                                            control_q=options.control_Q,
                                            pf_options=options)
+
                 
             elif circuit.any_control:
                 # Solve NR with the AC/DC algorithm
@@ -308,8 +327,6 @@ def solve(circuit: NumericalCircuit,
             # for any other method, raise exception
             raise Exception(solver_type.value + ' Not supported in power flow mode')
         
-        print("(power_flow_worker.py) solution.V: ", solution.V)
-
         # record the solution type
         solution.method = solver_type
 
@@ -461,7 +478,10 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                                                                              branch_rates=branch_rates,
                                                                              Yf=solution.Yf,
                                                                              Yt=solution.Yt,
-                                                                             method=solution.method)
+                                                                             method=solution.method,
+                                                                             generalised_pf = options.generalised_pf,
+                                                                             vsc_results = solution.vsc_results,
+                                                                             contTrafo_results = solution.contTrafo_results)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = PowerFlowResults(n=circuit.nbus,
@@ -472,6 +492,7 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                                hvdc_names=circuit.hvdc_names,
                                bus_types=bus_types)
 
+    # GENERALISED PF
     results.Sbus = solution.Scalc * circuit.Sbase  # MVA
     results.voltage = solution.V
     results.Sf = Sfb  # in MVA already
@@ -499,7 +520,10 @@ def power_flow_post_process(
         branch_rates: CxVec,
         Yf: Union[CscMat, None] = None,
         Yt: Union[CscMat, None] = None,
-        method: Union[None, SolverType] = None
+        method: Union[None, SolverType] = None,
+        generalised_pf: bool = False,
+        vsc_results: Tuple = None,
+        contTrafo_results: Tuple = None
 ) -> Tuple[CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Compute the power Sf trough the Branches.
@@ -515,6 +539,68 @@ def power_flow_post_process(
     # Compute the slack and pv buses power
     vd = calculation_inputs.vd
     pv = calculation_inputs.pv
+
+    if generalised_pf:
+        # power at the slack nodes
+        Sbus[vd] = V[vd] * np.conj(calculation_inputs.Ybus[vd, :].dot(V))
+
+        # Reactive power at the pv nodes
+        P = Sbus[pv].real
+        Q = (V[pv] * np.conj(calculation_inputs.Ybus[pv, :].dot(V))).imag
+        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
+
+        if Yf is None:
+            Yf = calculation_inputs.Yf
+        if Yt is None:
+            Yt = calculation_inputs.Yt
+
+        # Branches current, loading, etc
+        Vf = V[calculation_inputs.branch_data.F]
+        Vt = V[calculation_inputs.branch_data.T]
+        If = Yf * V
+        It = Yt * V
+        Sf = Vf * np.conj(If)
+        St = Vt * np.conj(It)
+
+        # Branch losses in MVA
+        losses = (Sf + St) * calculation_inputs.Sbase
+
+        # branch voltage increment
+        Vbranch = Vf - Vt
+
+        # Branch power in MVA
+        Sfb = Sf * calculation_inputs.Sbase
+        Stb = St * calculation_inputs.Sbase
+
+        # Branch loading in p.u.
+        loading = Sfb / (branch_rates + 1e-9)
+
+        # VSC branch powers
+        nvsc = calculation_inputs.vsc_data.nelm
+        ncontTrafo = calculation_inputs.controllable_trafo_data.nelm
+        if nvsc > 0:
+            vsc_pfrom, vsc_pto, vsc_qto = vsc_results
+            print("(power_flow_worker.py) vsc_results: ", vsc_pfrom)
+            print("(power_flow_worker.py) vsc_results: ", vsc_pto)
+            print("(power_flow_worker.py) vsc_results: ", vsc_qto)
+            #package the vsc_pto and vsc_qto into complex arrays
+            vsc_Sto = vsc_pto + 1j*vsc_qto
+            #add it, and we assume that the VSCs are always the second last in the branch data, only insert the last nvsc elements
+            Stb[-nvsc-ncontTrafo:] += vsc_Sto * calculation_inputs.Sbase
+            Sfb[-nvsc-ncontTrafo:] += vsc_pfrom * calculation_inputs.Sbase
+
+        if ncontTrafo > 0:
+            p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = contTrafo_results
+            #package the contTrafo_pto and contTrafo_qto into complex arrays
+            contTrafo_Sto = p_to_contTrafo + 1j*q_to_contTrafo
+            contTrafo_Sfrom = p_from_contTrafo + 1j*q_from_contTrafo
+            #add it, and we assume that the VSCs are always the last in the branch data, only insert the last ncontTrafo elements
+            Stb[-ncontTrafo:] += contTrafo_Sto * calculation_inputs.Sbase
+            Sfb[-ncontTrafo:] += contTrafo_Sfrom * calculation_inputs.Sbase
+
+
+        return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
+
 
     if method not in [SolverType.DC]:
         # power at the slack nodes
@@ -617,8 +703,10 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
     # compute islands
     islands = None
-    if options.generalised_pf == True:
-        islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands, generalised_pf = options.generalised_pf)
+    # Generalised PowerFlow does not split into islands
+    if options.generalised_pf == True: 
+        islands = list()
+        islands.append(nc)
     else:
         islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
     results.island_number = len(islands)
@@ -755,7 +843,10 @@ def multi_island_pf(multi_circuit: MultiCircuit,
     :param areas_dict: Area to area index dictionary
     :return: PowerFlowResults instance
     """
-
+    ## GENERALISED PF: temporary solution 
+    if options.solver_type == SolverType.GENERALISED:
+        options.generalised_pf = True
+        options.retry_with_other_methods = False
 
     # Generalised PowerFlow
     if options.generalised_pf:
@@ -769,7 +860,7 @@ def multi_island_pf(multi_circuit: MultiCircuit,
             bus_dict=bus_dict,
             areas_dict=areas_dict
         )
-        print("Generalised PowerFlow")
+        print("(power_flow_worker.py) Generalised PowerFlow")
     
 
     # Normal PowerFlow
@@ -784,6 +875,7 @@ def multi_island_pf(multi_circuit: MultiCircuit,
             bus_dict=bus_dict,
             areas_dict=areas_dict
         )
+        print("(power_flow_worker.py) Normal PowerFlow")
 
     res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
 

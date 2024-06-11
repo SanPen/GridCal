@@ -118,6 +118,9 @@ class BranchData:
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
 
+        # GENERALISED PF
+        self.name_to_idx: dict = dict()
+
     def size(self) -> int:
         """
         Get size of the structure

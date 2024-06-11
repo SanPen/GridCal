@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
-                                        TapAngleControl, TapModuleControl, TapChangerTypes)
+                                        TapAngleControl, TapModuleControl, TapChangerTypes, GpfControlType)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -90,7 +90,13 @@ class Transformer2W(ControllableBranchParent):
                  tc_neutral_position: int = 2,
                  tc_dV: float = 0.01,
                  tc_asymmetry_angle=90,
-                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation):
+                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation,
+                 gpf_ctrl1_elm=None,
+                 gpf_ctrl1_mode=None,
+                 gpf_ctrl1_val=0.0,
+                 gpf_ctrl2_elm=None,
+                 gpf_ctrl2_mode=None,
+                 gpf_ctrl2_val=0.0):
         """
         Transformer constructor
         :param name: Name of the branch
@@ -225,6 +231,15 @@ class Transformer2W(ControllableBranchParent):
         # type template
         self.template = template
 
+        ## GENERALISED PF
+        self.gpf_ctrl1_elm = gpf_ctrl1_elm
+        self.gpf_ctrl1_mode = gpf_ctrl1_mode
+        self.gpf_ctrl1_val = gpf_ctrl1_val
+        self.gpf_ctrl2_elm = gpf_ctrl2_elm
+        self.gpf_ctrl2_mode = gpf_ctrl2_mode
+        self.gpf_ctrl2_val = gpf_ctrl2_val
+
+
         # register
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
@@ -238,6 +253,14 @@ class Transformer2W(ControllableBranchParent):
                       definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
 
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
+
+        ## GENERALISED PF
+        self.register(key='gpf_ctrl1_elm', units='', tpe=str, definition='Generalised PF control 1 element pointer.')
+        self.register(key='gpf_ctrl1_mode', units='', tpe=GpfControlType, definition='Generalised PF control 1 mode.')
+        self.register(key='gpf_ctrl1_val', units='', tpe=float, definition='Generalised PF control 1 value.')
+        self.register(key='gpf_ctrl2_elm', units='', tpe=str, definition='Generalised PF control 2 element pointer.')
+        self.register(key='gpf_ctrl2_mode', units='', tpe=GpfControlType, definition='Generalised PF control 2 mode.')
+        self.register(key='gpf_ctrl2_val', units='', tpe=float, definition='Generalised PF control 2 value.')
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """

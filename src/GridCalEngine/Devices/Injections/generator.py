@@ -20,7 +20,7 @@ import pandas as pd
 from typing import Union
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType, GpfControlType
 from GridCalEngine.Devices.Aggregation.technology import Technology
 from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
@@ -62,7 +62,14 @@ class Generator(GeneratorParent):
                  capex: float = 0,
                  opex: float = 0,
                  srap_enabled: bool = True,
-                 build_status: BuildStatus = BuildStatus.Commissioned):
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 gpf_ctrl1_elm=None,
+                 gpf_ctrl1_mode=None,
+                 gpf_ctrl1_val=0.0,
+                 gpf_ctrl2_elm=None,
+                 gpf_ctrl2_mode=None,
+                 gpf_ctrl2_val=0.0):
+
         """
         Voltage controlled generator. This generators supports several reactive power
         :param name: Name of the generator
@@ -209,6 +216,18 @@ class Generator(GeneratorParent):
         # system base power MVA
         self.Sbase = Sbase
 
+
+        ## GENERALISED PF
+        self.gpf_ctrl1_elm = gpf_ctrl1_elm
+        self.gpf_ctrl1_mode = gpf_ctrl1_mode
+        self.gpf_ctrl1_val = gpf_ctrl1_val
+        self.gpf_ctrl2_elm = gpf_ctrl2_elm
+        self.gpf_ctrl2_mode = gpf_ctrl2_mode
+        self.gpf_ctrl2_val = gpf_ctrl2_val
+
+
+
+
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 
         self.register(key='Pf', units='', tpe=float,
@@ -248,6 +267,15 @@ class Generator(GeneratorParent):
                       definition='Maximum amount of generation decrease per hour.')
 
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
+
+        ## GENERALISED PF
+        self.register(key='gpf_ctrl1_elm', units='', tpe=str, definition='Generalised PF control 1 element pointer.')
+        self.register(key='gpf_ctrl1_mode', units='', tpe=GpfControlType, definition='Generalised PF control 1 mode.')
+        self.register(key='gpf_ctrl1_val', units='', tpe=float, definition='Generalised PF control 1 value.')
+        self.register(key='gpf_ctrl2_elm', units='', tpe=str, definition='Generalised PF control 2 element pointer.')
+        self.register(key='gpf_ctrl2_mode', units='', tpe=GpfControlType, definition='Generalised PF control 2 mode.')
+        self.register(key='gpf_ctrl2_val', units='', tpe=float, definition='Generalised PF control 2 value.')
+
 
     @property
     def Pf_prof(self) -> Profile:

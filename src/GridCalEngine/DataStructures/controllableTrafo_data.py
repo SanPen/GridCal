@@ -14,9 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.DataStructures.branch_data import BranchData
+import numpy as np
+import pandas as pd
+import scipy.sparse as sp
+import GridCalEngine.Topology.topology as tp
+from GridCalEngine.enumerations import WindingsConnection, TransformerControlType
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
+from typing import List, Tuple, Dict
 
-class ControllableTrafoData(BranchData):
+class ControllableTrafoData:
     """
     Class to store the data of a controllable transformer
     """
@@ -30,9 +36,100 @@ class ControllableTrafoData(BranchData):
         :param control_type: control type
         :param control_value: control value
         """
-        super().__init__(nelm, nbus)
-        self.nbus: int = nbus
         self.nelm: int = nelm
+        self.nbus: int = nbus
+
+        self.names: StrVec = np.empty(self.nelm, dtype=object)
+        self.idtag: StrVec = np.empty(self.nelm, dtype=object)
+
+        self.dc: IntVec = np.zeros(self.nelm, dtype=int)
+
+        self.active: IntVec = np.zeros(nelm, dtype=int)
+        self.rates: Vec = np.zeros(nelm, dtype=float)
+        self.contingency_rates: Vec = np.zeros(nelm, dtype=float)
+        self.protection_rates: Vec = np.zeros(nelm, dtype=float)
+
+        self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
+        self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
+
+        self.ctrl_bus1: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses1
+        self.ctrl_bus2: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses2
+
+        # reliabilty
+        self.mttf: Vec = np.zeros(self.nelm, dtype=float)
+        self.mttr: Vec = np.zeros(self.nelm, dtype=float)
+
+        # composite losses curve (a * x^2 + b * x + c)
+        self.a: Vec = np.zeros(self.nelm, dtype=float)
+        self.b: Vec = np.zeros(self.nelm, dtype=float)
+        self.c: Vec = np.zeros(self.nelm, dtype=float)
+
+        self.R: Vec = np.zeros(self.nelm, dtype=float)
+        self.X: Vec = np.zeros(self.nelm, dtype=float)
+        self.G: Vec = np.zeros(self.nelm, dtype=float)
+        self.B: Vec = np.zeros(self.nelm, dtype=float)
+
+        self.R0: Vec = np.zeros(self.nelm, dtype=float)
+        self.X0: Vec = np.zeros(self.nelm, dtype=float)
+        self.G0: Vec = np.zeros(self.nelm, dtype=float)
+        self.B0: Vec = np.zeros(self.nelm, dtype=float)
+
+        self.R2: Vec = np.zeros(self.nelm, dtype=float)
+        self.X2: Vec = np.zeros(self.nelm, dtype=float)
+        self.G2: Vec = np.zeros(self.nelm, dtype=float)
+        self.B2: Vec = np.zeros(self.nelm, dtype=float)
+
+        self.conn: ObjVec = np.array([WindingsConnection.GG] * self.nelm)
+
+        self.k: Vec = np.ones(nelm, dtype=float)
+
+        self.tap_module: Vec = np.ones(nelm, dtype=float)
+        self.tap_module_min: Vec = np.full(nelm, fill_value=0.1, dtype=float)
+        self.tap_module_max: Vec = np.full(nelm, fill_value=1.5, dtype=float)
+        self.tap_angle: Vec = np.zeros(nelm, dtype=float)
+        self.tap_angle_min: Vec = np.full(nelm, fill_value=-6.28, dtype=float)
+        self.tap_angle_max: Vec = np.full(nelm, fill_value=6.28, dtype=float)
+        self.Beq: Vec = np.zeros(nelm, dtype=float)
+        self.G0sw: Vec = np.zeros(nelm, dtype=float)
+
+        self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
+        self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
+
+        self.Pfset: Vec = np.zeros(nelm, dtype=float)
+        self.Qfset: Vec = np.zeros(nelm, dtype=float)
+        self.Qtset: Vec = np.zeros(nelm, dtype=float)
+        self.vf_set: Vec = np.ones(nelm, dtype=float)
+        self.vt_set: Vec = np.ones(nelm, dtype=float)
+
+        self.Kdp: Vec = np.ones(self.nelm, dtype=float)
+        self.Kdp_va: Vec = np.ones(self.nelm, dtype=float)
+        self.alpha1: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
+        self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
+        self.alpha3: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
+        self.control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+
+        self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
+        self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
+
+        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
+                                                           dtype=int)  # connectivity branch with their "from" bus
+        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
+                                                           dtype=int)  # connectivity branch with their "to" bus
+
+        self.overload_cost: Vec = np.zeros(nelm, dtype=float)
+
+        self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+
+        # GENERALISED PF
+        self.gpf_ctrl1_elm: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl1_mode: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl1_val: Vec = np.zeros(nelm, dtype=float)
+        self.gpf_ctrl2_elm: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl2_mode: StrVec = np.empty(nelm, dtype=object)
+        self.gpf_ctrl2_val: Vec = np.zeros(nelm, dtype=float)
+
+        self.name_to_idx: dict = dict()
+
 
     def __str__(self):
         """
