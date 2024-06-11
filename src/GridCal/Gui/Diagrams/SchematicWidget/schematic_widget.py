@@ -821,17 +821,6 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
                                            draw_labels=draw_labels)
         return graphic_object
 
-    def set_data(self, circuit: MultiCircuit, diagram: SchematicDiagram):
-        """
-        Set the widget data and redraw
-        :param circuit: MultiCircuit
-        :param diagram: SchematicDiagram
-        """
-        self.clear()
-        self.circuit = circuit
-        self.diagram = diagram
-        self.draw()
-
     def draw_additional_diagram(self,
                                 diagram: SchematicDiagram,
                                 prefer_node_breaker: bool = False,

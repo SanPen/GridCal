@@ -27,17 +27,17 @@ from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-    from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
+    from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class Segment(QGraphicsLineItem):
+class MapLineSegment(QGraphicsLineItem):
     """
     Segment joining two NodeGraphicItem
     """
 
-    def __init__(self, first: NodeGraphicItem, second: NodeGraphicItem, container: MapTemplateLine):
+    def __init__(self, first: NodeGraphicItem, second: NodeGraphicItem, container: MapLineContainer):
         """
         Segment constructor
         :param first: NodeGraphicItem
@@ -46,12 +46,13 @@ class Segment(QGraphicsLineItem):
         QGraphicsLineItem.__init__(self)
         self.first: NodeGraphicItem = first
         self.second: NodeGraphicItem = second
-        self.container: MapTemplateLine = container
+        self.container: MapLineContainer = container
         self.draw_labels = True
 
         self.style = Qt.SolidLine
         self.color = Qt.blue
         self.width = 1
+        # self.setScale(0.01)
 
         self.set_colour(self.color, self.width, self.style)
         self.update_endings()
