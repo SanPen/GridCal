@@ -101,6 +101,7 @@ class InvestmentEvaluationMethod(Enum):
     MVRSM = "MVRSM"
     NSGA3 = "NSGA3"
     Random = "Random"
+    NSGA3_platypus = "NSGA3 Platypus"
 
     def __str__(self):
         return self.value

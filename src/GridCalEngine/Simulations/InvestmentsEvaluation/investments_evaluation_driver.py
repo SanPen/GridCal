@@ -25,7 +25,7 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_p
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
-from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
+from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3, NSGA_3_platypus
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.random_eval import random_trial
 from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTypes
 from GridCalEngine.basic_structures import IntVec, Vec, CxVec
@@ -287,7 +287,6 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # Report the progress
         self.report_progress2(self.results.current_evaluation, self.max_iter)
-
         return scores.arr()
 
     def objective_function_so(self, combination: IntVec) -> float:
@@ -440,6 +439,49 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         self.report_done()
 
+    def optimized_evaluation_nsga3_platypus(self) -> None:
+        """
+        Run an optimized investment evaluation with NSGA3 using Platypus library
+        """
+        self.report_text("Evaluating investments with NSGA3 (Platypus library)...")
+
+        pop_size = int(round(self.dim))  # if needed, divide by 5 for ideal grid
+        n_partitions = int(round(pop_size))
+        print("pop_size initialization: {}".format(pop_size))
+        print("n_partitions initialization: {}".format(n_partitions))
+
+        # compile the snapshot
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+                                                    max_eval=self.options.max_eval * 2)
+
+        # add baseline
+        #ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+
+        # optimize
+        X, obj_values = NSGA_3_platypus(
+            obj_func=self.objective_function,
+            n_partitions=n_partitions,
+            n_var=2, #self.dim,
+            n_obj=2, #len(ret),
+            n_const=1,                      # ACTUALIZAR MAS ADELANTE AUTOMATICAMENTE
+            max_evals=self.options.max_eval,  # termination
+            pop_size=pop_size,
+            crossover_prob=0.8,                 #N/A POR AHORA
+            mutation_probability=0.1,           #N/A POR AHORA
+            eta=30, #20 / 30                    #N/A POR AHORA
+        )
+        print("execution completed:.....................................................")
+        print("variable values: \n {}".format(X))
+        print("__________________________________________________________________________")
+        print("objective values: \n {}".format(obj_values))
+        print("__________________________________________________________________________")
+        print("Soluciones non-dominated: {}".format(len(X)))
+        print("Valores objetivo non-dominated: {}".format(len(obj_values)))
+
+        #self.results.set_best_combination(combination=X[0, :])  #dimension de X
+
+        self.report_done()
+        return(X,obj_values)
     def randomized_evaluation(self) -> None:
         """
         Run purely random evaluations, without any optimization
@@ -486,6 +528,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         elif self.options.solver == InvestmentEvaluationMethod.Random:
             self.randomized_evaluation()
+
+        elif self.options.solver == InvestmentEvaluationMethod.NSGA3_platypus:
+            self.optimized_evaluation_nsga3_platypus()
 
         else:
             raise Exception('Unsupported method')
