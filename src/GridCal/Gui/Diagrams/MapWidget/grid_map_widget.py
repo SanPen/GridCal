@@ -101,18 +101,16 @@ class GridMapWidget(BaseDiagramWidget):
         # Any representation on the map must be done after this Goto Function
         self.map.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
 
-        # self.startLev = start_level
-        # self.startLat = latitude
-        # self.startLon = longitude
+        self.map.startLev = start_level
+        self.map.startLat = latitude
+        self.map.startLon = longitude
 
-        # he = self.map.view.height()
-        # wi = self.map.view.width()
-        #
-        # self.startHe = he
-        # self.startWi = wi
+        he = self.map.view.height()
+        wi = self.map.view.width()
+
+        self.startHe = he
+        self.startWi = wi
         self.constantLineWidth = True
-        # video pointer
-        # self._video: Union[None, cv2.VideoWriter] = None
 
         # draw
         self.draw()
@@ -234,7 +232,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param lon:
         :return:
         """
-        return self.to_x_y(lat=lat, lon=lon)
+        return self.map.to_x_y(lat=lat, lon=lon)
 
     def update_diagram_element(self,
                                device: ALL_DEV_TYPES,
