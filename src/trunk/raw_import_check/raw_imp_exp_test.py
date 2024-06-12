@@ -1,14 +1,11 @@
-import os
-
 import numpy as np
 import GridCalEngine.api as gc
 from GridCalEngine.IO import FileSave
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
-from GridCalEngine.IO.file_handler import FileSavingOptions
 from GridCalEngine.Simulations import PowerFlowOptions
-from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Simulations.results_template import DriverToSave
+from GridCalEngine.IO.file_handler import FileSavingOptions
 
 
 def compare_inputs(circuit_1, circuit_2, tol=1e-6):
@@ -147,59 +144,31 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
         return 1
 
 
-def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
-    options = FileSavingOptions()
-    options.one_file_per_profile = True
-    options.cgmes_profiles = [cgmesProfile.EQ,
-                              cgmesProfile.OP,
-                              cgmesProfile.TP,
-                              cgmesProfile.SV,
-                              cgmesProfile.SSH]
-    options.cgmes_version = CGMESVersions.v2_4_15
-    options.cgmes_boundary_set = boundary_zip_path
-
-    return options
-
-
-def run_import_export_test(import_path: str | list[str], export_fname: str, boundary_zip_path: str):
+def run_import_export_test(import_path: str, export_fname: str):
     logger = Logger()
     # CGMES model import to MultiCircuit
     circuit = gc.open_file(import_path)
-    # run power flow
-    pf_options = PowerFlowOptions()
-    pf_results = gc.power_flow(circuit, pf_options)
+
+    # pf_options = PowerFlowOptions()
+    pf_results = gc.power_flow(circuit)
 
     pf_session_data = DriverToSave(name="powerflow results",
                                    tpe=SimulationTypes.PowerFlow_run,
                                    results=pf_results,
                                    logger=logger)
-    # Export
-    # export_dir = os.path.join(os.path.curdir, "/export_result")
-    # export_name = os.path.join(export_dir, export_name)
-    options = create_file_save_options(boundary_zip_path)
+    options = FileSavingOptions()
     options.sessions_data.append(pf_session_data)
 
-    cgmes_export = FileSave(circuit=circuit,
-                            file_name=export_fname,
-                            options=options)
-    cgmes_export.save_cgmes()
+    raw_export = FileSave(circuit=circuit,
+                          file_name=export_fname,
+                          options=options)
+    raw_export.save_raw()
 
     circuit2 = gc.open_file(export_fname)
     compare_inputs(circuit, circuit2)
 
 
-cgmes_path = r"C:\WorkProjects\PycharmProjects\GridCal\src\tests\data\grids\CGMES_2_4_15\micro_grid_NL_T1.zip"
-boundary_path = r"C:\WorkProjects\PycharmProjects\GridCal\src\tests\data\grids\CGMES_2_4_15\ENTSOe_boundary_set.zip"
-export_name = r"C:\WorkProjects\PycharmProjects\GridCal\src\trunk\cgmes_import_check\export_result\micro_grid_NL_T1.zip"
-run_import_export_test(cgmes_path, export_name, boundary_path)
-# nc_o = gc.compile_numerical_circuit_at(circuit_o)
+raw_path = r"C:\WorkProjects\PycharmProjects\GridCal\src\tests\data\grids\RAW\IEEE 30 bus.raw"
+export_name = r"C:\WorkProjects\PycharmProjects\GridCal\src\trunk\raw_import_check\export_result\IEEE 30 bus.raw"
 
-# export to CGMES
-# crate FileSave
-
-# boundary: micro grid Boundary
-# gc.save_file() from FileHandler
-
-# import the exported CGMES
-
-# Compare with the original
+run_import_export_test(import_path=raw_path, export_fname=export_name)
