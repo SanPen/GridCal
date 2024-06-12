@@ -37,9 +37,21 @@ if __name__ == "__main__":
     inv.run()
     e_time = time.time()
 
-    output_f=inv.results._f_obj
-    combinations=inv.results._combinations
-    #output_f1f2=¿?
+    #Results:
+    #output_f=inv.results._f_obj
+    #combinations=inv.results._combinations
+    output_f1=inv.results._financial
+    output_f2=inv.results._electrical
+
+
+    # plot all the results in scatter - not only pareto front
+    import matplotlib.pyplot as plt
+    import matplotlib
+    import pandas as pd
+    matplotlib.use("Qt5Agg")
+    data=np.vstack((output_f1,output_f2))
+    plt.scatter(data[0],data[1])
+    plt.show()
 
     print("Simulation time: {} sec".format(e_time - st_time))
 

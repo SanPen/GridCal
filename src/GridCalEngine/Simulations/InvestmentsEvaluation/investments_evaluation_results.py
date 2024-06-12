@@ -56,6 +56,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses: Vec = np.zeros(max_eval, dtype=float)
         self._overload_score: Vec = np.zeros(max_eval, dtype=float)
         self._voltage_score: Vec = np.zeros(max_eval, dtype=float)
+        self._electrical: Vec = np.zeros(max_eval, dtype=float)
         self._financial: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
@@ -81,6 +82,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='_losses', tpe=Vec)
         self.register(name='_overload_score', tpe=Vec)
         self.register(name='_voltage_score', tpe=Vec)
+        self.register(name='_electrical', tpe=Vec)
         self.register(name='_financial', tpe=Vec)
         self.register(name='_f_obj', tpe=Vec)
         self.register(name='_index_names', tpe=Vec)
@@ -120,6 +122,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                losses: float,
                overload_score: float,
                voltage_score: float,
+               electrical: float,
                financial: float,
                objective_function_sum: float,
                combination: IntVec,
@@ -132,6 +135,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param losses:
         :param overload_score:
         :param voltage_score:
+        :param electrical:
         :param financial:
         :param objective_function_sum:
         :param combination: vector of size (n_investment_groups) with ones in those investments used
@@ -142,6 +146,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._losses[eval_idx] = losses
         self._overload_score[eval_idx] = overload_score
         self._voltage_score[eval_idx] = voltage_score
+        self._electrical[eval_idx] = electrical
         self._financial[eval_idx] = financial
         self._f_obj[eval_idx] = objective_function_sum
         self._combinations[eval_idx, :] = combination
@@ -243,6 +248,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             losses: float,
             overload_score: float,
             voltage_score: float,
+            electrical: float,
             financial: float,
             objective_function_sum: float,
             combination: IntVec) -> None:
@@ -253,6 +259,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param losses:
         :param overload_score:
         :param voltage_score:
+        :param electrical:
         :param financial:
         :param objective_function_sum:
         :param combination:
@@ -269,6 +276,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                         losses=losses,
                         overload_score=overload_score,
                         voltage_score=voltage_score,
+                        electrical=electrical,
                         financial=financial,
                         objective_function_sum=objective_function_sum,
                         combination=combination,
@@ -313,7 +321,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                 self._losses,
                 self._overload_score / 1e6,
                 self._voltage_score / 1e6,
-                self._losses + self._voltage_score + self._overload_score,
+                self._electrical,
+                #self._losses + self._voltage_score + self._overload_score,
                 self._financial,
                 self._f_obj,
                 self._combinations
