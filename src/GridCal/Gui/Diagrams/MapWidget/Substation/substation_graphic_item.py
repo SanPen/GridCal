@@ -20,9 +20,11 @@ from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
-from GridCal.Gui.GuiFunctions import add_menu_entry
-from GridCalEngine.Devices.Substation.substation import Substation
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+from GridCal.Gui.GuiFunctions import add_menu_entry
+
+from GridCalEngine.Devices.Substation.substation import Substation
+from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
@@ -68,7 +70,13 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setRect(0.0, 0.0, r, r)
         self.lat = lat
         self.lon = lon
-        self.x, self.y = editor.to_x_y(lat=lat, lon=lon)
+
+        if lat is not None and lon is not None:
+            self.x, self.y = self.editor.to_x_y(lat=lat, lon=lon)
+        else:
+            self.x = 0
+            self.y = 0
+
         self.radius = r
 
         self.resize(r)
@@ -143,13 +151,24 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             self.updatePosition()
             self.editor.update_connectors()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
         self.updateDiagram()  # always update
+
+        if self.api_object is not None:
+            self.editor.set_editor_model(api_object=self.api_object,
+                                         dictionary_of_lists={
+                                             DeviceType.CountryDevice: self.editor.circuit.get_countries(),
+                                             DeviceType.CommunityDevice: self.editor.circuit.get_communities(),
+                                             DeviceType.RegionDevice: self.editor.circuit.get_regions(),
+                                             DeviceType.MunicipalityDevice: self.editor.circuit.get_municipalities(),
+                                             DeviceType.AreaDevice: self.editor.circuit.get_areas(),
+                                             DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
+                                         })
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """

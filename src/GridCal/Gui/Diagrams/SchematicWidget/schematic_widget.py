@@ -80,7 +80,6 @@ from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
 
 BRANCH_GRAPHICS = Union[
@@ -444,13 +443,13 @@ class CustomGraphicsView(QGraphicsView):
 #     return graphic_obj
 
 
-class SchematicWidget(BaseDiagramWidget, QSplitter):
+class SchematicWidget(BaseDiagramWidget):
     """
     This is the bus-branch editor
 
     Structure:
 
-    {SchematicWidget: QSplitter}
+    {SchematicWidget: BaseDiagramWidget}
      |
       - .editor_graphics_view {QGraphicsView} (Handles the drag and drop)
      |
@@ -481,53 +480,21 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
         :param time_index: time index to represent
         :param prefer_node_breaker: Preffer the node breaker representation?
         """
+
         BaseDiagramWidget.__init__(self,
                                    circuit=circuit,
                                    diagram=diagram,
                                    time_index=time_index,
                                    call_delete_db_element_func=call_delete_db_element_func)
-        QSplitter.__init__(self)
-
-        # store a reference to the multi circuit instance
-        # self.circuit: MultiCircuit = circuit
-
-        # diagram to store the objects locations
-        # self.diagram: SchematicDiagram = diagram
-        # self.graphics_manager = GraphicsManager()
-
-        # default_bus_voltage (kV)
-        self.default_bus_voltage = default_bus_voltage
-
-        # Preffer the node breaker representation?
-        self.prefer_node_breaker: bool = prefer_node_breaker
-
-        # self.logger: Logger = Logger()
-
-        # This function is meant to be a master delete function that is passed to each diagram
-        # so that when a diagram deletes an element, the element is deleted in all other diagrams
-        # self.call_delete_db_element_func = call_delete_db_element_func
-
-        # nodes distance "explosion" factor
-        self.expand_factor = 1.1
-
-        # Widget layout and child widgets:
-        self.horizontal_layout = QHBoxLayout(self)
-        self.object_editor_table = QTableView(self)
-
-        # library model
-        self.library_model = SchematicLibraryModel(self)
-
-        # Actual libraryView object
-        self.library_view = QListView(self)
-        self.library_view.setModel(self.library_model)
-        self.library_view.setViewMode(self.library_view.ViewMode.ListMode)
-        self.library_view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = SchematicScene(parent=self)  # scene to add to the QGraphicsView
 
-        # self.results_dictionary: Dict[SimulationTypes, DRIVER_OBJECTS] = dict()
+        # library model
+        self.library_model = SchematicLibraryModel()
+        self.library_view.setModel(self.library_model)
 
+        # add the actual editor
         self.editor_graphics_view = CustomGraphicsView(self.diagram_scene, parent=self)
 
         # override events
@@ -537,31 +504,21 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
         self.editor_graphics_view.wheelEvent = self.graphicsWheelEvent
         self.editor_graphics_view.keyPressEvent = self.graphicsKeyPressEvent
 
-        # Zoom indicator
-        self._zoom = 0
-
-        # create the grid name editor
-        self.frame1 = QFrame()
-        self.frame1_layout = QVBoxLayout()
-        self.frame1_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.frame1_layout.addWidget(self.library_view)
-        self.frame1.setLayout(self.frame1_layout)
-
-        # Add the two objects into a layout
-        splitter2 = QSplitter(self)
-        splitter2.addWidget(self.frame1)
-        splitter2.addWidget(self.object_editor_table)
-        splitter2.setOrientation(Qt.Vertical)
-        self.addWidget(splitter2)
         self.addWidget(self.editor_graphics_view)
-
-        # factor 1:10
-        splitter2.setStretchFactor(0, 2)
-        splitter2.setStretchFactor(1, 5)
-
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
+
+        # default_bus_voltage (kV)
+        self.default_bus_voltage = default_bus_voltage
+
+        # Preffer the node breaker representation?
+        self.prefer_node_breaker: bool = prefer_node_breaker
+
+        # nodes distance "explosion" factor
+        self.expand_factor = 1.1
+
+        # Zoom indicator
+        self._zoom = 0
 
         # line drawing vars
         self.started_branch: Union[LineGraphicTemplateItem, None] = None
@@ -578,46 +535,11 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
         # self.pos_label = QGraphicsTextItem()
         # self.add_to_scene(self.pos_label)
 
-        # current time index from the GUI (None or 0, 1, 2, ..., n-1)
-        # self._time_index: Union[None, int] = time_index
-
-        # video pointer
-        # self._video: Union[None, cv2.VideoWriter] = None
-
         if diagram is not None:
             self.draw()
 
         # -------------------------------------------------------------------------------------------------
         # Note: Do not declare any variable beyond here, as it may bnot be considered if draw is called :/
-
-    def set_time_index(self, time_index: Union[int, None]):
-        """
-        Set the time index of the table
-        :param time_index: None or integer value
-        """
-        super().set_time_index(time_index=time_index)
-
-        mdl = self.object_editor_table.model()
-        if isinstance(mdl, ObjectsModel):
-            mdl.set_time_index(time_index=self._time_index)
-
-    def set_editor_model(self,
-                         api_object: ALL_DEV_TYPES,
-                         dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
-        """
-        Set an api object to appear in the editable table view of the editor
-        :param api_object: any EditableDevice
-        :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
-        """
-        mdl = ObjectsModel(objects=[api_object],
-                           property_list=api_object.property_list,
-                           time_index=self.get_time_index(),
-                           parent=self.object_editor_table,
-                           editable=True,
-                           transposed=True,
-                           dictionary_of_lists=dictionary_of_lists if dictionary_of_lists is not None else dict())
-
-        self.object_editor_table.setModel(mdl)
 
     def graphicsDragEnterEvent(self, event: QDragEnterEvent) -> None:
         """
@@ -1169,8 +1091,6 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
                                                         api_object=device))
 
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
-
-
 
     def add_to_scene(self, graphic_object: QGraphicsItem = None) -> None:
         """

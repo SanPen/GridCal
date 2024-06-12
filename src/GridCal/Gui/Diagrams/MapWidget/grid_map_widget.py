@@ -55,7 +55,7 @@ from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 
 
-class GridMapWidget(MapWidget, BaseDiagramWidget):
+class GridMapWidget(BaseDiagramWidget):
     """
     GridMapWidget
     """
@@ -79,12 +79,6 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param diagram:
         :param call_delete_db_element_func:
         """
-        MapWidget.__init__(self,
-                           parent=None,
-                           tile_src=tile_src,
-                           start_level=start_level,
-                           zoom_callback=self.zoom_callback,
-                           position_callback=self.position_callback)
 
         BaseDiagramWidget.__init__(self,
                                    circuit=circuit,
@@ -96,18 +90,26 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                                    time_index=0,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
+        self.map = MapWidget(parent=self,
+                             tile_src=tile_src,
+                             start_level=start_level,
+                             startLat=latitude,
+                             startLon=longitude,
+                             zoom_callback=self.zoom_callback,
+                             position_callback=self.position_callback)
+
         # Any representation on the map must be done after this Goto Function
-        self.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
+        self.map.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
 
-        self.startLev = start_level
-        self.startLat = latitude
-        self.startLon = longitude
+        # self.startLev = start_level
+        # self.startLat = latitude
+        # self.startLon = longitude
 
-        he = self.view.height()
-        wi = self.view.width()
-
-        self.startHe = he
-        self.startWi = wi
+        # he = self.map.view.height()
+        # wi = self.map.view.width()
+        #
+        # self.startHe = he
+        # self.startWi = wi
         self.constantLineWidth = True
         # video pointer
         # self._video: Union[None, cv2.VideoWriter] = None
@@ -160,7 +162,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param graphic_object: Graphic object associated
         """
 
-        self.diagram_scene.addItem(graphic_object)
+        self.map.diagram_scene.addItem(graphic_object)
 
     def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
@@ -170,8 +172,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         api_object = getattr(graphic_object, 'api_object', None)
         if api_object is not None:
             self.graphics_manager.delete_device(api_object)
-        self.diagram_scene.removeItem(graphic_object)
-
+        self.map.diagram_scene.removeItem(graphic_object)
 
     def zoom_callback(self, zoom_level: int) -> None:
         """
@@ -193,23 +194,27 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         """
         Zoom in
         """
-        if self.level + 1 <= self.max_level:
-            self.zoom_level(level=self.level + 1)
+        if self.map.level + 1 <= self.map.max_level:
+            self.map.zoom_level(level=self.map.level + 1)
 
     def zoom_out(self):
         """
         Zoom out
         """
-        if self.level - 1 >= self.min_level:
-            self.zoom_level(level=self.level - 1)
+        if self.map.level - 1 >= self.map.min_level:
+            self.map.zoom_level(level=self.map.level - 1)
 
     def rescaleGraphics(self):
+        """
+
+        :return:
+        """
         if self.constantLineWidth:
             for device_type, graphics in self.graphics_manager.graphic_dict.items():
                 for graphic_id, graphic_item in graphics.items():
                     if isinstance(graphic_item, MapLineContainer):
                         for seg in graphic_item.segments_list:
-                            seg.scaleSegment = seg.lineWidth / self.schema_zoom;
+                            seg.scaleSegment = seg.lineWidth / self.map.schema_zoom
                             seg.setScale(seg.scaleSegment)
                             seg.update_endings(True)
 
@@ -220,18 +225,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param y:
         :return:
         """
-
-        sx, sy = self.to_x_y(self.startLat, self.startLon)
-
-        he = self.view.height()
-        wi = self.view.width()
-
-        node_gen_dx = sx + (self.startWi - wi) / 2
-        node_gen_dy = sy + (self.startHe - he) / 2
-
-        lon, lat = self.view_to_geo(xview=x - node_gen_dx, yview=y - node_gen_dy)
-
-        return lat, lon
+        return self.map.to_lat_lon(x=x, y=y)
 
     def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
         """
@@ -240,18 +234,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param lon:
         :return:
         """
-        he = self.view.height()
-        wi = self.view.width()
-
-        node_gen_dx = self.startWi - wi
-        node_gen_dy = self.startHe - he
-
-        x, y = self.geo_to_view(longitude=lon, latitude=lat)
-
-        x = x + node_gen_dx / 2
-        y = y + node_gen_dy / 2
-
-        return x, y
+        return self.to_x_y(lat=lat, lon=lon)
 
     def update_diagram_element(self,
                                device: ALL_DEV_TYPES,
@@ -307,11 +290,11 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         :return:
         """
-        if len(self.selectedItems) < 2:
+        if len(self.map.selectedItems) < 2:
             return 0
 
-        it1 = self.selectedItems[0]
-        it2 = self.selectedItems[1]
+        it1 = self.map.selectedItems[0]
+        it2 = self.map.selectedItems[1]
 
         if it1 == it2:
             return 0
@@ -320,7 +303,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         newline.copyData(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
 
-        better_first, better_second = self.compare_options(it1, it2)
+        better_first, better_second = self.map.compare_options(it1, it2)
 
         first_list = better_first.line_container.api_object.locations.data
         second_list = better_second.line_container.api_object.locations.data
@@ -350,7 +333,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         """
 
         nod = self.graphics_manager.delete_device(node.api_object)
-        self.diagram_scene.removeItem(nod)
+        self.map.diagram_scene.removeItem(nod)
         nod.line_container.removeNode(node)
 
     pass
@@ -362,7 +345,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :return:
         """
         sub = self.graphics_manager.delete_device(substation.api_object)
-        self.diagram_scene.removeItem(sub)
+        self.map.diagram_scene.removeItem(sub)
 
         br_types = [DeviceType.LineDevice, DeviceType.HVDCLineDevice]
 
@@ -381,7 +364,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         """
         lin = self.graphics_manager.delete_device(line.api_object)
         for seg in lin.segments_list:
-            self.diagram_scene.removeItem(seg)
+            self.map.diagram_scene.removeItem(seg)
 
     pass
 

@@ -19,8 +19,12 @@ from typing import TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
-from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
+from PySide6.QtWidgets import QGraphicsSceneMouseEvent
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+
+from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
+from GridCalEngine.enumerations import DeviceType
+
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
@@ -131,13 +135,19 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
             self.updatePosition()
             self.editor.update_connectors()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
         self.updateDiagram()  # always update
+
+        if self.api_object is not None:
+            self.editor.set_editor_model(api_object=self.api_object,
+                                         dictionary_of_lists={
+                                             DeviceType.SubstationDevice: self.editor.circuit.get_substations(),
+                                         })
 
     def mouseReleaseEvent(self, event):
         """

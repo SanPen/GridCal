@@ -164,14 +164,19 @@ class MapWidget(QWidget):
                  parent: Union[None, QWidget],
                  tile_src: Tiles,
                  start_level: int,
+                 startLat: float,
+                 startLon: float,
                  zoom_callback: Callable[[int], None],
                  position_callback: Callable[[float, float], None]):
-        """Initialize the widget.
-
-        parent       the GUI parent widget
-        tile_src     a Tiles object, source of tiles
-        start_level  level to initially display
-        kwargs       keyword args passed through to the underlying QLabel
+        """
+        Initialize the widget.
+        :param parent: the GUI parent widget
+        :param tile_src: a Tiles object, source of tiles
+        :param start_level: level to initially display
+        :param startLat:
+        :param startLon:
+        :param zoom_callback:
+        :param position_callback:
         """
 
         QWidget.__init__(self, parent)  # inherit all parent object setup
@@ -249,9 +254,9 @@ class MapWidget(QWidget):
         self.view_blat = 0
         self.view_tlat = 0
 
-        self.startLat = 0
-        self.startLon = 0
-        self.startLev = 1
+        self.startLat = startLat
+        self.startLon = startLon
+        self.startLev = start_level
 
         self.start_X = 0
         self.start_Y = 0
@@ -341,8 +346,8 @@ class MapWidget(QWidget):
         self.pressed = False
         self.disableMove = False
         self.inItem = False
-        self.startHe = 360
-        self.startWi = 240
+        self.startHe = self.view.height()  # 360
+        self.startWi = self.view.width()  # 240
 
         # Set initial zoom level (change the values as needed)
         initial_zoom_factor = 1
@@ -390,6 +395,8 @@ class MapWidget(QWidget):
         return qMouseEvent
 
     def eventFilter(self, obj, event):
+
+        # TODO: Mover a eventos particulares SceneMousePress, MouseRelease, etc...
 
         val = event.type()
 
@@ -661,12 +668,12 @@ class MapWidget(QWidget):
 
         level, longitude, latitude = self.get_level_and_position()
 
-        if self.startLon is not None:
+        if self.startLon is not None and longitude is not None and latitude is not None:
             x, y = self.geo_to_view(longitude=longitude, latitude=latitude)
             sx, sy = self.geo_to_view(longitude=self.startLon, latitude=self.startLat)
 
-            dx = x + (self.startWi - wi)/2 + (x - sx) * 1 / self.schema_zoom
-            dy = y + (self.startHe - he)/2 + (y - sy) * 1 / self.schema_zoom
+            dx = x + (self.startWi - wi) / 2 + (x - sx) * 1 / self.schema_zoom
+            dy = y + (self.startHe - he) / 2 + (y - sy) * 1 / self.schema_zoom
 
             point = QPointF(dx, dy)
             self.view.centerOn(point)
@@ -808,7 +815,7 @@ class MapWidget(QWidget):
     def rescaleGraphics(self):
         pass
 
-    def resizeEvent(self, event: QResizeEvent = None, updateDisplacement = True):
+    def resizeEvent(self, event: QResizeEvent = None, updateDisplacement=True):
         """
         Widget resized, recompute some state.
         """
@@ -2034,7 +2041,7 @@ class MapWidget(QWidget):
             self.pan_position(longitude, latitude, view_x, view_y)
 
             # to set some state variables
-            self.resizeEvent(updateDisplacement = False)
+            self.resizeEvent(updateDisplacement=False)
 
             # raise the EVT_PYSLIPQT_LEVEL event
             LevelEvent(level=level).emit_event()
@@ -3905,14 +3912,17 @@ class MapWidget(QWidget):
             return False  # couldn't change level
 
         self.level = level
+
         (self.num_tiles_x, self.num_tiles_y, _, _) = self.tile_src.GetInfo(level)
+
         self.map_width = self.num_tiles_x * self.tile_width
+
         self.map_height = self.num_tiles_y * self.tile_height
-        (self.map_llon, self.map_rlon,
-         self.map_blat, self.map_tlat) = self.tile_src.extent
+
+        (self.map_llon, self.map_rlon, self.map_blat, self.map_tlat) = self.tile_src.extent
 
         # to set some state variables
-        self.resizeEvent(updateDisplacement = False)
+        self.resizeEvent(updateDisplacement=False)
 
         # raise level change event
         LevelEvent(level=level).emit_event()
@@ -4006,6 +4016,46 @@ class MapWidget(QWidget):
                 break
 
         self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+
+    def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
+        """
+        Convert x, y position in the map to latitude and longitude
+        :param x:
+        :param y:
+        :return:
+        """
+
+        sx, sy = self.to_x_y(self.startLat, self.startLon)
+
+        he = self.view.height()
+        wi = self.view.width()
+
+        node_gen_dx = sx + (self.startWi - wi) / 2
+        node_gen_dy = sy + (self.startHe - he) / 2
+
+        lon, lat = self.view_to_geo(xview=x - node_gen_dx, yview=y - node_gen_dy)
+
+        return lat, lon
+
+    def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
+        """
+
+        :param lat:
+        :param lon:
+        :return:
+        """
+        he = self.view.height()
+        wi = self.view.width()
+
+        node_gen_dx = self.startWi - wi
+        node_gen_dy = self.startHe - he
+
+        x, y = self.geo_to_view(longitude=lon, latitude=lat)
+
+        x = x + node_gen_dx / 2
+        y = y + node_gen_dy / 2
+
+        return x, y
 
     def ChangeTileSet(self, tile_src):
         """Change the source of tiles.

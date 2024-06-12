@@ -16,14 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
-from typing import Union
+from typing import Union, List, Callable
 import pandas as pd
 from PySide6 import QtWidgets
 
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-from GridCalEngine.Devices.multi_circuit import MultiCircuit, get_system_user
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -263,7 +263,8 @@ class IoMain(ConfigurationMain):
         else:
             return None
 
-    def open_file_now(self, filenames, post_function=None) -> None:
+    def open_file_now(self, filenames: Union[str, List[str]],
+                      post_function: Union[None, Callable[[], None]] = None) -> None:
         """
         Open a file without questions
         :param filenames: list of file names (may be more than one because of CIM TP and EQ files)
@@ -324,9 +325,9 @@ class IoMain(ConfigurationMain):
 
                 else:
                     if self.circuit.get_bus_number() > 1500:
-                        quit_msg = "The grid is quite large, hence the schematic might be slow.\n" \
-                                   "Do you want to enable the schematic?\n" \
-                                   "(you can always enable the drawing later)"
+                        quit_msg = ("The grid is quite large, hence the schematic might be slow.\n"
+                                    "Do you want to enable the schematic?\n"
+                                    "(you can always enable the drawing later)")
                         reply = QtWidgets.QMessageBox.question(self, 'Enable schematic', quit_msg,
                                                                QtWidgets.QMessageBox.StandardButton.Yes,
                                                                QtWidgets.QMessageBox.StandardButton.No)

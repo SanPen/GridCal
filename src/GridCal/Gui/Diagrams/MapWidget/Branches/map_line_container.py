@@ -29,7 +29,6 @@ from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
-
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
@@ -187,10 +186,14 @@ class MapLineContainer(GenericDiagramWidget):
         self.redraw_segments()
 
     def removeNode(self, node: NodeGraphicItem):
+        """
 
+        :param node:
+        :return:
+        """
         for seg in self.segments_list:
             if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
-                self.editor.diagram_scene.removeItem(seg)
+                self.editor.map.diagram_scene.removeItem(seg)
 
         self.nodes_list.remove(node)
 
@@ -402,5 +405,3 @@ class MapLineContainer(GenericDiagramWidget):
 
         for line in self.segments_list:
             line.set_enable(val=False)
-
-
