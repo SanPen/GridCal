@@ -1,11 +1,12 @@
 import numpy as np
-import GridCalEngine.api as gc
+
 from GridCalEngine.IO import FileSave
 from GridCalEngine.Simulations import PowerFlowOptions
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.IO.file_handler import FileSavingOptions
+import GridCalEngine.api as gc
 
 
 def compare_inputs(circuit_1, circuit_2, tol=1e-6):
