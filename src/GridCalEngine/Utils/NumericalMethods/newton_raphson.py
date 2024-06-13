@@ -159,7 +159,7 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             if verbose > 0:
                 print(f'It {iteration}, error {error}, converged {converged}, x {x}, dx {dx}')
     print("")
-    print(ret.J.todense())
+    #print(ret.J.todense())
     return ConvexMethodResult(x=x,
                               error=error,
                               converged=converged,

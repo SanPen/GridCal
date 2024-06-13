@@ -524,7 +524,7 @@ def linn5bus_us_pvnode4_qlimit():
     bus4 = gce.Bus('Bus 4', vnom=138)
     grid.add_bus(bus4)
     gen1 = gce.Generator('Generator 1', control_bus=bus4, vset=1.0, Pmin=0, Pmax=1000,
-                         Qmin=-25, Qmax=25, Cost=15, Cost2=0.0, Snom=1000, P=1000)
+                         Qmin=-500, Qmax=500, Cost=15, Cost2=0.0, Snom=1000, P=1000)
     grid.add_generator(bus4, gen1)
 
     # bus5
@@ -583,8 +583,8 @@ def linn5bus_us_pvrnode2_qlimit():
     # add bus 4 with a load attached
     bus4 = gce.Bus('Bus 4', vnom=138)
     grid.add_bus(bus4)
-    gen1 = gce.Generator('Generator 1', control_bus=bus2, vset=1.0, Pmin=0, Pmax=1000,
-                         Qmin=-2500, Qmax=25, Cost=15, Cost2=0.0, Snom=1000, P=1000)
+    gen1 = gce.Generator('Generator 1', control_bus=bus2, vset=.95800823, Pmin=0, Pmax=1000,
+                         Qmin=-500, Qmax=500, Cost=15, Cost2=0.0, Snom=1000, P=1000)
     grid.add_generator(bus4, gen1)
 
     # bus5
@@ -598,13 +598,73 @@ def linn5bus_us_pvrnode2_qlimit():
     # transformer 1
     tr1 = gce.Transformer2W(bus_from=bus2, bus_to=bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
                             tap_phase_max=1.7, tap_phase_min=1.7, tap_module=1.0,
-                            tap_module_control_mode=gce.TapModuleControl.fixed, regulation_bus=bus4,
-                            Pset=1200)
+                            tap_module_control_mode=gce.TapModuleControl.fixed, regulation_bus=bus4)
     tr1.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
 
     # transformer 2
     tr2 = gce.Transformer2W(bus_from=bus1, bus_to=bus3, name='transformer 1-3', r=0.001, x=0.015, b=0.0, rate=1000,
-                            tap_phase_max=3.0, tap_phase_min=-3.0, tap_module=1.0, Pset=1200)
+                            tap_phase_max=3.0, tap_phase_min=-3.0, tap_module=1.0)
+    tr2.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
+
+    # add Lines connecting the buses
+    grid.add_line(gce.Line(bus_from=bus1, bus_to=bus2, name='line 1-2', r=0.01, x=0.01, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus3, bus_to=bus4, name='line 3-4', r=0.005, x=0.02, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus4, bus_to=bus5, name='line 4-5', r=0.005, x=0.02, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus5, bus_to=bus3, name='line 5-3', r=0.005, x=0.01, b=0.02, rate=1000))
+    grid.add_transformer2w(tr1)
+    grid.add_transformer2w(tr2)
+
+    return grid
+
+def linn5bus_us_pvr_slack():
+    """
+    Grid from Lynn Powel's book
+    """
+    # declare a circuit object
+    grid = gce.MultiCircuit()
+
+    # Add the buses and the generators and loads attached
+    bus1 = gce.Bus('Bus 1', vnom=138)
+    # bus1.is_slack = True  # we may mark the bus a slack
+    grid.add_bus(bus1)
+    grid.add_load(bus1, gce.Load('load 1', P=1000, Q=250))
+
+    # add bus 2 with a load attached
+    bus2 = gce.Bus('Bus 2', vnom=138)
+    grid.add_bus(bus2)
+    grid.add_load(bus2, gce.Load('load 2', P=1000, Q=250))
+    grid.add_shunt(bus2, gce.Shunt('BC 1', B=200.0))
+
+    # add bus 3 with a load attached
+    bus3 = gce.Bus('Bus 3', vnom=138)
+    grid.add_bus(bus3)
+
+    # add bus 4 with a load attached
+    bus4 = gce.Bus('Bus 4', vnom=138)
+    grid.add_bus(bus4)
+
+    # bus5
+    bus5 = gce.Bus('Bus 5', vnom=20)
+    grid.add_bus(bus5)
+    bus5.is_slack = True
+    gen2 = gce.Generator('Generator Slack', control_bus=bus5, vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0, Snom=400, P=1000)
+    grid.add_generator(bus5, gen2)
+
+
+    gen1 = gce.Generator('Generator 1', control_bus=bus5, vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0, Snom=1000, P=1000)
+    grid.add_generator(bus4, gen1)
+
+    # transformer 1
+    tr1 = gce.Transformer2W(bus_from=bus2, bus_to=bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
+                            tap_phase_max=1.7, tap_phase_min=1.7, tap_module=1.0,
+                            tap_module_control_mode=gce.TapModuleControl.fixed, regulation_bus=bus4)
+    tr1.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
+
+    # transformer 2
+    tr2 = gce.Transformer2W(bus_from=bus1, bus_to=bus3, name='transformer 1-3', r=0.001, x=0.015, b=0.0, rate=1000,
+                            tap_phase_max=3.0, tap_phase_min=-3.0, tap_module=1.0)
     tr2.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
 
     # add Lines connecting the buses
@@ -881,7 +941,7 @@ def compute_gx_autodiff(x: Vec,
     n_k_m = len(k_m)
     Va = Va0.copy()
     Vm = Vm0.copy()
-    Va[noslack], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=x, n_noslack=npvpq, n_pqpvr=n_pqpvr, n_k_tau=n_k_tau,
+    Va[noslack], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=x, n_noslack=len(noslack), n_pqpvr=n_pqpvr, n_k_tau=n_k_tau,
                                                        n_k_m=n_k_m)
     V = Vm * np.exp(1j * Va)
 
@@ -1071,6 +1131,7 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     pqpvr = np.r_[pq, pvr]  # np.r_[nc.pq, nc.pvr]
     npqpvr = len(pqpvr)
     npvpq = len(pvpq)
+    nnoslack = len(pq) + len(pvr) + len(pv) + len(pqv)
     S0 = nc.Sbus
     I0 = nc.Ibus
     Y0 = nc.YLoadBus
@@ -1111,16 +1172,19 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     pqpvr.sort()    # pqpvr = np.sort(pqpvr)
     k_tau.sort()    # k_tau = np.sort(k_tau)
     k_m.sort()      # k_m = np.sort(k_m)
-    Va[pvpq], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=ret.x, n_noslack=npvpq, n_pqpvr=npqpvr, n_k_tau=n_k_tau,
+
+    Va[no_slack], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=ret.x, n_noslack=nnoslack, n_pqpvr=npqpvr, n_k_tau=n_k_tau,
                                                     n_k_m=n_k_m)
 
-    Sinj, Iinj, Sf, St = powerflowresults(nc, Vm, Va, True)
 
+    Sinj, Iinj, Sf, St = powerflowresults(nc, Vm, Va, True)
+    print("Info:")
+    ret.print_info()
     # Retrieving the generator Qlimits and updating reactive power injection
     qminpvlimitspu = nc.generator_data.qmin * (1/nc.Sbase)
     qmaxpvlimitspu = nc.generator_data.qmax * (1/nc.Sbase)
     limitcheck = False
-    for g in pv:
+    for g in np.r_[pv, pvr]:
         ix = np.where(nc.generator_data.genbus == g)[0]
         if Sinj[g].imag > qmaxpvlimitspu[ix]:
             Sinj[g] = Sinj[g].real + 1j*qmaxpvlimitspu[ix]
@@ -1132,11 +1196,22 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
             pass    # within limits
 
         if limitcheck:
-            pq = np.append(pq, np.array([g]))
-            pqpvr = np.append(pqpvr, np.array([g]))
+            if g in pv:
+                pq = np.append(pq, np.array([g]))
+                pqpvr = np.append(pqpvr, np.array([g]))
+                pv = np.delete(pv, np.where(pv == g)[0])
+            elif g in pvr:
+                pq = np.append(pq, np.array([g]))
+                pvr = np.delete(pvr, np.where(pvr == g)[0])
+                cb = nc.generator_data.ctrl_bus[ix] # control bus
+                if cb in pqv:
+                    pq = np.append(pq, cb)
+                    pqpvr = np.append(pqpvr, cb)
+                    pqv = np.delete(pqv, np.where(pqv == cb)[0])
             pq.sort()
             pqpvr.sort()
-            pv = np.delete(pv, np.where(pv == g)[0])
+            pqv.sort()
+            pvr.sort()
             limitcheck = False
 
     # Updating indices
@@ -1151,11 +1226,12 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     pqpvr.sort()  # pqpvr = np.sort(pqpvr)
     k_tau.sort()  # k_tau = np.sort(k_tau)
     k_m.sort()  # k_m = np.sort(k_m)
+    nnoslack = len(pq) + len(pvr) + len(pv) + len(pqv)
     # Execute again the power flow to check controls
-    x1 = var2x(Va=Va0[no_slack], Vm=Vm0[pqpvr], tau=tau[k_tau], m=m[k_m])
+    x1 = var2x(Va=Va[no_slack], Vm=Vm[pqpvr], tau=tau[k_tau], m=m[k_m])
     ret: ConvexMethodResult = newton_raphson(func=pf_function,
                                              func_args=(
-                                                 Va, Vm, Ybus, Yf, Yt, Sinj, Iinj, Y0, Sf, St, m, tau, Cf, Ct, F, T,
+                                                 Va, Vm, Ybus, Yf, Yt, Sinj, I0, Y0, Sf, St, m, tau, Cf, Ct, F, T,
                                                  pq, no_slack, pvr, pqv, pqpvr, k_tau, k_tau_pf, k_tau_pt, k_m, k_m_vr,
                                                  k_m_qf, k_m_qt, i_m_vr),
                                              x0=x1,
@@ -1166,7 +1242,7 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
                                              logger=logger)
     Va = Va0.copy()
     Vm = Vm0.copy()
-    Va[pvpq], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=ret.x, n_noslack=npvpq, n_pqpvr=npqpvr, n_k_tau=n_k_tau,
+    Va[no_slack], Vm[pqpvr], tau[k_tau], m[k_m] = x2var(x=ret.x, n_noslack=nnoslack, n_pqpvr=npqpvr, n_k_tau=n_k_tau,
                                                     n_k_m=n_k_m)
     # Calculating PF results
     Sinj, Iinj, Sf, St = powerflowresults(nc, Vm, Va, True)
@@ -1181,6 +1257,8 @@ def powerflowresults(nc: NumericalCircuit, Vm: Vec, Va: Vec, show= False):
 
     df = pd.DataFrame(data={"Vm": Vm, "Va": np.degrees(Va)})
     if show:
+        print("")
+        print("---Voltages")
         print("Node --- Vm ------ Va-------")
         print(df)
     V = Vm * np.exp(1j * Va)
@@ -1194,6 +1272,11 @@ def powerflowresults(nc: NumericalCircuit, Vm: Vec, Va: Vec, show= False):
     It = nc.Yt * V
     Sf = Vf * np.conj(If)
     St = Vt * np.conj(It)
+
+    Sinjdf = pd.DataFrame(data={"Pinj": Sinj.real, "Qinj": Sinj.imag})
+    print("")
+    print("---Power injection")
+    print(Sinjdf)
 
     # Branch losses in MVA
     losses = (Sf + St) * nc.Sbase
@@ -1313,10 +1396,26 @@ def test_5() -> None:
 def test_6() -> None:
     """
     Checking if update q limits in generator controlling remote node.
-    Se está yendo de locos, no está funcionando la formulación para los nudos PVR
     :return:
     """
     gridtest_ = linn5bus_us_pvrnode2_qlimit()
+
+    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                       max_iter=50,
+                                       trust_radius=5.0,
+                                       tolerance=1e-6,
+                                       verbose=0)
+    run_pf2(grid=gridtest_, pf_options=pf_options_)
+
+def test_7() -> None:
+    """
+    Checking case when a PVR is controlling slack node. When it happens, it automatically changes to control itself if
+    it is not previously controlled.
+    NOTE: in this case, numerical_circuit returns PVR node controlling slack as a PQ node, so it is not necessary
+    to change it in simulation_indices. It is an option and it converges. Another option could be to set it as PV node
+    :return:
+    """
+    gridtest_ = linn5bus_us_pvr_slack()
 
     pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
                                        max_iter=50,

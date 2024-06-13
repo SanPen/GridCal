@@ -336,7 +336,8 @@ class NumericalCircuit:
 
         self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
-
+        #TODO: esto se está forzando a True para que no cambie los índices
+        use_stored_guess = True
         if not use_stored_guess:
             self.bus_data.Vbus = si.compose_generator_voltage_profile(
                 nbus=self.nbus,

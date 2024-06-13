@@ -763,15 +763,18 @@ class SimulationIndicesV2:
                     n = generator_buses[np.where(generator_control_bus == nodecontrolled)[0]]
                     # keep the first pvr node and change the rest to pv
                     if n.shape[0] > 1:
-                        # delete them from pvr
-                        pvr = np.delete(pvr, n[1:])
-                        # converting these nodes as a pv node
-                        pv = np.append(pv, n)
-                        for g in n:
-                            # changing generator control bus to itself
-                            generator_control_bus[np.where(generator_buses == g)[0]] = g
-                            # changing types
-                            types[g] = BusMode.PV.value
+                        if ref in n:
+                            pass    # it is previously checked in numerical_circuit
+                        else:
+                            # delete them from pvr
+                            pvr = np.delete(pvr, n[1:])
+                            # converting these nodes as a pv node
+                            pv = np.append(pv, n)
+                            for g in n:
+                                # changing generator control bus to itself
+                                generator_control_bus[np.where(generator_buses == g)[0]] = g
+                                # changing types
+                                types[g] = BusMode.PV.value
                     else:
                         # the only PVR node keeps being PVR node
                         pass
