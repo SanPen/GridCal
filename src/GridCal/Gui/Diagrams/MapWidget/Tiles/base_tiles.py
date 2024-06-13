@@ -40,8 +40,8 @@ class BaseTiles(object):
         self.max_lru = max_lru
 
         # set min and max tile levels and current level
-        self.min_level = min(self.levels)
-        self.max_level = max(self.levels)
+        self._min_level = min(self.levels)
+        self._max_level = max(self.levels)
         self.level = self.min_level
 
         self.num_tiles_x = 0
@@ -72,8 +72,53 @@ class BaseTiles(object):
             msg = "The tiles directory %s doesn't exist." % tiles_dir
             raise Exception(msg) from None
 
-    # possible recursion here?
-    #        self.UseLevel(min(self.levels))
+    @property
+    def max_level(self):
+        """
+
+        :return:
+        """
+        return self._max_level
+
+    @property
+    def min_level(self):
+        """
+
+        :return:
+        """
+        return self._min_level
+
+    @property
+    def tile_width(self):
+        return self.tile_size_x
+
+    @property
+    def tile_height(self):
+        return self.tile_size_y
+
+    @property
+    def map_width(self):
+        return self.num_tiles_x * self.tile_width  # virtual map width
+
+    @property
+    def map_height(self):
+        return self.num_tiles_y * self.tile_height  # virtual map height
+
+    @property
+    def map_llon(self):
+        return self.extent[0]
+
+    @property
+    def map_rlon(self):
+        return self.extent[1]
+
+    @property
+    def map_blat(self):
+        return self.extent[2]
+
+    @property
+    def map_tlat(self):
+        return self.extent[3]
 
     def UseLevel(self, level):
         """Prepare to serve tiles from the required level.

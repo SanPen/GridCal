@@ -4025,15 +4025,31 @@ class MapWidget(QWidget):
         :return:
         """
 
-        sx, sy = self.to_x_y(self.startLat, self.startLon)
+        # sx, sy = self.to_x_y(self.startLat, self.startLon)
+        #
+        # he = self.view.height()
+        # wi = self.view.width()
+        #
+        # node_gen_dx = sx + (self.startWi - wi) / 2
+        # node_gen_dy = sy + (self.startHe - he) / 2
+        #
+        # lon, lat = self.view_to_geo(xview=x - node_gen_dx, yview=y - node_gen_dy)
+        #
+        # return lat, lon
+
+        level, longitude, latitude = self.get_level_and_position()
+
+        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
 
         he = self.view.height()
         wi = self.view.width()
 
-        node_gen_dx = sx + (self.startWi - wi) / 2
-        node_gen_dy = sy + (self.startHe - he) / 2
+        node_gen_dx = self.startWi - wi
+        node_gen_dy = self.startHe - he
 
-        lon, lat = self.view_to_geo(xview=x - node_gen_dx, yview=y - node_gen_dy)
+        lon, lat = self.view_to_geo(xview=x - node_gen_dx / 2, yview=y - node_gen_dy / 2)
+
+        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return lat, lon
 
@@ -4044,6 +4060,23 @@ class MapWidget(QWidget):
         :param lon:
         :return:
         """
+        # he = self.view.height()
+        # wi = self.view.width()
+        #
+        # node_gen_dx = self.startWi - wi
+        # node_gen_dy = self.startHe - he
+        #
+        # x, y = self.geo_to_view(longitude=lon, latitude=lat)
+        #
+        # x = x + node_gen_dx / 2
+        # y = y + node_gen_dy / 2
+        #
+        # return x, y
+
+        level, longitude, latitude = self.get_level_and_position()
+
+        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+
         he = self.view.height()
         wi = self.view.width()
 
@@ -4054,6 +4087,8 @@ class MapWidget(QWidget):
 
         x = x + node_gen_dx / 2
         y = y + node_gen_dy / 2
+
+        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return x, y
 

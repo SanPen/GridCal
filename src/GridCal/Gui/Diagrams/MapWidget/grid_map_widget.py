@@ -17,6 +17,7 @@
 import os
 from typing import Union, List, Tuple, Dict
 import numpy as np
+import math
 from PySide6.QtWidgets import QGraphicsItem
 from PySide6.QtCore import Qt, QSize, QRect
 from PySide6.QtGui import QColor
@@ -46,12 +47,61 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineCo
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+from GridCal.Gui.Diagrams.MapWidget2.map_widget import MapWidget
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
+
+
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """
+
+    :param lat1:
+    :param lon1:
+    :param lat2:
+    :param lon2:
+    :return:
+    """
+    R = 6371  # Earth radius in kilometers
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(math.radians(lat1)) * math.cos(
+        math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
+
+
+def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem) -> Tuple[NodeGraphicItem, NodeGraphicItem]:
+    """
+
+    :param it1:
+    :param it2:
+    :return:
+    """
+    # Extract coordinates
+    first_last_lat = float(it1.line_container.api_object.locations.data[-1].lat)
+    first_last_long = float(it1.line_container.api_object.locations.data[-1].long)
+    second_first_lat = float(it2.line_container.api_object.locations.data[0].lat)
+    second_first_long = float(it2.line_container.api_object.locations.data[0].long)
+
+    # Calculate distances for both configurations
+    distance_1_to_2 = haversine_distance(first_last_lat, first_last_long,
+                                         second_first_lat, second_first_long)
+
+    second_last_lat = float(it2.line_container.api_object.locations.data[-1].lat)
+    second_last_long = float(it2.line_container.api_object.locations.data[-1].long)
+    first_first_lat = float(it1.line_container.api_object.locations.data[0].lat)
+    first_first_long = float(it1.line_container.api_object.locations.data[0].long)
+
+    distance_2_to_1 = haversine_distance(second_last_lat, second_last_long,
+                                         first_first_lat, first_first_long)
+
+    if distance_1_to_2 <= distance_2_to_1:
+        return it1, it2
+    else:
+        return it2, it1
 
 
 class GridMapWidget(BaseDiagramWidget):
@@ -178,14 +228,18 @@ class GridMapWidget(BaseDiagramWidget):
         """
         self.diagram.start_level = zoom_level
 
-    def position_callback(self, longitude: float, latitude: float) -> None:
+    def position_callback(self, latitude: float, longitude: float, x: int, y: int) -> None:
         """
         Update the diagram central position (useful for saving)
         :param longitude: in deg
         :param latitude: in deg
+        :param x:
+        :param y:
         """
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
+
+        print(f"Pos lat={latitude}, lon={longitude} x={x}, y={y}")
 
     def zoom_in(self):
         """
@@ -211,7 +265,7 @@ class GridMapWidget(BaseDiagramWidget):
                 for graphic_id, graphic_item in graphics.items():
                     if isinstance(graphic_item, MapLineContainer):
                         for seg in graphic_item.segments_list:
-                            seg.scaleSegment = seg.lineWidth / self.map.schema_zoom
+                            seg.scaleSegment = seg.lineWidth / self.map.view.schema_zoom
                             seg.setScale(seg.scaleSegment)
                             seg.update_endings(True)
 
@@ -222,7 +276,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param y:
         :return:
         """
-        return self.map.to_lat_lon(x=x, y=y)
+        return self.map.view.to_lat_lon(x=x, y=y)
 
     def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
         """
@@ -231,7 +285,7 @@ class GridMapWidget(BaseDiagramWidget):
         :param lon:
         :return:
         """
-        return self.map.to_x_y(lat=lat, lon=lon)
+        return self.map.view.to_x_y(lat=lat, lon=lon)
 
     def update_diagram_element(self,
                                device: ALL_DEV_TYPES,
@@ -287,11 +341,11 @@ class GridMapWidget(BaseDiagramWidget):
 
         :return:
         """
-        if len(self.map.selectedItems) < 2:
+        if len(self.map.view.selectedItems) < 2:
             return 0
 
-        it1 = self.map.selectedItems[0]
-        it2 = self.map.selectedItems[1]
+        it1 = self.map.view.selectedItems[0]
+        it2 = self.map.view.selectedItems[1]
 
         if it1 == it2:
             return 0
@@ -300,7 +354,7 @@ class GridMapWidget(BaseDiagramWidget):
         newline.copyData(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
 
-        better_first, better_second = self.map.compare_options(it1, it2)
+        better_first, better_second = compare_options(it1, it2)
 
         first_list = better_first.line_container.api_object.locations.data
         second_list = better_second.line_container.api_object.locations.data
