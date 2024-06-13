@@ -204,7 +204,11 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
             self.zoom_level(level=self.level - 1)
 
     def rescaleGraphics(self):
+
         if self.constantLineWidth:
+
+            self.view.setUpdatesEnabled(False)  # Disable updates
+
             for device_type, graphics in self.graphics_manager.graphic_dict.items():
                 for graphic_id, graphic_item in graphics.items():
                     if isinstance(graphic_item, MapLineContainer):
@@ -212,6 +216,8 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                             seg.scaleSegment = seg.lineWidth / self.schema_zoom;
                             seg.setScale(seg.scaleSegment)
                             seg.update_endings(True)
+
+            self.view.setUpdatesEnabled(True)  # Disable updates
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
