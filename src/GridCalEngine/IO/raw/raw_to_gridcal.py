@@ -132,7 +132,7 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
     Returns:
         Newton Load object
     """
-    name = str(psse_load.I) + '_' + psse_load.ID.replace("'", "")
+    name = str(psse_load.I) + '_' + str(psse_load.ID).replace("'", "")
     name = name.strip()
 
     # GL and BL come in MW and MVAr

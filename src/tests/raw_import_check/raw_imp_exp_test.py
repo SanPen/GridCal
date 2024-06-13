@@ -109,7 +109,7 @@ def compare_inputs(circuit_1, circuit_2, tol=1e-6):
              'Admittances', 'Ybus (real)')
     CheckArr(nc_1.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
              'Admittances', 'Ybus (imag)')
-    CheckArr(nc_1.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.realdata.real,
+    CheckArr(nc_1.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.real,
              tol, 'Admittances', 'Yf (real)')
     CheckArr(nc_1.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
              'Admittances', 'Yf (imag)')
