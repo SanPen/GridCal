@@ -178,5 +178,7 @@ raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relati
 
 export_relative_path = os.path.join('export_result', 'IEEE 30 bus.raw')
 export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
+if not os.path.exists(os.path.dirname(export_name)):
+    os.makedirs(os.path.dirname(export_name))
 
 run_import_export_test(import_path=raw_path, export_fname=export_name)
