@@ -24,7 +24,6 @@ from collections.abc import Callable
 from PySide6.QtGui import (QImage, QPainter)
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics import LineGraphicItem
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Substation.busbar import BusBar
@@ -350,7 +349,8 @@ class GridMapWidget(BaseDiagramWidget):
         for ty in br_types:
             lins = self.graphics_manager.get_device_type_list(ty)
             for lin in lins:
-                if lin.api_object.get_substation_from() == substation.api_object or lin.api_object.get_substation_to() == substation.api_object:
+                if (lin.api_object.get_substation_from() == substation.api_object
+                        or lin.api_object.get_substation_to() == substation.api_object):
                     self.removeLine(lin)
 
     pass
