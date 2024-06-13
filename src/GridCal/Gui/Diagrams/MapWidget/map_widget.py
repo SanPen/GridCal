@@ -793,6 +793,8 @@ class MapWidget(QWidget):
         self.schema_zoom = self.schema_zoom * self.zoom_factor
         self.view.scale(self.zoom_factor, self.zoom_factor)
 
+        self.rescaleGraphics()
+
     def diagram_zoom_out(self):
         """
         Translate the scene to make the center point correspond to the origin
@@ -800,6 +802,11 @@ class MapWidget(QWidget):
         """
         self.schema_zoom = self.schema_zoom / self.zoom_factor
         self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
+
+        self.rescaleGraphics()
+
+    def rescaleGraphics(self):
+        pass
 
     def resizeEvent(self, event: QResizeEvent = None, updateDisplacement = True):
         """

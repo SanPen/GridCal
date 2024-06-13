@@ -24,6 +24,7 @@ from collections.abc import Callable
 from PySide6.QtGui import (QImage, QPainter)
 from PySide6.QtSvg import QSvgGenerator
 
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics import LineGraphicItem
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Substation.busbar import BusBar
@@ -107,7 +108,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         self.startHe = he
         self.startWi = wi
-
+        self.constantLineWidth = True
         # video pointer
         # self._video: Union[None, cv2.VideoWriter] = None
 
@@ -201,6 +202,16 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         """
         if self.level - 1 >= self.min_level:
             self.zoom_level(level=self.level - 1)
+
+    def rescaleGraphics(self):
+        if self.constantLineWidth:
+            for device_type, graphics in self.graphics_manager.graphic_dict.items():
+                for graphic_id, graphic_item in graphics.items():
+                    if isinstance(graphic_item, MapLineContainer):
+                        for seg in graphic_item.segments_list:
+                            seg.scaleSegment = seg.lineWidth / self.schema_zoom;
+                            seg.setScale(seg.scaleSegment)
+                            seg.update_endings(True)
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """

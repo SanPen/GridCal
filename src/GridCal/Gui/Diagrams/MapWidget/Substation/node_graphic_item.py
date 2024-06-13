@@ -98,6 +98,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
         self.colorInner = QColor(255, 100, 100, 100)
         self.colorBorder = QColor(255, 100, 100, 100)
+        self.setZValue(1)
 
         # Assign color to the node
         self.setDefaultColor()
