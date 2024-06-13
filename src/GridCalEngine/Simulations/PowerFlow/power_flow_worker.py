@@ -220,7 +220,6 @@ def solve(circuit: NumericalCircuit,
 
         # Newton-Raphson (full)
         elif solver_type == SolverType.GENERALISED:
-            print("(power_flow_worker.py) elif solver_type == SolverType.GENERALISED: ")
             solution = pflw.NR_LS_GENERAL(nc=circuit,
                                         V0=V0,
                                         S0=S0,
@@ -345,7 +344,7 @@ def solve(circuit: NumericalCircuit,
 
         # record the solver steps
         solver_idx += 1
-        print("(power_flow_worker.py) solver_idx: ", solver_idx)
+        # print("(power_flow_worker.py) solver_idx: ", solver_idx)
 
     if not final_solution.converged:
         logger.add_error('Did not converge, even after retry!', 'Error', str(final_solution.norm_f), options.tolerance)
@@ -580,9 +579,9 @@ def power_flow_post_process(
         ncontTrafo = calculation_inputs.controllable_trafo_data.nelm
         if nvsc > 0:
             vsc_pfrom, vsc_pto, vsc_qto = vsc_results
-            print("(power_flow_worker.py) vsc_results: ", vsc_pfrom)
-            print("(power_flow_worker.py) vsc_results: ", vsc_pto)
-            print("(power_flow_worker.py) vsc_results: ", vsc_qto)
+            # print("(power_flow_worker.py) vsc_results: ", vsc_pfrom)
+            # print("(power_flow_worker.py) vsc_results: ", vsc_pto)
+            # print("(power_flow_worker.py) vsc_results: ", vsc_qto)
             #package the vsc_pto and vsc_qto into complex arrays
             vsc_Sto = vsc_pto + 1j*vsc_qto
             #add it, and we assume that the VSCs are always the second last in the branch data, only insert the last nvsc elements

@@ -1357,8 +1357,9 @@ if __name__ == '__main__':
     # simple4busacdc_pure() #converges true
     # simple4busacdc_wTrafo() #converged true because it is seen as an inactive device
     # simple4busacdc_wControllableTrafo() #converges true when controlling the powers across the transformer, lessons learnt, when you are controlling a branch power, if you try a setpont that goes agaisnt the natural flow of power ie from slack to load, youll have a hard time converging
-    simple4busacdc_wControllableTrafo_remoteControl()
-    # complex6bus() #converges true
+                                        # nodal power balances derivatives look good tho
+    # simple4busacdc_wControllableTrafo_remoteControl() #converges true, nodal power balances derivatives look good too
+    complex6bus() #converges true, derivatives at least the nodal power balances look good
 
 
     # doubleVSCsystem()
