@@ -2776,19 +2776,9 @@ class MultiCircuit:
 
         self.time_profile = pd.to_datetime(index, dayfirst=True)
 
-        for elm in self.buses:
-            elm.create_profiles(index)
-
-        for devs_list in self.get_injection_devices_lists():
-            for elm in devs_list:
-                elm.create_profiles(index)
-
-        for devs_list in self.get_branch_lists():
-            for elm in devs_list:
-                elm.create_profiles(index)
-
-        for devs_list in self.get_fluid_lists():
-            for elm in devs_list:
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(device_type=tpe)
+            for elm in elements:
                 elm.create_profiles(index)
 
     def set_time_profile(self, unix_data: IntVec):
@@ -2806,17 +2796,6 @@ class MultiCircuit:
 
         self.ensure_profiles_exist()
 
-        for elm in self.buses:
-            elm.create_profiles(self.time_profile)
-
-        for lst in self.get_branch_lists():
-            for elm in lst:
-                elm.create_profiles(self.time_profile)
-
-        for lst in self.get_injection_devices_lists():
-            for elm in lst:
-                elm.create_profiles(self.time_profile)
-
     def ensure_profiles_exist(self) -> None:
         """
         Format the pandas profiles in place using a time index.
@@ -2824,15 +2803,9 @@ class MultiCircuit:
         if self.time_profile is None:
             raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
 
-        for elm in self.buses:
-            elm.ensure_profiles_exist(self.time_profile)
-
-        for branch_list in self.get_branch_lists():
-            for elm in branch_list:
-                elm.ensure_profiles_exist(self.time_profile)
-
-        for lst in self.get_injection_devices_lists():
-            for elm in lst:
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(device_type=tpe)
+            for elm in elements:
                 elm.ensure_profiles_exist(self.time_profile)
 
     def get_bus_dict(self, by_idtag=False) -> Dict[str, dev.Bus]:
@@ -2961,6 +2934,7 @@ class MultiCircuit:
         """
         Add a transformer object
         :param obj: Transformer3W instance
+        :param add_middle_bus: Add the TR3 middle bus?
         """
 
         if self.time_profile is not None:
