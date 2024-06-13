@@ -112,15 +112,15 @@ class ControllableShunt(InjectionParent):
         self._g_steps = value
 
     def set_blocks(self, n_list: list[int], b_list: list[float]):
-        g_steps = []
+        b_steps = []
         accumulated_value = 0
 
         for index, n in enumerate(n_list):
             for _ in range(n):
                 accumulated_value += b_list[index]
-                g_steps.append(accumulated_value)
+                b_steps.append(accumulated_value)
 
-        self.g_steps = np.array(g_steps)
+        self.b_steps = np.array(b_steps)
 
     @property
     def b_steps(self):

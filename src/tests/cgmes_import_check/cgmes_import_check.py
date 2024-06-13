@@ -1,14 +1,5 @@
-import os
-
 import numpy as np
 import GridCalEngine.api as gc
-from GridCalEngine.IO import FileSave
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
-from GridCalEngine.IO.file_handler import FileSavingOptions
-from GridCalEngine.Simulations import PowerFlowOptions
-from GridCalEngine.Simulations.results_template import DriverToSave
-from GridCalEngine.enumerations import CGMESVersions, SolverType, SimulationTypes
-from GridCalEngine.basic_structures import Logger
 
 
 def compare_inputs(circuit_1, circuit_2, tol=1e-6):
@@ -109,7 +100,7 @@ def compare_inputs(circuit_1, circuit_2, tol=1e-6):
              'Admittances', 'Ybus (real)')
     CheckArr(nc_1.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
              'Admittances', 'Ybus (imag)')
-    CheckArr(nc_1.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.realdata.real,
+    CheckArr(nc_1.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.real,
              tol, 'Admittances', 'Yf (real)')
     CheckArr(nc_1.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
              'Admittances', 'Yf (imag)')
@@ -147,59 +138,89 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
         return 1
 
 
-def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
-    options = FileSavingOptions()
-    options.one_file_per_profile = True
-    options.cgmes_profiles = [cgmesProfile.EQ,
-                              cgmesProfile.OP,
-                              cgmesProfile.TP,
-                              cgmesProfile.SV,
-                              cgmesProfile.SSH]
-    options.cgmes_version = CGMESVersions.v2_4_15
-    options.cgmes_boundary_set = boundary_zip_path
+# # MODELO TYNDP
+# raw_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\MODELO_TYNDP\TYNDP2024_2030NT_REE_v2.2.raw"
+# cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\MODELO_TYNDP\modelo_tyndp.zip"
 
-    return options
+# IEEE 14
+# raw_path = r'C:\Work\git_local\GridCal\Grids_and_profiles\grids\IEEE 14 bus.raw'
+# cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\RAW_test_models\IEEE14_from_PF.zip"
 
+# micro_grid assembled
+raw_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_v33.raw"
+cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_base.zip"
 
-def run_import_export_test(import_path: str | list[str], export_fname: str, boundary_zip_path: str):
-    logger = Logger()
-    # CGMES model import to MultiCircuit
-    circuit = gc.open_file(import_path)
-    # run power flow
-    pf_options = PowerFlowOptions()
-    pf_results = gc.power_flow(circuit, pf_options)
+circuit_1 = gc.open_file(raw_path)
+circuit_1.buses.sort(key=lambda obj: obj.name)
+# circuit_1.generators.sort(key=lambda obj: obj.name)
+# circuit_1.loads.sort(key=lambda obj: obj.name)
+# circuit_1.shunts.sort(key=lambda obj: obj.name)
+# circuit_1.lines.sort(key=lambda obj: obj.name)
+# circuit_1.transformers2w.sort(key=lambda obj: obj.name)
 
-    pf_session_data = DriverToSave(name="powerflow results",
-                                   tpe=SimulationTypes.PowerFlow_run,
-                                   results=pf_results,
-                                   logger=logger)
-    # Export
-    # export_dir = os.path.join(os.path.curdir, "/export_result")
-    # export_name = os.path.join(export_dir, export_name)
-    options = create_file_save_options(boundary_zip_path)
-    options.sessions_data.append(pf_session_data)
+circuit_2 = gc.open_file(cgmes_path)
+circuit_2.buses.sort(key=lambda obj: obj.name)
+# circuit_2.generators.sort(key=lambda obj: obj.name)
+# circuit_2.loads.sort(key=lambda obj: obj.name)
+# circuit_2.shunts.sort(key=lambda obj: obj.name)
+# circuit_2.lines.sort(key=lambda obj: obj.name)
+# circuit_2.transformers2w.sort(key=lambda obj: obj.name)
 
-    cgmes_export = FileSave(circuit=circuit,
-                            file_name=export_fname,
-                            options=options)
-    cgmes_export.save_cgmes()
+# Compare MultiCircuits
+err, logger = circuit_1.compare_circuits(circuit_2, detailed_profile_comparison=False)
+print(logger.to_df())
+logger.to_df().to_csv('logger_comparison_microg.csv')
+compare_inputs(circuit_1, circuit_2, tol=1e-3)
 
-    circuit2 = gc.open_file(export_fname)
-    compare_inputs(circuit, circuit2)
+nc_1 = gc.compile_numerical_circuit_at(circuit_1)
+nc_2 = gc.compile_numerical_circuit_at(circuit_2)
 
+# TODO Compare Numerival Circuits
+log = nc_1.compare(nc_2)
+# same as above..
 
-cgmes_path = r"C:\WorkProjects\PycharmProjects\GridCal\src\tests\data\grids\CGMES_2_4_15\micro_grid_NL_T1.zip"
-boundary_path = r"C:\WorkProjects\PycharmProjects\GridCal\src\tests\data\grids\CGMES_2_4_15\ENTSOe_boundary_set.zip"
-export_name = r"C:\WorkProjects\PycharmProjects\GridCal\src\trunk\cgmes_import_check\export_result\micro_grid_NL_T1.zip"
-run_import_export_test(cgmes_path, export_name, boundary_path)
-# nc_o = gc.compile_numerical_circuit_at(circuit_o)
+# Compare Ybus: admittance matrix
+# nc_1.Ybus     # sparse
+# nc_1.Ybus.A   # dense version of Ybus, easier to compare
+print(f'\n --- COMPARISON of Ybus ---')
+print(f'Shape NC 1 = {nc_1.Ybus.A.shape}')
+print(f'Shape NC 2 = {nc_2.Ybus.A.shape} \n')
+print(f'Non-zero elements in NC 1 = {np.count_nonzero(nc_1.Ybus.A)}')
+print(f'Non-zero elements in NC 2 = {np.count_nonzero(nc_2.Ybus.A)}')
+print(nc_1.Ybus.A[0:10, 0:10])
+print(nc_2.Ybus.A[0:10, 0:10])
 
-# export to CGMES
-# crate FileSave
+# Set the tolerance (adjust as needed)
+tolerance = 1e-6
 
-# boundary: micro grid Boundary
-# gc.save_file() from FileHandler
+# Perform element-wise comparison
+comparison_result = np.isclose(nc_1.Ybus.A, nc_2.Ybus.A, atol=tolerance)
 
-# import the exported CGMES
+# Print the result
+print("Element-wise comparison result:")
+print(comparison_result)
 
-# Compare with the original
+# Compare Sbus: power injections --------------------------------------------
+print(f'\n --- COMPARISON of Sbus  ---')
+print(f'Shape NC 1 = {nc_1.Sbus.shape}')
+print(f'Shape NC 2 = {nc_2.Sbus.shape} \n')
+print(f'Non-zero elements in NC 1 = {np.count_nonzero(nc_1.Sbus)}')
+print(f'Non-zero elements in NC 2 = {np.count_nonzero(nc_2.Sbus)}')
+
+print(f'Sbus 1: {nc_1.Sbus}')
+print(f'Sbus 1: {nc_2.Sbus}')
+#
+# # TODO
+#
+# print(np.isclose(nc_1.Sbus.real, nc_2.Sbus.real, atol=tolerance))
+# print(np.isclose(nc_1.Sbus.imag, nc_2.Sbus.imag, atol=tolerance))
+# print(np.isclose(nc_1.Sbus, nc_2.Sbus, atol=tolerance))
+#
+# f1 = np.r_[nc_1.Sbus[nc_1.pq].real, nc_1.Sbus[nc_1.pv].real, nc_1.Sbus[nc_1.pq].imag]
+# f2 = np.r_[nc_2.Sbus[nc_2.pq].real, nc_2.Sbus[nc_2.pv].real, nc_2.Sbus[nc_2.pq].imag]
+# print(f1)
+# print(f2)
+# print(np.isclose(f1, f2, atol=tolerance))
+#
+# print(f'End of import check!')
+
