@@ -149,7 +149,6 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
-        self.updateDiagram()  # always update
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """

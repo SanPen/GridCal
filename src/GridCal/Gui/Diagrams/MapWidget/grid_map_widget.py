@@ -221,15 +221,19 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :return:
         """
 
-        sx, sy = self.to_x_y(self.startLat, self.startLon)
+        level, longitude, latitude = self.get_level_and_position()
+
+        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
 
         he = self.view.height()
         wi = self.view.width()
 
-        node_gen_dx = sx + (self.startWi - wi) / 2
-        node_gen_dy = sy + (self.startHe - he) / 2
+        node_gen_dx = self.startWi - wi
+        node_gen_dy = self.startHe - he
 
-        lon, lat = self.view_to_geo(xview=x - node_gen_dx, yview=y - node_gen_dy)
+        lon, lat = self.view_to_geo(xview=x - node_gen_dx / 2, yview=y - node_gen_dy / 2)
+
+        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return lat, lon
 
@@ -240,6 +244,11 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param lon:
         :return:
         """
+
+        level, longitude, latitude = self.get_level_and_position()
+
+        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+
         he = self.view.height()
         wi = self.view.width()
 
@@ -250,6 +259,8 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         x = x + node_gen_dx / 2
         y = y + node_gen_dy / 2
+
+        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return x, y
 
@@ -511,7 +522,9 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                 pass  # TODO: implementar
 
             elif category == DeviceType.HVDCLineDevice.value:
-                pass  # TODO: implementar
+                for idtag, location in points_group.locations.items():
+                    line: Line = location.api_object
+                    self.add_api_line(api_object=line, original=True)  # no need to add to the scene
 
             elif category == DeviceType.FluidNodeDevice.value:
                 pass  # TODO: implementar
