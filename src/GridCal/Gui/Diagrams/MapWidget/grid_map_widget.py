@@ -492,7 +492,9 @@ class GridMapWidget(BaseDiagramWidget):
                 pass  # TODO: implementar
 
             elif category == DeviceType.HVDCLineDevice.value:
-                pass  # TODO: implementar
+                for idtag, location in points_group.locations.items():
+                    line: Line = location.api_object
+                    self.add_api_line(api_object=line, original=True)  # no need to add to the scene
 
             elif category == DeviceType.FluidNodeDevice.value:
                 pass  # TODO: implementar

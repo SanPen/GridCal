@@ -167,8 +167,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             elif event.button() == Qt.LeftButton:
                 self.selectItem()
 
-        self.updateDiagram()  # always update
-
     def mouseReleaseEvent(self, event):
         """
         Event handler for mouse release events.

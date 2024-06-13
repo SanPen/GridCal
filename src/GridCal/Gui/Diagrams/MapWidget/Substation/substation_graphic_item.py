@@ -157,7 +157,6 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
-        self.updateDiagram()  # always update
 
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object,
