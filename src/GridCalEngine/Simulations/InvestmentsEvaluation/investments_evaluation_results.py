@@ -42,7 +42,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             ResultTypes.ParetoResults: [ResultTypes.InvestmentsParetoReportResults,
                                         ResultTypes.InvestmentsParetoCombinationsResults,
-                                        ResultTypes.InvestmentsParetoObjectivesResults],
+                                        ResultTypes.InvestmentsParetoObjectivesResults,
+                                        ResultTypes.InvestmentsParetoFrequencyResults],
 
             ResultTypes.SpecialPlots: [ResultTypes.InvestmentsParetoPlot,
                                        ResultTypes.InvestmentsIterationsPlot]
@@ -371,9 +372,14 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 xlabel='',
                                 units=y_label)
 
-        elif result_type == ResultTypes.InvestmentsFrequencyResults:
+        elif result_type in (ResultTypes.InvestmentsFrequencyResults, ResultTypes.InvestmentsParetoFrequencyResults):
 
-            freq = np.sum(self._combinations, axis=0)
+            if result_type == ResultTypes.InvestmentsParetoFrequencyResults:
+                # slice results according to the pareto indices
+                freq = np.sum(self._combinations[self._sorting_indices, :], axis=0)
+            else:
+                freq = np.sum(self._combinations, axis=0)
+
             freq_rel = freq / freq.sum()
             data = np.c_[freq, freq_rel]
 
