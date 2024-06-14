@@ -287,7 +287,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         # Report the progress
         self.report_progress2(self.results.current_evaluation, self.max_iter)
-        return scores.arr()
+        #np.sum(combination)
+        return scores.arr() # array of float --> e.g. [(float,float)] if 2 objectives
 
     def objective_function_so(self, combination: IntVec) -> float:
         """
@@ -455,15 +456,15 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                                     max_eval=self.options.max_eval * 2)
 
         # add baseline
-        #ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        #ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int)) # ERROR
 
         # optimize
         X, obj_values = NSGA_3_platypus(
             obj_func=self.objective_function,
             n_partitions=n_partitions,
-            n_var=2, #self.dim,
+            n_var=self.dim, #self.dim,
             n_obj=2, #len(ret),
-            n_const=1,                      # ACTUALIZAR MAS ADELANTE AUTOMATICAMENTE
+            n_const=0,                      # ACTUALIZAR MAS ADELANTE AUTOMATICAMENTE
             max_evals=self.options.max_eval,  # termination
             pop_size=pop_size,
             crossover_prob=0.8,                 #N/A POR AHORA

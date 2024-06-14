@@ -23,45 +23,50 @@ if __name__ == "__main__":
 
     pf_options = sim.PowerFlowOptions()
     #platypus:
-    # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3_platypus,
-    #                                            max_eval=4 * len(grid.investments),
-    #                                            pf_options=pf_options)
-    #pymoo:
     options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
-                                               max_eval=4 * len(grid.investments),
-                                               pf_options=pf_options)
+                                            max_eval=4 * len(grid.investments),
+                                            pf_options=pf_options)
+    #pymoo:
+    #options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
+    #                                           max_eval=4 * len(grid.investments),
+    #                                           pf_options=pf_options)
 
     print("max_evals inicializadas: {}".format(4 * len(grid.investments)))
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     st_time = time.time()
     inv.run()
     e_time = time.time()
+    print("Simulation time: {} sec".format(e_time - st_time))
+    print("Simulation time: {} min".format((e_time - st_time)/60))
+    np.sum(grid.investments.CAPEX)
 
-    #Results:
-    #output_f=inv.results._f_obj
+    #============================================================
+    #Results pymoo:
+    # ============================================================
+    output_f=inv.results._f_obj
     #combinations=inv.results._combinations
     output_f1=inv.results._financial
     output_f2=inv.results._electrical
 
-
-    # plot all the results in scatter - not only pareto front
-    import matplotlib.pyplot as plt
-    import matplotlib
-    import pandas as pd
-    matplotlib.use("Qt5Agg")
-    data=np.vstack((output_f1,output_f2))
-    plt.scatter(data[0],data[1])
-    plt.show()
-
-    print("Simulation time: {} sec".format(e_time - st_time))
-
-    # #..................PLOTTING PLATYPUS................................
+    # plot all the results in scatter - not only pareto front - PYMOO
     # import matplotlib.pyplot as plt
     # import matplotlib
     # import pandas as pd
     # matplotlib.use("Qt5Agg")
-    # data=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_platypus.xlsx")
+    # data=np.vstack((output_f1,output_f2))
     # plt.scatter(data[0],data[1])
     # plt.show()
+
+    # ============================================================
+    # Results PLATYPUS:
+    # ============================================================
+    #..................PLOTTING PLATYPUS................................
+    import matplotlib.pyplot as plt
+    import matplotlib
+    import pandas as pd
+    matplotlib.use("Qt5Agg")
+    data=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_platypus.xlsx")
+    plt.scatter(data[0],data[1])
+    plt.show()
 
 

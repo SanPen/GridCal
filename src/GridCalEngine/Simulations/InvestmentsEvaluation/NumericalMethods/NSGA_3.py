@@ -104,9 +104,9 @@ class GridNsga(ElementwiseProblem):
     def __init__(self, obj_func, n_var, n_obj):
         """
 
-        :param obj_func:
-        :param n_var:
-        :param n_obj:
+        :param obj_func: bound method InvestmentsEvaluationDriver.objective_function of <GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver.IndestmentsEvaluationDriver object
+        :param n_var: int
+        :param n_obj: int
         """
         super().__init__(n_var=n_var,
                          n_obj=n_obj,
@@ -119,13 +119,13 @@ class GridNsga(ElementwiseProblem):
     def _evaluate(self, x, out, *args, **kwargs):
         """
 
-        :param x:
+        :param x: [0 0 0 .....0] ndarray with len=390=pop_size
         :param out:
         :param args:
         :param kwargs:
         :return:
         """
-        out["F"] = self.obj_func(x)
+        out["F"] = self.obj_func(x) # F is array of 2 values (ndarray)
 
 
 def NSGA_3(obj_func,
@@ -180,43 +180,45 @@ def NSGA_3(obj_func,
     # plt.show()
     return res.X, res.F
 
-class TestProblem_platypus(Problem):
-    def __init__(self,obj_func, n_var, n_obj,n_const):
-        super().__init__(n_var, n_obj, n_const)           # decision variable,objective,constraints respectively
-        # self.types[:]=[Real(-2,2),Integer(-4,4)]              # fill variable type for every variable "[:]". If all are the same: self.types[:]=Real(0,100)
-        self.types[0] = Real(-2, 2)                    # first variable is Real number, bounds (-2,+2)
-        self.types[1] = Integer(-4, 4)                 # second variable is an Integer, bounds (-4,+4)
-        self.constraints[:] = '<=0'                             # applied to all constraints [:]. Also can do constraint[0]='>=0'. Also included: '==',"<", ">" "!=". See platypus library
-        self.directions[:] = Problem.MINIMIZE                   # or MAXIMIZE - optional parameter. NSGA3 not implemented maximization in platypus at the moment (june 2024)
-
-    def evaluate(self, solution):
-        x1 = solution.variables[0]
-        x2 = solution.variables[1]
-        f1 = x1 + x2
-        f2 = x1 ** 2 + x2 ** 2
-        solution.objectives[:] = [f1, f2]                       #objective functions
-        g1 = (x1 - 2) ** 2 + (x2 - 2) ** 2 - 36
-        solution.constraints[:] = [g1]                          #constraint
-
-class GridNsga_platypus(Problem):
-    def __init__(self,obj_func, n_var, n_obj,n_const):
-        super().__init__(n_var, n_obj, n_const)           # decision variable,objective,constraints respectively
-        # self.types[:]=[Real(-2,2),Integer(-4,4)]              # fill variable type for every variable "[:]". If all are the same: self.types[:]=Real(0,100)
-        self.types[0] = Binary(nbits=1)                    #
-        #self.constraints[:] = '<=0'                             # applied to all constraints [:]. Also can do constraint[0]='>=0'. Also included: '==',"<", ">" "!=". See platypus library
-        self.directions[:] = Problem.MINIMIZE                   # or MAXIMIZE - optional parameter. NSGA3 not implemented maximization in platypus at the moment (june 2024)
-        self.obj_func=obj_func
-    def evaluate(self, solution):
-        x = solution.variables[0]
-        solution.objectives[:]=self.obj_func
-
-
+# class TestProblem_platypus(Problem):
+#     def __init__(self, n_var, n_obj,n_const):
+#         super().__init__(n_var, n_obj, n_const)           # decision variable,objective,constraints respectively
+#         # self.types[:]=[Real(-2,2),Integer(-4,4)]              # fill variable type for every variable "[:]". If all are the same: self.types[:]=Real(0,100)
+#         self.types[0] = Real(-2, 2)                    # first variable is Real number, bounds (-2,+2)
+#         self.types[1] = Integer(-4, 4)                 # second variable is an Integer, bounds (-4,+4)
+#         self.constraints[:] = '<=0'                             # applied to all constraints [:]. Also can do constraint[0]='>=0'. Also included: '==',"<", ">" "!=". See platypus library
+#         self.directions[:] = Problem.MINIMIZE                   # or MAXIMIZE - optional parameter. NSGA3 not implemented maximization in platypus at the moment (june 2024)
+#
+#     def evaluate(self, solution):
+#         x1 = solution.variables[0]
+#         x2 = solution.variables[1]
+#         f1 = x1 + x2
+#         f2 = x1 ** 2 + x2 ** 2
+#         solution.objectives[:] = [f1, f2]                       #objective functions
+#         g1 = (x1 - 2) ** 2 + (x2 - 2) ** 2 - 36
+#         solution.constraints[:] = [g1]                          #constraint
+#         print(solution.objectives)
+# class GridNsga_platypus(Problem):
+#     def __init__(self, n_var, n_obj,n_const): #obj_func,
+#         super().__init__(n_var, n_obj, n_const)           # decision variable,objective,constraints respectively
+#         # self.types[:]=[Real(-2,2),Integer(-4,4)]              # fill variable type for every variable "[:]". If all are the same: self.types[:]=Real(0,100)
+#         self.types[:] = Integer(0,1)                    #Binary variable is True or Flase not [1,0]
+#         #self.constraints[:] = '<=0'                             # applied to all constraints [:]. Also can do constraint[0]='>=0'. Also included: '==',"<", ">" "!=". See platypus library
+#         self.directions[:] = Problem.MINIMIZE                   # or MAXIMIZE - optional parameter. NSGA3 not implemented maximization in platypus at the moment (june 2024)
+#         #self.obj_func=obj_func                              #same que pymoo
+#         #print(obj_func)
+#     def evaluate(self, solution):
+#         x = solution.variables[:] #x = solution.variables[0]
+#         #solution.objectives[:]=self.obj_func
+#         #solution.objectives[0]=self.obj_func[0]
+#         #solution.objectives[1] = self.obj_func[1]
+#         print("")
 
 def NSGA_3_platypus(obj_func,
            n_partitions: int = 100,
-           n_var: int = 2,
+           n_var: int = 1,
            n_obj: int = 2,
-           n_const: int = 1, # 2 for platypus test problem, 0 for PF problem
+           n_const: int = 0, # 1 for platypus test problem, 0 for PF problem
            max_evals: int = 30,
            pop_size: int = 1,
            crossover_prob: float = 0.05,
@@ -237,10 +239,13 @@ def NSGA_3_platypus(obj_func,
     """
 
     #platypus:
-    problem_ptp=TestProblem_platypus(obj_func,n_var, n_obj,n_const)
+    #problem_ptp=TestProblem_platypus(n_var, n_obj,n_const)
     # Powerflow problem:
-    #problem=GridNsga_platypus(obj_func,n_var, n_obj,n_const)
-
+    #problem_ptp=GridNsga_platypus(n_var, n_obj,n_const) #obj_func,
+    problem_ptp=Problem(n_var, n_obj,n_const)
+    problem_ptp.types[:]=Integer(0,1)
+    problem_ptp.function=obj_func
+    #print(problem_ptp)
     #calling NSGA3 algorithm from Platypus library:
     algorithm = NSGAIII(
                         problem_ptp,
@@ -248,8 +253,10 @@ def NSGA_3_platypus(obj_func,
                         divisions_inner=0,                      # optional, used for reference points too
                         generator=RandomGenerator(),           #generates initial population
                         #selector=TournamentSelector(2),        # selects parents during recombination
-                        #variator=CompoundOperator(SBX(),BitFlip()) # for Powerflow objective function
-                        variator=CompoundOperator(SBX(), PMX(), PM(), UM())    # CompoundOperator for mixed variables
+                        variator=CompoundOperator(SBX(probability=crossover_prob, distribution_index=eta),
+                                                  BitFlip(probability=mutation_probability)) # for Powerflow objective function
+
+                        #variator=CompoundOperator(SBX(), PMX(), PM(), UM())    # CompoundOperator for mixed variables
                         #variator = CompoundOperator(SBX(), HUX(), PM(), BitFlip())
                         )
     # running algorithm:
@@ -257,25 +264,49 @@ def NSGA_3_platypus(obj_func,
     #algorithm.reference_points=[[1,1],[..],...] #optional - specific reference points specified by user (list of lists)
     algorithm.run(max_evals)                     # number of evaluations = Termination condition
 
-    #results:
+    #results:for platypus test problem:
     res_objective = []
+    res_norm_objective=[] #normalised objective
     res_variables = []
+    res_variables_decoded=[]
     for solution in unique(nondominated(algorithm.result)):
         res_objective.append([solution.objectives[0], solution.objectives[1]])
-        variable_to_decode = solution.variables[1]  # x2 in this problem
-        x1 = solution.variables[0]
-        x2 = problem_ptp.types[1].decode(variable_to_decode)
-        res_variables.append([x1, x2])  # decode integer variable (from binary representation to number)
-        plt.scatter(solution.objectives[0],
-                    solution.objectives[1],
-                    color="r")
-        plt.title("{}".format(type(algorithm)))
+        res_norm_objective.append([solution.normalized_objectives[0], solution.normalized_objectives[1]])
+        res_variables = solution.variables[:]                       # integer variables, returns true false (not decoded)
+        variables_decoded = []
+        #option1:
+        variables_decoded2 = [problem_ptp.types[i].decode(res_variables[i]) for i in range(len(solution.variables))]
+
+        #option 2:
+        # for i in range(len(solution.variables)):
+        #     #variable_to_decode = var
+        #     decoded=problem_ptp.types[i].decode(res_variables[i])
+        #     variables_decoded.append(decoded)                       # for 1 solution only, stores all the values of the investments (0,1) decoded
+
+        res_variables_decoded.append(variables_decoded2)             #for each solution, stores all the values of the investments decoded (0,1)
+        # res_variables=solution.variables[:] #integer variables, returns true false
+        # problem_ptp.types[0].decode(res_variables[0])
+
+    # #results:for platypus test problem:
+    # res_objective = []
+    # res_variables = []
+    # for solution in unique(nondominated(algorithm.result)):
+    #     res_objective.append([solution.objectives[0], solution.objectives[1]])
+    #     variable_to_decode = solution.variables[1]  # x2 in this problem
+    #     x1 = solution.variables[0]
+    #     x2 = problem_ptp.types[1].decode(variable_to_decode)
+    #     res_variables.append([x1, x2])  # decode integer variable (from binary representation to number)
+    #     plt.scatter(solution.objectives[0],
+    #                 solution.objectives[1],
+    #                 color="r")
+    #     plt.title("{}".format(type(algorithm)))
 
     import pandas as pd
     dff = pd.DataFrame(res_objective)  # NECESARIO????
     dff.to_excel('nsga_platypus.xlsx')
 
-    hyp = Hypervolume(minimum=[0, 0, 0], maximum=[1, 1, 1])
+    #hyp2=Hypervolume.calculate(algorithm.result)
+    hyp = Hypervolume(minimum=[0, 0], maximum=[1, 1])
     print("Hypervolume: {}".format(hyp(algorithm.result)))
 
     print("pop_size: {}, pop_size internal: {}".format(algorithm.population_size,len(algorithm.population)))
@@ -289,5 +320,5 @@ def NSGA_3_platypus(obj_func,
     print("Num de soluciones objetivo nondominated:{}".format(len(res_objective)))
     print("Num total de soluciones {}".format(len(algorithm.result)))
 
-    return res_variables, res_objective #res.X, res.F
+    return res_variables_decoded, res_objective #res.X, res.F
 
