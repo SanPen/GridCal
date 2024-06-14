@@ -17,7 +17,7 @@
 import io
 import numpy as np
 import pandas as pd
-from typing import List, Union
+from typing import List, Union, Any
 from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtWidgets import QApplication, QDialog, QTableView, QVBoxLayout, QPushButton, QHBoxLayout
@@ -871,7 +871,7 @@ class ArrayTableModel(QAbstractTableModel):
         """
         return len(self._data)  # We have two columns, one for each array
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = Qt.DisplayRole) -> Any:
         """
 
         :param section:

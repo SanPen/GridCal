@@ -15,9 +15,56 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from PySide6.QtWidgets import QTableView, QVBoxLayout, QPushButton, QHBoxLayout, QDialog
+from typing import List
+from PySide6.QtCore import Qt, QModelIndex
+from PySide6.QtWidgets import QTableView, QVBoxLayout, QPushButton, QHBoxLayout, QDialog, QSpacerItem, QSizePolicy
 from GridCal.Gui.GeneralDialogues import ArrayTableModel
+from GridCal.Gui.messages import error_msg
 from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt
+
+
+class ControllableShuntArray(ArrayTableModel):
+
+    def __init__(self, data: List[np.ndarray], headers: List[str]):
+        ArrayTableModel.__init__(self, data=data, headers=headers)
+
+    def setData(self, index: QModelIndex, value: float, role=Qt.EditRole):
+        """
+
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+        if not index.isValid():
+            return False
+
+        if role == Qt.EditRole:
+            row = index.row()
+            column = index.column()
+            try:
+                value = float(value)
+            except ValueError:
+                return False
+
+            if row > 0:
+                if value > self._data[column][row - 1]:  # only allow incremental data
+                    self._data[column][row] = value
+                else:
+                    error_msg(text="Only incremental data is allowed", title="Set data")
+            else:
+                if len(self._data[column]) > 1:
+                    if value < self._data[column][1]:
+                        self._data[column][row] = value
+                    else:
+                        error_msg(text="Only incremental data is allowed", title="Set data")
+                else:
+                    self._data[column][row] = value
+
+            self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
+            return True
+
+        return False
 
 
 class ControllableShuntEditor(QDialog):
@@ -31,9 +78,9 @@ class ControllableShuntEditor(QDialog):
         self.setWindowTitle("Controllable shunt editor")
 
         self.api_object = api_object
-        self.model = ArrayTableModel(data=[self.api_object.g_steps,
-                                           self.api_object.b_steps],
-                                     headers=["G steps", "B steps"])
+        self.model = ControllableShuntArray(data=[self.api_object.g_steps,
+                                                  self.api_object.b_steps],
+                                            headers=["G steps (MW)", "B steps (MVAr)"])
 
         self.table_view = QTableView()
         self.table_view.setModel(self.model)
@@ -52,9 +99,11 @@ class ControllableShuntEditor(QDialog):
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.delete_button)
+        button_layout.addItem(QSpacerItem(40, 20, QSizePolicy.Policy.Maximum))
+        button_layout.addWidget(self.done_button)
 
         layout.addLayout(button_layout)
-        layout.addWidget(self.done_button)
+
         self.setLayout(layout)
 
     def get_g_steps(self) -> np.ndarray:
