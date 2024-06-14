@@ -459,13 +459,18 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                 self.voltage_scale = self.scaling_factor_voltage(self.overload_max_magnitude,
                                                                  self.voltage_majority_magnitude)
             else:
-                self.losses_scale = 1
-                self.voltage_scale = 1
+                self.losses_scale = 1.0
+                self.voltage_scale = 1.0
 
             columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)",
                        "Voltage cost (M€)"]
             data = np.c_[
-                self._financial, self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score, self._losses, self._overload_score, self._voltage_score]
+                self._financial,
+                self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score,
+                self._losses,
+                self._overload_score,
+                self._voltage_score
+            ]
             y_label = ''
             title = ''
 
@@ -534,37 +539,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                 ylabel=y_label,
                                 xlabel='',
                                 units=y_label)
-
-
-        # elif result_type == ResultTypes.InvestmentsParetoPlot1:
-        #     labels = self._index_names
-        #     # columns = ["Investment cost (M€)", "Technical cost (M€)"]
-        #     columns = ["Investment cost (M€)", "Losses (M€)"]
-        #     data = np.c_[self._financial, self._losses]
-        #     y_label = ''
-        #     title = ''
-        #
-        #     plt.ion()
-        #     color_norm = plt_colors.Normalize()
-        #     fig = plt.figure(figsize=(8, 6))
-        #     ax3 = plt.subplot(1, 1, 1)
-        #     sc3 = ax3.scatter(self._financial, self._losses, c=self._f_obj, norm=color_norm)
-        #     ax3.set_xlabel('Investment cost (M€)')
-        #     ax3.set_ylabel('Losses cost (M€)')
-        #     plt.colorbar(sc3, fraction=0.05, label='Objective function')
-        #     fig.suptitle(result_type.value)
-        #     plt.tight_layout()
-        #     plt.show()
-        #
-        #     return ResultsTable(data=data,
-        #                         index=np.array(labels),
-        #                         idx_device_type=DeviceType.NoDevice,
-        #                         columns=np.array(columns),
-        #                         cols_device_type=DeviceType.NoDevice.NoDevice,
-        #                         title=title,
-        #                         ylabel=y_label,
-        #                         xlabel='',
-        #                         units=y_label)
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names

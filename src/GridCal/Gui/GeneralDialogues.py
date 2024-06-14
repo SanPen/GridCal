@@ -848,6 +848,13 @@ class ArrayTableModel(QAbstractTableModel):
         self._data = data
         self.headers = headers
 
+    def get_data(self) -> List[np.ndarray]:
+        """
+        Get the model internal data
+        :return: list of arrays
+        """
+        return self._data
+
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         """
 
