@@ -43,6 +43,7 @@ def get_overload_score(loading: Union[CxMat, CxVec], branches_cost: Vec, thresho
     Compute overload score by multiplying the loadings above 100% by the associated branch cost.
     :param loading: load results
     :param branches_cost: all branch elements from studied grid
+    :param threshold: threshold for overload
     :return: sum of all costs associated to branch overloads
     """
     # branches_loading = np.abs(loading)
