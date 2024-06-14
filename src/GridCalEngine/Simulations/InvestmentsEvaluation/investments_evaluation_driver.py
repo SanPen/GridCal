@@ -433,7 +433,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             pop_size=pop_size,
             crossover_prob=0.8,
             mutation_probability=0.1,
-            eta=20,
+            eta=30,
         )
 
         self.results.set_best_combination(combination=X[:, 0])
@@ -446,7 +446,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3 (Platypus library)...")
 
-        pop_size = int(round(self.dim))  # if needed, divide by 5 for ideal grid
+        pop_size = int(round(self.dim/5))  # if needed, divide by 5 for ideal grid
         n_partitions = int(round(pop_size))
         print("pop_size initialization: {}".format(pop_size))
         print("n_partitions initialization: {}".format(n_partitions))

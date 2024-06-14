@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     pf_options = sim.PowerFlowOptions()
     #platypus:
-    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
+    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3_platypus,
                                             max_eval=4 * len(grid.investments),
                                             pf_options=pf_options)
     #pymoo:
@@ -38,7 +38,6 @@ if __name__ == "__main__":
     e_time = time.time()
     print("Simulation time: {} sec".format(e_time - st_time))
     print("Simulation time: {} min".format((e_time - st_time)/60))
-    np.sum(grid.investments.CAPEX)
 
     #============================================================
     #Results pymoo:
@@ -48,14 +47,14 @@ if __name__ == "__main__":
     output_f1=inv.results._financial
     output_f2=inv.results._electrical
 
-    # plot all the results in scatter - not only pareto front - PYMOO
-    # import matplotlib.pyplot as plt
-    # import matplotlib
-    # import pandas as pd
-    # matplotlib.use("Qt5Agg")
-    # data=np.vstack((output_f1,output_f2))
-    # plt.scatter(data[0],data[1])
-    # plt.show()
+    #plot all the results in scatter - not only pareto front - PYMOO
+    import matplotlib.pyplot as plt
+    import matplotlib
+    import pandas as pd
+    matplotlib.use("Qt5Agg")
+    data=np.vstack((output_f1,output_f2))
+    plt.scatter(data[0],data[1])
+    plt.show()
 
     # ============================================================
     # Results PLATYPUS:
@@ -66,7 +65,7 @@ if __name__ == "__main__":
     import pandas as pd
     matplotlib.use("Qt5Agg")
     data=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_platypus.xlsx")
-    plt.scatter(data[0],data[1])
+    plt.scatter(data[1],data[0], edgecolors='r')
     plt.show()
 
 
