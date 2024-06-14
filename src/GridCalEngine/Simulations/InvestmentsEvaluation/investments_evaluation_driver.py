@@ -15,9 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from typing import List, Dict
-from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver, PowerFlowOptions
+import numba as nb
+from typing import List, Dict, Union
+from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
+from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
@@ -27,29 +32,50 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_resu
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
 from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.random_eval import random_trial
-from GridCalEngine.enumerations import InvestmentEvaluationMethod, SimulationTypes
-from GridCalEngine.basic_structures import IntVec, Vec, CxVec
+from GridCalEngine.enumerations import (InvestmentEvaluationMethod, SimulationTypes, EngineType,
+                                        InvestmentsEvaluationObjectives)
+from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, CxMat
 
 
-def get_overload_score(loading: CxVec, branches_cost: Vec) -> float:
+@nb.njit(cache=True)
+def get_overload_score(loading: Union[CxMat, CxVec], branches_cost: Vec, threshold=1.0) -> float:
     """
     Compute overload score by multiplying the loadings above 100% by the associated branch cost.
     :param loading: load results
     :param branches_cost: all branch elements from studied grid
     :return: sum of all costs associated to branch overloads
     """
-    branches_loading = np.abs(loading)
+    # branches_loading = np.abs(loading)
 
     # get lines where loading is above 1 -- why not 0.9 ?
-    branches_idx = np.where(branches_loading > 1)[0]
+    # branches_idx = np.where(branches_loading > 1)
+    #
+    # # multiply by the load or only the overload?
+    # cost = branches_cost[branches_idx] * branches_loading[branches_idx]
 
-    # multiply by the load or only the overload?
-    cost = branches_cost[branches_idx] * branches_loading[branches_idx]
+    # return np.sum(cost)
 
-    return np.sum(cost)
+    cost_ = float(0.0)
+
+    if loading.ndim == 1:
+        for i in range(loading.shape[0]):
+            absloading = np.abs(loading[i])
+            if absloading > threshold:
+                cost_ += (absloading - threshold) * float(branches_cost[i])
+
+    elif loading.ndim == 2:
+
+        for i in range(loading.shape[0]):
+            for j in range(loading.shape[1]):
+                absloading = np.abs(loading[i, j])
+                if absloading > threshold:
+                    cost_ += (absloading - threshold) * branches_cost[j]
+
+    return cost_
 
 
-def get_voltage_module_score(voltage: CxVec, vm_cost: Vec, vm_max: Vec, vm_min: Vec) -> float:
+@nb.njit(cache=True)
+def get_voltage_module_score(voltage: Union[CxVec, CxMat], vm_cost: Vec, vm_max: Vec, vm_min: Vec) -> float:
     """
     Compute voltage module score by multiplying the voltages outside limits by the associated bus costs.
     :param voltage: voltage results
@@ -59,15 +85,35 @@ def get_voltage_module_score(voltage: CxVec, vm_cost: Vec, vm_max: Vec, vm_min: 
     :return: sum of all costs associated to voltage module deviation
     """
 
-    vm = np.abs(voltage)
-    vmax_diffs = np.array(vm - vm_max).clip(min=0)
-    vmin_diffs = np.array(vm_min - vm).clip(min=0)
-    cost = (vmax_diffs + vmin_diffs) * vm_cost
+    # vm = np.abs(voltage)
+    # vmax_diffs = np.array(vm - vm_max).clip(min=0)
+    # vmin_diffs = np.array(vm_min - vm).clip(min=0)
+    # cost = (vmax_diffs + vmin_diffs) * vm_cost
 
-    return cost.sum()
+    # return cost.sum()
+    cost_ = 0.0
+
+    if voltage.ndim == 1:
+        for i in range(voltage.shape[0]):
+            vm = np.abs(voltage[i])
+            if vm < vm_min[i]:
+                cost_ += vm_cost[i] * (vm_min[i] - vm)
+            elif vm > vm_max[i]:
+                cost_ += vm_cost[i] * (vm - vm_max[i])
+    elif voltage.ndim == 2:
+        for i in range(voltage.shape[0]):
+            for j in range(voltage.shape[1]):
+                vm = np.abs(voltage[i, j])
+                if vm < vm_min[j]:
+                    cost_ += vm_cost[j] * (vm_min[j] - vm)
+                elif vm > vm_max[j]:
+                    cost_ += vm_cost[j] * (vm - vm_max[j])
+
+    return cost_
 
 
-def get_voltage_phase_score(voltage: CxVec, va_cost: Vec, va_max: Vec, va_min: Vec) -> float:
+@nb.njit(cache=True)
+def get_voltage_phase_score(voltage: Union[CxMat, CxVec], va_cost: Vec, va_max: Vec, va_min: Vec) -> float:
     """
     Compute voltage phase score by multiplying the phases outside limits by the associated bus costs.
     :param voltage: voltage results
@@ -76,12 +122,33 @@ def get_voltage_phase_score(voltage: CxVec, va_cost: Vec, va_max: Vec, va_min: V
     :param va_min: minimum voltage angles
     :return: sum of all costs associated to voltage module deviation
     """
-    vp = np.angle(voltage)
-    va_max_diffs = np.array(vp - va_max).clip(min=0)
-    va_min_diffs = np.array(va_min - vp).clip(min=0)
-    cost = (va_max_diffs + va_min_diffs) * va_cost
+    # va = np.angle(voltage)
+    # va_max_diffs = np.array(va - va_max).clip(min=0)
+    # va_min_diffs = np.array(va_min - va).clip(min=0)
+    # cost = (va_max_diffs + va_min_diffs) * va_cost
 
-    return cost.sum()
+    # return cost.sum()
+
+    cost_ = 0.0
+
+    if voltage.ndim == 1:
+        for i in range(voltage.shape[0]):
+            va = np.angle(voltage[i])
+            if va < va_min[i]:
+                cost_ += va_cost[i] * (va_min[i] - va)
+            elif va > va_max[i]:
+                cost_ += va_cost[i] * (va - va_max[i])
+
+    elif voltage.ndim == 2:
+        for i in range(voltage.shape[0]):
+            for j in range(voltage.shape[1]):
+                va = np.angle(voltage[i, j])
+                if va < va_min[j]:
+                    cost_ += va_cost[j] * (va_min[j] - va)
+                elif va > va_max[j]:
+                    cost_ += va_cost[j] * (va - va_max[j])
+
+    return cost_
 
 
 class InvestmentScores:
@@ -172,22 +239,100 @@ def power_flow_function(inv_list: List[Investment],
     return scores
 
 
-class InvestmentsEvaluationDriver(DriverTemplate):
+def power_flow_ts_function(inv_list: List[Investment],
+                           grid: MultiCircuit,
+                           pf_options: PowerFlowOptions,
+                           time_indices: IntVec,
+                           opf_time_series_results: Union[None, OptimalPowerFlowTimeSeriesResults],
+                           clustering_results: Union[ClusteringResults, None],
+                           engine: EngineType,
+                           branches_cost,
+                           vm_cost: Vec,
+                           vm_max: Vec,
+                           vm_min: Vec,
+                           va_cost: Vec,
+                           va_max: Vec,
+                           va_min: Vec) -> InvestmentScores:
+    """
+    Compute the power flow of the grid given an investments group
+    :param inv_list: list of Investments
+    :param grid: MultiCircuit grid
+    :param pf_options: Power flow options
+    :param time_indices: Time indices of the investments
+    :param opf_time_series_results: Optimal power flow results
+    :param clustering_results: Clustering results
+    :param engine: Engine type
+    :param branches_cost: Array with all overloading cost for the branches
+    :param vm_cost: Array with all the bus voltage module violation costs
+    :param vm_max: Array with the Vm min values
+    :param vm_min: Array with the Vm max values
+    :param va_cost: Array with all the bus voltage angles violation costs
+    :param va_max: Array with the Va max values
+    :param va_min: Array with the Va min values
+    :return: InvestmentScores
+    """
+    driver = PowerFlowTimeSeriesDriver(grid=grid,
+                                       options=pf_options,
+                                       time_indices=time_indices,
+                                       opf_time_series_results=opf_time_series_results,
+                                       clustering_results=clustering_results,
+                                       engine=engine)
+    driver.run()
+
+    scores = InvestmentScores()
+
+    # compute scores
+    scores.losses_score = np.sum(driver.results.losses.real)
+    scores.overload_score = get_overload_score(loading=driver.results.loading,
+                                               branches_cost=branches_cost)
+    # scores.overload_score = 0
+    scores.voltage_module_score = get_voltage_module_score(voltage=driver.results.voltage,
+                                                           vm_cost=vm_cost,
+                                                           vm_max=vm_max,
+                                                           vm_min=vm_min)
+
+    scores.voltage_angle_score = get_voltage_phase_score(voltage=driver.results.voltage,
+                                                         va_cost=va_cost,
+                                                         va_max=va_max,
+                                                         va_min=va_min)
+
+    scores.capex_score = sum([inv.CAPEX for inv in inv_list])
+    scores.opex_score = sum([inv.OPEX for inv in inv_list])
+
+    return scores
+
+
+class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
     name = 'Investments evaluation'
     tpe = SimulationTypes.InvestmentsEvaluation_run
 
     def __init__(self,
                  grid: MultiCircuit,
-                 options: InvestmentsEvaluationOptions):
+                 options: InvestmentsEvaluationOptions,
+                 time_indices: Union[IntVec, None] = None,
+                 opf_time_series_results: Union[None, OptimalPowerFlowTimeSeriesResults] = None,
+                 clustering_results: Union[ClusteringResults, None] = None,
+                 engine: EngineType = EngineType.GridCal):
         """
         InputsAnalysisDriver class constructor
         :param grid: MultiCircuit instance
         :param options: InvestmentsEvaluationOptions
+        :param time_indices: Time indices of the investments
+        :param opf_time_series_results: Optimal power flow results
+        :param clustering_results: Clustering results
         """
-        DriverTemplate.__init__(self, grid=grid)
+        TimeSeriesDriverTemplate.__init__(self,
+                                          grid=grid,
+                                          time_indices=time_indices,
+                                          clustering_results=clustering_results,
+                                          engine=engine,
+                                          check_time_series=False)
 
         # options object
         self.options = options
+
+        # Optional, previously computed OPF results
+        self.opf_time_series_results: Union[None, OptimalPowerFlowTimeSeriesResults] = opf_time_series_results
 
         # results object
         self.results = InvestmentsEvaluationResults(investment_groups_names=grid.get_investment_groups_names(),
@@ -258,16 +403,36 @@ class InvestmentsEvaluationDriver(DriverTemplate):
                                          all_elemnts_dict=self.get_all_elements_dict)
 
         # do something
-        scores = power_flow_function(inv_list=inv_list,
-                                     grid=self.grid,
-                                     pf_options=self.options.pf_options,
-                                     branches_cost=self.branches_cost,
-                                     vm_cost=self.vm_cost,
-                                     vm_max=self.vm_max,
-                                     vm_min=self.vm_min,
-                                     va_cost=self.va_cost,
-                                     va_max=self.va_max,
-                                     va_min=self.va_min)
+        if self.options.objf_tpe == InvestmentsEvaluationObjectives.PowerFlow:
+            scores = power_flow_function(inv_list=inv_list,
+                                         grid=self.grid,
+                                         pf_options=self.options.pf_options,
+                                         branches_cost=self.branches_cost,
+                                         vm_cost=self.vm_cost,
+                                         vm_max=self.vm_max,
+                                         vm_min=self.vm_min,
+                                         va_cost=self.va_cost,
+                                         va_max=self.va_max,
+                                         va_min=self.va_min)
+
+        elif self.options.objf_tpe == InvestmentsEvaluationObjectives.TimeSeriesPowerFlow:
+
+            scores = power_flow_ts_function(inv_list=inv_list,
+                                            grid=self.grid,
+                                            pf_options=self.options.pf_options,
+                                            time_indices=self.time_indices,
+                                            opf_time_series_results=self.opf_time_series_results,
+                                            clustering_results=self.clustering_results,
+                                            engine=self.engine,
+                                            branches_cost=self.branches_cost,
+                                            vm_cost=self.vm_cost,
+                                            vm_max=self.vm_max,
+                                            vm_min=self.vm_min,
+                                            va_cost=self.va_cost,
+                                            va_max=self.va_max,
+                                            va_min=self.va_min)
+        else:
+            raise Exception(f'Unknown investments objective function type {self.options.objf_tpe}')
 
         # revert to the initial state
         self.grid.set_investments_status(investments_list=inv_list,

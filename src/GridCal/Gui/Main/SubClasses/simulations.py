@@ -44,7 +44,7 @@ from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, Solve
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
-                                        ContingencyFilteringMethods)
+                                        ContingencyFilteringMethods, InvestmentsEvaluationObjectives)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -202,6 +202,14 @@ class SimulationsMain(TimeEventsMain):
 
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
+
+        self.investment_evaluation_objfunc_dict = OrderedDict()
+        lst = list()
+        for method in [InvestmentsEvaluationObjectives.PowerFlow,
+                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow]:
+            self.investment_evaluation_objfunc_dict[method.value] = method
+            lst.append(method.value)
+        self.ui.investment_evaluation_objfunc_ComboBox.setModel(gf.get_list_model(lst))
 
         # dictionaries for available results
         self.available_results_dict: Union[Dict[str, Dict[str, ResultTypes]], None] = dict()
@@ -2440,17 +2448,34 @@ class SimulationsMain(TimeEventsMain):
 
                     # evaluation method
                     method = self.investment_evaluation_method_dict[
-                        self.ui.investment_evaluation_method_ComboBox.currentText()]
+                        self.ui.investment_evaluation_method_ComboBox.currentText()
+                    ]
 
                     # maximum number of function evalñuations as a factor of the number of investments
                     max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
                         self.circuit.investments_groups)
 
+                    objf_tpe = self.investment_evaluation_objfunc_dict[
+                        self.ui.investment_evaluation_objfunc_ComboBox.currentText()
+                    ]
+
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
-                                                               pf_options=self.get_selected_power_flow_options())
+                                                               pf_options=self.get_selected_power_flow_options(),
+                                                               objf_tpe=objf_tpe
+                                                               )
+
+                    opf_time_series_results = self.get_opf_ts_results(
+                        use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                    )
+
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
-                                                          options=options)
+                                                          options=options,
+                                                          time_indices=self.get_time_indices(),
+                                                          opf_time_series_results=opf_time_series_results,
+                                                          clustering_results=self.get_clustering_results(),
+                                                          engine=self.get_preferred_engine()
+                                                          )
 
                     self.session.run(drv,
                                      post_func=self.post_run_investments_evaluation,

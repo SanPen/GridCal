@@ -187,7 +187,8 @@ class ConfigurationMain(ResultsMain):
                 "max_branch_size": self.ui.max_branch_size_spinBox,
                 "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
                 "map_tile_provider": self.ui.tile_provider_comboBox,
-                "plotting_style": self.ui.plt_style_comboBox
+                "plotting_style": self.ui.plt_style_comboBox,
+                "video_fps": self.ui.fps_spinBox
             },
             "machine_learning": {
                 "clustering": {
@@ -200,6 +201,7 @@ class ConfigurationMain(ResultsMain):
                 "investments_evaluation": {
                     "investment_evaluation_method": self.ui.investment_evaluation_method_ComboBox,
                     "max_investments_evluation_number": self.ui.max_investments_evluation_number_spinBox,
+                    "investment_evaluation_obj_func": self.ui.investment_evaluation_objfunc_ComboBox,
                 }
             },
             "linear": {
