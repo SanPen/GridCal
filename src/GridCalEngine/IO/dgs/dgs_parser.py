@@ -676,7 +676,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         buses = terminals_dict[ID]  # array with the ID of the connection Buses
         bus1 = buses_dict[buses[0]]  # index of the bus
 
-        bus_obj = circuit.buses[bus1]
+        bus_obj = circuit.get_bus_at(bus1)
 
         # apply the slack values to the buses structure if the element is marked as slack
         if external['bustp'].values[i] == b'SL':
@@ -756,8 +756,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
             bus1 = buses_dict[buses[0]]
             bus2 = buses_dict[buses[1]]
 
-            bus_from = circuit.buses[bus1]
-            bus_to = circuit.buses[bus2]
+            bus_from = circuit.get_bus_at(bus1)
+            bus_to = circuit.get_bus_at(bus2)
 
             status = lines_enables[i]
 
@@ -886,8 +886,8 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
                 bus1 = buses_dict[buses[0]]
                 bus2 = buses_dict[buses[1]]
 
-                bus_from = circuit.buses[bus1]
-                bus_to = circuit.buses[bus2]
+                bus_from = circuit.get_bus_at(bus1)
+                bus_to = circuit.get_bus_at(bus2)
 
                 Smax = Nominal_power[type_idx]
 
@@ -961,7 +961,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         for i in range(len(loads)):
             ID = loads_ID[i]
             bus_idx = buses_dict[(terminals_dict[ID][0])]
-            bus_obj = circuit.buses[bus_idx]
+            bus_obj = circuit.get_bus_at(bus_idx)
             p = loads_P[i] * scale[i]  # in MW
             q = loads_Q[i] * scale[i]  # in MVA
 
@@ -999,7 +999,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         ID = shunts['ID'][i]
         buses = terminals_dict[ID]  # array with the ID of the connection Buses
         bus1 = buses_dict[buses[0]]
-        bus_obj = circuit.buses[bus1]
+        bus_obj = circuit.get_bus_at(bus1)
         name = shunts['loc_name'][i].decode(codification)
 
         if 'qcapn' in shunts.columns.values:
@@ -1037,7 +1037,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         ID = static_generators['ID'][i]
         buses = terminals_dict[ID]  # array with the ID of the connection Buses
         bus1 = buses_dict[buses[0]]
-        bus_obj = circuit.buses[bus1]
+        bus_obj = circuit.get_bus_at(bus1)
         mode = static_generators['av_mode'][i]
         num_machines = static_generators['ngnum'][i]
 
@@ -1073,7 +1073,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         ID = synchronous_machine['ID'][i]
         buses = terminals_dict[ID]  # array with the ID of the connection Buses
         bus1 = buses_dict[buses[0]]
-        bus_obj = circuit.buses[bus1]
+        bus_obj = circuit.get_bus_at(bus1)
         num_machines = synchronous_machine['ngnum'][i]
 
         # Get the type element

@@ -227,32 +227,32 @@ class InputsAnalysisResults(ResultsTemplate):
 
         :return:
         """
-        d = {elm: i for i, elm in enumerate(self.grid.zones)}
-        return np.array([d.get(bus.zone, "") for bus in self.grid.buses])
+        d = {elm: i for i, elm in enumerate(self.grid.get_zones())}
+        return np.array([d.get(bus.zone, "") for bus in self.grid.get_buses()])
 
     def get_bus_area_indices(self):
         """
 
         :return:
         """
-        d = {elm: i for i, elm in enumerate(self.grid.areas)}
-        return np.array([d.get(bus.area, "") for bus in self.grid.buses])
+        d = {elm: i for i, elm in enumerate(self.grid.get_areas())}
+        return np.array([d.get(bus.area, "") for bus in self.grid.get_buses()])
 
     def get_bus_country_indices(self):
         """
 
         :return:
         """
-        d = {elm: i for i, elm in enumerate(self.grid.countries)}
-        return np.array([d.get(bus.country, "") for bus in self.grid.buses])
+        d = {elm: i for i, elm in enumerate(self.grid.get_countries())}
+        return np.array([d.get(bus.country, "") for bus in self.grid.get_buses()])
 
     def get_bus_substation_indices(self):
         """
 
         :return:
         """
-        d = {elm: i for i, elm in enumerate(self.grid.substations)}
-        return np.array([d.get(bus.substation, "") for bus in self.grid.buses])
+        d = {elm: i for i, elm in enumerate(self.grid.get_substations())}
+        return np.array([d.get(bus.substation, "") for bus in self.grid.get_buses()])
 
     def get_collection_attr_series(self, elms, magnitude: str, aggregation="Area"):
         """

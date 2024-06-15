@@ -316,8 +316,8 @@ class ModelsInputGUI(QtWidgets.QDialog):
         n = len(self.grids_model.items())
         data_m = dict()
         data_a = dict()
-        index = [''] * n
-        dates = [''] * n
+        index = np.empty(n, dtype=object)
+        dates = np.empty(n, dtype=object)
 
         for t, entry in enumerate(self.grids_model.items()):
 
@@ -329,23 +329,26 @@ class ModelsInputGUI(QtWidgets.QDialog):
                 dates[t] = extract_and_convert_to_datetime(os.path.basename(entry.path))
 
                 loaded_grid = FileOpen(entry.path).open()
-                assign_grid(t=t,
-                            loaded_grid=loaded_grid,
-                            main_grid=main_grid,
-                            use_secondary_key=use_secondary_key)
 
-                if write_report:
-                    for i, bus in enumerate(loaded_grid.buses):
-                        arr_m = data_m.get(bus.code, None)
-                        arr_a = data_a.get(bus.code, None)
-                        if arr_m is None:
-                            arr_m = np.zeros(n, dtype=float)
-                            data_m[bus.code] = arr_m
-                            arr_a = np.zeros(n, dtype=float)
-                            data_a[bus.code] = arr_a
+                if loaded_grid is not None:
 
-                        arr_m[t] = bus.Vm0 * float(bus.active)
-                        arr_a[t] = bus.Va0 * float(bus.active)
+                    assign_grid(t=t,
+                                loaded_grid=loaded_grid,
+                                main_grid=main_grid,
+                                use_secondary_key=use_secondary_key)
+
+                    if write_report:
+                        for i, bus in enumerate(loaded_grid.get_buses()):
+                            arr_m = data_m.get(bus.code, None)
+                            arr_a = data_a.get(bus.code, None)
+                            if arr_m is None:
+                                arr_m = np.zeros(n, dtype=float)
+                                data_m[bus.code] = arr_m
+                                arr_a = np.zeros(n, dtype=float)
+                                data_a[bus.code] = arr_a
+
+                            arr_m[t] = bus.Vm0 * float(bus.active)
+                            arr_a[t] = bus.Va0 * float(bus.active)
 
         if write_report:
             with pd.ExcelWriter(report_name) as w:  # pylint: disable=abstract-class-instantiated

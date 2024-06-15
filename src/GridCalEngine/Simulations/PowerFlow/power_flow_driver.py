@@ -84,7 +84,7 @@ class PowerFlowDriver(DriverTemplate):
         Add a report of the results (in-place)
         """
         vm = np.abs(self.results.voltage)
-        for i, bus in enumerate(self.grid.buses):
+        for i, bus in enumerate(self.grid.get_buses()):
             if vm[i] > bus.Vmax:
                 self.logger.add_warning("Overvoltage",
                                         device=bus.name,

@@ -82,9 +82,9 @@ def get_pgm_buses(circuit: MultiCircuit, idx0):
     """
     bus_dict = dict()
 
-    node = pgm.initialize_array('input', 'node', len(circuit.buses))
+    node = pgm.initialize_array('input', 'node', circuit.get_bus_number())
     idx = idx0
-    for i, bus in enumerate(circuit.buses):
+    for i, bus in enumerate(circuit.get_buses()):
         # fill in data
         node['id'][i] = idx
         node['u_rated'][i] = bus.Vnom * 1000.0  # in V
@@ -316,7 +316,7 @@ def get_pgm_source(circuit: MultiCircuit, bus_dict, idx0):
     else:
         # there are no generators, look for the slack bus
         found = False
-        for i, bus in enumerate(circuit.buses):
+        for i, bus in enumerate(circuit.get_buses()):
             if bus.is_slack:
                 sym_gen['id'][k] = idx
                 sym_gen['node'][k] = i

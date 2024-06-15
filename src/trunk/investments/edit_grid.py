@@ -17,14 +17,18 @@ if __name__ == "__main__":
     fname = os.path.join('IEEE 118 Bus - investments.gridcal')
     grid = FileOpen(fname).open()
 
-    for load in grid.loads:
+    if grid is None:
+        raise Exception("No grid found")
+
+    for load in grid.get_loads():
         load.P = 1.5*load.P
         load.Q = 1.5*load.Q
-    for gen in grid.generators:
+
+    for gen in grid.get_generators():
         gen.P = 1.5*gen.P
 
     new_lines = []
-    for line in grid.lines:
+    for line in grid.get_lines():
         new_line = line.copy(forced_new_idtag=True)
         new_line.active = False
         # new_line.B = 0
@@ -35,7 +39,7 @@ if __name__ == "__main__":
         grid.add_line(new_line)
 
     new_trs = []
-    for transformer in grid.transformers2w:
+    for transformer in grid.get_transformers2w():
         new_tr = transformer.copy(forced_new_idtag=True)
         new_tr.active = False
         new_trs.append(new_tr)
@@ -43,10 +47,10 @@ if __name__ == "__main__":
     for new_tr in new_trs:
         grid.add_transformer2w(new_tr)
 
-    for buses in grid.buses:
+    for buses in grid.get_buses():
         buses.Vmin = 0.95
 
-    num_lines = len(grid.lines)
+    num_lines = len(grid.get_lines())
     nset_lines = int(num_lines / 2)  # number of investments
     for ii in range(nset_lines):
         group = InvestmentsGroup(idtag=None,
@@ -55,7 +59,7 @@ if __name__ == "__main__":
         grid.add_investments_group(group)
 
         # add the selection as investments to the group
-        elm = grid.lines[nset_lines + ii]
+        elm = grid.get_lines()[nset_lines + ii]
         con = Investment(device_idtag=elm.idtag,
                          code=elm.code,
                          name=elm.type_name + ": " + elm.name,
@@ -64,7 +68,7 @@ if __name__ == "__main__":
                          group=group)
         grid.add_investment(con)
 
-    num_trs = len(grid.transformers2w)
+    num_trs = grid.get_transformers2w()
     nset_trs = int(num_trs / 2)  # number of investments
     for ii in range(nset_trs):
         group = InvestmentsGroup(idtag=None,
@@ -73,7 +77,7 @@ if __name__ == "__main__":
         grid.add_investments_group(group)
 
         # add the selection as investments to the group
-        elm = grid.transformers2w[nset_trs + ii]
+        elm = grid.get_transformers2w()[nset_trs + ii]
         con = Investment(device_idtag=elm.idtag,
                          code=elm.code,
                          name=elm.type_name + ": " + elm.name,

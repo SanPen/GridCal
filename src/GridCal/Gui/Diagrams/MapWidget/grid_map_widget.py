@@ -715,37 +715,6 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                 latitudes[i] = bus.latitude
                 nodes_dict[bus.name] = (bus.latitude, bus.longitude)
 
-        # Pnorm = np.abs(Sbus.real) / np.max(Sbus.real)
-        #
-        # add node positions
-        # for i, bus in enumerate(circuit.buses):
-        #
-        #     tooltip = str(i) + ': ' + bus.name + '\n' \
-        #               + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
-        #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
-        #     if Sbus is not None:
-        #         tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
-        #     if types is not None:
-        #         tooltip += '\nType: ' + bus_types[types[i]]
-        #
-        #     # get the line colour
-        #     r, g, b, a = voltage_cmap(vnorm[i])
-        #     color = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
-        #     html_color = color.name()
-        #
-        #     if use_flow_based_width:
-        #         radius = int(np.floor(min_bus_width + Pnorm[i] * (max_bus_width - min_bus_width)))
-        #     else:
-        #         radius = 50
-        #
-        #     position = bus.get_coordinates()
-        #     html = '<i>' + tooltip + '</i>'
-        #     folium.Circle(position,
-        #                   popup=html,
-        #                   radius=radius,
-        #                   color=html_color,
-        #                   tooltip=tooltip).add_to(marker_cluster)
-
         # Try colouring the branches
         if len(branches):
 

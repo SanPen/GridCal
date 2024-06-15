@@ -607,8 +607,8 @@ class SimulationsMain(TimeEventsMain):
         """
         areas_from_idx = gf.get_checked_indices(self.ui.areaFromListView.model())
         areas_to_idx = gf.get_checked_indices(self.ui.areaToListView.model())
-        areas_from = [self.circuit.areas[i] for i in areas_from_idx]
-        areas_to = [self.circuit.areas[i] for i in areas_to_idx]
+        areas_from = [self.circuit.get_areas()[i] for i in areas_from_idx]
+        areas_to = [self.circuit.get_areas()[i] for i in areas_to_idx]
 
         for a1 in areas_from:
             if a1 in areas_to:
@@ -1145,7 +1145,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if len(self.circuit.contingency_groups) > 0:
+            if self.circuit.get_contingency_groups_number() > 0:
 
                 if not self.session.is_this_running(SimulationTypes.ContingencyAnalysis_run):
 
@@ -1201,7 +1201,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if len(self.circuit.contingency_groups) > 0:
+            if self.circuit.get_contingency_groups_number() > 0:
 
                 if self.valid_time_series():
                     if not self.session.is_this_running(SimulationTypes.ContingencyAnalysisTS_run):
@@ -1513,7 +1513,7 @@ class SimulationsMain(TimeEventsMain):
 
                     # direction vector
                     alpha = self.ui.alpha_doubleSpinBox.value()
-                    n = len(self.circuit.buses)
+                    n = self.circuit.get_bus_number()
 
                     # vector that multiplies the target power: The continuation direction
                     alpha_vec = np.ones(n)
@@ -2296,17 +2296,17 @@ class SimulationsMain(TimeEventsMain):
 
             colours = viz.get_n_colours(n=len(drv.groups_by_index))
 
-            bus_colours = np.empty(len(self.circuit.buses), dtype=object)
-            tool_tips = [""] * len(self.circuit.buses)
+            bus_colours = np.empty(self.circuit.get_bus_number(), dtype=object)
+            tool_tips = [""] * self.circuit.get_bus_number()
             for c, group in enumerate(drv.groups_by_index):
                 for i in group:
-                    bus = self.circuit.buses[i]
+                    bus = self.circuit.get_bus_at(i)
                     if bus.active:
                         r, g, b, a = colours[c]
                         bus_colours[i] = QtGui.QColor(r * 255, g * 255, b * 255, a * 255)
                         tool_tips[i] = 'Group ' + str(c)
 
-            self.set_big_bus_marker_colours(buses=self.circuit.buses,
+            self.set_big_bus_marker_colours(buses=self.circuit.get_buses(),
                                             colors=bus_colours,
                                             tool_tips=tool_tips)
 
@@ -2389,7 +2389,7 @@ class SimulationsMain(TimeEventsMain):
 
                         for i, freq in zip(idx, frequencies):
 
-                            bus = self.circuit.buses[i]
+                            bus = self.circuit.get_bus_at(i)
                             batts = batt_by_bus.get(bus, None)
 
                             # add a marker to the bus if there are no batteries in it
@@ -2422,7 +2422,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
             options = self.get_selected_power_flow_options()
-            bus_names = np.array([b.name for b in self.circuit.buses])
+            bus_names = np.array([b.name for b in self.circuit.get_buses()])
             sigma_driver = sim.SigmaAnalysisDriver(grid=self.circuit, options=options)
             sigma_driver.run()
 
@@ -2442,7 +2442,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if len(self.circuit._investments_groups) > 0:
+            if self.circuit.get_investments_groups_number() > 0:
 
                 if not self.session.is_this_running(SimulationTypes.InvestmentsEvaluation_run):
 
@@ -2452,8 +2452,7 @@ class SimulationsMain(TimeEventsMain):
                     ]
 
                     # maximum number of function evalñuations as a factor of the number of investments
-                    max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
-                        self.circuit._investments_groups)
+                    max_eval = self.ui.max_investments_evluation_number_spinBox.value() * self.circuit.get_investments_groups_number()
 
                     objf_tpe = self.investment_evaluation_objfunc_dict[
                         self.ui.investment_evaluation_objfunc_ComboBox.currentText()

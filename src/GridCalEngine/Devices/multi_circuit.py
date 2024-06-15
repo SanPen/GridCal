@@ -346,6 +346,9 @@ class MultiCircuit:
         # list of power to gas devices
         self._p2xs: List[dev.FluidP2x] = list()
 
+        # list of declared diagrams
+        self._diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
+
         # objects with profiles
         self.objects_with_profiles = {
             "Regions": [
@@ -435,9 +438,6 @@ class MultiCircuit:
                     profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
-
-        # list of declared diagrams
-        self.diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
 
     def __str__(self):
         return str(self.name)
@@ -1272,6 +1272,470 @@ class MultiCircuit:
             d[key] = [o.device_type.value for o in elm_list]
         return d
 
+    @property
+    def lines(self) -> List[dev.Line]:
+        """
+
+        :return:
+        """
+        return self._lines
+
+    @property
+    def dc_lines(self) -> List[dev.DcLine]:
+        """
+
+        :return:
+        """
+        return self._dc_lines
+
+    @property
+    def transformers2w(self) -> List[dev.Transformer2W]:
+        """
+
+        :return:
+        """
+        return self._transformers2w
+
+    @property
+    def hvdc_lines(self) -> List[dev.HvdcLine]:
+        """
+
+        :return:
+        """
+        return self._hvdc_lines
+
+    @property
+    def vsc_devices(self) -> List[dev.VSC]:
+        """
+
+        :return:
+        """
+        return self._vsc_devices
+
+    @property
+    def upfc_devices(self) -> List[dev.UPFC]:
+        """
+
+        :return:
+        """
+        return self._upfc_devices
+
+    @property
+    def switch_devices(self) -> List[dev.Switch]:
+        """
+
+        :return:
+        """
+        return self._switch_devices
+
+    @property
+    def transformers3w(self) -> List[dev.Transformer3W]:
+        """
+
+        :return:
+        """
+        return self._transformers3w
+
+    @property
+    def windings(self) -> List[dev.Winding]:
+        """
+
+        :return:
+        """
+        return self._windings
+
+    @property
+    def series_reactances(self) -> List[dev.SeriesReactance]:
+        """
+
+        :return:
+        """
+        return self._series_reactances
+
+    @property
+    def buses(self) -> List[dev.Bus]:
+        """
+
+        :return:
+        """
+        return self._buses
+
+    @property
+    def connectivity_nodes(self) -> List[dev.ConnectivityNode]:
+        """
+
+        :return:
+        """
+        return self._connectivity_nodes
+
+    @property
+    def bus_bars(self) -> List[dev.BusBar]:
+        """
+
+        :return:
+        """
+        return self._bus_bars
+
+    @property
+    def voltage_levels(self) -> List[dev.VoltageLevel]:
+        """
+
+        :return:
+        """
+        return self._voltage_levels
+
+    @property
+    def loads(self) -> List[dev.Load]:
+        """
+
+        :return:
+        """
+        return self._loads
+
+    @property
+    def generators(self) -> List[dev.Generator]:
+        """
+
+        :return:
+        """
+        return self._generators
+
+    @property
+    def external_grids(self) -> List[dev.ExternalGrid]:
+        """
+
+        :return:
+        """
+        return self._external_grids
+
+    @property
+    def shunts(self) -> List[dev.Shunt]:
+        """
+
+        :return:
+        """
+        return self._shunts
+
+    @property
+    def batteries(self) -> List[dev.Battery]:
+        """
+
+        :return:
+        """
+        return self._batteries
+
+    @property
+    def static_generators(self) -> List[dev.StaticGenerator]:
+        """
+
+        :return:
+        """
+        return self._static_generators
+
+    @property
+    def current_injections(self) -> List[dev.CurrentInjection]:
+        """
+
+        :return:
+        """
+        return self._current_injections
+
+    @property
+    def controllable_shunts(self) -> List[dev.ControllableShunt]:
+        """
+
+        :return:
+        """
+        return self._controllable_shunts
+
+    @property
+    def pi_measurements(self) -> List[dev.PiMeasurement]:
+        """
+
+        :return:
+        """
+        return self._pi_measurements
+
+    @property
+    def qi_measurements(self) -> List[dev.QiMeasurement]:
+        """
+
+        :return:
+        """
+        return self._qi_measurements
+
+    @property
+    def vm_measurements(self) -> List[dev.VmMeasurement]:
+        """
+
+        :return:
+        """
+        return self._vm_measurements
+
+    @property
+    def pf_measurements(self) -> List[dev.PfMeasurement]:
+        """
+
+        :return:
+        """
+        return self._pf_measurements
+
+    @property
+    def qf_measurements(self) -> List[dev.QfMeasurement]:
+        """
+
+        :return:
+        """
+        return self._qf_measurements
+
+    @property
+    def if_measurements(self) -> List[dev.IfMeasurement]:
+        """
+
+        :return:
+        """
+        return self._if_measurements
+
+    @property
+    def overhead_line_types(self) -> List[dev.OverheadLineType]:
+        """
+
+        :return:
+        """
+        return self._overhead_line_types
+
+    @property
+    def wire_types(self) -> List[dev.Wire]:
+        """
+
+        :return:
+        """
+        return self._wire_types
+
+    @property
+    def underground_cable_types(self) -> List[dev.UndergroundLineType]:
+        """
+
+        :return:
+        """
+        return self._underground_cable_types
+
+    @property
+    def sequence_line_types(self) -> List[dev.SequenceLineType]:
+        """
+
+        :return:
+        """
+        return self._sequence_line_types
+
+    @property
+    def transformer_types(self) -> List[dev.TransformerType]:
+        """
+
+        :return:
+        """
+        return self._transformer_types
+
+    @property
+    def branch_groups(self) -> List[dev.BranchGroup]:
+        """
+
+        :return:
+        """
+        return self._branch_groups
+
+    @property
+    def substations(self) -> List[dev.Substation]:
+        """
+
+        :return:
+        """
+        return self._substations
+
+    @property
+    def areas(self) -> List[dev.Area]:
+        """
+
+        :return:
+        """
+        return self._areas
+
+    @property
+    def zones(self) -> List[dev.Zone]:
+        """
+
+        :return:
+        """
+        return self._zones
+
+    @property
+    def countries(self) -> List[dev.Country]:
+        """
+
+        :return:
+        """
+        return self._countries
+
+    @property
+    def communities(self) -> List[dev.Community]:
+        """
+
+        :return:
+        """
+        return self._communities
+
+    @property
+    def regions(self) -> List[dev.Region]:
+        """
+
+        :return:
+        """
+        return self._regions
+
+    @property
+    def municipalities(self) -> List[dev.Municipality]:
+        """
+
+        :return:
+        """
+        return self._municipalities
+
+    @property
+    def contingencies(self) -> List[dev.Contingency]:
+        """
+
+        :return:
+        """
+        return self._contingencies
+
+    @property
+    def contingency_groups(self) -> List[dev.ContingencyGroup]:
+        """
+
+        :return:
+        """
+        return self._contingency_groups
+
+    @property
+    def investments(self) -> List[dev.Investment]:
+        """
+
+        :return:
+        """
+        return self._investments
+
+    @property
+    def investments_groups(self) -> List[dev.InvestmentsGroup]:
+        """
+
+        :return:
+        """
+        return self._investments_groups
+
+    @property
+    def technologies(self) -> List[dev.Technology]:
+        """
+
+        :return:
+        """
+        return self._technologies
+
+    @property
+    def modelling_authorities(self) -> List[dev.ModellingAuthority]:
+        """
+
+        :return:
+        """
+        return self._modelling_authorities
+
+    @property
+    def fuels(self) -> List[dev.Fuel]:
+        """
+
+        :return:
+        """
+        return self._fuels
+
+    @property
+    def emission_gases(self) -> List[dev.EmissionGas]:
+        """
+
+        :return:
+        """
+        return self._emission_gases
+
+    @property
+    def generators_technologies(self) -> List[dev.GeneratorTechnology]:
+        """
+
+        :return:
+        """
+        return self._generators_technologies
+
+    @property
+    def generators_fuels(self) -> List[dev.GeneratorFuel]:
+        """
+
+        :return:
+        """
+        return self._generators_fuels
+
+    @property
+    def generators_emissions(self) -> List[dev.GeneratorEmission]:
+        """
+
+        :return:
+        """
+        return self._generators_emissions
+
+    @property
+    def fluid_nodes(self) -> List[dev.FluidNode]:
+        """
+
+        :return:
+        """
+        return self._fluid_nodes
+
+    @property
+    def fluid_paths(self) -> List[dev.FluidPath]:
+        """
+
+        :return:
+        """
+        return self._fluid_paths
+
+    @property
+    def turbines(self) -> List[dev.FluidTurbine]:
+        """
+
+        :return:
+        """
+        return self._turbines
+
+    @property
+    def pumps(self) -> List[dev.FluidPump]:
+        """
+
+        :return:
+        """
+        return self._pumps
+
+    @property
+    def p2xs(self) -> List[dev.FluidP2x]:
+        """
+
+        :return:
+        """
+        return self._p2xs
+
+    @property
+    def diagrams(self) -> List[Union[dev.MapDiagram, dev.SchematicDiagram]]:
+        """
+
+        :return:
+        """
+        return self._diagrams
+
     def get_zones(self) -> List[dev.Zone]:
         """
         Get list of zones
@@ -1469,6 +1933,13 @@ class MultiCircuit:
         """
         return self._contingency_groups
 
+    def get_contingency_groups_number(self) -> int:
+        """
+        Get contingency_groups number
+        :return: int
+        """
+        return len(self._contingency_groups)
+
     def get_contingencies(self) -> List[dev.Contingency]:
         """
         Get Contingency
@@ -1509,14 +1980,14 @@ class MultiCircuit:
         Get list of diagrams
         :return: MapDiagram, SchematicDiagram device
         """
-        return self.diagrams
+        return self._diagrams
 
     def has_diagrams(self) -> bool:
         """
         Check if there are diagrams stored
         :return:
         """
-        return len(self.diagrams) > 0
+        return len(self._diagrams) > 0
 
     def add_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
         """
@@ -1524,14 +1995,14 @@ class MultiCircuit:
         :param diagram: MapDiagram, SchematicDiagram device
         :return:
         """
-        self.diagrams.append(diagram)
+        self._diagrams.append(diagram)
 
     def remove_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
         """
         Remove diagrams
         :param diagram: MapDiagram, SchematicDiagram device
         """
-        self.diagrams.remove(diagram)
+        self._diagrams.remove(diagram)
 
     def get_buses(self) -> List[dev.Bus]:
         """

@@ -726,12 +726,14 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     :param branch_connection_voltage_tolerance: tolerance in p.u. of a branch voltage to be considered a transformer
     :return: MultiCircuit instance
     """
-
+    from GridCalEngine.enumerations import DeviceType
     circuit = MultiCircuit(Sbase=psse_circuit.SBASE)
     circuit.comments = 'Converted from a PSS/e .raw file'
 
-    circuit.areas = [dev.Area(name=x.ARNAME) for x in psse_circuit.areas]
-    circuit.zones = [dev.Zone(name=x.ZONAME) for x in psse_circuit.zones]
+    circuit.set_elements_by_type(device_type=DeviceType.AreaDevice,
+                                 devices=[dev.Area(name=x.ARNAME) for x in psse_circuit.areas])
+    circuit.set_elements_by_type(device_type=DeviceType.ZoneDevice,
+                                 devices=[dev.Zone(name=x.ZONAME) for x in psse_circuit.zones])
 
     area_dict = {val.I: elm for val, elm in zip(psse_circuit.areas, circuit.areas)}
     zones_dict = {val.I: elm for val, elm in zip(psse_circuit.zones, circuit.zones)}
@@ -770,10 +772,12 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
             circuit.add_shunt(bus=bus, api_obj=bus_shunt)
 
     if missing_areas:
-        circuit.areas = [v for k, v in area_dict.items()]
+        circuit.set_elements_by_type(device_type=DeviceType.AreaDevice,
+                                     devices=[v for k, v in area_dict.items()])
 
     if missing_zones:
-        circuit.zones = [v for k, v in zones_dict.items()]
+        circuit.set_elements_by_type(device_type=DeviceType.ZoneDevice,
+                                     devices=[v for k, v in zones_dict.items()])
 
     # check htat the area slack buses actually make sense
     for area in psse_circuit.areas:

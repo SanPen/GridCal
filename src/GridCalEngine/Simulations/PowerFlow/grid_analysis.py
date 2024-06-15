@@ -74,7 +74,7 @@ class TimeSeriesResultsAnalysis:
 
         Vmax = np.zeros(n)
         Vmin = np.zeros(n)
-        for i, bus in enumerate(self.grid.buses):
+        for i, bus in enumerate(self.grid.get_buses()):
             Vmax[i] = bus.Vmax
             Vmin[i] = bus.Vmin
 

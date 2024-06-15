@@ -5,7 +5,12 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_pow
 from GridCalEngine.Simulations.OPF import opf_driver
 
 
-def modify_grid(grid):
+def modify_grid(grid: gce.MultiCircuit):
+    """
+
+    :param grid:
+    :return:
+    """
     disp_areas = ['A11', 'A15']
     dict_bus_lims = {'21215': [230, 225],
                      '11055': [410, 405],
@@ -16,7 +21,7 @@ def modify_grid(grid):
     tol = 1e-4
     vm_cost = 1e4
 
-    for gen in grid.generators:
+    for gen in grid.get_generators():
         if gen.bus.area.name in disp_areas:
             # P limits -> restrict them very close to P
             gen.Pmax = gen.P + tol
@@ -24,7 +29,7 @@ def modify_grid(grid):
             # Tanmax -> set pf close to 0 to get large tanmax
             gen.Pf = tol
 
-    for bus in grid.buses:
+    for bus in grid.get_buses():
         if bus.code in dict_bus_lims.keys():
             # Increase Vm slack cost to enforce limits
             bus.Vm_cost = vm_cost

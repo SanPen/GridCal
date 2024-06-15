@@ -1032,8 +1032,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                   AvailableTransferMode.Load: 2,
                   AvailableTransferMode.GenerationAndLoad: 3}
 
-    bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
-    areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
+    bus_dict = {bus: i for i, bus in enumerate(grid.get_buses())}
+    areas_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
 
     if time_indices is None:
         time_indices = [None]

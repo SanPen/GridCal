@@ -179,7 +179,7 @@ class CIMExport:
         substation_bus = dict()
 
         # buses sweep to gather previous data (base voltages, etc..)
-        for i, bus in enumerate(self.circuit.buses):
+        for i, bus in enumerate(self.circuit.get_buses()):
 
             Vnom = bus.Vnom
 

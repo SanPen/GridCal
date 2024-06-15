@@ -23,7 +23,7 @@ from PySide6 import QtWidgets
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-from GridCalEngine.Devices.multi_circuit import MultiCircuit, get_system_user
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -450,19 +450,19 @@ class IoMain(ConfigurationMain):
                             injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                             injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
                             injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
-                            diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
-                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
-                                                                     busbars=new_circuit.bus_bars,
-                                                                     lines=new_circuit.lines,
-                                                                     dc_lines=new_circuit.dc_lines,
-                                                                     transformers2w=new_circuit.transformers2w,
-                                                                     transformers3w=new_circuit.transformers3w,
-                                                                     hvdc_lines=new_circuit.hvdc_lines,
-                                                                     vsc_devices=new_circuit.vsc_devices,
-                                                                     upfc_devices=new_circuit.upfc_devices,
-                                                                     switches=new_circuit.switch_devices,
-                                                                     fluid_nodes=new_circuit._fluid_nodes,
-                                                                     fluid_paths=new_circuit._fluid_paths,
+                            diagram_widget.add_elements_to_schematic(buses=new_circuit.get_buses(),
+                                                                     connectivity_nodes=new_circuit.get_connectivity_nodes(),
+                                                                     busbars=new_circuit.get_bus_bars(),
+                                                                     lines=new_circuit.get_lines(),
+                                                                     dc_lines=new_circuit.get_dc_lines(),
+                                                                     transformers2w=new_circuit.get_transformers2w(),
+                                                                     transformers3w=new_circuit.get_transformers3w(),
+                                                                     hvdc_lines=new_circuit.get_hvdc(),
+                                                                     vsc_devices=new_circuit.get_vsc(),
+                                                                     upfc_devices=new_circuit.get_upfc(),
+                                                                     switches=new_circuit.get_switches(),
+                                                                     fluid_nodes=new_circuit.get_fluid_nodes(),
+                                                                     fluid_paths=new_circuit.get_fluid_paths(),
                                                                      injections_by_bus=injections_by_bus,
                                                                      injections_by_fluid_node=injections_by_fluid_node,
                                                                      injections_by_cn=injections_by_cn,

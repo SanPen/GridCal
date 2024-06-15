@@ -400,7 +400,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
             df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
-                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                name = 'B' + str(circuit.get_bus_number() + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
@@ -419,7 +419,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
             df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
-                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                name = 'B' + str(circuit.get_bus_number() + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
@@ -428,7 +428,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 circuit.add_bus(bus)
                 buses_id_dict[id_] = bus
 
-                name = 'LD' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
+                name = 'LD' + str(circuit.get_bus_number()) + '_' + str(df['NAME'].values[i])
                 p = float(df['P'].values[i]) * Sbase
                 q = float(df['Q'].values[i]) * Sbase
                 load = dev.Load(name=name, P=p, Q=q)
@@ -445,7 +445,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
             df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
-                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                name = 'B' + str(circuit.get_bus_number() + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
@@ -457,7 +457,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 mode = int(df['MODEL'].values[i])
 
                 if mode == 1:
-                    name = 'GEN' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
+                    name = 'GEN' + str(circuit.get_bus_number()) + '_' + str(df['NAME'].values[i])
                     p = float(df['P'].values[i]) * Sbase
                     q = float(df['Q'].values[i]) * Sbase
                     v = float(df['V'].values[i])  # p.u.
@@ -465,7 +465,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
 
                     circuit.add_generator(bus, gen)
                 else:
-                    name = 'GENSTAT' + str(len(circuit.buses)) + '_' + str(df['NAME'].values[i])
+                    name = 'GENSTAT' + str(circuit.get_bus_number()) + '_' + str(df['NAME'].values[i])
                     p = float(df['P'].values[i]) * Sbase
                     q = float(df['Q'].values[i]) * Sbase
                     gen = dev.StaticGenerator(name=name, P=p, Q=q)
@@ -484,14 +484,14 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
             df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
-                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                name = 'B' + str(circuit.get_bus_number() + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
                 id_ = df['ID'].values[i]
                 bus = dev.Bus(name=name, Vnom=Vnom, xpos=x, ypos=y, height=40, width=60)
 
-                name = 'LD' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                name = 'LD' + str(circuit.get_bus_number() + 1) + '_' + str(df['NAME'].values[i])
                 p = float(df['P'].values[i]) * Sbase
                 q = float(df['Q'].values[i]) * Sbase
                 load = dev.Load(name=name, P=p, Q=q)
@@ -507,7 +507,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
             df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
-                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                name = 'B' + str(circuit.get_bus_number() + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor
@@ -525,7 +525,7 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
             df = data_structures['Schema'][tpe]
 
             for i in range(df.shape[0]):
-                name = 'B' + str(len(circuit.buses) + 1) + '_' + str(df['NAME'].values[i])
+                name = 'B' + str(circuit.get_bus_number() + 1) + '_' + str(df['NAME'].values[i])
                 Vnom = float(df['VBASE'].values[i])
                 x = float(df['GX'].values[i]) / contraction_factor
                 y = float(df['GY'].values[i]) / contraction_factor

@@ -453,7 +453,7 @@ class FileSave:
                                  filename_zip=self.file_name,
                                  model_data=model_data,
                                  sessions_data=self.options.sessions_data,
-                                 diagrams=self.circuit.diagrams,
+                                 diagrams=self.circuit.get_diagrams(),
                                  json_files=self.options.dictionary_of_json_files,
                                  text_func=self.text_func,
                                  progress_func=self.progress_func,

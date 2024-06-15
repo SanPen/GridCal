@@ -2137,7 +2137,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                               bus_types=nc.bus_data.bus_types,
                                               opf_results=opf_results)
 
-    if len(circuit._fluid_nodes) > 0:
+    if circuit.get_fluid_nodes_number() > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
                                                                           t_idx=t_idx,
                                                                           time_series=time_series)

@@ -49,7 +49,7 @@ class NodeGroupsDriver(DriverTemplate):
 
         self.min_group_size = min_group_size
 
-        n = len(grid.buses)
+        n = grid.get_bus_number()
 
         self.use_ptdf = True
 
@@ -133,7 +133,7 @@ class NodeGroupsDriver(DriverTemplate):
         self.groups_by_index = [list() for k in labels]
 
         # fill in the groups
-        for i, (bus, group_idx) in enumerate(zip(self.grid.buses, db.labels_)):
+        for i, (bus, group_idx) in enumerate(zip(self.grid.get_buses(), db.labels_)):
             if group_idx > -1:
                 self.groups_by_name[group_idx].append(bus.name)
                 self.groups_by_index[group_idx].append(i)

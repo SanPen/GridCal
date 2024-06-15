@@ -72,10 +72,10 @@ def add_btg_buses(
     :param ntime: number of time steps
     :return: bus dictionary buses[uuid] -> Bus
     """
-    areas_dict = {elm: k for k, elm in enumerate(circuit.areas)}
+    areas_dict = {elm: k for k, elm in enumerate(circuit.get_areas())}
     bus_dict = dict()
 
-    for i, bus in enumerate(circuit.buses):
+    for i, bus in enumerate(circuit.get_buses()):
 
         elm = btg.Node(uuid=bus.idtag,
                        name=bus.name,

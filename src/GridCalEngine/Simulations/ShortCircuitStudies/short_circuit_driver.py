@@ -278,7 +278,7 @@ class ShortCircuitDriver(DriverTemplate):
             grid.add_branch(br1)
             grid.add_branch(br2)
             grid.add_bus(middle_bus)
-            sc_bus_index.append(len(grid.buses) - 1)
+            sc_bus_index.append(grid.get_bus_number() - 1)
 
         else:
             grid = self.grid

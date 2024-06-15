@@ -95,8 +95,8 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
 
     # form C
     m = circuit.get_branch_number()
-    n = len(circuit.buses)
-    buses_dict = {bus: i for i, bus in enumerate(circuit.buses)}
+    n = circuit.get_bus_number()
+    buses_dict = {bus: i for i, bus in enumerate(circuit.get_buses())}
     C = lil_matrix((m, n), dtype=int)
     graph = nx.DiGraph()
 
@@ -151,7 +151,7 @@ def reduce_grid_brute(circuit: MultiCircuit, removed_br_idx):
         updated_bus = bus_t
 
         # delete bus
-        removed_bus = circuit.buses.pop(f)
+        removed_bus = circuit.get_buses().pop(f)
 
         # remove the branch and that's it
         removed_branch = branches.pop(removed_br_idx)
@@ -216,7 +216,7 @@ def reduce_buses(circuit: MultiCircuit, buses_to_reduce: List[Bus], text_func=No
 
             if len(related_buses) > 0:
                 selected = related_buses.pop(0)
-                while selected not in circuit.buses and len(related_buses) > 0:
+                while selected not in circuit.get_buses() and len(related_buses) > 0:
                     selected = related_buses.pop(0)
 
                 # merge the bus with the selected one

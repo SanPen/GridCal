@@ -337,16 +337,16 @@ class DiagramsMain(CompiledArraysMain):
 
         cmap = self.cmap_dict[cmap_text]
 
-        buses = self.circuit.buses
+        buses = self.circuit.get_buses()
         branches = self.circuit.get_branches_wo_hvdc()
-        hvdc_lines = self.circuit.hvdc_lines
+        hvdc_lines = self.circuit.get_hvdc()
 
         if current_study == sim.PowerFlowDriver.tpe.value:
             if t_idx is None:
                 results: sim.PowerFlowResults = self.session.get_results(SimulationTypes.PowerFlow_run)
-                bus_active = [bus.active for bus in self.circuit.buses]
+                bus_active = [bus.active for bus in self.circuit.get_buses()]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.get_hvdc()]
 
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
@@ -382,9 +382,9 @@ class DiagramsMain(CompiledArraysMain):
             if t_idx is not None:
                 results: sim.PowerFlowTimeSeriesResults = self.session.get_results(
                     SimulationTypes.PowerFlowTimeSeries_run)
-                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.get_buses()]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.get_hvdc()]
 
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
@@ -418,7 +418,7 @@ class DiagramsMain(CompiledArraysMain):
                 results: sim.ContinuationPowerFlowResults = self.session.get_results(
                     SimulationTypes.ContinuationPowerFlow_run
                 )
-                bus_active = [bus.active for bus in self.circuit.buses]
+                bus_active = [bus.active for bus in self.circuit.get_buses()]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
                 return diagram.colour_results(buses=buses,
@@ -454,7 +454,7 @@ class DiagramsMain(CompiledArraysMain):
             results: sim.StochasticPowerFlowResults = self.session.get_results(
                 SimulationTypes.StochasticPowerFlow
             )
-            bus_active = [bus.active for bus in self.circuit.buses]
+            bus_active = [bus.active for bus in self.circuit.get_buses()]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
             # hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
 
@@ -484,7 +484,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.ShortCircuitDriver.tpe.value:
             if t_idx is None:
                 results: sim.ShortCircuitResults = self.session.get_results(SimulationTypes.ShortCircuit_run)
-                bus_active = [bus.active for bus in self.circuit.buses]
+                bus_active = [bus.active for bus in self.circuit.get_buses()]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
                 return diagram.colour_results(buses=buses,
@@ -516,9 +516,9 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.OptimalPowerFlowDriver.tpe.value:
             if t_idx is None:
                 results: sim.OptimalPowerFlowResults = self.session.get_results(SimulationTypes.OPF_run)
-                bus_active = [bus.active for bus in self.circuit.buses]
+                bus_active = [bus.active for bus in self.circuit.get_buses()]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.get_hvdc()]
 
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
@@ -551,9 +551,9 @@ class DiagramsMain(CompiledArraysMain):
                 results: sim.OptimalPowerFlowTimeSeriesResults = self.session.get_results(
                     SimulationTypes.OPFTimeSeries_run
                 )
-                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.get_buses()]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.get_hvdc()]
 
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
@@ -585,9 +585,9 @@ class DiagramsMain(CompiledArraysMain):
             t_idx2 = 0 if t_idx is None else t_idx
 
             results: sim.NodalCapacityTimeSeriesResults = self.session.nodal_capacity_optimization_ts
-            bus_active = [bus.active_prof[t_idx2] for bus in self.circuit.buses]
+            bus_active = [bus.active_prof[t_idx2] for bus in self.circuit.get_buses()]
             br_active = [br.active_prof[t_idx2] for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.hvdc_lines]
+            hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.get_hvdc()]
 
             return diagram.colour_results(buses=buses,
                                           branches=branches,
@@ -614,9 +614,9 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.LinearAnalysisDriver.tpe.value:
             if t_idx is None:
                 results: sim.LinearAnalysisResults = self.session.get_results(SimulationTypes.LinearAnalysis_run)
-                bus_active = [bus.active for bus in self.circuit.buses]
+                bus_active = [bus.active for bus in self.circuit.get_buses()]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.get_hvdc()]
                 voltage = np.ones(self.circuit.get_bus_number())
 
                 return diagram.colour_results(buses=buses,
@@ -645,9 +645,9 @@ class DiagramsMain(CompiledArraysMain):
             if t_idx is not None:
                 results: sim.LinearAnalysisTimeSeriesResults = self.session.get_results(
                     SimulationTypes.LinearAnalysis_TS_run)
-                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.get_buses()]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.get_hvdc()]
 
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
@@ -675,9 +675,9 @@ class DiagramsMain(CompiledArraysMain):
             if t_idx is None:
                 results: sim.ContingencyAnalysisResults = self.session.get_results(
                     SimulationTypes.ContingencyAnalysis_run)
-                bus_active = [bus.active for bus in self.circuit.buses]
+                bus_active = [bus.active for bus in self.circuit.get_buses()]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active for hvdc in self.circuit.get_hvdc()]
                 con_idx = 0
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
@@ -705,9 +705,9 @@ class DiagramsMain(CompiledArraysMain):
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
                     SimulationTypes.ContingencyAnalysisTS_run
                 )
-                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
+                bus_active = [bus.active_prof[t_idx] for bus in self.circuit.get_buses()]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.get_hvdc()]
 
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
@@ -736,7 +736,7 @@ class DiagramsMain(CompiledArraysMain):
                 results = self.session.get_results(SimulationTypes.InputsAnalysis_run)
                 nbus = self.circuit.get_bus_number()
                 nbr = self.circuit.get_branch_number()
-                bus_active = [bus.active for bus in self.circuit.buses]
+                bus_active = [bus.active for bus in self.circuit.get_buses()]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
 
                 return diagram.colour_results(buses=buses,
@@ -1007,7 +1007,7 @@ class DiagramsMain(CompiledArraysMain):
         self.diagram_widgets_list.clear()
         self.remove_all_diagram_widgets()
 
-        for diagram in self.circuit.diagrams:
+        for diagram in self.circuit.get_diagrams():
 
             if isinstance(diagram, dev.SchematicDiagram):
                 diagram_widget = SchematicWidget(self.circuit,
@@ -1500,7 +1500,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         if prop == 'area':
             self.object_select_window = ObjectSelectWindow(title='Area',
-                                                           object_list=self.circuit.areas,
+                                                           object_list=self.circuit.get_areas(),
                                                            parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
@@ -1513,7 +1513,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif prop == 'country':
             self.object_select_window = ObjectSelectWindow(title='country',
-                                                           object_list=self.circuit.countries,
+                                                           object_list=self.circuit.get_countries(),
                                                            parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
@@ -1525,7 +1525,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif prop == 'zone':
             self.object_select_window = ObjectSelectWindow(title='Zones',
-                                                           object_list=self.circuit.zones,
+                                                           object_list=self.circuit.get_zones(),
                                                            parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
@@ -1546,7 +1546,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         if prop == 'area':
             self.object_select_window = ObjectSelectWindow(title='Area',
-                                                           object_list=self.circuit.areas,
+                                                           object_list=self.circuit.get_areas(),
                                                            parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
@@ -1558,7 +1558,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif prop == 'country':
             self.object_select_window = ObjectSelectWindow(title='country',
-                                                           object_list=self.circuit.countries,
+                                                           object_list=self.circuit.get_countries(),
                                                            parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()
@@ -1570,7 +1570,7 @@ class DiagramsMain(CompiledArraysMain):
 
         elif prop == 'zone':
             self.object_select_window = ObjectSelectWindow(title='Zones',
-                                                           object_list=self.circuit.zones,
+                                                           object_list=self.circuit.get_zones(),
                                                            parent=self)
             self.object_select_window.setModal(True)
             self.object_select_window.exec_()

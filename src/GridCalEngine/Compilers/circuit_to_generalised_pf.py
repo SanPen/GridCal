@@ -42,11 +42,11 @@ def get_bus_data(circuit: MultiCircuit,
     :param use_stored_guess:
     :return:
     """
-    bus_data = ds.BusData(nbus=len(circuit.buses))
+    bus_data = ds.BusData(nbus=circuit.get_bus_number())
 
-    substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
+    substation_dict = {sub: i for i, sub in enumerate(circuit.get_substations())}
 
-    for i, bus in enumerate(circuit.buses):
+    for i, bus in enumerate(circuit.get_buses()):
 
         # bus parameters
         bus_data.names[i] = bus.name
@@ -104,7 +104,8 @@ def get_load_data(circuit: MultiCircuit,
     :return:
     """
 
-    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=len(circuit.buses))
+    data = ds.LoadData(nelm=circuit.get_load_like_device_number(),
+                       nbus=circuit.get_bus_number())
 
     ii = 0
     for elm in circuit.get_loads():
@@ -274,7 +275,7 @@ def get_shunt_data(circuit: MultiCircuit,
     """
     devices = circuit.get_shunts()
 
-    data = ds.ShuntData(nelm=len(devices), nbus=len(circuit.buses))
+    data = ds.ShuntData(nelm=len(devices), nbus=circuit.get_bus_number())
 
     for k, elm in enumerate(devices):
 
@@ -323,7 +324,7 @@ def get_generator_data(circuit: MultiCircuit,
     devices = circuit.get_generators()
 
     data = ds.GeneratorData(nelm=len(devices),
-                            nbus=len(circuit.buses))
+                            nbus=circuit.get_bus_number())
 
     gen_index_dict: Dict[str, int] = dict()
     for k, elm in enumerate(devices):

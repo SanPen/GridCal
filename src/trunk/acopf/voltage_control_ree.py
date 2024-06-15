@@ -13,6 +13,9 @@ def voltage_control_opf(file_path):
 
     grid = gce.FileOpen(file_path).open()
 
+    if grid is None:
+        return
+
     # the generators in these areas are the ones that we want to dispatch the reactive power
     disp_areas = ['A11', 'A15']
 
@@ -34,7 +37,7 @@ def voltage_control_opf(file_path):
 
     bus_set = set()
 
-    for i, gen in enumerate(grid.generators):
+    for i, gen in enumerate(grid.get_generators()):
         if gen.bus.is_slack or gen.bus.area.name in disp_areas:
             print(str(i) + ' pass')
             bus_set.add(i)
@@ -60,7 +63,7 @@ def voltage_control_opf(file_path):
     Vmin = list()
     Vmax = list()
     pilot_flag = list()
-    for i, bus in enumerate(grid.buses):
+    for i, bus in enumerate(grid.get_buses()):
         is_pilot = False
 
         if bus.code in dict_bus_lims.keys():

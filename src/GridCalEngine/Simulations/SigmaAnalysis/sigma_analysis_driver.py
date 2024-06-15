@@ -239,7 +239,7 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
     :return: PowerFlowResults instance
     """
     # print('PowerFlowDriver at ', self.grid.name)
-    n = len(multi_circuit.buses)
+    n = multi_circuit.get_bus_number()
     m = multi_circuit.get_branch_number()
     results = SigmaAnalysisResults(n)
 
