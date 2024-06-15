@@ -255,8 +255,8 @@ def parse_generators(circuit: MultiCircuit,
         gen_dict[i] = gen
 
         # Add the generator to the bus
-        gen.bus = circuit.buses[bus_idx]
-        circuit.add_generator(bus=circuit.buses[bus_idx], api_obj=gen)
+        gen.bus = circuit.get_bus_at(bus_idx)
+        circuit.add_generator(bus=circuit.get_bus_at(bus_idx), api_obj=gen)
 
     if 'gencost' in data:
         # parse the OPF data
@@ -313,8 +313,8 @@ def parse_branches_data(circuit: MultiCircuit,
     for i in range(n):
         f_idx = int(table[i, matpower_branches.F_BUS])
         t_idx = int(table[i, matpower_branches.T_BUS])
-        f = circuit.buses[bus_idx_dict[f_idx]]
-        t = circuit.buses[bus_idx_dict[t_idx]]
+        f = circuit.get_bus_at(bus_idx_dict[f_idx])
+        t = circuit.get_bus_at(bus_idx_dict[t_idx])
 
         if table.shape[1] == 37:  # FUBM model
 
@@ -382,7 +382,7 @@ def parse_branches_data(circuit: MultiCircuit,
                 branch = dev.VSC(bus_from=f,
                                  bus_to=t,
                                  code="{0}_{1}_1".format(f_idx, t_idx),
-                                 name='VSC' + str(len(circuit.vsc_devices) + 1),
+                                 name='VSC' + str(circuit.get_vsc_number() + 1),
                                  active=bool(table[i, matpower_branches.BR_STATUS]),
                                  r=table[i, matpower_branches.BR_R],
                                  x=table[i, matpower_branches.BR_X],
@@ -524,7 +524,7 @@ def parse_branches_data(circuit: MultiCircuit,
                 logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
     # convert normal lines into DC-lines if needed
-    for line in circuit.lines:
+    for line in circuit.get_lines():
 
         if line.bus_to.is_dc and line.bus_from.is_dc:
             dc_line = dev.DcLine(bus_from=line.bus_from,
@@ -738,7 +738,7 @@ def get_buses(circuit: MultiCircuit) -> Tuple[List[Dict[str, float]], Dict[dev.B
 
     inj_per_bus = circuit.get_injection_devices_grouped_by_bus()
 
-    for i, elm in enumerate(circuit.buses):
+    for i, elm in enumerate(circuit.get_buses()):
 
         Pd = 0.0
         Qd = 0.0
@@ -770,7 +770,7 @@ def get_buses(circuit: MultiCircuit) -> Tuple[List[Dict[str, float]], Dict[dev.B
             'Vmin': elm.Vmin
         })
 
-        bus_dict[circuit.buses[i]] = i + 1
+        bus_dict[circuit.get_bus_at(i)] = i + 1
 
     return data, bus_dict
 

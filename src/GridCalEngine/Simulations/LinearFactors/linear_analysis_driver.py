@@ -120,7 +120,7 @@ class LinearAnalysisDriver(DriverTemplate):
 
             # compose the HVDC power Injections
             bus_dict = self.grid.get_bus_index_dict()
-            nbus = len(self.grid.buses)
+            nbus = self.grid.get_bus_number()
 
             # TODO: Use the function from HvdcData instead of the one from MultiCircuit
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,

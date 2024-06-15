@@ -229,7 +229,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investmenst_by_groups_index_dict()
 
         # dimensions
-        self.dim = len(self.grid.investments_groups)
+        self.dim = self.grid.get_investments_groups_number()
 
         # max iter
         self.max_iter = options.max_eval
@@ -356,7 +356,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         """
         Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
         """
-        self.max_iter = len(self.grid.investments_groups) + 1
+        self.max_iter = self.grid.get_investments_groups_number() + 1
 
         # declare the results
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
@@ -365,7 +365,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         # add baseline
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
-        dim = len(self.grid.investments_groups)
+        dim = self.grid.get_investments_groups_number()
 
         # add one at a time
         for k in range(dim):

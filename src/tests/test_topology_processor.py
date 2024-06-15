@@ -39,7 +39,7 @@ def createExampleGridDiagram1() -> MultiCircuit:
         cn_from = cn_dict[term_from_name]
         cn_to = cn_dict[term_to_name]
         li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
-        grid.lines.append(li)
+        grid.add_line(li)
 
     # Add switches
     switch_data = {
@@ -57,7 +57,7 @@ def createExampleGridDiagram1() -> MultiCircuit:
         cn_to = cn_dict[term_to_name]
         active = active_name == 'closed'
         s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
-        grid.switch_devices.append(s)
+        grid.add_switch(s)
 
     return grid
 
@@ -96,7 +96,7 @@ def createExampleGridTest1() -> MultiCircuit:
         cn_from = cn_dict[term_from_name]
         cn_to = cn_dict[term_to_name]
         li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
-        grid.lines.append(li)
+        grid.add_line(li)
 
     # Add switches
     switch_data = {
@@ -112,7 +112,7 @@ def createExampleGridTest1() -> MultiCircuit:
         cn_to = cn_dict[term_to_name]
         active = active_name == 'closed'
         s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
-        grid.switch_devices.append(s)
+        grid.add_switch(s)
 
     return grid
 
@@ -151,7 +151,7 @@ def createExampleGridTest2() -> MultiCircuit:
         cn_from = cn_dict[term_from_name]
         cn_to = cn_dict[term_to_name]
         li = dev.Line(name=line_name, cn_from=cn_from, cn_to=cn_to)
-        grid.lines.append(li)
+        grid.add_line(li)
 
     # Add transformers
     transformer_data = {
@@ -162,7 +162,7 @@ def createExampleGridTest2() -> MultiCircuit:
         cn_from = cn_dict[term_from_name]
         cn_to = cn_dict[term_to_name]
         tr = dev.Transformer2W(name=tr_name, cn_from=cn_from, cn_to=cn_to)
-        grid.transformers2w.append(tr)
+        grid.add_transformer2w(tr)
 
     # Add switches
     switch_data = {
@@ -182,7 +182,7 @@ def createExampleGridTest2() -> MultiCircuit:
         cn_to = cn_dict[term_to_name]
         active = active_name == 'closed'
         s = dev.Switch(name=switch_name, cn_from=cn_from, cn_to=cn_to, active=active)
-        grid.switch_devices.append(s)
+        grid.add_switch(s)
 
     return grid
 
@@ -195,14 +195,14 @@ def test_topology_reduction():
 
         grid_.process_topology_at(t_idx=None)
 
-        assert grid_.buses, "Buses creation failed"
+        assert grid_.get_buses(), "Buses creation failed"
 
         for l in grid_.get_branches():
             assert l.bus_from, "{} without bus_from associated".format(l.type_name)
             assert l.bus_to, "{} without bus_to associated".format(l.type_name)
         # TODO: procesador topológico adaptarlo a transformadores de 3
-        if grid_.transformers3w:
-            for t in grid_.transformers3w:
+        if grid_.get_transformers3w_number():
+            for t in grid_.get_transformers3w():
                 assert t.bus1, "Transformer3w without bus1 associated"
                 assert t.bus2, "Transformer3w without bus2 associated"
                 assert t.bus3, "Transformer3w without bus3 associated"

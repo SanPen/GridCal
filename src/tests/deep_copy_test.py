@@ -36,7 +36,7 @@ def test_multi_circuit_deep_copy() -> bool:
     main_circuit_cpy = main_circuit.copy()
 
     # modify the copy
-    for elm in main_circuit_cpy.buses:
+    for elm in main_circuit_cpy.get_buses():
         elm.active = False
 
     for elm in main_circuit_cpy.get_loads():
@@ -47,7 +47,7 @@ def test_multi_circuit_deep_copy() -> bool:
 
     # check that the copy and the original are still different by
     # changing the original in the same way and checking that both are the same
-    for elm, elm_copy in zip(main_circuit.buses, main_circuit_cpy.buses):
+    for elm, elm_copy in zip(main_circuit.get_buses(), main_circuit_cpy.get_buses()):
         assert elm.active != elm_copy.active
 
     for elm, elm_copy in zip(main_circuit.get_loads(), main_circuit_cpy.get_loads()):

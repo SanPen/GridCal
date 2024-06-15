@@ -1581,8 +1581,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param export_model_fname: Export the model into LP and MPS?
     :return: OpfVars
     """
-    bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
-    areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
+    bus_dict = {bus: i for i, bus in enumerate(grid.get_buses())}
+    areas_dict = {elm: i for i, elm in enumerate(grid.get_areas())}
 
     if time_indices is None:
         time_indices = [None]

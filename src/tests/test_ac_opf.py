@@ -55,8 +55,8 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
 
     grid = gce.FileOpen(file_path).open()
 
-    for ll in range(len(grid.lines)):
-        grid.lines[ll].monitor_loading = True
+    for line in grid.get_lines():
+        line.monitor_loading = True
 
     nc = gce.compile_numerical_circuit_at(grid)
     pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
@@ -67,15 +67,16 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
     slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
-    grid.transformers2w[0].control_mode = TransformerControlType.PtQt
-    grid.transformers2w[1].control_mode = TransformerControlType.Pf
-    grid.transformers2w[2].control_mode = TransformerControlType.V
+    grid._transformers2w[0].control_mode = TransformerControlType.PtQt
+    grid._transformers2w[1].control_mode = TransformerControlType.Pf
+    grid._transformers2w[2].control_mode = TransformerControlType.V
 
-    for ll in range(len(grid.lines)):
-        grid.lines[ll].monitor_loading = True
-        grid.lines[ll].Cost_prof.default_value *= 10000  # TODO: why change the profile default, is this not a snapshot?
-    for b in range(len(grid.buses)):
-        grid.buses[b].Vm_cost *= 10000
+    for line in grid.get_lines():
+        line.monitor_loading = True
+        line.Cost_prof.default_value *= 10000  # TODO: why change the profile default, is this not a snapshot?
+
+    for bus in grid.get_buses():
+        bus.Vm_cost *= 10000
 
     nc = gce.compile_numerical_circuit_at(grid)
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFstd

@@ -21,7 +21,7 @@ import functools
 from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
-from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 from trunk.investments.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
@@ -63,7 +63,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.investments_by_group: Dict[int, List[Investment]] = self.grid.get_investmenst_by_groups_index_dict()
 
         # dimensions
-        self.dim = len(self.grid.investments_groups)
+        self.dim = self.grid.get_investments_groups_number()
 
         # numerical circuit
         self.nc: Union[NumericalCircuit, None] = None
@@ -216,9 +216,9 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # compile the snapshot
         self.nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=len(self.grid.investments_groups) + 1)
+                                                    max_eval=self.grid.get_investments_groups_number() + 1)
         # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
+        self.nc.set_investments_status(investments_list=self.grid._investments, status=0)
 
         # evaluate the investments
         self.__eval_index = 0
@@ -226,7 +226,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # add baseline
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
 
-        dim = len(self.grid.investments_groups)
+        dim = self.grid.get_investments_groups_number()
 
         for k in range(dim):
             self.report_text("Evaluating investment group {}...".format(k))
@@ -261,7 +261,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.options.max_eval + 1)
         # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
+        self.nc.set_investments_status(investments_list=self.grid._investments, status=0)
 
         # evaluate the investments
         self.__eval_index = 0
@@ -313,7 +313,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.options.max_eval)
         # disable all status
-        self.nc.set_investments_status(investments_list=self.grid.investments, status=0)
+        self.nc.set_investments_status(investments_list=self.grid._investments, status=0)
 
         # evaluate the investments
         self.__eval_index = 0

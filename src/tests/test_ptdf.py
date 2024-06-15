@@ -412,7 +412,7 @@ def test_mlodf() -> None:
         linear_analysis.run()
 
         Sf0 = linear_analysis.results.Sf
-        Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
+        Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.get_contingencies()])
 
         linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
                                                                 contingency_groups_used=main_circuit.get_contingency_groups())
@@ -624,7 +624,7 @@ def test_generation_contingencies_powerflow():
         nc = gce.compile_numerical_circuit_at(main_circuit, t_idx=None)
 
         for index, change in case['cont_index_change'].items():
-            main_circuit.generators[index].P *= change
+            main_circuit.get_generators()[index].P *= change
 
         power_flow = gce.PowerFlowDriver(main_circuit, pf_options)
         power_flow.run()
@@ -667,8 +667,8 @@ def test_compensated_ptdf():
 
         main_circuit_raw = gce.FileOpen(case['orig']).open()
         # main_circuit_raw.delete_line(main_circuit_raw.get_lines()[0]) # Disable branch 1_2
-        line = main_circuit.contingencies[0].code
-        for l in main_circuit_raw.lines:
+        line = main_circuit.get_contingencies()[0].code
+        for l in main_circuit_raw.get_lines():
             if l.code == line:
                 l.active = False
 
@@ -779,7 +779,7 @@ def test_ptdf_contingencies_powerflow():
             cont_analysis_driver1.run()
 
             line_cnt = ''
-            for cnt in main_circuit.contingencies:
+            for cnt in main_circuit.get_contingencies():
                 if cnt.value == 0.0:  # Generator contingencies have values in this test have values <0 or >0
                     line_cnt = cnt.code
 
@@ -787,9 +787,9 @@ def test_ptdf_contingencies_powerflow():
             main_circuit_raw = gce.FileOpen(case['orig']).open()
 
             for index, change in case['cont_index_change'].items():
-                main_circuit_raw.generators[index].P *= change
+                main_circuit_raw.get_generators()[index].P *= change
 
-            for l in main_circuit.lines:
+            for l in main_circuit.get_lines():
                 if l.code == line_cnt:
                     l.active = False
 

@@ -2442,7 +2442,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.circuit.valid_for_simulation():
 
-            if len(self.circuit.investments_groups) > 0:
+            if len(self.circuit._investments_groups) > 0:
 
                 if not self.session.is_this_running(SimulationTypes.InvestmentsEvaluation_run):
 
@@ -2453,7 +2453,7 @@ class SimulationsMain(TimeEventsMain):
 
                     # maximum number of function evalñuations as a factor of the number of investments
                     max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
-                        self.circuit.investments_groups)
+                        self.circuit._investments_groups)
 
                     objf_tpe = self.investment_evaluation_objfunc_dict[
                         self.ui.investment_evaluation_objfunc_ComboBox.currentText()

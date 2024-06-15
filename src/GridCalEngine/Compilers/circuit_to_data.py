@@ -43,11 +43,11 @@ def get_bus_data(circuit: MultiCircuit,
     :param use_stored_guess:
     :return:
     """
-    bus_data = ds.BusData(nbus=len(circuit.buses))
+    bus_data = ds.BusData(nbus=circuit.get_bus_number())
 
-    substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
+    substation_dict = {sub: i for i, sub in enumerate(circuit.get_substations())}
 
-    for i, bus in enumerate(circuit.buses):
+    for i, bus in enumerate(circuit.get_buses()):
 
         # bus parameters
         bus_data.names[i] = bus.name
@@ -104,7 +104,7 @@ def get_load_data(circuit: MultiCircuit,
     :return:
     """
 
-    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=len(circuit.buses))
+    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=circuit.get_bus_number())
 
     ii = 0
     for elm in circuit.get_loads():
@@ -274,7 +274,7 @@ def get_shunt_data(circuit: MultiCircuit,
     """
     devices = circuit.get_shunts()
 
-    data = ds.ShuntData(nelm=len(devices), nbus=len(circuit.buses))
+    data = ds.ShuntData(nelm=len(devices), nbus=circuit.get_bus_number())
 
     for k, elm in enumerate(devices):
 
@@ -323,7 +323,7 @@ def get_generator_data(circuit: MultiCircuit,
     devices = circuit.get_generators()
 
     data = ds.GeneratorData(nelm=len(devices),
-                            nbus=len(circuit.buses))
+                            nbus=circuit.get_bus_number())
 
     gen_index_dict: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
@@ -601,7 +601,7 @@ def get_branch_data(circuit: MultiCircuit,
     ii = 0
 
     # Compile the lines
-    for i, elm in enumerate(circuit.lines):
+    for i, elm in enumerate(circuit.get_lines()):
         # generic stuff
         data.names[i] = elm.name
         data.idtag[i] = elm.idtag
@@ -665,7 +665,7 @@ def get_branch_data(circuit: MultiCircuit,
         ii += 1
 
     # DC-lines
-    for i, elm in enumerate(circuit.dc_lines):
+    for i, elm in enumerate(circuit.get_dc_lines()):
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -716,7 +716,7 @@ def get_branch_data(circuit: MultiCircuit,
         ii += 1
 
     # 2-winding transformers
-    for i, elm in enumerate(circuit.transformers2w):
+    for i, elm in enumerate(circuit.get_transformers2w()):
 
         # generic stuff
         f = bus_dict[elm.bus_from]
@@ -801,7 +801,7 @@ def get_branch_data(circuit: MultiCircuit,
         ii += 1
 
     # windings
-    for i, elm in enumerate(circuit.windings):
+    for i, elm in enumerate(circuit.get_windings()):
 
         if elm.bus_from is not None and elm.bus_to is not None:
             # generic stuff
@@ -889,7 +889,7 @@ def get_branch_data(circuit: MultiCircuit,
             logger.add_error("Ill connected winding", device=elm.idtag)
 
     # VSC
-    for i, elm in enumerate(circuit.vsc_devices):
+    for i, elm in enumerate(circuit.get_vsc()):
 
         # generic stuff
         f = bus_dict[elm.bus_from]
@@ -994,7 +994,7 @@ def get_branch_data(circuit: MultiCircuit,
         ii += 1
 
     # UPFC
-    for i, elm in enumerate(circuit.upfc_devices):
+    for i, elm in enumerate(circuit.get_upfc()):
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -1045,7 +1045,7 @@ def get_branch_data(circuit: MultiCircuit,
         ii += 1
 
     # Series reactance
-    for i, elm in enumerate(circuit.series_reactances):
+    for i, elm in enumerate(circuit.get_series_reactances()):
         # generic stuff
         f = bus_dict[elm.bus_from]
         t = bus_dict[elm.bus_to]
@@ -1123,7 +1123,7 @@ def get_hvdc_data(circuit: MultiCircuit,
     data = ds.HvdcData(nelm=circuit.get_hvdc_number(), nbus=circuit.get_bus_number())
 
     # HVDC
-    for i, elm in enumerate(circuit.hvdc_lines):
+    for i, elm in enumerate(circuit.get_hvdc()):
 
         # generic stuff
         f = bus_dict[elm.bus_from]

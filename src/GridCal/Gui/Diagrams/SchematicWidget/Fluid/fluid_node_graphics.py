@@ -491,5 +491,5 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.fluid_nodes.index(self.api_object)
+        i = self.editor.circuit._fluid_nodes.index(self.api_object)
         # self.editor.diagramScene.plot_bus(i, self.api_object)

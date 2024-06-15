@@ -135,7 +135,7 @@ def test_basic():
     grid.apply_all_branch_types()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
@@ -176,7 +176,7 @@ def test_basic():
     print()
 
     print("Transformer types:")
-    for t in grid.transformer_types:
+    for t in grid._transformer_types:
         print(f" - {t}: Copper losses={int(t.Pcu)}kW, Iron losses={int(t.Pfe)}kW, SC voltage={t.Vsc}%")
     print()
 
@@ -286,7 +286,7 @@ def test_gridcal_basic_pi():
     grid.apply_all_branch_types()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
@@ -328,7 +328,7 @@ def test_gridcal_basic_pi():
     print()
 
     print("Transformer types:")
-    for t in grid.transformer_types:
+    for t in grid._transformer_types:
         print(f" - {t}: Copper losses={int(t.Pcu)}kW, Iron losses={int(t.Pfe)}kW, SC voltage={t.Vsc}%")
     print()
 

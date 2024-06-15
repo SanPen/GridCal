@@ -184,5 +184,5 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        dictionary_of_lists = {DeviceType.Technology: self.editor.circuit.technologies}
+        dictionary_of_lists = {DeviceType.Technology: self.editor.circuit._technologies}
         self.editor.set_editor_model(api_object=self.api_object, dictionary_of_lists=dictionary_of_lists)

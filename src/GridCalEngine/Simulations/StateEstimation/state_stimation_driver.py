@@ -178,7 +178,7 @@ class StateEstimation(DriverTemplate):
         :return:
         """
         self.tic()
-        n = len(self.grid.buses)
+        n = len(self.grid.get_buses())
         m = self.grid.get_branch_number()
 
         numerical_circuit = compile_numerical_circuit_at(self.grid)

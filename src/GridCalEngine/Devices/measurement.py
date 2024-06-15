@@ -14,11 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Union
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.enumerations import DeviceType
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES
 
 
 class MeasurementTemplate(EditableDevice):
@@ -28,7 +31,7 @@ class MeasurementTemplate(EditableDevice):
 
     def __init__(self, value: float,
                  uncertainty: float,
-                 api_obj: EditableDevice,
+                 api_obj: ALL_DEV_TYPES,
                  name: str,
                  idtag: Union[str, None],
                  device_type: DeviceType):
@@ -47,11 +50,11 @@ class MeasurementTemplate(EditableDevice):
                                 device_type=device_type)
         self.value = value
         self.sigma = uncertainty
-        self.api_object: EditableDevice = api_obj
+        self.api_object: ALL_DEV_TYPES = api_obj
 
         self.register("value", "", float, "Value of the measurement")
         self.register("sigma", "", float, "Uncertainty of the measurement")
-        self.register("api_object", "", EditableDevice, "Value of the measurement")
+
 
 
 class PiMeasurement(MeasurementTemplate):
@@ -69,6 +72,8 @@ class PiMeasurement(MeasurementTemplate):
                                      idtag=idtag,
                                      device_type=DeviceType.PiMeasurementDevice)
 
+        self.register("api_object", "", DeviceType.BusDevice, "Value of the measurement")
+
 
 class QiMeasurement(MeasurementTemplate):
     """
@@ -84,6 +89,8 @@ class QiMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.QiMeasurementDevice)
+
+        self.register("api_object", "", DeviceType.BusDevice, "Value of the measurement")
 
 
 class VmMeasurement(MeasurementTemplate):
@@ -101,13 +108,15 @@ class VmMeasurement(MeasurementTemplate):
                                      idtag=idtag,
                                      device_type=DeviceType.VmMeasurementDevice)
 
+        self.register("api_object", "", DeviceType.BusDevice, "Value of the measurement")
+
 
 class PfMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
-    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+    def __init__(self, value: float, uncertainty: float, api_obj: BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
         MeasurementTemplate.__init__(self,
                                      value=value,
@@ -117,13 +126,15 @@ class PfMeasurement(MeasurementTemplate):
                                      idtag=idtag,
                                      device_type=DeviceType.PfMeasurementDevice)
 
+        self.register("api_object", "", DeviceType.BranchDevice, "Value of the measurement")
+
 
 class QfMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
-    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+    def __init__(self, value: float, uncertainty: float, api_obj: BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
         MeasurementTemplate.__init__(self,
                                      value=value,
@@ -133,13 +144,15 @@ class QfMeasurement(MeasurementTemplate):
                                      idtag=idtag,
                                      device_type=DeviceType.QfMeasurementDevice)
 
+        self.register("api_object", "", DeviceType.BranchDevice, "Value of the measurement")
+
 
 class IfMeasurement(MeasurementTemplate):
     """
     Measurement class
     """
 
-    def __init__(self, value: float, uncertainty: float, api_obj: BranchParent, name="",
+    def __init__(self, value: float, uncertainty: float, api_obj: BRANCH_TYPES, name="",
                  idtag: Union[str, None] = None):
         MeasurementTemplate.__init__(self,
                                      value=value,
@@ -148,3 +161,5 @@ class IfMeasurement(MeasurementTemplate):
                                      name=name,
                                      idtag=idtag,
                                      device_type=DeviceType.IfMeasurementDevice)
+
+        self.register("api_object", "", DeviceType.BranchDevice, "Value of the measurement")

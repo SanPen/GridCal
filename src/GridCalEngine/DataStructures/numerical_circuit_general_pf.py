@@ -2353,10 +2353,10 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                           t_idx=t_idx)
 
     if bus_dict is None:
-        bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
+        bus_dict = {bus: i for i, bus in enumerate(circuit.get_buses())}
 
     if areas_dict is None:
-        areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
+        areas_dict = {elm: i for i, elm in enumerate(circuit.get_areas())}
 
     nc.bus_data = gc_compiler2.get_bus_data(circuit=circuit,
                                             t_idx=t_idx,
@@ -2428,7 +2428,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                             branch_data = nc.branch_data)
     
 
-    if len(circuit.fluid_nodes) > 0:
+    if len(circuit._fluid_nodes) > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
                                                                           t_idx=t_idx,
                                                                           time_series=time_series)

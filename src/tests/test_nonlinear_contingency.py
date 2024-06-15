@@ -18,7 +18,7 @@ def test_non_linear_factors():
     # generate the contingency
     con_group = ContingencyGroup()
     con = Contingency(idtag='',
-                      device_idtag=main_circuit.lines[line_idx_test].idtag,
+                      device_idtag=main_circuit.get_lines()[line_idx_test].idtag,
                       group=con_group)
     main_circuit.add_contingency_group(con_group)
     main_circuit.add_contingency(con)
@@ -44,7 +44,7 @@ def test_non_linear_factors():
                                               linear_multiple_contingencies=None)
     nl_simulation.run()
 
-    main_circuit.lines[line_idx_test].active = False
+    main_circuit.get_lines()[line_idx_test].active = False
 
     # re-run the power flow after disconnecting a line -----------------------------------------------------------------
     pf_options = PowerFlowOptions(SolverType.HELM,

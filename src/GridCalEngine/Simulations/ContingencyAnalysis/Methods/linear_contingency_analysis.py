@@ -98,7 +98,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
 
         if multi_contingency.has_injection_contingencies():
-            cnt = grid.contingencies
+            cnt = grid.get_fluid_paths()
             injections = numerical_circuit.set_linear_contingency_status(contingencies_list=cnt)
         else:
             injections = None

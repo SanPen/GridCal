@@ -156,15 +156,6 @@ def compare_devices_lists(dev_list1, dev_list2):
                                   their_elm=elm2)
                 issues.append(issue)
 
-            # if this is a bus, then examine the children
-            if elm1.device_type == DeviceType.BusDevice:
-
-                issues += compare_devices_lists(elm1.loads, elm2.loads)
-                issues += compare_devices_lists(elm1.generators, elm2.generators)
-                issues += compare_devices_lists(elm1.batteries, elm2.batteries)
-                issues += compare_devices_lists(elm1.static_generators, elm2.static_generators)
-                issues += compare_devices_lists(elm1.shunts, elm2.shunts)
-
         else:
             # my element has been deleted
             issue = SyncIssue(device_type=elm1.device_type,
@@ -198,19 +189,11 @@ def detect_changes_and_conflicts(current_circuit: MultiCircuit, file_circuit: Mu
 
     issues = list()  # device name, issue type, property, my value, their value, elm1, elm2
 
-    # buses
-    issues += compare_devices_lists(dev_list1=current_circuit.buses,
-                                    dev_list2=file_circuit.buses)
-
-    # Branches
-    issues += compare_devices_lists(dev_list1=current_circuit.lines,
-                                    dev_list2=file_circuit.lines)
-
-    issues += compare_devices_lists(dev_list1=current_circuit.transformers2w,
-                                    dev_list2=file_circuit.transformers2w)
-
-    issues += compare_devices_lists(dev_list1=current_circuit.hvdc_lines,
-                                    dev_list2=file_circuit.hvdc_lines)
+    for key, dev_type in current_circuit.device_type_name_dict.items():
+        list1 = current_circuit.get_elements_by_type(device_type=dev_type)
+        list2 = file_circuit.get_elements_by_type(device_type=dev_type)
+        issues += compare_devices_lists(dev_list1=list1,
+                                        dev_list2=list2)
 
     return issues
 

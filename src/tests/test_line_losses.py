@@ -69,7 +69,7 @@ def test_line_losses_1():
     print()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
@@ -83,8 +83,8 @@ def test_line_losses_1():
     print()
 
     print("Voltages:")
-    for i in range(len(grid.buses)):
-        print(f" - {grid.buses[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu")
+    for i in range(len(grid.get_buses())):
+        print(f" - {grid.get_buses()[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu")
     print()
 
     print("Losses:")
@@ -153,7 +153,7 @@ def test_line_losses_2():
     print()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
@@ -167,8 +167,8 @@ def test_line_losses_2():
     print()
 
     print("Voltages:")
-    for i in range(len(grid.buses)):
-        print(f" - {grid.buses[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu")
+    for i in range(len(grid.get_buses())):
+        print(f" - {grid.get_buses()[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu")
     print()
 
     print("Losses:")
@@ -236,7 +236,7 @@ def test_line_losses_3():
     print()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
@@ -250,8 +250,8 @@ def test_line_losses_3():
     print()
 
     print("Voltages:")
-    for i in range(len(grid.buses)):
-        print(f" - {grid.buses[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu")
+    for i in range(len(grid.get_buses())):
+        print(f" - {grid.get_buses()[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu")
     print()
 
     print("Losses:")

@@ -133,7 +133,7 @@ def test_ac_transformers2w():
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                               device_to_terminal_dict_object_2_terminals(), logger,
                               10)
-    generated_transtormer2w = multi_circuit.transformers2w[0]
+    generated_transtormer2w = multi_circuit.get_transformers2w()[0]
     assert generated_transtormer2w.B == 80.0
     assert generated_transtormer2w.B0 == 80.0
     assert generated_transtormer2w.B2 == 1e-20
@@ -230,7 +230,7 @@ def test_ac_transformers3w():
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                               device_to_terminal_dict_object_3_terminals(), logger,
                               10)
-    generated_transformers3w = multi_circuit.transformers3w[0]
+    generated_transformers3w = multi_circuit.get_transformers3w()[0]
     assert len(logger.entries) == 0
     assert generated_transformers3w.V1 == 100
     assert generated_transformers3w.V2 == 100

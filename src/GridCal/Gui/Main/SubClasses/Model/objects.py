@@ -116,13 +116,13 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.GeneratorDevice:
             elm = dev.Generator()
-            dictionary_of_lists = {DeviceType.Technology: self.circuit.technologies,
+            dictionary_of_lists = {DeviceType.Technology: self.circuit._technologies,
                                    DeviceType.FuelDevice: self.circuit.get_fuels(),
-                                   DeviceType.EmissionGasDevice: self.circuit.emission_gases, }
+                                   DeviceType.EmissionGasDevice: self.circuit._emission_gases, }
 
         elif elm_type == DeviceType.BatteryDevice:
             elm = dev.Battery()
-            dictionary_of_lists = {DeviceType.Technology: self.circuit.technologies, }
+            dictionary_of_lists = {DeviceType.Technology: self.circuit._technologies, }
 
         elif elm_type == DeviceType.ShuntDevice:
             elm = dev.Shunt()
@@ -223,7 +223,7 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.InvestmentDevice:
             elm = dev.Investment()
-            dictionary_of_lists = {DeviceType.InvestmentsGroupDevice: self.circuit.investments_groups, }
+            dictionary_of_lists = {DeviceType.InvestmentsGroupDevice: self.circuit.get_investments_groups(), }
 
         elif elm_type == DeviceType.InvestmentsGroupDevice:
             elm = dev.InvestmentsGroup()
@@ -258,7 +258,7 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.GeneratorTechnologyAssociation:
             elm = dev.GeneratorTechnology()
             dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.Technology: self.circuit.technologies, }
+                                   DeviceType.Technology: self.circuit._technologies, }
 
         elif elm_type == DeviceType.GeneratorFuelAssociation:
             elm = dev.GeneratorFuel()
@@ -268,7 +268,7 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.GeneratorEmissionAssociation:
             elm = dev.GeneratorEmission()
             dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.EmissionGasDevice: self.circuit.emission_gases, }
+                                   DeviceType.EmissionGasDevice: self.circuit._emission_gases, }
 
         elif elm_type == DeviceType.FluidNodeDevice:
             elm = dev.FluidNode()
@@ -549,7 +549,7 @@ class ObjectsTableMain(DiagramsMain):
                 self.circuit.add_contingency_group(group)
 
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:
-                group = dev.InvestmentsGroup(name=f"Investments group {len(self.circuit.investments_groups) + 1}")
+                group = dev.InvestmentsGroup(name=f"Investments group {self.circuit.get_investments_groups_number() + 1}")
                 self.circuit.add_investments_group(group)
 
             elif elm_type == DeviceType.BranchGroupDevice.value:
@@ -557,37 +557,37 @@ class ObjectsTableMain(DiagramsMain):
                 self.circuit.add_branch_group(group)
 
             elif elm_type == DeviceType.Technology.value:
-                tech = dev.Technology(name=f"Technology {len(self.circuit.technologies) + 1}")
+                tech = dev.Technology(name=f"Technology {len(self.circuit._technologies) + 1}")
                 self.circuit.add_technology(tech)
 
             elif elm_type == DeviceType.OverheadLineTypeDevice.value:
 
                 obj = dev.OverheadLineType()
                 obj.frequency = self.circuit.fBase
-                obj.tower_name = f'Tower {len(self.circuit.overhead_line_types) + 1}'
+                obj.tower_name = f'Tower {len(self.circuit._overhead_line_types) + 1}'
                 self.circuit.add_overhead_line(obj)
 
             elif elm_type == DeviceType.UnderGroundLineDevice.value:
 
-                name = f'Cable {len(self.circuit.underground_cable_types) + 1}'
+                name = f'Cable {len(self.circuit._underground_cable_types) + 1}'
                 obj = dev.UndergroundLineType(name=name)
                 self.circuit.add_underground_line(obj)
 
             elif elm_type == DeviceType.SequenceLineDevice.value:
 
-                name = f'Sequence line {len(self.circuit.sequence_line_types) + 1}'
+                name = f'Sequence line {len(self.circuit._sequence_line_types) + 1}'
                 obj = dev.SequenceLineType(name=name)
                 self.circuit.add_sequence_line(obj)
 
             elif elm_type == DeviceType.WireDevice.value:
 
-                name = f'Wire {len(self.circuit.wire_types) + 1}'
+                name = f'Wire {len(self.circuit._wire_types) + 1}'
                 obj = dev.Wire(name=name, gmr=0.01, r=0.01, x=0)
                 self.circuit.add_wire(obj)
 
             elif elm_type == DeviceType.TransformerTypeDevice.value:
 
-                name = f'Transformer type {len(self.circuit.transformer_types) + 1}'
+                name = f'Transformer type {len(self.circuit._transformer_types) + 1}'
                 obj = dev.TransformerType(hv_nominal_voltage=10, lv_nominal_voltage=0.4, nominal_power=2,
                                           copper_losses=0.8, iron_losses=0.1, no_load_current=0.1,
                                           short_circuit_voltage=0.1,
@@ -596,13 +596,13 @@ class ObjectsTableMain(DiagramsMain):
 
             elif elm_type == DeviceType.FuelDevice.value:
 
-                name = f'Fuel {len(self.circuit.fuels) + 1}'
+                name = f'Fuel {len(self.circuit._fuels) + 1}'
                 obj = dev.Fuel(name=name)
                 self.circuit.add_fuel(obj)
 
             elif elm_type == DeviceType.EmissionGasDevice.value:
 
-                name = f'Gas {len(self.circuit.emission_gases) + 1}'
+                name = f'Gas {len(self.circuit._emission_gases) + 1}'
                 obj = dev.EmissionGas(name=name)
                 self.circuit.add_emission_gas(obj)
 
@@ -651,12 +651,12 @@ class ObjectsTableMain(DiagramsMain):
                 if elm_type == DeviceType.OverheadLineTypeDevice.value:
 
                     # pick the object
-                    tower = self.circuit.overhead_line_types[idx]
+                    tower = self.circuit._overhead_line_types[idx]
 
                     # launch editor
                     self.tower_builder_window = TowerBuilderGUI(parent=self,
                                                                 tower=tower,
-                                                                wires_catalogue=self.circuit.wire_types)
+                                                                wires_catalogue=self.circuit._wire_types)
                     self.tower_builder_window.resize(int(1.81 * 700.0), 700)
                     self.tower_builder_window.exec()
                     self.collect_memory()
@@ -981,10 +981,10 @@ class ObjectsTableMain(DiagramsMain):
         for island in islands:
             if island.nbus <= min_island:
                 for r in island.original_bus_idx:
-                    buses_to_delete.append(self.circuit.buses[r])
+                    buses_to_delete.append(self.circuit.get_buses()[r])
                     buses_to_delete_idx.append(r)
 
-        for r, bus in enumerate(self.circuit.buses):
+        for r, bus in enumerate(self.circuit.get_buses()):
             if not bus.active and not np.any(bus.active_prof.toarray()):
                 if r not in buses_to_delete_idx:
                     buses_to_delete.append(bus)
@@ -997,11 +997,11 @@ class ObjectsTableMain(DiagramsMain):
             logger.add_info("Deleted " + str(elm.device_type.value), elm.name)
 
         # search other elements to delete
-        for dev_lst in [self.circuit.lines,
-                        self.circuit.dc_lines,
-                        self.circuit.vsc_devices,
-                        self.circuit.hvdc_lines,
-                        self.circuit.transformers2w,
+        for dev_lst in [self.circuit.get_lines(),
+                        self.circuit.get_dc_lines(),
+                        self.circuit.get_vsc(),
+                        self.circuit.get_hvdc(),
+                        self.circuit.get_transformers2w(),
                         self.circuit.get_generators(),
                         self.circuit.get_loads(),
                         self.circuit.get_shunts(),

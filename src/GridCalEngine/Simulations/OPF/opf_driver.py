@@ -109,7 +109,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
                                         expected_value=100.0)
 
         va = np.angle(self.results.voltage)
-        for i, bus in enumerate(self.grid.buses):
+        for i, bus in enumerate(self.grid.get_buses()):
             if va[i] > bus.angle_max:
                 self.logger.add_warning("Overvoltage",
                                         device=bus.name,

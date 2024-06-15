@@ -571,9 +571,9 @@ class BaseMainGui(QMainWindow):
         """
         Update the area dependent combos
         """
-        n = len(self.circuit.areas)
-        mdl1 = gf.get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
-        mdl2 = gf.get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+        n = len(self.circuit._areas)
+        mdl1 = gf.get_list_model([str(elm) for elm in self.circuit._areas], checks=True)
+        mdl2 = gf.get_list_model([str(elm) for elm in self.circuit._areas], checks=True)
 
         self.ui.areaFromListView.setModel(mdl1)
         self.ui.areaToListView.setModel(mdl2)
@@ -679,9 +679,9 @@ class BaseMainGui(QMainWindow):
         """
         Detect which Branches are transformers
         """
-        if len(self.circuit.lines) > 0:
+        if self.circuit.get_lines_number() > 0:
 
-            for elm in self.circuit.lines:
+            for elm in self.circuit.get_lines():
 
                 v1 = elm.bus_from.Vnom
                 v2 = elm.bus_to.Vnom
@@ -748,10 +748,10 @@ class BaseMainGui(QMainWindow):
         Add default catalogue to circuit
         """
 
-        self.circuit.transformer_types += get_transformer_catalogue()
-        self.circuit.underground_cable_types += get_cables_catalogue()
-        self.circuit.wire_types += get_wires_catalogue()
-        self.circuit.sequence_line_types += get_sequence_lines_catalogue()
+        self.circuit._transformer_types += get_transformer_catalogue()
+        self.circuit._underground_cable_types += get_cables_catalogue()
+        self.circuit._wire_types += get_wires_catalogue()
+        self.circuit._sequence_line_types += get_sequence_lines_catalogue()
 
     def get_snapshot_circuit(self):
         """
@@ -789,7 +789,7 @@ class BaseMainGui(QMainWindow):
         # gather results
         if self.contingency_planner_dialogue.generated_results:
             if len(self.contingency_planner_dialogue.contingency_groups):
-                self.circuit.contingency_groups += self.contingency_planner_dialogue.contingency_groups
-                self.circuit.contingencies += self.contingency_planner_dialogue.contingencies
+                self.circuit._contingency_groups += self.contingency_planner_dialogue.contingency_groups
+                self.circuit._contingencies += self.contingency_planner_dialogue.contingencies
             else:
                 info_msg(text="No contingencies were generated :/", title="Contingency planner")

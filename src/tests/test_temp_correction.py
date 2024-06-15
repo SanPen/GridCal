@@ -114,12 +114,12 @@ def test_corr_line_losses():
     print()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
     print("Branches:")
-    for b in grid.lines:
+    for b in grid.get_lines():
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
@@ -127,23 +127,23 @@ def test_corr_line_losses():
     print()
 
     print("Voltages:")
-    for i in range(len(grid.buses)):
-        print(f" - {grid.buses[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu")
+    for i in range(len(grid.get_buses())):
+        print(f" - {grid.get_bus_at(i)}: voltage={round(power_flow.results.voltage[i], 3)} pu")
     print()
 
     print("Losses:")
-    for i in range(len(grid.lines)):
-        print(f" - {grid.lines[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
+    for i in range(len(grid.get_lines())):
+        print(f" - {grid.get_lines()[i]}: losses={round(power_flow.results.losses[i], 3)} MVA")
     print()
 
     print("Loadings (power):")
-    for i in range(len(grid.lines)):
-        print(f" - {grid.lines[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA")
+    for i in range(len(grid.get_lines())):
+        print(f" - {grid.get_lines()[i]}: loading={round(power_flow.results.Sf[i], 3)} MVA")
     print()
 
     print("Loadings (current):")
-    for i in range(len(grid.lines)):
-        print(f" - {grid.lines[i]}: loading={round(power_flow.results.If[i], 3)} pu")
+    for i in range(len(grid.get_lines())):
+        print(f" - {grid.get_lines()[i]}: loading={round(power_flow.results.If[i], 3)} pu")
     print()
 
     assert approx_losses == solution

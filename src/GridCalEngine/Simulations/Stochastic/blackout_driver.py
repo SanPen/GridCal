@@ -281,8 +281,9 @@ class CascadingDriver(DriverTemplate):
         self.report_text('Running cascading failure...')
 
         n_grids = len(calculation_inputs) + self.max_additional_islands
-        if n_grids > len(self.grid.buses):  # safety check
-            n_grids = len(self.grid.buses) - 1
+        nbus = self.grid.get_bus_number()
+        if n_grids > nbus:  # safety check
+            n_grids = nbus - 1
 
         # print('n grids: ', n_grids)
 

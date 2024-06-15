@@ -47,8 +47,8 @@ def test_opf_ts_batt():
                                               time_indices=main_circuit.get_all_time_indices())
     opf_ts.run()
 
-    p_rise_lim = main_circuit.batteries[0].Pmax
-    p_redu_lim = main_circuit.batteries[0].Pmin
+    p_rise_lim = main_circuit.get_batteries()[0].Pmax
+    p_redu_lim = main_circuit.get_batteries()[0].Pmin
 
     batt_energy = opf_ts.results.battery_energy[:, 0]
 
@@ -87,8 +87,8 @@ def test_opf_ts_hydro():
                                               time_indices=main_circuit.get_all_time_indices())
     opf_ts.run()
 
-    p_path0_max = main_circuit.fluid_paths[0].max_flow
-    p_path0_min = main_circuit.fluid_paths[0].min_flow
+    p_path0_max = main_circuit.get_fluid_paths()[0].max_flow
+    p_path0_min = main_circuit.get_fluid_paths()[0].min_flow
 
     l_node0 = opf_ts.results.fluid_node_current_level[:, 0]
 

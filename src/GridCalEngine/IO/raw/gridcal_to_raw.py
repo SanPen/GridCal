@@ -226,7 +226,7 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.ANG2 = transformer.winding2.tap_phase
     psse_transformer.ANG3 = transformer.winding3.tap_phase
 
-    i, j, k, ckt = psse_transformer.code.split("_", 3)
+    i, j, k, ckt = transformer.code.split("_", 3)
 
     psse_transformer.I = bus_dict[transformer.bus1]
     psse_transformer.J = bus_dict[transformer.bus2]
@@ -383,60 +383,60 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
 
     counter = RawCounter(grid=grid)
 
-    for i, area in enumerate(grid.areas):
+    for i, area in enumerate(grid.get_areas()):
         psse_circuit.areas.append(get_area(area=area, i=i + 1))
         area_dict[area] = i + 1
 
-    for i, zone in enumerate(grid.zones):
+    for i, zone in enumerate(grid.get_zones()):
         psse_circuit.zones.append(get_zone(zone=zone, i=i + 1))
         zones_dict[zone] = i + 1
 
-    for bus in grid.buses:
+    for bus in grid.get_buses():
         psse_circuit.buses.append(get_psse_bus(bus, area_dict, zones_dict))
 
-    for load in grid.loads:
+    for load in grid.get_loads():
         psse_circuit.loads.append(get_psse_load(load=load,
                                                 bus_dict=counter.bus_int_dict,
                                                 id_number=counter.get_id(load.bus)))
 
-    for generator in grid.generators:
+    for generator in grid.get_generators():
         psse_circuit.generators.append(get_psse_generator(generator=generator,
                                                           bus_dict=counter.bus_int_dict,
                                                           id_number=counter.get_id(generator.bus)))
 
-    for shunt in grid.shunts:
+    for shunt in grid.get_shunts():
         psse_circuit.fixed_shunts.append(get_psse_fixed_shunt(shunt=shunt,
                                                               bus_dict=counter.bus_int_dict,
                                                               id_number=counter.get_id(shunt.bus)))
 
-    for controllable_shunt in grid.controllable_shunts:
+    for controllable_shunt in grid.get_controllable_shunts():
         psse_circuit.switched_shunts.append(get_psse_switched_shunt(shunt=controllable_shunt,
                                                                     bus_dict=counter.bus_int_dict))
 
-    for line in grid.lines:
+    for line in grid.get_lines():
         psse_circuit.branches.append(get_psse_branch(branch=line,
                                                      bus_dict=counter.bus_int_dict,
                                                      ckt=counter.get_ckt(branch=line)))
 
-    for transformer in grid.transformers2w:
+    for transformer in grid.get_transformers2w():
         psse_circuit.transformers.append(get_psse_transformer2w(transformer=transformer,
                                                                 bus_dict=counter.bus_int_dict,
                                                                 ckt=counter.get_ckt(branch=transformer)))
 
-    for transformer in grid.transformers3w:
+    for transformer in grid.get_transformers3w():
         psse_circuit.transformers.append(get_psse_transformer3w(transformer=transformer,
                                                                 bus_dict=counter.bus_int_dict))
 
     # TODO: Decide whether to convert hvdc_lines into vsc_dc_lines or two_terminal_dc_lines.
-    for hvdc_line in grid.hvdc_lines:
+    for hvdc_line in grid.get_hvdc():
         psse_circuit.vsc_dc_lines.append(get_vsc_dc_line(hvdc_line,
                                                          bus_dict=counter.bus_int_dict))
 
-    for hvdc_line in grid.hvdc_lines:
+    for hvdc_line in grid.get_hvdc():
         psse_circuit.two_terminal_dc_lines.append(get_psse_two_terminal_dc_line(hvdc_line,
                                                                                 bus_dict=counter.bus_int_dict))
 
-    for upfc_device in grid.upfc_devices:
+    for upfc_device in grid.get_upfc():
         psse_circuit.facts.append(get_psse_facts(upfc_device,
                                                  bus_dict=counter.bus_int_dict))
 

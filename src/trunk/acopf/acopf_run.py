@@ -300,8 +300,8 @@ def case14():
 
     # grid.delete_line(grid.lines[0])
     # grid.delete_line(grid.lines[1])
-    for ll in range(len(grid.lines)):
-        grid.lines[ll].monitor_loading = True
+    for ll in range(len(grid.get_lines())):
+        grid.get_lines()[ll].monitor_loading = True
 
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=ReactivePowerControlMode.NoControl)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFslacks,
@@ -405,7 +405,7 @@ def casehvdc():
 
     grid = gce.FileOpen(file_path).open()
 
-    for gen in grid.generators:
+    for gen in grid.get_generators():
         gen.qmin_set = -0.8 * gen.Snom
         gen.qmax_set = 0.8 * gen.Snom
 
@@ -439,7 +439,7 @@ def caseREE():
 
     grid = gce.FileOpen(file_path).open()
 
-    for gen in grid.generators:
+    for gen in grid.get_generators():
         gen.qmin_set = -0.8 * gen.Snom
         gen.qmax_set = 0.8 * gen.Snom
 
@@ -453,7 +453,7 @@ def caseREE():
     tol = 1e-4
     vm_cost = 1e4
     i = 0
-    for gen in grid.generators:
+    for gen in grid.get_generators():
         if gen.bus.area.name in disp_areas:
             # P limits -> restrict them very close to P
             print(f'Select generator {i}')
@@ -472,7 +472,7 @@ def caseREE():
         # i += 1
 
     i = 0
-    for bus in grid.buses:
+    for bus in grid.get_buses():
         if bus.code in dict_bus_lims.keys():
             print(f'Grab bus {i}')
             # Change Vm slack cost to enforce limits

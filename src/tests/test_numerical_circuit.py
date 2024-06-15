@@ -37,7 +37,7 @@ def test_numerical_cicuit_generator_contingencies():
         #     nc.set_contingency_status(contingencies_list=[cnt])
 
         # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
-        cnt = main_circuit.contingencies[0]
+        cnt = main_circuit.get_contingencies()[0]
 
         p_prev = nc.generator_data.p[1]  # P del primer generador antes del cambio
         nc.set_contingency_status(contingencies_list=[cnt])
@@ -60,7 +60,7 @@ def test_numerical_cicuit_branch_contingencies():
         main_circuit = FileOpen(fname).open()
         nc = compile_numerical_circuit_at(main_circuit, t_idx=None)
 
-        cnt = main_circuit.contingencies
+        cnt = main_circuit.get_contingencies()
         nc.set_contingency_status(contingencies_list=cnt)
         cnt_branch = np.where(nc.branch_data.active == 0)[0]  # deactivated branches
 
@@ -80,7 +80,7 @@ def test_numerical_cicuit_spv():
     #
     #     nc.set_contingency_status(contingencies_list=[cnt])
 
-    cnt = main_circuit.contingencies[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
+    cnt = main_circuit.get_contingencies()[0]  # yo sé que la primera contingencia es cambiar el generador del bus 1 en 120%
 
     p_antes = nc.generator_data.p[1]  # P del primer generador antes del cambio
     nc.set_contingency_status(contingencies_list=[cnt])

@@ -133,7 +133,7 @@ def add_npa_areas(circuit: MultiCircuit,
     """
     d = dict()
 
-    for i, area in enumerate(circuit.areas):
+    for i, area in enumerate(circuit._areas):
         elm = npa.Area(uuid=area.idtag,
                        secondary_id=str(area.code),
                        name=area.name,
@@ -158,7 +158,7 @@ def add_npa_zones(circuit: MultiCircuit,
     """
     d = dict()
 
-    for i, area in enumerate(circuit.zones):
+    for i, area in enumerate(circuit._zones):
         elm = npa.Zone(uuid=area.idtag,
                        secondary_id=str(area.code),
                        name=area.name,
@@ -211,7 +211,7 @@ def add_npa_contingencies(circuit: MultiCircuit,
     """
     d = dict()
 
-    for i, elm in enumerate(circuit.contingencies):
+    for i, elm in enumerate(circuit._contingencies):
         dev = npa.Contingency(uuid=elm.idtag,
                               secondary_id=str(elm.code),
                               name=elm.name,
@@ -238,7 +238,7 @@ def add_npa_investment_groups(circuit: MultiCircuit, npa_circuit: "npa.HybridCir
     """
     d = dict()
 
-    for i, elm in enumerate(circuit.investments_groups):
+    for i, elm in enumerate(circuit.get_investments_groups()):
         dev = npa.InvestmentsGroup(uuid=elm.idtag,
                                    secondary_id=str(elm.code),
                                    name=elm.name,
@@ -266,7 +266,7 @@ def add_npa_investments(circuit: MultiCircuit,
     """
     d = dict()
 
-    for i, elm in enumerate(circuit.investments):
+    for i, elm in enumerate(circuit._investments):
         dev = npa.Investment(uuid=elm.idtag,
                              secondary_id=str(elm.code),
                              name=elm.name,
@@ -304,11 +304,11 @@ def add_npa_buses(circuit: MultiCircuit,
         assert (len(time_indices) == n_time)
 
     if area_dict is None:
-        area_dict = {elm: k for k, elm in enumerate(circuit.areas)}
+        area_dict = {elm: k for k, elm in enumerate(circuit._areas)}
 
     bus_dict: Dict[str, "npa.CalculationNode"] = dict()
 
-    for i, bus in enumerate(circuit.buses):
+    for i, bus in enumerate(circuit.get_buses()):
 
         elm = npa.CalculationNode(uuid=bus.idtag,
                                   secondary_id=str(bus.code),
@@ -620,7 +620,7 @@ def add_npa_line(circuit: MultiCircuit,
     """
 
     # Compile the lines
-    for i, elm in enumerate(circuit.lines):
+    for i, elm in enumerate(circuit.get_lines()):
         lne = npa.AcLine(uuid=elm.idtag,
                          secondary_id=str(elm.code),
                          name=elm.name,
@@ -677,7 +677,7 @@ def add_transformer_data(circuit: MultiCircuit,
         TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
     }
 
-    for i, elm in enumerate(circuit.transformers2w):
+    for i, elm in enumerate(circuit._transformers2w):
         tr2 = npa.Transformer2WFull(uuid=elm.idtag,
                                     secondary_id=str(elm.code),
                                     name=elm.name,
@@ -751,7 +751,7 @@ def add_transformer3w_data(circuit: MultiCircuit,
         TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
     }
 
-    for i, elm in enumerate(circuit.transformers3w):
+    for i, elm in enumerate(circuit._transformers3w):
         tr3 = npa.Transformer3W(uuid=elm.idtag,
                                 secondary_id=str(elm.code),
                                 name=elm.name,
@@ -797,7 +797,7 @@ def add_vsc_data(circuit: MultiCircuit,
     :param n_time: number of time steps
     :param time_indices: Array of time indices
     """
-    for i, elm in enumerate(circuit.vsc_devices):
+    for i, elm in enumerate(circuit._vsc_devices):
         vsc = npa.AcDcConverter(uuid=elm.idtag,
                                 secondary_id=str(elm.code),
                                 name=elm.name,
@@ -866,7 +866,7 @@ def add_dc_line_data(circuit: MultiCircuit,
     :param time_indices: Array of time indices
     """
     # Compile the lines
-    for i, elm in enumerate(circuit.dc_lines):
+    for i, elm in enumerate(circuit.get_dc_lines()):
         lne = npa.DcLine(uuid=elm.idtag,
                          name=elm.name,
                          calc_node_from=bus_dict[elm.bus_from.idtag],
@@ -913,7 +913,7 @@ def add_hvdc_data(circuit: MultiCircuit,
     cmode_dict = {HvdcControlType.type_0_free: npa.HvdcControlMode.HvdcControlAngleDroop,
                   HvdcControlType.type_1_Pset: npa.HvdcControlMode.HvdcControlPfix}
 
-    for i, elm in enumerate(circuit.hvdc_lines):
+    for i, elm in enumerate(circuit._hvdc_lines):
         hvdc = npa.HvdcLine(uuid=elm.idtag,
                             secondary_id=str(elm.code),
                             name=elm.name,
@@ -1538,7 +1538,7 @@ def translate_newton_pa_pf_results(grid: MultiCircuit, res: "npa.PowerFlowResult
     results.hvdc_loading = res.hvdc_loading[0, :]
     results.hvdc_losses = res.hvdc_losses[0, :]
     results.bus_area_indices = grid.get_bus_area_indices()
-    results.area_names = [a.name for a in grid.areas]
+    results.area_names = [a.name for a in grid._areas]
     results.bus_types = convert_bus_types(res.bus_types[0])  # this is a list of lists
 
     for rep in res.stats[0]:
@@ -1569,7 +1569,7 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
                                       battery_names=res.battery_names,
                                       hvdc_names=res.hvdc_names,
                                       bus_types=convert_bus_types(res.bus_types[0]),
-                                      area_names=[a.name for a in grid.areas],
+                                      area_names=[a.name for a in grid._areas],
                                       F=res.F,
                                       T=res.T,
                                       F_hvdc=res.hvdc_F,
@@ -1602,7 +1602,7 @@ def translate_newton_pa_opf_results(grid: MultiCircuit, res: "npa.NonlinearOpfRe
     results.hvdc_loading = res.hvdc_loading[0, :]
     # results.hvdc_losses = res.hvdc_losses[0, :]
     results.bus_area_indices = grid.get_bus_area_indices()
-    results.area_names = [a.name for a in grid.areas]
+    results.area_names = [a.name for a in grid._areas]
     results.bus_types = convert_bus_types(res.bus_types[0])
     results.converged = res.stats[0][0].converged[0]
 

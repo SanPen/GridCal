@@ -19,8 +19,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    #con_options.srap_max_loading = 1.4
-    grid.lines[2].protection_rating_factor = 1.4
+    # con_options.srap_max_loading = 1.4
+    grid.get_lines()[2].protection_rating_factor = 1.4
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -40,8 +40,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    #con_options.srap_max_loading = 1.4
-    grid.lines[2].protection_rating_factor = 1.4
+    # con_options.srap_max_loading = 1.4
+    grid.get_lines()[2].protection_rating_factor = 1.4
     con_options.srap_max_power = 1
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -66,8 +66,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    #con_options.srap_max_loading = 1.1
-    grid.lines[2].protection_rating_factor = 1.1
+    # con_options.srap_max_loading = 1.1
+    grid.get_lines()[2].protection_rating_factor = 1.1
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -94,8 +94,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    #con_options.srap_max_loading = 1.4
-    grid.lines[5].protection_rating_factor = 1.4
+    # con_options.srap_max_loading = 1.4
+    grid.get_lines()[5].protection_rating_factor = 1.4
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -115,8 +115,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    #con_options.srap_max_loading = 1.4
-    grid.lines[5].protection_rating_factor = 1.4
+    # con_options.srap_max_loading = 1.4
+    grid.get_lines()[5].protection_rating_factor = 1.4
     con_options.srap_max_power = 1
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -140,8 +140,8 @@ def test_srap():
     con_options.use_srap = True
     con_options.contingency_method = ContingencyMethod.PTDF
 
-    #con_options.srap_max_loading = 1.1
-    grid.lines[5].protection_rating_factor = 1.1
+    # con_options.srap_max_loading = 1.1
+    grid.get_lines()[5].protection_rating_factor = 1.1
     con_options.srap_max_power = 8
     con_drv = ContingencyAnalysisDriver(grid=grid,
                                         options=con_options,
@@ -159,4 +159,3 @@ def test_srap():
         not test5_result_a) * test5_result_b * (not test6_result))
 
     return test_summary
-

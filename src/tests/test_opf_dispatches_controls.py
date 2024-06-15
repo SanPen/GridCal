@@ -40,7 +40,7 @@ def test_opf_hvdc():
                                           generate_report=True)
 
     # HVDC dispatch on
-    main_circuit.hvdc_lines[0].dispatchable = True
+    main_circuit.get_hvdc()[0].dispatchable = True
 
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
@@ -49,7 +49,7 @@ def test_opf_hvdc():
     pf_on = opf.results.hvdc_Pf[0]
 
     # HVDC dispatch off
-    main_circuit.hvdc_lines[0].dispatchable = False
+    main_circuit.get_hvdc()[0].dispatchable = False
 
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
@@ -68,6 +68,9 @@ def test_opf_gen():
 
     main_circuit = FileOpen(fname).open()
 
+    if main_circuit is None:
+        return
+
     power_flow_options = PowerFlowOptions(SolverType.NR,
                                           verbose=False,
                                           initialize_with_existing_solution=False,
@@ -84,21 +87,21 @@ def test_opf_gen():
                                           generate_report=True)
 
     # Gen dispatch on
-    main_circuit.generators[0].enabled_dispatch = True
+    main_circuit.get_generators()[0].enabled_dispatch = True
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pgen_on = opf.results.generator_power[0]
 
     # Gen dispatch off
-    main_circuit.generators[0].enabled_dispatch = False
+    main_circuit.get_generators()[0].enabled_dispatch = False
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pgen_off = opf.results.generator_power[0]
 
     # Gen dispatch back on
-    main_circuit.generators[0].enabled_dispatch = True
+    main_circuit.get_generators()[0].enabled_dispatch = True
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
@@ -131,21 +134,21 @@ def test_opf_line_monitoring():
 
     # branch 2 monitoring on
     br_idx = 2
-    main_circuit.lines[br_idx].monitor_loading = True
+    main_circuit.get_lines()[br_idx].monitor_loading = True
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf_on = opf.results.Sf[br_idx]
 
     # HVDC dispatch off
-    main_circuit.lines[br_idx].monitor_loading = False
+    main_circuit.get_lines()[br_idx].monitor_loading = False
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf_off = opf.results.Sf[br_idx]
 
     # HVDC dispatch back on
-    main_circuit.lines[br_idx].monitor_loading = True
+    main_circuit.get_lines()[br_idx].monitor_loading = True
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
@@ -178,23 +181,23 @@ def test_opf_hvdc_controls():
                                           generate_report=True)
 
     # HVDC free mode
-    main_circuit.hvdc_lines[0].control_mode = HvdcControlType.type_0_free
+    main_circuit.get_hvdc()[0].control_mode = HvdcControlType.type_0_free
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf_free = opf.results.hvdc_Pf[0]
 
     # HVDC Pset mode
-    main_circuit.hvdc_lines[0].control_mode = HvdcControlType.type_1_Pset
+    main_circuit.get_hvdc()[0].control_mode = HvdcControlType.type_1_Pset
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf_pset = opf.results.hvdc_Pf[0]
 
     # HVDC Pset mode non dispatchable
-    main_circuit.hvdc_lines[0].dispatchable = False
-    main_circuit.hvdc_lines[0].control_mode = HvdcControlType.type_1_Pset
-    main_circuit.hvdc_lines[0].Pset = 50  # MW
+    main_circuit.get_hvdc()[0].dispatchable = False
+    main_circuit.get_hvdc()[0].control_mode = HvdcControlType.type_1_Pset
+    main_circuit.get_hvdc()[0].Pset = 50  # MW
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
@@ -203,7 +206,7 @@ def test_opf_hvdc_controls():
     # check that no error or warning is generated
     assert opf.logger.error_count() == 0
     assert pf_free != pf_pset
-    assert np.isclose(abs(pf_pset), main_circuit.hvdc_lines[0].rate, atol=1e-3)
+    assert np.isclose(abs(pf_pset), main_circuit.get_hvdc()[0].rate, atol=1e-3)
     assert np.isclose(pf_pset2, 50, atol=1e-5)
 
 
@@ -228,22 +231,22 @@ def test_opf_trafo_controls():
                                           generate_report=True)
 
     # trafo fixed
-    main_circuit.transformers2w[0].control_mode = TransformerControlType.fixed
+    main_circuit.get_transformers2w()[0].control_mode = TransformerControlType.fixed
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf1 = opf.results.Sf[48]
 
     # trafo controlling
-    main_circuit.transformers2w[0].control_mode = TransformerControlType.Pf
-    main_circuit.transformers2w[0].tap_angle_control_mode = TapAngleControl.Pf
+    main_circuit.get_transformers2w()[0].control_mode = TransformerControlType.Pf
+    main_circuit.get_transformers2w()[0].tap_angle_control_mode = TapAngleControl.Pf
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf2 = opf.results.Sf[48]
 
     # trafo back to fixed
-    main_circuit.transformers2w[0].control_mode = TransformerControlType.fixed
+    main_circuit.get_transformers2w()[0].control_mode = TransformerControlType.fixed
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()

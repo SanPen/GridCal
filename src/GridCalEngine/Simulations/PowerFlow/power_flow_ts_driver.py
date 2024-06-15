@@ -95,8 +95,8 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                          clustering_results=self.clustering_results)
 
         # compile dictionaries once for speed
-        bus_dict = {bus: i for i, bus in enumerate(self.grid.buses)}
-        areas_dict = {elm: i for i, elm in enumerate(self.grid.areas)}
+        bus_dict = {bus: i for i, bus in enumerate(self.grid.get_buses())}
+        areas_dict = {elm: i for i, elm in enumerate(self.grid.get_areas())}
         self.report_progress(0.0)
         for it, t in enumerate(time_indices):
 

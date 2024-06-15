@@ -1588,7 +1588,7 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
         :param to_port:
         :return:
         """
-        name = 'FluidPath ' + str(len(self.circuit.fluid_paths) + 1)
+        name = 'FluidPath ' + str(len(self.circuit._fluid_paths) + 1)
         obj = FluidPath(source=source,
                         target=target,
                         name=name)

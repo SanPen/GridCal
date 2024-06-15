@@ -74,7 +74,7 @@ def test_tolerance_lf_higher():
     print()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
@@ -88,9 +88,9 @@ def test_tolerance_lf_higher():
     print()
 
     print("Voltages:")
-    for i in range(len(grid.buses)):
+    for i in range(len(grid.get_buses())):
         print(
-            f" - {grid.buses[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu"
+            f" - {grid.get_bus_at(i)}: voltage={round(power_flow.results.voltage[i], 3)} pu"
         )
     print()
 
@@ -166,7 +166,7 @@ def test_tolerance_lf_lower():
     print()
 
     print("Buses:")
-    for i, b in enumerate(grid.buses):
+    for i, b in enumerate(grid.get_buses()):
         print(f" - bus[{i}]: {b}")
     print()
 
@@ -180,9 +180,9 @@ def test_tolerance_lf_lower():
     print()
 
     print("Voltages:")
-    for i in range(len(grid.buses)):
+    for i in range(len(grid.get_buses())):
         print(
-            f" - {grid.buses[i]}: voltage={round(power_flow.results.voltage[i], 3)} pu"
+            f" - {grid.get_bus_at(i)}: voltage={round(power_flow.results.voltage[i], 3)} pu"
         )
     print()
 

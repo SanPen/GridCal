@@ -274,7 +274,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
         volt_lev, substat, country = None, None, None
         if cgmes_elm.ConnectivityNodeContainer:
             volt_lev = find_object_by_idtag(
-                object_list=gc_model.voltage_levels,
+                object_list=gc_model.get_voltage_levels(),
                 target_idtag=cgmes_elm.ConnectivityNodeContainer.uuid
             )
             if volt_lev is None:
@@ -286,7 +286,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                                        device_property="ConnectivityNodeContainer")
             else:
                 substat = find_object_by_idtag(
-                    object_list=gc_model.substations,
+                    object_list=gc_model.get_substations(),
                     target_idtag=volt_lev.substation.idtag
                 )
                 if substat is None:
@@ -377,7 +377,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
             voltage_level=vl
         )
 
-        gcdev_model.connectivity_nodes.append(gcdev_elm)
+        gcdev_model.add_connectivity_node(gcdev_elm)
         cn_look_up.add_cn(gcdev_elm)
         cn_node_dict[gcdev_elm.idtag] = gcdev_elm
 
@@ -397,7 +397,6 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -470,7 +469,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: Logger object
     """
     # add generation technologies
@@ -591,7 +589,6 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -1021,7 +1018,6 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -1129,7 +1125,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
                 # longitude=0.0
             )
             region = find_object_by_idtag(
-                object_list=gcdev_model.communities,
+                object_list=gcdev_model.get_communities(),
                 target_idtag=cgmes_elm.Region.uuid
             )
             if region is not None:
@@ -1162,7 +1158,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
         )
 
         subs = find_object_by_idtag(
-            object_list=gcdev_model.substations,
+            object_list=gcdev_model.get_substations(),
             target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
         )
         if subs:
@@ -1172,6 +1168,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
         volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
 
     return volt_lev_dict
+
 
 def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                       gcdev_model: MultiCircuit,
@@ -1285,7 +1282,7 @@ def get_gcdev_community(cgmes_model: CgmesCircuit,
             )
 
             c = find_object_by_idtag(
-                object_list=gcdev_model.countries,
+                object_list=gcdev_model.get_countries(),
                 target_idtag=cgmes_elm.Region.uuid
             )
             if c is not None:

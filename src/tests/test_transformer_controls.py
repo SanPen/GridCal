@@ -13,7 +13,7 @@ def test_v_control_true():
     fname = os.path.join('data', 'grids', 'IEEE57.gridcal')
     main_circuit = FileOpen(fname).open()
 
-    tr = main_circuit.transformers2w[5]
+    tr = main_circuit.get_transformers2w()[5]
 
     tr.control_mode = TransformerControlType.V
     tr.vset = 1.0
@@ -37,7 +37,7 @@ def test_v_control_false():
     fname = os.path.join('data', 'grids', 'IEEE57.gridcal')
     main_circuit = FileOpen(fname).open()
 
-    tr = main_circuit.transformers2w[5]
+    tr = main_circuit.get_transformers2w()[5]
 
     tr.control_mode = TransformerControlType.fixed
     tr.vset = 1.0

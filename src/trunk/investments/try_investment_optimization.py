@@ -97,7 +97,7 @@ def add_random_lines_investments(grid, num_lines):
 
 
 def obtain_random_points(grid, num_random_combinations, pf_options):
-    list_length = len(grid.investments_groups)
+    list_length = grid.get_investments_groups_number()
     combinations_list = [[random.choice([0, 1]) for _ in range(list_length)] for _ in range(num_random_combinations)]
 
     investments_by_group = grid.get_investmenst_by_groups_index_dict()
@@ -176,8 +176,8 @@ if __name__ == "__main__":
     # mvrsm = InvestmentEvaluationMethod.MVRSM_multi
     mvrsm = InvestmentEvaluationMethod.MVRSM
 
-    print(4*len(grid.investments))
-    options = invsim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid.investments), pf_options=pf_options)
+    print(4 * len(grid._investments))
+    options = invsim.InvestmentsEvaluationOptions(solver=mvrsm, max_eval=4*len(grid._investments), pf_options=pf_options)
     inv = invsim.InvestmentsEvaluationDriver(grid, options=options)
 
     # Profile the inv.run() method
