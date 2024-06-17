@@ -2851,3 +2851,36 @@ def add_menu_entry(menu: QtWidgets.QMenu,
         entry.triggered.connect(function_ptr)
 
     return entry
+
+
+def create_spinbox(value: float, minimum: float, maximum: float, decimals: int = 4) -> QtWidgets.QDoubleSpinBox:
+    """
+
+    :param value:
+    :param minimum:
+    :param maximum:
+    :param decimals:
+    :return:
+    """
+    sn_spinner = QtWidgets.QDoubleSpinBox()
+    sn_spinner.setMinimum(minimum)
+    sn_spinner.setMaximum(maximum)
+    sn_spinner.setDecimals(decimals)
+    sn_spinner.setValue(value)
+    return sn_spinner
+
+
+def create_int_spinbox(value: int, minimum: int, maximum: int) -> QtWidgets.QSpinBox:
+    """
+
+    :param value:
+    :param minimum:
+    :param maximum:
+    :return:
+    """
+    sn_spinner = QtWidgets.QSpinBox()
+    sn_spinner.setMinimum(minimum)
+    sn_spinner.setMaximum(maximum)
+    sn_spinner.setValue(value)
+    return sn_spinner
+

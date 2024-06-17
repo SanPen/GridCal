@@ -497,6 +497,7 @@ class IoMain(ConfigurationMain):
                            "CGMES (*.zip);;"
                            "CIM (*.xml);;"
                            "Electrical Json V3 (*.ejson3);;"
+                           "Raw (*.raw);;"
                            "Rawx (*.rawx);;"
                            "Sqlite (*.sqlite);;")
 
@@ -531,6 +532,7 @@ class IoMain(ConfigurationMain):
                     extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
                     extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
                     extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                    extension['PSSe raw (*.raw)'] = '.raw'
                     extension['PSSe rawx (*.rawx)'] = '.rawx'
                     extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                     extension['Sqlite (*.sqlite)'] = '.sqlite'

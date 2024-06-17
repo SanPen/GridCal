@@ -1361,7 +1361,7 @@ class SchematicWidget(BaseDiagramWidget):
                                     graphic_object=graphic_object)
 
         # add the new object to the circuit
-        self.circuit.add_branch(obj)
+        self.circuit.add_line(obj)
 
         # update the connection placement
         graphic_object.update_ports()
@@ -1395,7 +1395,7 @@ class SchematicWidget(BaseDiagramWidget):
                                     graphic_object=graphic_object)
 
         # add the new object to the circuit
-        self.circuit.add_branch(obj)
+        self.circuit.add_dc_line(obj)
 
         # update the connection placement
         graphic_object.update_ports()
@@ -1456,7 +1456,7 @@ class SchematicWidget(BaseDiagramWidget):
                                     graphic_object=graphic_object)
 
         # add the new object to the circuit
-        self.circuit.add_branch(obj)
+        self.circuit.add_transformer2w(obj)
 
         # update the connection placement
         graphic_object.update_ports()
@@ -1490,7 +1490,7 @@ class SchematicWidget(BaseDiagramWidget):
                                     graphic_object=graphic_object)
 
         # add the new object to the circuit
-        self.circuit.add_branch(obj)
+        self.circuit.add_vsc(obj)
 
         # update the connection placement
         graphic_object.update_ports()

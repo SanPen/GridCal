@@ -423,7 +423,7 @@ def sort_by_crowding(fronts: List[List[int]], population: Mat) -> Tuple[Mat, Int
     return population[sorting_indices, :], sorting_indices
 
 
-def non_dominated_sorting(y_values: Mat, x_values: Mat):
+def non_dominated_sorting(y_values: Mat, x_values: Mat) -> Tuple[Mat, Mat, IntVec]:
     """
     Use non dominated sorting and crowded sorting to sort the multidimensional objectives
     :param y_values: Matrix of function evaluations (Npoints, NObjdim)
@@ -438,7 +438,7 @@ def non_dominated_sorting(y_values: Mat, x_values: Mat):
     # sorted_population, sorting_indices = sort_by_crowding(fronts=fronts, population=y_values)
     sorted_population, sorting_indices = sort_by_crowding(fronts=[fronts[0]], population=y_values)
 
-    return sorted_population, x_values[sorting_indices, :]
+    return sorted_population, x_values[sorting_indices, :], sorting_indices
 
 
 def get_norm_factors(scaling_values):
@@ -536,9 +536,10 @@ def MVRSM_mo_pareto(obj_func,
     objectives_normalized = normalize_md(y_population[:rand_evals, :], normalization_factors)
 
     # Get best point yet
-    objectives_sorted = non_dominated_sorting(objectives_normalized, x_population[:rand_evals, :])
-    best_y = objectives_sorted[0][0]
-    best_x = objectives_sorted[1][0]
+    sorted_y, sorted_x, sorting_indices = non_dominated_sorting(objectives_normalized,
+                                                                x_population[:rand_evals, :])
+    best_y = sorted_y[0]
+    best_x = sorted_x[0]
 
     # Update the model with the normalized random evaluation points
     for rand_it in range(len(objectives_normalized)):
@@ -627,7 +628,7 @@ def MVRSM_mo_pareto(obj_func,
                         break
 
     # apply non-dominated sorting
-    y_sorted, x_sorted = non_dominated_sorting(y_values=y_population.copy(),
-                                               x_values=x_population)
+    y_sorted, x_sorted, sorting_indices = non_dominated_sorting(y_values=y_population.copy(),
+                                                                x_values=x_population)
 
     return y_sorted, x_sorted, y_population, x_population
