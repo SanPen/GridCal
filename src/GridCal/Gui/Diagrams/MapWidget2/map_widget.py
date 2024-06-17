@@ -139,8 +139,8 @@ class MapView(QGraphicsView):
 
         zoomInitial = self.map_widget.level
 
-        self.mouse_x = mouse_event.x() / 1.5
-        self.mouse_y = mouse_event.y() / 1.5
+        self.mouse_x = mouse_event.x()
+        self.mouse_y = mouse_event.y()
 
         if event.angleDelta().y() > 0:
             new_level = self.map_widget.level + 1
@@ -350,7 +350,7 @@ class MapWidget(QWidget):
 
         # keyboard state variables
         self.shift_down = False
-        self.zoom_factor = 2
+        self.zoom_factor = 4
 
         # when dragging, remember the initial start point
         self.start_drag_x: int = 0
