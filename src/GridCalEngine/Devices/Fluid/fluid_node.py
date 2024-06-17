@@ -68,11 +68,11 @@ class FluidNode(EditableDevice):
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self._inflow_prof = Profile(default_value=inflow)  # m3/s
-        self._spillage_cost_prof = Profile(default_value=spillage_cost)  # e/(m3/s)
+        self._inflow_prof = Profile(default_value=inflow, data_type=float)  # m3/s
+        self._spillage_cost_prof = Profile(default_value=spillage_cost, data_type=float)  # e/(m3/s)
 
-        self._max_soc_prof = Profile(default_value=max_soc)  # p.u.
-        self._min_soc_prof = Profile(default_value=min_soc)  # p.u.
+        self._max_soc_prof = Profile(default_value=max_soc, data_type=float)  # p.u.
+        self._min_soc_prof = Profile(default_value=min_soc, data_type=float)  # p.u.
 
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")

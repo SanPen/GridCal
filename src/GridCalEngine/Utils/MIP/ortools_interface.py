@@ -29,9 +29,12 @@ from ortools.linear_solver.python.model_builder import LinearConstraint as LpCst
 from ortools.linear_solver.python.model_builder import LinearExpr as LpExp
 from ortools.linear_solver.python.model_builder import Variable as LpVar
 from ortools.linear_solver.python.model_builder import _Sum as LpSum
-from ortools.init.python import init
+# from ortools.init.python import init
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
+
+# this avoids displaying all the solver logger information, should only be called once
+# init.CppBridge.init_logging("")
 
 
 def get_available_mip_solvers() -> List[str]:
@@ -39,7 +42,6 @@ def get_available_mip_solvers() -> List[str]:
     Get a list of candidate solvers
     :return:
     """
-    init.CppBridge.init_logging("")  # this avoids displaying all the solver logger information
     candidates = ['SCIP', 'CBC', 'CPLEX', 'GUROBI', 'XPRESS', 'HIGHS', 'GLOP']
     res = list()
     for c in candidates:

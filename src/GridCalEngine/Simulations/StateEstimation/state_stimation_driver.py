@@ -224,7 +224,9 @@ class StateEstimation(DriverTemplate):
                                                                                        Sbus=island.Sbus,
                                                                                        V=solution.V,
                                                                                        branch_rates=island.branch_rates,
-                                                                                       Yf=None, Yt=None)
+                                                                                       Ybus=None,
+                                                                                       Yf=None,
+                                                                                       Yt=None)
 
             # pack results into a SE results object
             results = StateEstimationResults(n=island.nbus,

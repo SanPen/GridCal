@@ -24,13 +24,12 @@ from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import Li
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import (AvailableTransferCapacityOptions,
                                                                               compute_atc_list, compute_alpha)
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 from GridCalEngine.basic_structures import Vec, Mat, IntVec, StrVec, DateVec
-from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes, DeviceType
+from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes, DeviceType, SimulationTypes
 
 
 class AvailableTransferCapacityTimeSeriesResults(ResultsTemplate):
@@ -200,17 +199,18 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.NetTransferCapacityTS_run
     name = tpe.value
 
-    def __init__(
-            self, grid: MultiCircuit,
-            options: AvailableTransferCapacityOptions,
-            time_indices: np.ndarray,
-            clustering_results: Union[ClusteringResults, None] = None):
+    def __init__(self,
+                 grid: MultiCircuit,
+                 options: AvailableTransferCapacityOptions,
+                 time_indices: np.ndarray,
+                 clustering_results: Union[ClusteringResults, None] = None):
 
         """
         Power Transfer Distribution Factors class constructor
         :param grid: MultiCircuit Object
         :param options: OPF options
         :param time_indices: array of time indices to simulate
+        :param clustering_results: ClusteringResults (optional)
         """
 
         TimeSeriesDriverTemplate.__init__(

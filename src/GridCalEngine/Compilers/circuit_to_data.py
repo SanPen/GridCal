@@ -65,10 +65,10 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.angle_max[i] = bus.angle_max
 
         if bus.is_slack:
-            bus_data.bus_types[i] = 3  # VD
+            bus_data.bus_types[i] = BusMode.Slack.value  # VD
         else:
             # bus.determine_bus_type().value
-            bus_data.bus_types[i] = 1  # PQ by default, later it is modified by generators and batteries
+            bus_data.bus_types[i] = BusMode.PQ.value  # PQ by default, later it is modified by generators and batteries
 
         if bus.substation is not None:
             bus_data.substations[i] = substation_dict[bus.substation]
@@ -174,11 +174,11 @@ def get_load_data(circuit: MultiCircuit,
 
         # change stuff depending on the modes
         if elm.mode == ExternalGridMode.VD:
-            bus_data.bus_types[i] = 3  # set as Slack
+            bus_data.bus_types[i] = BusMode.Slack.value  # set as Slack
 
         elif elm.mode == ExternalGridMode.PV:
-            if bus_data.bus_types[i] != 3:  # if it is not Slack
-                bus_data.bus_types[i] = 2  # set as PV
+            if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
+                bus_data.bus_types[i] = BusMode.PV.value  # set as PV
 
                 if not use_stored_guess:
 
@@ -194,11 +194,11 @@ def get_load_data(circuit: MultiCircuit,
                             logger.add_error('Different set points', elm.bus.name, elm.Vm, Vbus[i])
 
         if time_series:
-            data.S[ii] = complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
+            data.S[ii] += complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
             data.active[ii] = elm.active_prof[t_idx]
 
         else:
-            data.S[ii] = complex(elm.P, elm.Q)
+            data.S[ii] += complex(elm.P, elm.Q)
             data.active[ii] = elm.active
 
         data.C_bus_elm[i, ii] = 1
@@ -219,12 +219,12 @@ def get_load_data(circuit: MultiCircuit,
         data.b_max[ii] = elm.Bmax
 
         if time_series:
-            data.Y[ii] = complex(elm.G_at(t_idx), elm.B_at(t_idx))
+            data.Y[ii] += complex(elm.G_at(t_idx), elm.B_at(t_idx))
             data.active[ii] = elm.active_prof[t_idx]
             data.cost[ii] = elm.Cost_prof[t_idx]
 
         else:
-            data.Y[ii] = complex(elm.G, elm.B)
+            data.Y[ii] += complex(elm.G, elm.B)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
@@ -242,12 +242,12 @@ def get_load_data(circuit: MultiCircuit,
         data.mttr[ii] = elm.mttr
 
         if time_series:
-            data.I[ii] = complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+            data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
             data.active[ii] = elm.active_prof[t_idx]
             data.cost[ii] = elm.Cost_prof[t_idx]
 
         else:
-            data.I[ii] = complex(elm.Ir, elm.Ii)
+            data.I[ii] += complex(elm.Ir, elm.Ii)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
@@ -323,6 +323,7 @@ def get_generator_data(circuit: MultiCircuit,
     :return:
     """
     devices = circuit.get_generators()
+    #TODO: hay que cambiar genbus para hacerlo de otra forma
     genbus = np.array([circuit.buses.index(x.bus) for x in devices])
 
     data = ds.GeneratorData(nelm=len(devices),

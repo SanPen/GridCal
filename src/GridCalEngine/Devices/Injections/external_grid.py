@@ -73,8 +73,8 @@ class ExternalGrid(LoadParent):
         # Impedance in equivalent MVA
         self.Vm = Vm
         self.Va = Va
-        self._Vm_prof = Profile(default_value=Vm)
-        self._Va_prof = Profile(default_value=Va)
+        self._Vm_prof = Profile(default_value=Vm, data_type=float)
+        self._Va_prof = Profile(default_value=Va, data_type=float)
 
         self.register(key='mode', units='', tpe=ExternalGridMode,
                       definition='Operation mode of the external grid (voltage or load)')

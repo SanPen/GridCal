@@ -34,7 +34,7 @@ class Switch(BranchParent):
                  rate=1.0,
                  active=True,
                  contingency_factor=1.0, protection_rating_factor: float = 1.4,
-                 is_open=False,
+                 # is_open=False,
                  retained=True,
                  normal_open=False,
                  rated_current=0.0):
@@ -77,7 +77,7 @@ class Switch(BranchParent):
         self.R = r
         self.X = x
 
-        self.is_open = is_open
+        # self.is_open = is_open
         self.retained = retained
 
         self.normal_open = normal_open
@@ -86,8 +86,8 @@ class Switch(BranchParent):
         self.register(key='R', units='pu', tpe=float, definition='Positive-sequence resistance')
         self.register(key='X', units='pu', tpe=float, definition='Positive-sequence reactance')
 
-        self.register(key='is_open', units="", tpe=bool,
-                      definition='Switch is open', old_names=['open'])
+        # self.register(key='is_open', units="", tpe=bool,
+        #               definition='Switch is open', old_names=['open'])
         self.register(key='retained', units="", tpe=bool,
                       definition='Switch is retained')
 
@@ -136,70 +136,6 @@ class Switch(BranchParent):
 
             data.append(obj)
         return data
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-        if version == 2:
-            d = {'id': self.idtag,
-                 'type': 'Switch',
-                 'phases': 'ps',
-                 'name': self.name,
-                 'name_code': self.code,
-                 'bus_from': self.bus_from.idtag,
-                 'bus_to': self.bus_to.idtag,
-                 'active': self.active,
-
-                 'rate': self.rate,
-
-                 'r': self.R,
-                 'x': self.X
-                 }
-        elif version == 3:
-            d = {'id': self.idtag,
-                 'type': 'Switch',
-                 'phases': 'ps',
-                 'name': self.name,
-                 'name_code': self.code,
-                 'bus_from': self.bus_from.idtag,
-                 'bus_to': self.bus_to.idtag,
-                 'active': self.active,
-
-                 'rate': self.rate,
-                 'contingency_factor1': self.contingency_factor,
-                 'contingency_factor2': self.contingency_factor,
-                 'contingency_factor3': self.contingency_factor,
-
-                 'r': self.R,
-                 'x': self.X
-                 }
-        else:
-            d = dict()
-
-        return d
-
-    def get_profiles_dict(self, version=3):
-        """
-
-        :return:
-        """
-        if self.active_prof is not None:
-            active_prof = self.active_prof.tolist()
-        else:
-            active_prof = list()
-
-        return {'id': self.idtag,
-                'active': active_prof}
-
-    def get_units_dict(self, version=3):
-        """
-        Get units of the values
-        """
-        return {'rate': 'MW',
-                'r': 'p.u.',
-                'x': 'p.u.'}
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

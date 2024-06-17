@@ -24,8 +24,12 @@ from tests.print_power_flow_results import print_power_flow_results
 
 
 def test_api_helm():
+    """
+
+    :return:
+    """
     np.set_printoptions(precision=4)
-    fname = os.path.join('..', '..', 'Grids_and_profiles', 'grids', 'IEEE 30 Bus with storage.xlsx')
+    fname = os.path.join('data', 'grids', 'IEEE 30 Bus with storage.xlsx')
     grid = FileOpen(fname).open()
 
     print('\n\n', grid.name)

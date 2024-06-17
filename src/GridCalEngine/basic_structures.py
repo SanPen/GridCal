@@ -258,6 +258,7 @@ class LogEntry:
     """
 
     def __init__(self,
+                 time: Union[str, None] = None,
                  msg="",
                  severity: LogSeverity = LogSeverity.Information,
                  device="",
@@ -267,7 +268,10 @@ class LogEntry:
                  device_property="",
                  object_value=None,
                  expected_object_value=None):
-        self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
+        if time is None:
+            self.time = "{date:%H:%M:%S}".format(date=datetime.datetime.now())  # might use %Y/%m/%d %H:%M:%S
+        else:
+            self.time = time
         self.msg = str(msg)
         self.severity = severity
         self.device = device
@@ -351,15 +355,15 @@ class Logger:
         :param expected_object_value:
         :return:
         """
-        self.entries.append(LogEntry(msg=msg,
+        self.entries.append(LogEntry(msg=str(msg),
                                      severity=LogSeverity.Information,
-                                     device=device,
+                                     device=str(device),
                                      value=str(value),
                                      expected_value=str(expected_value),
-                                     device_class=device_class,
-                                     device_property=device_property,
-                                     object_value=object_value,
-                                     expected_object_value=expected_object_value))
+                                     device_class=str(device_class),
+                                     device_property=str(device_property),
+                                     object_value=str(object_value),
+                                     expected_object_value=str(expected_object_value)))
 
     def add_warning(self, msg: str, device="", value="", expected_value="", device_class='', comment='',
                     device_property='', object_value=None, expected_object_value=None):
@@ -376,15 +380,15 @@ class Logger:
         :param expected_object_value:
         :return:
         """
-        self.entries.append(LogEntry(msg=msg,
+        self.entries.append(LogEntry(msg=str(msg),
                                      severity=LogSeverity.Warning,
-                                     device=device,
+                                     device=str(device),
                                      value=str(value),
                                      expected_value=str(expected_value),
-                                     device_class=device_class,
-                                     device_property=device_property,
-                                     object_value=object_value,
-                                     expected_object_value=expected_object_value))
+                                     device_class=str(device_class),
+                                     device_property=str(device_property),
+                                     object_value=str(object_value),
+                                     expected_object_value=str(expected_object_value)))
 
     def add_error(self, msg: str, device="", value="", expected_value="", device_class='', comment='',
                   device_property='', object_value=None, expected_object_value=None):
@@ -401,15 +405,15 @@ class Logger:
         :param expected_object_value:
         :return:
         """
-        self.entries.append(LogEntry(msg=msg,
+        self.entries.append(LogEntry(msg=str(msg),
                                      severity=LogSeverity.Error,
-                                     device=device,
+                                     device=str(device),
                                      value=str(value),
                                      expected_value=str(expected_value),
-                                     device_class=device_class,
-                                     device_property=device_property,
-                                     object_value=object_value,
-                                     expected_object_value=expected_object_value))
+                                     device_class=str(device_class),
+                                     device_property=str(device_property),
+                                     object_value=str(object_value),
+                                     expected_object_value=str(expected_object_value)))
 
     def add_divergence(self, msg, device="", value=0, expected_value=0, tol=1e-6):
         """
@@ -423,9 +427,9 @@ class Logger:
         """
 
         if abs(value - expected_value) > tol:
-            self.entries.append(LogEntry(msg=msg,
+            self.entries.append(LogEntry(msg=str(msg),
                                          severity=LogSeverity.Divergence,
-                                         device=device,
+                                         device=str(device),
                                          value=str(value),
                                          expected_value=str(expected_value),
                                          device_class="",
@@ -450,15 +454,15 @@ class Logger:
         :return:
         """
         # self.entries.append(LogEntry(msg, severity, device, str(value), str(expected_value)))
-        self.entries.append(LogEntry(msg=msg,
+        self.entries.append(LogEntry(msg=str(msg),
                                      severity=severity,
-                                     device=device,
+                                     device=str(device),
                                      value=str(value),
                                      expected_value=str(expected_value),
-                                     device_class=device_class,
-                                     device_property=device_property,
-                                     object_value=object_value,
-                                     expected_object_value=expected_object_value))
+                                     device_class=str(device_class),
+                                     device_property=str(device_property),
+                                     object_value=str(object_value),
+                                     expected_object_value=str(expected_object_value)))
 
     def to_dict(self) -> Union[Dict[str, Dict[str, List[Tuple[str, str, str, str]]]], Dict[str, Dict[str, List[List[str]]]]]:
         """
@@ -495,6 +499,22 @@ class Logger:
                                               'Property', 'Device', 'Value', 'Expected value'])
         df.set_index('Time', inplace=True)
         return df
+
+    def parse_df(self, df: pd.DataFrame):
+        """
+        Parse DataFrame
+        :param df: DataFrame
+        """
+        for i, row in df.iterrows():
+            self.entries.append(LogEntry(msg=str(row["Message"]),
+                                         severity=LogSeverity(row["Severity"]),
+                                         device=str(row["Device"]),
+                                         value=str(row["Value"]),
+                                         expected_value=str(row["Expected value"]),
+                                         device_class=str(row["Class"]),
+                                         device_property=str(row["Property"]),
+                                         object_value="",
+                                         expected_object_value=""))
 
     def to_csv(self, fname):
         """

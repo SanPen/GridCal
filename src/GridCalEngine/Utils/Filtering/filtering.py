@@ -18,8 +18,6 @@ from typing import List, Union
 from enum import Enum
 import re
 import numpy as np
-from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.basic_structures import BoolVec, Mat
 
 
 def is_odd(number: int):
@@ -29,6 +27,16 @@ def is_odd(number: int):
     :return:
     """
     return number % 2 != 0
+
+
+def is_numeric(obj: np.ndarray) -> bool:
+    """
+    Checks if the numpy array is numeric
+    :param obj:
+    :return:
+    """
+    attrs = ['__add__', '__sub__', '__mul__', '__truediv__', '__pow__']
+    return all(hasattr(obj, attr) for attr in attrs)
 
 
 class CompOps(Enum):
@@ -88,6 +96,11 @@ class FilterOps(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return FilterOps[s]
         except KeyError:
@@ -95,6 +108,10 @@ class FilterOps(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -116,6 +133,11 @@ class FilterSubject(Enum):
 
     @staticmethod
     def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
         try:
             return FilterSubject[s]
         except KeyError:
@@ -123,6 +145,10 @@ class FilterSubject(Enum):
 
     @classmethod
     def list(cls):
+        """
+
+        :return:
+        """
         return list(map(lambda c: c.value, cls))
 
 
@@ -310,20 +336,19 @@ class MasterFilter:
         """
 
         """
-        self.stack: List[Union[Filter, FilterOps]] = []
+        self.stack: List[Union[Filter, FilterOps]] = list()
 
     def add(self, elm: Union[Filter, FilterOps]) -> None:
         """
-
-        :param elm:
-        :return:
+        Add filter or filter operation to the stack
+        :param elm: filter or filter operation
         """
         self.stack.append(elm)
 
-    def size(self):
+    def size(self) -> int:
         """
-
-        :return:
+        Get size of the stack
+        :return: int
         """
         return len(self.stack)
 
@@ -341,7 +366,7 @@ def parse_single(token: str) -> Union[Filter, None]:
     :param token: Token
     :return: Filter or None if the token is not valid
     """
-    elms = re.split(r'([<>=!]=?|in|starts|ends|like|notlike)', token)
+    elms = re.split(r'(?<=\s)([<>=!]=?|in|starts|ends|like|notlike)(?=\s)', token)
 
     if len(elms) == 3:
 
@@ -370,7 +395,7 @@ def parse_expression(expression: str) -> MasterFilter:
     :return: MasterFilter
     """
     mst_flt = MasterFilter()
-    master_tokens = re.split(r'(and|or)', expression)
+    master_tokens = re.split(r'(?<=\s)(and|or)(?=\s)', expression)
 
     for token in master_tokens:
 
@@ -386,13 +411,3 @@ def parse_expression(expression: str) -> MasterFilter:
             mst_flt.add(elm=elm)
 
     return mst_flt
-
-
-def is_numeric(obj):
-    """
-    Checks if the numpy array is numeric
-    :param obj:
-    :return:
-    """
-    attrs = ['__add__', '__sub__', '__mul__', '__truediv__', '__pow__']
-    return all(hasattr(obj, attr) for attr in attrs)

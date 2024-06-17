@@ -20,7 +20,7 @@ from typing import Union
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (TransformerControlType, BuildStatus, TapModuleControl, TapAngleControl,
-                                        SubObjectType)
+                                        SubObjectType, TapChangerTypes)
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -79,7 +79,12 @@ class ControllableBranchParent(BranchParent):
                  capex: float,
                  opex: float,
                  build_status: BuildStatus,
-                 device_type: DeviceType):
+                 device_type: DeviceType,
+                 tc_total_positions: int = 5,
+                 tc_neutral_position: int = 2,
+                 tc_dV: float = 0.01,
+                 tc_asymmetry_angle=90,
+                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation):
         """
         Transformer constructor
         :param name: Name of the branch
@@ -172,13 +177,17 @@ class ControllableBranchParent(BranchParent):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-        self._temp_oper_prof = Profile(default_value=temp_oper)
+        self._temp_oper_prof = Profile(default_value=temp_oper, data_type=float)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
 
         # tap changer object
-        self._tap_changer = TapChanger()
+        self._tap_changer = TapChanger(total_positions=tc_total_positions,
+                                       neutral_position=tc_neutral_position,
+                                       dV=tc_dV,
+                                       asymmetry_angle=tc_asymmetry_angle,
+                                       tc_type=tc_type)
 
         # Tap module
         if tap_module != 0:
@@ -187,11 +196,11 @@ class ControllableBranchParent(BranchParent):
         else:
             self.tap_module = self._tap_changer.get_tap_module()
 
-        self._tap_module_prof = Profile(default_value=tap_module)
+        self._tap_module_prof = Profile(default_value=tap_module, data_type=float)
 
         # Tap angle
         self.tap_phase = tap_phase
-        self._tap_phase_prof = Profile(default_value=tap_phase)
+        self._tap_phase_prof = Profile(default_value=tap_phase, data_type=float)
 
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
@@ -201,10 +210,13 @@ class ControllableBranchParent(BranchParent):
         self.vset = vset
         self.Pset = Pset
 
-        self.control_mode: TransformerControlType = control_mode
+        self.control_mode: TransformerControlType = control_mode  # Legacy
+
         self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
         self.tap_angle_control_mode: TapAngleControl = tap_angle_control_mode
+
         self.regulation_branch: BranchParent = regulation_branch
+
         self.regulation_bus: Bus = regulation_bus
         self.regulation_cn: ConnectivityNode = regulation_cn
 
@@ -254,13 +266,13 @@ class ControllableBranchParent(BranchParent):
                       definition='Objective power at the "from" side of when regulating the angle.')
 
         self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
-                      definition='Branch where the controls are applied.')
+                      definition='Branch where the controls are applied.', editable=False)
 
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
-                      definition='Bus where the regulation is applied.')
+                      definition='Bus where the regulation is applied.', editable=False)
 
         self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Connectivity node where the regulation is applied.')
+                      definition='Connectivity node where the regulation is applied.', editable=False)
 
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
@@ -322,7 +334,7 @@ class ControllableBranchParent(BranchParent):
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
-    def tap_changer(self) -> Profile:
+    def tap_changer(self) -> TapChanger:
         """
         Cost profile
         :return: Profile
@@ -378,14 +390,16 @@ class ControllableBranchParent(BranchParent):
         Move the tap changer one position up
         """
         self.tap_changer.tap_up()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
 
     def tap_down(self):
         """
         Move the tap changer one position up
         """
         self.tap_changer.tap_down()
-        self.tap_module = self.tap_changer.get_tap()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
 
     def apply_tap_changer(self, tap_changer: TapChanger):
         """
@@ -399,6 +413,7 @@ class ControllableBranchParent(BranchParent):
         self.tap_changer = tap_changer
 
         if self.tap_module != 0:
-            self.tap_changer.set_tap(self.tap_module)
+            self.tap_changer.set_tap_module(tap_module=self.tap_module)
         else:
-            self.tap_module = self.tap_changer.get_tap()
+            self.tap_module = self.tap_changer.get_tap_module()
+            self.tap_phase = self.tap_changer.get_tap_phase()

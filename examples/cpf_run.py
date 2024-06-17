@@ -33,7 +33,7 @@ vc_inputs = gce.ContinuationPowerFlowInput(Sbase=base_power,
                                            Vbase=power_flow.results.voltage,
                                            Starget=base_power * 2)
 
-vc = gce.ContinuationPowerFlowDriver(circuit=main_circuit,
+vc = gce.ContinuationPowerFlowDriver(grid=main_circuit,
                                      options=vc_options,
                                      inputs=vc_inputs,
                                      pf_options=pf_options)

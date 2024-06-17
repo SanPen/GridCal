@@ -41,24 +41,10 @@ class InvestmentsGroup(EditableDevice):
                                 name=name,
                                 idtag=idtag,
                                 code='',
-                                device_type=DeviceType.InvestmentsGroupDevice)
+                                device_type=DeviceType.InvestmentsGroupDevice,
+                                comment=comment)
 
         # Contingency type
         self.category = category
-        self.comment = comment
 
         self.register(key='category', units='', tpe=str, definition='Some tag to category the contingency group')
-
-        self.register(key='comment', units='', tpe=str, definition='Some comment')
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-
-        return {
-            'id': self.idtag,
-            'name': self.name,
-            'category': self.category,
-        }

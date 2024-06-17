@@ -46,5 +46,4 @@ class Zone(GenericAreaGroup):
 
         self.area: Union[Area, None] = area
 
-        self.register(key="area", units="", tpe=DeviceType.AreaDevice,
-                      definition="Substation area, altenativelly this can be obtained from the zone")
+        self.register(key="area", units="", tpe=DeviceType.AreaDevice, definition="Area of this zone.")

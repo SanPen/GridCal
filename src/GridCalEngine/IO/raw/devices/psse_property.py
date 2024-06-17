@@ -45,3 +45,7 @@ class PsseProperty(BaseProperty):
                               max_value=max_value)
 
         self.rawx_key = rawx_key
+
+    def __str__(self):
+
+        return f'PSSeProp:{self.property_name}'

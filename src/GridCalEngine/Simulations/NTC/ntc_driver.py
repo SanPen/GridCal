@@ -18,12 +18,11 @@
 import numpy as np
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.NTC.ntc_options import OptimalNetTransferCapacityOptions
 from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import SimulationTypes
 
 
 class OptimalNetTransferCapacityDriver(DriverTemplate):

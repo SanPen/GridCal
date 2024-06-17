@@ -5,11 +5,17 @@ All server tile sources should inherit from this class.
 For example, see osm_tiles.py.
 """
 import queue
+import ssl
 from urllib import request
 from collections.abc import Callable
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import QThread
 from GridCal.Gui.Diagrams.MapWidget.logger import log
+
+
+# SSL magic to solve the certificates hell
+# https://stackoverflow.com/questions/68275857/urllib-error-urlerror-urlopen-error-ssl-certificate-verify-failed-certifica
+ssl._create_default_https_context = ssl._create_stdlib_context
 
 
 class TileWorker(QThread):
@@ -88,4 +94,3 @@ class TileWorker(QThread):
 
             # finally, removes request from queue
             self.requests.task_done()
-

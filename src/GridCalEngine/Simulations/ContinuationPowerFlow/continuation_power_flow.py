@@ -23,7 +23,7 @@ from GridCalEngine.enumerations import ReactivePowerControlMode, CpfParametrizat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCalEngine.Topology.simulation_indices import compile_types
-import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (polar_to_rect, compute_power)
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 
@@ -38,7 +38,7 @@ class CpfNumericResults:
     CpfNumericResults
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.V = list()
         self.Sbus = list()
         self.lmbda = list()
@@ -74,7 +74,7 @@ class CpfNumericResults:
         self.normF.append(normf)
         self.success.append(converged)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.V)
 
 
@@ -473,10 +473,10 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
             lam -= mu * dlam
 
             # update Vm and Va again in case we wrapped around with a negative Vm
-            V = cf.polar_to_rect(Vm, Va)
+            V = polar_to_rect(Vm, Va)
 
             # evaluate F(x, lam)
-            Scalc = cf.compute_power(Ybus, V)
+            Scalc = compute_power(Ybus, V)
             mismatch = Scalc - Sbus - lam * Sxfr
 
             # evaluate the parametrization function P(x, lambda)
@@ -710,7 +710,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 bus_types = types_new
                 Sbus = Scalc.real + 1j * Qnew
 
-                Sxfr = Sbus_target - Sbus  # TODO: really?
+                Sxfr = Sbus_target - Sbus
 
                 vd, pq, pv, pqpv = compile_types(Pbus=Sbus.real, types=types_new)
             else:

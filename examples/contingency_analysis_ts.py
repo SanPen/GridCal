@@ -19,11 +19,11 @@ main_circuit = FileOpen(fname).open()
 options_ = ContingencyAnalysisOptions(
     use_provided_flows=False,
     Pf=None,
-    engine=en.ContingencyMethod.PTDF,
+    contingency_method=en.ContingencyMethod.PTDF,
     pf_options=PowerFlowOptions(),
 )
 
-simulation = ContingencyAnalysisTimeSeries(
+simulation = ContingencyAnalysisTimeSeriesDriver(
     grid=main_circuit,
     options=options_,
     time_indices=main_circuit.get_all_time_indices(),

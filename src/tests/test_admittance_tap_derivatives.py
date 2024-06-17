@@ -76,7 +76,7 @@ def case_5bus():
     grid = gce.MultiCircuit()
 
     # Add the buses and the generators and loads attached
-    bus1 = gce.Bus('Bus 1', vnom=20)
+    bus1 = gce.Bus('Bus 1', Vnom=20)
     # bus1.is_slack = True  # we may mark the bus a slack
     grid.add_bus(bus1)
 
@@ -87,22 +87,22 @@ def case_5bus():
     grid.add_generator(bus1, gen1)
 
     # add bus 2 with a load attached
-    bus2 = gce.Bus('Bus 2', vnom=20)
+    bus2 = gce.Bus('Bus 2', Vnom=20)
     grid.add_bus(bus2)
     grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
 
     # add bus 3 with a load attached
-    bus3 = gce.Bus('Bus 3', vnom=20)
+    bus3 = gce.Bus('Bus 3', Vnom=20)
     grid.add_bus(bus3)
     grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
 
     # add bus 4 with a load attached
-    bus4 = gce.Bus('Bus 4', vnom=20)
+    bus4 = gce.Bus('Bus 4', Vnom=20)
     grid.add_bus(bus4)
     grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
 
     # add bus 5 with a load attached
-    bus5 = gce.Bus('Bus 5', vnom=20)
+    bus5 = gce.Bus('Bus 5', Vnom=20)
     grid.add_bus(bus5)
     grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
@@ -145,8 +145,7 @@ def case9() -> NonlinearOPFResults:
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+    file_path = os.path.join('data', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
@@ -163,8 +162,7 @@ def case14() -> NonlinearOPFResults:
     print(cwd)
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case14.m')
+    file_path = os.path.join('data', 'grids', 'case14.m')
 
     grid = gce.FileOpen(file_path).open()
     for l in grid.get_transformers2w():
@@ -183,8 +181,7 @@ def case_pegase89() -> NonlinearOPFResults:
     cwd = os.getcwd()
     print(cwd)
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..'))
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
+    file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
     grid.get_transformers2w()[3].control_mode = TransformerControlType.PtQt

@@ -24,8 +24,7 @@ from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_input import Sto
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, BranchImpedanceMode
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc
-
-from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 
@@ -70,7 +69,12 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
         self.simulation_type = simulation_type
 
-        self.results = None
+        self.results = StochasticPowerFlowResults(n=0,
+                                                  m=0,
+                                                  p=0,
+                                                  bus_names=np.empty(0),
+                                                  branch_names=np.empty(0),
+                                                  bus_types=np.empty(0))
 
         self.logger = Logger()
 

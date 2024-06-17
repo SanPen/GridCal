@@ -20,13 +20,12 @@ import numpy as np
 import pandas as pd
 from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType
+from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType, SimulationTypes
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch_ts
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
@@ -87,8 +86,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             n_fluid_node=self.grid.get_fluid_nodes_number(),
             n_fluid_path=self.grid.get_fluid_paths_number(),
             n_fluid_injection=self.grid.get_fluid_injection_number(),
-            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [
-                datetime.datetime.now()],
+            time_array=self.grid.time_profile[self.time_indices] if self.time_indices is not None else [datetime.datetime.now()],
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             clustering_results=clustering_results)
 
@@ -129,6 +127,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         contingency_groups_used=self.options.contingency_groups_used,
                                          unit_Commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
                                          all_generators_fixed=False,
@@ -267,11 +266,18 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         n = len(groups)
         i = 1
         energy_0: Union[Vec, None] = None  # at the beginning
+        fluid_level_0: Union[Vec, None] = None
 
         while i < n and not self.__cancel__:
             start_ = groups[i - 1]
             end_ = groups[i]
-            time_indices = np.arange(start_, end_)
+
+            # Grab the last time index in the last group
+            if i == n - 1:
+                time_indices = np.arange(start_, end_ + 1)
+            else:
+                time_indices = np.arange(start_, end_)
+
             # show progress message
             print(start_, ':', end_, ' [', end_ - start_, ']')
             self.report_text('Running OPF for the time group {0} '
@@ -285,6 +291,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         contingency_groups_used=self.options.contingency_groups_used,
                                          unit_Commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
                                          all_generators_fixed=False,
@@ -293,6 +300,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          areas_from=self.options.areas_from,
                                          areas_to=self.options.areas_to,
                                          energy_0=energy_0,
+                                         fluid_level_0=fluid_level_0,
                                          logger=self.logger,
                                          export_model_fname=self.options.export_model_fname)
 
@@ -338,6 +346,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.converged[time_indices] = np.array([opf_vars.acceptable_solution] * opf_vars.nt)
 
             energy_0 = self.results.battery_energy[end_ - 1, :]
+            fluid_level_0 = self.results.fluid_node_current_level[end_ - 1, :]
 
             # update progress bar
             self.report_progress2(i, len(groups))

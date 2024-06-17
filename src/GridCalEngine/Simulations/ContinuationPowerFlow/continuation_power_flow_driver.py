@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
@@ -22,7 +22,7 @@ from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow imp
 from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_options import ContinuationPowerFlowOptions
 from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_input import ContinuationPowerFlowInput
 from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow_results import ContinuationPowerFlowResults
-from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 
@@ -30,21 +30,21 @@ class ContinuationPowerFlowDriver(DriverTemplate):
     name = 'Continuation Power Flow'
     tpe = SimulationTypes.ContinuationPowerFlow_run
 
-    def __init__(self, circuit: MultiCircuit,
+    def __init__(self, grid: MultiCircuit,
                  options: ContinuationPowerFlowOptions,
                  inputs: ContinuationPowerFlowInput,
                  pf_options: PowerFlowOptions,
                  opf_results=None, t=0):
         """
         ContinuationPowerFlowDriver constructor
-        :param circuit: NumericalCircuit instance
+        :param grid: NumericalCircuit instance
         :param options: ContinuationPowerFlowOptions instance
         :param inputs: ContinuationPowerFlowInput instance
         :param pf_options: PowerFlowOptions instance
         :param opf_results:
         """
 
-        DriverTemplate.__init__(self, grid=circuit)
+        DriverTemplate.__init__(self, grid=grid)
 
         # voltage stability options
         self.options = options
@@ -57,7 +57,12 @@ class ContinuationPowerFlowDriver(DriverTemplate):
 
         self.t = t
 
-        self.results = None
+        self.results = ContinuationPowerFlowResults(nval=0,
+                                                    nbus=0,
+                                                    nbr=0,
+                                                    bus_names=[],
+                                                    branch_names=[],
+                                                    bus_types=[])
 
     def get_steps(self):
         """
@@ -68,7 +73,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         else:
             return list()
 
-    def progress_callback(self, lmbda):
+    def progress_callback(self, lmbda: float) -> None:
         """
         Send progress report
         :param lmbda: lambda value
@@ -76,14 +81,14 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         """
         self.report_text('Running continuation power flow (lambda:' + "{0:.2f}".format(lmbda) + ')...')
 
-    def run(self):
+    def run_at(self, t_idx: Union[int, None] = None) -> ContinuationPowerFlowResults:
         """
         run the voltage collapse simulation
         @return:
         """
         self.tic()
         nc = compile_numerical_circuit_at(circuit=self.grid,
-                                          t_idx=None,
+                                          t_idx=t_idx,
                                           apply_temperature=self.pf_options.apply_temperature_correction,
                                           branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
                                           opf_results=self.opf_results)
@@ -156,3 +161,11 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                                islands[i].original_branch_idx)
 
         self.toc()
+        return self.results
+
+    def run(self):
+        """
+        run the voltage collapse simulation
+        @return:
+        """
+        self.run_at(t_idx=None)

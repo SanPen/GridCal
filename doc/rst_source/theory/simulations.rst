@@ -31,6 +31,7 @@ Optimal power flow
     opf/opf
     opf/opf_dc_ts
     opf/opf_ac_ts
+    opf/acopf
     opf/hydro
 
 

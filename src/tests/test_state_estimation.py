@@ -34,9 +34,9 @@ def test_3_node() -> None:
     grid.add_bus(b2)
     grid.add_bus(b3)
 
-    grid.add_branch(br1)
-    grid.add_branch(br2)
-    grid.add_branch(br3)
+    grid.add_line(br1)
+    grid.add_line(br2)
+    grid.add_line(br3)
 
     se = StateEstimation(circuit=grid)
 

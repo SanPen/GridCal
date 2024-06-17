@@ -42,6 +42,10 @@ class Terminal(ACDCTerminal):
 		self.SvPowerFlow: SvPowerFlow | None = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.topological_node import TopologicalNode
 		self.TopologicalNode: TopologicalNode | None = None
+		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.mutual_coupling import MutualCoupling
+		self.HasSecondMutualCoupling: MutualCoupling | None = None
+		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.mutual_coupling import MutualCoupling
+		self.HasFirstMutualCoupling: MutualCoupling | None = None
 
 		self.register_property(
 			name='ConverterDCSides',
@@ -122,5 +126,21 @@ The phase code on terminals connecting same ConnectivityNode or same Topological
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''The topological node associated with the terminal.   This can be used as an alternative to the connectivity node path to topological node, thus making it unnecessary to model connectivity nodes in some cases.   Note that the if connectivity nodes are in the model, this association would probably not be used as an input specification.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='HasSecondMutualCoupling',
+			class_type=MutualCoupling,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Mutual couplings with the branch associated as the first branch.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='HasFirstMutualCoupling',
+			class_type=MutualCoupling,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''Mutual couplings associated with the branch as the first branch.''',
 			profiles=[]
 		)

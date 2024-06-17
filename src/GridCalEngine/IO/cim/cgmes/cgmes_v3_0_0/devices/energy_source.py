@@ -28,6 +28,12 @@ class EnergySource(EnergyConnection):
 		self.nominalVoltage: float = None
 		self.pMin: float = None
 		self.pMax: float = None
+		self.r: float = None
+		self.r0: float = None
+		self.rn: float = None
+		self.x: float = None
+		self.x0: float = None
+		self.xn: float = None
 		self.activePower: float = None
 		self.reactivePower: float = None
 		self.voltageAngle: float = None
@@ -63,6 +69,54 @@ class EnergySource(EnergyConnection):
 			multiplier=UnitMultiplier.M,
 			unit=UnitSymbol.W,
 			description='''Product of RMS value of the voltage and the RMS value of the in-phase component of the current.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='r',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='r0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='rn',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='x',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='x0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='xn',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
 			profiles=[]
 		)
 		self.register_property(

@@ -23,7 +23,7 @@ from typing import List
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Branches.branch import BranchType
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Simulations.driver_types import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 pd.set_option('display.max_rows', 500)

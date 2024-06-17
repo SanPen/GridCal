@@ -22,17 +22,25 @@ class MapLocation:
     GraphicLocation
     """
 
-    def __init__(self, latitude: float = 0.0, longitude: float = 0.0, altitude: float = 0.0, api_object=None):
+    def __init__(self,
+                 latitude: float = 0.0,
+                 longitude: float = 0.0,
+                 altitude: float = 0.0,
+                 api_object=None,
+                 draw_labels: bool = True):
         """
 
         :param latitude:
         :param longitude:
         :param altitude:
+        :param api_object:
+        :param draw_labels:
         """
 
         self.latitude = latitude
         self.longitude = longitude
         self.altitude = altitude
+        self.draw_labels = draw_labels
         self.api_object = api_object
 
     def get_properties_dict(self) -> Dict[str, float]:
@@ -40,4 +48,7 @@ class MapLocation:
         get as a dictionary point
         :return:
         """
-        return {'latitude': self.latitude, 'longitude': self.longitude, 'altitude': self.altitude}
+        return {'latitude': self.latitude,
+                'longitude': self.longitude,
+                'altitude': self.altitude,
+                'draw_labels': self.draw_labels}

@@ -25,9 +25,9 @@ class FullModel(IdentifiedObject):
         self.scenarioTime: str = None
         self.created: str = None
         self.version: str = None
-        self.profile: str = None
+        self.profile: str | list = None
         self.modelingAuthoritySet: str = None
-        self.DependentOn: str = None
+        self.DependentOn: str | list = None
         self.longDependentOnPF: str = None
         self.Supersedes: str = None
 

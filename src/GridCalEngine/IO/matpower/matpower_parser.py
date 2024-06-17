@@ -180,7 +180,7 @@ def parse_buses_data(circuit: MultiCircuit,
 
         bus = dev.Bus(name=names[i],
                       code=code,
-                      vnom=table[i, matpower_buses.BASE_KV],
+                      Vnom=table[i, matpower_buses.BASE_KV],
                       vmax=table[i, matpower_buses.VMAX],
                       vmin=table[i, matpower_buses.VMIN],
                       area=area,

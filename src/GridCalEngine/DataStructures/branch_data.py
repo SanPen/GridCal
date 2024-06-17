@@ -20,7 +20,7 @@ import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection, TransformerControlType
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 
 class BranchData:
@@ -207,7 +207,7 @@ class BranchData:
         data.ctrl_branch = self.ctrl_branch[elm_idx]
         data.ctrl_mode_m = self.ctrl_mode_m[elm_idx]
         data.ctrl_mode_tau = self.ctrl_mode_tau[elm_idx]
-        bus_map = {o: i for i, o in enumerate(bus_idx)}
+        bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
             if data.control_mode[k] != TransformerControlType.fixed:
                 data.ctrl_bus[k] = bus_map[data.ctrl_bus[k]]

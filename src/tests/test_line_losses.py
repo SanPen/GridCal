@@ -35,8 +35,8 @@ def test_line_losses_1():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
 
     grid.add_bus(Bus0)
     grid.add_bus(Bus1)
@@ -48,7 +48,7 @@ def test_line_losses_1():
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Line(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.01, x=0.05))
+    grid.add_line(Line(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.01, x=0.05))
 
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
@@ -57,9 +57,9 @@ def test_line_losses_1():
     power_flow.run()
 
     # Check solution
-    approx_losses = round(1000*power_flow.results.losses[0], 3)
+    approx_losses = round(1000 * power_flow.results.losses[0], 3)
     solution = complex(0.116, 0.58)  # Expected solution from GridCal
-                                     # Tested on ETAP 16.1.0 and pandapower
+    # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
     print(f"Test: {test_name}")
@@ -79,7 +79,7 @@ def test_line_losses_1():
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
-        print(f"   X/R = {round(b.X/b.R, 2)}")
+        print(f"   X/R = {round(b.X / b.R, 2)}")
     print()
 
     print("Voltages:")
@@ -117,9 +117,9 @@ def test_line_losses_2():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
-    Bus2 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
+    Bus2 = Bus(name="Bus1", Vnom=25)
 
     for b in Bus0, Bus1, Bus2:
         grid.add_bus(b)
@@ -131,8 +131,8 @@ def test_line_losses_2():
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Line(bus_from=Bus0, bus_to=Bus1, name="Cable0", r=0.005, x=0.025))
-    grid.add_branch(Line(bus_from=Bus1, bus_to=Bus2, name="Cable1", r=0.005, x=0.025))
+    grid.add_line(Line(bus_from=Bus0, bus_to=Bus1, name="Cable0", r=0.005, x=0.025))
+    grid.add_line(Line(bus_from=Bus1, bus_to=Bus2, name="Cable1", r=0.005, x=0.025))
 
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
@@ -141,9 +141,9 @@ def test_line_losses_2():
     power_flow.run()
 
     # Check solution
-    approx_losses = round(1000*sum(power_flow.results.losses), 3)
+    approx_losses = round(1000 * sum(power_flow.results.losses), 3)
     solution = complex(0.116, 0.58)  # Expected solution from GridCal
-                                     # Tested on ETAP 16.1.0 and pandapower
+    # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
     print(f"Test: {test_name}")
@@ -163,7 +163,7 @@ def test_line_losses_2():
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
-        print(f"   X/R = {round(b.X/b.R, 2)}")
+        print(f"   X/R = {round(b.X / b.R, 2)}")
     print()
 
     print("Voltages:")
@@ -201,8 +201,8 @@ def test_line_losses_3():
     grid.logger = Logger()
 
     # Create buses
-    Bus0 = Bus(name="Bus0", vnom=25, is_slack=True)
-    Bus1 = Bus(name="Bus1", vnom=25)
+    Bus0 = Bus(name="Bus0", Vnom=25, is_slack=True)
+    Bus1 = Bus(name="Bus1", Vnom=25)
 
     for b in Bus0, Bus1:
         grid.add_bus(b)
@@ -214,8 +214,8 @@ def test_line_losses_3():
     grid.add_generator(Bus0, Generator(name="Utility"))
 
     # Create cable (r and x should be in pu)
-    grid.add_branch(Line(bus_from=Bus0, bus_to=Bus1, name="Cable0", r=0.02, x=0.1))
-    grid.add_branch(Line(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.02, x=0.1))
+    grid.add_line(Line(bus_from=Bus0, bus_to=Bus1, name="Cable0", r=0.02, x=0.1))
+    grid.add_line(Line(bus_from=Bus0, bus_to=Bus1, name="Cable1", r=0.02, x=0.1))
 
     # Run non-linear load flow
     options = PowerFlowOptions(verbose=True)
@@ -224,9 +224,9 @@ def test_line_losses_3():
     power_flow.run()
 
     # Check solution
-    approx_losses = round(1000*sum(power_flow.results.losses), 3)
+    approx_losses = round(1000 * sum(power_flow.results.losses), 3)
     solution = complex(0.116, 0.58)  # Expected solution from GridCal
-                                     # Tested on ETAP 16.1.0 and pandapower
+    # Tested on ETAP 16.1.0 and pandapower
 
     print("\n=================================================================")
     print(f"Test: {test_name}")
@@ -246,7 +246,7 @@ def test_line_losses_3():
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
-        print(f"   X/R = {round(b.X/b.R, 2)}")
+        print(f"   X/R = {round(b.X / b.R, 2)}")
     print()
 
     print("Voltages:")

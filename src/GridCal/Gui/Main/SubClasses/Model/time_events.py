@@ -48,7 +48,6 @@ class TimeEventsMain(ObjectsTableMain):
         # Buttons
         self.ui.new_profiles_structure_pushButton.clicked.connect(self.new_profiles_structure)
         self.ui.delete_profiles_structure_pushButton.clicked.connect(self.delete_profiles_structure)
-        # self.ui.set_profile_state_button.clicked.connect(self.set_profiles_state_to_grid)
         self.ui.edit_profiles_pushButton.clicked.connect(self.import_profiles)
         self.ui.edit_profiles_from_models_pushButton.clicked.connect(self.import_profiles_from_models)
         self.ui.set_profile_state_button.clicked.connect(self.set_profile_state_to_snapshot)
@@ -83,11 +82,15 @@ class TimeEventsMain(ObjectsTableMain):
         """
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
+
             steps, step_length, step_unit, time_base = dlg.get_values()
 
             self.ui.profiles_tableView.setModel(None)
 
-            self.circuit.create_profiles(steps, step_length, step_unit, time_base)
+            self.circuit.create_profiles(steps=steps,
+                                         step_length=step_length,
+                                         step_unit=step_unit,
+                                         time_base=time_base)
 
             self.display_profiles()
 
@@ -330,7 +333,7 @@ class TimeEventsMain(ObjectsTableMain):
             idx_to = self.ui.device_type_magnitude_comboBox_2.currentIndex()
             magnitude_to = magnitudes[idx_to]
 
-            if len(self.circuit.buses) > 0 and magnitude_from != magnitude_to:
+            if self.circuit.valid_for_simulation() and magnitude_from != magnitude_to:
 
                 msg = "Are you sure that you want to overwrite the values " + magnitude_to + \
                       " with the values of " + magnitude_from + "?"
@@ -430,7 +433,7 @@ class TimeEventsMain(ObjectsTableMain):
         Open the dialogue to load profile data from models
         """
 
-        if len(self.circuit.buses) == 0:
+        if not self.circuit.valid_for_simulation():
             warning_msg("There are no objects to which to assign a profile. \n"
                         "You need to load or create a grid!")
             return
@@ -461,6 +464,13 @@ class TimeEventsMain(ObjectsTableMain):
                         "that you prefer.\n\n"
                         "Use the 'Create profiles button'.")
 
+    def get_circuit_snapshot_datetime(self):
+        """
+        Set the datetime from the circuit
+        """
+        val = self.circuit.snapshot_time
+        self.ui.snapshot_dateTimeEdit.setDateTime(val)
+
     def set_profile_state_to_snapshot(self):
         """
         Set the selected profiles state in the grid
@@ -469,6 +479,7 @@ class TimeEventsMain(ObjectsTableMain):
 
         if idx > -1:
             self.circuit.set_state(t=idx)
+            self.get_circuit_snapshot_datetime()
         else:
             info_msg('Select a time series step to copy to the snapshot', 'Set snapshot')
 

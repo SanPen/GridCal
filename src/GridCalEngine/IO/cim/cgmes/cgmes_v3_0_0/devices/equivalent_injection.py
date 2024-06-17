@@ -30,6 +30,12 @@ class EquivalentInjection(EquivalentEquipment):
 		self.regulationCapability: bool = None
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.reactive_capability_curve import ReactiveCapabilityCurve
 		self.ReactiveCapabilityCurve: ReactiveCapabilityCurve | None = None
+		self.r: float = None
+		self.r0: float = None
+		self.r2: float = None
+		self.x: float = None
+		self.x0: float = None
+		self.x2: float = None
 		self.regulationStatus: bool = None
 		self.regulationTarget: float = None
 		self.p: float = None
@@ -81,6 +87,54 @@ class EquivalentInjection(EquivalentEquipment):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''The reactive capability curve used by this equivalent injection.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='r',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='r0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='r2',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='x',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='x0',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='x2',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
 			profiles=[]
 		)
 		self.register_property(

@@ -163,8 +163,8 @@ inputs for that driver. The driver is run, storing the driver results
 object. Although this may seem overly complicated, it has proven to be
 maintainable and very convenient.
 
-Snapshot vs. time series
-~~~~~~~~~~~~~~~~~~~~~~~~
+Snapshot vs. time series
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 GridCal has dual structure to handle legacy cases (snapshot), as well as
 cases with many variations (time series)
@@ -195,7 +195,7 @@ while the numerical circuit is array-oriented (despite beign packed into
 objects)
 
 Loading a grid
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -216,7 +216,7 @@ GridCal supports a plethora of file formats:
    coordinates)
 
 Save a grid
-~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -229,7 +229,7 @@ Save a grid
    gce.save_file(my_grid, "my_file_2.gridcal")
 
 Creating a Grid using the API objects
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We are going to create a very simple 5-node grid from the excellent book
 *Power System Load Flow Analysis by Lynn Powell*.
@@ -559,8 +559,8 @@ Linear optimization
 Run a linear optimization and verify with power flow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Often ties, you want to dispatch the generation using a linear
-optimization, to then *veryfy* the results using the power exact power
+Often times, you want to dispatch the generation using a linear
+optimization, to then *verify* the results using the power exact power
 flow. With GridCal, to do so is as easy as passing the results of the
 OPF into the PowerFlowDriver:
 

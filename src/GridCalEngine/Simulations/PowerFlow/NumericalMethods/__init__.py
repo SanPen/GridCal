@@ -23,6 +23,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_ode imp
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.gauss_power_flow import gausspf
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep, helm_coefficients_josep, helm_coefficients_dY, helm_preparation_dY
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_acdc import NR_LS_ACDC
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_general import NR_LS_GENERAL
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_decoupled import NRD_LS
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquardt_acdc import LM_ACDC
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow import dcpf, lacpf

@@ -1294,7 +1294,7 @@ if __name__ == "__main__":
 
     import sys
     from pathlib import Path
-    import qdarktheme
+    import GridCal.ThirdParty.qdarktheme as qdarktheme
 
     dest = Path("../Main/screenshots")
     dest.mkdir(exist_ok=True)

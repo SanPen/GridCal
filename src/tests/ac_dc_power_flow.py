@@ -22,7 +22,10 @@ import GridCalEngine.api as gce
 
 
 def test_1():
-    # fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt.gridcal'
+    """
+
+    :return:
+    """
     fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.gridcal')
     grid = gce.open_file(fname)
 

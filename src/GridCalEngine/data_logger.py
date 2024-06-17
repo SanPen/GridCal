@@ -141,14 +141,14 @@ class DataLogger:
         :param comment:
         :return:
         """
-        self.entries.append(DataLogEntry(msg=msg,
-                                         severity=DataLogSeverity.Warning,
-                                         device=device,
-                                         device_class=device_class,
-                                         property_name=device_property,
+        self.entries.append(DataLogEntry(msg=str(msg),
+                                         severity=DataLogSeverity.Information,
+                                         device=str(device),
+                                         device_class=str(device_class),
+                                         property_name=str(device_property),
                                          value=str(value),
                                          expected_value=str(expected_value),
-                                         comment=comment))
+                                         comment=str(comment)))
 
     def add_warning(self, msg, device="", device_class="", device_property='', value="", expected_value="",
                     comment=""):
@@ -163,14 +163,14 @@ class DataLogger:
         :param comment:
         :return:
         """
-        self.entries.append(DataLogEntry(msg=msg,
+        self.entries.append(DataLogEntry(msg=str(msg),
                                          severity=DataLogSeverity.Warning,
-                                         device=device,
-                                         device_class=device_class,
-                                         property_name=device_property,
+                                         device=str(device),
+                                         device_class=str(device_class),
+                                         property_name=str(device_property),
                                          value=str(value),
                                          expected_value=str(expected_value),
-                                         comment=comment))
+                                         comment=str(comment)))
 
     def add_error(self, msg: str, device="", device_class="", device_property='', value="", expected_value="",
                   comment=""):
@@ -185,14 +185,14 @@ class DataLogger:
         :param comment:
         :return:
         """
-        self.entries.append(DataLogEntry(msg=msg,
+        self.entries.append(DataLogEntry(msg=str(msg),
                                          severity=DataLogSeverity.Error,
-                                         device=device,
-                                         device_class=device_class,
-                                         property_name=device_property,
+                                         device=str(device),
+                                         device_class=str(device_class),
+                                         property_name=str(device_property),
                                          value=str(value),
                                          expected_value=str(expected_value),
-                                         comment=comment))
+                                         comment=str(comment)))
 
     def add_divergence(self, msg, device="", device_class="", device_property='', value=0, expected_value=0, tol=1e-6):
         """
@@ -208,11 +208,11 @@ class DataLogger:
         """
 
         if abs(value - expected_value) > tol:
-            self.entries.append(DataLogEntry(msg=msg,
+            self.entries.append(DataLogEntry(msg=str(msg),
                                              severity=DataLogSeverity.Divergence,
-                                             device=device,
-                                             device_class=device_class,
-                                             property_name=device_property,
+                                             device=str(device),
+                                             device_class=str(device_class),
+                                             property_name=str(device_property),
                                              value=str(value),
                                              expected_value=str(expected_value)))
 
@@ -229,11 +229,11 @@ class DataLogger:
         :param expected_value:
         :return:
         """
-        self.entries.append(DataLogEntry(msg=msg,
+        self.entries.append(DataLogEntry(msg=str(msg),
                                          severity=severity,
-                                         device=device,
-                                         device_class=device_class,
-                                         property_name=device_property,
+                                         device=str(device),
+                                         device_class=str(device_class),
+                                         property_name=str(device_property),
                                          value=str(value),
                                          expected_value=str(expected_value)))
 

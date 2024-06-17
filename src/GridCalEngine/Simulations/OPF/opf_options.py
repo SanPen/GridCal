@@ -16,8 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import List, Union
-from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping
+from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping, AcOpfMode
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 
 
 class OptimalPowerFlowOptions:
@@ -32,9 +34,10 @@ class OptimalPowerFlowOptions:
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                  mip_solver=MIPSolvers.CBC,
                  faster_less_accurate=False,
-                 power_flow_options=None,
+                 power_flow_options: Union[None, PowerFlowOptions] = None,
                  bus_types=None,
                  consider_contingencies=False,
+                 contingency_groups_used: List[ContingencyGroup] = (),
                  skip_generation_limits=False,
                  lodf_tolerance=0.001,
                  maximize_flows=False,
@@ -50,6 +53,7 @@ class OptimalPowerFlowOptions:
                  ips_iterations: int = 100,
                  ips_trust_radius: float = 1.0,
                  ips_init_with_pf: bool = False,
+                 acopf_mode: AcOpfMode = AcOpfMode.ACOPFstd,
                  pf_results: PowerFlowResults = None):
         """
         Optimal power flow options
@@ -82,7 +86,7 @@ class OptimalPowerFlowOptions:
 
         self.faster_less_accurate = faster_less_accurate
 
-        self.power_flow_options = power_flow_options
+        self.power_flow_options: PowerFlowOptions = power_flow_options if power_flow_options else PowerFlowOptions()
 
         self.bus_types = bus_types
 
@@ -91,6 +95,8 @@ class OptimalPowerFlowOptions:
         self.skip_generation_limits = skip_generation_limits
 
         self.consider_contingencies = consider_contingencies
+
+        self.contingency_groups_used: List[ContingencyGroup] = contingency_groups_used
 
         self.lodf_tolerance = lodf_tolerance
 
@@ -113,6 +119,8 @@ class OptimalPowerFlowOptions:
         self.export_model_fname: Union[None, str] = export_model_fname
 
         self.generate_report = generate_report
+
+        self.acopf_mode = acopf_mode
 
         # IPS settings
         self.ips_method: SolverType = ips_method

@@ -25,9 +25,8 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
-from GridCalEngine.Devices.sparse_array import SparseArray
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType, TransformerControlType
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TransformerControlType)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -40,91 +39,91 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
     # loading algorithm is able to find the object substitutions
 
     object_types = {
-                    'modelling_authority': dev.ModellingAuthority(),
+        'modelling_authority': dev.ModellingAuthority(),
 
-                    'area': dev.Area(),
-                    'zone': dev.Zone(),
+        'area': dev.Area(),
+        'zone': dev.Zone(),
 
-                    'substation': dev.Substation(),
+        'substation': dev.Substation(),
 
-                    'voltage_level': dev.VoltageLevel(),
+        'voltage_level': dev.VoltageLevel(),
 
-                    'country': dev.Country(),
-                    'community': dev.Community(),
-                    'region': dev.Region(),
-                    'municipality': dev.Municipality(),
+        'country': dev.Country(),
+        'community': dev.Community(),
+        'region': dev.Region(),
+        'municipality': dev.Municipality(),
 
-                    'technology': dev.Technology(),
+        'technology': dev.Technology(),
 
-                    'fuel': dev.Fuel(),
+        'fuel': dev.Fuel(),
 
-                    'emission': dev.EmissionGas(),
+        'emission': dev.EmissionGas(),
 
-                    'bus': dev.Bus(),
+        'bus': dev.Bus(),
 
-                    'bus_bar': dev.BusBar(),
+        'bus_bar': dev.BusBar(),
 
-                    'connectivity node': dev.ConnectivityNode(),
+        'connectivity node': dev.ConnectivityNode(),
 
-                    'load': dev.Load(),
+        'load': dev.Load(),
 
-                    'static_generator': dev.StaticGenerator(),
+        'static_generator': dev.StaticGenerator(),
 
-                    'battery': dev.Battery(),
+        'battery': dev.Battery(),
 
-                    'generator': dev.Generator(),
+        'generator': dev.Generator(),
 
-                    'shunt': dev.Shunt(),
+        'shunt': dev.Shunt(),
 
-                    'linear_shunt': dev.ControllableShunt(),
+        'linear_shunt': dev.ControllableShunt(),
 
-                    'external_grid': dev.ExternalGrid(),
+        'external_grid': dev.ExternalGrid(),
 
-                    'current_injection': dev.CurrentInjection(),
+        'current_injection': dev.CurrentInjection(),
 
-                    'wires': dev.Wire(),
-                    'overhead_line_types': dev.OverheadLineType(),
-                    'underground_cable_types': dev.UndergroundLineType(),
-                    'sequence_line_types': dev.SequenceLineType(),
-                    'transformer_types': dev.TransformerType(),
+        'wires': dev.Wire(),
+        'overhead_line_types': dev.OverheadLineType(),
+        'underground_cable_types': dev.UndergroundLineType(),
+        'sequence_line_types': dev.SequenceLineType(),
+        'transformer_types': dev.TransformerType(),
 
-                    'branch_group': dev.BranchGroup(),
+        'branch_group': dev.BranchGroup(),
 
-                    'branch': dev.Branch(),
-                    'transformer2w': dev.Transformer2W(),
+        'branch': dev.Branch(),
+        'transformer2w': dev.Transformer2W(),
 
-                    'windings': dev.Winding(),
-                    'transformer3w': dev.Transformer3W(),
+        'windings': dev.Winding(),
+        'transformer3w': dev.Transformer3W(),
 
-                    'line': dev.Line(),
-                    'dc_line': dev.DcLine(None, None),
+        'line': dev.Line(),
+        'dc_line': dev.DcLine(None, None),
 
-                    'hvdc': dev.HvdcLine(),
+        'hvdc': dev.HvdcLine(),
 
-                    'vsc': dev.VSC(None, None),
-                    'upfc': dev.UPFC(None, None),
+        'vsc': dev.VSC(None, None),
+        'upfc': dev.UPFC(None, None),
 
-                    'series_reactance': dev.SeriesReactance(),
+        'series_reactance': dev.SeriesReactance(),
 
-                    'switch': dev.Switch(),
+        'switch': dev.Switch(),
 
-                    'contingency_group': dev.ContingencyGroup(),
-                    'contingency': dev.Contingency(),
+        'contingency_group': dev.ContingencyGroup(),
+        'contingency': dev.Contingency(),
 
-                    'investments_group': dev.InvestmentsGroup(),
-                    'investment': dev.Investment(),
+        'investments_group': dev.InvestmentsGroup(),
+        'investment': dev.Investment(),
 
-                    'generator_technology': dev.GeneratorTechnology(),
-                    'generator_fuel': dev.GeneratorFuel(),
-                    'generator_emission': dev.GeneratorEmission(),
+        'generator_technology': dev.GeneratorTechnology(),
+        'generator_fuel': dev.GeneratorFuel(),
+        'generator_emission': dev.GeneratorEmission(),
 
-                    'fluid_node': dev.FluidNode(),
-                    'fluid_path': dev.FluidPath(),
-                    'fluid_turbine': dev.FluidTurbine(),
-                    'fluid_pump': dev.FluidPump(),
-                    'fluid_p2x': dev.FluidP2x(),
+        'fluid_node': dev.FluidNode(),
+        'fluid_path': dev.FluidPath(),
+        'fluid_turbine': dev.FluidTurbine(),
+        'fluid_pump': dev.FluidPump(),
+        'fluid_p2x': dev.FluidP2x(),
 
-                    }
+    }
     return object_types
 
 
@@ -338,20 +337,23 @@ def profile_todict_str(profile: Profile) -> Dict[str, str]:
         }
 
 
-def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]],
-                          collection: Union[None, Dict[str, Any]] = None) -> Profile:
+def get_profile_from_dict(profile: Profile,
+                          data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]],
+                          collection: Union[None, Dict[str, Any]] = None):
     """
     Create a profile from json dict data
+    :param profile: Profile object to fill in
     :param data: Json dict data
     :param collection: if the collection is provided, it will be used to convert idtags into objects
-    :return: Profile
+    :return: None
     """
     default_value = data['default']
-    profile = Profile(default_value=default_value, is_sparse=bool(data['is_sparse']))
+    is_sparse = bool(data['is_sparse'])
+    # profile = Profile(default_value=default_value, is_sparse=bool(data['is_sparse']))
 
-    if profile.is_sparse:
+    if is_sparse:
         sp_data = data['sparse_data']
-        profile._sparse_array = SparseArray()
+
         if collection is None:
             map_data = {int(key): val for key, val in sp_data['map'].items()}
 
@@ -359,7 +361,11 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
             default_value = collection.get(data['default'], default_value)
             map_data = {int(key): collection.get(val, default_value) for key, val in sp_data['map'].items()}
 
-        profile.sparse_array.create_from_dict(default_value=default_value, size=data['size'], map_data=map_data)
+        if profile.dtype == DeviceType.BusDevice:  # manual correction for buses profile incorrect value
+            if default_value == "None":
+                default_value = profile.default_value
+
+        profile.create_sparse(default_value=default_value, size=data['size'], map_data=map_data)
     else:
 
         if collection is None:
@@ -368,7 +374,6 @@ def get_profile_from_dict(data: Dict[str, Union[str, Union[Any, Dict[str, Any]]]
             arr = [collection.get(i, default_value) for i in data['dense_data']]
         profile.set(np.array(arr))
     profile.set_initialized()
-    return profile
 
 
 def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
@@ -417,7 +422,7 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
 
 def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     """
-
+    Transform a MultiCircuit into a collection of Json files
     :param circuit:
     :return:
     """
@@ -446,9 +451,11 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     # time
     unix_time = circuit.get_unix_time()
     data['time'] = {'unix': unix_time.tolist(),
-                    'prob': list(np.ones(len(unix_time)))}
+                    'prob': list(np.ones(len(unix_time))),
+                    'snapshot_unix': circuit.get_snapshot_time_unix()}
 
     return data
+
 
 
 def search_property(template_elm: ALL_DEV_TYPES,
@@ -929,12 +936,13 @@ def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Uni
         # search the profile in the json
         json_profile = json_entry.get(gc_prop.profile_name, None)
 
+        profile: Profile = elm.get_profile(magnitude=gc_prop.name)
+
         if json_profile is None:
             # the profile was not found, so we fill it with the default stuff
-            elm.get_profile(magnitude=gc_prop.name).fill(property_value)
+            profile.fill(property_value)
         else:
-            profile = get_profile_from_dict(data=json_profile, collection=collection)
-            elm.set_profile(prop=gc_prop, arr=profile)
+            get_profile_from_dict(profile=profile, data=json_profile, collection=collection)
 
 
 def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
@@ -967,7 +975,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         for property_name, gc_prop in template_elm.registered_properties.items():
 
             # search for the property in the json
-            property_value = searc_property_into_json(json_entry, gc_prop)
+            property_value = searc_property_into_json(json_entry=json_entry, prop=gc_prop)
 
             if property_value is not None:
 
@@ -1110,7 +1118,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
     return devices, devices_dict
 
 
-def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dict[str, Any]]],
+def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]],
                        text_func: Union[Callable, None] = None,
                        progress_func: Union[Callable, None] = None,
                        logger: Logger = Logger()) -> MultiCircuit:
@@ -1237,6 +1245,11 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
             tdata = model_data.get('time', None)
             if tdata is not None:
                 circuit.set_unix_time(arr=tdata['unix'])
+
+                snapshot_unix_time = tdata.get('snapshot_unix', None)
+                if snapshot_unix_time is not None:
+                    circuit.set_snapshot_time_unix(val=snapshot_unix_time)
+
             else:
                 logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
                 circuit.time_profile = None
@@ -1300,20 +1313,19 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
     # create diagrams --------------------------------------------------------------------------------------------------
     if text_func is not None:
         text_func("Parsing diagrams...")
-    if 'diagrams' in data.keys():
 
-        if len(data['diagrams']):
-            obj_dict = circuit.gat_all_elements_dict_by_type()
+    # try to get the get the list of diagrams
+    list_of_diagrams: List[Dict[str, Any]] = data.get('diagrams', None)
 
-            for diagram_dict in data['diagrams']:
+    if list_of_diagrams is not None:
 
-                if diagram_dict['type'] == DiagramType.BusBranch.value:
-                    diagram = dev.BusBranchDiagram()
-                    diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
-                    circuit.add_diagram(diagram)
+        if len(list_of_diagrams):
+            obj_dict = circuit.get_all_elements_dict_by_type(add_locations=True)
 
-                elif diagram_dict['type'] == DiagramType.NodeBreaker.value:
-                    diagram = dev.NodeBreakerDiagram()
+            for diagram_dict in list_of_diagrams:
+
+                if diagram_dict['type'] in [DiagramType.Schematic.value, "bus-branch"]:
+                    diagram = dev.SchematicDiagram()
                     diagram.parse_data(data=diagram_dict, obj_dict=obj_dict, logger=logger)
                     circuit.add_diagram(diagram)
 

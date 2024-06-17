@@ -20,7 +20,6 @@ from typing import Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
 import GridCalEngine.Simulations.PowerFlow.power_flow_worker as pf_worker
@@ -28,14 +27,15 @@ from GridCalEngine.Compilers.circuit_to_bentayga import bentayga_pf
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_pf
 from GridCalEngine.Compilers.circuit_to_pgm import pgm_pf
 from GridCalEngine.basic_structures import IntVec
-from GridCalEngine.enumerations import EngineType
+from GridCalEngine.enumerations import EngineType, SimulationTypes
 
 
 class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
-    tpe = SimulationTypes.TimeSeries_run
+    tpe = SimulationTypes.PowerFlowTimeSeries_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit,
+    def __init__(self,
+                 grid: MultiCircuit,
                  options: Union[PowerFlowOptions, None] = None,
                  time_indices: Union[IntVec, None] = None,
                  opf_time_series_results=None,
@@ -61,6 +61,17 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.options = PowerFlowOptions() if options is None else options
 
         self.opf_time_series_results = opf_time_series_results
+
+        self.results = PowerFlowTimeSeriesResults(n=0,
+                                                  m=0,
+                                                  n_hvdc=0,
+                                                  bus_names=np.empty(0),
+                                                  branch_names=np.empty(0),
+                                                  hvdc_names=np.empty(0),
+                                                  time_array=np.empty(0),
+                                                  bus_types=np.empty(0),
+                                                  area_names=None,
+                                                  clustering_results=None)
 
     def run_single_thread(self, time_indices) -> PowerFlowTimeSeriesResults:
         """

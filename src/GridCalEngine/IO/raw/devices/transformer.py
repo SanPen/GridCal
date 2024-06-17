@@ -1092,7 +1092,7 @@ class RawTransformer(RawObject):
             """
             ti = self.WINDV1
             tj = self.WINDV2
-            tap_module = ti / tj
+            tap_module = ti / tj if tj != 0 else 1.0
 
         elif self.CW == 2:
             """

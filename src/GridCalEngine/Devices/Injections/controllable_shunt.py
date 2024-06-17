@@ -84,7 +84,7 @@ class ControllableShunt(InjectionParent):
             self._b_steps[i] = b_per_step * (i + 1)
 
         self.step = step
-        self._step_prof = Profile(default_value=step)
+        self._step_prof = Profile(default_value=step, data_type=int)
 
         self.register(key='step', units='', tpe=int, definition='Device tap step', profile_name='step_prof')
         self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
@@ -110,6 +110,17 @@ class ControllableShunt(InjectionParent):
     def g_steps(self, value: np.ndarray):
         assert isinstance(value, np.ndarray)
         self._g_steps = value
+
+    def set_blocks(self, n_list: list[int], b_list: list[float]):
+        b_steps = []
+        accumulated_value = 0
+
+        for index, n in enumerate(n_list):
+            for _ in range(n):
+                accumulated_value += b_list[index]
+                b_steps.append(accumulated_value)
+
+        self.b_steps = np.array(b_steps)
 
     @property
     def b_steps(self):

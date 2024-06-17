@@ -53,7 +53,7 @@ def test_cpf():
                                            Vbase=Vbase,
                                            Starget=Sbase * 2)
 
-    vc = ContinuationPowerFlowDriver(circuit=main_circuit,
+    vc = ContinuationPowerFlowDriver(grid=main_circuit,
                                      options=vc_options,
                                      inputs=vc_inputs,
                                      pf_options=pf_options)

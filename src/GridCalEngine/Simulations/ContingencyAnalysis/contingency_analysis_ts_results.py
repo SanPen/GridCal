@@ -32,7 +32,9 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
     Contingency analysis time series results
     """
 
-    def __init__(self, n: int, nbr: int, nc: int,
+    def __init__(self,
+                 n: int,
+                 nbr: int,
                  time_array: DateVec,
                  bus_names: StrVec,
                  branch_names: StrVec,
@@ -43,7 +45,6 @@ class ContingencyAnalysisTimeSeriesResults(ResultsTemplate):
         ContingencyAnalysisTimeSeriesResults
         :param n: number of nodes
         :param nbr: number of branches
-        :param nc: number of contingencies
         :param time_array: array of time values
         :param bus_names: rray of bus names
         :param branch_names: array of branch names

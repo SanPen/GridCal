@@ -41,9 +41,9 @@ class GenericAreaGroup(EditableDevice):
         self.latitude = latitude
         self.longitude = longitude
 
-        self.register(key='longitude', units='deg', tpe=float, definition='longitude of the bus.', profile_name='',
+        self.register(key='longitude', units='deg', tpe=float, definition='longitude.', profile_name='',
                       editable=False)
-        self.register(key='latitude', units='deg', tpe=float, definition='latitude of the bus.', profile_name='',
+        self.register(key='latitude', units='deg', tpe=float, definition='latitude.', profile_name='',
                       editable=False)
 
 

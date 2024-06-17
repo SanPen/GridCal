@@ -1,0 +1,22 @@
+
+Pypi
+Indirectamente a través de python -m pip
+
+Blue marble maps tile provider:
+https://s3.amazonaws.com/com.modestmaps.bluemarble/
+
+CartoDB
+http://basemaps.cartocdn.com/dark_all/
+http://basemaps.cartocdn.com/light_all/
+
+Mapbox
+http://c.tiles.mapbox.com/v3/examples.map-szwdot65/
+
+MapQuest
+http://otile1.mqcdn.com/tiles/1.0.0/map/
+http://otile2.mqcdn.com/tiles/1.0.0/map/
+http://otile3.mqcdn.com/tiles/1.0.0/map/
+http://otile4.mqcdn.com/tiles/1.0.0/map/
+
+OpenStreetMaps
+https://tile.openstreetmap.org

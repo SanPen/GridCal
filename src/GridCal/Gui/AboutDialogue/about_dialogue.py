@@ -9,18 +9,20 @@ from GridCal.__version__ import __GridCal_VERSION__, contributors_msg, copyright
 from GridCal.update import check_version, get_upgrade_command
 from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 from GridCalEngine.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE,
-                                                               NEWTON_PA_RECOMMENDED_VERSION,
-                                                               NEWTON_PA_VERSION)
+                                                          NEWTON_PA_RECOMMENDED_VERSION,
+                                                          NEWTON_PA_VERSION)
 from GridCalEngine.Compilers.circuit_to_bentayga import (BENTAYGA_AVAILABLE,
-                                                              BENTAYGA_RECOMMENDED_VERSION,
-                                                              BENTAYGA_VERSION)
+                                                         BENTAYGA_RECOMMENDED_VERSION,
+                                                         BENTAYGA_VERSION)
 from GridCalEngine.Compilers.circuit_to_pgm import (PGM_AVAILABLE,
-                                                         PGM_RECOMMENDED_VERSION,
-                                                         PGM_VERSION)
+                                                    PGM_RECOMMENDED_VERSION,
+                                                    PGM_VERSION)
 
 
 class AboutDialogueGuiGUI(QtWidgets.QDialog):
-
+    """
+    AboutDialogueGuiGUI
+    """
     def __init__(self, parent=None):
         """
 

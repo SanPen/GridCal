@@ -20,11 +20,11 @@ from matplotlib import pyplot as plt
 
 from GridCalEngine.enumerations import EngineType
 import GridCal.Gui.GuiFunctions as gf
-from GridCal.Gui.Main.SubClasses.base_gui import BaseMainGui
+from GridCal.Gui.Main.SubClasses.Server.server import ServerMain
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
-class CompiledArraysMain(BaseMainGui):
+class CompiledArraysMain(ServerMain):
     """
     Diagrams Main
     """
@@ -36,7 +36,7 @@ class CompiledArraysMain(BaseMainGui):
         """
 
         # create main window
-        BaseMainGui.__init__(self, parent)
+        ServerMain.__init__(self, parent=parent)
 
         # array modes
         self.ui.arrayModeComboBox.addItem('real')
@@ -60,7 +60,7 @@ class CompiledArraysMain(BaseMainGui):
 
         i = self.ui.simulation_data_island_comboBox.currentIndex()
 
-        if i > -1 and len(self.circuit.buses) > 0:
+        if i > -1 and self.circuit.valid_for_simulation():
             elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)

@@ -27,6 +27,18 @@ class EquivalentBranch(EquivalentEquipment):
 		self.r21: float = None
 		self.x: float = None
 		self.x21: float = None
+		self.negativeR12: float = None
+		self.negativeR21: float = None
+		self.negativeX12: float = None
+		self.negativeX21: float = None
+		self.positiveR12: float = None
+		self.positiveR21: float = None
+		self.positiveX12: float = None
+		self.positiveX21: float = None
+		self.zeroR12: float = None
+		self.zeroR21: float = None
+		self.zeroX12: float = None
+		self.zeroX21: float = None
 
 		self.register_property(
 			name='r',
@@ -54,6 +66,102 @@ class EquivalentBranch(EquivalentEquipment):
 		)
 		self.register_property(
 			name='x21',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='negativeR12',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='negativeR21',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='negativeX12',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='negativeX21',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='positiveR12',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='positiveR21',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='positiveX12',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='positiveX21',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='zeroR12',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='zeroR21',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Resistance (real part of impedance).''',
+			profiles=[]
+		)
+		self.register_property(
+			name='zeroX12',
+			class_type=float,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.ohm,
+			description='''Reactance (imaginary part of impedance), at rated frequency.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='zeroX21',
 			class_type=float,
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.ohm,

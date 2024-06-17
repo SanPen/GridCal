@@ -54,21 +54,3 @@ class GeneratorEmission(EditableDevice):
         self.register(key='emission', units='', tpe=DeviceType.EmissionGasDevice, definition='Emission')
         self.register(key='rate', units='t/MWh', tpe=float,
                       definition='Emissions rate of the gas in the generator (t/MWh)')
-
-    def get_properties_dict(self, version=3):
-        data = {'id': self.idtag,
-                'name': self.name,
-                'code': self.code,
-                'generator': self.generator,
-                'emission': self.emission,
-                'rate': self.rate
-                }
-        return data
-
-    def get_profiles_dict(self, version=3):
-        data = {'id': self.idtag}
-        return data
-
-    def get_units_dict(self, version=3):
-        data = {}
-        return data

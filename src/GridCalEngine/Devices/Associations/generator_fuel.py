@@ -55,20 +55,3 @@ class GeneratorFuel(EditableDevice):
         self.register(key='rate', units='t/MWh', tpe=float,
                       definition='Fuel consumption rate in the generator')
 
-    def get_properties_dict(self, version=3):
-        data = {'id': self.idtag,
-                'name': self.name,
-                'code': self.code,
-                'generator': self.generator,
-                'fuel': self.fuel,
-                'rate': self.rate
-                }
-        return data
-
-    def get_profiles_dict(self, version=3):
-        data = {'id': self.idtag}
-        return data
-
-    def get_units_dict(self, version=3):
-        data = {}
-        return data

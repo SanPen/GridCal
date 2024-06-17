@@ -100,7 +100,8 @@ class InvestmentEvaluationMethod(Enum):
     Independent = "Independent"
     Hyperopt = "Hyperopt"
     MVRSM = "MVRSM"
-    MVRSM_multi = "MVRSM_multi"
+    NSGA3 = "NSGA3"
+    Random = "Random"
 
     def __str__(self):
         return self.value
@@ -532,9 +533,8 @@ class DiagramType(Enum):
     """
     Types of diagrams
     """
-    BusBranch = 'bus-branch'
+    Schematic = 'schematic'
     SubstationLineMap = 'substation-line-map'
-    NodeBreaker = 'node-breaker'
 
     def __str__(self):
         return self.value
@@ -551,6 +551,41 @@ class DiagramType(Enum):
         """
         try:
             return DiagramType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class AcOpfMode(Enum):
+    """
+    AC-OPF problem types
+    """
+    ACOPFstd = 'ACOPFstd'
+    ACOPFslacks = 'ACOPFslacks'
+    ACOPFMaxInjections = 'ACOPFMaxInjections'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return AcOpfMode[s]
         except KeyError:
             return s
 
@@ -887,7 +922,7 @@ class DeviceType(Enum):
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
     BranchGroupDevice = 'Branch group'
-    LambdaDevice = "Loading from the base situation ($\lambda$)"
+    LambdaDevice = r"Loading from the base situation ($\lambda$)"
 
     PiMeasurementDevice = 'Pi Measurement'
     QiMeasurementDevice = 'Qi Measurement'
@@ -1235,6 +1270,32 @@ class LogSeverity(Enum):
             return s
 
 
+class CGMESVersions(Enum):
+    """
+    Enumeration of logs severities
+    """
+    v2_4_15 = '2.4.15'
+    v3_0_0 = '3.0.0'
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return CGMESVersions[s]
+        except KeyError:
+            return s
+
+
 class SparseSolver(Enum):
     """
     Sparse solvers to use
@@ -1249,6 +1310,48 @@ class SparseSolver(Enum):
 
     def __str__(self):
         return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return CGMESVersions[s]
+        except KeyError:
+            return s
+
+
+class NodalCapacityMethod(Enum):
+    """
+    Sparse solvers to use
+    """
+    NonlinearOptimization = 'Nonlinear Optimization'
+    LinearOptimization = 'Linear Optimization'
+    CPF = "Continuation power flow"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return NodalCapacityMethod[s]
+        except KeyError:
+            return s
 
 
 class ResultTypes(Enum):
@@ -1323,6 +1426,7 @@ class ResultTypes(Enum):
     GeneratorStartingUp = 'Generator starting up'
     GeneratorShuttingDown = 'Generator shutting down'
     BusVoltagePolarPlot = 'Voltage plot'
+    BusNodalCapacity = "Nodal capacity"
 
     # OPF-NTC
     HvdcOverloads = 'HVDC overloads'
@@ -1483,6 +1587,7 @@ class ResultTypes(Enum):
     AreaResults = 'Area'
     InfoResults = 'Information'
     ReportsResults = 'Reports'
+    ParetoResults = 'Pareto'
     SlacksResults = 'Slacks'
     DispatchResults = 'Dispatch'
     FlowReports = 'Flow Reports'
@@ -1505,15 +1610,24 @@ class ResultTypes(Enum):
     FluidP2XResults = 'Fluid P2Xs'
 
     # investments evaluation
-    InvestmentsReportResults = 'Investments evaluation report'
-    InvestmentsParetoPlot = 'Pareto plot'
+    InvestmentsReportResults = 'Evaluation report'
+    InvestmentsFrequencyResults = "Frequency"
+    InvestmentsCombinationsResults = "Combinations"
+    InvestmentsObjectivesResults = "Objectives"
+
+    InvestmentsParetoReportResults = 'Pareto evaluation report'
+    InvestmentsParetoFrequencyResults = "Pareto frequency"
+    InvestmentsParetoCombinationsResults = "Pareto combinations"
+    InvestmentsParetoObjectivesResults = "Pareto objectives"
+
+    InvestmentsParetoPlot = 'Pareto plots'
     InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
-        return self.value[0]
+        return self.value
 
     def __repr__(self):
-        return str(self.value[0])
+        return str(self.value)
 
     @staticmethod
     def argparse(s):
@@ -1526,3 +1640,121 @@ class ResultTypes(Enum):
             return ResultTypes[s]
         except KeyError:
             return s
+
+
+class SimulationTypes(Enum):
+    """
+    Enumeration of simulation types
+    """
+    TemplateDriver = 'Template'
+    PowerFlow_run = 'Power flow'
+    ShortCircuit_run = 'Short circuit'
+    MonteCarlo_run = 'Monte Carlo'
+    PowerFlowTimeSeries_run = 'Power flow time series'
+    ClusteringAnalysis_run = 'Clustering Analysis'
+    ContinuationPowerFlow_run = 'Voltage collapse'
+    LatinHypercube_run = 'Latin Hypercube'
+    StochasticPowerFlow = 'Stochastic Power Flow'
+    Cascade_run = 'Cascade'
+    OPF_run = 'Optimal power flow'
+    OPF_NTC_run = 'Optimal net transfer capacity'
+    OPF_NTC_TS_run = 'Optimal net transfer capacity time series'
+    OPFTimeSeries_run = 'Optimal power flow time series'
+    TransientStability_run = 'Transient stability'
+    TopologyReduction_run = 'Topology reduction'
+    LinearAnalysis_run = 'Linear analysis'
+    LinearAnalysis_TS_run = 'Linear analysis time series'
+    NonLinearAnalysis_run = 'Nonlinear analysis'
+    NonLinearAnalysis_TS_run = 'Nonlinear analysis time series'
+    ContingencyAnalysis_run = 'Contingency analysis'
+    ContingencyAnalysisTS_run = 'Contingency analysis time series'
+    Delete_and_reduce_run = 'Delete and reduce'
+    NetTransferCapacity_run = 'Available transfer capacity'
+    NetTransferCapacityTS_run = 'Available transfer capacity time series'
+    SigmaAnalysis_run = "Sigma Analysis"
+    NodeGrouping_run = "Node groups"
+    InputsAnalysis_run = 'Inputs Analysis'
+    OptimalNetTransferCapacityTimeSeries_run = 'Optimal net transfer capacity time series'
+    InvestmentsEvaluation_run = 'Investments evaluation'
+    TopologyProcessor_run = 'Topology Processor'
+    NodalCapacityTimeSeries_run = 'Nodal capacity time series'
+
+    NoSim = "No simulation"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return SimulationTypes[s]
+        except KeyError:
+            return s
+
+
+class JobStatus(Enum):
+    """
+    Job status types
+    """
+    Done = 'Done'
+    Running = 'Running'
+    Failed = "Failed"
+    Waiting = "Waiting"
+    Cancelled = "Cancelled"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return JobStatus[s]
+        except KeyError:
+            return s
+
+
+class ContingencyFilteringMethods(Enum):
+    """
+    Contingency filtering methods
+    """
+    All = "All contingencies"
+    Country = "Country"
+    Zone = "Zone"
+    Area = "Area"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ContingencyFilteringMethods[s]
+        except KeyError:
+            return s
+
+
+

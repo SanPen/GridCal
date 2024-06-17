@@ -145,7 +145,7 @@ class BaseTiles(object):
 
     def GetExtent(self):
         """Get geo limits of the map tiles.
-        
+                         (min_lon,   max_lon,   min_lat,   max_lat)
         Returns a tuple: (min_geo_x, max_geo_x, min_geo_y, max_geo_y)
         """
 
@@ -167,7 +167,7 @@ class BaseTiles(object):
         pass
         # raise Exception('You must override BaseTiles.setCallback(callback))')
 
-    def Geo2Tile(self, xgeo: float, ygeo: float) -> Tuple[float, float]:
+    def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """
         Convert geo to tile fractional coordinates for level in use.
         xgeo   geo longitude in degrees

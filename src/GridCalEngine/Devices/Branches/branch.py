@@ -162,7 +162,7 @@ class Branch(BranchParent):
         # Conductor base and operating temperatures in ºC
         self.temp_base = temp_base
         self.temp_oper = temp_oper
-        self._temp_oper_prof = Profile(default_value=temp_oper)
+        self._temp_oper_prof = Profile(default_value=temp_oper, data_type=float)
 
         # Conductor thermal constant (1/ºC)
         self.alpha = alpha
@@ -182,7 +182,7 @@ class Branch(BranchParent):
 
         # branch rating in MVA
         self.rate = rate
-        self._rate_prof = Profile(default_value=rate)
+        self._rate_prof = Profile(default_value=rate, data_type=float)
 
         # branch type: Line, Transformer, etc...
         self.branch_type = branch_type
@@ -373,42 +373,6 @@ class Branch(BranchParent):
 
             data.append(obj)
         return data
-
-    def get_properties_dict(self, version=3):
-        """
-        Get json dictionary
-        :return:
-        """
-
-        d = {'id': self.idtag,
-             'type': 'branch',
-             'phases': 'ps',
-             'name': self.name,
-             'from': self.bus_from.idtag,
-             'to': self.bus_to.idtag,
-             'active': self.active,
-             'rate': self.rate,
-             'r': self.R,
-             'x': self.X,
-             'g': self.G,
-             'b': self.B,
-             'length': self.length,
-             'tap_module': self.tap_module,
-             'bus_to_regulated': self.bus_to_regulated,
-             'vset': self.vset,
-             'temp_base': self.temp_base,
-             'temp_oper': self.temp_oper,
-             'alpha': self.alpha,
-             'tap_angle': self.angle,
-             'branch_type': str(self.branch_type),
-             'active_profile': [],
-             'rate_prof': []}
-
-        if self.active_prof is not None:
-            d['active_profile'] = self.active_prof.tolist()
-            d['rate_prof'] = self.rate_prof.tolist()
-
-        return d
 
     def plot_profiles(self, time_series=None, my_index=0, show_fig=True):
         """

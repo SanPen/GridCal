@@ -89,6 +89,25 @@ def parse_rawx(file_name: str, logger: Logger = Logger()) -> PsseCircuit:
     return psse_grid
 
 
+class NpEncoder(json.JSONEncoder):
+    """
+
+    """
+    def default(self, obj):
+        dtypes = (np.datetime64, np.complexfloating)
+        if isinstance(obj, dtypes):
+            return str(obj)
+        elif isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            if any([np.issubdtype(obj.dtype, i) for i in dtypes]):
+                return obj.astype(str).tolist()
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
+
+
 def write_rawx(file_name: str, circuit: PsseCircuit, logger: Logger = Logger()) -> Logger:
     """
     RAWx export
@@ -113,11 +132,11 @@ def write_rawx(file_name: str, circuit: PsseCircuit, logger: Logger = Logger()) 
                 if len(fields) == 0:
                     fields = list(d.keys())
 
-        data[circuit_prop.rawx_key] = {'fields': fields, data: elm_data}
+        data[circuit_prop.rawx_key] = {"fields": fields, "data": elm_data}
 
     # save the data into a file
     rawx = {'network': data}
     with open(file_name, 'w') as fp:
-        fp.write(json.dumps(rawx, indent=True))
+        fp.write(json.dumps(rawx, indent=True, cls=NpEncoder))
 
     return logger

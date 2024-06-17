@@ -27,7 +27,7 @@ def test_sparse_array1():
     n = 10
     x = np.sin(np.arange(n) + 1.0)
 
-    s = SparseArray()
+    s = SparseArray(data_type=float)
     s.create_from_array(x, default_value=0.0)
 
     all_ok = True
@@ -51,7 +51,7 @@ def test_sparse_array2():
     for i in range(10, 30):
         x[i] = math.sin(i)
 
-    s = SparseArray()
+    s = SparseArray(data_type=float)
     s.create_from_array(x, default_value=0.0)
 
     all_ok = True
@@ -78,7 +78,7 @@ def test_sparse_array3():
 
     assert is_sparse  # should be sparse
 
-    s = SparseArray()
+    s = SparseArray(data_type=int)
     s.create_from_array(x, default_value=most_frequent)
 
     all_ok = True
@@ -102,8 +102,8 @@ def test_sparse_array4():
     for i in range(10, 30):
         x[i] = math.sin(i)
 
-    s = SparseArray()
-    s.create_from_array(x, default_value=0.0)
+    s = SparseArray(data_type=int)
+    s.create_from_array(x, default_value=0)
 
     # generate rando indices
     indices = np.random.randint(low=0, high=n, size=n)
@@ -136,7 +136,7 @@ def test_profile1():
         x[i] = math.sin(i)
 
     # we set the threshold to 90% sparsity, hence the profile will be considered dense
-    profile = Profile(default_value=0.0, arr=x, sparsity_threshold=0.9)
+    profile = Profile(default_value=0.0, arr=x, sparsity_threshold=0.9, data_type=float)
 
     assert not profile.is_sparse
 
@@ -148,13 +148,11 @@ def test_profile1():
     assert all_ok
 
     # now we set the threshhold to 75% sparsity, hence the array will be considered sparse
-    profile = Profile(default_value=0.0, arr=x, sparsity_threshold=0.75)
+    profile = Profile(default_value=0.0, arr=x, sparsity_threshold=0.75, data_type=float)
     assert profile.is_sparse
 
     # x is fully sparse, there are only 20 different values
     assert len(profile._sparse_array._map) == 20  # 30 - 10 -> 20
-
-
 
 
 def test_profile2():
@@ -166,7 +164,7 @@ def test_profile2():
     x = np.full(n, 15)
     x[20] = 30
 
-    profile = Profile(default_value=15, arr=x)
+    profile = Profile(default_value=15, arr=x, data_type=int)
 
     assert profile.is_sparse
 
