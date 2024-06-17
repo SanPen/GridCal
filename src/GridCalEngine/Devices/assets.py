@@ -1178,6 +1178,10 @@ class Assets:
 
     @property
     def bus_bars(self) -> List[dev.BusBar]:
+        """
+        Get the list of BusBars
+        :return:
+        """
         return self._bus_bars
 
     @bus_bars.setter
@@ -2561,6 +2565,10 @@ class Assets:
 
     @property
     def areas(self) -> List[dev.Area]:
+        """
+        Get the list of Areas
+        :return:
+        """
         return self._areas
 
     @areas.setter
@@ -3249,6 +3257,14 @@ class Assets:
         Delete zone
         :param obj: index
         """
+        to_del = list()
+        for elm in self._generators_technologies:
+            if elm.technology == obj:
+                to_del.append(elm)
+
+        for elm in to_del:
+            self.delete_generator_technology(elm)
+
         # todo: remove dependencies
         self._technologies.remove(obj)
 
@@ -3374,6 +3390,15 @@ class Assets:
         Delete Fuel
         :param obj: index
         """
+
+        to_del = list()
+        for elm in self._generators_fuels:
+            if elm.fuel == obj:
+                to_del.append(elm)
+
+        for elm in to_del:
+            self.delete_generator_fuel(elm)
+
         self._fuels.remove(obj)
 
     def get_fuel_indexing_dict(self) -> Dict[str, int]:
@@ -3465,7 +3490,7 @@ class Assets:
     @property
     def generators_technologies(self) -> List[dev.GeneratorTechnology]:
         """
-
+        Get list of GeneratorTechnology association objects
         :return:
         """
         return self._generators_technologies
@@ -3506,7 +3531,7 @@ class Assets:
     @property
     def generators_fuels(self) -> List[dev.GeneratorFuel]:
         """
-
+        Get list of Generator fuels associations
         :return:
         """
         return self._generators_fuels
@@ -3547,7 +3572,7 @@ class Assets:
     @property
     def generators_emissions(self) -> List[dev.GeneratorEmission]:
         """
-
+        Get list of generator associations
         :return:
         """
         return self._generators_emissions
@@ -3577,6 +3602,10 @@ class Assets:
 
     @property
     def fluid_nodes(self) -> List[dev.FluidNode]:
+        """
+        Get list of the fluid nodes
+        :return:
+        """
         return self._fluid_nodes
 
     @fluid_nodes.setter
@@ -3633,7 +3662,7 @@ class Assets:
     @property
     def fluid_paths(self) -> List[dev.FluidPath]:
         """
-
+        Get list of fluid path devices
         :return:
         """
         return self._fluid_paths
@@ -3687,7 +3716,7 @@ class Assets:
     @property
     def turbines(self) -> List[dev.FluidTurbine]:
         """
-
+        Get list of fluid turbines
         :return:
         """
         return self._turbines
@@ -3745,6 +3774,10 @@ class Assets:
 
     @property
     def pumps(self) -> List[dev.FluidPump]:
+        """
+        Get the list of fluid pumps
+        :return:
+        """
         return self._pumps
 
     @pumps.setter
@@ -3800,7 +3833,7 @@ class Assets:
     @property
     def p2xs(self) -> List[dev.FluidP2x]:
         """
-
+        Get list of power-to-x devices
         :return:
         """
         return self._p2xs
@@ -3858,6 +3891,10 @@ class Assets:
 
     @property
     def diagrams(self) -> List[Union[dev.MapDiagram, dev.SchematicDiagram]]:
+        """
+        Get the list of diagrams
+        :return:
+        """
         return self._diagrams
 
     @diagrams.setter
@@ -3896,7 +3933,7 @@ class Assets:
     # ------------------------------------------------------------------------------------------------------------------
     #
     #
-    # Functions over aggregations of devices
+    # Functions of aggregations of devices
     #
     #
     # ------------------------------------------------------------------------------------------------------------------
@@ -4319,7 +4356,7 @@ class Assets:
             for elm in elements:
                 elm.ensure_profiles_exist(self.time_profile)
 
-    def get_elements_by_type(self, device_type: DeviceType) -> List[ALL_DEV_TYPES]:
+    def get_elements_by_type(self, device_type: DeviceType) -> Union[pd.DatetimeIndex, List[ALL_DEV_TYPES]]:
         """
         Get set of elements and their parent nodes
         :param device_type: DeviceTYpe instance
@@ -4909,8 +4946,8 @@ class Assets:
 
         return data
 
-    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[
-        str, Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(self,
+                                      add_locations: bool = False) -> dict[str, Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :return:
@@ -4950,76 +4987,3 @@ class Assets:
         for key, elm_list in self.objects_with_profiles.items():
             for elm in elm_list:
                 self.get_elements_by_type(device_type=elm.device_type).clear()
-
-    def get_catalogue_dict(self, branches_only=False):
-        """
-        Returns a dictionary with the catalogue types and the associated list of objects.
-
-        Arguments:
-
-            **branches_only** (bool, False): Only branch types
-        """
-        # 'Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers'
-
-        if branches_only:
-
-            catalogue_dict = {'Overhead lines': self._overhead_line_types,
-                              'Transformers': self._transformer_types,
-                              'Underground lines': self._underground_cable_types,
-                              'Sequence lines': self._sequence_line_types}
-        else:
-            catalogue_dict = {'Wires': self._wire_types,
-                              'Overhead lines': self._overhead_line_types,
-                              'Underground lines': self._underground_cable_types,
-                              'Sequence lines': self._sequence_line_types,
-                              'Transformers': self._transformer_types}
-
-        return catalogue_dict
-
-    def get_catalogue_dict_by_name(self, type_class: str = None):
-        """
-        Get the catalogue elements by name
-        :param type_class:
-        :return:
-        """
-        d = dict()
-
-        # ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
-
-        if type_class is None:
-            tpes = [self._overhead_line_types,
-                    self._underground_cable_types,
-                    self._wire_types,
-                    self._transformer_types,
-                    self._sequence_line_types]
-            name_prop = ''
-
-        elif type_class == 'Wires':
-            tpes = self._wire_types
-            name_prop = 'name'
-
-        elif type_class == 'Overhead lines':
-            tpes = self._overhead_line_types
-            name_prop = 'name'
-
-        elif type_class == 'Underground lines':
-            tpes = self._underground_cable_types
-            name_prop = 'name'
-
-        elif type_class == 'Sequence lines':
-            tpes = self._sequence_line_types
-            name_prop = 'name'
-
-        elif type_class == 'Transformers':
-            tpes = self._transformer_types
-            name_prop = 'name'
-
-        else:
-            tpes = list()
-            name_prop = 'name'
-
-        # make dictionary
-        for tpe in tpes:
-            d[getattr(tpe, name_prop)] = tpe
-
-        return d
