@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     pf_options = sim.PowerFlowOptions()
     #platypus:
-    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
+    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3_platypus,
                                             max_eval=4 * len(grid.investments),
                                             pf_options=pf_options)
     #pymoo:
@@ -39,25 +39,25 @@ if __name__ == "__main__":
     print("Simulation time: {} sec".format(e_time - st_time))
     print("Simulation time: {} min".format((e_time - st_time)/60))
 
-    #============================================================
-    #Results pymoo:
-    # ============================================================
-    output_f=inv.results._f_obj
-    #combinations=inv.results._combinations
-    output_f1=inv.results._financial
-    output_f2=inv.results._electrical
-    #save to excel all solutions (not only non-dominated)
-    data=np.column_stack((output_f1,output_f2))
-    dff = pd.DataFrame(data)
-    dff.to_excel('nsga_PYMOO_all.xlsx')
-
-    #plot all the results in scatter - not only pareto front - PYMOO
-    import matplotlib.pyplot as plt
-    import matplotlib
-    import pandas as pd
-    matplotlib.use("Qt5Agg")
-    plt.scatter(data[0],data[1])
-    plt.show()
+    # #============================================================
+    # #Results pymoo:
+    # # ============================================================
+    # output_f=inv.results._f_obj
+    # #combinations=inv.results._combinations
+    # output_f1=inv.results._financial
+    # output_f2=inv.results._electrical
+    # #save to excel all solutions (not only non-dominated)
+    # data=np.column_stack((output_f1,output_f2))
+    # dff = pd.DataFrame(data)
+    # dff.to_excel('nsga_PYMOO_all.xlsx')
+    #
+    # #plot all the results in scatter - not only pareto front - PYMOO
+    # import matplotlib.pyplot as plt
+    # import matplotlib
+    # import pandas as pd
+    # matplotlib.use("Qt5Agg")
+    # plt.scatter(data[0],data[1])
+    # plt.show()
 
     # ============================================================
     # Results PLATYPUS:

@@ -44,9 +44,52 @@ class UniformBinarySampling(Sampling):
         for i, num in enumerate(num_ones):
             ones_into_array[i, :num] = 1
             np.random.shuffle(ones_into_array[i])
-
+        print("testing")
         return ones_into_array
 
+# NOT WORKING:
+# def UniformBinarySampling_platypus(problem_ptp,max_evals,pop_size):
+#     n_var=problem_ptp.nvars #390
+#     n_samples=pop_size #78
+#     num_ones = np.linspace(0,n_var , n_samples, dtype=int) #problem.nvar
+#     num_ones[-1] = n_var
+#     ones_into_array = np.zeros((n_samples, n_var), dtype=int)
+#     for i, num in enumerate(num_ones):
+#         ones_into_array[i, :num] = 1
+#         np.random.shuffle(ones_into_array[i])
+#
+#     print("testing")
+#     ones_into_array_binary=ones_into_array.astype(bool) #changing 1/0 into True/false for platypus
+#     population = []
+#     for i in range(n_samples):
+#         for j in range(n_var):
+#             population.append(list(ones_into_array_binary[i][j]))
+#     solution = Solution(problem_ptp)
+#     solution.variables = [population]  # testear si esto funciona
+#
+#     # initial_pop = [Solution(problem_ptp) for i in range(pop_size)]
+#     # for i in range(n_samples): #pop_size
+#     #     initial_pop[i].variables = ones_into_array_binary[i]
+#     return (population)
+
+class UniformBinaryGenerator(Generator): #platypus
+
+    def __init__(self):
+        super().__init__()
+
+    def generate(self, problem_ptp):
+        solution = Solution(problem_ptp)
+        #solution.variables = [x.rand() for x in problem_ptp.types]
+        np.random.randint(0,1,size=1,dtype=int)
+        #bool(random.choice([0, 1]))
+        random_population=np.random.randint(0, 2, size=390, dtype=int) #return random integers from the discrte uniform distribution (numpy array)
+
+        initial_population=[]
+        for i in range(390):
+            boolean_random_population=bool(random_population[i])
+            initial_population.append([boolean_random_population])
+        solution.variables = initial_population
+        return solution
 
 class SkewedBinarySampling(Sampling):
     def _do(self, problem, n_samples, **kwargs):
@@ -246,12 +289,20 @@ def NSGA_3_platypus(obj_func,
     problem_ptp.types[:]=Integer(0,1)
     problem_ptp.function=obj_func
     #print(problem_ptp)
+
+    #generator
+    #population_initialised=UniformBinarySampling_platypus(problem_ptp,max_evals,pop_size)
+    #solution = Solution(problem_ptp)
+    #solution.variables = [a_test]  # testear si esto funciona
+
     #calling NSGA3 algorithm from Platypus library:
     algorithm = NSGAIII(
                         problem_ptp,
                         divisions_outer=n_partitions,           # outer divisions for reference points
                         divisions_inner=0,                      # optional, used for reference points too
-                        generator=RandomGenerator(),           #generates initial population
+                        #generator=InjectedPopulation(UniformBinarySampling_platypus(problem_ptp,max_evals,pop_size)),
+                        #generator=RandomGenerator(),           #generates initial population
+                        generator=UniformBinaryGenerator(),
                         #selector=TournamentSelector(2),        # selects parents during recombination
                         variator=CompoundOperator(SBX(probability=crossover_prob, distribution_index=eta),
                                                   BitFlip(probability=mutation_probability)) # for Powerflow objective function
@@ -307,9 +358,9 @@ def NSGA_3_platypus(obj_func,
 
     import pandas as pd
     dff = pd.DataFrame(res_objective)       #only non-dominated solutions
-    dff.to_excel('nsga_platypus.xlsx')      #only non-dominated solutions
+    dff.to_excel('nsga_platypus_uniform.xlsx')      #only non-dominated solutions
     df=pd.DataFrame(res_objective_all)      # save all the solutions
-    dff.to_excel('nsga_platypus_all.xlsx')  # Save all the solutions
+    dff.to_excel('nsga_platypus_all_uniform.xlsx')  # Save all the solutions
 
     #hyp2=Hypervolume.calculate(algorithm.result)
     hyp = Hypervolume(minimum=[0, 0], maximum=[1, 1])

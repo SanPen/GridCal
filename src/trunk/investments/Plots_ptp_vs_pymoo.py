@@ -5,7 +5,7 @@ import pandas as pd
 
 #===============================PLOT NON DOMINATED SOLUTIONS===============================
 matplotlib.use("Qt5Agg")
-data_ptp=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_platypus_all.xlsx")
+data_ptp=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_platypus_all_uniform.xlsx")
 data_pymoo=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_PYMOO.xlsx")
 ptp_plot=plt.scatter(data_ptp[1],data_ptp[0], c='limegreen',edgecolors='g',marker='o') #edgecolors='g',
 pymoo_plot=plt.scatter(data_pymoo[1],data_pymoo[0], c='cornflowerblue',edgecolors='b',marker='o') #,edgecolors='b'

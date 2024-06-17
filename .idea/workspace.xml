@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation (ongoing)">
-      <change afterPath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - similar results to pymoo. Plots added.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -144,7 +144,7 @@
     "Python tests.Nosetests in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
-    "Python.NSGA_3.executor": "Run",
+    "Python.NSGA_3.executor": "Debug",
     "Python.Plots_ptp_vs_pymoo.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.investments_evaluation_driver.executor": "Run",
@@ -153,7 +153,7 @@
     "Python.new_circuit_objects.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
     "Python.system_scaler.executor": "Run",
-    "Python.try_multiobj_nsga.executor": "Debug",
+    "Python.try_multiobj_nsga.executor": "Run",
     "Python.update_gui_file (1).executor": "Run",
     "Python.update_gui_file.executor": "Run",
     "Python.upload_to_pypi.executor": "Run",
@@ -1687,7 +1687,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="491" />
+    <option name="localTasksCounter" value="492" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1733,7 +1733,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added get_branch_areas_info to the multi-circuit" />
     <MESSAGE value="added the linear shunt and current injection to the compiler" />
     <MESSAGE value="Fixed: the contingency time series results not adding the detailed report for every time step&#10;&#10;Added all_generators_fixed to run_linear_opf_ts&#10;&#10;Minor GUI labeling" />
     <MESSAGE value="fixed test of stochastic pf sending the name" />
@@ -1758,7 +1757,8 @@
     <MESSAGE value="Creación script prueba NSGA3" />
     <MESSAGE value="Implementing 2 objective function (electrical+financial). Solves issue low n_nds" />
     <MESSAGE value="Platypus implementation (ongoing)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation (ongoing)" />
+    <MESSAGE value="Platypus implementation - similar results to pymoo. Plots added." />
+    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - similar results to pymoo. Plots added." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2173,8 +2173,53 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>309</line>
+          <line>360</line>
           <option name="timeStamp" value="1704" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
+          <line>46</line>
+          <option name="timeStamp" value="1708" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
+          <line>318</line>
+          <option name="timeStamp" value="1713" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
+          <line>298</line>
+          <option name="timeStamp" value="1714" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
+          <line>293</line>
+          <option name="timeStamp" value="1715" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
+          <line>61</line>
+          <option name="timeStamp" value="1716" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/platypus/operators.py</url>
+          <line>56</line>
+          <option name="timeStamp" value="1719" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/platypus/core.py</url>
+          <line>379</line>
+          <option name="timeStamp" value="1720" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/platypus/operators.py</url>
+          <line>55</line>
+          <option name="timeStamp" value="1721" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/platypus/operators.py</url>
+          <line>36</line>
+          <option name="timeStamp" value="1722" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -2191,6 +2236,8 @@
         <watch expression="self" />
         <watch expression="problem_ptp" />
         <watch expression="algorithm.result" />
+        <watch expression="problem_ptp" language="Python" />
+        <watch expression="problem_ptp" language="Python" />
       </configuration>
     </watches-manager>
   </component>
