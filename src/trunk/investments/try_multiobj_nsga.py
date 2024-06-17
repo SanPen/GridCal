@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     pf_options = sim.PowerFlowOptions()
     #platypus:
-    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3_platypus,
+    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
                                             max_eval=4 * len(grid.investments),
                                             pf_options=pf_options)
     #pymoo:
@@ -46,13 +46,16 @@ if __name__ == "__main__":
     #combinations=inv.results._combinations
     output_f1=inv.results._financial
     output_f2=inv.results._electrical
+    #save to excel all solutions (not only non-dominated)
+    data=np.column_stack((output_f1,output_f2))
+    dff = pd.DataFrame(data)
+    dff.to_excel('nsga_PYMOO_all.xlsx')
 
     #plot all the results in scatter - not only pareto front - PYMOO
     import matplotlib.pyplot as plt
     import matplotlib
     import pandas as pd
     matplotlib.use("Qt5Agg")
-    data=np.vstack((output_f1,output_f2))
     plt.scatter(data[0],data[1])
     plt.show()
 

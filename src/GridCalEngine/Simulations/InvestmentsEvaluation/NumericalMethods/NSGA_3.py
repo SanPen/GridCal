@@ -171,7 +171,7 @@ def NSGA_3(obj_func,
 
     import pandas as pd
     dff = pd.DataFrame(res.F)
-    dff.to_excel('nsga.xlsx')
+    dff.to_excel('nsga_PYMOO.xlsx')
     import matplotlib.pyplot as plt
     # import matplotlib
     # matplotlib.use("Qt5Agg")
@@ -287,6 +287,10 @@ def NSGA_3_platypus(obj_func,
         # res_variables=solution.variables[:] #integer variables, returns true false
         # problem_ptp.types[0].decode(res_variables[0])
 
+    res_objective_all=[]
+    for solution in algorithm.result:
+        res_objective_all.append(solution.objectives)
+
     # #results:for platypus test problem:
     # res_objective = []
     # res_variables = []
@@ -302,8 +306,10 @@ def NSGA_3_platypus(obj_func,
     #     plt.title("{}".format(type(algorithm)))
 
     import pandas as pd
-    dff = pd.DataFrame(res_objective)  # NECESARIO????
-    dff.to_excel('nsga_platypus.xlsx')
+    dff = pd.DataFrame(res_objective)       #only non-dominated solutions
+    dff.to_excel('nsga_platypus.xlsx')      #only non-dominated solutions
+    df=pd.DataFrame(res_objective_all)      # save all the solutions
+    dff.to_excel('nsga_platypus_all.xlsx')  # Save all the solutions
 
     #hyp2=Hypervolume.calculate(algorithm.result)
     hyp = Hypervolume(minimum=[0, 0], maximum=[1, 1])
