@@ -16,9 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 import json
-import numpy as np
-import pyarrow as pa
-import pyarrow.ipc as ipc
 from typing import Dict
 from hashlib import sha256
 from fastapi import FastAPI, Header, HTTPException, BackgroundTasks, Response
@@ -165,7 +162,7 @@ async def cancel_job(job_id: str):
 
 
 @app.get("/download_results")
-async def download_large_file():
+async def download_large_file(job_id: str):
     """
 
     :return:
@@ -186,6 +183,8 @@ async def download_large_file():
         with open(file_path, "rb") as file:
             while chunk := file.read(1024 * 1024):  # Read in chunks of 1MB
                 yield chunk
+
+    print("Sending", file_path)
 
     # Return a streaming response
     return StreamingResponse(iterfile(), media_type="application/octet-stream")
