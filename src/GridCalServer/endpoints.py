@@ -16,9 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 import json
+import numpy as np
+import pyarrow as pa
+import pyarrow.ipc as ipc
 from typing import Dict
 from hashlib import sha256
-from fastapi import FastAPI, Header, HTTPException, BackgroundTasks
+from fastapi import FastAPI, Header, HTTPException, BackgroundTasks, Response
 from fastapi.responses import FileResponse
 from starlette.responses import StreamingResponse
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction, RemoteJob
@@ -77,7 +80,7 @@ async def stream_load_json(json_data):
 
     async def generate():
         """
-
+        generate
         """
         yield json.dumps(json_data).encode()
 
@@ -91,6 +94,9 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     """
     circuit = parse_gridcal_data(data=json_data)
     print(f'Circuit loaded alright nbus{circuit.get_bus_number()}, nbr{circuit.get_branch_number()}')
+
+    # with open("mi_red.json", "w") as f:
+    #     f.write(json.dumps(json_data, indent=4))
 
     if 'instruction' in json_data:
         instruction = RemoteInstruction(data=json_data['instruction'])
@@ -156,6 +162,33 @@ async def cancel_job(job_id: str):
 
     job.cancel()
     return {"message": f"Job {job_id} canceled successfully"}
+
+
+@app.get("/download_results")
+async def download_large_file():
+    """
+
+    :return:
+    """
+    # Path to your large binary file
+    file_path = "/home/santi/Vídeos/Dentro.del.Laberinto.avi"
+
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        return Response(status_code=404, content="File not found")
+
+    # Function to stream the file
+    def iterfile():
+        """
+
+        :return:
+        """
+        with open(file_path, "rb") as file:
+            while chunk := file.read(1024 * 1024):  # Read in chunks of 1MB
+                yield chunk
+
+    # Return a streaming response
+    return StreamingResponse(iterfile(), media_type="application/octet-stream")
 
 
 if __name__ == "__main__":

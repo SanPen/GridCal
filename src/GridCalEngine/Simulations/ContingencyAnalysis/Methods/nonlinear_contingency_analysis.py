@@ -58,13 +58,13 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     area_names, bus_area_indices, F, T, hvdc_F, hvdc_T = grid.get_branch_areas_info()
 
     # declare the results
-    results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
+    results = ContingencyAnalysisResults(ncon=len(linear_multiple_contingencies.contingency_groups_used),
                                          nbr=numerical_circuit.nbr,
                                          nbus=numerical_circuit.nbus,
                                          branch_names=numerical_circuit.branch_names,
                                          bus_names=numerical_circuit.bus_names,
                                          bus_types=numerical_circuit.bus_types,
-                                         con_names=grid.get_contingency_group_names())
+                                         con_names=linear_multiple_contingencies.get_contingency_group_names())
 
     # get contingency groups dictionary
     cg_dict = grid.get_contingency_group_dict()
@@ -97,7 +97,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     available_power = numerical_circuit.generator_data.get_injections_per_bus().real
 
     # for each contingency group
-    for ic, contingency_group in enumerate(grid.contingency_groups):
+    for ic, contingency_group in enumerate(linear_multiple_contingencies.contingency_groups_used):
 
         # get the group's contingencies
         contingencies = cg_dict[contingency_group.idtag]
@@ -108,7 +108,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         # report progress
         if t is None and calling_class is not None:
             calling_class.report_text(f'Contingency group: {contingency_group.name}')
-            calling_class.report_progress2(ic, len(grid.contingency_groups) * 100)
+            calling_class.report_progress2(ic, len(linear_multiple_contingencies.contingency_groups_used) * 100)
 
         # run
         pf_res = multi_island_pf_nc(nc=numerical_circuit,

@@ -921,7 +921,7 @@ class DeviceType(Enum):
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
     BranchGroupDevice = 'Branch group'
-    LambdaDevice = "Loading from the base situation ($\lambda$)"
+    LambdaDevice = r"Loading from the base situation ($\lambda$)"
 
     PiMeasurementDevice = 'Pi Measurement'
     QiMeasurementDevice = 'Qi Measurement'
@@ -1586,6 +1586,7 @@ class ResultTypes(Enum):
     AreaResults = 'Area'
     InfoResults = 'Information'
     ReportsResults = 'Reports'
+    ParetoResults = 'Pareto'
     SlacksResults = 'Slacks'
     DispatchResults = 'Dispatch'
     FlowReports = 'Flow Reports'
@@ -1608,19 +1609,24 @@ class ResultTypes(Enum):
     FluidP2XResults = 'Fluid P2Xs'
 
     # investments evaluation
-    InvestmentsReportResults = 'Investments evaluation report'
-    # InvestmentsParetoPlot1 = 'Pareto plot 1'
-    # InvestmentsParetoPlot2 = 'Pareto plot 2'
-    # InvestmentsParetoPlot3 = 'Pareto plot 3'
-    # InvestmentsParetoPlot4 = 'Pareto plot 4'
+    InvestmentsReportResults = 'Evaluation report'
+    InvestmentsFrequencyResults = "Frequency"
+    InvestmentsCombinationsResults = "Combinations"
+    InvestmentsObjectivesResults = "Objectives"
+
+    InvestmentsParetoReportResults = 'Pareto evaluation report'
+    InvestmentsParetoFrequencyResults = "Pareto frequency"
+    InvestmentsParetoCombinationsResults = "Pareto combinations"
+    InvestmentsParetoObjectivesResults = "Pareto objectives"
+
     InvestmentsParetoPlot = 'Pareto plots'
     InvestmentsIterationsPlot = 'Iterations plot'
 
     def __str__(self):
-        return self.value[0]
+        return self.value
 
     def __repr__(self):
-        return str(self.value[0])
+        return str(self.value)
 
     @staticmethod
     def argparse(s):
@@ -1720,3 +1726,34 @@ class JobStatus(Enum):
             return JobStatus[s]
         except KeyError:
             return s
+
+
+class ContingencyFilteringMethods(Enum):
+    """
+    Contingency filtering methods
+    """
+    All = "All contingencies"
+    Country = "Country"
+    Zone = "Zone"
+    Area = "Area"
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ContingencyFilteringMethods[s]
+        except KeyError:
+            return s
+
+
+

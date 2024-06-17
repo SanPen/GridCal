@@ -223,7 +223,7 @@ def test_dcpowerflow():
                                           dispatch_storage=True,
                                           control_q=gce.ReactivePowerControlMode.NoControl,
                                           control_p=False)
-        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                               linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
@@ -414,7 +414,8 @@ def test_mlodf() -> None:
         Sf0 = linear_analysis.results.Sf
         Sf0red = np.array([Sf0[branchdict[t.code]] for t in main_circuit.contingencies])
 
-        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
+                                                                contingency_groups_used=main_circuit.get_contingency_groups())
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
         mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A  # TODO: Suponemos que son los MLODF
 
@@ -429,7 +430,7 @@ def test_mlodf() -> None:
                                           control_q=gce.ReactivePowerControlMode.NoControl,
                                           control_p=False)
 
-        options = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        options = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PTDF)
         cont_analysis_driver = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options,
                                                              linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver.run()
@@ -457,7 +458,7 @@ def test_mlodf_sanpen():
                                           dispatch_storage=True,
                                           control_q=gce.ReactivePowerControlMode.NoControl,
                                           control_p=False)
-        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                               linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
@@ -465,9 +466,10 @@ def test_mlodf_sanpen():
         # MLODF method
         linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
-        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
+                                                                contingency_groups_used=main_circuit.get_contingency_groups())
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PTDF)
         cont_analysis_driver2 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options2,
                                                               linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
@@ -505,7 +507,7 @@ def test_ptdf_generation_contingencies():
                                           control_p=False)
         # DC power flow method
 
-        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                               linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
@@ -513,9 +515,10 @@ def test_ptdf_generation_contingencies():
         # PTDF METHOD
         linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
-        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
+                                                                contingency_groups_used=main_circuit.get_contingency_groups())
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PTDF)
         cont_analysis_driver2 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options2)
         cont_analysis_driver2.run()
 
@@ -549,7 +552,7 @@ def test_lodf_single_contingencies():
                                           control_p=False)
 
         options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options,
-                                                  engine=gce.ContingencyMethod.PowerFlow)
+                                                  contingency_method=gce.ContingencyMethod.PowerFlow)
 
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit,
                                                               options=options1,
@@ -559,9 +562,10 @@ def test_lodf_single_contingencies():
         # LODF method
         linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
-        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
+                                                                contingency_groups_used=main_circuit.get_contingency_groups())
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+        options2 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PTDF)
         cont_analysis_driver2 = gce.ContingencyAnalysisDriver(grid=main_circuit,
                                                               options=options2)  # linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver2.run()
@@ -610,7 +614,7 @@ def test_generation_contingencies_powerflow():
                                           dispatch_storage=True,
                                           control_q=gce.ReactivePowerControlMode.NoControl,
                                           control_p=False)
-        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+        options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                               linear_multiple_contingencies=None)
         cont_analysis_driver1.run()
@@ -657,7 +661,8 @@ def test_compensated_ptdf():
         linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
         linear_analysis.run()
 
-        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
+        linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
+                                                                contingency_groups_used=main_circuit.get_contingency_groups())
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
         main_circuit_raw = gce.FileOpen(case['orig']).open()
@@ -720,7 +725,8 @@ def test_ptdf_contingencies_powerflow():
             linear_analysis = gce.LinearAnalysisDriver(grid=main_circuit)
             linear_analysis.run()
 
-            linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit)
+            linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
+                                                                    contingency_groups_used=main_circuit.get_contingency_groups())
             linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
             # DC power flow method with ContingencyAnalysisDriver
@@ -731,7 +737,7 @@ def test_ptdf_contingencies_powerflow():
                                               control_q=gce.ReactivePowerControlMode.NoControl,
                                               control_p=False)
 
-            options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PTDF)
+            options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PTDF)
             cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                                   linear_multiple_contingencies=linear_multi_contingency)
             cont_analysis_driver1.run()
@@ -767,7 +773,7 @@ def test_ptdf_contingencies_powerflow():
                                               control_q=gce.ReactivePowerControlMode.NoControl,
                                               control_p=False)
 
-            options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, engine=gce.ContingencyMethod.PowerFlow)
+            options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
             cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                                   linear_multiple_contingencies=None)
             cont_analysis_driver1.run()

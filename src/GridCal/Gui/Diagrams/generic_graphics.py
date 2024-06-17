@@ -18,13 +18,14 @@ from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 import darkdetect
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtWidgets import (QPushButton, QGraphicsLineItem, QGraphicsItem, QVBoxLayout, QGraphicsPolygonItem,
-                               QDialog, QGraphicsRectItem, QGraphicsEllipseItem)
+from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsItem, QGraphicsPolygonItem,
+                               QGraphicsRectItem, QGraphicsEllipseItem)
 from PySide6.QtGui import QColor
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+    from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 
 try:
     IS_DARK = darkdetect.theme() == "Dark"
@@ -35,6 +36,7 @@ except ImportError:
 ACTIVE = {'style': Qt.SolidLine,
           'color': Qt.white if IS_DARK else Qt.black,
           'text': Qt.white if IS_DARK else Qt.black,
+          'backgound': Qt.black if IS_DARK else Qt.white,
           'fluid': QColor(0, 170, 212, 255)}
 
 DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
@@ -59,6 +61,14 @@ def set_light_mode() -> None:
     IS_DARK = False
     ACTIVE['color'] = Qt.black
     ACTIVE['text'] = Qt.black
+
+
+def is_dark_mode() -> bool:
+    """
+
+    :return:
+    """
+    return IS_DARK
 
 
 if IS_DARK:
@@ -167,14 +177,15 @@ class Line(QGraphicsLineItem):
         return super(QGraphicsLineItem, self).itemChange(change, value)
 
 
-class GenericDBWidget:
+class GenericDiagramWidget:
     """
     Generic DataBase Widget
     """
+
     def __init__(self,
                  parent,
                  api_object: ALL_DEV_TYPES,
-                 editor: SchematicWidget,
+                 editor: Union[SchematicWidget, MapWidget],
                  draw_labels: bool):
         """
         Constructor
@@ -188,7 +199,7 @@ class GenericDBWidget:
 
         self.api_object: ALL_DEV_TYPES = api_object
 
-        self.editor: SchematicWidget = editor
+        self.editor: Union[SchematicWidget, MapWidget] = editor
 
         self._draw_labels: bool = draw_labels
 
@@ -254,5 +265,3 @@ class GenericDBWidget:
         :return:
         """
         self.draw_labels = not self.draw_labels
-
-

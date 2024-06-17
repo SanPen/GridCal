@@ -17,12 +17,12 @@
 from __future__ import annotations
 import numpy as np
 from typing import List, TYPE_CHECKING
-from PySide6.QtCore import Qt, QPoint, QPointF
+from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question

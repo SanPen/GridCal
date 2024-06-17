@@ -153,6 +153,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      zonal_grouping=self.opf_options.zonal_grouping,
                                      skip_generation_limits=self.opf_options.skip_generation_limits,
                                      consider_contingencies=self.opf_options.consider_contingencies,
+                                     contingency_groups_used=self.opf_options.contingency_groups_used,
                                      unit_Commitment=self.opf_options.unit_commitment,
                                      ramp_constraints=self.opf_options.unit_commitment,
                                      all_generators_fixed=False,

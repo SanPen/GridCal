@@ -20,7 +20,8 @@ from itertools import groupby
 from scipy.sparse import lil_matrix
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.raw.devices import (RawArea, RawZone, RawBus, RawLoad, RawFixedShunt, RawGenerator,
-                                          RawSwitchedShunt, RawTransformer, RawBranch)
+                                          RawSwitchedShunt, RawTransformer, RawBranch, RawVscDCLine,
+                                          RawTwoTerminalDCLine, RawFACTS)
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import BRANCH_TYPES
@@ -194,7 +195,7 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
     psse_transformer.SBASE1_2 = transformer.Sn
     psse_transformer.RATE1_1 = transformer.rate
 
-    # i, j, ckt = transformer.code.split("_")
+    # i, j, ckt = transformer.code.split("_", 2)
 
     psse_transformer.I = bus_dict[transformer.bus_from]
     psse_transformer.J = bus_dict[transformer.bus_to]
@@ -225,7 +226,7 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.ANG2 = transformer.winding2.tap_phase
     psse_transformer.ANG3 = transformer.winding3.tap_phase
 
-    i, j, k, ckt = psse_transformer.code.split("_")
+    i, j, k, ckt = psse_transformer.code.split("_", 3)
 
     psse_transformer.I = bus_dict[transformer.bus1]
     psse_transformer.J = bus_dict[transformer.bus2]
@@ -244,19 +245,88 @@ def get_psse_branch(branch: dev.Line, bus_dict: Dict[dev.Bus, int], ckt: int) ->
     :return:
     """
     psse_branch = RawBranch()
+
+    # i, j, ckt = line.code.split("_", 2)
+
     psse_branch.I = bus_dict[branch.bus_from]
     psse_branch.J = bus_dict[branch.bus_to]
 
     psse_branch.CKT = ckt
 
+    psse_branch.NAME = branch.name
     psse_branch.R = branch.R
     psse_branch.X = branch.X
     psse_branch.B = branch.B
-    psse_branch.NAME = branch.name
-    psse_branch.ST = 1
+    psse_branch.ST = 1 if branch.active else 0
+    psse_branch.idtag = branch.idtag
     psse_branch.LEN = branch.length
 
     return psse_branch
+
+
+def get_vsc_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> RawVscDCLine:
+    """
+
+    :param hvdc_line:
+    :param bus_dict:
+    :return:
+    """
+    psse_vsc_dc_line = RawVscDCLine()
+    psse_vsc_dc_line.NAME = hvdc_line.name
+    psse_vsc_dc_line.ACSET1 = hvdc_line.Vset_f
+    psse_vsc_dc_line.ACSET2 = hvdc_line.Vset_t
+
+    return psse_vsc_dc_line
+
+
+def get_psse_two_terminal_dc_line(hvdc_line: dev.HvdcLine, bus_dict: Dict[dev.Bus, int]) -> RawTwoTerminalDCLine:
+    """
+
+    :param hvdc_line:
+    :param bus_dict:
+    :return:
+    """
+    psse_two_terminal_dc_line = RawTwoTerminalDCLine()
+    psse_two_terminal_dc_line.NAME = hvdc_line.name
+
+    id_tag = hvdc_line.idtag[:-2] if hvdc_line.idtag.endswith("_1") else hvdc_line.idtag
+    ipr, ipi = id_tag.split("_", 2)
+
+    psse_two_terminal_dc_line.IPR = int(ipr)
+    psse_two_terminal_dc_line.IPI = int(ipi)
+
+    psse_two_terminal_dc_line.RDC = hvdc_line.r
+    psse_two_terminal_dc_line.ANMNR = np.rad2deg(hvdc_line.min_firing_angle_f)
+    psse_two_terminal_dc_line.ANMXR = np.rad2deg(hvdc_line.max_firing_angle_f)
+    psse_two_terminal_dc_line.ANMNI = np.rad2deg(hvdc_line.min_firing_angle_t)
+    psse_two_terminal_dc_line.ANMXI = np.rad2deg(hvdc_line.max_firing_angle_t)
+
+    return psse_two_terminal_dc_line
+
+
+def get_psse_facts(upfc: dev.UPFC, bus_dict: Dict[dev.Bus, int]) -> RawFACTS:
+    """
+
+    :param upfc:
+    :param bus_dict:
+    :return:
+    """
+    psse_facts = RawFACTS()
+    psse_facts.NAME = upfc.name
+
+    id_tag = upfc.idtag[:-2] if upfc.idtag.endswith("_1") else upfc.idtag
+    # i, j = id_tag.split("_", 2)
+
+    psse_facts.I = bus_dict[upfc.bus_from]
+    psse_facts.J = bus_dict[upfc.bus_to]
+    psse_facts.SET1 = upfc.Rs
+    psse_facts.SHMX = 1 / upfc.Xsh if upfc.Xsh > 0 else 0.0
+    psse_facts.VSET = upfc.Vsh
+    psse_facts.PDES = upfc.Pfset
+    psse_facts.QDES = upfc.Qfset
+    psse_facts.IMX = upfc.rate - 1e-20
+
+    return psse_facts
 
 
 class RawCounter:
@@ -272,7 +342,7 @@ class RawCounter:
         n = grid.get_bus_number()
         self.bus_int_dict = {bus: i + 1 for i, bus in enumerate(grid.get_buses())}
         self.bus_dev_count_dict = {bus: 0 for bus in grid.get_buses()}
-        self.ckt_counter = lil_matrix((n+1, n+1), dtype=int)
+        self.ckt_counter = lil_matrix((n + 1, n + 1), dtype=int)
 
     def get_id(self, bus: dev.Bus) -> int:
         """
@@ -314,11 +384,11 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     counter = RawCounter(grid=grid)
 
     for i, area in enumerate(grid.areas):
-        psse_circuit.areas.append(get_area(area=area, i=i+1))
+        psse_circuit.areas.append(get_area(area=area, i=i + 1))
         area_dict[area] = i + 1
 
     for i, zone in enumerate(grid.zones):
-        psse_circuit.zones.append(get_zone(zone=zone, i=i+1))
+        psse_circuit.zones.append(get_zone(zone=zone, i=i + 1))
         zones_dict[zone] = i + 1
 
     for bus in grid.buses:
@@ -356,5 +426,18 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
     for transformer in grid.transformers3w:
         psse_circuit.transformers.append(get_psse_transformer3w(transformer=transformer,
                                                                 bus_dict=counter.bus_int_dict))
+
+    # TODO: Decide whether to convert hvdc_lines into vsc_dc_lines or two_terminal_dc_lines.
+    for hvdc_line in grid.hvdc_lines:
+        psse_circuit.vsc_dc_lines.append(get_vsc_dc_line(hvdc_line,
+                                                         bus_dict=counter.bus_int_dict))
+
+    for hvdc_line in grid.hvdc_lines:
+        psse_circuit.two_terminal_dc_lines.append(get_psse_two_terminal_dc_line(hvdc_line,
+                                                                                bus_dict=counter.bus_int_dict))
+
+    for upfc_device in grid.upfc_devices:
+        psse_circuit.facts.append(get_psse_facts(upfc_device,
+                                                 bus_dict=counter.bus_int_dict))
 
     return psse_circuit

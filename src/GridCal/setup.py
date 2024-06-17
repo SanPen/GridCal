@@ -108,6 +108,7 @@ dependencies = ['setuptools>=41.0.1',
                 "rdflib",
                 "websockets",
                 "opencv-python",
+                "packaging",
                 "GridCalEngine==" + __GridCal_VERSION__,  # the GridCalEngine version must be exactly the same
                 ]
 
