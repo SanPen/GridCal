@@ -151,8 +151,17 @@ class ServerMain(BaseMainGui):
 
         :return:
         """
-        self.server_driver.download_results(job_id="",
-                                            api_key="",
-                                            local_filename="received.bin")
+
+        indices = self.ui.server_tableView.selectedIndexes()
+
+        if len(indices) == 1:
+
+            row_idx = indices[0].row()
+
+            job = self.server_driver.data_model.jobs[row_idx]
+
+            self.server_driver.download_results(job_id=job.id_tag,
+                                                api_key="",
+                                                local_filename=job.id_tag + '.results')
 
         print("Done")
