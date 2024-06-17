@@ -561,11 +561,11 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
 
                 try:
                     x = float(cat_elm['REAC'].values[0]) * Sbase
-                except:
+                except ValueError as e:
                     x = 1e-20
 
-                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, x=x, branch_type=dev.BranchType.Branch)
-                circuit.add_branch(br)
+                br = dev.SeriesReactance(bus_from=b1, bus_to=b2, name=name, x=x)
+                circuit.add_series_reactance(br)
 
         # Estimator
         # __headers__['Branches']['ESTIM'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT']
@@ -606,8 +606,8 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 state = bool(int(df['STAT'].values[i]))
                 b1 = buses_id_dict[id1]
                 b2 = buses_id_dict[id2]
-                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, active=state, branch_type=dev.BranchType.Switch)
-                circuit.add_branch(br)
+                br = dev.Switch(bus_from=b1, bus_to=b2, name=name, active=state)
+                circuit.add_switch(br)
 
         # Lines, cables and bars
         # fill until it fits or truncate the data
@@ -636,15 +636,15 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
 
                 try:
                     r = float(cat_elm['R'].values[0]) * length / 1000
-                except:
+                except ValueError as e:
                     r = 1e-20
                 try:
                     x = float(cat_elm['X'].values[0]) * length / 1000
-                except:
+                except ValueError as e:
                     x = 1e-20
                 try:
                     b = float(cat_elm['B'].values[0]) * length / 1000
-                except:
+                except ValueError as e:
                     b = 1e-20
 
                 Imax = float(cat_elm['RATTYP'].values[0]) / 1000.0  # pass from A to kA
@@ -655,9 +655,8 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x = x if x > 0.0 else 1e-20
                 b = b if b > 0.0 else 1e-20
 
-                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, rate=Smax, length=length,
-                                branch_type=dev.BranchType.Line)
-                circuit.add_branch(br)
+                br = dev.Line(bus_from=b1, bus_to=b2, name=name, r=r, x=x, b=b, rate=Smax, length=length)
+                circuit.add_line(br)
 
         # Intensity Transformer
         # __headers__['Branches']['TI'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'INDEP', 'I', 'SIMULT', 'EXIST', 'STAT',
@@ -677,8 +676,8 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 df_cat = data_structures['CatalogBranch'][tpe]
                 cat_elm = df_cat[df_cat['EQ'] == eq_id]
 
-                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, branch_type=dev.BranchType.Transformer)
-                circuit.add_branch(br)
+                br = dev.Transformer2W(bus_from=b1, bus_to=b2, name=name)
+                circuit.add_transformer2w(br)
 
         # Self-transformer
         # __headers__['Branches']['XFORM1'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
@@ -726,9 +725,8 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                     s = 1e-20
                     logger.add_error('Not found.', tpe + ':' + eq_id)
 
-                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, r=r, x=x, rate=s,
-                                branch_type=dev.BranchType.Transformer)
-                circuit.add_branch(br)
+                br = dev.Transformer2W(bus_from=b1, bus_to=b2, name=name, r=r, x=x, rate=s)
+                circuit.add_transformer2w(br)
 
         # 3-winding transformer
         # __headers__['Branches']['XFORM3'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'ID3', 'ID1N', 'ID2N', 'ID3N',
@@ -790,17 +788,11 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 x23 = x23 if x23 > 0.0 else 1e-20
                 s23 = s23 if s23 > 0.0 else 1e-20
 
-                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, r=r12, x=x12, rate=s12,
-                                branch_type=dev.BranchType.Transformer)
-                circuit.add_branch(br)
-
-                br = dev.Branch(bus_from=b1, bus_to=b3, name=name, r=r13, x=x13, rate=s13,
-                                branch_type=dev.BranchType.Transformer)
-                circuit.add_branch(br)
-
-                br = dev.Branch(bus_from=b2, bus_to=b3, name=name, r=r23, x=x23, rate=s23,
-                                branch_type=dev.BranchType.Transformer)
-                circuit.add_branch(br)
+                circuit.add_transformer3w(obj=dev.Transformer3W(bus1=b1, bus2=b2, bus3=b3, name=name,
+                                                                r12=r12, x12=x12,
+                                                                r23=r23, x23=x23,
+                                                                r31=r13, x31=x13,
+                                                                rate12=s1, rate23=s2, rate31=s3))
 
         # Neutral impedance
         # __headers__['Branches']['ZN'] = ['CLASS', 'ID', 'NAME', 'ID1', 'ID2', 'EXIST', 'STAT', 'PERM', 'FAILRT',
@@ -814,8 +806,8 @@ def load_dpx(file_name, contraction_factor=1000) -> tuple[Union[MultiCircuit, An
                 id2 = df['ID2'].values[i]
                 b1 = buses_id_dict[id1]
                 b2 = buses_id_dict[id2]
-                br = dev.Branch(bus_from=b1, bus_to=b2, name=name, branch_type=dev.BranchType.Branch)
-                circuit.add_branch(br)
+                br = dev.SeriesReactance(bus_from=b1, bus_to=b2, name=name)
+                circuit.add_series_reactance(br)
 
     # return the circuit and the logs
     return circuit, logger

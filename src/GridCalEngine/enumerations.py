@@ -1615,6 +1615,7 @@ class ResultTypes(Enum):
     InvestmentsObjectivesResults = "Objectives"
 
     InvestmentsParetoReportResults = 'Pareto evaluation report'
+    InvestmentsParetoFrequencyResults = "Pareto frequency"
     InvestmentsParetoCombinationsResults = "Pareto combinations"
     InvestmentsParetoObjectivesResults = "Pareto objectives"
 
