@@ -252,7 +252,10 @@ class ServerDriver(QThread):
             self.status_func(txt)
 
     def base_url(self):
-
+        """
+        Base URL of the service
+        :return:
+        """
         return f"http://{self.url}:{self.port}"
 
     def is_running(self) -> bool:
@@ -360,6 +363,31 @@ class ServerDriver(QThread):
             response.raise_for_status()
 
         self.get_jobs()
+
+    def download_results(self, job_id: str, api_key: str, local_filename: str):
+        """
+
+        :param job_id:
+        :param api_key:
+        :param local_filename:
+        :return:
+        """
+        url = f"{self.base_url()}/download_results/{job_id}"
+
+        headers = {
+            "accept": "application/json",
+            "API-Key": api_key
+        }
+
+        # Stream the download to avoid loading the entire file into memory
+        with requests.get(url, headers=headers, stream=True) as response:
+            response.raise_for_status()  # Check if the request was successful
+            with open(local_filename, "wb") as file:
+                for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
+                    if chunk:  # Filter out keep-alive chunks
+                        file.write(chunk)
+
+        print(f"Downloaded file saved as {local_filename}")
 
     def cancel_job(self, job_id: str, api_key: str) -> dict:
         """
