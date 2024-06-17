@@ -30,7 +30,7 @@ ygeo: latitude
 from typing import List, Union, Tuple, Callable
 from enum import Enum
 import math
-from PySide6.QtCore import Qt, QTimer, QEvent
+from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent)
@@ -80,13 +80,18 @@ class MapView(QGraphicsView):
         self.startLat = startLat
         self.startLon = startLon
         self.startLev = start_level
+        self.map_widget.level = start_level
+
+        self.mouse_x = None
+        self.mouse_y = None
 
         self.diagram_w = 25000
         self.diagram_H = 25000
 
+        self.inItem = False
         self.pressed = False
         self.disableMove = False
-        self.inItem = False
+
         self.startHe = self.height()  # 360
         self.startWi = self.width()  # 240
 
@@ -103,16 +108,26 @@ class MapView(QGraphicsView):
     def mousePressEvent(self, event: QMouseEvent):
 
         self.map_widget.mousePressEvent(event)
+        self.pressed = True
+        self.disableMove = False
+        b = event.button()
+        if b == Qt.RightButton:
+            if not self.inItem:
+                for item in self.selectedItems:
+                    item.deSelectItem()
+                self.selectedItems.clear()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         self.map_widget.mouseReleaseEvent(event)
-
+        self.pressed = False
+        self.disableMove = True
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         self.map_widget.mouseDoubleClickEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
-        self.map_widget.mouseMoveEvent(event)
-
+        if not self.disableMove:
+            self.map_widget.mouseMoveEvent(event)
+            self.centerSchema()
     def keyPressEvent(self, event: QKeyEvent):
         self.map_widget.keyPressEvent(event)
 
@@ -120,7 +135,62 @@ class MapView(QGraphicsView):
         self.map_widget.keyReleaseEvent(event)
 
     def wheelEvent(self, event: QWheelEvent):
+        mouse_event = event
+
+        zoomInitial = self.map_widget.level
+
+        self.mouse_x = mouse_event.x() / 1.5
+        self.mouse_y = mouse_event.y() / 1.5
+
+        if event.angleDelta().y() > 0:
+            new_level = self.map_widget.level + 1
+        else:
+            new_level = self.map_widget.level - 1
+
+        val = self.map_widget.zoom_level(new_level, self.mouse_x, self.mouse_y)
+
+        if val:
+            if event.angleDelta().y() > 0:
+                self.schema_zoom = self.schema_zoom * self.map_widget.zoom_factor
+                self.scale(self.map_widget.zoom_factor, self.map_widget.zoom_factor)
+            else:
+                self.schema_zoom = self.schema_zoom / self.map_widget.zoom_factor
+                self.scale(1.0 / self.map_widget.zoom_factor, 1.0 / self.map_widget.zoom_factor)
+        else:
+            self.map_widget.level = zoomInitial
+            val = self.map_widget.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
+
         self.map_widget.wheelEvent(event)
+
+        self.centerSchema()
+
+    def resizeEvent(self, event: QResizeEvent = None):
+        """
+        Widget resized, recompute some state.
+        """
+
+        self.map_widget.resizeEvent(event=event)
+
+    def setSizeDiagram(self):
+        # new widget size
+        self.view_width = self.width()
+        self.view_height = self.height()
+
+    def setSceneRectDiagram(self):
+        used_width = self.diagram_w
+        used_height = self.diagram_H
+
+        xToDiagram = -(used_width / 2)
+        yToDiagram = -(used_height / 2)
+
+        # Adjust the scene rect if needed
+        self.setSceneRect(xToDiagram,
+                               yToDiagram,
+                               used_width,
+                               used_height)
+
+        self.centerSchema()
+
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
@@ -172,6 +242,27 @@ class MapView(QGraphicsView):
         self.map_widget.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
         return x, y
+
+    def centerSchema(self) -> None:
+        """
+        This function centers the schema relative to the map according to lat. and long.
+        """
+
+        he = self.map_widget.view.height()
+        wi = self.map_widget.view.width()
+
+        level, longitude, latitude = self.map_widget.get_level_and_position()
+
+        if self.startLon is not None and longitude is not None and latitude is not None:
+            x, y = self.map_widget.geo_to_view(longitude=longitude, latitude=latitude)
+            sx, sy = self.map_widget.geo_to_view(longitude=self.startLon, latitude=self.startLat)
+
+            dx = (-sx + wi/2) / self.schema_zoom
+            dy = (-sy + he/2) / self.schema_zoom
+
+            point = QPointF(dx, dy)
+            self.map_widget.view.centerOn(point)
+            print("---")
 
 
 class MapWidget(QWidget):
@@ -259,6 +350,7 @@ class MapWidget(QWidget):
 
         # keyboard state variables
         self.shift_down = False
+        self.zoom_factor = 2
 
         # when dragging, remember the initial start point
         self.start_drag_x: int = 0
@@ -577,13 +669,17 @@ class MapWidget(QWidget):
 
         self.zoom_level(new_level, self.mouse_x, self.mouse_y)
 
-    def resizeEvent(self, event: QResizeEvent = None, updateDisplacement=True):
+    def resizeEvent(self, event: QResizeEvent = None):
         """
         Widget resized, recompute some state.
         """
 
+        self.view.setSizeDiagram()
+
         # recalculate the "key" tile stuff
         self.rectify_key_tile()
+
+        self.view.setSceneRectDiagram()
 
     def enterEvent(self, event: QEnterEvent):
         """
@@ -1227,7 +1323,7 @@ class MapWidget(QWidget):
             self.pan_position(longitude, latitude, view_x, view_y)
 
             # to set some state variables
-            self.resizeEvent(updateDisplacement=False)
+            self.resizeEvent()
 
             # raise the EVT_PYSLIPQT_LEVEL event
             # LevelEvent(level=level).emit_event()
@@ -1504,7 +1600,7 @@ class MapWidget(QWidget):
         # self.map_llon, self.map_rlon, self.map_blat, self.map_tlat = self.tile_src.extent
 
         # to set some state variables
-        self.resizeEvent(updateDisplacement=False)
+        self.resizeEvent()
 
         # raise level change event
         # LevelEvent(level=level).emit_event()
