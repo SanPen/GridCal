@@ -1,7 +1,7 @@
 import os
 import sys
 
-sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
+# sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.generalised_power_flow import run_nonlinear_opf, \
@@ -477,6 +477,52 @@ def complex6bus():
     print("Error:", results.error)
 
 
+def complex10bus():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/2_10busACDCwTrafo.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)    
+
+
+def system_1_5_Subsystem():
+    file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/1_5_Subsystem.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)  
+
+
+
+
+def ieee14():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/14bus.gridcal'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+
+    results = gce.power_flow(grid, options=pf_options)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)  
+
+
 def simple3busacdc_controllingPower_wtrafo():
     # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
     file_path = 'C:/Users/raiya/Desktop/gpf_testers/3busacdc_simple_powerControl_wtrafo.gridcal'
@@ -911,64 +957,6 @@ def casehvdc():
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
-def caseREE():
-    """
-    IEEE14
-    """
-    cwd = os.getcwd()
-
-    # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..'))
-
-    file_path = os.path.join(new_directory, 'REE Grids', 'entrada_a_aopf.raw')
-
-    grid = gce.FileOpen(file_path).open()
-
-    disp_areas = ['A11', 'A15']
-    dict_bus_lims = {'21215': [230, 225],
-                     '11055': [410, 405],
-                     '21075': [230, 225],
-                     '25130': [230, 225],
-                     '15005': [410, 405],
-                     '15015': [410, 405]}
-    tol = 1e-4
-    vm_cost = 1e4
-    i = 0
-    for gen in grid.generators:
-        if gen.bus.area.name in disp_areas:
-            # P limits -> restrict them very close to P
-            print(i)
-            gen.Pmax = gen.P + tol
-            gen.Pmin = gen.P - tol
-            # Tanmax -> set pf close to 0 to get large tanmax
-            gen.Pf = tol
-        i += 1
-    i = 0
-    print('reset i')
-    for bus in grid.buses:
-        if bus.code in dict_bus_lims.keys():
-            print(i)
-            # Increase Vm slack cost to enforce limits
-            bus.Vm_cost = vm_cost
-            # Redo Vm limits from the inputs
-            vm_lims = dict_bus_lims[bus.code]
-            bus.Vmax = vm_lims[0] / bus.Vnom
-            bus.Vmin = vm_lims[1] / bus.Vnom
-        i += 1
-
-    genlist = grid.get_generation_like_devices()
-    dic = {gen.code: k for k, gen in enumerate(genlist)}
-
-    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
-    power_flow = gce.PowerFlowDriver(grid, options)
-    power_flow.run()
-
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFslacks,
-                                              verbose=1, ips_iterations=150, ips_tolerance=1e-8)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
-
-
 import os
 import GridCalEngine.api as gce
 
@@ -1359,21 +1347,18 @@ if __name__ == '__main__':
     # simple4busacdc_wControllableTrafo() #converges true when controlling the powers across the transformer, lessons learnt, when you are controlling a branch power, if you try a setpont that goes agaisnt the natural flow of power ie from slack to load, youll have a hard time converging
                                         # nodal power balances derivatives look good tho
     # simple4busacdc_wControllableTrafo_remoteControl() #converges true, nodal power balances derivatives look good too
-    complex6bus() #converges true, derivatives at least the nodal power balances look good
+    # complex6bus() #converges true, derivatives at least the nodal power balances look good
+    # complex10bus()
+    ieee14() #converges true, derivatives look good   
+    # system_1_5_Subsystem()
 
 
     # doubleVSCsystem()
-
-    
     # compare_results()
     
     # acdc10_example() #converges true but there is a HVDC Link so it doesnt make sense to converge
     # fubm_caseHVDC_vt()
-    # fubm_caseHVDC_vt_normalNR()clear
-
-    # acdc3bus_example() #problem with the control
-    # pegase2k_example() #runs super slow and does not converge
-
+    # fubm_caseHVDC_vt_normalNR()
 
     # whatever_func()
     

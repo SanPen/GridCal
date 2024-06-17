@@ -3232,10 +3232,10 @@ if __name__ == '__main__':
     # grid_ = HelperFunctions.ieee14_example()      #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.pure_dc_3bus()        #converges true
     # grid_ = HelperFunctions.pure_ac_2bus()        #converges true
-    grid_ = HelperFunctions.pure_ac_3bus_trafo()  #converges true, your trafo is not broken maybe?
+    # grid_ = HelperFunctions.pure_ac_3bus_trafo()  #converges true, your trafo is not broken maybe?
     # grid_ = HelperFunctions.acdc_5bus()           #converges true 
     # grid_ = HelperFunctions.acdc_3bus() 
-    # grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
+    grid_ = HelperFunctions.acdc_10bus()          #converges true, you must be very careful when you are settings powers
     # grid_ = HelperFunctions.acdc_10buswoTrafo()
     # grid_ = HelperFunctions.linn5bus_example2()
     # grid_ = HelperFunctions.bus14_example()

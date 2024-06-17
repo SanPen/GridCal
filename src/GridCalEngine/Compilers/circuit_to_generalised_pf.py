@@ -1063,7 +1063,7 @@ def get_controllable_trafo_data(circuit: MultiCircuit,
     
     nelm = 0
     for i, elm in enumerate(circuit.transformers2w):
-        if elm.gpf_ctrl1_elm is None and elm.gpf_ctrl2_elm is None:
+        if elm.gpf_ctrl1_elm == None and elm.gpf_ctrl2_elm == None:
             continue
         nelm += 1
 
@@ -1077,7 +1077,7 @@ def get_controllable_trafo_data(circuit: MultiCircuit,
     for i, elm in enumerate(circuit.transformers2w):
 
         #if the trafo does not have any control targets, skip
-        if elm.gpf_ctrl1_elm is None and elm.gpf_ctrl2_elm is None:
+        if elm.gpf_ctrl1_elm == None and elm.gpf_ctrl2_elm == None:
             continue
 
         controllable_trafo_dict[elm.name] = ii  # associate the idtag to the index

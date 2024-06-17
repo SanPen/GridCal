@@ -129,7 +129,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
         ret: ConvexMethodResult = newton_raphson(func=pf_function_gpf2,
                                                     func_args=(Vm0, Va0, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, Ybus, nc),
                                                     x0=_x0,
-                                                    tol=pf_options.tolerance,
+                                                    tol=1e-7,
                                                     max_iter=pf_options.max_iter,
                                                     # max_iter = 3,
                                                     trust=pf_options.trust_radius,
@@ -595,6 +595,13 @@ def pf_function_gpf2(x: Vec,
     else:
         Gx = None
 
+    # print("(newton_raphson_general.py) General g")
+    # print(g)
+
+    # if Gx is not None:
+    #     print("(newton_raphson_general.py) General Gx")
+    #     print(Gx.todense())
+
     return ConvexFunctionResult(f=g, J=Gx)
 
 def pf_function_raiyan(x: Vec,
@@ -628,6 +635,13 @@ def pf_function_raiyan(x: Vec,
         Gx = compute_gx(x, g, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc)
     else:
         Gx = None
+
+    print("(newton_raphson_general.py) Pure AC g")
+    print(g)
+
+    if Gx is not None:
+        print("(newton_raphson_general.py) Pure AC Gx")
+        print(Gx.todense())
 
     return ConvexFunctionResult(f=g, J=Gx)
 
@@ -1486,7 +1500,7 @@ def compute_gx_gpf_symbolic(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to_vsc,
 
 
 
-def compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc):
+def compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc, onlyNumerical = False):
     """
     Compute the Jacobian matrix for the power flow function
     :param V:
@@ -1506,6 +1520,9 @@ def compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p
     Va = np.angle(V)
     
     try:
+        if onlyNumerical:
+            raise Exception("Switching to numerical differentiation")
+        
         J = compute_gx_gpf_symbolic(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to_vsc, q_to_vsc, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)          
         assert J.shape == (len(x), len(x))
         if det(J.todense()) == 0:

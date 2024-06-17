@@ -579,21 +579,27 @@ def power_flow_post_process(
         ncontTrafo = calculation_inputs.controllable_trafo_data.nelm
         if nvsc > 0:
             vsc_pfrom, vsc_pto, vsc_qto = vsc_results
-            # print("(power_flow_worker.py) vsc_results: ", vsc_pfrom)
-            # print("(power_flow_worker.py) vsc_results: ", vsc_pto)
-            # print("(power_flow_worker.py) vsc_results: ", vsc_qto)
-            #package the vsc_pto and vsc_qto into complex arrays
+            # print("(power_flow_worker.py) vsc_pfrom: ", vsc_pfrom)
+            # print("(power_flow_worker.py) vsc_pto: ", vsc_pto)
+            # print("(power_flow_worker.py) vsc_qto: ", vsc_qto)
+            # print("(power_flow_worker.py) Stb: ", Stb)
+            # print("(power_flow_worker.py) Sfb: ", Sfb)
+            # print("(power_flow_worker.py) -nvsc-ncontTrafo:-ncontTrafo: ", (-nvsc-ncontTrafo), -ncontTrafo)      
+            # print("(power_flow_worker.py) Stb[-nvsc-ncontTrafo:-ncontTrafo]: ", Stb[-nvsc-ncontTrafo:-ncontTrafo])
+            # print("(power_flow_worker.py) Sfb[-nvsc-ncontTrafo:-ncontTrafo]: ", Sfb[-nvsc-ncontTrafo:-ncontTrafo])  
+            # print("(power_flow_worker.py) Stb[-nvsc-ncontTrafo:]: ", Stb[-nvsc-ncontTrafo:])
+            # print("(power_flow_worker.py) Sfb[-nvsc-ncontTrafo:]: ", Sfb[-nvsc-ncontTrafo:])    
+
+
             vsc_Sto = vsc_pto + 1j*vsc_qto
-            #add it, and we assume that the VSCs are always the second last in the branch data, only insert the last nvsc elements
-            Stb[-nvsc-ncontTrafo:] += vsc_Sto * calculation_inputs.Sbase
-            Sfb[-nvsc-ncontTrafo:] += vsc_pfrom * calculation_inputs.Sbase
+            end_index = -ncontTrafo if ncontTrafo != 0 else None
+            Stb[-nvsc-ncontTrafo:end_index] += vsc_Sto * calculation_inputs.Sbase
+            Sfb[-nvsc-ncontTrafo:end_index] += vsc_pfrom * calculation_inputs.Sbase
 
         if ncontTrafo > 0:
             p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = contTrafo_results
-            #package the contTrafo_pto and contTrafo_qto into complex arrays
             contTrafo_Sto = p_to_contTrafo + 1j*q_to_contTrafo
             contTrafo_Sfrom = p_from_contTrafo + 1j*q_from_contTrafo
-            #add it, and we assume that the VSCs are always the last in the branch data, only insert the last ncontTrafo elements
             Stb[-ncontTrafo:] += contTrafo_Sto * calculation_inputs.Sbase
             Sfb[-ncontTrafo:] += contTrafo_Sfrom * calculation_inputs.Sbase
 
