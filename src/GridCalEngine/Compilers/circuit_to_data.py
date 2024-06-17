@@ -552,7 +552,7 @@ def get_battery_data(circuit: MultiCircuit,
             else:
                 data.p[k] = elm.P
 
-            data.ctrl_bus[k] = bus_dict.get(elm.regulation_bus, i)
+            data.ctrl_bus[k] = bus_dict.get(elm.control_bus, i)
 
             data.active[k] = elm.active
             data.pf[k] = elm.Pf
