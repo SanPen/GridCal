@@ -90,34 +90,66 @@ class BaseTiles(object):
 
     @property
     def tile_width(self):
+        """
+
+        :return:
+        """
         return self.tile_size_x
 
     @property
     def tile_height(self):
+        """
+
+        :return:
+        """
         return self.tile_size_y
 
     @property
     def map_width(self):
+        """
+
+        :return:
+        """
         return self.num_tiles_x * self.tile_width  # virtual map width
 
     @property
     def map_height(self):
+        """
+
+        :return:
+        """
         return self.num_tiles_y * self.tile_height  # virtual map height
 
     @property
     def map_llon(self):
+        """
+
+        :return:
+        """
         return self.extent[0]
 
     @property
     def map_rlon(self):
+        """
+
+        :return:
+        """
         return self.extent[1]
 
     @property
     def map_blat(self):
+        """
+
+        :return:
+        """
         return self.extent[2]
 
     @property
     def map_tlat(self):
+        """
+
+        :return:
+        """
         return self.extent[3]
 
     def UseLevel(self, level):
@@ -212,7 +244,7 @@ class BaseTiles(object):
         pass
         # raise Exception('You must override BaseTiles.setCallback(callback))')
 
-    def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
+    def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[int, int]:
         """
         Convert geo to tile fractional coordinates for level in use.
         xgeo   geo longitude in degrees
