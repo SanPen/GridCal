@@ -3265,7 +3265,6 @@ class Assets:
         for elm in to_del:
             self.delete_generator_technology(elm)
 
-        # todo: remove dependencies
         self._technologies.remove(obj)
 
     def get_technology_indexing_dict(self) -> Dict[str, int]:
@@ -3593,7 +3592,6 @@ class Assets:
         Delete GeneratorFuel
         :param obj: GeneratorFuel
         """
-        # todo: delete dependencies
         self._generators_emissions.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -4030,6 +4028,9 @@ class Assets:
         Get list of the branch lists
         :return: List[List[BRANCH_TYPES]]
         """
+
+        # This order must be respected durng the compilation
+
         return [
             self._lines,
             self._dc_lines,
