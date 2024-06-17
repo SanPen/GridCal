@@ -391,9 +391,9 @@ class ServerDriver(QThread):
                     if chunk:  # Filter out keep-alive chunks
                         file.write(chunk)
                         sent += chunk_size
-                        self.progress_text(f"Sent {sent / chunk_size} MBytes")
+                        self.progress_text.emit(f"Sent {sent / chunk_size} MBytes")
 
-        self.progress_text(f"Downloaded file saved as {local_filename}")
+        self.progress_text.emit(f"Downloaded file saved as {local_filename}")
         print(f"Downloaded file saved as {local_filename}")
 
     def cancel_job(self, job_id: str, api_key: str) -> dict:
