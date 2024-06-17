@@ -677,6 +677,77 @@ def linn5bus_us_pvr_slack():
 
     return grid
 
+def linn5bus_us_tr_controlling_vm():
+    """
+    Grid from Lynn Powel's book
+    """
+    # declare a circuit object
+    grid = gce.MultiCircuit()
+
+    # Add the buses and the generators and loads attached
+    bus1 = gce.Bus('Bus 1', vnom=138)
+    # bus1.is_slack = True  # we may mark the bus a slack
+    grid.add_bus(bus1)
+    grid.add_load(bus1, gce.Load('load 1', P=1000, Q=250))
+
+    # add bus 2 with a load attached
+    bus2 = gce.Bus('Bus 2', vnom=138)
+    grid.add_bus(bus2)
+    grid.add_load(bus2, gce.Load('load 2', P=1000, Q=250))
+    grid.add_shunt(bus2, gce.Shunt('BC 1', B=200.0))
+
+    # add bus 3 with a load attached
+    bus3 = gce.Bus('Bus 3', vnom=138)
+    grid.add_bus(bus3)
+
+    # add bus 4 with a load attached
+    bus4 = gce.Bus('Bus 4', vnom=138)
+    grid.add_bus(bus4)
+    gen1 = gce.Generator('Generator 1', control_bus=bus4, vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0, Snom=1000, P=1000)
+    grid.add_generator(bus4, gen1)
+
+    # bus5
+    bus5 = gce.Bus('Bus 5', vnom=20)
+    grid.add_bus(bus5)
+    bus5.is_slack = True
+    gen2 = gce.Generator('Generator Slack', control_bus=bus5, vset=1.0, Pmin=0, Pmax=1000,
+                         Qmin=-1000, Qmax=1000, Cost=15, Cost2=0.0, Snom=400, P=1000)
+    grid.add_generator(bus5, gen2)
+
+    # tr1 = gce.Transformer2W(bus2, bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
+    #                  tap_module_max=1.1, tap_module_min=0.9, tap_module=1.0,
+    #                  tap_module_control_mode=gce.TapModuleControl.fixed,
+    #                  regulation_bus=bus2)
+
+    tr1 = gce.Transformer2W(bus_from=bus2, bus_to=bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
+                            tap_phase_max=1.1, tap_phase_min=0.9, tap_module=1.0,
+                            tap_module_control_mode=gce.TapModuleControl.Vm, Pset=1200,
+                            regulation_bus=bus2)
+
+    # tr1 = gce.Transformer2W(bus_from=bus2, bus_to=bus4, name='transformer 2-4', r=0.001, x=0.01, b=0.0, rate=1000,
+    #                         tap_phase_max=1.7, tap_phase_min=1.7, tap_module=1.0, Pset=1200)
+
+    tr1.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
+
+    tr2 = gce.Transformer2W(bus_from=bus1, bus_to=bus3, name='transformer 1-3', r=0.001, x=0.015, b=0.0, rate=1000,
+                            tap_phase_max=1.1, tap_phase_min=0.9, tap_module=1.0,
+                            tap_module_control_mode=gce.TapModuleControl.fixed,
+                            regulation_bus=bus1)
+    # tr2 = gce.Transformer2W(bus_from=bus1, bus_to=bus3, name='transformer 1-3', r=0.001, x=0.015, b=0.0, rate=1000,
+    #                         tap_phase_max=3.0, tap_phase_min=-3.0, tap_module=1.0, Pset=1200)
+    tr2.tap_changer = gce.TapChanger(total_positions=21, neutral_position=11, dV=0.01)
+
+    # add Lines connecting the buses
+    grid.add_line(gce.Line(bus_from=bus1, bus_to=bus2, name='line 1-2', r=0.01, x=0.01, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus3, bus_to=bus4, name='line 3-4', r=0.005, x=0.02, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus4, bus_to=bus5, name='line 4-5', r=0.005, x=0.02, b=0.02, rate=1000))
+    grid.add_line(gce.Line(bus_from=bus5, bus_to=bus3, name='line 5-3', r=0.005, x=0.01, b=0.02, rate=1000))
+    grid.add_transformer2w(tr1)
+    grid.add_transformer2w(tr2)
+
+    return grid
+
 def linn5bus_us():
     """
     Grid from Lynn Powel's book
@@ -812,6 +883,8 @@ def compute_g(V: CxVec,
     Vt = V[T]
     If = Yf * V
     It = Yt * V
+    # TODO: discretizar solo para los elementos que haya que calcularlo (los índices). Solo los necesitamos en las ramas
+    # que controlan.
     Sf_calc = Vf * np.conj(If)
     St_calc = Vt * np.conj(It)
 
@@ -1074,7 +1147,7 @@ def indices_computation(grid: gce.MultiCircuit):
 
     return ref, pq, pv, pvr, no_slack, pqv, k_m_vr, k_m_qf, k_m_qt, k_tau_pf, k_tau_pt
 
-def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
+def run_pf(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     """
 
     :param grid:
@@ -1131,7 +1204,7 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     pqpvr = np.r_[pq, pvr]  # np.r_[nc.pq, nc.pvr]
     npqpvr = len(pqpvr)
     npvpq = len(pvpq)
-    nnoslack = len(pq) + len(pvr) + len(pv) + len(pqv)
+    nnoslack = len(pq) + len(pvr) + len(pv) + len(pqv) + len(i_m_vr)
     S0 = nc.Sbus
     I0 = nc.Ibus
     Y0 = nc.YLoadBus
@@ -1226,7 +1299,8 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     pqpvr.sort()  # pqpvr = np.sort(pqpvr)
     k_tau.sort()  # k_tau = np.sort(k_tau)
     k_m.sort()  # k_m = np.sort(k_m)
-    nnoslack = len(pq) + len(pvr) + len(pv) + len(pqv)
+    nnoslack = len(pq) + len(pvr) + len(pv) + len(pqv) + len(i_m_vr)
+
     # Execute again the power flow to check controls
     x1 = var2x(Va=Va[no_slack], Vm=Vm[pqpvr], tau=tau[k_tau], m=m[k_m])
     ret: ConvexMethodResult = newton_raphson(func=pf_function,
@@ -1253,7 +1327,7 @@ def run_pf2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions):
     print("Logger:")
     logger.print()
 
-def powerflowresults(nc: NumericalCircuit, Vm: Vec, Va: Vec, show= False):
+def powerflowresults(nc: NumericalCircuit, Vm: Vec, Va: Vec, show = False):
 
     df = pd.DataFrame(data={"Vm": Vm, "Va": np.degrees(Va)})
     if show:
@@ -1291,23 +1365,11 @@ def powerflowresults(nc: NumericalCircuit, Vm: Vec, Va: Vec, show= False):
     return Sinj, Iinj, Sf, St
 
 
-def test_multiple_slack() -> None:
-    gridtest_ = linn5bus_multislack()
-
-    ref, pq, pv, pvr, no_slack, pqv, k_m_vr, k_m_qf, k_m_qt, k_tau_pf, k_tau_pt = indices_computation(grid=gridtest_)
-
-    # check that it exists only one slack node
-    assert (len(ref) == 1)
-
-    # check that slack node is the one with higher nominal power
-    candidate = gridtest_.generators[0]
-    for g in gridtest_.generators:
-        if g.Snom > candidate.Snom:
-            candidate = g
-    # TODO: hay que cambiar esto en otro punto diferente al del compute_indices
-    # assert (candidate.bus == gridtest_.buses[ref[0]])
-
 def test_run() -> None:
+    """
+    Testing base case
+    :return:
+    """
 
     gridtest_ = linn5bus_us_basecase()
 
@@ -1316,7 +1378,7 @@ def test_run() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
 
 def test_1() -> None:
     """
@@ -1329,7 +1391,7 @@ def test_1() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
 
 
 def test_2() -> None:
@@ -1343,15 +1405,15 @@ def test_2() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
 
 def test_3() -> None:
     """
     Network with a slack controlling initially the voltage of a remote node. Slack generator must control itself.
     NOTE: it has been detected that GridCal internally, when it detects that there is a slack node controlling voltage
     in a different remote node, it searches for a slack node like if it has not been selected as an input. It the
-    test case implemented, despite it converges, it has been detected that the slack selected could not be appropiate so
-    it must be checked with Santiago and José Luis
+    test case implemented, despite it converges, it has been detected that the slack selected could not be appropiate
+    so it must be checked with Santiago and José Luis
     :return:
     """
 
@@ -1362,7 +1424,7 @@ def test_3() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
 
 def test_4() -> None:
     """
@@ -1377,7 +1439,7 @@ def test_4() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
 
 def test_5() -> None:
     """
@@ -1391,7 +1453,7 @@ def test_5() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
 
 def test_6() -> None:
     """
@@ -1405,7 +1467,7 @@ def test_6() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
 
 def test_7() -> None:
     """
@@ -1422,7 +1484,22 @@ def test_7() -> None:
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=gridtest_, pf_options=pf_options_)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
+
+def test_8() -> None:
+    """
+
+    :return:
+    """
+    gridtest_ = linn5bus_us_tr_controlling_vm()
+
+    pf_options_ = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                       max_iter=50,
+                                       trust_radius=5.0,
+                                       tolerance=1e-6,
+                                       verbose=0)
+    run_pf(grid=gridtest_, pf_options=pf_options_)
+
 
 if __name__ == '__main__':
     import os
@@ -1444,4 +1521,4 @@ if __name__ == '__main__':
                                        trust_radius=5.0,
                                        tolerance=1e-6,
                                        verbose=0)
-    run_pf2(grid=grid_, pf_options=pf_options_)
+    run_pf(grid=grid_, pf_options=pf_options_)

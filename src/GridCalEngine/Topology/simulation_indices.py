@@ -704,7 +704,7 @@ class SimulationIndicesV2:
                 brctrl = np.where(branch_control_bus == i)[0]
                 for j in brctrl:    # in case there are more than one
                     if branch_control_mode_m[j] == TapModuleControl.Vm:
-                        pqv = np.append(pqv, np.array([i]))
+                        #pqv = np.append(pqv, np.array([i]))
                         pq = np.delete(pq, np.where(pq == i)[0])
                         i_m_vr = np.append(i_m_vr, np.array([i]))
                     else:

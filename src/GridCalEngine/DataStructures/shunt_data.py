@@ -39,7 +39,11 @@ class ShuntData:
 
         self.active: IntVec = np.zeros(nelm, dtype=bool)
         self.admittance: CxVec = np.zeros(nelm, dtype=complex)
-
+        self.bmax:Vec = np.zeros(nelm, dtype=float)
+        self.bmin:Vec = np.zeros(nelm, dtype=float)
+        self.gmax:Vec = np.zeros(nelm, dtype=float)
+        self.gmin:Vec = np.zeros(nelm, dtype=float)
+        self.controllable: IntVec = np.zeros(nelm, dtype=bool)
         # reliabilty
         self.mttf: Vec = np.zeros(nelm, dtype=float)
         self.mttr: Vec = np.zeros(nelm, dtype=float)
@@ -47,6 +51,7 @@ class ShuntData:
         self.C_bus_elm: sp.lil_matrix = sp.lil_matrix((nbus, nelm), dtype=int)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+
 
     def size(self) -> int:
         """
@@ -71,6 +76,11 @@ class ShuntData:
 
         data.active = self.active[elm_idx]
         data.admittance = self.admittance[elm_idx]
+        data.bmax = self.bmax[elm_idx]
+        data.bmin = self.bmin[elm_idx]
+        data.gmax = self.gmax[elm_idx]
+        data.gmin = self.gmin[elm_idx]
+        data.controllable = self.controllable[elm_idx]
 
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
@@ -93,6 +103,11 @@ class ShuntData:
         data.idtag = self.idtag.copy()
         data.active = self.active.copy()
         data.admittance = self.admittance.copy()
+        data.bmax = self.bmax.copy()
+        data.bmin = self.bmin.copy()
+        data.gmax = self.gmax.copy()
+        data.gmin = self.gmin.copy()
+        data.controllable = self.controllable.copy()
 
         data.mttf = self.mttf.copy()
         data.mttr = self.mttr.copy()
