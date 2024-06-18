@@ -341,10 +341,9 @@ class NumericalCircuit:
 
         return Sbus
 
-    def consolidate_information(self, use_stored_guess: bool = False) -> None:
+    def consolidate_information(self) -> None:
         """
         Consolidates the information of this object
-        :return:
         """
 
         self.nbus = len(self.bus_data)
@@ -367,31 +366,6 @@ class NumericalCircuit:
 
         self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
-
-        # if not use_stored_guess:
-        #     self.bus_data.Vbus = si.compose_generator_voltage_profile(
-        #         nbus=self.nbus,
-        #         gen_bus_indices=self.generator_data.get_bus_indices(),
-        #         gen_vset=self.generator_data.v,
-        #         gen_status=self.generator_data.active,
-        #         gen_is_controlled=self.generator_data.controllable,
-        #         bat_bus_indices=self.battery_data.get_bus_indices(),
-        #         bat_vset=self.battery_data.v,
-        #         bat_status=self.battery_data.active,
-        #         bat_is_controlled=self.battery_data.controllable,
-        #         hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
-        #         hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
-        #         hvdc_status=self.hvdc_data.active,
-        #         hvdc_vf=self.hvdc_data.Vset_f,
-        #         hvdc_vt=self.hvdc_data.Vset_t,
-        #         k_vf_beq=self.k_vf_beq,
-        #         i_vf_beq=self.i_vf_beq,
-        #         k_vt_m=self.k_vt_m,
-        #         i_vt_m=self.i_vt_m,
-        #         branch_status=self.branch_data.active,
-        #         br_vf=self.branch_data.vf_set,
-        #         br_vt=self.branch_data.vt_set
-        #     )
 
     def copy(self) -> "NumericalCircuit":
         """
@@ -2168,6 +2142,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                               plant_dict=plant_dict,
                                                               t_idx=t_idx)
 
-    nc.consolidate_information(use_stored_guess=use_stored_guess)
+    nc.consolidate_information()
 
     return nc

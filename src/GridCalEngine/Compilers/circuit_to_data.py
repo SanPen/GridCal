@@ -22,30 +22,29 @@ from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, ConverterControlType,
                                         TransformerControlType, HvdcControlType)
-from GridCalEngine.basic_structures import CxVec, BoolVec
+from GridCalEngine.basic_structures import BoolVec
 import GridCalEngine.DataStructures as ds
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 
 
-def set_bus_voltage(i: int,
-                    bus_name: str,
-                    bus_voltage_used: BoolVec,
-                    bus_data: ds.BusData,
-                    candidate_Vm: float,
-                    use_stored_guess: bool,
-                    logger: Logger):
+def set_bus_control_voltage(i: int,
+                            bus_name: str,
+                            bus_voltage_used: BoolVec,
+                            bus_data: ds.BusData,
+                            candidate_Vm: float,
+                            use_stored_guess: bool,
+                            logger: Logger) -> None:
     """
-
-    :param i:
-    :param bus_name:
-    :param bus_voltage_used:
-    :param bus_data:
-    :param candidate_Vm:
-    :param use_stored_guess:
-    :param logger:
-    :return:
+    Set the bus control voltage
+    :param i: Bus index
+    :param bus_name: Bus name
+    :param bus_voltage_used: Array of flags indicating if a bus voltage has been modified before
+    :param bus_data: BusData
+    :param candidate_Vm: Voltage set point that you want to set
+    :param use_stored_guess: Use the stored seed values?
+    :param logger: Logger
     """
     if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
         bus_data.bus_types[i] = BusMode.PV.value  # set as PV
@@ -55,7 +54,10 @@ def set_bus_voltage(i: int,
             bus_data.Vbus[i] = complex(candidate_Vm, 0)
             bus_voltage_used[i] = True
         elif candidate_Vm != bus_data.Vbus[i]:
-            logger.add_error('Different set points', bus_name, candidate_Vm, bus_data.Vbus[i])
+            logger.add_error(msg='Different control voltage set points',
+                             device=bus_name,
+                             value=candidate_Vm,
+                             expected_value=bus_data.Vbus[i])
 
 
 def get_bus_data(circuit: MultiCircuit,
@@ -205,13 +207,13 @@ def get_load_data(circuit: MultiCircuit,
 
         elif elm.mode == ExternalGridMode.PV:
 
-            set_bus_voltage(i=i,
-                            bus_name=elm.bus.name,
-                            bus_data=bus_data,
-                            bus_voltage_used=bus_voltage_used,
-                            candidate_Vm=elm.Vm_prof[t_idx] if time_series else elm.Vm,
-                            use_stored_guess=use_stored_guess,
-                            logger=logger)
+            set_bus_control_voltage(i=i,
+                                    bus_name=elm.bus.name,
+                                    bus_data=bus_data,
+                                    bus_voltage_used=bus_voltage_used,
+                                    candidate_Vm=elm.Vm_prof[t_idx] if time_series else elm.Vm,
+                                    use_stored_guess=use_stored_guess,
+                                    logger=logger)
 
         if time_series:
             data.S[ii] += complex(elm.P_prof[t_idx], elm.Q_prof[t_idx])
@@ -244,13 +246,13 @@ def get_load_data(circuit: MultiCircuit,
             data.cost[ii] = elm.Cost_prof[t_idx]
 
             if elm.is_controlled and elm.active_prof[t_idx]:
-                set_bus_voltage(i=i,
-                                bus_name=elm.bus.name,
-                                bus_data=bus_data,
-                                bus_voltage_used=bus_voltage_used,
-                                candidate_Vm=elm.Vset_prof[t_idx],
-                                use_stored_guess=use_stored_guess,
-                                logger=logger)
+                set_bus_control_voltage(i=i,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset_prof[t_idx],
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
         else:
             data.Y[ii] += complex(elm.G, elm.B)
@@ -258,13 +260,13 @@ def get_load_data(circuit: MultiCircuit,
             data.cost[ii] = elm.Cost
 
             if elm.is_controlled and elm.active:
-                set_bus_voltage(i=i,
-                                bus_name=elm.bus.name,
-                                bus_data=bus_data,
-                                bus_voltage_used=bus_voltage_used,
-                                candidate_Vm=elm.Vset,
-                                use_stored_guess=use_stored_guess,
-                                logger=logger)
+                set_bus_control_voltage(i=i,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -421,13 +423,13 @@ def get_generator_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
-                    set_bus_voltage(i=i,
-                                    bus_name=elm.bus.name,
-                                    bus_data=bus_data,
-                                    bus_voltage_used=bus_voltage_used,
-                                    candidate_Vm=elm.Vset_prof[t_idx],
-                                    use_stored_guess=use_stored_guess,
-                                    logger=logger)
+                    set_bus_control_voltage(i=i,
+                                            bus_name=elm.bus.name,
+                                            bus_data=bus_data,
+                                            bus_voltage_used=bus_voltage_used,
+                                            candidate_Vm=elm.Vset_prof[t_idx],
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
 
         else:
             if opf_results is not None:
@@ -448,13 +450,13 @@ def get_generator_data(circuit: MultiCircuit,
                 if elm.srap_enabled and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
-                set_bus_voltage(i=i,
-                                bus_name=elm.bus.name,
-                                bus_data=bus_data,
-                                bus_voltage_used=bus_voltage_used,
-                                candidate_Vm=elm.Vset,
-                                use_stored_guess=use_stored_guess,
-                                logger=logger)
+                set_bus_control_voltage(i=i,
+                                        bus_name=elm.bus.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
@@ -556,13 +558,13 @@ def get_battery_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
-                    set_bus_voltage(i=i,
-                                    bus_name=elm.bus.name,
-                                    bus_data=bus_data,
-                                    bus_voltage_used=bus_voltage_used,
-                                    candidate_Vm=elm.Vset_prof[t_idx],
-                                    use_stored_guess=use_stored_guess,
-                                    logger=logger)
+                    set_bus_control_voltage(i=i,
+                                            bus_name=elm.bus.name,
+                                            bus_data=bus_data,
+                                            bus_voltage_used=bus_voltage_used,
+                                            candidate_Vm=elm.Vset_prof[t_idx],
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
 
         else:
             if opf_results is not None:
@@ -584,13 +586,13 @@ def get_battery_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
-                    set_bus_voltage(i=i,
-                                    bus_name=elm.bus.name,
-                                    bus_data=bus_data,
-                                    bus_voltage_used=bus_voltage_used,
-                                    candidate_Vm=elm.Vset,
-                                    use_stored_guess=use_stored_guess,
-                                    logger=logger)
+                    set_bus_control_voltage(i=i,
+                                            bus_name=elm.bus.name,
+                                            bus_data=bus_data,
+                                            bus_voltage_used=bus_voltage_used,
+                                            candidate_Vm=elm.Vset,
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
@@ -1201,21 +1203,21 @@ def get_hvdc_data(circuit: MultiCircuit,
 
             # hack the bus types to believe they are PV
             if elm.active_prof[t_idx]:
-                set_bus_voltage(i=f,
-                                bus_name=elm.bus_from.name,
-                                bus_data=bus_data,
-                                bus_voltage_used=bus_voltage_used,
-                                candidate_Vm=elm.Vset_f_prof[t_idx],
-                                use_stored_guess=use_stored_guess,
-                                logger=logger)
+                set_bus_control_voltage(i=f,
+                                        bus_name=elm.bus_from.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset_f_prof[t_idx],
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
-                set_bus_voltage(i=t,
-                                bus_name=elm.bus_to.name,
-                                bus_data=bus_data,
-                                bus_voltage_used=bus_voltage_used,
-                                candidate_Vm=elm.Vset_t_prof[t_idx],
-                                use_stored_guess=use_stored_guess,
-                                logger=logger)
+                set_bus_control_voltage(i=t,
+                                        bus_name=elm.bus_to.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset_t_prof[t_idx],
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
         else:
             data.active[i] = elm.active
@@ -1238,21 +1240,21 @@ def get_hvdc_data(circuit: MultiCircuit,
 
             # hack the bus types to believe they are PV
             if elm.active:
-                set_bus_voltage(i=f,
-                                bus_name=elm.bus_from.name,
-                                bus_data=bus_data,
-                                bus_voltage_used=bus_voltage_used,
-                                candidate_Vm=elm.Vset_f,
-                                use_stored_guess=use_stored_guess,
-                                logger=logger)
+                set_bus_control_voltage(i=f,
+                                        bus_name=elm.bus_from.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset_f,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
-                set_bus_voltage(i=t,
-                                bus_name=elm.bus_to.name,
-                                bus_data=bus_data,
-                                bus_voltage_used=bus_voltage_used,
-                                candidate_Vm=elm.Vset_t,
-                                use_stored_guess=use_stored_guess,
-                                logger=logger)
+                set_bus_control_voltage(i=t,
+                                        bus_name=elm.bus_to.name,
+                                        bus_data=bus_data,
+                                        bus_voltage_used=bus_voltage_used,
+                                        candidate_Vm=elm.Vset_t,
+                                        use_stored_guess=use_stored_guess,
+                                        logger=logger)
 
         data.Vnf[i] = elm.bus_from.Vnom
         data.Vnt[i] = elm.bus_to.Vnom
