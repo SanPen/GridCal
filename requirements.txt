@@ -30,6 +30,7 @@ pytest >= 7.2.0
 rdflib
 pymoo
 fastapi
+starlette
 uvicorn
 websockets
 opencv-python
