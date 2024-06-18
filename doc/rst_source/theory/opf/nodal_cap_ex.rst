@@ -15,11 +15,7 @@ Linear example
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([10, 11]))
 
-    print('P nodal capacity: ', res.nodal_capacity_vars.P)
-    print('P generators: ', res.gen_vars.p)
-    print('P loads: ', res.load_vars.shedding)
-    print('P slacks pos: ', res.branch_vars.flow_slacks_pos)
-    print('P slacks neg: ', res.branch_vars.flow_slacks_neg)
+    print('P linear nodal capacity: ', res.nodal_capacity_vars.P)
     print('')
 
 
@@ -42,11 +38,18 @@ Non-linear example
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([10, 11]))
 
-    print('P nodal capacity: ', res.nodal_capacity_vars.P)
-    print('P generators: ', res.gen_vars.p)
-    print('P loads: ', res.load_vars.shedding)
-    print('P slacks pos: ', res.branch_vars.flow_slacks_pos)
-    print('P slacks neg: ', res.branch_vars.flow_slacks_neg)
+    print('P non-linear nodal capacity: ', res.nodal_capacity)
     print('')
 
+
+Results
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Linear nodal capacity power, in MW**
+
+P linear nodal capacity: [4.85736901, 1.52653874]
+
+**Non-linear nodal capacity power, in MW**
+
+P non-linear nodal capacity: [5.0114640, 1.693406]
 
