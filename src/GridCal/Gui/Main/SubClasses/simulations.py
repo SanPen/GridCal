@@ -38,6 +38,7 @@ import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
@@ -769,60 +770,108 @@ class SimulationsMain(TimeEventsMain):
         Dispatch the power flow action
         :return:
         """
-        if self.ts_flag():
-            self.run_power_flow_time_series()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.PowerFlowTimeSeries_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.PowerFlow_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_power_flow()
+            if self.ts_flag():
+                self.run_power_flow_time_series()
+            else:
+                self.run_power_flow()
 
     def optimal_power_flow_dispatcher(self):
         """
         Dispatch the optimal power flow action
         :return:
         """
-        if self.ts_flag():
-            self.run_opf_time_series()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.OPFTimeSeries_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.OPF_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_opf()
+            if self.ts_flag():
+                self.run_opf_time_series()
+            else:
+                self.run_opf()
 
     def optimal_ntc_dispatcher(self):
         """
         Dispatch the NTC action
         :return:
         """
-        if self.ts_flag():
-            self.run_available_transfer_capacity_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_TS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_available_transfer_capacity()
+            if self.ts_flag():
+                self.run_available_transfer_capacity_ts()
+            else:
+                self.run_available_transfer_capacity()
 
     def optimal_ntc_opf_dispatcher(self):
         """
         Dispatch the optimal NTC action
         :return:
         """
-        if self.ts_flag():
-            self.run_opf_ntc_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacityTS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacity_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_opf_ntc()
+            if self.ts_flag():
+                self.run_opf_ntc_ts()
+            else:
+                self.run_opf_ntc()
 
     def linear_pf_dispatcher(self):
         """
         Dispatch the linear power flow action
         :return:
         """
-        if self.ts_flag():
-            self.run_linear_analysis_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.LinearAnalysis_TS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.LinearAnalysis_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_linear_analysis()
+            if self.ts_flag():
+                self.run_linear_analysis_ts()
+            else:
+                self.run_linear_analysis()
 
     def contingencies_dispatcher(self):
         """
         Dispatch the contingencies action
         :return:
         """
-        if self.ts_flag():
-            self.run_contingency_analysis_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.ContingencyAnalysisTS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.ContingencyAnalysis_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_contingency_analysis()
+            if self.ts_flag():
+                self.run_contingency_analysis_ts()
+            else:
+                self.run_contingency_analysis()
 
     def run_power_flow(self):
         """

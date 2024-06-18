@@ -45,6 +45,9 @@ class ServerMain(BaseMainGui):
         # menu
         self.ui.actionEnable_server_mode.triggered.connect(self.server_start_stop)
 
+        # table double click
+        self.ui.server_tableView.doubleClicked.connect(self.get_results)
+
     @staticmethod
     def server_config_file_path() -> str:
         """
@@ -142,3 +145,23 @@ class ServerMain(BaseMainGui):
             if len(self.server_driver.logger):
                 warning_msg(text="Could not connect to the server", title="Server connection")
                 self.ui.actionEnable_server_mode.setChecked(False)
+
+    def get_results(self):
+        """
+
+        :return:
+        """
+
+        indices = self.ui.server_tableView.selectedIndexes()
+
+        if len(indices) == 1:
+
+            row_idx = indices[0].row()
+
+            job = self.server_driver.data_model.jobs[row_idx]
+
+            self.server_driver.download_results(job_id=job.id_tag,
+                                                api_key="",
+                                                local_filename=job.id_tag + '.results')
+
+        print("Done")
