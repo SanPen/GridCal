@@ -35,8 +35,9 @@ from platypus import *
 from platypus.indicators import Hypervolume
 
 
-class UniformBinarySampling(Sampling):
+class UniformBinarySampling(Sampling): #pymoo library
     def _do(self, problem, n_samples, **kwargs):
+
         num_ones = np.linspace(0, problem.n_var, n_samples, dtype=int)
         num_ones[-1] = problem.n_var
         ones_into_array = np.zeros((n_samples, problem.n_var), dtype=int)
@@ -47,43 +48,67 @@ class UniformBinarySampling(Sampling):
         print("testing")
         return ones_into_array
 
-# NOT WORKING:
-# def UniformBinarySampling_platypus(problem_ptp,max_evals,pop_size):
-#     n_var=problem_ptp.nvars #390
-#     n_samples=pop_size #78
-#     num_ones = np.linspace(0,n_var , n_samples, dtype=int) #problem.nvar
-#     num_ones[-1] = n_var
-#     ones_into_array = np.zeros((n_samples, n_var), dtype=int)
-#     for i, num in enumerate(num_ones):
-#         ones_into_array[i, :num] = 1
-#         np.random.shuffle(ones_into_array[i])
-#
-#     print("testing")
-#     ones_into_array_binary=ones_into_array.astype(bool) #changing 1/0 into True/false for platypus
-#     population = []
-#     for i in range(n_samples):
-#         for j in range(n_var):
-#             population.append(list(ones_into_array_binary[i][j]))
-#     solution = Solution(problem_ptp)
-#     solution.variables = [population]  # testear si esto funciona
-#
-#     # initial_pop = [Solution(problem_ptp) for i in range(pop_size)]
-#     # for i in range(n_samples): #pop_size
-#     #     initial_pop[i].variables = ones_into_array_binary[i]
-#     return (population)
+    def UniformBinaryGenerator(problem_ptp,pop_size):
+        """
+        BASED ON PLATYPUS LIBRARY ONLY
+        Defines the initial population matrix as an array and then transforms into platypus solution object
+        to be used for InjectedPopulation Generator method. It is based on UniformBinarySampling method for pymoo
 
-class UniformBinaryGenerator(Generator): #platypus
+        """
+        #inputs:
+        n_samples=pop_size #78
+        #creating an array with the number of ones we want in each individual:
+        num_ones = np.linspace(0, problem_ptp.nvars, n_samples, dtype=int)
+        num_ones[-1] = problem_ptp.nvars
+        # creating an array for each individual, with the number of ones defined in "num_ones"
+        ones_into_array = np.zeros((n_samples, problem_ptp.nvars), dtype=int)
+        # Fill ones_into_array randomly
+        ones_into_array_bin=[]
+        for i, num in enumerate(num_ones):
+            ones_into_array[i, :num] = 1
+            np.random.shuffle(ones_into_array[i])
+            #changing into platypus format:
+            aux=[]
+            for j in range(problem_ptp.nvars):
+                aux.append([bool(ones_into_array[i,j])])
+            ones_into_array_bin.append(aux)
 
+        predefined_population =np.array(ones_into_array_bin) #array instead of list
+        # #to check number of ones per individual:
+        # for i in range(78):
+        #     unos = 0
+        #     suma=0
+        #     #print(i)
+        #     for j in range(390):
+        #         #print(j)
+        #         if ones_into_array_bin[i][j][0] == True: unos = unos + 1
+        #     suma=np.sum(ones_into_array[i])
+        #     print("individuo {} unos: {}".format(i, suma))
+        #         #print(unos)
+        #     print("individuo {} trues: {}".format(i, unos))
+
+        #defining the initial population as a solution object
+        ind=0
+        initial_population=[]
+        for individual in predefined_population:
+            solution=Solution(problem_ptp)
+            solution.variables=individual.tolist()
+            #problem_ptp.evaluate(solution)
+            initial_population.append(solution)
+            ind=ind+1
+            #print('individual: {}'.format(ind))
+
+        return initial_population
+
+class UniformBinaryGenerator(Generator): #platypus library, not used now, see UniformBinaryGenerator function above
     def __init__(self):
         super().__init__()
 
     def generate(self, problem_ptp):
         solution = Solution(problem_ptp)
-        #solution.variables = [x.rand() for x in problem_ptp.types]
-        np.random.randint(0,1,size=1,dtype=int)
-        #bool(random.choice([0, 1]))
-        random_population=np.random.randint(0, 2, size=390, dtype=int) #return random integers from the discrte uniform distribution (numpy array)
-
+        random_population=np.random.randint(0, 2, size=problem_ptp.nvars, dtype=int) #return random integers from the discrte uniform distribution (numpy array)
+        random_population2=np.random.choice([0,1], p=[0.7,0.3],size=390)
+        random_population=np.zeros(390) #initialize vector to zeros
         initial_population=[]
         for i in range(390):
             boolean_random_population=bool(random_population[i])
@@ -288,30 +313,27 @@ def NSGA_3_platypus(obj_func,
     problem_ptp=Problem(n_var, n_obj,n_const)
     problem_ptp.types[:]=Integer(0,1)
     problem_ptp.function=obj_func
-    #print(problem_ptp)
 
-    #generator
-    #population_initialised=UniformBinarySampling_platypus(problem_ptp,max_evals,pop_size)
-    #solution = Solution(problem_ptp)
-    #solution.variables = [a_test]  # testear si esto funciona
+    init_pop_obj=UniformBinaryGenerator(problem_ptp,pop_size)
 
     #calling NSGA3 algorithm from Platypus library:
     algorithm = NSGAIII(
                         problem_ptp,
-                        divisions_outer=n_partitions,           # outer divisions for reference points
-                        divisions_inner=0,                      # optional, used for reference points too
-                        #generator=InjectedPopulation(UniformBinarySampling_platypus(problem_ptp,max_evals,pop_size)),
-                        #generator=RandomGenerator(),           #generates initial population
-                        generator=UniformBinaryGenerator(),
-                        #selector=TournamentSelector(2),        # selects parents during recombination
+                        divisions_outer=n_partitions,                   # outer divisions for reference points
+                        divisions_inner=0,                              # optional, used for reference points too
+                        generator=InjectedPopulation(init_pop_obj),     # init_pop_obj is the initial population as solution object from platypus
+                        #generator=RandomGenerator(),                   #generates initial population
+                        #generator=UniformBinaryGenerator(),
+                        #selector=TournamentSelector(2),                # selects parents during recombination
                         variator=CompoundOperator(SBX(probability=crossover_prob, distribution_index=eta),
                                                   BitFlip(probability=mutation_probability)) # for Powerflow objective function
 
-                        #variator=CompoundOperator(SBX(), PMX(), PM(), UM())    # CompoundOperator for mixed variables
-                        #variator = CompoundOperator(SBX(), HUX(), PM(), BitFlip())
+                        #variator=CompoundOperator(SBX(), PMX(), PM(), UM())    # CompoundOperator for mixed variables: int and float
+                        #variator = CompoundOperator(SBX(), HUX(), PM(), BitFlip()) #default example from platypus web
                         )
     # running algorithm:
     algorithm.population_size=pop_size           #optional - fixing population size, if not specified, it estimates it from "divisions_outer".
+    #algorithm.population = initial_population
     #algorithm.reference_points=[[1,1],[..],...] #optional - specific reference points specified by user (list of lists)
     algorithm.run(max_evals)                     # number of evaluations = Termination condition
 
@@ -358,9 +380,9 @@ def NSGA_3_platypus(obj_func,
 
     import pandas as pd
     dff = pd.DataFrame(res_objective)       #only non-dominated solutions
-    dff.to_excel('nsga_platypus_uniform.xlsx')      #only non-dominated solutions
+    dff.to_excel('nsga_platypus_random_uniform.xlsx')      #only non-dominated solutions
     df=pd.DataFrame(res_objective_all)      # save all the solutions
-    dff.to_excel('nsga_platypus_all_uniform.xlsx')  # Save all the solutions
+    dff.to_excel('nsga_platypus_all_random_uniform.xlsx')  # Save all the solutions
 
     #hyp2=Hypervolume.calculate(algorithm.result)
     hyp = Hypervolume(minimum=[0, 0], maximum=[1, 1])
