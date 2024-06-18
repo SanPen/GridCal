@@ -760,17 +760,8 @@ class MultiCircuit(Assets):
         """
         Set the profiles state at the index t as the default values.
         """
-        for bus in self._buses:
-            bus.set_profile_values(t)
-
-        for elm in self.get_injection_devices():
-            elm.set_profile_values(t)
-
-        for elm in self.get_fluid_devices():
-            elm.set_profile_values(t)
-
-        for branch in self.get_branches():
-            branch.set_profile_values(t)
+        for device in self.items_declared():
+            device.set_profile_values(t)
 
         self.snapshot_time = self.time_profile[t]
 

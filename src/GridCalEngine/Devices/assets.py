@@ -17,7 +17,7 @@
 import warnings
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Set
+from typing import List, Dict, Tuple, Union, Any, Set, Generator
 import datetime as dateslib
 
 from GridCalEngine.basic_structures import IntVec, StrVec
@@ -294,6 +294,34 @@ class Assets:
                     profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Device iterators
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def item_types(self) -> Generator[DeviceType, None, None]:
+        """
+        Iterator of all the objects in the MultiCircuit
+        """
+        for key, tpe in self.device_type_name_dict.items():
+            yield tpe
+
+    def items_declared(self) -> Generator[ALL_DEV_TYPES, None, None]:
+        """
+        Iterator of the declared objects in the MultiCircuit
+        """
+        for key, elm_type_list in self.objects_with_profiles.items():
+            for elm in elm_type_list:
+                yield elm
+
+    def items(self) -> Generator[ALL_DEV_TYPES, None, None]:
+        """
+        Iterator of all the objects in the MultiCircuit
+        """
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(device_type=tpe)
+            for elm in elements:
+                yield elm
 
     # ------------------------------------------------------------------------------------------------------------------
     # Time profile
@@ -4181,11 +4209,11 @@ class Assets:
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
         """
-        return [self.get_loads(),
-                self.get_external_grids(),
-                self.get_static_generators(),
-                self.get_controllable_shunts(),
-                self.get_current_injections()]
+        return [self.loads,
+                self.static_generators,
+                self.external_grids,
+                self.controllable_shunts,
+                self.current_injections]
 
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
@@ -4211,47 +4239,63 @@ class Assets:
     # ------------------------------------------------------------------------------------------------------------------
     # Generation like devices
     # ------------------------------------------------------------------------------------------------------------------
+    def get_generation_like_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
+        """
+        Get a list with the fluid injections lists
+        :return:
+        """
+        return [self._generators, self._batteries, self._controllable_shunts]
 
-    def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
+    def get_generation_like_number(self) -> int:
         """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
+        Get number of fluid injections
+        :return: int
         """
-        return (self.get_generators()
-                + self.get_batteries())
+        count = 0
+        for lst in self.get_generation_like_lists():
+            count += len(lst)
+        return count
+
+    def get_generation_like_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Injection<Injection>` names.
+        Sort by order: turbines, pumps, p2xs
+        """
+        names = list()
+        for lst in self.get_generation_like_lists():
+            for elm in lst:
+                names.append(elm.name)
+        return np.array(names)
+
+    def get_generation_like_devices(self) -> List[FLUID_TYPES]:
+        """
+        Returns a list of :ref:`Injection<Injection>` names.
+        Sort by order: turbines, pumps, p2xs
+        """
+        elms = list()
+        for lst in self.get_generation_like_lists():
+            elms += lst
+        return elms
 
     # ------------------------------------------------------------------------------------------------------------------
     # Fluid injections
     # ------------------------------------------------------------------------------------------------------------------
-
-    def get_fluid_devices(self) -> List[FLUID_TYPES]:
+    def get_fluid_injection_lists(self) -> List[List[FLUID_TYPES]]:
         """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
+        Get a list with the fluid injections lists
+        :return:
         """
-        return (self.get_fluid_nodes()
-                + self.get_fluid_paths()
-                + self.get_fluid_pumps()
-                + self.get_fluid_turbines()
-                + self.get_fluid_p2xs())
-
-    def get_fluid_lists(self) -> List[List[FLUID_TYPES]]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        return [self.get_fluid_nodes(),
-                self.get_fluid_paths(),
-                self.get_fluid_pumps(),
-                self.get_fluid_turbines(),
-                self.get_fluid_p2xs()]
+        return [self._turbines, self._pumps, self._p2xs]
 
     def get_fluid_injection_number(self) -> int:
         """
         Get number of fluid injections
         :return: int
         """
-        return self.get_fluid_turbines_number() + self.get_fluid_pumps_number() + self.get_fluid_p2xs_number()
+        count = 0
+        for lst in self.get_fluid_injection_lists():
+            count += len(lst)
+        return count
 
     def get_fluid_injection_names(self) -> StrVec:
         """
@@ -4259,15 +4303,9 @@ class Assets:
         Sort by order: turbines, pumps, p2xs
         """
         names = list()
-        for elm in self._turbines:
-            names.append(elm.name)
-
-        for elm in self._pumps:
-            names.append(elm.name)
-
-        for elm in self._p2xs:
-            names.append(elm.name)
-
+        for lst in self.get_fluid_injection_lists():
+            for elm in lst:
+                names.append(elm.name)
         return np.array(names)
 
     def get_fluid_injections(self) -> List[FLUID_TYPES]:
@@ -4275,7 +4313,10 @@ class Assets:
         Returns a list of :ref:`Injection<Injection>` names.
         Sort by order: turbines, pumps, p2xs
         """
-        return self._turbines + self._pumps + self._p2xs
+        elms = list()
+        for lst in self.get_fluid_injection_lists():
+            elms += lst
+        return elms
 
     # ------------------------------------------------------------------------------------------------------------------
     # Contingency devices
@@ -4286,7 +4327,7 @@ class Assets:
         Get a list of devices susceptible to be included in contingencies
         :return: list of devices
         """
-        return self.get_branches() + self.get_generators()
+        return self.get_branches() + self.get_injection_devices()
 
     # ------------------------------------------------------------------------------------------------------------------
     #
