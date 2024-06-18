@@ -226,7 +226,7 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.ANG2 = transformer.winding2.tap_phase
     psse_transformer.ANG3 = transformer.winding3.tap_phase
 
-    i, j, k, ckt = psse_transformer.code.split("_", 3)
+    i, j, k, ckt = transformer.code.split("_", 3)
 
     psse_transformer.I = bus_dict[transformer.bus1]
     psse_transformer.J = bus_dict[transformer.bus2]
