@@ -22,6 +22,21 @@ General indices and dimensions
   * - nb
     - Number of batteries
 
+  * - nbr
+    - Number of branches (without HVDC)
+
+  * - n_fluid_node
+    - Number of fluid nodes
+
+  * - n_fluid_path
+    - Number of fluid paths
+
+  * - n_fluid_inj
+    - Number of fluid injections
+
+  * - ncap
+    - Number of nodes in the capacity calculation
+
   * - nl
     - Number of loads
 
@@ -38,14 +53,17 @@ General indices and dimensions
 Objective function
 ------------------
 
-The objective function minimizes the cost of generation plus all the slack variables set in the problem.
+The objective function minimizes the cost of generation, all the slack variables, the spillage, and promotes the
+injection of power coming from the nodes selected to compute the nodal capacity.
 
 .. math::
 
-    min: \quad f = \sum_t^{nt}  \sum_g^{ng} cost_g \cdot Pg_{g,t} \\
+    min: \quad f = \sum_t^{nt}  \sum_g^{ng} cost_g \cdot Pg_{g, t} \\
                  + \sum_t^{nt}  \sum_b^{nb} cost_b \cdot Pb_{b, t}  \\
                  + \sum_t^{nt}  \sum_l^{nl} cost_l \cdot LSlack_{l, t} \\
                  + \sum_t^{nt}  \sum_i^{m} Fslack1_{i,t} + Fslack2_{i,t} \\
+                 + \sum_t^{nt}  \sum_f^{n_fluid_node} cost_spill \cdot spill_{f, t} \\
+                 + \sum_t^{nt}  \sum_c^{ncap} 100 \cdot cap_sign_ \cdot Pcap_{c, t} \\
 
 
 Power injections
@@ -59,6 +77,12 @@ are injected per node, such that the vector :math:`P` is dimensionally coherent 
     P = C\_bus\_gen \times Pg  \\
         + C\_bus\_bat \times Pb  \\
         - C\_bus\_load \times (LSlack + Load)
+
+The nodal capacity power injections are added in the specific bus indices.
+
+.. math::
+
+    P{cap_idx, :} += Pcap
 
 
 .. list-table::
@@ -118,6 +142,18 @@ are injected per node, such that the vector :math:`P` is dimensionally coherent 
     - nl, nt
     - LP
     - p.u.
+
+  * - :math:`Pcap`
+    - Matrix of active power in the capacity calculation per time step.
+    - ncap, nt
+    - LP
+    - p.u.
+
+  * - :math:`cap_idx`
+    - Vector of bus indices in the capacity calculation.
+    - ncap
+    - int
+    - dimensionless
 
 
 Nodal power balance
@@ -280,6 +316,25 @@ extra line capacity required to transport the power in both senses of the transp
     - m, nt
     - LP
     - p.u.
+
+Nodal capacity calculation
+--------------------------
+
+If there are buses selected at which we want to compute the nodal capacity, it implies their power injections have to
+be prioritized. If the chosen sign is negative, it is akin to maximizing generation, whereas a positive sign
+implies maximizing the load. Thus, the limits have to be properly set.
+
+If generation has to be maximized:
+
+.. math::
+
+    0 \leq Pcap \leq 9999.9
+
+If demand has to be maximized:
+
+.. math::
+
+    -9999.9 \leq Pcap \leq 0
 
 
 Battery discharge restrictions
