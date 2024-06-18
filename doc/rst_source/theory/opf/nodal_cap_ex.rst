@@ -51,5 +51,5 @@ P linear nodal capacity: [4.85736901, 1.52653874]
 
 **Non-linear nodal capacity power, in MW**
 
-P non-linear nodal capacity: [[5.0114640, 1.693406]]
+P non-linear nodal capacity: [5.0114640, 1.693406]
 
