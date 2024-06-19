@@ -28,10 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus (done)">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
-    </list>
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -151,7 +148,7 @@
     "Python.new_circuit_objects.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
     "Python.system_scaler.executor": "Run",
-    "Python.try_multiobj_nsga.executor": "Debug",
+    "Python.try_multiobj_nsga.executor": "Run",
     "Python.update_gui_file (1).executor": "Run",
     "Python.update_gui_file.executor": "Run",
     "Python.upload_to_pypi.executor": "Run",
@@ -1685,7 +1682,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="494" />
+    <option name="localTasksCounter" value="496" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1718,7 +1715,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="devel" />
+                        <option value="204_investments_evaluation" />
                       </list>
                     </value>
                   </entry>
@@ -1731,7 +1728,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed test of stochastic pf sending the name" />
     <MESSAGE value="tried to improve test_topology_processor.py (discuss with ruben carmona)" />
     <MESSAGE value="Fixed profile loading bug" />
     <MESSAGE value="converter 1j synthax to complex in circuit_to_data.py" />
@@ -1756,7 +1752,8 @@
     <MESSAGE value="Platypus implementation - similar results to pymoo. Plots added." />
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator method for platypus (in process)" />
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus (done)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus (done)" />
+    <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list" />
+    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2190,24 +2187,9 @@
           <option name="timeStamp" value="1714" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/platypus/operators.py</url>
-          <line>56</line>
-          <option name="timeStamp" value="1719" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/platypus/operators.py</url>
-          <line>55</line>
-          <option name="timeStamp" value="1721" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
           <line>339</line>
           <option name="timeStamp" value="1726" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/platypus/operators.py</url>
-          <line>51</line>
-          <option name="timeStamp" value="1728" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>

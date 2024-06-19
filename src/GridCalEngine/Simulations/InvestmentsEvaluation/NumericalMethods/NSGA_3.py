@@ -341,12 +341,12 @@ def NSGA_3_platypus(obj_func,
 
     #results:for platypus test problem:
     res_objective = []
-    #res_norm_objective=[] #normalised objective
+    #res_norm_objective=[]                                          #normalised objective --> only for method algorithm.run()
     res_variables = []
     res_variables_decoded=[]
     for solution in unique(nondominated(algorithm.result)):
         res_objective.append([solution.objectives[0], solution.objectives[1]])
-        #res_norm_objective.append([solution.normalized_objectives[0], solution.normalized_objectives[1]])
+        #res_norm_objective.append([solution.normalized_objectives[0], solution.normalized_objectives[1]])      #only for method algorithm.run()
         res_variables = solution.variables[:]                       # integer variables, returns true false (not decoded)
         variables_decoded = []
         #option1:
@@ -358,7 +358,7 @@ def NSGA_3_platypus(obj_func,
         #     decoded=problem_ptp.types[i].decode(res_variables[i])
         #     variables_decoded.append(decoded)                       # for 1 solution only, stores all the values of the investments (0,1) decoded
 
-        res_variables_decoded.append(variables_decoded2)             #for each solution, stores all the values of the investments decoded (0,1)
+        res_variables_decoded.append(variables_decoded2)              #for each solution, stores all the values of the investments decoded (0,1)
         # res_variables=solution.variables[:] #integer variables, returns true false
         # problem_ptp.types[0].decode(res_variables[0])
 
