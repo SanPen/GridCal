@@ -66,7 +66,7 @@ def test_demo_5_node(root_path=ROOT_PATH):
     # grid.plot_graph()
     print('\n\n', grid.name)
 
-    FileSave(grid, 'demo_5_node.json').save()
+    # FileSave(grid, 'demo_5_node.json').save()
 
     options = PowerFlowOptions(SolverType.NR, verbose=False)
 
