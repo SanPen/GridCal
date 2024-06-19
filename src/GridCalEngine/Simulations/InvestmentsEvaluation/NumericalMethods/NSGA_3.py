@@ -335,9 +335,9 @@ def NSGA_3_platypus(obj_func,
     algorithm.population_size=pop_size           #optional - fixing population size, if not specified, it estimates it from "divisions_outer".
     #algorithm.population = initial_population   # n/a
     #algorithm.reference_points=[[1,1],[..],...] #optional - specific reference points specified by user (list of lists)
-    algorithm.step()
+    #algorithm.step()
 
-    #algorithm.run(max_evals)                     # number of evaluations = Termination condition
+    algorithm.run(max_evals)                     # number of evaluations = Termination condition
 
     #results:for platypus test problem:
     res_objective = []
