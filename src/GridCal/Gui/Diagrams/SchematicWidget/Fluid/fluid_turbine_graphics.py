@@ -17,9 +17,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtGui import QPen, QIcon, QPixmap
-from PySide6.QtWidgets import (QMenu, QGraphicsTextItem, QGraphicsSceneMouseEvent)
+from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
 from GridCalEngine.Devices.Fluid.fluid_turbine import FluidTurbine
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 

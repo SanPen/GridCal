@@ -20,9 +20,13 @@ from uuid import uuid4, getnode
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (SimulationTypes, JobStatus)
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_jsons
+from GridCalEngine.IO.gridcal.zip_interface import save_results_in_zip
 
 
 class RemoteInstruction:
+    """
+    Remote instruction class
+    """
 
     def __init__(self,
                  operation: Union[None, SimulationTypes] = None,
@@ -52,6 +56,10 @@ class RemoteInstruction:
             self.parse_data(data)
 
     def get_data(self):
+        """
+
+        :return:
+        """
         return {
             'operation': self.operation.value if self.operation is not None else None,
             "user": self.user,
@@ -59,11 +67,19 @@ class RemoteInstruction:
         }
 
     def parse_data(self, data: Dict[str, Dict[str, str]]):
+        """
+
+        :param data:
+        :return:
+        """
         self.operation = SimulationTypes(data['operation'])
         self.user = data['user']
 
 
 class RemoteJob:
+    """
+    Remote job class
+    """
 
     def __init__(self,
                  grid: Union[None, MultiCircuit] = None,
@@ -83,24 +99,40 @@ class RemoteJob:
 
         self.status: JobStatus = JobStatus.Waiting
 
+        self.progress: str = ""
+
         if data is not None:
             self.parse_data(data)
 
     def cancel(self):
+        """
+
+        :return:
+        """
         self.status = JobStatus.Cancelled
 
     def get_data(self) -> dict:
+        """
+
+        :return:
+        """
         return {
             "id_tag": self.id_tag,
             "grid_name": self.grid_name,
             "instruction": self.instruction.get_data(),
-            "status": self.status.value
+            "status": self.status.value,
+            "progress": self.progress
         }
 
     def parse_data(self, data: Dict[str, Any]):
+        """
 
+        :param data:
+        :return:
+        """
         self.id_tag = data['id_tag']
         self.grid_name = data['grid_name']
+        self.progress = data['progress']
         self.status = JobStatus(data['status'])
         self.instruction = RemoteInstruction(data=data['instruction'])
 
@@ -126,3 +158,5 @@ def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
         'diagrams': []
     }
     return data
+
+

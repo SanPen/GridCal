@@ -51,7 +51,7 @@ class TapChanger:
                  total_positions: int = 5,
                  neutral_position: int = 2,
                  dV: float = 0.01,
-                 asymmetry_angle=90,
+                 asymmetry_angle: float = 90.0,
                  tc_type: TapChangerTypes = TapChangerTypes.NoRegulation) -> None:
         """
 
