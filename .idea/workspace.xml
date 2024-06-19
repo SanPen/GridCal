@@ -28,12 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - step method">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation done- eliminating commented lines. Decoding variables for step method.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1688,7 +1684,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="499" />
+    <option name="localTasksCounter" value="500" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1734,7 +1730,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="converter 1j synthax to complex in circuit_to_data.py" />
     <MESSAGE value="Fixed topology test for checking" />
     <MESSAGE value="Improved issues with the new profile handling as arrays" />
     <MESSAGE value="Improved dialogue typings" />
@@ -1759,7 +1754,8 @@
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list" />
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list 3" />
     <MESSAGE value="Platypus implementation - step method" />
-    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - step method" />
+    <MESSAGE value="Platypus implementation done- eliminating commented lines. Decoding variables for step method." />
+    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation done- eliminating commented lines. Decoding variables for step method." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2176,16 +2172,6 @@
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
           <line>47</line>
           <option name="timeStamp" value="1708" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>362</line>
-          <option name="timeStamp" value="1740" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>317</line>
-          <option name="timeStamp" value="1741" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py</url>
