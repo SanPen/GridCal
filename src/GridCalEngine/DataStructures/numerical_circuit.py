@@ -1984,7 +1984,7 @@ class NumericalCircuit:
                  'Admittances', 'Ybus (real)', logger)
         CheckArr(self.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
                  'Admittances', 'Ybus (imag)', logger)
-        CheckArr(self.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.realdata.real,
+        CheckArr(self.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.real,
                  tol, 'Admittances', 'Yf (real)', logger)
         CheckArr(self.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
                  'Admittances', 'Yf (imag)', logger)
