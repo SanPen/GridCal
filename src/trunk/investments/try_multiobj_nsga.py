@@ -21,19 +21,17 @@ if __name__ == "__main__":
     #fname = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/investments/edited_IEEE 118 Bus - investments.gridcal')
     grid = FileOpen(fname).open()
 
+    st_time = time.time()
+
     pf_options = sim.PowerFlowOptions()
     #platypus:
     options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3_platypus,
                                             max_eval=4 * len(grid.investments),
                                             pf_options=pf_options)
-    #pymoo:
-    #options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
-    #                                           max_eval=4 * len(grid.investments),
-    #                                           pf_options=pf_options)
 
     print("max_evals inicializadas: {}".format(4 * len(grid.investments)))
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
-    st_time = time.time()
+    #st_time = time.time()
     inv.run()
     e_time = time.time()
     print("Simulation time: {} sec".format(e_time - st_time))

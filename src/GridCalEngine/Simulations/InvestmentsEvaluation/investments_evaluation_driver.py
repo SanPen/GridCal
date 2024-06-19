@@ -476,8 +476,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         print("__________________________________________________________________________")
         print("objective values: \n {}".format(obj_values))
         print("__________________________________________________________________________")
-        print("Soluciones non-dominated: {}".format(len(X)))
-        print("Valores objetivo non-dominated: {}".format(len(obj_values)))
+        print("Number of solutions: {}".format(len(X)))
+        print("Number of objective values: {}".format(len(obj_values)))
 
         #self.results.set_best_combination(combination=X[0, :])  #dimension de X
 

@@ -335,17 +335,37 @@ def NSGA_3_platypus(obj_func,
     algorithm.population_size=pop_size           #optional - fixing population size, if not specified, it estimates it from "divisions_outer".
     #algorithm.population = initial_population   # n/a
     #algorithm.reference_points=[[1,1],[..],...] #optional - specific reference points specified by user (list of lists)
-    #algorithm.step()
 
-    algorithm.run(max_evals)                     # number of evaluations = Termination condition
+    #============================STEP METHOD===================================
+    output_per_iteration=[]
+    iterations=int(max_evals/pop_size)
+    all_solutions = []
+    all_variables=[]
+    all_objectives=[]
+    for it in range(iterations):
+        algorithm.step()
+        outputs=[solution.variables[:] for solution in algorithm.result]
+
+        for s in range(len(algorithm.result)):
+            all_solutions.append(algorithm.result[s])
+            all_variables.append(algorithm.result[s].variables)
+            all_objectives.append(algorithm.result[s].objectives)
+        output_per_iteration.append(outputs)
+    res_objective_all=np.array(all_objectives[:])
+
+
+
+
+    #============================RUN METHOD===================================
+    #algorithm.run(max_evals)                     # number of evaluations = Termination condition
 
     #results:for platypus test problem:
-    res_objective = []
+    res_objective_nd = []
     #res_norm_objective=[]                                          #normalised objective --> only for method algorithm.run()
     res_variables = []
-    res_variables_decoded=[]
+    res_variables_decoded_nd=[]
     for solution in unique(nondominated(algorithm.result)):
-        res_objective.append([solution.objectives[0], solution.objectives[1]])
+        res_objective_nd.append([solution.objectives[0], solution.objectives[1]])
         #res_norm_objective.append([solution.normalized_objectives[0], solution.normalized_objectives[1]])      #only for method algorithm.run()
         res_variables = solution.variables[:]                       # integer variables, returns true false (not decoded)
         variables_decoded = []
@@ -358,13 +378,13 @@ def NSGA_3_platypus(obj_func,
         #     decoded=problem_ptp.types[i].decode(res_variables[i])
         #     variables_decoded.append(decoded)                       # for 1 solution only, stores all the values of the investments (0,1) decoded
 
-        res_variables_decoded.append(variables_decoded2)              #for each solution, stores all the values of the investments decoded (0,1)
+        res_variables_decoded_nd.append(variables_decoded2)              #for each solution, stores all the values of the investments decoded (0,1)
         # res_variables=solution.variables[:] #integer variables, returns true false
         # problem_ptp.types[0].decode(res_variables[0])
 
-    res_objective_all=[]
+    res_objective_lastgen=[]
     for solution in algorithm.result:
-        res_objective_all.append(solution.objectives)
+        res_objective_lastgen.append(solution.objectives)
 
     # #results:for platypus test problem:
     # res_objective = []
@@ -381,12 +401,14 @@ def NSGA_3_platypus(obj_func,
     #     plt.title("{}".format(type(algorithm)))
 
     import pandas as pd
-    dff = pd.DataFrame(res_objective)       #only non-dominated solutions
-    dff.to_excel('nsga_platypus_random_uniform.xlsx')      #only non-dominated solutions
-    df=pd.DataFrame(res_objective_all)      # save all the solutions
-    dff.to_excel('nsga_platypus_all_random_uniform.xlsx')  # Save all the solutions
-
+    df_nd = pd.DataFrame(res_objective_nd)       #only non-dominated solutions
+    df_nd.to_excel('nsga_ptp_uf_nd.xlsx')      #only non-dominated solutions, UF= uniform sampling, ptp=platypus
+    df_lasteval=pd.DataFrame(res_objective_lastgen)      # save all the solutions in last generation
+    df_lasteval.to_excel('nsga_ptp_uf_lastgen.xlsx')  # Save all the solutions in last generation ,   UF= uniform sampling
+    df_all = pd.DataFrame(res_objective_all)  # save all the solutions
+    df_all.to_excel('nsga_ptp_uf_all.xlsx')  # Save all the solutions,  UF= uniform sampling
     #hyp2=Hypervolume.calculate(algorithm.result)
+
     hyp = Hypervolume(minimum=[0, 0], maximum=[1, 1])
     print("Hypervolume: {}".format(hyp(algorithm.result)))
 
@@ -398,8 +420,11 @@ def NSGA_3_platypus(obj_func,
     print("n_const: {}".format(n_const))
     print("n_obj: {}".format(n_obj))
     print("Num de soluciones variables nondominated:{}".format(len(res_variables)))
-    print("Num de soluciones objetivo nondominated:{}".format(len(res_objective)))
+    print("Num de soluciones objetivo nondominated:{}".format(len(res_objective_nd)))
+    print("Num de soluciones objetivo last gen:{}".format(len(res_objective_lastgen)))
+    print("Num de soluciones objetivo all:{}".format(len(res_objective_all)))
     print("Num total de soluciones {}".format(len(algorithm.result)))
 
-    return res_variables_decoded, res_objective #res.X, res.F
+    return all_variables, res_objective_all #res_objective_nd, res_objective_lastgen, #res_variables_decoded_nd
+    #pdte variables y metrics
 

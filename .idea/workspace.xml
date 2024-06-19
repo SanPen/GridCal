@@ -28,7 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list 3">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -169,7 +175,7 @@
 }]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
-    <option name="myPyQtBackend" value="pyside6" />
+    <option name="myPyQtBackend" value="pyqt5" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -1682,7 +1688,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="496" />
+    <option name="localTasksCounter" value="497" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1728,7 +1734,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="tried to improve test_topology_processor.py (discuss with ruben carmona)" />
     <MESSAGE value="Fixed profile loading bug" />
     <MESSAGE value="converter 1j synthax to complex in circuit_to_data.py" />
     <MESSAGE value="Fixed topology test for checking" />
@@ -1753,7 +1758,8 @@
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator method for platypus (in process)" />
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus (done)" />
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list" />
-    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list" />
+    <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list 3" />
+    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus - eliminate objective normalised list 3" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2158,17 +2164,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py</url>
-          <line>27</line>
+          <line>35</line>
           <option name="timeStamp" value="1701" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py</url>
-          <line>51</line>
+          <line>49</line>
           <option name="timeStamp" value="1703" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>384</line>
+          <line>404</line>
           <option name="timeStamp" value="1704" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2178,23 +2184,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>342</line>
-          <option name="timeStamp" value="1713" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>319</line>
-          <option name="timeStamp" value="1714" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>339</line>
-          <option name="timeStamp" value="1726" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>334</line>
-          <option name="timeStamp" value="1731" />
+          <line>362</line>
+          <option name="timeStamp" value="1732" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -2210,9 +2201,10 @@
         <watch expression="self" />
         <watch expression="self" />
         <watch expression="problem_ptp" language="Python" />
-        <watch expression="algorithm.result" />
+        <watch expression="algorithm.result" language="Python" />
         <watch expression="problem_ptp" language="Python" />
         <watch expression="problem_ptp" language="Python" />
+        <watch expression="output_per_iteration[19]" />
       </configuration>
     </watches-manager>
   </component>
