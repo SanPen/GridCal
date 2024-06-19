@@ -126,12 +126,12 @@ def test_islands():
 
         return [np.array(isl) for isl in islands]
 
-    # fnames = [os.path.join('data', 'grids', 'IEEE14 - multi-island hvdc.gridcal'),
-    #           os.path.join('data', 'grids', '8_nodes_2_islands.gridcal'),
-    #           os.path.join('data', 'grids', 'IEEE 39 (2 islands).gridcal')]
-    fnames = [
-              os.path.join('data', 'grids', '8_nodes_2_islands.gridcal'),
-              os.path.join('data', 'grids', 'IEEE 39 (2 islands).gridcal')]
+    fnames = [os.path.join('data', 'grids', 'IEEE14 - multi-island hvdc.gridcal'),
+               os.path.join('data', 'grids', '8_nodes_2_islands.gridcal'),
+               os.path.join('data', 'grids', 'IEEE 39 (2 islands).gridcal')]
+    # fnames = [
+    #          os.path.join('data', 'grids', '8_nodes_2_islands.gridcal'),
+    #          os.path.join('data', 'grids', 'IEEE 39 (2 islands).gridcal')]
 
     for fname in fnames:
         main_circuit = FileOpen(fname).open()
