@@ -207,7 +207,7 @@ class FileOpen:
                     else:
                         self.logger.add('The file could not be processed')
 
-                elif file_extension.lower() == '.gridcal':
+                elif file_extension.lower() in ['.gridcal', '.dgridcal']:
 
                     # open file content
                     data_dictionary, self.json_files = get_frames_from_zip(self.file_name,
@@ -388,7 +388,7 @@ class FileSave:
         if self.file_name.endswith('.xlsx'):
             logger = self.save_excel()
 
-        elif self.file_name.endswith('.gridcal'):
+        elif self.file_name.endswith('.gridcal') or self.file_name.endswith('.dgridcal'):
             logger = self.save_zip()
 
         elif self.file_name.endswith('.sqlite'):
