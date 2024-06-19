@@ -9007,7 +9007,7 @@ QProgressBar::chunk{
     <string>Expand distances</string>
    </property>
    <property name="shortcut">
-    <string>F3</string>
+    <string>Ctrl+Alt++</string>
    </property>
   </action>
   <action name="actionSmaller_nodes">
@@ -9022,7 +9022,7 @@ QProgressBar::chunk{
     <string>Shrink distances</string>
    </property>
    <property name="shortcut">
-    <string>F2</string>
+    <string>Ctrl+Alt+-</string>
    </property>
   </action>
   <action name="actionPower_flow_Stochastic">
