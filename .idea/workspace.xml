@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - Defining UniformBinaryGenerator method for platypus (in process)">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus (done)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,7 +151,7 @@
     "Python.new_circuit_objects.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
     "Python.system_scaler.executor": "Run",
-    "Python.try_multiobj_nsga.executor": "Run",
+    "Python.try_multiobj_nsga.executor": "Debug",
     "Python.update_gui_file (1).executor": "Run",
     "Python.update_gui_file.executor": "Run",
     "Python.upload_to_pypi.executor": "Run",
@@ -1687,7 +1685,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="493" />
+    <option name="localTasksCounter" value="494" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1733,7 +1731,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed: the contingency time series results not adding the detailed report for every time step&#10;&#10;Added all_generators_fixed to run_linear_opf_ts&#10;&#10;Minor GUI labeling" />
     <MESSAGE value="fixed test of stochastic pf sending the name" />
     <MESSAGE value="tried to improve test_topology_processor.py (discuss with ruben carmona)" />
     <MESSAGE value="Fixed profile loading bug" />
@@ -1758,7 +1755,8 @@
     <MESSAGE value="Platypus implementation (ongoing)" />
     <MESSAGE value="Platypus implementation - similar results to pymoo. Plots added." />
     <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator method for platypus (in process)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - Defining UniformBinaryGenerator method for platypus (in process)" />
+    <MESSAGE value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus (done)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Platypus implementation - Defining UniformBinaryGenerator function for defining the initial population in platypus (done)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2173,7 +2171,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>383</line>
+          <line>384</line>
           <option name="timeStamp" value="1704" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2183,12 +2181,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>341</line>
+          <line>342</line>
           <option name="timeStamp" value="1713" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>320</line>
+          <line>319</line>
           <option name="timeStamp" value="1714" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2203,7 +2201,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>338</line>
+          <line>339</line>
           <option name="timeStamp" value="1726" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2213,8 +2211,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>290</line>
-          <option name="timeStamp" value="1730" />
+          <line>334</line>
+          <option name="timeStamp" value="1731" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

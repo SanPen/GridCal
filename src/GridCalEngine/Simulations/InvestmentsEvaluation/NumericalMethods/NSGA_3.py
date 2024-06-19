@@ -48,7 +48,7 @@ class UniformBinarySampling(Sampling): #pymoo library
         print("testing")
         return ones_into_array
 
-    def UniformBinaryGenerator(problem_ptp,pop_size):
+def UniformBinaryPopulation(problem_ptp,pop_size):
         """
         BASED ON PLATYPUS LIBRARY ONLY
         Defines the initial population matrix as an array and then transforms into platypus solution object
@@ -270,7 +270,7 @@ def NSGA_3(obj_func,
 #     def __init__(self, n_var, n_obj,n_const): #obj_func,
 #         super().__init__(n_var, n_obj, n_const)           # decision variable,objective,constraints respectively
 #         # self.types[:]=[Real(-2,2),Integer(-4,4)]              # fill variable type for every variable "[:]". If all are the same: self.types[:]=Real(0,100)
-#         self.types[:] = Integer(0,1)                    #Binary variable is True or Flase not [1,0]
+#         self.types[:] = Integer(0,1)                    #Binary variable is True or False not [1,0]
 #         #self.constraints[:] = '<=0'                             # applied to all constraints [:]. Also can do constraint[0]='>=0'. Also included: '==',"<", ">" "!=". See platypus library
 #         self.directions[:] = Problem.MINIMIZE                   # or MAXIMIZE - optional parameter. NSGA3 not implemented maximization in platypus at the moment (june 2024)
 #         #self.obj_func=obj_func                              #same que pymoo
@@ -306,7 +306,7 @@ def NSGA_3_platypus(obj_func,
     :return:
     """
 
-    #platypus:
+    # platypus test problem:
     #problem_ptp=TestProblem_platypus(n_var, n_obj,n_const)
     # Powerflow problem:
     #problem_ptp=GridNsga_platypus(n_var, n_obj,n_const) #obj_func,
@@ -314,7 +314,7 @@ def NSGA_3_platypus(obj_func,
     problem_ptp.types[:]=Integer(0,1)
     problem_ptp.function=obj_func
 
-    init_pop_obj=UniformBinaryGenerator(problem_ptp,pop_size)
+    init_pop_obj=UniformBinaryPopulation(problem_ptp,pop_size)
 
     #calling NSGA3 algorithm from Platypus library:
     algorithm = NSGAIII(
@@ -333,18 +333,20 @@ def NSGA_3_platypus(obj_func,
                         )
     # running algorithm:
     algorithm.population_size=pop_size           #optional - fixing population size, if not specified, it estimates it from "divisions_outer".
-    #algorithm.population = initial_population
+    #algorithm.population = initial_population   # n/a
     #algorithm.reference_points=[[1,1],[..],...] #optional - specific reference points specified by user (list of lists)
-    algorithm.run(max_evals)                     # number of evaluations = Termination condition
+    algorithm.step()
+
+    #algorithm.run(max_evals)                     # number of evaluations = Termination condition
 
     #results:for platypus test problem:
     res_objective = []
-    res_norm_objective=[] #normalised objective
+    #res_norm_objective=[] #normalised objective
     res_variables = []
     res_variables_decoded=[]
     for solution in unique(nondominated(algorithm.result)):
         res_objective.append([solution.objectives[0], solution.objectives[1]])
-        res_norm_objective.append([solution.normalized_objectives[0], solution.normalized_objectives[1]])
+        #res_norm_objective.append([solution.normalized_objectives[0], solution.normalized_objectives[1]])
         res_variables = solution.variables[:]                       # integer variables, returns true false (not decoded)
         variables_decoded = []
         #option1:
