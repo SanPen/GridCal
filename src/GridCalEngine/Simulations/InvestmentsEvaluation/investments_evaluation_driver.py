@@ -448,8 +448,8 @@ class InvestmentsEvaluationDriver(DriverTemplate):
 
         pop_size = int(round(self.dim/5))  # if needed, divide by 5 for ideal grid
         n_partitions = int(round(pop_size))
-        print("pop_size initialization: {}".format(pop_size))
-        print("n_partitions initialization: {}".format(n_partitions))
+        #print("pop_size initialization: {}".format(pop_size))
+        #print("n_partitions initialization: {}".format(n_partitions))
 
         # compile the snapshot
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
@@ -463,20 +463,20 @@ class InvestmentsEvaluationDriver(DriverTemplate):
             obj_func=self.objective_function,
             n_partitions=n_partitions,
             n_var=self.dim, #self.dim,
-            n_obj=2, #len(ret),
-            n_const=0,                      # ACTUALIZAR MAS ADELANTE AUTOMATICAMENTE
-            max_evals=self.options.max_eval,  # termination
+            n_obj=2,                            #len(ret) #previously takes length of ret (baseline)
+            n_const=0,                          # ACTUALIZAR MAS ADELANTE AUTOMATICAMENTE
+            max_evals=self.options.max_eval,    # termination condition
             pop_size=pop_size,
-            crossover_prob=0.8,                 #N/A POR AHORA
-            mutation_probability=0.1,           #N/A POR AHORA
-            eta=30, #20 / 30                    #N/A POR AHORA
+            crossover_prob=0.8,
+            mutation_probability=0.1,
+            eta=30, #between 20 / 30
         )
         print("execution completed:.....................................................")
-        print("variable values: \n {}".format(X))
-        print("__________________________________________________________________________")
-        print("objective values: \n {}".format(obj_values))
-        print("__________________________________________________________________________")
-        print("Number of solutions: {}".format(len(X)))
+        #print("variable values: \n {}".format(X))
+        #print("__________________________________________________________________________")
+        #print("objective values: \n {}".format(obj_values))
+        #print("__________________________________________________________________________")
+        print("Number of solutions (var): {}".format(len(X)))
         print("Number of objective values: {}".format(len(obj_values)))
 
         #self.results.set_best_combination(combination=X[0, :])  #dimension de X

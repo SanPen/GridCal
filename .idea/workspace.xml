@@ -28,7 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - step method" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Platypus implementation - step method">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/Plots_ptp_vs_pymoo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -140,7 +146,7 @@
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
     "Python.NSGA_3.executor": "Run",
-    "Python.Plots_ptp_vs_pymoo.executor": "Debug",
+    "Python.Plots_ptp_vs_pymoo.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.investments_evaluation_driver.executor": "Run",
     "Python.load_designer.executor": "Run",
@@ -148,7 +154,7 @@
     "Python.new_circuit_objects.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
     "Python.system_scaler.executor": "Run",
-    "Python.try_multiobj_nsga.executor": "Run",
+    "Python.try_multiobj_nsga.executor": "Debug",
     "Python.update_gui_file (1).executor": "Run",
     "Python.update_gui_file.executor": "Run",
     "Python.upload_to_pypi.executor": "Run",
@@ -1682,7 +1688,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="498" />
+    <option name="localTasksCounter" value="499" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -2168,18 +2174,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
-          <line>404</line>
-          <option name="timeStamp" value="1704" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
           <line>47</line>
           <option name="timeStamp" value="1708" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
           <line>362</line>
-          <option name="timeStamp" value="1732" />
+          <option name="timeStamp" value="1740" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
+          <line>317</line>
+          <option name="timeStamp" value="1741" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py</url>
+          <line>473</line>
+          <option name="timeStamp" value="1743" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py</url>
+          <line>36</line>
+          <option name="timeStamp" value="1744" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

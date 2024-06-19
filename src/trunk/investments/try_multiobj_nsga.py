@@ -29,7 +29,7 @@ if __name__ == "__main__":
                                             max_eval=4 * len(grid.investments),
                                             pf_options=pf_options)
 
-    print("max_evals inicializadas: {}".format(4 * len(grid.investments)))
+    #print("max_evals inicializadas: {}".format(4 * len(grid.investments)))
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     #st_time = time.time()
     inv.run()
@@ -65,8 +65,8 @@ if __name__ == "__main__":
     import matplotlib
     import pandas as pd
     matplotlib.use("Qt5Agg")
-    data=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_platypus.xlsx")
-    plt.scatter(data[1],data[0], edgecolors='r')
+    data=pd.read_excel(r"C:\Users\cmach\PycharmProjects\GridCal2\src\trunk\investments\nsga_ptp_uf_all.xlsx")
+    plt.scatter(data[1],data[0], c='r', edgecolors='r')
     plt.show()
 
 
