@@ -1015,6 +1015,7 @@ class SubObjectType(Enum):
     GeneratorQCurve = 'Generator Q curve'
     LineLocations = 'Line locations'
     TapChanger = 'Tap changer'
+    Array = "Array"
 
     def __str__(self) -> str:
         return str(self.value)

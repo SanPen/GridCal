@@ -49,6 +49,11 @@ class CimExporter:
         if cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
             rdf_serialization.parse(data=RDFS_serialization_2_4_15, format="ttl")
 
+            if cgmesProfile.OP in profiles_to_export:
+                self.export_OP = True
+            if cgmesProfile.SC in profiles_to_export:
+                self.export_SC = True
+
             self.namespaces = {
                 "xmlns:cim": "http://iec.ch/TC57/2013/CIM-schema-cim16#",
                 "xmlns:md": "http://iec.ch/TC57/61970-552/ModelDescription/1#",
@@ -61,7 +66,8 @@ class CimExporter:
                        "http://entsoe.eu/CIM/EquipmentOperation/3/1"],
                 "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
                 "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
-                "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
+                "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"],
+                "GL": ["http://entsoe.eu/CIM/GeographicalLocation/2/1"]
             }
 
             self.enum_dict = dict()
@@ -79,6 +85,8 @@ class CimExporter:
                         self.enum_dict["SSH"] = enum_list_dict
                     elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
                         self.enum_dict["TP"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/GeographicalLocation/2/1":
+                        self.enum_dict["GL"] = enum_list_dict
                 if str(s_i).split("#")[1] == "RdfAbout":
                     about_list = list()
                     for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
@@ -91,6 +99,8 @@ class CimExporter:
                         self.about_dict["SSH"] = about_list
                     elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/Topology/4/1":
                         self.about_dict["TP"] = about_list
+                    elif str(s_i).split("#")[0] == "http://entsoe.eu/CIM/GeographicalLocation/2/1":
+                        self.about_dict["GL"] = about_list
 
             self.class_filters = {}
             json_dict = json.loads(RDFS_INFO_2_4_15)
@@ -109,7 +119,8 @@ class CimExporter:
                 "SC": ["http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
                 "SSH": ["http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0"],
                 "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
-                "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"]
+                "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"],
+                "GL": ["http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0"]
             }
             self.enum_dict = dict()
             self.about_dict = dict()
@@ -130,6 +141,8 @@ class CimExporter:
                         self.enum_dict["SC"] = enum_list_dict
                     elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/Operation-EU/3.0":
                         self.enum_dict["OP"] = enum_list_dict
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0":
+                        self.enum_dict["GL"] = enum_list_dict
                 if str(s_i).split("#")[1] == "RdfAbout":
                     about_list = list()
                     for s, p, o in rdf_serialization.triples((s_i, OWL.members, None)):
@@ -146,6 +159,8 @@ class CimExporter:
                         self.about_dict["SC"] = about_list
                     elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/Operation-EU/3.0":
                         self.about_dict["OP"] = about_list
+                    elif str(s_i).split("#")[0] == "http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0":
+                        self.about_dict["GL"] = about_list
 
             self.class_filters = {}
             json_dict = json.loads(RDFS_INFO_3_0_0)

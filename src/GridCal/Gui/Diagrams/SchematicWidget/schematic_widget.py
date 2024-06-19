@@ -526,8 +526,7 @@ class SchematicWidget(BaseDiagramWidget, QSplitter):
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = SchematicScene(parent=self)  # scene to add to the QGraphicsView
 
-        # self.results_dictionary: Dict[SimulationTypes, DRIVER_OBJECTS] = dict()
-
+        # create the graphics view
         self.editor_graphics_view = CustomGraphicsView(self.diagram_scene, parent=self)
 
         # override events

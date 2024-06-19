@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
 import numpy as np
-from GridCalEngine.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Parents.shunt_parent import ShuntParent
 from GridCalEngine.Devices.profile import Profile
 
@@ -99,12 +99,16 @@ class ControllableShunt(ShuntParent):
         # voltage set profile for this load in p.u.
         self._Vset_prof = Profile(default_value=vset, data_type=float)
 
-        self.register(key='Vset', units='p.u.', tpe=float,
-                      definition='Set voltage. This is used for controlled shunts.', profile_name='Vset_prof')
+        self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
+        self.register(key='g_steps', units='', tpe=SubObjectType.Array,
+                      definition='Conductance incremental steps')
+        self.register(key='b_steps', units='', tpe=SubObjectType.Array,
+                      definition='Susceptance incremental steps')
 
         self.register(key='step', units='', tpe=int, definition='Device tap step', profile_name='step_prof')
-        self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
-        self.register(key='is_controlled', units='', tpe=bool, definition='Is controlled?')
+
+        self.register(key='Vset', units='p.u.', tpe=float,
+                      definition='Set voltage. This is used for controlled shunts.', profile_name='Vset_prof')
 
     @property
     def step(self):
@@ -117,11 +121,14 @@ class ControllableShunt(ShuntParent):
     @step.setter
     def step(self, value: int):
 
-        self._step = int(value)
+        if 0 <= value < len(self._b_steps):
 
-        # override value on change
-        # self.B = self._b_steps[self._step]
-        # self.G = self._g_steps[self._step]
+            self._step = int(value)
+
+            # override value on change
+            self.B = self._b_steps[self._step]
+            self.G = self._g_steps[self._step]
+
 
     @property
     def Bmin(self):
