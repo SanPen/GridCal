@@ -1894,9 +1894,9 @@ class NumericalCircuit:
 
         logger = Logger()
 
-        # ------------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         #  Compare data
-        # ------------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
 
         CheckArr(self.branch_data.F, nc_2.branch_data.F, tol, 'BranchData', 'F', logger)
         CheckArr(self.branch_data.T, nc_2.branch_data.T, tol, 'BranchData', 'T', logger)
@@ -1958,9 +1958,9 @@ class NumericalCircuit:
                  nc_2.shunt_data.get_injections_per_bus(), tol, 'ShuntData',
                  'Injections per bus', logger)
 
-        # ------------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         #  Compare arrays and data
-        # ------------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
 
         CheckArr(self.Sbus.real, nc_2.Sbus.real, tol, 'Pbus', 'P', logger)
         CheckArr(self.Sbus.imag, nc_2.Sbus.imag, tol, 'Qbus', 'Q', logger)
@@ -1984,7 +1984,7 @@ class NumericalCircuit:
                  'Admittances', 'Ybus (real)', logger)
         CheckArr(self.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
                  'Admittances', 'Ybus (imag)', logger)
-        CheckArr(self.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.realdata.real,
+        CheckArr(self.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.real,
                  tol, 'Admittances', 'Yf (real)', logger)
         CheckArr(self.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
                  'Admittances', 'Yf (imag)', logger)
