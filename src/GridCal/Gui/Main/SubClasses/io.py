@@ -60,7 +60,7 @@ class IoMain(ConfigurationMain):
         self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
                                     '.ejson2', '.ejson3',
-                                    '.xml', '.rawx', '.zip', '.dpx', '.epc']
+                                    '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC']
 
         self.cgmes_version_dict = {x.value: x for x in [CGMESVersions.v2_4_15,
                                                         CGMESVersions.v3_0_0]}
@@ -235,7 +235,7 @@ class IoMain(ConfigurationMain):
         """
 
         files_types = ("Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs "
-                       "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml *.zip *.dpx *.epc *.nc *.hdf5)")
+                       "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml *.zip *.dpx *.epc *.EPC *.nc *.hdf5)")
 
         dialogue = QtWidgets.QFileDialog(None,
                                          caption='Open file',
@@ -496,6 +496,7 @@ class IoMain(ConfigurationMain):
                            "CGMES (*.zip);;"
                            "CIM (*.xml);;"
                            "Electrical Json V3 (*.ejson3);;"
+                           "Raw (*.raw);;"
                            "Rawx (*.rawx);;"
                            "Sqlite (*.sqlite);;")
 
@@ -530,6 +531,7 @@ class IoMain(ConfigurationMain):
                     extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
                     extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
                     extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                    extension['PSSe raw (*.raw)'] = '.raw'
                     extension['PSSe rawx (*.rawx)'] = '.rawx'
                     extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                     extension['Sqlite (*.sqlite)'] = '.sqlite'

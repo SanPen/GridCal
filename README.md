@@ -799,7 +799,7 @@ branches = main_circuit.get_branches()
 # manually generate the contingencies
 for i, br in enumerate(branches):
     # add a contingency group
-    group = ContingencyGroup(name="contingency {}".format(i+1))
+    group = ContingencyGroup(name="contingency {}".format(i + 1))
     main_circuit.add_contingency_group(group)
 
     # add the branch contingency to the groups, only groups are failed at once
@@ -809,9 +809,9 @@ for i, br in enumerate(branches):
 # add a special contingency
 group = ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag, 
+main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag,
                                          name=branches[3].name, group=group))
-main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag, 
+main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag,
                                          name=branches[5].name, group=group))
 
 pf_options = PowerFlowOptions(solver_type=SolverType.NR)
@@ -819,7 +819,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 # declare the contingency options
 options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       Pf=None,
-                                      engine=ContingencyMethod.PowerFlow,
+                                      contingency_method=ContingencyMethod.PowerFlow,
                                       # if no power flow options are provided 
                                       # a linear power flow is used
                                       pf_options=pf_options)
@@ -889,9 +889,9 @@ m_circuit.add_bus(b1)
 m_circuit.add_bus(b2)
 m_circuit.add_bus(b3)
 
-m_circuit.add_branch(br1)
-m_circuit.add_branch(br2)
-m_circuit.add_branch(br3)
+m_circuit.add_line(br1)
+m_circuit.add_line(br2)
+m_circuit.add_line(br3)
 
 # Declare the simulation driver and run
 se = StateEstimation(circuit=m_circuit)

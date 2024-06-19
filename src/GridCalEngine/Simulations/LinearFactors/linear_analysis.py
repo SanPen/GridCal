@@ -226,78 +226,6 @@ def make_lodf(Cf: sp.csc_matrix,
     return LODF
 
 
-# @nb.njit(cache=True)
-def make_mlodf(circuit, lodf):
-    """
-    Function to build an MLODF matrix.
-    Deprecated, use LinearMultiContingency instead
-    :param circuit:
-    :param lodf:
-    :return:
-    """
-    lodf_nx_list = list()
-
-    # Create dictionaries to speed up the access
-    cg_dict = {cg.idtag: cg for cg in circuit.contingency_groups}
-    idx_dict = {e.idtag: i for i, e in enumerate(circuit.get_branches())}
-
-    # Initialize c_idx list for each contingency groups
-    for cg in circuit.contingency_groups:
-        cg.c_idx = list()
-
-    # Loop for contingencies to fill group c_idx
-    for c in circuit.contingencies:
-        cg_dict[c.group.idtag].c_idx.append(idx_dict[c.device_idtag])
-
-    for cg in circuit.contingency_groups:
-
-        # Sort unique c_idx
-        cg.c_idx = list(sorted(set(cg.c_idx), reverse=False))
-
-        # Compute LODF vector
-        L = lodf[:, cg.c_idx]  # Take the columns of the LODF associated with the contingencies
-
-        # Compute M matrix [n, n] (lodf relating the outaged lines to each other)
-        M = np.ones((len(cg.c_idx), len(cg.c_idx)))
-        for i in range(len(cg.c_idx)):
-            for j in range(len(cg.c_idx)):
-                if not (i == j):
-                    M[i, j] = -lodf[cg.c_idx[i], cg.c_idx[j]]
-
-        # Compute LODF_NX
-        lodf_nx = np.matmul(L, np.linalg.inv(M))
-
-        # store tuple (c_idx, lodf_nx)
-        lodf_nx_list.append(
-            (cg.c_idx, lodf_nx)
-        )
-
-    return lodf_nx_list
-
-
-@nb.njit(cache=True)
-def make_otdf(ptdf: Mat,
-              lodf: Mat,
-              j: int) -> Mat:
-    """
-    Outage sensitivity of the Branches when transferring power from the bus j to the slack
-        LODF: outage transfer distribution factors
-    :param ptdf: power transfer distribution factors matrix (n-branch, n-bus)
-    :param lodf: line outage distribution factors matrix (n-branch, n-branch)
-    :param j: index of the bus injection
-    :return: LODF matrix (n-branch, n-branch)
-    """
-    nk = ptdf.shape[0]
-    nl = nk
-    otdf = np.empty((nk, nl))
-
-    for k in range(nk):
-        for l in range(nl):
-            otdf[k, l] = ptdf[k, j] + lodf[k, l] * ptdf[l, j]
-
-    return otdf
-
-
 @nb.njit(cache=True)
 def make_transfer_limits(ptdf: Mat,
                          flows: Vec,
@@ -534,12 +462,14 @@ class LinearMultiContingencies:
     LinearMultiContingencies
     """
 
-    def __init__(self, grid: MultiCircuit):
+    def __init__(self, grid: MultiCircuit, contingency_groups_used: List[ContingencyGroup]):
         """
         Constructor
         :param grid: MultiCircuit
         """
         self.grid: MultiCircuit = grid
+
+        self.contingency_groups_used = contingency_groups_used
 
         # auxiliary structures
         self.__contingency_group_dict = grid.get_contingency_group_dict()
@@ -550,7 +480,7 @@ class LinearMultiContingencies:
         self.contingency_indices = list()
 
         # for each contingency group
-        for ic, contingency_group in enumerate(self.grid.contingency_groups):
+        for ic, contingency_group in enumerate(self.contingency_groups_used):
             self.contingency_indices.append(ContingencyIndices(contingency_group=contingency_group,
                                                                contingency_group_dict=self.__contingency_group_dict,
                                                                branches_dict=self.__branches_dict,
@@ -559,6 +489,13 @@ class LinearMultiContingencies:
 
         # list of LinearMultiContingency objects that are used later to compute the contingency flows
         self.multi_contingencies: List[LinearMultiContingency] = list()
+
+    def get_contingency_group_names(self) -> List[str]:
+        """
+        Returns a list of of the names of the used contingency groups
+        :return:
+        """
+        return [elm.name for elm in self.contingency_groups_used]
 
     def compute(self,
                 lodf: Mat,
@@ -572,14 +509,14 @@ class LinearMultiContingencies:
         :param ptdf: original PTDF matrix (nbr, nbus)
         :param ptdf_threshold: threshold to discard values
         :param lodf_threshold: Threshold for LODF conversion to sparse
-        :param prepare_for_srap: if we are going to check with SRAP conditions, we must add the PTDF factors
+        :param prepare_for_srap:
         :return: None
         """
 
         self.multi_contingencies = list()
 
         # for each contingency group
-        for ic, contingency_group in enumerate(self.grid.contingency_groups):
+        for ic, contingency_group in enumerate(self.contingency_groups_used):
 
             contingency_indices = self.contingency_indices[ic]
 
@@ -595,8 +532,6 @@ class LinearMultiContingencies:
                 M = create_M_numba(lodf=lodf,
                                    branch_contingency_indices=contingency_indices.branch_contingency_indices)
                 L = lodf[:, contingency_indices.branch_contingency_indices]
-
-
 
                 try:
                     # Compute LODF for the multiple failure MLODF[k, βδ]
@@ -649,7 +584,7 @@ class LinearMultiContingencies:
                     # PTDF[βδ, i]
                     ptdf_bd_i = dense_to_csc(
                         mat=ptdf[np.ix_(contingency_indices.branch_contingency_indices,
-                                 contingency_indices.bus_contingency_indices)],
+                                        contingency_indices.bus_contingency_indices)],
                         threshold=ptdf_threshold
                     )
 
