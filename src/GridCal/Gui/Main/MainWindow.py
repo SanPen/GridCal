@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -4379,14 +4379,14 @@ class Ui_mainWindow(object):
         self.actionBigger_nodes.setToolTip(QCoreApplication.translate("mainWindow", u"Expand distances", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(shortcut)
-        self.actionBigger_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"F3", None))
+        self.actionBigger_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"Ctrl+Alt++", None))
 #endif // QT_CONFIG(shortcut)
         self.actionSmaller_nodes.setText(QCoreApplication.translate("mainWindow", u"Shrink", None))
 #if QT_CONFIG(tooltip)
         self.actionSmaller_nodes.setToolTip(QCoreApplication.translate("mainWindow", u"Shrink distances", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(shortcut)
-        self.actionSmaller_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"F2", None))
+        self.actionSmaller_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"Ctrl+Alt+-", None))
 #endif // QT_CONFIG(shortcut)
         self.actionPower_flow_Stochastic.setText(QCoreApplication.translate("mainWindow", u"Stochastic power flow", None))
 #if QT_CONFIG(tooltip)

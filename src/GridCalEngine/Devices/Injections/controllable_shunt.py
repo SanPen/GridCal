@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
 import numpy as np
-from GridCalEngine.enumerations import DeviceType, BuildStatus
+from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Parents.shunt_parent import ShuntParent
 from GridCalEngine.Devices.profile import Profile
 
@@ -104,7 +104,10 @@ class ControllableShunt(ShuntParent):
 
         self.register(key='step', units='', tpe=int, definition='Device tap step', profile_name='step_prof')
         self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
-        self.register(key='is_controlled', units='', tpe=bool, definition='Is controlled?')
+        self.register(key='g_steps', units='', tpe=SubObjectType.Array,
+                      definition='Conductance incremental steps')
+        self.register(key='b_steps', units='', tpe=SubObjectType.Array,
+                      definition='Susceptance incremental steps')
 
     @property
     def step(self):
