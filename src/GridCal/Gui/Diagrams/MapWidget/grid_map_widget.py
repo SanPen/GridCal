@@ -239,7 +239,7 @@ class GridMapWidget(BaseDiagramWidget):
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
 
-        print(f"Pos lat={latitude}, lon={longitude} x={x}, y={y}")
+        # print(f"Pos lat={latitude}, lon={longitude} x={x}, y={y}")
 
     def zoom_in(self):
         """
