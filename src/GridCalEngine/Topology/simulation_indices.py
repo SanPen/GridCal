@@ -676,7 +676,15 @@ class SimulationIndicesV2:
                 print("Blackout grid: no slack neither pv or pvr nodes")
                 pass
             else:  # select the PV with higher rate power as slack
-                i = generator_buses[np.where(Snomgen == max(Snomgen))]
+                mx = max(Pbus[pv])
+                if mx > 0:
+                    # find the generator that is injecting the most
+                    i = np.where(Pbus == mx)[0][0]
+
+                else:
+                    # all the generators are injecting zero, pick the first pv
+                    i = pv[0]
+                #i = generator_buses[np.where(Snomgen == max(Snomgen))]
                 if i in pv:
                     pv = np.delete(pv, np.where(pv == i)[0])
                     ref = np.array([i])

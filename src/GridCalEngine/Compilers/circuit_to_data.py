@@ -810,8 +810,30 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.control_mode[ii] = elm.control_mode
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
-        data.ctrl_bus[ii] = bus_dict.get(elm.regulation_bus, -1)
-        data.ctrl_branch[ii] = ii  # This branch
+        if (elm.control_mode == TransformerControlType.V) or (elm.control_mode == TransformerControlType.PtV):
+            if elm.regulation_bus is None:
+                data.ctrl_bus[ii] = t   # Assuming we don't know the regulation bus
+                logger.add_warning(f"Undefined branch control bus for mode = {elm.control_mode.value}",
+                                   device=elm.name, value=t, expected_value="", device_property="control mode",
+                                   device_class="transformer")
+            else:
+                data.ctrl_bus[ii] = bus_dict[elm.regulation_bus]
+        else:
+            data.ctrl_bus[ii] = bus_dict.get(elm.regulation_bus, -1)
+
+        if ((elm.control_mode == TransformerControlType.Pf) or (elm.control_mode == TransformerControlType.Qt) or
+            (elm.control_mode == TransformerControlType.PtQt) or (elm.control_mode == TransformerControlType.PtV)):
+            if elm.regulation_branch is None:
+                data.ctrl_branch[ii] = ii  # Assuming we don't know the regulation branch
+                logger.add_warning(f"Undefined branch control branch for mode = {elm.control_mode.value}",
+                                   device=elm.name, value=ii, expected_value="", device_property="control mode",
+                                   device_class="transformer")
+            else:
+                data.ctrl_branch[ii] = ii
+        else:
+            data.ctrl_branch[ii] = ii   # We assume that, in case it doesn't control branches, we assign itself
+
+        # data.ctrl_branch[ii] = ii  # This branch
         data.ctrl_mode_m[ii] = elm.tap_module_control_mode
         data.ctrl_mode_tau[ii] = elm.tap_angle_control_mode
 

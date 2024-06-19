@@ -208,10 +208,12 @@ class BranchData:
         data.ctrl_mode_m = self.ctrl_mode_m[elm_idx]
         data.ctrl_mode_tau = self.ctrl_mode_tau[elm_idx]
         bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
+        elm_map: Dict[int, int] = {o: i for i, o in enumerate(elm_idx)}
         for k in range(data.nelm):
             if data.control_mode[k] != TransformerControlType.fixed:
                 data.ctrl_bus[k] = bus_map[data.ctrl_bus[k]]
-                data.ctrl_branch[k] = bus_map[data.ctrl_branch[k]]
+                #data.ctrl_branch[k] = bus_map[data.ctrl_branch[k]]
+                data.ctrl_branch[k] = elm_map[data.ctrl_branch[k]]
             data.F[k] = bus_map[data.F[k]]
             data.T[k] = bus_map[data.T[k]]
 
