@@ -1884,7 +1884,7 @@ class NumericalCircuit:
 
         return circuit_islands
 
-    def compare(self, nc_2: "NumericalCircuit", tol=1e-6) -> Logger:
+    def compare(self, nc_2: "NumericalCircuit", tol=1e-6) -> Tuple[bool, Logger]:
         """
         Compare this numerical circuit with another numerical circuit
         :param nc_2: NumericalCircuit
@@ -1995,7 +1995,8 @@ class NumericalCircuit:
 
         CheckArr(self.Vbus, nc_2.Vbus, tol, 'NumericCircuit', 'V0', logger)
 
-        return logger
+        # if any error in the logger, bad
+        return logger.error_count() == 0, logger
 
 
 def compile_numerical_circuit_at(circuit: MultiCircuit,
