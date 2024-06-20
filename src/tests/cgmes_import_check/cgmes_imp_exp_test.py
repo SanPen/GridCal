@@ -42,10 +42,11 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
     """
     logger = Logger()
     # CGMES model import to MultiCircuit
-    circuit = gc.open_file(import_path)
+    circuit_1 = gc.open_file(import_path)
+    nc_1 = gc.compile_numerical_circuit_at(circuit_1)
     # run power flow
     pf_options = PowerFlowOptions()
-    pf_results = gc.power_flow(circuit, pf_options)
+    pf_results = gc.power_flow(circuit_1, pf_options)
 
     pf_session_data = DriverToSave(name="powerflow results",
                                    tpe=SimulationTypes.PowerFlow_run,
@@ -57,17 +58,29 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
     options = create_file_save_options(boundary_zip_path)
     options.sessions_data.append(pf_session_data)
 
-    cgmes_export = FileSave(circuit=circuit,
+    cgmes_export = FileSave(circuit=circuit_1,
                             file_name=export_fname,
                             options=options)
     cgmes_export.save_cgmes()
 
-    circuit2 = gc.open_file([export_fname, boundary_zip_path])
-    # compare_inputs(circuit, circuit2)
+    circuit_2 = gc.open_file([export_fname, boundary_zip_path])
+    nc_2 = gc.compile_numerical_circuit_at(circuit_2)
 
-    ok, logger = circuit.compare_circuits(circuit2)
+    # SORTING
+    circuit_1.buses.sort(key=lambda obj: obj.name)
+    circuit_2.buses.sort(key=lambda obj: obj.name)
+
+    # COMPARING
+    ok, logger = circuit_1.compare_circuits(circuit_2)
 
     if not ok:
+        logger.print()
+
+    ok, logger = nc_1.compare(nc_2=nc_2, tol=1e-6)
+
+    if ok:
+        print("OK!")
+    else:
         logger.print()
 
     assert ok

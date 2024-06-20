@@ -19,7 +19,7 @@ import uuid
 import numpy as np
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
                                         ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
-                                        HvdcControlType)
+                                        HvdcControlType, ActionType)
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 
@@ -38,6 +38,7 @@ GCPROP_TYPES = Union[
     Type[ConverterControlType],
     Type[TapModuleControl],
     Type[TapAngleControl],
+    Type[ActionType]
 ]
 
 
@@ -178,6 +179,8 @@ class EditableDevice:
 
         self.comment: str = comment
 
+        self.action: ActionType = ActionType.NoAction
+
         # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()
 
@@ -187,12 +190,14 @@ class EditableDevice:
         # list of properties that cannot be edited
         self.non_editable_properties: List[str] = list()
 
-
         self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='action', units='', tpe=ActionType,
+                      definition='Object action to perform.\nOnly used for model merging.',
+                      display=False)
         self.register(key='comment', units='', tpe=str, definition='User comment')
 
     def __str__(self) -> str:
