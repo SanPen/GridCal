@@ -17,26 +17,24 @@
 
 import os
 import cmath
-import warnings
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Set
+from typing import List, Dict, Tuple, Union, Set
 from uuid import getnode as get_mac, uuid4
-import datetime as dateslib
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
-from GridCalEngine.Devices.assets import Assets, add_devices_list
+from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMat
 
 import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ActionType
 
 
 def get_system_user() -> str:
@@ -1794,7 +1792,7 @@ class MultiCircuit(Assets):
         base_elements_dict = base_grid.get_all_elements_dict()
 
         for elm_from_here in self.items():  # for every device...
-            add_to_diff = False
+            action = ActionType.NoAction
 
             # try to search for the counterpart in the base circuit
             elm_from_base = base_elements_dict.get(elm_from_here.idtag, None)
@@ -1802,6 +1800,7 @@ class MultiCircuit(Assets):
             if elm_from_base is None:
                 # not found in the base, add it
                 add_to_diff = True
+                action = ActionType.Add
 
             else:
                 # check differences
@@ -1817,7 +1816,7 @@ class MultiCircuit(Assets):
                                         device_property=prop.name,
                                         value=v2,
                                         expected_value=v1)
-                        add_to_diff = True
+                        action = ActionType.Modify
 
                     if prop.has_profile():
                         p1 = elm_from_here.get_profile_by_prop(prop=prop)
@@ -1829,7 +1828,7 @@ class MultiCircuit(Assets):
                                             device_property=prop.name,
                                             object_value=p2,
                                             expected_object_value=p1)
-                            add_to_diff = True
+                            action = ActionType.Modify
 
                         if detailed_profile_comparison:
                             for t_idx in range(nt):
@@ -1844,7 +1843,7 @@ class MultiCircuit(Assets):
                                                     device=str(elm_from_here),
                                                     value=v2,
                                                     expected_value=v1)
-                                    add_to_diff = True
+                                    action = ActionType.Modify
 
                                 v1b = elm_from_here.get_property_value(prop=prop, t_idx=t_idx)
                                 v2b = elm_from_base.get_property_value(prop=prop, t_idx=t_idx)
@@ -1857,7 +1856,7 @@ class MultiCircuit(Assets):
                                         device=str(elm_from_here),
                                         value=v1b,
                                         expected_value=v1)
-                                    add_to_diff = True
+                                    action = ActionType.Modify
 
                                 if v2 != v2b:
                                     logger.add_info(
@@ -1867,9 +1866,10 @@ class MultiCircuit(Assets):
                                         device=str(elm_from_here),
                                         value=v1b,
                                         expected_value=v1)
-                                    add_to_diff = True
+                                    action = ActionType.Modify
 
-            if add_to_diff:
+            if action != ActionType.NoAction:
+                elm_from_here.action = action
                 dgrid.add_elements_by_type(obj=elm_from_here)
                 logger.add_info(msg="Device added in the diff circuit",
                                 device_class=elm_from_here.device_type.value,
