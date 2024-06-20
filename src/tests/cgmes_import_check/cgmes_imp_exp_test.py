@@ -25,7 +25,8 @@ def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
                               cgmesProfile.OP,
                               cgmesProfile.TP,
                               cgmesProfile.SV,
-                              cgmesProfile.SSH]
+                              cgmesProfile.SSH,
+                              cgmesProfile.SC]
     options.cgmes_version = CGMESVersions.v2_4_15
     options.cgmes_boundary_set = boundary_zip_path
 
