@@ -109,11 +109,8 @@ class TimeEventsMain(ObjectsTableMain):
                                                    QtWidgets.QMessageBox.StandardButton.No)
 
             if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
-                for bus in self.circuit.buses:
-                    bus.delete_profiles()
-                self.circuit.time_profile = None
+                self.circuit.delete_profiles()
                 self.ui.profiles_tableView.setModel(None)
-                # self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.update_area_combos()
             else:

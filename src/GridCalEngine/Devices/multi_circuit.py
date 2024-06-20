@@ -1870,7 +1870,7 @@ class MultiCircuit(Assets):
 
             if action != ActionType.NoAction:
                 elm_from_here.action = action
-                dgrid.add_elements_by_type(obj=elm_from_here)
+                dgrid.add_element(obj=elm_from_here)
                 logger.add_info(msg="Device added in the diff circuit",
                                 device_class=elm_from_here.device_type.value,
                                 device_property=elm_from_here.name, )
@@ -1971,7 +1971,7 @@ class MultiCircuit(Assets):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated branch",
                             device=elm.idtag,
                             device_class=elm.device_type.value)
@@ -2020,7 +2020,7 @@ class MultiCircuit(Assets):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated injection",
                             device=elm.idtag,
                             device_class=elm.device_type.value)

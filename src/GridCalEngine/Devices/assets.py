@@ -506,6 +506,15 @@ class Assets:
             for elm in elements:
                 elm.ensure_profiles_exist(self.time_profile)
 
+    def delete_profiles(self):
+        """
+        Delete the time profiles
+        :return:
+        """
+        for elm in self.items():
+            elm.delete_profiles()
+        self.time_profile = None
+
     # ------------------------------------------------------------------------------------------------------------------
     # Snapshot time
     # ------------------------------------------------------------------------------------------------------------------
@@ -4802,7 +4811,7 @@ class Assets:
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
-    def add_elements_by_type(self, obj: ALL_DEV_TYPES) -> None:
+    def add_element(self, obj: ALL_DEV_TYPES) -> None:
         """
         Add a device in its corresponding list
         :param obj: device object to add
@@ -4980,7 +4989,7 @@ class Assets:
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
-    def delete_elements_by_type(self, obj: ALL_DEV_TYPES) -> None:
+    def delete_element(self, obj: ALL_DEV_TYPES) -> None:
         """
         Get set of elements and their parent nodes
         :param obj: device object to delete
@@ -5186,7 +5195,7 @@ class Assets:
 
         else:
             # add
-            self.add_elements_by_type(obj=api_obj)
+            self.add_element(obj=api_obj)
 
             logger.add_info("Element added",
                             device_class=api_obj.device_type.value,
