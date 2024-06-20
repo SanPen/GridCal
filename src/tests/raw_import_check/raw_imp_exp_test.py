@@ -12,7 +12,14 @@ import GridCalEngine.api as gc
 
 
 def run_import_export_test(import_path: str, export_fname: str):
+    """
+
+    :param import_path:
+    :param export_fname:
+    :return:
+    """
     logger = Logger()
+
     # CGMES model import to MultiCircuit
     circuit_1 = gc.open_file(import_path)
     nc_1 = gc.compile_numerical_circuit_at(circuit_1)
@@ -64,6 +71,7 @@ def test_raw_roundtrip():
 
     export_relative_path = os.path.join('export_result', test_grid_name)
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
+
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))
 

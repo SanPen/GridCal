@@ -1226,9 +1226,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                 elements_dict_by_type[template_elm.device_type] = devices_dict
 
                 # add the devices to the circuit
-                circuit.set_elements_by_type(device_type=template_elm.device_type,
-                                             devices=devices,
-                                             logger=logger)
+                circuit.set_elements_list_by_type(device_type=template_elm.device_type,
+                                                  devices=devices,
+                                                  logger=logger)
 
             else:
                 # no objects of this type
@@ -1284,9 +1284,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     elements_dict_by_type[template_elm.device_type] = devices_dict
 
                     # add the devices to the circuit
-                    circuit.set_elements_by_type(device_type=template_elm.device_type,
-                                                 devices=devices,
-                                                 logger=logger)
+                    circuit.set_elements_list_by_type(device_type=template_elm.device_type,
+                                                      devices=devices,
+                                                      logger=logger)
                 else:
                     # branch is a legacy structure, so we can avoid reporting its absence
                     if object_type_key != 'branch':
