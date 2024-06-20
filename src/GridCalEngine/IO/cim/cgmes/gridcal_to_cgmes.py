@@ -707,6 +707,8 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                                )  # which Vnom we need?
         line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, line, cgmes_model, logger),
                           create_cgmes_terminal(mc_elm.bus_to, line, cgmes_model, logger)]
+        line.length = mc_elm.length
+
         vnom = line.BaseVoltage.nominalVoltage
 
         if vnom is not None:
@@ -1174,7 +1176,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_geograpical_regions(gc_model, cgmes_model, logger)
     get_cgmes_subgeograpical_regions(gc_model, cgmes_model, logger)
 
-    get_cgmes_base_voltages(gc_model, cgmes_model, logger)  # TODO 46-45
+    get_cgmes_base_voltages(gc_model, cgmes_model, logger)
 
     get_cgmes_substations(gc_model, cgmes_model, logger)
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)
