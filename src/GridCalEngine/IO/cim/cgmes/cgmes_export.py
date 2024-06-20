@@ -49,6 +49,11 @@ class CimExporter:
         if cgmes_circuit.cgmes_version == CGMESVersions.v2_4_15:
             rdf_serialization.parse(data=RDFS_serialization_2_4_15, format="ttl")
 
+            if cgmesProfile.OP in profiles_to_export:
+                self.export_OP = True
+            if cgmesProfile.SC in profiles_to_export:
+                self.export_SC = True
+
             self.namespaces = {
                 "xmlns:cim": "http://iec.ch/TC57/2013/CIM-schema-cim16#",
                 "xmlns:md": "http://iec.ch/TC57/61970-552/ModelDescription/1#",
