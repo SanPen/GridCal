@@ -424,12 +424,17 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                         pass  # TODO convert exponent to ZIP
                     else:  # ZIP model
                         # TODO check all attributes
+                        # :param P: Active power in MW
                         p = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantPower
+                        # :param Q: Reactive power in MVAr
                         q = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantPower
+                        # :param Ir: Real current in equivalent MW
                         i_r = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantCurrent
+                        # :param Ii: Imaginary current in equivalent MVAr
                         i_i = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantCurrent
-
+                        # :param G: Conductance in equivalent MW
                         g = cgmes_elm.p * cgmes_elm.LoadResponse.pConstantImpedance
+                        # :param B: Susceptance in equivalent MVAr
                         b = cgmes_elm.q * cgmes_elm.LoadResponse.qConstantImpedance
                 else:
                     p = cgmes_elm.p

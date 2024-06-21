@@ -262,18 +262,29 @@ def create_cgmes_load_response_char(
     new_rdf_id = get_new_rdfid()
     lrc_template = cgmes_model.get_class_type("LoadResponseCharacteristic")
     lrc = lrc_template(rdfid=new_rdf_id)
-    # lrc.name =
+    lrc.name = f'LoadRespChar_{load.name}'
+    # lrc.shortName = load.name
     lrc.exponentModel = False
-    lrc.pConstantCurrent = load.Ir / load.P if load.P != 0.0 else 0
-    lrc.qConstantCurrent = load.Ii / load.Q if load.Q != 0.0 else 0
-    lrc.pConstantImpedance = load.G / load.P if load.P != 0.0 else 0
-    lrc.qConstantImpedance = load.B / load.Q if load.Q != 0.0 else 0
-    lrc.pConstantPower = 1 - lrc.pConstantCurrent - lrc.pConstantImpedance
-    lrc.qConstantPower = 1 - lrc.qConstantCurrent - lrc.qConstantImpedance
-    if lrc.pConstantPower < 0 or lrc.qConstantPower < 0:
-        logger.add_error(msg='Constant Impedance/Current parameters are not correct',
-                         device=load,
-                         device_class=gcdev.Load)
+    # SUPPOSING that
+    lrc.pConstantImpedance = 0.0
+    lrc.qConstantImpedance = 0.0
+    # Expression got simpler
+    lrc.pConstantPower = load.P / (load.Ir + load.P)
+    lrc.qConstantPower = load.Q / (load.Ii + load.Q)
+    lrc.pConstantCurrent = 1 - lrc.pConstantPower
+    lrc.qConstantCurrent = 1 - lrc.qConstantPower
+
+    # Legacy
+    # lrc.pConstantCurrent = load.Ir / load.P if load.P != 0.0 else 0
+    # lrc.qConstantCurrent = load.Ii / load.Q if load.Q != 0.0 else 0
+    # lrc.pConstantImpedance = load.G / load.P if load.P != 0.0 else 0
+    # lrc.qConstantImpedance = load.B / load.Q if load.Q != 0.0 else 0
+    # lrc.pConstantPower = 1 - lrc.pConstantCurrent - lrc.pConstantImpedance
+    # lrc.qConstantPower = 1 - lrc.qConstantCurrent - lrc.qConstantImpedance
+    # if lrc.pConstantPower < 0 or lrc.qConstantPower < 0:
+    #     logger.add_error(msg='Constant Impedance/Current parameters are not correct',
+    #                      device=load,
+    #                      device_class=gcdev.Load)
     # sum for 3 for p = 1
     # TODO B only 1 lrc for every load
     # if it not supports voltage dependent load, lf wont be the same
@@ -644,10 +655,15 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
         cl.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
-        cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm, cgmes_model=cgmes_model, logger=logger)
-        # cl.LoadGroup = ConformLoadGroup ..?
-        cl.p = mc_elm.P / cl.LoadResponse.pConstantPower
-        cl.q = mc_elm.Q / cl.LoadResponse.qConstantPower
+
+        if mc_elm.Ii != 0.0:
+            cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm, cgmes_model=cgmes_model, logger=logger)
+            # cl.LoadGroup = ConformLoadGroup ..?
+            cl.p = mc_elm.P / cl.LoadResponse.pConstantPower
+            cl.q = mc_elm.Q / cl.LoadResponse.qConstantPower
+        else:
+            cl.p = mc_elm.P
+            cl.q = mc_elm.Q
 
         cl.description = mc_elm.code
 
