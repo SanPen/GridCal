@@ -70,7 +70,7 @@ def compare_inputs(circuit_1, circuit_2, tol=1e-6):
     # shunt
     CheckArr(nc_1.shunt_data.active, nc_2.shunt_data.active, tol, 'ShuntData',
              'active')
-    CheckArr(nc_1.shunt_data.admittance, nc_2.shunt_data.admittance, tol,
+    CheckArr(nc_1.shunt_data.Y, nc_2.shunt_data.Y, tol,
              'ShuntData', 'S')
     CheckArr(nc_1.shunt_data.get_injections_per_bus(),
              nc_2.shunt_data.get_injections_per_bus(), tol, 'ShuntData',

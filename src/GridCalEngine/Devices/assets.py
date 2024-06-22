@@ -4288,7 +4288,6 @@ class Assets:
         return [self.loads,
                 self.static_generators,
                 self.external_grids,
-                self.controllable_shunts,
                 self.current_injections]
 
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
@@ -4313,6 +4312,38 @@ class Assets:
         return n
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Shunt-like devices
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_shunt_like_devices_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
+        """
+        Get a list of all devices that behave like a shunt
+        :return: List of Lists of Shunt devices
+        """
+        return [self.shunts,
+                self.controllable_shunts]
+
+    def get_shunt_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of Shunt devices
+        """
+        elms = list()
+        for lst in self.get_shunt_like_devices_lists():
+            elms += lst
+        return elms
+
+    def get_shunt_like_device_number(self) -> int:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of EditableDevice
+        """
+        n = 0
+        for lst in self.get_shunt_like_devices_lists():
+            n += len(lst)
+
+        return n
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Generation like devices
     # ------------------------------------------------------------------------------------------------------------------
     def get_generation_like_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
@@ -4320,7 +4351,7 @@ class Assets:
         Get a list with the fluid injections lists
         :return:
         """
-        return [self._generators, self._batteries, self._controllable_shunts]
+        return [self._generators, self._batteries]
 
     def get_generation_like_number(self) -> int:
         """
@@ -4343,7 +4374,7 @@ class Assets:
                 names.append(elm.name)
         return np.array(names)
 
-    def get_generation_like_devices(self) -> List[FLUID_TYPES]:
+    def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Returns a list of :ref:`Injection<Injection>` names.
         Sort by order: turbines, pumps, p2xs

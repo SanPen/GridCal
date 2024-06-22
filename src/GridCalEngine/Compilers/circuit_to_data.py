@@ -74,7 +74,7 @@ def get_bus_data(circuit: MultiCircuit,
     :param use_stored_guess:
     :return:
     """
-    bus_data = ds.BusData(nbus=len(circuit.buses))
+    bus_data = ds.BusData(nbus=circuit.get_bus_number())
 
     substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
 
@@ -135,7 +135,7 @@ def get_load_data(circuit: MultiCircuit,
     :return:
     """
 
-    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=len(circuit.buses))
+    data = ds.LoadData(nelm=circuit.get_load_like_device_number(), nbus=circuit.get_bus_number())
 
     ii = 0
     for elm in circuit.get_loads():
@@ -226,6 +226,78 @@ def get_load_data(circuit: MultiCircuit,
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
+    for elm in circuit.get_current_injections():
+
+        i = bus_dict[elm.bus]
+
+        data.names[ii] = elm.name
+        data.idtag[ii] = elm.idtag
+
+        data.mttf[ii] = elm.mttf
+        data.mttr[ii] = elm.mttr
+
+        if time_series:
+            data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
+            data.active[ii] = elm.active_prof[t_idx]
+            data.cost[ii] = elm.Cost_prof[t_idx]
+
+        else:
+            data.I[ii] += complex(elm.Ir, elm.Ii)
+            data.active[ii] = elm.active
+            data.cost[ii] = elm.Cost
+
+        data.C_bus_elm[i, ii] = 1
+        ii += 1
+
+    return data
+
+
+def get_shunt_data(circuit: MultiCircuit,
+                   bus_dict,
+                   bus_voltage_used: BoolVec,
+                   bus_data: ds.BusData,
+                   logger: Logger,
+                   t_idx=-1,
+                   time_series=False,
+                   use_stored_guess=False) -> ds.ShuntData:
+    """
+
+    :param circuit:
+    :param bus_dict:
+    :param bus_voltage_used:
+    :param bus_data:
+    :param logger:
+    :param t_idx:
+    :param time_series:
+    :param use_stored_guess:
+    :return:
+    """
+    devices = circuit.get_shunts()
+
+    data = ds.ShuntData(nelm=circuit.get_shunt_like_device_number(),
+                        nbus=circuit.get_bus_number())
+
+    ii = 0
+    for k, elm in enumerate(devices):
+
+        i = bus_dict[elm.bus]
+
+        data.names[k] = elm.name
+        data.idtag[k] = elm.idtag
+
+        data.mttf[k] = elm.mttf
+        data.mttr[k] = elm.mttr
+
+        if time_series:
+            data.active[k] = elm.active_prof[t_idx]
+            data.Y[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
+        else:
+            data.active[k] = elm.active
+            data.Y[k] = complex(elm.G, elm.B)
+
+        data.C_bus_elm[i, k] = 1
+        ii += 1
+
     for elm in circuit.get_controllable_shunts():
 
         i = bus_dict[elm.bus]
@@ -236,9 +308,9 @@ def get_load_data(circuit: MultiCircuit,
         data.mttf[ii] = elm.mttf
         data.mttr[ii] = elm.mttr
 
-        data.controlled[ii] = elm.is_controlled
-        data.b_min[ii] = elm.Bmin
-        data.b_max[ii] = elm.Bmax
+        data.controllable[ii] = elm.is_controlled
+        data.qmin[ii] = elm.Bmin
+        data.qmax[ii] = elm.Bmax
 
         if time_series:
             data.Y[ii] += complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
@@ -271,73 +343,6 @@ def get_load_data(circuit: MultiCircuit,
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
-    for elm in circuit.get_current_injections():
-
-        i = bus_dict[elm.bus]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        if time_series:
-            data.I[ii] += complex(elm.Ir_prof[t_idx], elm.Ii_prof[t_idx])
-            data.active[ii] = elm.active_prof[t_idx]
-            data.cost[ii] = elm.Cost_prof[t_idx]
-
-        else:
-            data.I[ii] += complex(elm.Ir, elm.Ii)
-            data.active[ii] = elm.active
-            data.cost[ii] = elm.Cost
-
-        data.C_bus_elm[i, ii] = 1
-        ii += 1
-
-    return data
-
-
-def get_shunt_data(circuit: MultiCircuit,
-                   bus_dict,
-                   bus_voltage_used: BoolVec,
-                   logger: Logger,
-                   t_idx=-1,
-                   time_series=False,
-                   use_stored_guess=False) -> ds.ShuntData:
-    """
-
-    :param circuit:
-    :param bus_dict:
-    :param bus_voltage_used:
-    :param logger:
-    :param t_idx:
-    :param time_series:
-    :param use_stored_guess:
-    :return:
-    """
-    devices = circuit.get_shunts()
-
-    data = ds.ShuntData(nelm=len(devices), nbus=len(circuit.buses))
-
-    for k, elm in enumerate(devices):
-
-        i = bus_dict[elm.bus]
-
-        data.names[k] = elm.name
-        data.idtag[k] = elm.idtag
-
-        data.mttf[k] = elm.mttf
-        data.mttr[k] = elm.mttr
-
-        if time_series:
-            data.active[k] = elm.active_prof[t_idx]
-            data.admittance[k] = complex(elm.G_prof[t_idx], elm.B_prof[t_idx])
-        else:
-            data.active[k] = elm.active
-            data.admittance[k] = complex(elm.G, elm.B)
-
-        data.C_bus_elm[i, k] = 1
-
     return data
 
 
@@ -366,7 +371,7 @@ def get_generator_data(circuit: MultiCircuit,
     devices = circuit.get_generators()
 
     data = ds.GeneratorData(nelm=len(devices),
-                            nbus=len(circuit.buses))
+                            nbus=circuit.get_bus_number())
 
     gen_index_dict: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
