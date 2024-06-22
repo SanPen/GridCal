@@ -107,11 +107,6 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                            function_ptr=self.tap_down,
                            icon_path=":/Icons/icons/down.svg")
 
-            add_menu_entry(menu=menu,
-                           text="Change bus",
-                           function_ptr=self.change_bus,
-                           icon_path=":/Icons/icons/move_bus.svg")
-
             menu.addSeparator()
 
             add_menu_entry(menu=menu,
@@ -139,7 +134,10 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                            function_ptr=self.flip_connections,
                            icon_path=":/Icons/icons/redo.svg")
 
-
+            add_menu_entry(menu=menu,
+                           text="Change bus",
+                           function_ptr=self.change_bus,
+                           icon_path=":/Icons/icons/move_bus.svg")
 
             menu.exec_(event.screenPos())
 

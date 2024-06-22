@@ -14,12 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import numpy as np
-from typing import Union
+from typing import Union, TYPE_CHECKING, Tuple
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.enumerations import DeviceType, SubObjectType
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
+from GridCalEngine.basic_structures import Logger
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.types import CONNECTION_TYPE
 
 
 class FluidPath(EditableDevice):
@@ -94,3 +99,23 @@ class FluidPath(EditableDevice):
             self._locations.set(data=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a locations')
+
+    def get_from_and_to_objects(self,
+                                t_idx: Union[int, None] = None,
+                                logger: Logger = Logger(),
+                                prefer_node_breaker: bool = True) -> Tuple[CONNECTION_TYPE, CONNECTION_TYPE, bool]:
+        """
+        Get the from and to connection objects of the branch
+        :param t_idx: Time index (optional)
+        :param logger: Logger object
+        :param prefer_node_breaker: If true the connectivity nodes are examined first,
+                                    otherwise the buses are returned right away
+        :return: Object from, Object to, is it ok?
+        """
+
+        # Pick the right bus
+        bus_from = self.source
+        bus_to = self.target
+
+        ok = bus_from is not None and bus_to is not None
+        return bus_from, bus_to, ok

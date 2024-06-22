@@ -1022,7 +1022,7 @@ def add_nodal_capacity_formulation(t: Union[int, None],
                                                        ub=0.0,
                                                        name=join("nodal_capacity_", [t, k], "_"))
 
-        # minimize the load shedding
+        # maximize the nodal power injection
         f_obj += 100 * nodal_capacity_sign * nodal_capacity_vars.P[t, k]
 
     return f_obj

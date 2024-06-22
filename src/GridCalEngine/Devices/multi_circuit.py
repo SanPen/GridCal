@@ -17,26 +17,24 @@
 
 import os
 import cmath
-import warnings
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Set
+from typing import List, Dict, Tuple, Union, Set
 from uuid import getnode as get_mac, uuid4
-import datetime as dateslib
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
-from GridCalEngine.Devices.assets import Assets, add_devices_list
+from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
+from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMat
 
 import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ActionType
 
 
 def get_system_user() -> str:
@@ -760,17 +758,8 @@ class MultiCircuit(Assets):
         """
         Set the profiles state at the index t as the default values.
         """
-        for bus in self._buses:
-            bus.set_profile_values(t)
-
-        for elm in self.get_injection_devices():
-            elm.set_profile_values(t)
-
-        for elm in self.get_fluid_devices():
-            elm.set_profile_values(t)
-
-        for branch in self.get_branches():
-            branch.set_profile_values(t)
+        for device in self.items_declared():
+            device.set_profile_values(t)
 
         self.snapshot_time = self.time_profile[t]
 
@@ -827,49 +816,6 @@ class MultiCircuit(Assets):
         coord = np.array([b.get_coordinates() for b in self._buses])
 
         return coord.mean(axis=0).tolist()
-
-    def add_circuit(self, circuit: "MultiCircuit"):
-        """
-        Add a circuit to this circuit
-        :param circuit: Circuit to insert
-        :return: Nothing
-        """
-
-        # add profiles if required
-        if self.time_profile is not None:
-
-            for bus in circuit._buses:
-                bus.create_profiles(index=self.time_profile)
-
-            for lst in [circuit._lines, circuit._transformers2w, circuit._hvdc_lines]:
-                for branch in lst:
-                    branch.create_profiles(index=self.time_profile)
-
-        add_devices_list(self._buses, circuit._buses)
-        add_devices_list(self._lines, circuit._lines)
-        add_devices_list(self._transformers2w, circuit._transformers2w)
-        add_devices_list(self._windings, circuit._windings)
-        add_devices_list(self._transformers3w, circuit._transformers3w)
-        add_devices_list(self._hvdc_lines, circuit._hvdc_lines)
-        add_devices_list(self._vsc_devices, circuit._vsc_devices)
-        add_devices_list(self._upfc_devices, circuit._upfc_devices)
-        add_devices_list(self._dc_lines, circuit._dc_lines)
-
-        add_devices_list(self._switch_devices, circuit._switch_devices)
-        add_devices_list(self._areas, circuit._areas)
-        add_devices_list(self._zones, circuit._zones)
-        add_devices_list(self._substations, circuit._substations)
-        add_devices_list(self._countries, circuit._countries)
-
-        add_devices_list(self._technologies, circuit._technologies)
-
-        add_devices_list(self._overhead_line_types, circuit._overhead_line_types)
-        add_devices_list(self._wire_types, circuit._wire_types)
-        add_devices_list(self._underground_cable_types, circuit._underground_cable_types)
-        add_devices_list(self._sequence_line_types, circuit._sequence_line_types)
-        add_devices_list(self._transformer_types, circuit._transformer_types)
-
-        return circuit._buses
 
     def snapshot_balance(self):
         """
@@ -1290,11 +1236,11 @@ class MultiCircuit(Assets):
 
         return groups
 
-    def get_injection_devices_grouped_by_cn(self) -> Dict[
-        dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode,
+                                                          Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
-        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        :return: Dict[ConnectivityNode, Dict[DeviceType, List[Injection devs]]
         """
         groups: Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
 
@@ -1731,8 +1677,8 @@ class MultiCircuit(Assets):
         if self.snapshot_time != grid2.snapshot_time:
             logger.add_error(msg="Different snapshot times",
                              device_class="snapshot time",
-                             value=str(grid2.get_snapshot_time_unix),
-                             expected_value=self.get_snapshot_time_unix)
+                             value=str(grid2.get_snapshot_time_unix()),
+                             expected_value=self.get_snapshot_time_unix())
 
         # for each category
         for key, template_elms_list in self.objects_with_profiles.items():
@@ -1746,7 +1692,9 @@ class MultiCircuit(Assets):
 
                 if len(elms1) != len(elms2):
                     logger.add_error(msg="Different number of elements",
-                                     device_class=template_elm.device_type.value)
+                                     device_class=template_elm.device_type.value,
+                                     value=len(elms2),
+                                     expected_value=len(elms1))
 
                 # for every property
                 for prop_name, prop in template_elm.registered_properties.items():
@@ -1813,6 +1761,147 @@ class MultiCircuit(Assets):
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
+
+    def differentiate_circuits(self, base_grid: "MultiCircuit",
+                               detailed_profile_comparison: bool = True) -> Tuple[bool, Logger, "MultiCircuit"]:
+        """
+        Compare this circuit with another circuits for equality
+        :param base_grid: MultiCircuit used as comparison base
+        :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
+        :return: equal?, Logger with the comparison information, Multicircuit with the elements that have changed
+        """
+        logger = Logger()
+
+        dgrid = MultiCircuit(name=self.name + " increment")
+        dgrid.comments = f"Incremental grid created from {self.name} using {base_grid.name} as base."
+
+        if self.get_time_number() != base_grid.get_time_number():
+            nt = 0
+            logger.add_error(msg="Different number of time steps",
+                             device_class="time",
+                             value=base_grid.get_time_number(),
+                             expected_value=self.get_time_number())
+        else:
+            nt = self.get_time_number()
+
+        if self.snapshot_time != base_grid.snapshot_time:
+            logger.add_error(msg="Different snapshot times",
+                             device_class="snapshot time",
+                             value=str(base_grid.get_snapshot_time_unix),
+                             expected_value=self.get_snapshot_time_unix)
+
+        # get a dictionary of all the elements of the other circuit
+        base_elements_dict = base_grid.get_all_elements_dict()
+
+        for elm_from_here in self.items():  # for every device...
+            action = ActionType.NoAction
+
+            # try to search for the counterpart in the base circuit
+            elm_from_base = base_elements_dict.get(elm_from_here.idtag, None)
+
+            if elm_from_base is None:
+                # not found in the base, add it
+                action = ActionType.Add
+
+            else:
+                # check differences
+                for prop_name, prop in elm_from_here.registered_properties.items():
+
+                    # compare the snapshot values
+                    v1 = elm_from_here.get_property_value(prop=prop, t_idx=None)
+                    v2 = elm_from_base.get_property_value(prop=prop, t_idx=None)
+
+                    if v1 != v2:
+                        logger.add_info(msg="Different snapshot values",
+                                        device_class=elm_from_here.device_type.value,
+                                        device_property=prop.name,
+                                        value=v2,
+                                        expected_value=v1)
+                        action = ActionType.Modify
+
+                    if prop.has_profile():
+                        p1 = elm_from_here.get_profile_by_prop(prop=prop)
+                        p2 = elm_from_here.get_profile_by_prop(prop=prop)
+
+                        if p1 != p2:
+                            logger.add_info(msg="Different profile values",
+                                            device_class=elm_from_here.device_type.value,
+                                            device_property=prop.name,
+                                            object_value=p2,
+                                            expected_object_value=p1)
+                            action = ActionType.Modify
+
+                        if detailed_profile_comparison:
+                            for t_idx in range(nt):
+
+                                v1 = p1[t_idx]
+                                v2 = p2[t_idx]
+
+                                if v1 != v2:
+                                    logger.add_info(msg="Different time series values",
+                                                    device_class=elm_from_here.device_type.value,
+                                                    device_property=prop.name,
+                                                    device=str(elm_from_here),
+                                                    value=v2,
+                                                    expected_value=v1)
+                                    action = ActionType.Modify
+
+                                v1b = elm_from_here.get_property_value(prop=prop, t_idx=t_idx)
+                                v2b = elm_from_base.get_property_value(prop=prop, t_idx=t_idx)
+
+                                if v1 != v1b:
+                                    logger.add_info(
+                                        msg="Profile values differ with different getter methods!",
+                                        device_class=elm_from_here.device_type.value,
+                                        device_property=prop.name,
+                                        device=str(elm_from_here),
+                                        value=v1b,
+                                        expected_value=v1)
+                                    action = ActionType.Modify
+
+                                if v2 != v2b:
+                                    logger.add_info(
+                                        msg="Profile getting values differ with different getter methods!",
+                                        device_class=elm_from_here.device_type.value,
+                                        device_property=prop.name,
+                                        device=str(elm_from_here),
+                                        value=v1b,
+                                        expected_value=v1)
+                                    action = ActionType.Modify
+
+            if action != ActionType.NoAction:
+                elm_from_here.action = action
+                dgrid.add_element(obj=elm_from_here)
+                logger.add_info(msg="Device added in the diff circuit",
+                                device_class=elm_from_here.device_type.value,
+                                device_property=elm_from_here.name, )
+
+        # if any error in the logger, bad
+        return logger.error_count() == 0, logger, dgrid
+
+    def add_circuit(self, circuit: "MultiCircuit") -> Logger:
+        """
+        Add a circuit to this circuit
+        :param circuit: Circuit to insert
+        :return: Nothing
+        """
+
+        logger = Logger()
+
+        # add profiles if required
+        if self.time_profile is not None:
+
+            for bus in circuit._buses:
+                bus.create_profiles(index=self.time_profile)
+
+            for lst in [circuit._lines, circuit._transformers2w, circuit._hvdc_lines]:
+                for branch in lst:
+                    branch.create_profiles(index=self.time_profile)
+
+        for api_object in circuit.items():
+            self.add_or_replace_object(api_obj=api_object, logger=logger)
+
+        return logger
 
     def clean_branches(self,
                        nt: int,
@@ -1883,7 +1972,7 @@ class MultiCircuit(Assets):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated branch",
                             device=elm.idtag,
                             device_class=elm.device_type.value)
@@ -1932,7 +2021,7 @@ class MultiCircuit(Assets):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated injection",
                             device=elm.idtag,
                             device_class=elm.device_type.value)

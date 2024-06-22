@@ -883,7 +883,7 @@ class ArrayTableModel(QAbstractTableModel):
             if orientation == Qt.Horizontal:
                 return self.headers[section]
             if orientation == Qt.Vertical:
-                return section + 1  # To show row numbers starting from 1
+                return section  # To show row numbers starting from 0
         return None
 
     def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Union[None, str]:
@@ -1026,6 +1026,7 @@ class ArrayEditor(QDialog):
 
 if __name__ == "__main__":
     import sys
+
     # from PySide6.QtWidgets import QApplication
     #
     # app = QApplication(sys.argv)

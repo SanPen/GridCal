@@ -633,23 +633,23 @@ class PowerWorldParser:
         buses_dict, bus_volt = parse_buses(data_dict['bus data']['data'], substations_dict, area_dict, zone_dict)
 
         # create devices
-        grid.set_elements_by_type(device_type=DeviceType.BusDevice, devices=list(buses_dict.values()))
+        grid.set_elements_list_by_type(device_type=DeviceType.BusDevice, devices=list(buses_dict.values()))
 
         if 'branch data' in data_dict.keys():
             lines = parse_branches(data_dict['branch data']['data'], buses_dict)
-            grid.set_elements_by_type(device_type=DeviceType.LineDevice, devices=lines)
+            grid.set_elements_list_by_type(device_type=DeviceType.LineDevice, devices=lines)
 
         if 'transformer data' in data_dict.keys():
             transformers2w = parse_transformers(data_dict['transformer data']['data'], buses_dict)
-            grid.set_elements_by_type(device_type=DeviceType.Transformer2WDevice, devices=transformers2w)
+            grid.set_elements_list_by_type(device_type=DeviceType.Transformer2WDevice, devices=transformers2w)
 
         if 'load data' in data_dict.keys():
             loads = parse_loads(data_dict['load data']['data'], buses_dict)
-            grid.set_elements_by_type(device_type=DeviceType.LoadDevice, devices=loads)
+            grid.set_elements_list_by_type(device_type=DeviceType.LoadDevice, devices=loads)
 
         if 'generator data' in data_dict.keys():
             generators = parse_generators(data_dict['generator data']['data'], buses_dict, bus_volt)
-            grid.set_elements_by_type(device_type=DeviceType.GeneratorDevice, devices=generators)
+            grid.set_elements_list_by_type(device_type=DeviceType.GeneratorDevice, devices=generators)
 
         if 'dc bus data' in data_dict.keys():
             # augments buses_dict and bus_volt
@@ -659,11 +659,11 @@ class PowerWorldParser:
 
             if 'dc line data' in data_dict.keys():
                 dc_lines = parse_dc_lines(data_dict['dc line data']['data'], dc_buses_dict)
-                grid.set_elements_by_type(device_type=DeviceType.DCLineDevice, devices=dc_lines)
+                grid.set_elements_list_by_type(device_type=DeviceType.DCLineDevice, devices=dc_lines)
 
             if 'dc converter data' in data_dict.keys():
                 vsc_devices = parse_dc_converters(data_dict['dc converter data']['data'], buses_dict, dc_buses_dict)
-                grid.set_elements_by_type(device_type=DeviceType.VscDevice, devices=vsc_devices)
+                grid.set_elements_list_by_type(device_type=DeviceType.VscDevice, devices=vsc_devices)
 
         logger += grid.fill_xy_from_lat_lon()
 

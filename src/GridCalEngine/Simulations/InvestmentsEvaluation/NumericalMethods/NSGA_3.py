@@ -27,6 +27,10 @@ from pymoo.core.mutation import Mutation
 
 
 class UniformBinarySampling(Sampling):
+    """
+    UniformBinarySampling
+    """
+
     def _do(self, problem, n_samples, **kwargs):
         num_ones = np.linspace(0, problem.n_var, n_samples, dtype=int)
         num_ones[-1] = problem.n_var
@@ -40,6 +44,10 @@ class UniformBinarySampling(Sampling):
 
 
 class SkewedBinarySampling(Sampling):
+    """
+    SkewedBinarySampling
+    """
+
     def _do(self, problem, n_samples, **kwargs):
         max_ones = int(problem.n_var * 1)
         num_ones = (np.linspace(0, 1, n_samples) ** 3 * max_ones).astype(int)
@@ -62,6 +70,10 @@ class SkewedBinarySampling(Sampling):
 
 
 class QuadBinarySampling(Sampling):
+    """
+    QuadBinarySampling
+    """
+
     def _do(self, problem, n_samples, **kwargs):
         max_ones = int(problem.n_var * 1)
         half_samples = n_samples // 2
@@ -80,6 +92,9 @@ class QuadBinarySampling(Sampling):
 
 
 class BitflipMutation(Mutation):
+    """
+    BitflipMutation
+    """
 
     def _do(self, problem, x, **kwargs):
         mask = np.random.random(x.shape) < self.get_prob_var(problem)
@@ -146,7 +161,7 @@ def NSGA_3(obj_func,
     ref_dirs = get_reference_directions("reduction", n_obj, n_partitions, seed=1)
 
     algorithm = NSGA3(pop_size=pop_size,
-                      sampling=SkewedBinarySampling(),  #UniformBinarySampling() for ideal grid
+                      sampling=SkewedBinarySampling(),  # UniformBinarySampling() for ideal grid
                       crossover=SBX(prob=crossover_prob, eta=eta, vtype=float, repair=RoundingRepair()),
                       mutation=BitflipMutation(prob=mutation_probability, prob_var=0.4, repair=RoundingRepair()),
                       # selection=TournamentSelection(pressure=2),
