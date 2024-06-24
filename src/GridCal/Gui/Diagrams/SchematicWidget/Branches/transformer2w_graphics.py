@@ -16,14 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
-from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_editor import (TransformerEditor,
-                                                                              reverse_transformer_short_circuit_study)
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_editor import TransformerEditor
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_taps_editor import TransformerTapsEditor
 from GridCalEngine.Devices.Branches.transformer import Transformer2W, TransformerType
 from GridCalEngine.enumerations import DeviceType
 
@@ -69,10 +68,11 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
             menu = QMenu()
             menu.addSection("Transformer")
 
-            pe = menu.addAction('Active')
-            pe.setCheckable(True)
-            pe.setChecked(self.api_object.active)
-            pe.triggered.connect(self.enable_disable_toggle)
+            add_menu_entry(menu=menu,
+                           text="Active",
+                           function_ptr=self.enable_disable_toggle,
+                           checkeable=True,
+                           checked_value=self.api_object.active)
 
             add_menu_entry(menu=menu,
                            text="Draw labels",
@@ -80,69 +80,64 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                            checkeable=True,
                            checked_value=self.draw_labels)
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
+            add_menu_entry(menu=menu,
+                           text="Delete",
+                           function_ptr=self.remove,
+                           icon_path=":/Icons/icons/delete3.svg")
 
-            ra3 = menu.addAction('Editor')
-            edit_icon = QIcon()
-            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
-            ra3.setIcon(edit_icon)
-            ra3.triggered.connect(self.edit)
-
-            rabf = menu.addAction('Change bus')
-            move_bus_icon = QIcon()
-            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-            rabf.setIcon(move_bus_icon)
-            rabf.triggered.connect(self.change_bus)
-
-            menu.addSeparator()
-
-            ra6 = menu.addAction('Plot profiles')
-            plot_icon = QIcon()
-            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-            ra6.setIcon(plot_icon)
-            ra6.triggered.connect(self.plot_profiles)
-
-            ra3 = menu.addAction('Add to catalogue')
-            ra3_icon = QIcon()
-            ra3_icon.addPixmap(QPixmap(":/Icons/icons/Catalogue.svg"))
-            ra3.setIcon(ra3_icon)
-            ra3.triggered.connect(self.add_to_catalogue)
-
-            ra4 = menu.addAction('Assign rate to profile')
-            ra4_icon = QIcon()
-            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            ra4.setIcon(ra4_icon)
-            ra4.triggered.connect(self.assign_rate_to_profile)
-
-            ra5 = menu.addAction('Assign active state to profile')
-            ra5_icon = QIcon()
-            ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            ra5.setIcon(ra5_icon)
-            ra5.triggered.connect(self.assign_status_to_profile)
-
-            ra7 = menu.addAction('Flip')
-            ra7_icon = QIcon()
-            ra7_icon.addPixmap(QPixmap(":/Icons/icons/redo.svg"))
-            ra7.setIcon(ra7_icon)
-            ra7.triggered.connect(self.flip_connections)
+            add_menu_entry(menu=menu,
+                           text="Edit template",
+                           function_ptr=self.edit,
+                           icon_path=":/Icons/icons/edit.svg")
 
             menu.addSection('Tap changer')
 
-            ra4 = menu.addAction('Tap up')
-            ra4_icon = QIcon()
-            ra4_icon.addPixmap(QPixmap(":/Icons/icons/up.svg"))
-            ra4.setIcon(ra4_icon)
-            ra4.triggered.connect(self.tap_up)
+            add_menu_entry(menu=menu,
+                           text="Edit tap changer",
+                           function_ptr=self.edit_tap_changer,
+                           icon_path=":/Icons/icons/edit.svg")
 
-            ra5 = menu.addAction('Tap down')
-            ra5_icon = QIcon()
-            ra5_icon.addPixmap(QPixmap(":/Icons/icons/down.svg"))
-            ra5.setIcon(ra5_icon)
-            ra5.triggered.connect(self.tap_down)
+            add_menu_entry(menu=menu,
+                           text="Tap up",
+                           function_ptr=self.tap_up,
+                           icon_path=":/Icons/icons/up.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Tap down",
+                           function_ptr=self.tap_down,
+                           icon_path=":/Icons/icons/down.svg")
+
+            menu.addSeparator()
+
+            add_menu_entry(menu=menu,
+                           text="Plot profiles",
+                           function_ptr=self.plot_profiles,
+                           icon_path=":/Icons/icons/plot.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Add to catalogue",
+                           function_ptr=self.add_to_catalogue,
+                           icon_path=":/Icons/icons/Catalogue.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Assign rate to profile",
+                           function_ptr=self.assign_rate_to_profile,
+                           icon_path=":/Icons/icons/assign_to_profile.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Assign active state to profile",
+                           function_ptr=self.assign_status_to_profile,
+                           icon_path=":/Icons/icons/assign_to_profile.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Flip",
+                           function_ptr=self.flip_connections,
+                           icon_path=":/Icons/icons/redo.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Change bus",
+                           function_ptr=self.change_bus,
+                           icon_path=":/Icons/icons/move_bus.svg")
 
             menu.exec_(event.screenPos())
 
@@ -176,6 +171,16 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                                 modify_on_accept=True,
                                 templates=templates,
                                 current_template=current_template)
+        if dlg.exec_():
+            pass
+
+    def edit_tap_changer(self):
+        """
+
+        :return:
+        """
+
+        dlg = TransformerTapsEditor(api_object=self.api_object.tap_changer)
         if dlg.exec_():
             pass
 
@@ -213,19 +218,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                              title="Add transformer type")
 
         if ok:
-            Pfe, Pcu, Vsc, I0, Sn = reverse_transformer_short_circuit_study(transformer_obj=self.api_object,
-                                                                            Sbase=self.editor.circuit.Sbase)
-
-            tpe = TransformerType(hv_nominal_voltage=self.api_object.HV,
-                                  lv_nominal_voltage=self.api_object.LV,
-                                  nominal_power=Sn,
-                                  copper_losses=Pcu,
-                                  iron_losses=Pfe,
-                                  no_load_current=I0,
-                                  short_circuit_voltage=Vsc,
-                                  gr_hv1=0.5,
-                                  gx_hv1=0.5,
-                                  name='type from ' + self.api_object.name)
+            tpe = self.api_object.get_transformer_type(Sbase=self.editor.circuit.Sbase)
 
             self.editor.circuit.add_transformer_type(tpe)
 

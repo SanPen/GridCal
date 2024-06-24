@@ -26,6 +26,7 @@ from matplotlib.colors import LinearSegmentedColormap
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.time_events import TimeEventsMain
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
@@ -37,13 +38,14 @@ import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
                                         ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
-                                        ContingencyFilteringMethods)
+                                        ContingencyFilteringMethods, InvestmentsEvaluationObjectives)
 
 
 class SimulationsMain(TimeEventsMain):
@@ -202,6 +204,14 @@ class SimulationsMain(TimeEventsMain):
         # ptdf grouping modes
         self.ptdf_group_modes = OrderedDict()
 
+        self.investment_evaluation_objfunc_dict = OrderedDict()
+        lst = list()
+        for method in [InvestmentsEvaluationObjectives.PowerFlow,
+                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow]:
+            self.investment_evaluation_objfunc_dict[method.value] = method
+            lst.append(method.value)
+        self.ui.investment_evaluation_objfunc_ComboBox.setModel(gf.get_list_model(lst))
+
         # dictionaries for available results
         self.available_results_dict: Union[Dict[str, Dict[str, ResultTypes]], None] = dict()
 
@@ -249,7 +259,7 @@ class SimulationsMain(TimeEventsMain):
 
         # set the threads so that the diagram scene objects can plot them
         for diagram in self.diagram_widgets_list:
-            if isinstance(diagram, SchematicWidget):
+            if isinstance(diagram, (SchematicWidget, MapWidget)):
                 diagram.set_results_to_plot(all_threads)
 
         return all_threads
@@ -760,60 +770,108 @@ class SimulationsMain(TimeEventsMain):
         Dispatch the power flow action
         :return:
         """
-        if self.ts_flag():
-            self.run_power_flow_time_series()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.PowerFlowTimeSeries_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.PowerFlow_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_power_flow()
+            if self.ts_flag():
+                self.run_power_flow_time_series()
+            else:
+                self.run_power_flow()
 
     def optimal_power_flow_dispatcher(self):
         """
         Dispatch the optimal power flow action
         :return:
         """
-        if self.ts_flag():
-            self.run_opf_time_series()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.OPFTimeSeries_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.OPF_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_opf()
+            if self.ts_flag():
+                self.run_opf_time_series()
+            else:
+                self.run_opf()
 
     def optimal_ntc_dispatcher(self):
         """
         Dispatch the NTC action
         :return:
         """
-        if self.ts_flag():
-            self.run_available_transfer_capacity_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_TS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.OPF_NTC_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_available_transfer_capacity()
+            if self.ts_flag():
+                self.run_available_transfer_capacity_ts()
+            else:
+                self.run_available_transfer_capacity()
 
     def optimal_ntc_opf_dispatcher(self):
         """
         Dispatch the optimal NTC action
         :return:
         """
-        if self.ts_flag():
-            self.run_opf_ntc_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacityTS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.NetTransferCapacity_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_opf_ntc()
+            if self.ts_flag():
+                self.run_opf_ntc_ts()
+            else:
+                self.run_opf_ntc()
 
     def linear_pf_dispatcher(self):
         """
         Dispatch the linear power flow action
         :return:
         """
-        if self.ts_flag():
-            self.run_linear_analysis_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.LinearAnalysis_TS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.LinearAnalysis_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_linear_analysis()
+            if self.ts_flag():
+                self.run_linear_analysis_ts()
+            else:
+                self.run_linear_analysis()
 
     def contingencies_dispatcher(self):
         """
         Dispatch the contingencies action
         :return:
         """
-        if self.ts_flag():
-            self.run_contingency_analysis_ts()
+        if self.server_driver.is_running():
+            if self.ts_flag():
+                instruction = RemoteInstruction(operation=SimulationTypes.ContingencyAnalysisTS_run)
+            else:
+                instruction = RemoteInstruction(operation=SimulationTypes.ContingencyAnalysis_run)
+
+            self.server_driver.send_data(circuit=self.circuit, instruction=instruction)
         else:
-            self.run_contingency_analysis()
+            if self.ts_flag():
+                self.run_contingency_analysis_ts()
+            else:
+                self.run_contingency_analysis()
 
     def run_power_flow(self):
         """
@@ -2439,17 +2497,34 @@ class SimulationsMain(TimeEventsMain):
 
                     # evaluation method
                     method = self.investment_evaluation_method_dict[
-                        self.ui.investment_evaluation_method_ComboBox.currentText()]
+                        self.ui.investment_evaluation_method_ComboBox.currentText()
+                    ]
 
                     # maximum number of function evalñuations as a factor of the number of investments
                     max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
                         self.circuit.investments_groups)
 
+                    objf_tpe = self.investment_evaluation_objfunc_dict[
+                        self.ui.investment_evaluation_objfunc_ComboBox.currentText()
+                    ]
+
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
-                                                               pf_options=self.get_selected_power_flow_options())
+                                                               pf_options=self.get_selected_power_flow_options(),
+                                                               objf_tpe=objf_tpe
+                                                               )
+
+                    opf_time_series_results = self.get_opf_ts_results(
+                        use_opf=self.ui.actionOpf_to_Power_flow.isChecked()
+                    )
+
                     drv = sim.InvestmentsEvaluationDriver(grid=self.circuit,
-                                                          options=options)
+                                                          options=options,
+                                                          time_indices=self.get_time_indices(),
+                                                          opf_time_series_results=opf_time_series_results,
+                                                          clustering_results=self.get_clustering_results(),
+                                                          engine=self.get_preferred_engine()
+                                                          )
 
                     self.session.run(drv,
                                      post_func=self.post_run_investments_evaluation,

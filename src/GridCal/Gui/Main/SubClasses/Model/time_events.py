@@ -82,11 +82,15 @@ class TimeEventsMain(ObjectsTableMain):
         """
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
+
             steps, step_length, step_unit, time_base = dlg.get_values()
 
             self.ui.profiles_tableView.setModel(None)
 
-            self.circuit.create_profiles(steps, step_length, step_unit, time_base)
+            self.circuit.create_profiles(steps=steps,
+                                         step_length=step_length,
+                                         step_unit=step_unit,
+                                         time_base=time_base)
 
             self.display_profiles()
 
@@ -105,11 +109,8 @@ class TimeEventsMain(ObjectsTableMain):
                                                    QtWidgets.QMessageBox.StandardButton.No)
 
             if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
-                for bus in self.circuit.buses:
-                    bus.delete_profiles()
-                self.circuit.time_profile = None
+                self.circuit.delete_profiles()
                 self.ui.profiles_tableView.setModel(None)
-                # self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.update_area_combos()
             else:

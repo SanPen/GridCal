@@ -23,7 +23,7 @@ from PySide6 import QtWidgets
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-from GridCalEngine.Devices.multi_circuit import MultiCircuit, get_system_user
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -81,6 +81,7 @@ class IoMain(ConfigurationMain):
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
         self.ui.actionAdd_circuit.triggered.connect(self.add_circuit)
+        self.ui.actionExport_circuit_differential.triggered.connect(self.export_circuit_differential)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSave_as.triggered.connect(self.save_file_as)
         self.ui.actionExport_all_the_device_s_profiles.triggered.connect(self.export_object_profiles)
@@ -229,18 +230,27 @@ class IoMain(ConfigurationMain):
         else:
             warning_msg('There is a file being processed now.')
 
-    def open_file_threaded(self, post_function=None):
+    def open_file_threaded(self, post_function=None, allow_diff_file_format: bool = False, title: str = 'Open file'):
         """
         Open file from a Qt thread to remain responsive
+        :param post_function: Any function to run after
+        :param allow_diff_file_format: Allow loading GridCal diff files?
+        :param title: Title of the open window
         """
 
-        files_types = ("Formats (*.gridcal *.gch5 *.xlsx *.xls *.sqlite *.dgs "
-                       "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml *.zip *.dpx *.epc *.EPC *.nc *.hdf5)")
+        files_types = "*.gridcal "
+
+        if allow_diff_file_format:
+            files_types += "*.dgridcal "
+
+        files_types += "*.gch5 *.xlsx *.xls *.sqlite *.dgs "
+        files_types += "*.m *.raw *.RAW *.rawx *.json *.ejson2 *.ejson3 *.xml "
+        files_types += "*.zip *.dpx *.epc *.EPC *.nc *.hdf5"
 
         dialogue = QtWidgets.QFileDialog(None,
-                                         caption='Open file',
+                                         caption=title,
                                          directory=self.project_directory,
-                                         filter=files_types)
+                                         filter=f"Formats ({files_types})")
 
         if dialogue.exec():
             filenames = dialogue.selectedFiles()
@@ -429,7 +439,7 @@ class IoMain(ConfigurationMain):
                 else:
                     # add the circuit
                     new_circuit = self.open_file_thread_object.circuit
-                    buses = self.circuit.add_circuit(new_circuit)
+                    logger = self.circuit.add_circuit(new_circuit)
 
                     dlg = CustomQuestionDialogue(title="Add new grid",
                                                  question="Do you want to add the loaded grid to a new diagram?",
@@ -469,7 +479,63 @@ class IoMain(ConfigurationMain):
                                                                      explode_factor=1.0,
                                                                      prog_func=None,
                                                                      text_func=None)
-                            diagram_widget.set_selected_buses(buses=buses)
+                            diagram_widget.set_selected_buses(buses=new_circuit.buses)
+
+    def export_circuit_differential(self):
+        """
+        Prompt to add another circuit
+        """
+        self.open_file_threaded(post_function=self.post_create_circuit_differential,
+                                allow_diff_file_format=True,
+                                title="Load base grid to compare...")
+
+    def post_create_circuit_differential(self):
+        """
+
+        :return:
+        """
+        self.stuff_running_now.remove('file_open')
+
+        if self.open_file_thread_object is not None:
+
+            if self.open_file_thread_object.logger.has_logs():
+                dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                dlg.exec_()
+
+            if self.open_file_thread_object.valid:
+
+                if not self.circuit.valid_for_simulation():
+                    # load the circuit right away
+                    self.stuff_running_now.append('file_open')
+                    self.post_open_file()
+                else:
+                    # diff the circuit
+                    new_circuit = self.open_file_thread_object.circuit
+
+                    # create the differential
+                    ok, diff_logger, dgrid = self.circuit.differentiate_circuits(new_circuit)
+
+                    if diff_logger.has_logs():
+                        dlg = LogsDialogue('Grid differences', diff_logger)
+                        dlg.exec_()
+
+                    # select the file to save
+                    filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
+                                                                                    dgrid.name,
+                                                                                    "GridCal diff (*.dgridcal)")
+
+                    if filename != '':
+
+                        # if the user did not enter the extension, add it automatically
+                        name, file_extension = os.path.splitext(filename)
+
+                        if file_extension == '':
+                            filename = name + ".dgridcal"
+
+                        # we were able to compose the file correctly, now save it
+                        self.save_file_now(filename=filename,
+                                           type_selected=type_selected,
+                                           grid=dgrid)
 
     def save_file_as(self):
         """
@@ -496,6 +562,7 @@ class IoMain(ConfigurationMain):
                            "CGMES (*.zip);;"
                            "CIM (*.xml);;"
                            "Electrical Json V3 (*.ejson3);;"
+                           "Raw (*.raw);;"
                            "Rawx (*.rawx);;"
                            "Sqlite (*.sqlite);;")
 
@@ -530,6 +597,7 @@ class IoMain(ConfigurationMain):
                     extension['Electrical Json V2 (*.ejson2)'] = '.ejson2'
                     extension['Electrical Json V3 (*.ejson3)'] = '.ejson3'
                     extension['GridCal zip (*.gridcal)'] = '.gridcal'
+                    extension['PSSe raw (*.raw)'] = '.raw'
                     extension['PSSe rawx (*.rawx)'] = '.rawx'
                     extension['GridCal HDF5 (*.gch5)'] = '.gch5'
                     extension['Sqlite (*.sqlite)'] = '.sqlite'
@@ -577,12 +645,13 @@ class IoMain(ConfigurationMain):
 
         return options
 
-    def save_file_now(self, filename: str, type_selected: str = ""):
+    def save_file_now(self, filename: str, type_selected: str = "", grid: Union[MultiCircuit, None] = None):
         """
         Save the file right now, without questions
         :param filename: filename to save to
         :param type_selected: File type description as it appears
                               in the file saving dialogue i.e. GridCal zip (*.gridcal)
+        :param grid: MultiCircuit or None, if None, self.circuit is taken
         """
 
         if ('file_save' not in self.stuff_running_now) and ('file_open' not in self.stuff_running_now):
@@ -599,7 +668,7 @@ class IoMain(ConfigurationMain):
             options = self.get_file_save_options()
             options.type_selected = type_selected
 
-            self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit,
+            self.save_file_thread_object = filedrv.FileSaveThread(circuit=self.circuit if grid is None else grid,
                                                                   file_name=filename,
                                                                   options=options)
 

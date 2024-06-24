@@ -36,11 +36,11 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.series_reactance_graphics imp
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.map_template_line import MapTemplateLine
-from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
+from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
@@ -65,11 +65,11 @@ ALL_BUS_BRACH_GRAPHICS = Union[
 ]
 
 ALL_MAP_GRAPHICS = Union[
-    MapTemplateLine,
+    MapLineContainer,
     VoltageLevelGraphicItem,
     NodeGraphicItem,
     SubstationGraphicItem,
-    Segment
+    MapLineSegment
 ]
 
 ALL_GRAPHICS = Union[ALL_BUS_BRACH_GRAPHICS, ALL_MAP_GRAPHICS]

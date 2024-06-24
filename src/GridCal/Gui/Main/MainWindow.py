@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -468,6 +468,9 @@ class Ui_mainWindow(object):
         icon71 = QIcon()
         icon71.addFile(u":/Icons/icons/record.svg", QSize(), QIcon.Normal, QIcon.Off)
         self.actionRecord_video.setIcon(icon71)
+        self.actionExport_circuit_differential = QAction(mainWindow)
+        self.actionExport_circuit_differential.setObjectName(u"actionExport_circuit_differential")
+        self.actionExport_circuit_differential.setIcon(icon23)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout_3 = QGridLayout(self.centralwidget)
@@ -504,7 +507,7 @@ class Ui_mainWindow(object):
         self.diagram_selection_splitter.setOrientation(Qt.Horizontal)
         self.schematic_frame = QFrame(self.diagram_selection_splitter)
         self.schematic_frame.setObjectName(u"schematic_frame")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.schematic_frame.sizePolicy().hasHeightForWidth())
@@ -643,7 +646,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_28.addWidget(self.filter_pushButton)
 
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_28.addItem(self.horizontalSpacer_2)
 
@@ -692,7 +695,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_25.addWidget(self.db_step_label)
 
-        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_25.addItem(self.horizontalSpacer_9)
 
@@ -766,7 +769,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout.addWidget(self.edit_profiles_from_models_pushButton)
 
-        self.horizontalSpacer = QSpacerItem(183, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer = QSpacerItem(183, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
@@ -826,7 +829,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_4.addWidget(self.device_type_magnitude_comboBox_2)
 
-        self.horizontalSpacer_13 = QSpacerItem(267, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_13 = QSpacerItem(267, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_4.addItem(self.horizontalSpacer_13)
 
@@ -942,7 +945,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_23.addWidget(self.arrayModeComboBox, 0, 3, 1, 1)
 
-        self.horizontalSpacer_23 = QSpacerItem(510, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_23 = QSpacerItem(510, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_23.addItem(self.horizontalSpacer_23, 0, 5, 1, 1)
 
@@ -1046,7 +1049,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_8.addWidget(self.server_pwd_lineEdit)
 
-        self.horizontalSpacer_7 = QSpacerItem(304, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_7 = QSpacerItem(304, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_8.addItem(self.horizontalSpacer_7)
 
@@ -1112,7 +1115,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_34.addWidget(self.label_16)
 
-        self.horizontalSpacer_22 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_22 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_34.addItem(self.horizontalSpacer_22)
 
@@ -1156,7 +1159,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_33.addWidget(self.label_37)
 
-        self.horizontalSpacer_21 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_21 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_33.addItem(self.horizontalSpacer_21)
 
@@ -1223,7 +1226,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.search_results_Button)
 
-        self.horizontalSpacer_20 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_20 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_20)
 
@@ -1305,7 +1308,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout_5 = QHBoxLayout(self.frame_56)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.horizontalSpacer_16 = QSpacerItem(866, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_16 = QSpacerItem(866, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_5.addItem(self.horizontalSpacer_16)
 
@@ -1567,7 +1570,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_22.addWidget(self.label_2, 0, 0, 1, 1)
 
-        self.verticalSpacer_10 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_10 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_22.addItem(self.verticalSpacer_10, 15, 0, 1, 1)
 
@@ -1684,14 +1687,14 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.override_branch_controls_checkBox)
 
-        self.verticalSpacer_14 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_14 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_4.addItem(self.verticalSpacer_14)
 
 
         self.gridLayout_24.addWidget(self.frame_36, 2, 3, 1, 1)
 
-        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_5 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_24.addItem(self.horizontalSpacer_5, 2, 6, 1, 1)
 
@@ -1767,7 +1770,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_14.addWidget(self.label_122, 7, 0, 1, 1)
 
-        self.verticalSpacer_12 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_12 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_14.addItem(self.verticalSpacer_12, 8, 0, 1, 1)
 
@@ -1955,14 +1958,14 @@ class Ui_mainWindow(object):
 
         self.gridLayout_2.addWidget(self.start_vs_from_default_radioButton, 7, 0, 1, 3)
 
-        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_7 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_2.addItem(self.verticalSpacer_7, 16, 0, 1, 3)
 
 
         self.horizontalLayout_10.addWidget(self.frame_21)
 
-        self.horizontalSpacer_24 = QSpacerItem(589, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_24 = QSpacerItem(589, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_10.addItem(self.horizontalSpacer_24)
 
@@ -2021,7 +2024,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_18.addWidget(self.mip_solver_comboBox, 0, 1, 1, 1)
 
-        self.verticalSpacer_18 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_18 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_18.addItem(self.verticalSpacer_18, 10, 0, 1, 1)
 
@@ -2043,7 +2046,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_10.addWidget(self.groupBox, 4, 3, 1, 1)
 
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_10.addItem(self.horizontalSpacer_10, 4, 5, 1, 1)
 
@@ -2067,7 +2070,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_27.addWidget(self.label_125, 0, 0, 1, 1)
 
-        self.verticalSpacer_21 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_21 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_27.addItem(self.verticalSpacer_21, 7, 0, 1, 1)
 
@@ -2166,7 +2169,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_26.addWidget(self.label_42, 0, 0, 1, 1)
 
-        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_5 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_26.addItem(self.verticalSpacer_5, 7, 0, 1, 1)
 
@@ -2218,7 +2221,7 @@ class Ui_mainWindow(object):
         self.ntc_tab.setObjectName(u"ntc_tab")
         self.gridLayout_13 = QGridLayout(self.ntc_tab)
         self.gridLayout_13.setObjectName(u"gridLayout_13")
-        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_6 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_13.addItem(self.horizontalSpacer_6, 3, 4, 2, 1)
 
@@ -2241,7 +2244,7 @@ class Ui_mainWindow(object):
         self.groupBox_6.setCheckable(False)
         self.gridLayout_29 = QGridLayout(self.groupBox_6)
         self.gridLayout_29.setObjectName(u"gridLayout_29")
-        self.verticalSpacer_24 = QSpacerItem(20, 393, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_24 = QSpacerItem(20, 393, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_29.addItem(self.verticalSpacer_24, 3, 0, 1, 1)
 
@@ -2315,7 +2318,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_15.addWidget(self.skipNtcGenerationLimitsCheckBox, 0, 0, 1, 2)
 
-        self.verticalSpacer_23 = QSpacerItem(20, 168, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_23 = QSpacerItem(20, 168, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_15.addItem(self.verticalSpacer_23, 12, 1, 1, 1)
 
@@ -2366,7 +2369,7 @@ class Ui_mainWindow(object):
         self.groupBox_4.setObjectName(u"groupBox_4")
         self.gridLayout_20 = QGridLayout(self.groupBox_4)
         self.gridLayout_20.setObjectName(u"gridLayout_20")
-        self.verticalSpacer_22 = QSpacerItem(20, 325, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_22 = QSpacerItem(20, 325, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_20.addItem(self.verticalSpacer_22, 5, 0, 1, 1)
 
@@ -2478,7 +2481,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_12.addWidget(self.nodal_capacity_method_comboBox, 1, 0, 1, 2)
 
-        self.verticalSpacer_6 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_6 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_12.addItem(self.verticalSpacer_6, 4, 0, 1, 1)
 
@@ -2490,7 +2493,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_16.addWidget(self.groupBox_7, 3, 0, 1, 2)
 
-        self.horizontalSpacer_4 = QSpacerItem(630, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_4 = QSpacerItem(630, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_16.addItem(self.horizontalSpacer_4, 3, 2, 1, 1)
 
@@ -2713,7 +2716,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_25.addWidget(self.srap_deadband_doubleSpinBox, 7, 1, 1, 1)
 
-        self.verticalSpacer_19 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_19 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_25.addItem(self.verticalSpacer_19, 10, 0, 1, 1)
 
@@ -2756,7 +2759,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_28.addWidget(self.frame_78, 0, 0, 1, 2)
 
-        self.horizontalSpacer_28 = QSpacerItem(828, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_28 = QSpacerItem(828, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_28.addItem(self.horizontalSpacer_28, 3, 3, 1, 1)
 
@@ -2788,83 +2791,17 @@ class Ui_mainWindow(object):
         self.gridLayout_21 = QGridLayout(self.frame_18)
         self.gridLayout_21.setObjectName(u"gridLayout_21")
         self.gridLayout_21.setContentsMargins(-1, 0, -1, -1)
-        self.line_24 = QFrame(self.frame_18)
-        self.line_24.setObjectName(u"line_24")
-        palette18 = QPalette()
-        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_24.setPalette(palette18)
-        self.line_24.setFrameShadow(QFrame.Plain)
-        self.line_24.setLineWidth(4)
-        self.line_24.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_21.addWidget(self.line_24, 14, 0, 1, 2)
-
-        self.label_44 = QLabel(self.frame_18)
-        self.label_44.setObjectName(u"label_44")
-
-        self.gridLayout_21.addWidget(self.label_44, 17, 0, 1, 2)
-
-        self.label_88 = QLabel(self.frame_18)
-        self.label_88.setObjectName(u"label_88")
-        self.label_88.setMinimumSize(QSize(24, 24))
-        self.label_88.setMaximumSize(QSize(24, 24))
-        self.label_88.setPixmap(QPixmap(u":/Icons/icons/color_grid.svg"))
-        self.label_88.setScaledContents(True)
-
-        self.gridLayout_21.addWidget(self.label_88, 13, 0, 1, 1)
-
-        self.label_33 = QLabel(self.frame_18)
-        self.label_33.setObjectName(u"label_33")
-
-        self.gridLayout_21.addWidget(self.label_33, 10, 0, 1, 2)
-
-        self.node_distances_elements_spinBox = QSpinBox(self.frame_18)
-        self.node_distances_elements_spinBox.setObjectName(u"node_distances_elements_spinBox")
-        self.node_distances_elements_spinBox.setMinimum(1)
-        self.node_distances_elements_spinBox.setMaximum(99999)
-        self.node_distances_elements_spinBox.setValue(2)
-
-        self.gridLayout_21.addWidget(self.node_distances_elements_spinBox, 16, 0, 1, 2)
-
         self.label_121 = QLabel(self.frame_18)
         self.label_121.setObjectName(u"label_121")
-        palette19 = QPalette()
-        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_121.setPalette(palette19)
+        palette18 = QPalette()
+        palette18.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_121.setPalette(palette18)
         self.label_121.setFont(font2)
         self.label_121.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
 
         self.gridLayout_21.addWidget(self.label_121, 18, 1, 1, 1)
-
-        self.line_30 = QFrame(self.frame_18)
-        self.line_30.setObjectName(u"line_30")
-        palette20 = QPalette()
-        palette20.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette20.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette20.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_30.setPalette(palette20)
-        self.line_30.setFrameShadow(QFrame.Plain)
-        self.line_30.setLineWidth(4)
-        self.line_30.setFrameShape(QFrame.HLine)
-
-        self.gridLayout_21.addWidget(self.line_30, 19, 0, 1, 2)
-
-        self.investment_evaluation_method_ComboBox = QComboBox(self.frame_18)
-        self.investment_evaluation_method_ComboBox.setObjectName(u"investment_evaluation_method_ComboBox")
-
-        self.gridLayout_21.addWidget(self.investment_evaluation_method_ComboBox, 21, 0, 1, 2)
-
-        self.cluster_number_spinBox = QSpinBox(self.frame_18)
-        self.cluster_number_spinBox.setObjectName(u"cluster_number_spinBox")
-        self.cluster_number_spinBox.setMinimum(1)
-        self.cluster_number_spinBox.setMaximum(999999)
-        self.cluster_number_spinBox.setValue(200)
-
-        self.gridLayout_21.addWidget(self.cluster_number_spinBox, 11, 0, 1, 3)
 
         self.label_120 = QLabel(self.frame_18)
         self.label_120.setObjectName(u"label_120")
@@ -2875,58 +2812,96 @@ class Ui_mainWindow(object):
 
         self.gridLayout_21.addWidget(self.label_120, 18, 0, 1, 1)
 
-        self.verticalSpacer_16 = QSpacerItem(20, 250, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.label_153 = QLabel(self.frame_18)
+        self.label_153.setObjectName(u"label_153")
 
-        self.gridLayout_21.addItem(self.verticalSpacer_16, 24, 1, 1, 1)
-
-        self.label_7 = QLabel(self.frame_18)
-        self.label_7.setObjectName(u"label_7")
-
-        self.gridLayout_21.addWidget(self.label_7, 12, 0, 1, 2)
-
-        self.label_94 = QLabel(self.frame_18)
-        self.label_94.setObjectName(u"label_94")
-        self.label_94.setMinimumSize(QSize(24, 24))
-        self.label_94.setMaximumSize(QSize(24, 24))
-        self.label_94.setPixmap(QPixmap(u":/Icons/icons/clustering.svg"))
-        self.label_94.setScaledContents(True)
-
-        self.gridLayout_21.addWidget(self.label_94, 8, 0, 1, 1)
-
-        self.label_3 = QLabel(self.frame_18)
-        self.label_3.setObjectName(u"label_3")
-
-        self.gridLayout_21.addWidget(self.label_3, 20, 0, 1, 2)
-
-        self.label_89 = QLabel(self.frame_18)
-        self.label_89.setObjectName(u"label_89")
-        palette21 = QPalette()
-        palette21.setBrush(QPalette.Active, QPalette.WindowText, brush2)
-        palette21.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
-        palette21.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_89.setPalette(palette21)
-        self.label_89.setFont(font2)
-        self.label_89.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
-
-        self.gridLayout_21.addWidget(self.label_89, 13, 1, 1, 1)
+        self.gridLayout_21.addWidget(self.label_153, 22, 0, 1, 2)
 
         self.line_29 = QFrame(self.frame_18)
         self.line_29.setObjectName(u"line_29")
-        palette22 = QPalette()
-        palette22.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette22.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette22.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_29.setPalette(palette22)
+        palette19 = QPalette()
+        palette19.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_29.setPalette(palette19)
         self.line_29.setFrameShadow(QFrame.Plain)
         self.line_29.setLineWidth(4)
         self.line_29.setFrameShape(QFrame.HLine)
 
         self.gridLayout_21.addWidget(self.line_29, 9, 0, 1, 3)
 
+        self.label_3 = QLabel(self.frame_18)
+        self.label_3.setObjectName(u"label_3")
+
+        self.gridLayout_21.addWidget(self.label_3, 20, 0, 1, 2)
+
+        self.label_88 = QLabel(self.frame_18)
+        self.label_88.setObjectName(u"label_88")
+        self.label_88.setMinimumSize(QSize(24, 24))
+        self.label_88.setMaximumSize(QSize(24, 24))
+        self.label_88.setPixmap(QPixmap(u":/Icons/icons/color_grid.svg"))
+        self.label_88.setScaledContents(True)
+
+        self.gridLayout_21.addWidget(self.label_88, 13, 0, 1, 1)
+
         self.label_51 = QLabel(self.frame_18)
         self.label_51.setObjectName(u"label_51")
 
-        self.gridLayout_21.addWidget(self.label_51, 22, 0, 1, 2)
+        self.gridLayout_21.addWidget(self.label_51, 24, 0, 1, 2)
+
+        self.node_distances_elements_spinBox = QSpinBox(self.frame_18)
+        self.node_distances_elements_spinBox.setObjectName(u"node_distances_elements_spinBox")
+        self.node_distances_elements_spinBox.setMinimum(1)
+        self.node_distances_elements_spinBox.setMaximum(99999)
+        self.node_distances_elements_spinBox.setValue(2)
+
+        self.gridLayout_21.addWidget(self.node_distances_elements_spinBox, 16, 0, 1, 2)
+
+        self.line_24 = QFrame(self.frame_18)
+        self.line_24.setObjectName(u"line_24")
+        palette20 = QPalette()
+        palette20.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette20.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette20.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_24.setPalette(palette20)
+        self.line_24.setFrameShadow(QFrame.Plain)
+        self.line_24.setLineWidth(4)
+        self.line_24.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_21.addWidget(self.line_24, 14, 0, 1, 2)
+
+        self.line_30 = QFrame(self.frame_18)
+        self.line_30.setObjectName(u"line_30")
+        palette21 = QPalette()
+        palette21.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette21.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette21.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_30.setPalette(palette21)
+        self.line_30.setFrameShadow(QFrame.Plain)
+        self.line_30.setLineWidth(4)
+        self.line_30.setFrameShape(QFrame.HLine)
+
+        self.gridLayout_21.addWidget(self.line_30, 19, 0, 1, 2)
+
+        self.cluster_number_spinBox = QSpinBox(self.frame_18)
+        self.cluster_number_spinBox.setObjectName(u"cluster_number_spinBox")
+        self.cluster_number_spinBox.setMinimum(1)
+        self.cluster_number_spinBox.setMaximum(999999)
+        self.cluster_number_spinBox.setValue(200)
+
+        self.gridLayout_21.addWidget(self.cluster_number_spinBox, 11, 0, 1, 3)
+
+        self.label_89 = QLabel(self.frame_18)
+        self.label_89.setObjectName(u"label_89")
+        palette22 = QPalette()
+        palette22.setBrush(QPalette.Active, QPalette.WindowText, brush2)
+        palette22.setBrush(QPalette.Inactive, QPalette.WindowText, brush2)
+        palette22.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_89.setPalette(palette22)
+        self.label_89.setFont(font2)
+        self.label_89.setAlignment(Qt.AlignBottom|Qt.AlignLeading|Qt.AlignLeft)
+
+        self.gridLayout_21.addWidget(self.label_89, 13, 1, 1, 1)
 
         self.frame_59 = QFrame(self.frame_18)
         self.frame_59.setObjectName(u"frame_59")
@@ -2950,6 +2925,19 @@ class Ui_mainWindow(object):
 
         self.gridLayout_21.addWidget(self.frame_59, 8, 1, 1, 1)
 
+        self.max_investments_evluation_number_spinBox = QSpinBox(self.frame_18)
+        self.max_investments_evluation_number_spinBox.setObjectName(u"max_investments_evluation_number_spinBox")
+        self.max_investments_evluation_number_spinBox.setMinimum(1)
+        self.max_investments_evluation_number_spinBox.setMaximum(999999999)
+        self.max_investments_evluation_number_spinBox.setValue(4)
+
+        self.gridLayout_21.addWidget(self.max_investments_evluation_number_spinBox, 25, 0, 1, 2)
+
+        self.label_33 = QLabel(self.frame_18)
+        self.label_33.setObjectName(u"label_33")
+
+        self.gridLayout_21.addWidget(self.label_33, 10, 0, 1, 2)
+
         self.node_distances_sigma_doubleSpinBox = QDoubleSpinBox(self.frame_18)
         self.node_distances_sigma_doubleSpinBox.setObjectName(u"node_distances_sigma_doubleSpinBox")
         self.node_distances_sigma_doubleSpinBox.setDecimals(6)
@@ -2958,13 +2946,38 @@ class Ui_mainWindow(object):
 
         self.gridLayout_21.addWidget(self.node_distances_sigma_doubleSpinBox, 15, 0, 1, 2)
 
-        self.max_investments_evluation_number_spinBox = QSpinBox(self.frame_18)
-        self.max_investments_evluation_number_spinBox.setObjectName(u"max_investments_evluation_number_spinBox")
-        self.max_investments_evluation_number_spinBox.setMinimum(1)
-        self.max_investments_evluation_number_spinBox.setMaximum(999999999)
-        self.max_investments_evluation_number_spinBox.setValue(4)
+        self.label_7 = QLabel(self.frame_18)
+        self.label_7.setObjectName(u"label_7")
 
-        self.gridLayout_21.addWidget(self.max_investments_evluation_number_spinBox, 23, 0, 1, 2)
+        self.gridLayout_21.addWidget(self.label_7, 12, 0, 1, 2)
+
+        self.label_44 = QLabel(self.frame_18)
+        self.label_44.setObjectName(u"label_44")
+
+        self.gridLayout_21.addWidget(self.label_44, 17, 0, 1, 2)
+
+        self.verticalSpacer_16 = QSpacerItem(20, 250, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_21.addItem(self.verticalSpacer_16, 26, 1, 1, 1)
+
+        self.investment_evaluation_method_ComboBox = QComboBox(self.frame_18)
+        self.investment_evaluation_method_ComboBox.setObjectName(u"investment_evaluation_method_ComboBox")
+
+        self.gridLayout_21.addWidget(self.investment_evaluation_method_ComboBox, 21, 0, 1, 2)
+
+        self.label_94 = QLabel(self.frame_18)
+        self.label_94.setObjectName(u"label_94")
+        self.label_94.setMinimumSize(QSize(24, 24))
+        self.label_94.setMaximumSize(QSize(24, 24))
+        self.label_94.setPixmap(QPixmap(u":/Icons/icons/clustering.svg"))
+        self.label_94.setScaledContents(True)
+
+        self.gridLayout_21.addWidget(self.label_94, 8, 0, 1, 1)
+
+        self.investment_evaluation_objfunc_ComboBox = QComboBox(self.frame_18)
+        self.investment_evaluation_objfunc_ComboBox.setObjectName(u"investment_evaluation_objfunc_ComboBox")
+
+        self.gridLayout_21.addWidget(self.investment_evaluation_objfunc_ComboBox, 23, 0, 1, 2)
 
 
         self.horizontalLayout_6.addWidget(self.frame_18)
@@ -3069,7 +3082,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_6.addWidget(self.max_iterations_stochastic_spinBox, 6, 2, 1, 1)
 
-        self.verticalSpacer_8 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_8 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_6.addItem(self.verticalSpacer_8, 12, 1, 1, 1)
 
@@ -3106,7 +3119,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_6.addWidget(self.frame_15)
 
-        self.horizontalSpacer_3 = QSpacerItem(935, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_3 = QSpacerItem(935, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_6.addItem(self.horizontalSpacer_3)
 
@@ -3221,7 +3234,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_36.addWidget(self.frame_52)
 
-        self.verticalSpacer_13 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_13 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_36.addItem(self.verticalSpacer_13)
 
@@ -3306,14 +3319,14 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_25.addWidget(self.frame_23)
 
-        self.verticalSpacer_15 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_15 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_25.addItem(self.verticalSpacer_15)
 
 
         self.gridLayout_17.addWidget(self.frame_31, 0, 2, 1, 1)
 
-        self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_17.addItem(self.horizontalSpacer_18, 0, 3, 1, 1)
 
@@ -3390,7 +3403,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_21.addWidget(self.rxThresholdSpinBox)
 
-        self.verticalSpacer_11 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_11 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_21.addItem(self.verticalSpacer_11)
 
@@ -3593,7 +3606,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.palette_comboBox, 3, 0, 1, 2)
 
-        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout.addItem(self.verticalSpacer_4, 14, 0, 1, 1)
 
@@ -3665,7 +3678,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_38.addWidget(self.tile_provider_comboBox)
 
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_38.addItem(self.verticalSpacer_2)
 
@@ -3780,14 +3793,14 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_7.addWidget(self.frame_24)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_7.addItem(self.verticalSpacer)
 
 
         self.horizontalLayout_18.addWidget(self.frame_3)
 
-        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_18.addItem(self.horizontalSpacer_15)
 
@@ -3816,7 +3829,7 @@ class Ui_mainWindow(object):
 
         self.gridLayout_11.addWidget(self.label_115, 0, 1, 1, 1)
 
-        self.verticalSpacer_20 = QSpacerItem(20, 436, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_20 = QSpacerItem(20, 436, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.gridLayout_11.addItem(self.verticalSpacer_20, 7, 1, 1, 1)
 
@@ -3961,7 +3974,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_40.addWidget(self.frame_79)
 
-        self.horizontalSpacer_27 = QSpacerItem(659, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_27 = QSpacerItem(659, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_40.addItem(self.horizontalSpacer_27)
 
@@ -4097,7 +4110,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_12.addWidget(self.frame_25)
 
-        self.verticalSpacer_3 = QSpacerItem(20, 363, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.verticalSpacer_3 = QSpacerItem(20, 363, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_12.addItem(self.verticalSpacer_3)
 
@@ -4202,6 +4215,7 @@ class Ui_mainWindow(object):
         self.menuExport.addAction(self.actionExport_all_the_device_s_profiles)
         self.menuExport.addAction(self.actionExport_contingencies)
         self.menuExport.addAction(self.actionExport_all_results)
+        self.menuExport.addAction(self.actionExport_circuit_differential)
         self.menuImport.addAction(self.actionAdd_circuit)
         self.menuImport.addAction(self.actionImport_bus_coordinates)
         self.menuImport.addAction(self.actionImport_contingencies)
@@ -4369,14 +4383,14 @@ class Ui_mainWindow(object):
         self.actionBigger_nodes.setToolTip(QCoreApplication.translate("mainWindow", u"Expand distances", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(shortcut)
-        self.actionBigger_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"F3", None))
+        self.actionBigger_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"Ctrl+Alt++", None))
 #endif // QT_CONFIG(shortcut)
         self.actionSmaller_nodes.setText(QCoreApplication.translate("mainWindow", u"Shrink", None))
 #if QT_CONFIG(tooltip)
         self.actionSmaller_nodes.setToolTip(QCoreApplication.translate("mainWindow", u"Shrink distances", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(shortcut)
-        self.actionSmaller_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"F2", None))
+        self.actionSmaller_nodes.setShortcut(QCoreApplication.translate("mainWindow", u"Ctrl+Alt+-", None))
 #endif // QT_CONFIG(shortcut)
         self.actionPower_flow_Stochastic.setText(QCoreApplication.translate("mainWindow", u"Stochastic power flow", None))
 #if QT_CONFIG(tooltip)
@@ -4656,6 +4670,7 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.actionRecord_video.setToolTip(QCoreApplication.translate("mainWindow", u"Record video of the schematic", None))
 #endif // QT_CONFIG(tooltip)
+        self.actionExport_circuit_differential.setText(QCoreApplication.translate("mainWindow", u"Circuit differential", None))
 #if QT_CONFIG(tooltip)
         self.grid_name_line_edit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the grid model", None))
 #endif // QT_CONFIG(tooltip)
@@ -5219,9 +5234,12 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.ml_tab.setToolTip(QCoreApplication.translate("mainWindow", u"Machine-learning related settings", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_44.setText("")
+        self.label_121.setText(QCoreApplication.translate("mainWindow", u"Investment evaluation", None))
+        self.label_120.setText("")
+        self.label_153.setText(QCoreApplication.translate("mainWindow", u"Objective function", None))
+        self.label_3.setText(QCoreApplication.translate("mainWindow", u"Method", None))
         self.label_88.setText("")
-        self.label_33.setText(QCoreApplication.translate("mainWindow", u"Number of clusters", None))
+        self.label_51.setText(QCoreApplication.translate("mainWindow", u"Maximum evaluations", None))
 #if QT_CONFIG(tooltip)
         self.node_distances_elements_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Minimum size of the group", None))
 #endif // QT_CONFIG(tooltip)
@@ -5229,29 +5247,27 @@ class Ui_mainWindow(object):
         self.node_distances_elements_spinBox.setStatusTip("")
 #endif // QT_CONFIG(statustip)
         self.node_distances_elements_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" elements", None))
-        self.label_121.setText(QCoreApplication.translate("mainWindow", u"Investment evaluation", None))
-#if QT_CONFIG(tooltip)
-        self.investment_evaluation_method_ComboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Select the investment evaluation method", None))
-#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.cluster_number_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Number of clusters, this affects all the simulations that deal with clustering</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.cluster_number_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" Clusters", None))
-        self.label_120.setText("")
-        self.label_7.setText("")
-        self.label_94.setText("")
-        self.label_3.setText(QCoreApplication.translate("mainWindow", u"Method", None))
         self.label_89.setText(QCoreApplication.translate("mainWindow", u"Node grouping", None))
-        self.label_51.setText(QCoreApplication.translate("mainWindow", u"Maximum evaluations", None))
         self.label_93.setText(QCoreApplication.translate("mainWindow", u"Clustering", None))
-#if QT_CONFIG(tooltip)
-        self.node_distances_sigma_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"M\u00e1ximum standard deviation to determine the groups", None))
-#endif // QT_CONFIG(tooltip)
-        self.node_distances_sigma_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" \u03c3", None))
 #if QT_CONFIG(tooltip)
         self.max_investments_evluation_number_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Number of maximum evaluations for the optimization methods", None))
 #endif // QT_CONFIG(tooltip)
         self.max_investments_evluation_number_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" x number of investments", None))
+        self.label_33.setText(QCoreApplication.translate("mainWindow", u"Number of clusters", None))
+#if QT_CONFIG(tooltip)
+        self.node_distances_sigma_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"M\u00e1ximum standard deviation to determine the groups", None))
+#endif // QT_CONFIG(tooltip)
+        self.node_distances_sigma_doubleSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" \u03c3", None))
+        self.label_7.setText("")
+        self.label_44.setText("")
+#if QT_CONFIG(tooltip)
+        self.investment_evaluation_method_ComboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Select the investment evaluation method", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_94.setText("")
         self.label_55.setText(QCoreApplication.translate("mainWindow", u"Method", None))
         self.label_78.setText("")
         self.label_79.setText(QCoreApplication.translate("mainWindow", u"Cascading", None))

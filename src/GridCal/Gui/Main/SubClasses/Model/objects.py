@@ -453,7 +453,7 @@ class ObjectsTableMain(DiagramsMain):
                 for obj in selected_objects:
 
                     # delete from the database
-                    self.circuit.delete_elements_by_type(obj=obj)
+                    self.circuit.delete_element(obj=obj)
 
                     # delete from all diagrams
                     for diagram in self.diagram_widgets_list:
