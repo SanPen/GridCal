@@ -1236,11 +1236,11 @@ class MultiCircuit(Assets):
 
         return groups
 
-    def get_injection_devices_grouped_by_cn(self) -> Dict[
-        dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode,
+                                                          Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
-        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        :return: Dict[ConnectivityNode, Dict[DeviceType, List[Injection devs]]
         """
         groups: Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
 
@@ -1677,8 +1677,8 @@ class MultiCircuit(Assets):
         if self.snapshot_time != grid2.snapshot_time:
             logger.add_error(msg="Different snapshot times",
                              device_class="snapshot time",
-                             value=str(grid2.get_snapshot_time_unix),
-                             expected_value=self.get_snapshot_time_unix)
+                             value=str(grid2.get_snapshot_time_unix()),
+                             expected_value=self.get_snapshot_time_unix())
 
         # for each category
         for key, template_elms_list in self.objects_with_profiles.items():
@@ -1692,7 +1692,9 @@ class MultiCircuit(Assets):
 
                 if len(elms1) != len(elms2):
                     logger.add_error(msg="Different number of elements",
-                                     device_class=template_elm.device_type.value)
+                                     device_class=template_elm.device_type.value,
+                                     value=len(elms2),
+                                     expected_value=len(elms1))
 
                 # for every property
                 for prop_name, prop in template_elm.registered_properties.items():
@@ -1799,7 +1801,6 @@ class MultiCircuit(Assets):
 
             if elm_from_base is None:
                 # not found in the base, add it
-                add_to_diff = True
                 action = ActionType.Add
 
             else:
@@ -1870,7 +1871,7 @@ class MultiCircuit(Assets):
 
             if action != ActionType.NoAction:
                 elm_from_here.action = action
-                dgrid.add_elements_by_type(obj=elm_from_here)
+                dgrid.add_element(obj=elm_from_here)
                 logger.add_info(msg="Device added in the diff circuit",
                                 device_class=elm_from_here.device_type.value,
                                 device_property=elm_from_here.name, )
@@ -1971,7 +1972,7 @@ class MultiCircuit(Assets):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated branch",
                             device=elm.idtag,
                             device_class=elm.device_type.value)
@@ -2020,7 +2021,7 @@ class MultiCircuit(Assets):
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated injection",
                             device=elm.idtag,
                             device_class=elm.device_type.value)

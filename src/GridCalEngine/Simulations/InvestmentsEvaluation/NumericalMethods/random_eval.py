@@ -2,9 +2,9 @@ import numpy as np
 
 
 def random_trial(obj_func,
-           n_var: int = 1,
-           n_obj: int = 2,
-           max_evals: int = 3000):
+                 n_var: int = 1,
+                 n_obj: int = 2,
+                 max_evals: int = 3000):
     """
 
     :param obj_func:

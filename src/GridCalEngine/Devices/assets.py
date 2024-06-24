@@ -506,6 +506,15 @@ class Assets:
             for elm in elements:
                 elm.ensure_profiles_exist(self.time_profile)
 
+    def delete_profiles(self):
+        """
+        Delete the time profiles
+        :return:
+        """
+        for elm in self.items():
+            elm.delete_profiles()
+        self.time_profile = None
+
     # ------------------------------------------------------------------------------------------------------------------
     # Snapshot time
     # ------------------------------------------------------------------------------------------------------------------
@@ -4279,7 +4288,6 @@ class Assets:
         return [self.loads,
                 self.static_generators,
                 self.external_grids,
-                self.controllable_shunts,
                 self.current_injections]
 
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
@@ -4304,6 +4312,38 @@ class Assets:
         return n
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Shunt-like devices
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_shunt_like_devices_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
+        """
+        Get a list of all devices that behave like a shunt
+        :return: List of Lists of Shunt devices
+        """
+        return [self.shunts,
+                self.controllable_shunts]
+
+    def get_shunt_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of Shunt devices
+        """
+        elms = list()
+        for lst in self.get_shunt_like_devices_lists():
+            elms += lst
+        return elms
+
+    def get_shunt_like_device_number(self) -> int:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of EditableDevice
+        """
+        n = 0
+        for lst in self.get_shunt_like_devices_lists():
+            n += len(lst)
+
+        return n
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Generation like devices
     # ------------------------------------------------------------------------------------------------------------------
     def get_generation_like_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
@@ -4311,7 +4351,7 @@ class Assets:
         Get a list with the fluid injections lists
         :return:
         """
-        return [self._generators, self._batteries, self._controllable_shunts]
+        return [self._generators, self._batteries]
 
     def get_generation_like_number(self) -> int:
         """
@@ -4334,7 +4374,7 @@ class Assets:
                 names.append(elm.name)
         return np.array(names)
 
-    def get_generation_like_devices(self) -> List[FLUID_TYPES]:
+    def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Returns a list of :ref:`Injection<Injection>` names.
         Sort by order: turbines, pumps, p2xs
@@ -4802,7 +4842,7 @@ class Assets:
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
-    def add_elements_by_type(self, obj: ALL_DEV_TYPES) -> None:
+    def add_element(self, obj: ALL_DEV_TYPES) -> None:
         """
         Add a device in its corresponding list
         :param obj: device object to add
@@ -4980,7 +5020,7 @@ class Assets:
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
-    def delete_elements_by_type(self, obj: ALL_DEV_TYPES) -> None:
+    def delete_element(self, obj: ALL_DEV_TYPES) -> None:
         """
         Get set of elements and their parent nodes
         :param obj: device object to delete
@@ -5186,7 +5226,7 @@ class Assets:
 
         else:
             # add
-            self.add_elements_by_type(obj=api_obj)
+            self.add_element(obj=api_obj)
 
             logger.add_info("Element added",
                             device_class=api_obj.device_type.value,

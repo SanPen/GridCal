@@ -17,7 +17,7 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec, BoolVec
 
 
 class ShuntData:
@@ -38,7 +38,15 @@ class ShuntData:
         self.idtag: StrVec = np.empty(nelm, dtype=object)
 
         self.active: IntVec = np.zeros(nelm, dtype=bool)
-        self.admittance: CxVec = np.zeros(nelm, dtype=complex)
+
+        self.controllable: BoolVec = np.zeros(nelm, dtype=bool)
+
+        self.Y: CxVec = np.zeros(nelm, dtype=complex)
+
+        self.qmin: Vec = np.zeros(nelm, dtype=float)
+        self.qmax: Vec = np.zeros(nelm, dtype=float)
+
+        self.cost: Vec = np.zeros(nelm, dtype=float)
 
         # reliabilty
         self.mttf: Vec = np.zeros(nelm, dtype=float)
@@ -70,7 +78,15 @@ class ShuntData:
         data.idtag = self.idtag[elm_idx]
 
         data.active = self.active[elm_idx]
-        data.admittance = self.admittance[elm_idx]
+
+        data.controllable = self.controllable[elm_idx]
+
+        data.Y = self.Y[elm_idx]
+
+        data.qmax = self.qmax[elm_idx]
+        data.qmin = self.qmin[elm_idx]
+
+        data.cost = self.cost[elm_idx]
 
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
@@ -92,7 +108,14 @@ class ShuntData:
         data.names = self.names.copy()
         data.idtag = self.idtag.copy()
         data.active = self.active.copy()
-        data.admittance = self.admittance.copy()
+        data.controllable = self.controllable.copy()
+
+        data.Y = self.Y.copy()
+
+        data.qmax = self.qmax.copy()
+        data.qmin = self.qmin.copy()
+
+        data.cost = self.cost.copy()
 
         data.mttf = self.mttf.copy()
         data.mttr = self.mttr.copy()
@@ -110,11 +133,9 @@ class ShuntData:
         :return: array of island branch indices
         """
         if self.nelm:
-            return tp.get_elements_of_the_island(
-                C_element_bus=self.C_bus_elm.T,
-                island=bus_idx,
-                active=self.active,
-            )
+            return tp.get_elements_of_the_island(C_element_bus=self.C_bus_elm.T,
+                                                 island=bus_idx,
+                                                 active=self.active)
         else:
             return np.zeros(0, dtype=int)
 
@@ -132,7 +153,21 @@ class ShuntData:
         Get Injections per bus
         :return:
         """
-        return self.C_bus_elm * (self.admittance * self.active)
+        return self.C_bus_elm * (self.Y * self.active)
+
+    def get_qmax_per_bus(self) -> Vec:
+        """
+        Get generator Qmax per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.qmax * self.active)
+
+    def get_qmin_per_bus(self) -> Vec:
+        """
+        Get generator Qmin per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.qmin * self.active)
 
     def __len__(self) -> int:
         return self.nelm
