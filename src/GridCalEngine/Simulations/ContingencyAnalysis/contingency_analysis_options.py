@@ -20,9 +20,10 @@ from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
-class ContingencyAnalysisOptions:
+class ContingencyAnalysisOptions(OptionsTemplate):
     """
     Contingency analysis options
     """
@@ -60,6 +61,7 @@ class ContingencyAnalysisOptions:
         :param contingency_method: ContingencyEngine to use (PowerFlow, PTDF, ...)
         :param contingency_groups: List of contingencies to use, if None all will be used
         """
+        OptionsTemplate.__init__(self, name="ContingencyAnalysisOptions")
 
         self.use_provided_flows = use_provided_flows
 

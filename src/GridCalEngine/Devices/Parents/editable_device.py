@@ -19,7 +19,7 @@ import uuid
 import numpy as np
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
                                         ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
-                                        HvdcControlType, ActionType)
+                                        HvdcControlType, ActionType, AvailableTransferMode)
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 
@@ -38,7 +38,8 @@ GCPROP_TYPES = Union[
     Type[ConverterControlType],
     Type[TapModuleControl],
     Type[TapAngleControl],
-    Type[ActionType]
+    Type[ActionType],
+    Type[AvailableTransferMode]
 ]
 
 
@@ -270,9 +271,9 @@ class EditableDevice:
 
     def register(self,
                  key: str,
-                 units: str,
                  tpe: GCPROP_TYPES,
-                 definition: str,
+                 units: str = "",
+                 definition: str = "",
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,

@@ -1016,6 +1016,8 @@ class DeviceType(Enum):
 
     ModellingAuthority = "Modelling Authority"
 
+    SimulationOptionsDevice = "SimulationOptionsDevice"
+
     def __str__(self) -> str:
         return str(self.value)
 
