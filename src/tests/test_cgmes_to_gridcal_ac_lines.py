@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import pytest
 
@@ -58,7 +58,7 @@ def calc_node_dict_object() -> Dict[str, gcdev.Bus]:
     return d
 
 
-def cn_dict_object() -> Dict[str, gcdev.ConnectivityNode]:
+def cn_dict_object() -> dict[str, list[ConnectivityNode | Any]]:
     d = dict()
     d["cn1"] = [cn_test]
     return d
