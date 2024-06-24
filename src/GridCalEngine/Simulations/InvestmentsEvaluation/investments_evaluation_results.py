@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
-from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
+from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
 from collections import Counter
 
 

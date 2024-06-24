@@ -1333,11 +1333,6 @@ class NumericalCircuit:
             Qmax_bus += self.battery_data.get_qmax_per_bus()
             Qmin_bus += self.battery_data.get_qmin_per_bus()
 
-        # if self.nshunt > 0:
-        #     # shunts
-        #     Qmax_bus += self.shunt_data.get_b_max_per_bus()
-        #     Qmin_bus += self.shunt_data.get_b_min_per_bus()
-
         if self.nhvdc > 0:
             # hvdc from
             Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
@@ -1347,21 +1342,15 @@ class NumericalCircuit:
             Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
             Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
 
+        if self.nshunt > 0:
+            Qmax_bus += self.shunt_data.get_qmax_per_bus()
+            Qmin_bus += self.shunt_data.get_qmin_per_bus()
+
         # fix zero values
         Qmax_bus[Qmax_bus == 0] = 1e20
         Qmin_bus[Qmin_bus == 0] = -1e20
 
         return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
-
-    def compute_susceptance_limits(self):
-        """
-        Compute susceptance limits
-        :return:
-        """
-        Bmin = self.load_data.get_b_min_per_bus() / self.Sbase
-        Bmax = self.load_data.get_b_max_per_bus() / self.Sbase
-
-        return Bmax, Bmin
 
     def get_inter_areas_branches(self, buses_areas_1, buses_areas_2):
         """
@@ -1621,7 +1610,7 @@ class NumericalCircuit:
                 Cf=self.Cf,
                 Ct=self.Ct,
                 C_bus_shunt=self.shunt_data.C_bus_elm.tocsc(),
-                shunt_admittance=self.shunt_data.admittance,
+                shunt_admittance=self.shunt_data.Y,
                 shunt_active=self.shunt_data.active,
                 ys=Ys,
                 B=self.branch_data.B,
@@ -1952,7 +1941,7 @@ class NumericalCircuit:
         # shunt
         CheckArr(self.shunt_data.active, nc_2.shunt_data.active, tol, 'ShuntData',
                  'active', logger)
-        CheckArr(self.shunt_data.admittance, nc_2.shunt_data.admittance, tol,
+        CheckArr(self.shunt_data.Y, nc_2.shunt_data.Y, tol,
                  'ShuntData', 'S', logger)
         CheckArr(self.shunt_data.get_injections_per_bus(),
                  nc_2.shunt_data.get_injections_per_bus(), tol, 'ShuntData',
@@ -2081,9 +2070,10 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     nc.shunt_data = gc_compiler2.get_shunt_data(circuit=circuit,
                                                 bus_dict=bus_dict,
+                                                bus_voltage_used=bus_voltage_used,
+                                                bus_data=nc.bus_data,
                                                 t_idx=t_idx,
                                                 time_series=time_series,
-                                                bus_voltage_used=bus_voltage_used,
                                                 logger=logger,
                                                 use_stored_guess=use_stored_guess)
 

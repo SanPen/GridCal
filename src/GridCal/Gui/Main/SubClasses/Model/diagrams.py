@@ -1695,6 +1695,6 @@ class DiagramsMain(CompiledArraysMain):
                 diagram.delete_diagram_element(device=api_obj, propagate=False)
 
         try:
-            self.circuit.delete_elements_by_type(obj=api_obj)
+            self.circuit.delete_element(obj=api_obj)
         except ValueError as e:
             print(e)
