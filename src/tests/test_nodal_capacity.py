@@ -19,9 +19,18 @@ def test_linear_vs_nonlinear_ncap():
 
     # Nonlinear OPF
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=0)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
-                                              ips_iterations=50, verbose=0, acopf_mode=AcOpfMode.ACOPFstd)
-    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=False, pf_init=True,
+
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF,
+                                              ips_tolerance=1e-8,
+                                              ips_iterations=50,
+                                              verbose=0,
+                                              acopf_mode=AcOpfMode.ACOPFstd)
+
+    res = run_nonlinear_opf(grid=grid,
+                            pf_options=pf_options,
+                            opf_options=opf_options,
+                            plot_error=False,
+                            pf_init=True,
                             optimize_nodal_capacity=True,
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([10, 11]))

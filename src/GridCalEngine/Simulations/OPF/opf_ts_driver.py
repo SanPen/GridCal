@@ -261,7 +261,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.report_text('Making groups...')
 
         # get the partition points of the time series
-        groups = get_time_groups(t_array=self.grid.time_profile[self.time_indices], grouping=self.options.grouping)
+        groups = get_time_groups(t_array=self.grid.time_profile[self.time_indices], grouping=self.options.time_grouping)
 
         n = len(groups)
         i = 1
@@ -419,7 +419,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         if self.engine == EngineType.GridCal:
 
-            if self.options.grouping == TimeGrouping.NoGrouping:
+            if self.options.time_grouping == TimeGrouping.NoGrouping:
                 self.opf()
             else:
                 if self.time_indices is None:

@@ -26,7 +26,7 @@ def test_opf():
     print('Reading...')
     main_circuit = FileOpen(fname).open()
     print('Running OPF...', '')
-    opf_options = OptimalPowerFlowOptions(verbose=False,
+    opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF)
     opf = OptimalPowerFlowDriver(grid=main_circuit, options=opf_options)
     opf.run()

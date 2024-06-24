@@ -636,7 +636,7 @@ class SimulationsMain(TimeEventsMain):
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
         q_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
-        q_steepness_factor = 1.0
+
         taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
 
         verbose = self.ui.verbositySpinBox.value()
@@ -648,7 +648,6 @@ class SimulationsMain(TimeEventsMain):
 
         max_outer_iter = 1000  # not used anymore
 
-        dispatch_storage = False
         mu = self.ui.muSpinBox.value()
 
         if self.ui.helm_retry_checkBox.isChecked():
@@ -676,17 +675,13 @@ class SimulationsMain(TimeEventsMain):
         ops = sim.PowerFlowOptions(solver_type=solver_type,
                                    retry_with_other_methods=retry_with_other_methods,
                                    verbose=verbose,
-                                   initialize_with_existing_solution=use_stored_guess,
                                    tolerance=tolerance,
                                    max_iter=max_iter,
                                    max_outer_loop_iter=max_outer_iter,
                                    control_q=q_control_mode,
-                                   multi_core=False,
-                                   dispatch_storage=dispatch_storage,
                                    control_taps=taps_control_mode,
                                    apply_temperature_correction=temp_correction,
                                    branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
-                                   q_steepness_factor=q_steepness_factor,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
                                    trust_radius=mu,
@@ -1627,7 +1622,7 @@ class SimulationsMain(TimeEventsMain):
                                                                   tol=pf_options.tolerance,
                                                                   max_it=pf_options.max_iter,
                                                                   stop_at=vc_stop_at_dict[mode],
-                                                                  verbose=False)
+                                                                  verbose=0)
 
                     if use_alpha:
                         '''
@@ -1954,7 +1949,7 @@ class SimulationsMain(TimeEventsMain):
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
-        pf_results = self.session.power_flow
+        # pf_results = self.session.power_flow
 
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
@@ -1977,8 +1972,7 @@ class SimulationsMain(TimeEventsMain):
                                               ips_tolerance=ips_tolerance,
                                               ips_iterations=ips_iterations,
                                               ips_trust_radius=ips_trust_radius,
-                                              ips_init_with_pf=ips_init_with_pf,
-                                              pf_results=pf_results)
+                                              ips_init_with_pf=ips_init_with_pf)
 
         return options
 

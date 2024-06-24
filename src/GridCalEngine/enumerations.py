@@ -1054,6 +1054,7 @@ class SubObjectType(Enum):
     LineLocations = 'Line locations'
     TapChanger = 'Tap changer'
     Array = "Array"
+    ObjectsList = "ObjectsList"
 
     def __str__(self) -> str:
         return str(self.value)

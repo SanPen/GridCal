@@ -88,11 +88,11 @@ class StochStopCriterion(StopCriterion):
         return self.z * math.sqrt(var / self.n) < self.dist
 
 
-if __name__ == '__main__':
-    crit = StochStopCriterion(0.01)
-    assert math.isclose(crit.z, 1.96, abs_tol=1e-3)
-
-    for i in range(10):
-        x = 0.12 + np.random.random() * 1e-3
-        crit.add(x)
-    assert bool(crit)  # typically the residual is approx. 1e-4; shouldn't cause spurious fails
+# if __name__ == '__main__':
+#     crit = StochStopCriterion(0.01)
+#     assert math.isclose(crit.z, 1.96, abs_tol=1e-3)
+#
+#     for i in range(10):
+#         x = 0.12 + np.random.random() * 1e-3
+#         crit.add(x)
+#     assert bool(crit)  # typically the residual is approx. 1e-4; shouldn't cause spurious fails

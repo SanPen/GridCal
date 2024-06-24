@@ -16,9 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from GridCalEngine.enumerations import BranchImpedanceMode, ReactivePowerControlMode, SolverType, TapsControlMode
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
-class PowerFlowOptions:
+class PowerFlowOptions(OptionsTemplate):
     """
     Power flow options
     """
@@ -33,12 +34,8 @@ class PowerFlowOptions:
                  max_outer_loop_iter=100,
                  control_q=ReactivePowerControlMode.NoControl,
                  control_taps=TapsControlMode.NoControl,
-                 multi_core=False,
-                 dispatch_storage=False,
-                 control_p=False,
                  apply_temperature_correction=False,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
-                 q_steepness_factor=30,
                  distributed_slack=False,
                  ignore_single_node_islands=False,
                  trust_radius=1.0,
@@ -52,28 +49,24 @@ class PowerFlowOptions:
         :param solver_type: Solver type
         :param retry_with_other_methods: Use a battery of methods to tackle the problem if the main solver_type fails
         :param verbose: Print additional details in the console (0: no details, 1: some details, 2: all details)
-        :param initialize_with_existing_solution: Use the existing solution from the Bus class (Vm0, Va0)
         :param tolerance: Solution tolerance for the power flow numerical methods
         :param max_iter: Maximum number of iterations for the power flow numerical method
         :param max_outer_loop_iter: Maximum number of iterations for the controls outer loop
         :param control_q: Control mode for the PV nodes reactive power limits
         :param control_taps: Control mode for the transformer taps equipped with a voltage regulator
                              (as part of the outer loop)
-        :param multi_core: Use multi-core processing? applicable for time series
-        :param dispatch_storage: Dispatch storage? (obsolete)
-        :param control_p: Control active power (optimization dispatch)
         :param apply_temperature_correction: Apply the temperature correction to the resistance of the Branches?
         :param branch_impedance_tolerance_mode: Type of modification of the Branches impedance
-        :param q_steepness_factor: Steepness factor :math:`k` for the :ref:`ReactivePowerControlMode<q_control>` iterative control (obsolete)
         :param distributed_slack: Applies the redistribution of the slack power proportionally among the controlled generators
         :param ignore_single_node_islands: If True the islands of 1 node are ignored
         :param trust_radius:
         :param backtracking_parameter: parameter used to correct the "bad" iterations, typically 0.5
-        :param use_stored_guess:
+        :param use_stored_guess: Use the existing solution from the Bus class (Vm0, Va0)
         :param override_branch_controls:
         :param generate_report:
         :param generalised_pf:
         """
+        OptionsTemplate.__init__(self, name='PowerFlowOptions')
 
         self.solver_type = solver_type
 
@@ -87,23 +80,15 @@ class PowerFlowOptions:
 
         self.control_Q = control_q
 
-        self.control_P = control_p
-
         self.verbose = verbose
 
         self.initialize_with_existing_solution = initialize_with_existing_solution
-
-        self.multi_thread = multi_core
-
-        self.dispatch_storage = dispatch_storage
 
         self.control_taps = control_taps
 
         self.apply_temperature_correction = apply_temperature_correction
 
         self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
-
-        self.q_steepness_factor = q_steepness_factor
 
         self.distributed_slack = distributed_slack
 
@@ -119,7 +104,24 @@ class PowerFlowOptions:
 
         self.generate_report = generate_report
 
-        self.generalised_pf = generalised_pf
+        self.generalised_pf = generalised_pf  # TODO: Remove this
 
-    def __str__(self):
-        return "PowerFlowOptions"
+        self.register(key="solver_type", tpe=SolverType)
+        self.register(key="retry_with_other_methods", tpe=bool)
+        self.register(key="tolerance", tpe=float)
+        self.register(key="max_iter", tpe=int)
+        self.register(key="max_outer_loop_iter", tpe=int)
+        self.register(key="control_Q", tpe=ReactivePowerControlMode)
+        self.register(key="verbose", tpe=int)
+        self.register(key="initialize_with_existing_solution", tpe=bool)
+        self.register(key="control_taps", tpe=bool)
+        self.register(key="apply_temperature_correction", tpe=bool)
+        self.register(key="branch_impedance_tolerance_mode", tpe=BranchImpedanceMode)
+        self.register(key="distributed_slack", tpe=bool)
+        self.register(key="ignore_single_node_islands", tpe=bool)
+        self.register(key="trust_radius", tpe=float)
+        self.register(key="backtracking_parameter", tpe=float)
+        self.register(key="use_stored_guess", tpe=bool)
+        self.register(key="override_branch_controls", tpe=bool)
+        self.register(key="generate_report", tpe=bool)
+        self.register(key="generalised_pf", tpe=bool)

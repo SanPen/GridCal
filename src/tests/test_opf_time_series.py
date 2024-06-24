@@ -26,15 +26,11 @@ def test_opf_ts():
     print('Running OPF-TS...', '')
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
-                                          verbose=False,
-                                          initialize_with_existing_solution=False,
-                                          multi_core=False,
-                                          dispatch_storage=True,
+                                          verbose=0,
                                           control_q=ReactivePowerControlMode.NoControl,
-                                          control_p=True,
                                           retry_with_other_methods=False)
 
-    opf_options = OptimalPowerFlowOptions(verbose=False,
+    opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           time_grouping=TimeGrouping.Daily,

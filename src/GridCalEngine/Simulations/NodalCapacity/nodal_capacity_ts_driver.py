@@ -327,7 +327,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                   tol=1e-6,
                                                   max_it=20,
                                                   stop_at=CpfStopAt.Full,
-                                                  verbose=False)
+                                                  verbose=0)
 
         # define the direcion of loading
         base_power = power_flow.results.Sbus / self.grid.Sbase
