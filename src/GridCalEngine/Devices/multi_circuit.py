@@ -1656,11 +1656,14 @@ class MultiCircuit(Assets):
             if elm.bus == bus2:
                 elm.bus = bus1
 
-    def compare_circuits(self, grid2: "MultiCircuit", detailed_profile_comparison: bool = True) -> Tuple[bool, Logger]:
+    def compare_circuits(self, grid2: "MultiCircuit",
+                         detailed_profile_comparison: bool = True,
+                         skip_internals: bool = False) -> Tuple[bool, Logger]:
         """
         Compare this circuit with another circuits for equality
         :param grid2: MultiCircuit
         :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
+        :param skip_internals: skip non visible properties
         :return: equal?, Logger with the comparison information
         """
         logger = Logger()
@@ -1674,7 +1677,7 @@ class MultiCircuit(Assets):
         else:
             nt = self.get_time_number()
 
-        if self.snapshot_time != grid2.snapshot_time:
+        if (self.snapshot_time != grid2.snapshot_time) and not skip_internals:
             logger.add_error(msg="Different snapshot times",
                              device_class="snapshot time",
                              value=str(grid2.get_snapshot_time_unix()),
@@ -1699,65 +1702,71 @@ class MultiCircuit(Assets):
                 # for every property
                 for prop_name, prop in template_elm.registered_properties.items():
 
-                    # for every pair of elements:
-                    for elm1, elm2 in zip(elms1, elms2):
+                    if skip_internals:
+                        analyze = prop.display
+                    else:
+                        analyze = True
 
-                        # compare the snapshot values
-                        v1 = elm1.get_property_value(prop=prop, t_idx=None)
-                        v2 = elm2.get_property_value(prop=prop, t_idx=None)
+                    if analyze:
+                        # for every pair of elements:
+                        for elm1, elm2 in zip(elms1, elms2):
 
-                        if v1 != v2:
-                            logger.add_error(msg="Different snapshot values",
-                                             device_class=template_elm.device_type.value,
-                                             device_property=prop.name,
-                                             value=v2,
-                                             expected_value=v1)
+                            # compare the snapshot values
+                            v1 = elm1.get_property_value(prop=prop, t_idx=None)
+                            v2 = elm2.get_property_value(prop=prop, t_idx=None)
 
-                        if prop.has_profile():
-                            p1 = elm1.get_profile_by_prop(prop=prop)
-                            p2 = elm1.get_profile_by_prop(prop=prop)
-
-                            if p1 != p2:
-                                logger.add_error(msg="Different profile values",
+                            if v1 != v2:
+                                logger.add_error(msg="Different snapshot values",
                                                  device_class=template_elm.device_type.value,
                                                  device_property=prop.name,
-                                                 object_value=p2,
-                                                 expected_object_value=p1)
+                                                 value=v2,
+                                                 expected_value=v1)
 
-                            if detailed_profile_comparison:
-                                for t_idx in range(nt):
+                            if prop.has_profile():
+                                p1 = elm1.get_profile_by_prop(prop=prop)
+                                p2 = elm1.get_profile_by_prop(prop=prop)
 
-                                    v1 = p1[t_idx]
-                                    v2 = p2[t_idx]
+                                if p1 != p2:
+                                    logger.add_error(msg="Different profile values",
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=prop.name,
+                                                     object_value=p2,
+                                                     expected_object_value=p1)
 
-                                    if v1 != v2:
-                                        logger.add_error(msg="Different time series values",
-                                                         device_class=template_elm.device_type.value,
-                                                         device_property=prop.name,
-                                                         device=str(elm1),
-                                                         value=v2,
-                                                         expected_value=v1)
+                                if detailed_profile_comparison:
+                                    for t_idx in range(nt):
 
-                                    v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
-                                    v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+                                        v1 = p1[t_idx]
+                                        v2 = p2[t_idx]
 
-                                    if v1 != v1b:
-                                        logger.add_error(
-                                            msg="Profile getting values differ with different getter methods!",
-                                            device_class=template_elm.device_type.value,
-                                            device_property=prop.name,
-                                            device=str(elm1),
-                                            value=v1b,
-                                            expected_value=v1)
+                                        if v1 != v2:
+                                            logger.add_error(msg="Different time series values",
+                                                             device_class=template_elm.device_type.value,
+                                                             device_property=prop.name,
+                                                             device=str(elm1),
+                                                             value=v2,
+                                                             expected_value=v1)
 
-                                    if v2 != v2b:
-                                        logger.add_error(
-                                            msg="Profile getting values differ with different getter methods!",
-                                            device_class=template_elm.device_type.value,
-                                            device_property=prop.name,
-                                            device=str(elm1),
-                                            value=v1b,
-                                            expected_value=v1)
+                                        v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                                        v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+
+                                        if v1 != v1b:
+                                            logger.add_error(
+                                                msg="Profile getting values differ with different getter methods!",
+                                                device_class=template_elm.device_type.value,
+                                                device_property=prop.name,
+                                                device=str(elm1),
+                                                value=v1b,
+                                                expected_value=v1)
+
+                                        if v2 != v2b:
+                                            logger.add_error(
+                                                msg="Profile getting values differ with different getter methods!",
+                                                device_class=template_elm.device_type.value,
+                                                device_property=prop.name,
+                                                device=str(elm1),
+                                                value=v1b,
+                                                expected_value=v1)
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
@@ -1870,11 +1879,12 @@ class MultiCircuit(Assets):
                                     action = ActionType.Modify
 
             if action != ActionType.NoAction:
-                elm_from_here.action = action
-                dgrid.add_element(obj=elm_from_here)
+                new_element = elm_from_here.copy(forced_new_idtag=False)
+                new_element.action = action
+                dgrid.add_element(obj=new_element)
                 logger.add_info(msg="Device added in the diff circuit",
-                                device_class=elm_from_here.device_type.value,
-                                device_property=elm_from_here.name, )
+                                device_class=new_element.device_type.value,
+                                device_property=new_element.name, )
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger, dgrid
