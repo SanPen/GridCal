@@ -17,9 +17,10 @@
 
 from GridCalEngine.Simulations.ContinuationPowerFlow.continuation_power_flow import (CpfStopAt,
                                                                                      CpfParametrization)
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
-class ContinuationPowerFlowOptions:
+class ContinuationPowerFlowOptions(OptionsTemplate):
     """
     ContinuationPowerFlowOptions
     """
@@ -34,7 +35,7 @@ class ContinuationPowerFlowOptions:
                  tol=1e-6,
                  max_it=20,
                  stop_at=CpfStopAt.Nose,
-                 verbose=False):
+                 verbose: int = 0):
         """
         Voltage collapse options
         @param step: Step length
@@ -48,6 +49,7 @@ class ContinuationPowerFlowOptions:
         @param stop_at: Value of lambda to stop at, it can be specified by a concept namely NOSE to sto at the edge or
         FULL tp draw the full curve
         """
+        OptionsTemplate.__init__(self, name='ContinuationPowerFlowOptions')
 
         self.step = step
 
@@ -59,12 +61,23 @@ class ContinuationPowerFlowOptions:
 
         self.step_max = step_max
 
-        self.error_tol = error_tol
+        self.step_tol = error_tol
 
-        self.tol = tol
+        self.solution_tol = tol
 
         self.max_it = max_it
 
         self.stop_at = stop_at
 
         self.verbose = verbose
+
+        self.register(key="step", tpe=float)
+        self.register(key="approximation_order", tpe=CpfParametrization)
+        self.register(key="adapt_step", tpe=bool)
+        self.register(key="step_min", tpe=float)
+        self.register(key="step_max", tpe=float)
+        self.register(key="step_tol", tpe=float)
+        self.register(key="solution_tol", tpe=float)
+        self.register(key="max_it", tpe=int)
+        self.register(key="stop_at", tpe=CpfStopAt)
+        self.register(key="verbose", tpe=int)

@@ -25,7 +25,7 @@ vc_options = gce.ContinuationPowerFlowOptions(step=0.001,
                                               tol=1e-6,
                                               max_it=20,
                                               stop_at=gce.CpfStopAt.Full,
-                                              verbose=False)
+                                              verbose=0)
 
 # We compose the target direction
 base_power = power_flow.results.Sbus / main_circuit.Sbase

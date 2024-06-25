@@ -17,11 +17,15 @@
 import random
 import uuid
 import numpy as np
-from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
-                                        HvdcControlType, ActionType)
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
+from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
+                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
+                                        HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
+                                        CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
+                                        InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
+                                        ZonalGrouping, MIPSolvers, AcOpfMode, ReactivePowerControlMode,
+                                        BranchImpedanceMode, FaultType)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -38,7 +42,22 @@ GCPROP_TYPES = Union[
     Type[ConverterControlType],
     Type[TapModuleControl],
     Type[TapAngleControl],
-    Type[ActionType]
+    Type[ActionType],
+    Type[AvailableTransferMode],
+    Type[ContingencyMethod],
+    Type[CpfParametrization],
+    Type[CpfStopAt],
+    Type[InvestmentEvaluationMethod],
+    Type[InvestmentsEvaluationObjectives],
+    Type[NodalCapacityMethod],
+    Type[SolverType],
+    Type[TimeGrouping],
+    Type[ZonalGrouping],
+    Type[MIPSolvers],
+    Type[AcOpfMode],
+    Type[ReactivePowerControlMode],
+    Type[BranchImpedanceMode],
+    Type[FaultType]
 ]
 
 
@@ -150,6 +169,24 @@ class GCProp:
         return "prop:" + self.name
 
 
+def get_action_symbol(action: ActionType):
+    """
+
+    :param action:
+    :return:
+    """
+    if action == ActionType.NoAction:
+        return "."
+    elif action == ActionType.Add:
+        return "+"
+    elif action == ActionType.Delete:
+        return "-"
+    elif action == ActionType.Modify:
+        return "~"
+    else:
+        return ""
+
+
 class EditableDevice:
     """
     This is the main device class from which all inherit
@@ -208,7 +245,7 @@ class EditableDevice:
         return str(self.name)
 
     def __repr__(self) -> str:
-        return self.idtag + '::' + self.name
+        return get_action_symbol(self.action) + "::" + self.idtag + '::' + self.name
 
     def __hash__(self) -> int:
         # alternatively, return hash(repr(self))
@@ -270,9 +307,9 @@ class EditableDevice:
 
     def register(self,
                  key: str,
-                 units: str,
                  tpe: GCPROP_TYPES,
-                 definition: str,
+                 units: str = "",
+                 definition: str = "",
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,

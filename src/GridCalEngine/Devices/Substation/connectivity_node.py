@@ -61,15 +61,15 @@ class ConnectivityNode(EditableDevice):
 
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the cn.')
 
-        self.register("dc", "", bool, "is this a DC connectivity node?")
+        self.register(key="dc", tpe=bool, definition="is this a DC connectivity node?")
 
-        self.register("internal", "", bool, "is internal of a busbar?")
+        self.register(key="internal", tpe=bool, definition="is internal of a busbar?")
 
-        self.register("default_bus", "", DeviceType.BusDevice,
-                      "Default bus to use for topology processing (optional)")
+        self.register(key="default_bus", tpe=DeviceType.BusDevice,
+                      definition="Default bus to use for topology processing (optional)")
 
-        self.register("voltage_level", "", DeviceType.VoltageLevelDevice,
-                      "Voltage level of this connectivity node (optional)")
+        self.register(key="voltage_level", tpe=DeviceType.VoltageLevelDevice,
+                      definition="Voltage level of this connectivity node (optional)")
 
     @property
     def voltage_level(self) -> Union[VoltageLevel, None]:

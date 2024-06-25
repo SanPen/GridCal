@@ -28,10 +28,8 @@ def test_contingency() -> None:
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
                                   verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
+                                  use_stored_guess=False,
+                                  control_q=ReactivePowerControlMode.NoControl)
 
     options = ContingencyAnalysisOptions(pf_options=pf_options, 
                                          contingency_method=ContingencyMethod.PowerFlow)
@@ -60,11 +58,8 @@ def test_linear_contingency():
     fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
+                                  verbose=0,
+                                  control_q=ReactivePowerControlMode.NoControl)
 
     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
     linear_analysis.run()

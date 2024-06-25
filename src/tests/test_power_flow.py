@@ -44,12 +44,8 @@ def test_ieee_grids():
         print(solver_type)
 
         options = PowerFlowOptions(solver_type,
-                                   verbose=False,
-                                   initialize_with_existing_solution=False,
-                                   multi_core=False,
-                                   dispatch_storage=True,
+                                   verbose=0,
                                    control_q=ReactivePowerControlMode.NoControl,
-                                   control_p=True,
                                    retry_with_other_methods=False)
 
         for f1, f2 in files:
@@ -95,11 +91,7 @@ def test_dc_pf_ieee14():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False,
-                               dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14.m')
@@ -140,11 +132,7 @@ def test_dc_pf_ieee14_ps():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False,
-                               dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14_ps.m')

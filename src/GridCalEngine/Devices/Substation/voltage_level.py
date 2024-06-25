@@ -45,5 +45,5 @@ class VoltageLevel(EditableDevice):
 
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal voltage')
 
-        self.register("substation", "", DeviceType.SubstationDevice,
-                      "Substation of this bus bar (optional)")
+        self.register(key="substation", tpe=DeviceType.SubstationDevice,
+                      definition="Substation of this Voltage level (optional)")
