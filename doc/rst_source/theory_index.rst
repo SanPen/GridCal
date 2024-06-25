@@ -45,6 +45,8 @@ Optimal power flow
     theory/opf/opf_dc_ts
     theory/opf/opf_ac_ts
     theory/opf/hydro
+    theory/opf/acopf
+    theory/opf/nodal_cap_ex
 
 
 Short Circuit
@@ -62,7 +64,8 @@ Linear factors
 .. toctree::
     :maxdepth: 3
 
-    theory/ptdf
+    theory/linear/ptdf
+    theory/linear/srap
 
 
 Investments Evaluation
