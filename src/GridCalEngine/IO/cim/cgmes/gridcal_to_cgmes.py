@@ -255,10 +255,9 @@ def create_cgmes_terminal(bus: Bus,
     return term
 
 
-def create_cgmes_load_response_char(
-        load: gcdev.Load,
-        cgmes_model: CgmesCircuit,
-        logger: DataLogger):
+def create_cgmes_load_response_char(load: gcdev.Load,
+                                    cgmes_model: CgmesCircuit,
+                                    logger: DataLogger):
     new_rdf_id = get_new_rdfid()
     lrc_template = cgmes_model.get_class_type("LoadResponseCharacteristic")
     lrc = lrc_template(rdfid=new_rdf_id)
@@ -380,6 +379,25 @@ def create_cgmes_regulating_control(
     cgmes_model.add(rc)
 
     return rc
+
+
+def create_cgmes_current_limits(mc_elm: Union[gcdev.Line,
+                                              # gcdev.Transformer2W,
+                                              # gcdev.Transformer3W
+                                              ],
+                                cgmes_model: CgmesCircuit,
+                                logger: DataLogger):
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("CurrentLimit")
+    curr_lim = object_template(rdfid=new_rdf_id)
+    curr_lim.name = f'{mc_elm.name} - CL-1'
+    curr_lim.shortName = f'CL-1'
+    curr_lim.description = f'Ratings for element {mc_elm.name} - Limit'
+
+    curr_lim.value = mc_elm.rate
+    # curr_lim.OperationalLimitSet
+    # curr_lim.OperationalLimitType
+    return
 
 
 # endregion
@@ -753,12 +771,6 @@ def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
     # rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
     #                                     4)
     # TODO Move it to util, we need a device and its terminals and create a limit for the terminals, create the LimitTypes
-    pass
-
-
-def get_cgmes_current_limits(multicircuit_model: MultiCircuit,
-                             cgmes_model: CgmesCircuit,
-                             logger: DataLogger):
     pass
 
 
