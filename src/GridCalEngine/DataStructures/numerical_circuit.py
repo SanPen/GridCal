@@ -57,6 +57,37 @@ ALL_STRUCTS = Union[
 ]
 
 
+def CheckArr(arr: Vec, arr_expected: Vec, tol: float, name: str, test: str, logger: Logger) -> int:
+    """
+
+    :param arr:
+    :param arr_expected:
+    :param tol:
+    :param name:
+    :param test:
+    :param logger:
+    :return:
+    """
+    if arr.shape != arr_expected.shape:
+        logger.add_error(msg="Different shape",
+                         device=name,
+                         device_property=test,
+                         value=str(arr.shape),
+                         expected_value=str(arr_expected.shape))
+        return 1
+
+    if np.allclose(arr, arr_expected, atol=tol):
+        return 0
+    else:
+        diff = arr - arr_expected
+        logger.add_error(msg="Numeric differences",
+                         device=name,
+                         device_property=test,
+                         value=f"min diff: {diff.min()}, max diff: {diff.max()}",
+                         expected_value=tol)
+        return 1
+
+
 def get_inter_areas_branch(F: np.ndarray,
                            T: np.ndarray,
                            buses_in_a1: np.ndarray,
@@ -220,15 +251,15 @@ class NumericalCircuit:
         # Internal variables filled on demand, to be ready to consume once computed
         # --------------------------------------------------------------------------------------------------------------
 
-        self.Vbus_: CxVec = None
-        self.Sbus_: CxVec = None
-        self.Ibus_: CxVec = None
-        self.YloadBus_: CxVec = None
-        self.Yshunt_from_devices_: CxVec = None
-        self.Bmax_bus_: Vec = None
-        self.Bmin_bus_: Vec = None
-        self.Qmax_bus_: Vec = None
-        self.Qmin_bus_: Vec = None
+        self.Vbus_: Union[None, CxVec] = None
+        self.Sbus_: Union[None, CxVec] = None
+        self.Ibus_: Union[None, CxVec] = None
+        self.YloadBus_: Union[None, CxVec] = None
+        self.Yshunt_from_devices_: Union[None, CxVec] = None
+        self.Bmax_bus_: Union[None, Vec] = None
+        self.Bmin_bus_: Union[None, Vec] = None
+        self.Qmax_bus_: Union[None, Vec] = None
+        self.Qmin_bus_: Union[None, Vec] = None
 
         # class that holds all the simulation indices
         self.simulation_indices_: Union[None, si.SimulationIndices] = None
@@ -252,22 +283,22 @@ class NumericalCircuit:
         # Dict[idtag] -> (structure, index)
         self.structs_dict_: Union[Dict[str, Tuple[ALL_STRUCTS, int]], None] = None
 
-    def reset_calculations(self):
+    def reset_calculations(self) -> None:
         """
         This resets the lazy evaluation of the calculations like Ybus, Sbus, etc...
         If you want to use the NumericalCircuit as structure to modify stuff,
         this should be called after all modifications prior to the usage in any
         calculation
         """
-        self.Vbus_: CxVec = None
-        self.Sbus_: CxVec = None
-        self.Ibus_: CxVec = None
-        self.YloadBus_: CxVec = None
-        self.Yshunt_from_devices_: CxVec = None
-        self.Qmax_bus_: Vec = None
-        self.Qmin_bus_: Vec = None
-        self.Bmax_bus_: Vec = None
-        self.Bmin_bus_: Vec = None
+        self.Vbus_: Union[None, CxVec] = None
+        self.Sbus_: Union[None, CxVec] = None
+        self.Ibus_: Union[None, CxVec] = None
+        self.YloadBus_: Union[None, CxVec] = None
+        self.Yshunt_from_devices_: Union[None, CxVec] = None
+        self.Qmax_bus_: Union[None, Vec] = None
+        self.Qmin_bus_: Union[None, Vec] = None
+        self.Bmax_bus_: Union[None, Vec] = None
+        self.Bmin_bus_: Union[None, Vec] = None
 
         # Connectivity matrices
         self.conn_matrices_: Union[tp.ConnectivityMatrices, None] = None
@@ -310,10 +341,9 @@ class NumericalCircuit:
 
         return Sbus
 
-    def consolidate_information(self, use_stored_guess: bool = False) -> None:
+    def consolidate_information(self) -> None:
         """
         Consolidates the information of this object
-        :return:
         """
 
         self.nbus = len(self.bus_data)
@@ -336,31 +366,6 @@ class NumericalCircuit:
 
         self.bus_data.installed_power = self.generator_data.get_installed_power_per_bus()
         self.bus_data.installed_power += self.battery_data.get_installed_power_per_bus()
-
-        if not use_stored_guess:
-            self.bus_data.Vbus = si.compose_generator_voltage_profile(
-                nbus=self.nbus,
-                gen_bus_indices=self.generator_data.get_bus_indices(),
-                gen_vset=self.generator_data.v,
-                gen_status=self.generator_data.active,
-                gen_is_controlled=self.generator_data.controllable,
-                bat_bus_indices=self.battery_data.get_bus_indices(),
-                bat_vset=self.battery_data.v,
-                bat_status=self.battery_data.active,
-                bat_is_controlled=self.battery_data.controllable,
-                hvdc_bus_f=self.hvdc_data.get_bus_indices_f(),
-                hvdc_bus_t=self.hvdc_data.get_bus_indices_t(),
-                hvdc_status=self.hvdc_data.active,
-                hvdc_vf=self.hvdc_data.Vset_f,
-                hvdc_vt=self.hvdc_data.Vset_t,
-                k_vf_beq=self.k_vf_beq,
-                i_vf_beq=self.i_vf_beq,
-                k_vt_m=self.k_vt_m,
-                i_vt_m=self.i_vt_m,
-                branch_status=self.branch_data.active,
-                br_vf=self.branch_data.vf_set,
-                br_vt=self.branch_data.vt_set
-            )
 
     def copy(self) -> "NumericalCircuit":
         """
@@ -421,7 +426,7 @@ class NumericalCircuit:
         Get a dictionary to map idtags to the structure they belong and the index
         :return: Dictionary relating an idtag to the structure and the index in it (Dict[idtag] -> (structure, index))
         """
-        structs_dict = dict()
+        structs_dict: Dict[str, Tuple[ALL_STRUCTS, int]] = dict()
 
         for struct_elm in self.get_structures_list():
 
@@ -432,9 +437,9 @@ class NumericalCircuit:
 
     def set_investments_status(self, investments_list: List[Investment], status: int) -> None:
         """
-        Set the status of a list of investmensts
+        Set the status of a list of investments
         :param investments_list: list of investments
-        :param status: status to set in the internal strctures
+        :param status: status to set in the internal structures
         """
 
         for inv in investments_list:
@@ -1328,11 +1333,6 @@ class NumericalCircuit:
             Qmax_bus += self.battery_data.get_qmax_per_bus()
             Qmin_bus += self.battery_data.get_qmin_per_bus()
 
-        # if self.nshunt > 0:
-        #     # shunts
-        #     Qmax_bus += self.shunt_data.get_b_max_per_bus()
-        #     Qmin_bus += self.shunt_data.get_b_min_per_bus()
-
         if self.nhvdc > 0:
             # hvdc from
             Qmax_bus += self.hvdc_data.get_qmax_from_per_bus()
@@ -1342,21 +1342,15 @@ class NumericalCircuit:
             Qmax_bus += self.hvdc_data.get_qmax_to_per_bus()
             Qmin_bus += self.hvdc_data.get_qmin_to_per_bus()
 
+        if self.nshunt > 0:
+            Qmax_bus += self.shunt_data.get_qmax_per_bus()
+            Qmin_bus += self.shunt_data.get_qmin_per_bus()
+
         # fix zero values
         Qmax_bus[Qmax_bus == 0] = 1e20
         Qmin_bus[Qmin_bus == 0] = -1e20
 
         return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
-
-    def compute_susceptance_limits(self):
-        """
-        Compute susceptance limits
-        :return:
-        """
-        Bmin = self.load_data.get_b_min_per_bus() / self.Sbase
-        Bmax = self.load_data.get_b_max_per_bus() / self.Sbase
-
-        return Bmax, Bmin
 
     def get_inter_areas_branches(self, buses_areas_1, buses_areas_2):
         """
@@ -1616,7 +1610,7 @@ class NumericalCircuit:
                 Cf=self.Cf,
                 Ct=self.Ct,
                 C_bus_shunt=self.shunt_data.C_bus_elm.tocsc(),
-                shunt_admittance=self.shunt_data.admittance,
+                shunt_admittance=self.shunt_data.Y,
                 shunt_active=self.shunt_data.active,
                 ys=Ys,
                 B=self.branch_data.B,
@@ -1879,6 +1873,120 @@ class NumericalCircuit:
 
         return circuit_islands
 
+    def compare(self, nc_2: "NumericalCircuit", tol=1e-6) -> Tuple[bool, Logger]:
+        """
+        Compare this numerical circuit with another numerical circuit
+        :param nc_2: NumericalCircuit
+        :param tol: NumericalCircuit
+        :return: Logger with the errors and warning events
+        """
+
+        logger = Logger()
+
+        # --------------------------------------------------------------------------------------------------------------
+        #  Compare data
+        # --------------------------------------------------------------------------------------------------------------
+
+        CheckArr(self.branch_data.F, nc_2.branch_data.F, tol, 'BranchData', 'F', logger)
+        CheckArr(self.branch_data.T, nc_2.branch_data.T, tol, 'BranchData', 'T', logger)
+        CheckArr(self.branch_data.active, nc_2.branch_data.active, tol,
+                 'BranchData', 'active', logger)
+        CheckArr(self.branch_data.R, nc_2.branch_data.R, tol, 'BranchData', 'r', logger)
+        CheckArr(self.branch_data.X, nc_2.branch_data.X, tol, 'BranchData', 'x', logger)
+        CheckArr(self.branch_data.G, nc_2.branch_data.G, tol, 'BranchData', 'g', logger)
+        CheckArr(self.branch_data.B, nc_2.branch_data.B, tol, 'BranchData', 'b', logger)
+        CheckArr(self.branch_data.rates, nc_2.branch_data.rates, tol, 'BranchData',
+                 'rates', logger)
+        CheckArr(self.branch_data.tap_module, nc_2.branch_data.tap_module, tol,
+                 'BranchData', 'tap_module', logger)
+        CheckArr(self.branch_data.tap_angle, nc_2.branch_data.tap_angle, tol,
+                 'BranchData', 'tap_angle', logger)
+
+        CheckArr(self.branch_data.G0, nc_2.branch_data.G0, tol, 'BranchData', 'g0', logger)
+
+        CheckArr(self.branch_data.virtual_tap_f, nc_2.branch_data.virtual_tap_f,
+                 tol, 'BranchData', 'vtap_f', logger)
+        CheckArr(self.branch_data.virtual_tap_t, nc_2.branch_data.virtual_tap_t,
+                 tol, 'BranchData', 'vtap_t', logger)
+
+        # bus data
+        CheckArr(self.bus_data.active, nc_2.bus_data.active, tol, 'BusData',
+                 'active', logger)
+        CheckArr(self.bus_data.Vbus.real, nc_2.bus_data.Vbus.real, tol, 'BusData',
+                 'V0', logger)
+        CheckArr(self.bus_data.installed_power, nc_2.bus_data.installed_power, tol,
+                 'BusData', 'installed power', logger)
+        CheckArr(self.bus_data.bus_types, nc_2.bus_data.bus_types, tol, 'BusData',
+                 'types', logger)
+
+        # generator data
+        CheckArr(self.generator_data.active, nc_2.generator_data.active, tol,
+                 'GenData', 'active', logger)
+        CheckArr(self.generator_data.p, nc_2.generator_data.p, tol, 'GenData', 'P', logger)
+        # CheckArr(nc_newton.generator_data.generator_pf, nc_gc.generator_data.generator_pf, tol, 'GenData', 'Pf')
+        CheckArr(self.generator_data.v, nc_2.generator_data.v, tol, 'GenData',
+                 'Vset', logger)
+        CheckArr(self.generator_data.qmin, nc_2.generator_data.qmin, tol,
+                 'GenData', 'Qmin', logger)
+        CheckArr(self.generator_data.qmax, nc_2.generator_data.qmax, tol,
+                 'GenData', 'Qmax', logger)
+
+        # load data
+        CheckArr(self.load_data.active, nc_2.load_data.active, tol, 'LoadData',
+                 'active', logger)
+        CheckArr(self.load_data.S, nc_2.load_data.S, tol, 'LoadData', 'S', logger)
+        CheckArr(self.load_data.I, nc_2.load_data.I, tol, 'LoadData', 'I', logger)
+        CheckArr(self.load_data.Y, nc_2.load_data.Y, tol, 'LoadData', 'Y', logger)
+
+        # shunt
+        CheckArr(self.shunt_data.active, nc_2.shunt_data.active, tol, 'ShuntData',
+                 'active', logger)
+        CheckArr(self.shunt_data.Y, nc_2.shunt_data.Y, tol,
+                 'ShuntData', 'S', logger)
+        CheckArr(self.shunt_data.get_injections_per_bus(),
+                 nc_2.shunt_data.get_injections_per_bus(), tol, 'ShuntData',
+                 'Injections per bus', logger)
+
+        # --------------------------------------------------------------------------------------------------------------
+        #  Compare arrays and data
+        # --------------------------------------------------------------------------------------------------------------
+
+        CheckArr(self.Sbus.real, nc_2.Sbus.real, tol, 'Pbus', 'P', logger)
+        CheckArr(self.Sbus.imag, nc_2.Sbus.imag, tol, 'Qbus', 'Q', logger)
+
+        CheckArr(self.pq, nc_2.pq, tol, 'Types', 'pq', logger)
+        CheckArr(self.pv, nc_2.pv, tol, 'Types', 'pv', logger)
+        CheckArr(self.vd, nc_2.vd, tol, 'Types', 'vd', logger)
+
+        CheckArr(self.Cf.toarray(), nc_2.Cf.toarray(), tol, 'Connectivity',
+                 'Cf (dense)', logger)
+        CheckArr(self.Ct.toarray(), nc_2.Ct.toarray(), tol, 'Connectivity',
+                 'Ct (dense)', logger)
+        CheckArr(self.Cf.tocsc().data, nc_2.Cf.tocsc().data, tol, 'Connectivity',
+                 'Cf', logger)
+        CheckArr(self.Ct.tocsc().data, nc_2.Ct.tocsc().data, tol, 'Connectivity',
+                 'Ct', logger)
+
+        CheckArr(self.Ybus.toarray(), nc_2.Ybus.toarray(), tol, 'Admittances',
+                 'Ybus (dense)', logger)
+        CheckArr(self.Ybus.tocsc().data.real, nc_2.Ybus.tocsc().data.real, tol,
+                 'Admittances', 'Ybus (real)', logger)
+        CheckArr(self.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
+                 'Admittances', 'Ybus (imag)', logger)
+        CheckArr(self.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.real,
+                 tol, 'Admittances', 'Yf (real)', logger)
+        CheckArr(self.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
+                 'Admittances', 'Yf (imag)', logger)
+        CheckArr(self.Yt.tocsc().data.real, nc_2.Yt.tocsc().data.real, tol,
+                 'Admittances', 'Yt (real)', logger)
+        CheckArr(self.Yt.tocsc().data.imag, nc_2.Yt.tocsc().data.imag, tol,
+                 'Admittances', 'Yt (imag)', logger)
+
+        CheckArr(self.Vbus, nc_2.Vbus, tol, 'NumericCircuit', 'V0', logger)
+
+        # if any error in the logger, bad
+        return logger.error_count() == 0, logger
+
 
 def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  t_idx: Union[int, None] = None,
@@ -1903,8 +2011,14 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
 
     logger = Logger()
 
-    # if any valis time index is specified, then the data is compiled from the time series
+    if circuit.get_connectivity_nodes_number() + circuit.get_switches_number():
+        # process topology, this
+        circuit.process_topology_at(t_idx=t_idx, logger=logger)
+
+    # if any valid time index is specified, then the data is compiled from the time series
     time_series = t_idx is not None
+
+    bus_voltage_used = np.zeros(circuit.get_bus_number(), dtype=bool)
 
     # declare the numerical circuit
     nc = NumericalCircuit(nbus=0,
@@ -1939,7 +2053,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                                   bus_data=nc.bus_data,
                                                                   t_idx=t_idx,
                                                                   time_series=time_series,
-                                                                  Vbus=nc.bus_data.Vbus,
+                                                                  bus_voltage_used=bus_voltage_used,
                                                                   logger=logger,
                                                                   opf_results=opf_results,
                                                                   use_stored_guess=use_stored_guess)
@@ -1949,22 +2063,23 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                     bus_data=nc.bus_data,
                                                     t_idx=t_idx,
                                                     time_series=time_series,
-                                                    Vbus=nc.bus_data.Vbus,
+                                                    bus_voltage_used=bus_voltage_used,
                                                     logger=logger,
                                                     opf_results=opf_results,
                                                     use_stored_guess=use_stored_guess)
 
     nc.shunt_data = gc_compiler2.get_shunt_data(circuit=circuit,
                                                 bus_dict=bus_dict,
+                                                bus_voltage_used=bus_voltage_used,
+                                                bus_data=nc.bus_data,
                                                 t_idx=t_idx,
                                                 time_series=time_series,
-                                                Vbus=nc.bus_data.Vbus,
                                                 logger=logger,
                                                 use_stored_guess=use_stored_guess)
 
     nc.load_data = gc_compiler2.get_load_data(circuit=circuit,
                                               bus_dict=bus_dict,
-                                              Vbus=nc.bus_data.Vbus,
+                                              bus_voltage_used=bus_voltage_used,
                                               bus_data=nc.bus_data,
                                               logger=logger,
                                               t_idx=t_idx,
@@ -1976,7 +2091,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                   t_idx=t_idx,
                                                   time_series=time_series,
                                                   bus_dict=bus_dict,
-                                                  Vbus=nc.bus_data.Vbus,
+                                                  bus_data=nc.bus_data,
+                                                  bus_voltage_used=bus_voltage_used,
                                                   apply_temperature=apply_temperature,
                                                   branch_tolerance_mode=branch_tolerance_mode,
                                                   opf_results=opf_results,
@@ -1987,7 +2103,11 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                               time_series=time_series,
                                               bus_dict=bus_dict,
                                               bus_types=nc.bus_data.bus_types,
-                                              opf_results=opf_results)
+                                              bus_data=nc.bus_data,
+                                              bus_voltage_used=bus_voltage_used,
+                                              opf_results=opf_results,
+                                              use_stored_guess=use_stored_guess,
+                                              logger=logger)
 
     if len(circuit.fluid_nodes) > 0:
         nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
@@ -2013,6 +2133,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                                               plant_dict=plant_dict,
                                                               t_idx=t_idx)
 
-    nc.consolidate_information(use_stored_guess=use_stored_guess)
+    nc.consolidate_information()
 
     return nc

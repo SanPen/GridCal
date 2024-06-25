@@ -17,25 +17,24 @@
 
 import os
 import cmath
-import warnings
 import copy
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Callable, Set
+from typing import List, Dict, Tuple, Union, Set
 from uuid import getnode as get_mac, uuid4
-import datetime as dateslib
 import networkx as nx
 from matplotlib import pyplot as plt
 from scipy.sparse import csc_matrix, lil_matrix
 
+from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.basic_structures import IntVec, StrVec, Vec, Mat, CxVec, IntMat, CxMat
-from GridCalEngine.data_logger import DataLogger
+from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMat
+
 import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ActionType
 
 
 def get_system_user() -> str:
@@ -130,7 +129,7 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
         return list(), list()
 
 
-class MultiCircuit:
+class MultiCircuit(Assets):
     """
     The concept of circuit should be easy enough to understand. It represents a set of
     nodes (:ref:`buses<Bus>`) and :ref:`Branches<Branch>` (lines, transformers or other
@@ -170,6 +169,7 @@ class MultiCircuit:
         :param fbase: base frequency in Hz
         :param idtag: unique identifier
         """
+        Assets.__init__(self)
 
         self.name: str = name
 
@@ -192,328 +192,18 @@ class MultiCircuit:
         # Base frequency in Hz
         self.fBase: float = fbase
 
-        # snapshot time
-        self._snapshot_time: dateslib.datetime = dateslib.datetime.now()  # dateslib.datetime(year=2000, month=1, day=1)
-
-        self.lines: List[dev.Line] = list()
-
-        self.dc_lines: List[dev.DcLine] = list()
-
-        self.transformers2w: List[dev.Transformer2W] = list()
-
-        self.hvdc_lines: List[dev.HvdcLine] = list()
-
-        self.vsc_devices: List[dev.VSC] = list()
-
-        self.upfc_devices: List[dev.UPFC] = list()
-
-        self.switch_devices: List[dev.Switch] = list()
-
-        self.transformers3w: List[dev.Transformer3W] = list()
-
-        self.windings: List[dev.Winding] = list()
-
-        self.series_reactances: List[dev.SeriesReactance] = list()
-
-        # Should accept buses
-        self.buses: List[dev.Bus] = list()
-
-        # array of connectivity nodes
-        self.connectivity_nodes: List[dev.ConnectivityNode] = list()
-
-        # array of busbars
-        self.bus_bars: List[dev.BusBar] = list()
-
-        # array of voltage levels
-        self.voltage_levels: List[dev.VoltageLevel] = list()
-
-        # List of loads
-        self.loads: List[dev.Load] = list()
-
-        # List of generators
-        self.generators: List[dev.Generator] = list()
-
-        # List of External Grids
-        self.external_grids: List[dev.ExternalGrid] = list()
-
-        # List of shunts
-        self.shunts: List[dev.Shunt] = list()
-
-        # List of batteries
-        self.batteries: List[dev.Battery] = list()
-
-        # List of static generators
-        self.static_generators: List[dev.StaticGenerator] = list()
-
-        # List of current injections devices
-        self.current_injections: List[dev.CurrentInjection] = list()
-
-        # List of linear shunt devices
-        self.controllable_shunts: List[dev.ControllableShunt] = list()
-
-        # Lists of measurements
-        self.pi_measurements: List[dev.PiMeasurement] = list()
-        self.qi_measurements: List[dev.QiMeasurement] = list()
-        self.vm_measurements: List[dev.VmMeasurement] = list()
-        self.pf_measurements: List[dev.PfMeasurement] = list()
-        self.qf_measurements: List[dev.QfMeasurement] = list()
-        self.if_measurements: List[dev.IfMeasurement] = list()
-
-        # List of overhead line objects
-        self.overhead_line_types: List[dev.OverheadLineType] = list()
-
-        # list of wire types
-        self.wire_types: List[dev.Wire] = list()
-
-        # underground cable lines
-        self.underground_cable_types: List[dev.UndergroundLineType] = list()
-
-        # sequence modelled lines
-        self.sequence_line_types: List[dev.SequenceLineType] = list()
-
-        # List of transformer types
-        self.transformer_types: List[dev.TransformerType] = list()
-
-        # list of branch groups
-        self.branch_groups: List[dev.BranchGroup] = list()
-
-        # list of substations
-        self.substations: List[dev.Substation] = list()  # [self.default_substation]
-
-        # list of areas
-        self.areas: List[dev.Area] = list()  # [self.default_area]
-
-        # list of zones
-        self.zones: List[dev.Zone] = list()  # [self.default_zone]
-
-        # list of countries
-        self.countries: List[dev.Country] = list()  # [self.default_country]
-
-        self.communities: List[dev.Community] = list()
-
-        self.regions: List[dev.Region] = list()
-
-        self.municipalities: List[dev.Municipality] = list()
-
         # logger of events
         self.logger: Logger = Logger()
-
-        # master time profile
-        self.time_profile: Union[pd.DatetimeIndex, None] = None
-
-        # contingencies
-        self.contingencies: List[dev.Contingency] = list()
-
-        # contingency group
-        self.contingency_groups: List[dev.ContingencyGroup] = list()
-
-        # investments
-        self.investments: List[dev.Investment] = list()
-
-        # investments group
-        self.investments_groups: List[dev.InvestmentsGroup] = list()
-
-        # technologies
-        self.technologies: List[dev.Technology] = list()
-
-        # Modelling authority
-        self.modelling_authorities: List[dev.ModellingAuthority] = list()
-
-        # fuels
-        self.fuels: List[dev.Fuel] = list()
-
-        # emission gasses
-        self.emission_gases: List[dev.EmissionGas] = list()
-
-        self.generators_technologies: List[dev.GeneratorTechnology] = list()
-
-        self.generators_fuels: List[dev.GeneratorFuel] = list()
-
-        self.generators_emissions: List[dev.GeneratorEmission] = list()
-
-        # fluids
-        self.fluid_nodes: List[dev.FluidNode] = list()
-
-        # fluid paths
-        self.fluid_paths: List[dev.FluidPath] = list()
-
-        # list of turbines
-        self.turbines: List[dev.FluidTurbine] = list()
-
-        # list of pumps
-        self.pumps: List[dev.FluidPump] = list()
-
-        # list of power to gas devices
-        self.p2xs: List[dev.FluidP2x] = list()
-
-        # objects with profiles
-        self.objects_with_profiles = {
-            "Regions": [
-                dev.Country(),
-                dev.Community(),
-                dev.Region(),
-                dev.Municipality(),
-                dev.Area(),
-                dev.Zone(),
-            ],
-            "Substation": [
-                dev.Substation(),
-                dev.VoltageLevel(),
-                dev.BusBar(),
-                dev.ConnectivityNode(),
-                dev.Bus(),
-            ],
-            "Injections": [
-                dev.Generator(),
-                dev.Battery(),
-                dev.Load(),
-                dev.StaticGenerator(),
-                dev.ExternalGrid(),
-                dev.Shunt(),
-                dev.ControllableShunt(),
-                dev.CurrentInjection()
-            ],
-            "Branches": [
-                dev.Line(),
-                dev.DcLine(),
-                dev.Transformer2W(),
-                dev.Winding(),
-                dev.Transformer3W(),
-                dev.SeriesReactance(),
-                dev.HvdcLine(),
-                dev.VSC(),
-                dev.UPFC(),
-            ],
-            "Fluid": [
-                dev.FluidNode(),
-                dev.FluidPath(),
-                dev.FluidTurbine(),
-                dev.FluidPump(),
-                dev.FluidP2x(),
-            ],
-            "Groups": [
-                dev.ContingencyGroup(),
-                dev.Contingency(),
-                dev.InvestmentsGroup(),
-                dev.Investment(),
-                dev.BranchGroup(),
-                dev.ModellingAuthority()
-            ],
-            "Tags & Associations": [
-                dev.Technology(),
-                dev.Fuel(),
-                dev.EmissionGas(),
-                dev.GeneratorTechnology(),
-                dev.GeneratorFuel(),
-                dev.GeneratorEmission(),
-            ],
-            "Catalogue": [
-                dev.Wire(),
-                dev.OverheadLineType(),
-                dev.UndergroundLineType(),
-                dev.SequenceLineType(),
-                dev.TransformerType()
-            ]
-        }
-
-        # dictionary of profile magnitudes per object
-        self.profile_magnitudes = dict()
-
-        self.device_type_name_dict: Dict[str, DeviceType] = dict()
-
-        '''
-        self.type_name = 'Shunt'
-
-        self.properties_with_profile = ['Y']
-        '''
-        for key, elm_list in self.objects_with_profiles.items():
-            for elm in elm_list:
-                if elm.properties_with_profile is not None:
-                    key = str(elm.device_type.value)
-                    profile_attr = list(elm.properties_with_profile.keys())
-                    profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
-                    self.profile_magnitudes[key] = (profile_attr, profile_types)
-                    self.device_type_name_dict[key] = elm.device_type
-
-        # list of declared diagrams
-        self.diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
 
     def __str__(self):
         return str(self.name)
 
-    @property
-    def snapshot_time(self) -> dateslib.datetime:
+    def valid_for_simulation(self) -> bool:
         """
-        Returns the current snapshot time
-        :return: Datetime
+        Checks if the data could be simulated
+        :return: true / false
         """
-        return self._snapshot_time
-
-    @snapshot_time.setter
-    def snapshot_time(self, val: dateslib.datetime):
-        if type(val) is dateslib.datetime:  # isinstance doesn't work for this
-            self._snapshot_time = dateslib.datetime(year=val.year,
-                                                    month=val.month,
-                                                    day=val.day,
-                                                    hour=val.hour,
-                                                    minute=val.minute,
-                                                    second=val.second,
-                                                    microsecond=val.microsecond)
-        elif type(val) is pd.Timestamp:  # isinstance doesn't work for this
-            self._snapshot_time = dateslib.datetime(year=val.year,
-                                                    month=val.month,
-                                                    day=val.day,
-                                                    hour=val.hour,
-                                                    minute=val.minute,
-                                                    second=val.second,
-                                                    microsecond=val.microsecond)
-        else:
-            raise Exception(f'unsupported value set {val} for snapshot_time')
-
-    @property
-    def has_time_series(self) -> bool:
-        """
-        Area there time series?
-        :return: True / False
-        """
-        # sanity check
-        if len(self.buses) > 0:
-            if self.time_profile is not None:
-                if self.buses[0].active_prof.size() != self.get_time_number():
-                    warnings.warn('The grid has a time signature but the objects do not!')
-
-        return self.time_profile is not None
-
-    def get_unix_time(self) -> IntVec:
-        """
-        Get the unix time representation of the time
-        :return:
-        """
-        if self.has_time_series:
-            return self.time_profile.values.astype(np.int64) // 10 ** 9
-        else:
-            return np.zeros(0, dtype=np.int64)
-
-    def set_unix_time(self, arr: IntVec):
-        """
-        Set the time with a unix time
-        :param arr: UNIX time iterable
-        """
-        self.time_profile = pd.to_datetime(arr, unit='s')
-
-    def get_snapshot_time_unix(self) -> int:
-        """
-        Get the unix representation of the snapshot time
-        :return: int
-        """
-        return int(self.snapshot_time.timestamp())
-
-    def set_snapshot_time_unix(self, val: int) -> None:
-        """
-        Convert unix datetime to python datetime
-        :param val: seconds since 1970-01-01T00:00:00
-        """
-        self.snapshot_time = pd.to_datetime(val * 1e9)
+        return (self.get_bus_number() + self.get_connectivity_nodes_number()) > 0
 
     def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
         """
@@ -536,195 +226,12 @@ class MultiCircuit:
             d[key] = [o.device_type.value for o in elm_list]
         return d
 
-    def get_zones(self) -> List[dev.Zone]:
-        """
-        Get list of zones
-        :return: List[dev.Zone]
-        """
-        return self.zones
-
-    def get_zone_number(self) -> int:
-        """
-        Get number of areas
-        :return: number of areas
-        """
-        return len(self.zones)
-
-    def get_areas(self) -> List[dev.Area]:
-        """
-        Get list of areas
-        :return: List[dev.Area]
-        """
-        return self.areas
-
-    def get_area_names(self) -> StrVec:
-        """
-        Get array of area names
-        :return: StrVec
-        """
-        return np.array([a.name for a in self.areas])
-
-    def get_area_number(self) -> int:
-        """
-        Get number of areas
-        :return: number of areas
-        """
-        return len(self.areas)
-
-    def get_substations(self) -> List[dev.Substation]:
-        """
-        Get a list of substations
-        :return: List[dev.Substation]
-        """
-        return self.substations
-
-    def get_substation_number(self) -> int:
-        """
-        Get number of areas
-        :return: number of areas
-        """
-        return len(self.substations)
-
-    def get_bus_number(self) -> int:
-        """
-        Return the number of buses
-        :return: number
-        """
-        return len(self.buses)
-
     def get_bus_default_types(self) -> IntVec:
         """
         Return an array of bus types
         :return: number
         """
-        return np.ones(len(self.buses), dtype=int)
-
-    def get_branch_lists_wo_hvdc(self) -> List[List[BRANCH_TYPES]]:
-        """
-        Get list of the branch lists
-        :return: List[List[BRANCH_TYPES]]
-        """
-        return [
-            self.lines,
-            self.dc_lines,
-            self.transformers2w,
-            self.windings,
-            self.vsc_devices,
-            self.upfc_devices,
-            self.series_reactances
-        ]
-
-    def get_branch_names_wo_hvdc(self) -> StrVec:
-        """
-        Get all branch names without HVDC devices
-        :return: StrVec
-        """
-        names = list()
-        for lst in self.get_branch_lists_wo_hvdc():
-            for elm in lst:
-                names.append(elm.name)
-        return np.array(names)
-
-    def get_branch_lists(self) -> List[List[BRANCH_TYPES]]:
-        """
-        Get list of the branch lists
-        :return: list of lists
-        """
-        lst = self.get_branch_lists_wo_hvdc()
-        lst.append(self.hvdc_lines)
-        return lst
-
-    def get_branch_number(self) -> int:
-        """
-        return the number of Branches (of all types)
-        :return: number
-        """
-        m = 0
-        for branch_list in self.get_branch_lists():
-            m += len(branch_list)
-        return m
-
-    def get_branch_names(self) -> StrVec:
-        """
-        Get array of all branch names
-        :return: StrVec
-        """
-
-        names = list()
-        for lst in self.get_branch_lists():
-            for elm in lst:
-                names.append(elm.name)
-        return np.array(names)
-
-    def get_branch_number_wo_hvdc(self) -> int:
-        """
-        return the number of Branches (of all types)
-        :return: number
-        """
-        count = 0
-        for branch_list in self.get_branch_lists_wo_hvdc():
-            count += len(branch_list)
-        return count
-
-    def get_branch_number_wo_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
-        """
-        get the from and to arrays of indices
-        :return: IntVec, IntVec
-        """
-        devices = self.get_branches_wo_hvdc()
-        m = len(devices)
-        F = np.zeros(m, dtype=int)
-        T = np.zeros(m, dtype=int)
-        bus_dict = self.get_bus_index_dict()
-        for i, elm in enumerate(devices):
-            F[i] = bus_dict[elm.bus_from]
-            T[i] = bus_dict[elm.bus_to]
-        return F, T
-
-    def get_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
-        """
-        get the from and to arrays of indices of HVDC lines
-        :return: IntVec, IntVec
-        """
-        m = len(self.hvdc_lines)
-        F = np.zeros(m, dtype=int)
-        T = np.zeros(m, dtype=int)
-        bus_dict = self.get_bus_index_dict()
-        for i, elm in enumerate(self.hvdc_lines):
-            F[i] = bus_dict[elm.bus_from]
-            T[i] = bus_dict[elm.bus_to]
-        return F, T
-
-    def get_time_number(self) -> int:
-        """
-        Return the number of buses
-        :return: number
-        """
-        if self.time_profile is not None:
-            return len(self.time_profile)
-        else:
-            return 0
-
-    def get_time_array(self) -> pd.DatetimeIndex:
-        """
-        Get the time array
-        :return: pd.DatetimeIndex
-        """
-        return self.time_profile
-
-    def get_all_time_indices(self) -> IntVec:
-        """
-        Get array with all the time steps
-        :return: IntVec
-        """
-        return np.arange(0, self.get_time_number())
-
-    def get_contingency_number(self) -> int:
-        """
-        Get number of contingencies
-        :return:
-        """
-        return len(self.contingencies)
+        return np.ones(len(self._buses), dtype=int)
 
     def get_dimensions(self):
         """
@@ -753,1729 +260,6 @@ class MultiCircuit:
         """
 
         return tp.find_different_states(states_array=self.get_branch_active_time_array())
-
-    def get_diagrams(self) -> List[Union[dev.MapDiagram, dev.SchematicDiagram]]:
-        """
-        Get list of diagrams
-        :return: MapDiagram, SchematicDiagram device
-        """
-        return self.diagrams
-
-    def has_diagrams(self) -> bool:
-        """
-        Check if there are diagrams stored
-        :return:
-        """
-        return len(self.diagrams) > 0
-
-    def add_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
-        """
-        Add diagram
-        :param diagram: MapDiagram, SchematicDiagram device
-        :return:
-        """
-        self.diagrams.append(diagram)
-
-    def remove_diagram(self, diagram: Union[dev.MapDiagram, dev.SchematicDiagram]):
-        """
-        Remove diagrams
-        :param diagram: MapDiagram, SchematicDiagram device
-        """
-        self.diagrams.remove(diagram)
-
-    def get_buses(self) -> List[dev.Bus]:
-        """
-        List of buses
-        :return:
-        """
-        return self.buses
-
-    def get_bus_at(self, i: int) -> dev.Bus:
-        """
-        List of buses
-        :param i: index
-        :return:
-        """
-        return self.buses[i]
-
-    def get_bus_names(self) -> StrVec:
-        """
-        List of bus names
-        :return:
-        """
-        return np.array([e.name for e in self.buses])
-
-    def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
-        """
-        Return all the branch objects.
-        :return: lines + transformers 2w + hvdc
-        """
-        lst = list()
-        for dev_list in self.get_branch_lists_wo_hvdc():
-            lst += dev_list
-        return lst
-
-    def get_branches_wo_hvdc_names(self) -> List[str]:
-        """
-        Get the non HVDC branches' names
-        :return: list of names
-        """
-        return [e.name for e in self.get_branches_wo_hvdc()]
-
-    def get_branches(self) -> List[BRANCH_TYPES]:
-        """
-        Return all the branch objects
-        :return: lines + transformers 2w + hvdc
-        """
-        return self.get_branches_wo_hvdc() + self.hvdc_lines
-
-    def get_branches_wo_hvdc_index_dict(self) -> Dict[BRANCH_TYPES, int]:
-        """
-        Get the branch to index dictionary
-        :return:
-        """
-        return {b: i for i, b in enumerate(self.get_branches_wo_hvdc())}
-
-    def get_injection_devices_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        return [self.get_generators(),
-                self.get_batteries(),
-                self.get_loads(),
-                self.get_external_grids(),
-                self.get_static_generators(),
-                self.get_shunts(),
-                self.get_controllable_shunts(),
-                self.get_current_injections()]
-
-    def get_injection_devices(self) -> List[INJECTION_DEVICE_TYPES]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-
-        elms = list()
-        for lst in self.get_injection_devices_lists():
-            elms += lst
-        return elms
-
-    def get_load_like_devices_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        return [self.get_loads(),
-                self.get_external_grids(),
-                self.get_static_generators(),
-                self.get_controllable_shunts(),
-                self.get_current_injections()]
-
-    def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        elms = list()
-        for lst in self.get_load_like_devices_lists():
-            elms += lst
-        return elms
-
-    def get_load_like_device_number(self) -> int:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        n = 0
-        for lst in self.get_load_like_devices_lists():
-            n += len(lst)
-
-        return n
-
-    def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        return (self.get_generators()
-                + self.get_batteries())
-
-    def get_fluid_devices(self) -> List[FLUID_TYPES]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        return (self.get_fluid_nodes()
-                + self.get_fluid_paths()
-                + self.get_fluid_pumps()
-                + self.get_fluid_turbines()
-                + self.get_fluid_p2xs())
-
-    def get_fluid_lists(self) -> List[List[FLUID_TYPES]]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        return [self.get_fluid_nodes(),
-                self.get_fluid_paths(),
-                self.get_fluid_pumps(),
-                self.get_fluid_turbines(),
-                self.get_fluid_p2xs()]
-
-    def get_contingency_devices(self) -> List[ALL_DEV_TYPES]:
-        """
-        Get a list of devices susceptible to be included in contingencies
-        :return: list of devices
-        """
-        return self.get_branches() + self.get_generators()
-
-    def get_investment_devices(self) -> List[ALL_DEV_TYPES]:
-        """
-        Get a list of devices susceptible to be included in investments
-        :return: list of devices
-        """
-        return (self.get_branches() + self.get_generators() + self.get_batteries() +
-                self.get_shunts() + self.get_loads() + self.buses)
-
-    def get_investmenst_by_groups(self) -> List[Tuple[dev.InvestmentsGroup, List[dev.Investment]]]:
-        """
-        Get a dictionary of investments goups and their
-        :return: list of investment groups and their list of associated investments
-        """
-        d = {e: list() for e in self.investments_groups}
-
-        for inv in self.investments:
-            inv_list = d.get(inv.group, None)
-
-            if inv_list is not None:
-                inv_list.append(inv)
-
-        # second pass, sort it
-        res = list()
-        for inv_group in self.investments_groups:
-
-            inv_list = d.get(inv_group, None)
-
-            if inv_list is not None:
-                res.append((inv_group, inv_list))
-            else:
-                res.append((inv_group, list()))
-
-        return res
-
-    def get_investmenst_by_groups_index_dict(self) -> Dict[int, List[dev.Investment]]:
-        """
-        Get a dictionary of investments goups and their
-        :return: Dict[investment group index] = list of investments
-        """
-        d = {e: idx for idx, e in enumerate(self.investments_groups)}
-
-        res = dict()
-        for inv in self.investments:
-            inv_group_idx = d.get(inv.group, None)
-            inv_list = res.get(inv_group_idx, None)
-            if inv_list is None:
-                res[inv_group_idx] = [inv]
-            else:
-                inv_list.append(inv)
-
-        return res
-
-    def get_investment_groups_names(self) -> StrVec:
-        """
-
-        :return:
-        """
-        return np.array([e.name for e in self.investments_groups])
-
-    def get_lines(self) -> List[dev.Line]:
-        """
-        get list of ac lines
-        :return: list of lines
-        """
-        return self.lines
-
-    def get_transformers2w(self) -> List[dev.Transformer2W]:
-        """
-        get list of 2-winding transformers
-        :return: list of transformers
-        """
-        return self.transformers2w
-
-    def get_transformers2w_number(self) -> int:
-        """
-        get the number of 2-winding transformers
-        :return: int
-        """
-        return len(self.transformers2w)
-
-    def get_transformers2w_names(self) -> List[str]:
-        """
-        get a list of names of the 2-winding transformers
-        :return: list of names
-        """
-        return [elm.name for elm in self.transformers2w]
-
-    def get_windings(self) -> List[dev.Winding]:
-        """
-
-        :return:
-        """
-        return self.windings
-
-    def get_windings_number(self) -> int:
-        """
-
-        :return:
-        """
-        return len(self.windings)
-
-    def get_windings_names(self) -> List[str]:
-        """
-
-        :return:
-        """
-        return [elm.name for elm in self.windings]
-
-    def get_transformers3w(self) -> List[dev.Transformer3W]:
-        """
-
-        :return:
-        """
-        return self.transformers3w
-
-    def get_transformers3w_number(self) -> int:
-        """
-
-        :return:
-        """
-        return len(self.transformers3w)
-
-    def get_transformers3w_names(self) -> List[str]:
-        """
-
-        :return:
-        """
-        return [elm.name for elm in self.transformers3w]
-
-    def get_vsc(self) -> List[dev.VSC]:
-        """
-
-        :return:
-        """
-        return self.vsc_devices
-
-    def get_dc_lines(self) -> List[dev.DcLine]:
-        """
-
-        :return:
-        """
-        return self.dc_lines
-
-    def get_upfc(self) -> List[dev.UPFC]:
-        """
-
-        :return:
-        """
-        return self.upfc_devices
-
-    def get_switches(self) -> List[dev.Switch]:
-        """
-
-        :return:
-        """
-        return self.switch_devices
-
-    def get_hvdc(self) -> List[dev.HvdcLine]:
-        """
-
-        :return:
-        """
-        return self.hvdc_lines
-
-    def get_hvdc_number(self) -> int:
-        """
-
-        :return:
-        """
-        return len(self.hvdc_lines)
-
-    def get_hvdc_names(self) -> StrVec:
-        """
-
-        :return:
-        """
-        return np.array([elm.name for elm in self.hvdc_lines])
-
-    def get_fuels(self) -> List[dev.Fuel]:
-        """
-
-        :return:
-        """
-        return self.fuels
-
-    def get_fuel_number(self) -> int:
-        """
-
-        :return:
-        """
-        return len(self.fuels)
-
-    def get_fuel_names(self) -> StrVec:
-        """
-
-        :return:
-        """
-        return np.array([elm.name for elm in self.fuels])
-
-    def get_emissions(self) -> List[dev.EmissionGas]:
-        """
-
-        :return:
-        """
-        return self.emission_gases
-
-    def get_emission_number(self) -> int:
-        """
-
-        :return:
-        """
-        return len(self.emission_gases)
-
-    def get_emission_names(self) -> StrVec:
-        """
-
-        :return:
-        """
-        return np.array([elm.name for elm in self.emission_gases])
-
-    def get_loads(self) -> List[dev.Load]:
-        """
-        Returns a list of :ref:`Load<load>` objects in the grid.
-        """
-        return self.loads
-
-    def get_loads_number(self) -> int:
-        """
-        Returns a list of :ref:`Load<load>` objects in the grid.
-        """
-        return len(self.loads)
-
-    def get_load_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`Load<load>` names.
-        """
-        return np.array([elm.name for elm in self.loads])
-
-    def get_external_grids(self) -> List[dev.ExternalGrid]:
-        """
-        Returns a list of :ref:`ExternalGrid<external_grid>` objects in the grid.
-        """
-        return self.external_grids
-
-    def get_external_grids_number(self) -> int:
-        """
-        Returns a list of :ref:`ExternalGrid<external_grid>` objects in the grid.
-        """
-        return len(self.external_grids)
-
-    def get_external_grid_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`ExternalGrid<external_grid>` names.
-        """
-        return np.array([elm.name for elm in self.external_grids])
-
-    def get_static_generators(self) -> List[dev.StaticGenerator]:
-        """
-        Returns a list of :ref:`StaticGenerator<static_generator>` objects in the grid.
-        """
-        return self.static_generators
-
-    def get_static_generators_number(self) -> int:
-        """
-        Return number of static generators
-        :return:
-        """
-        return len(self.static_generators)
-
-    def get_static_generators_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`StaticGenerator<static_generator>` names.
-        """
-        return np.array([elm.name for elm in self.static_generators])
-
-    def get_shunts(self) -> List[dev.Shunt]:
-        """
-        Returns a list of :ref:`Shunt<shunt>` objects in the grid.
-        """
-        return self.shunts
-
-    def get_shunts_number(self) -> int:
-        """
-        Get the number of shunts
-        """
-        return len(self.shunts)
-
-    def get_shunt_names(self):
-        """
-        Returns a list of :ref:`Shunt<shunt>` names.
-        """
-        return np.array([elm.name for elm in self.shunts])
-
-    def get_generators(self) -> List[dev.Generator]:
-        """
-        Returns a list of :ref:`Generator<generator>` objects in the grid.
-        """
-        return self.generators
-
-    def get_generators_number(self) -> int:
-        """
-        Get the number of generators
-        :return: int
-        """
-        return len(self.generators)
-
-    def get_generator_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`Generator<generator>` names.
-        """
-        return np.array([elm.name for elm in self.generators])
-
-    def get_batteries(self) -> List[dev.Battery]:
-        """
-        Returns a list of :ref:`Battery<battery>` objects in the grid.
-        """
-        return self.batteries
-
-    def get_batteries_number(self) -> int:
-        """
-        Returns a list of :ref:`Battery<battery>` objects in the grid.
-        """
-        return len(self.batteries)
-
-    def get_battery_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`Battery<battery>` names.
-        """
-        return np.array([elm.name for elm in self.batteries])
-
-    def get_battery_capacities(self):
-        """
-        Returns a list of :ref:`Battery<battery>` capacities.
-        """
-        return np.array([elm.Enom for elm in self.batteries])
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # current_injections
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_current_injections(self) -> List[dev.CurrentInjection]:
-        """
-        List of current_injections
-        :return: List[dev.CurrentInjection]
-        """
-        return self.current_injections
-
-    def get_current_injections_number(self) -> int:
-        """
-        Size of the list of current_injections
-        :return: size of current_injections
-        """
-        return len(self.current_injections)
-
-    def get_current_injection_at(self, i: int) -> dev.CurrentInjection:
-        """
-        Get current_injection at i
-        :param i: index
-        :return: CurrentInjection
-        """
-        return self.current_injections[i]
-
-    def get_current_injection_names(self) -> StrVec:
-        """
-        Array of current_injection names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.current_injections])
-
-    def add_current_injection(self,
-                              bus: dev.Bus,
-                              api_obj: Union[None, dev.CurrentInjection] = None) -> dev.CurrentInjection:
-        """
-        Add a CurrentInjection object
-        :param bus: Bus
-        :param api_obj: CurrentInjection instance
-        """
-
-        if api_obj is None:
-            api_obj = dev.CurrentInjection()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        if api_obj.name == 'CInj':
-            api_obj.name += '@' + bus.name
-
-        self.current_injections.append(api_obj)
-
-        return api_obj
-
-    def delete_current_injection(self, obj: dev.CurrentInjection) -> None:
-        """
-        Add a CurrentInjection object
-        :param obj: CurrentInjection instance
-        """
-
-        self.current_injections.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # controllable_shunts
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_controllable_shunts(self) -> List[dev.ControllableShunt]:
-        """
-        List of controllable_shunts
-        :return: List[dev.LinearShunt]
-        """
-        return self.controllable_shunts
-
-    def get_controllable_shunts_number(self) -> int:
-        """
-        Size of the list of controllable_shunts
-        :return: size of controllable_shunts
-        """
-        return len(self.controllable_shunts)
-
-    def get_controllable_shunt_at(self, i: int) -> dev.ControllableShunt:
-        """
-        Get linear_shunt at i
-        :param i: index
-        :return: LinearShunt
-        """
-        return self.controllable_shunts[i]
-
-    def get_controllable_shunt_names(self) -> StrVec:
-        """
-        Array of linear_shunt names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.controllable_shunts])
-
-    def add_controllable_shunt(self,
-                               bus: dev.Bus,
-                               api_obj: Union[None, dev.ControllableShunt] = None) -> dev.ControllableShunt:
-        """
-        Add a ControllableShunt object
-        :param bus: Bus
-        :param api_obj: ControllableShunt instance
-        """
-
-        if api_obj is None:
-            api_obj = dev.ControllableShunt()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        if api_obj.name == 'CShutn':
-            api_obj.name += '@' + bus.name
-
-        self.controllable_shunts.append(api_obj)
-
-        return api_obj
-
-    def delete_controllable_shunt(self, obj: dev.ControllableShunt) -> None:
-        """
-        Add a LinearShunt object
-        :param obj: LinearShunt instance
-        """
-
-        self.controllable_shunts.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # voltage_levels
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_voltage_levels(self) -> List[dev.VoltageLevel]:
-        """
-        List of voltage_levels
-        :return: List[dev.VoltageLevel]
-        """
-        return self.voltage_levels
-
-    def get_voltage_levels_number(self) -> int:
-        """
-        Size of the list of voltage_levels
-        :return: size of voltage_levels
-        """
-        return len(self.voltage_levels)
-
-    def get_voltage_level_at(self, i: int) -> dev.VoltageLevel:
-        """
-        Get voltage_level at i
-        :param i: index
-        :return: VoltageLevel
-        """
-        return self.voltage_levels[i]
-
-    def get_voltage_level_names(self) -> StrVec:
-        """
-        Array of voltage_level names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.voltage_levels])
-
-    def add_voltage_level(self, obj: dev.VoltageLevel):
-        """
-        Add a VoltageLevel object
-        :param obj: VoltageLevel instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.voltage_levels.append(obj)
-
-    def delete_voltage_level(self, obj: dev.VoltageLevel) -> None:
-        """
-        Add a VoltageLevel object
-        :param obj: VoltageLevel instance
-        """
-
-        self.voltage_levels.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # pi_measurements
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_pi_measurements(self) -> List[dev.PiMeasurement]:
-        """
-        List of pi_measurements
-        :return: List[dev.PiMeasurement]
-        """
-        return self.pi_measurements
-
-    def get_pi_measurements_number(self) -> int:
-        """
-        Size of the list of pi_measurements
-        :return: size of pi_measurements
-        """
-        return len(self.pi_measurements)
-
-    def get_pi_measurement_at(self, i: int) -> dev.PiMeasurement:
-        """
-        Get pi_measurement at i
-        :param i: index
-        :return: PiMeasurement
-        """
-        return self.pi_measurements[i]
-
-    def get_pi_measurement_names(self) -> StrVec:
-        """
-        Array of pi_measurement names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.pi_measurements])
-
-    def add_pi_measurement(self, obj: dev.PiMeasurement):
-        """
-        Add a PiMeasurement object
-        :param obj: PiMeasurement instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.pi_measurements.append(obj)
-
-    def delete_pi_measurement(self, obj: dev.PiMeasurement) -> None:
-        """
-        Add a PiMeasurement object
-        :param obj: PiMeasurement instance
-        """
-
-        self.pi_measurements.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # qi_measurements
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_qi_measurements(self) -> List[dev.QiMeasurement]:
-        """
-        List of qi_measurements
-        :return: List[dev.QiMeasurement]
-        """
-        return self.qi_measurements
-
-    def get_qi_measurements_number(self) -> int:
-        """
-        Size of the list of qi_measurements
-        :return: size of qi_measurements
-        """
-        return len(self.qi_measurements)
-
-    def get_qi_measurement_at(self, i: int) -> dev.QiMeasurement:
-        """
-        Get qi_measurement at i
-        :param i: index
-        :return: QiMeasurement
-        """
-        return self.qi_measurements[i]
-
-    def get_qi_measurement_names(self) -> StrVec:
-        """
-        Array of qi_measurement names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.qi_measurements])
-
-    def add_qi_measurement(self, obj: dev.QiMeasurement):
-        """
-        Add a QiMeasurement object
-        :param obj: QiMeasurement instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.qi_measurements.append(obj)
-
-    def delete_qi_measurement(self, obj: dev.QiMeasurement) -> None:
-        """
-        Add a QiMeasurement object
-        :param obj: QiMeasurement instance
-        """
-
-        self.qi_measurements.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # vm_measurements
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_vm_measurements(self) -> List[dev.VmMeasurement]:
-        """
-        List of vm_measurements
-        :return: List[dev.VmMeasurement]
-        """
-        return self.vm_measurements
-
-    def get_vm_measurements_number(self) -> int:
-        """
-        Size of the list of vm_measurements
-        :return: size of vm_measurements
-        """
-        return len(self.vm_measurements)
-
-    def get_vm_measurement_at(self, i: int) -> dev.VmMeasurement:
-        """
-        Get vm_measurement at i
-        :param i: index
-        :return: VmMeasurement
-        """
-        return self.vm_measurements[i]
-
-    def get_vm_measurement_names(self) -> StrVec:
-        """
-        Array of vm_measurement names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.vm_measurements])
-
-    def add_vm_measurement(self, obj: dev.VmMeasurement):
-        """
-        Add a VmMeasurement object
-        :param obj: VmMeasurement instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.vm_measurements.append(obj)
-
-    def delete_vm_measurement(self, obj: dev.VmMeasurement) -> None:
-        """
-        Add a VmMeasurement object
-        :param obj: VmMeasurement instance
-        """
-
-        self.vm_measurements.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # pf_measurements
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_pf_measurements(self) -> List[dev.PfMeasurement]:
-        """
-        List of pf_measurements
-        :return: List[dev.PfMeasurement]
-        """
-        return self.pf_measurements
-
-    def get_pf_measurements_number(self) -> int:
-        """
-        Size of the list of pf_measurements
-        :return: size of pf_measurements
-        """
-        return len(self.pf_measurements)
-
-    def get_pf_measurement_at(self, i: int) -> dev.PfMeasurement:
-        """
-        Get pf_measurement at i
-        :param i: index
-        :return: PfMeasurement
-        """
-        return self.pf_measurements[i]
-
-    def get_pf_measurement_names(self) -> StrVec:
-        """
-        Array of pf_measurement names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.pf_measurements])
-
-    def add_pf_measurement(self, obj: dev.PfMeasurement):
-        """
-        Add a PfMeasurement object
-        :param obj: PfMeasurement instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.pf_measurements.append(obj)
-
-    def delete_pf_measurement(self, obj: dev.PfMeasurement) -> None:
-        """
-        Add a PfMeasurement object
-        :param obj: PfMeasurement instance
-        """
-
-        self.pf_measurements.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # qf_measurements
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_qf_measurements(self) -> List[dev.QfMeasurement]:
-        """
-        List of qf_measurements
-        :return: List[dev.QfMeasurement]
-        """
-        return self.qf_measurements
-
-    def get_qf_measurements_number(self) -> int:
-        """
-        Size of the list of qf_measurements
-        :return: size of qf_measurements
-        """
-        return len(self.qf_measurements)
-
-    def get_qf_measurement_at(self, i: int) -> dev.QfMeasurement:
-        """
-        Get qf_measurement at i
-        :param i: index
-        :return: QfMeasurement
-        """
-        return self.qf_measurements[i]
-
-    def get_qf_measurement_names(self) -> StrVec:
-        """
-        Array of qf_measurement names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.qf_measurements])
-
-    def add_qf_measurement(self, obj: dev.QfMeasurement):
-        """
-        Add a QfMeasurement object
-        :param obj: QfMeasurement instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.qf_measurements.append(obj)
-
-    def delete_qf_measurement(self, obj: dev.QfMeasurement) -> None:
-        """
-        Add a QfMeasurement object
-        :param obj: QfMeasurement instance
-        """
-
-        self.qf_measurements.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # if_measurements
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_if_measurements(self) -> List[dev.IfMeasurement]:
-        """
-        List of if_measurements
-        :return: List[dev.IfMeasurement]
-        """
-        return self.if_measurements
-
-    def get_if_measurements_number(self) -> int:
-        """
-        Size of the list of if_measurements
-        :return: size of if_measurements
-        """
-        return len(self.if_measurements)
-
-    def get_if_measurement_at(self, i: int) -> dev.IfMeasurement:
-        """
-        Get if_measurement at i
-        :param i: index
-        :return: IfMeasurement
-        """
-        return self.if_measurements[i]
-
-    def get_if_measurement_names(self) -> StrVec:
-        """
-        Array of if_measurement names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.if_measurements])
-
-    def add_if_measurement(self, obj: dev.IfMeasurement):
-        """
-        Add a IfMeasurement object
-        :param obj: IfMeasurement instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.if_measurements.append(obj)
-
-    def delete_if_measurement(self, obj: dev.IfMeasurement) -> None:
-        """
-        Add a IfMeasurement object
-        :param obj: IfMeasurement instance
-        """
-
-        self.if_measurements.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # branch_groups
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_branch_groups(self) -> List[dev.BranchGroup]:
-        """
-        List of branch_groups
-        :return: List[dev.BranchGroup]
-        """
-        return self.branch_groups
-
-    def get_branch_groups_number(self) -> int:
-        """
-        Size of the list of branch_groups
-        :return: size of branch_groups
-        """
-        return len(self.branch_groups)
-
-    def get_branch_group_at(self, i: int) -> dev.BranchGroup:
-        """
-        Get branch_group at i
-        :param i: index
-        :return: BranchGroup
-        """
-        return self.branch_groups[i]
-
-    def get_branch_group_names(self) -> StrVec:
-        """
-        Array of branch_group names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.branch_groups])
-
-    def add_branch_group(self, obj: dev.BranchGroup):
-        """
-        Add a BranchGroup object
-        :param obj: BranchGroup instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.branch_groups.append(obj)
-
-    def delete_branch_group(self, obj: dev.BranchGroup) -> None:
-        """
-        Add a BranchGroup object
-        :param obj: BranchGroup instance
-        """
-
-        self.branch_groups.remove(obj)
-
-    # ------------------------------------------------------------------------------------------------------------------
-    # modelling_authority
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def get_modelling_authorities(self) -> List[dev.ModellingAuthority]:
-        """
-        List of modelling_authorities
-        :return: List[dev.ModellingAuthority]
-        """
-        return self.modelling_authorities
-
-    def get_modelling_authorities_number(self) -> int:
-        """
-        Size of the list of modelling_authorities
-        :return: size of modelling_authorities
-        """
-        return len(self.modelling_authorities)
-
-    def get_modelling_authority_at(self, i: int) -> dev.ModellingAuthority:
-        """
-        Get modelling_authority at i
-        :param i: index
-        :return: ModellingAuthority
-        """
-        return self.modelling_authorities[i]
-
-    def get_modelling_authority_names(self) -> StrVec:
-        """
-        Array of modelling_authority names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.modelling_authorities])
-
-    def add_modelling_authority(self, obj: dev.ModellingAuthority):
-        """
-        Add a ModellingAuthority object
-        :param obj: ModellingAuthority instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.modelling_authorities.append(obj)
-
-    def delete_modelling_authority(self, obj: dev.ModellingAuthority) -> None:
-        """
-        Add a ModellingAuthority object
-        :param obj: ModellingAuthority instance
-        """
-
-        self.modelling_authorities.remove(obj)
-
-    def get_elements_by_type(self, device_type: DeviceType) -> List[ALL_DEV_TYPES]:
-        """
-        Get set of elements and their parent nodes
-        :param device_type: DeviceTYpe instance
-        :return: List of elements, it raises an exception if the elements are unknown
-        """
-
-        if device_type == DeviceType.LoadDevice:
-            return self.get_loads()
-
-        elif device_type == DeviceType.StaticGeneratorDevice:
-            return self.get_static_generators()
-
-        elif device_type == DeviceType.GeneratorDevice:
-            return self.get_generators()
-
-        elif device_type == DeviceType.BatteryDevice:
-            return self.get_batteries()
-
-        elif device_type == DeviceType.ShuntDevice:
-            return self.get_shunts()
-
-        elif device_type == DeviceType.ExternalGridDevice:
-            return self.get_external_grids()
-
-        elif device_type == DeviceType.CurrentInjectionDevice:
-            return self.get_current_injections()
-
-        elif device_type == DeviceType.ControllableShuntDevice:
-            return self.get_controllable_shunts()
-
-        elif device_type == DeviceType.LineDevice:
-            return self.lines
-
-        elif device_type == DeviceType.LineLocation:
-            locations = list()
-            branches_w_locations = [self.lines, self.dc_lines, self.hvdc_lines, self.fluid_paths]
-            for lst in branches_w_locations:
-                for line in lst:
-                    locations += line.locations.data
-            return locations
-
-        elif device_type == DeviceType.Transformer2WDevice:
-            return self.transformers2w
-
-        elif device_type == DeviceType.Transformer3WDevice:
-            return self.transformers3w
-
-        elif device_type == DeviceType.WindingDevice:
-            return self.windings
-
-        elif device_type == DeviceType.SeriesReactanceDevice:
-            return self.series_reactances
-
-        elif device_type == DeviceType.HVDCLineDevice:
-            return self.hvdc_lines
-
-        elif device_type == DeviceType.UpfcDevice:
-            return self.upfc_devices
-
-        elif device_type == DeviceType.VscDevice:
-            return self.vsc_devices
-
-        elif device_type == DeviceType.BranchGroupDevice:
-            return self.branch_groups
-
-        elif device_type == DeviceType.BusDevice:
-            return self.buses
-
-        elif device_type == DeviceType.OverheadLineTypeDevice:
-            return self.overhead_line_types
-
-        elif device_type == DeviceType.TransformerTypeDevice:
-            return self.transformer_types
-
-        elif device_type == DeviceType.UnderGroundLineDevice:
-            return self.underground_cable_types
-
-        elif device_type == DeviceType.SequenceLineDevice:
-            return self.sequence_line_types
-
-        elif device_type == DeviceType.WireDevice:
-            return self.wire_types
-
-        elif device_type == DeviceType.DCLineDevice:
-            return self.dc_lines
-
-        elif device_type == DeviceType.SwitchDevice:
-            return self.switch_devices
-
-        elif device_type == DeviceType.SubstationDevice:
-            return self.substations
-
-        elif device_type == DeviceType.VoltageLevelDevice:
-            return self.voltage_levels
-
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            return self.connectivity_nodes
-
-        elif device_type == DeviceType.BusBarDevice:
-            return self.bus_bars
-
-        elif device_type == DeviceType.AreaDevice:
-            return self.areas
-
-        elif device_type == DeviceType.ZoneDevice:
-            return self.zones
-
-        elif device_type == DeviceType.CountryDevice:
-            return self.countries
-
-        elif device_type == DeviceType.CommunityDevice:
-            return self.communities
-
-        elif device_type == DeviceType.RegionDevice:
-            return self.regions
-
-        elif device_type == DeviceType.MunicipalityDevice:
-            return self.municipalities
-
-        elif device_type == DeviceType.ContingencyDevice:
-            return self.contingencies
-
-        elif device_type == DeviceType.ContingencyGroupDevice:
-            return self.contingency_groups
-
-        elif device_type == DeviceType.Technology:
-            return self.technologies
-
-        elif device_type == DeviceType.InvestmentDevice:
-            return self.investments
-
-        elif device_type == DeviceType.InvestmentsGroupDevice:
-            return self.investments_groups
-
-        elif device_type == DeviceType.FuelDevice:
-            return self.fuels
-
-        elif device_type == DeviceType.EmissionGasDevice:
-            return self.emission_gases
-
-        elif device_type == DeviceType.GeneratorTechnologyAssociation:
-            return self.generators_technologies
-
-        elif device_type == DeviceType.GeneratorFuelAssociation:
-            return self.generators_fuels
-
-        elif device_type == DeviceType.GeneratorEmissionAssociation:
-            return self.generators_emissions
-
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            return self.connectivity_nodes
-
-        elif device_type == DeviceType.FluidNodeDevice:
-            return self.fluid_nodes
-
-        elif device_type == DeviceType.FluidPathDevice:
-            return self.get_fluid_paths()
-
-        elif device_type == DeviceType.FluidTurbineDevice:
-            return self.get_fluid_turbines()
-
-        elif device_type == DeviceType.FluidPumpDevice:
-            return self.get_fluid_pumps()
-
-        elif device_type == DeviceType.FluidP2XDevice:
-            return self.get_fluid_p2xs()
-
-        elif device_type == DeviceType.PiMeasurementDevice:
-            return self.get_pi_measurements()
-
-        elif device_type == DeviceType.QiMeasurementDevice:
-            return self.get_qi_measurements()
-
-        elif device_type == DeviceType.PfMeasurementDevice:
-            return self.get_pf_measurements()
-
-        elif device_type == DeviceType.QfMeasurementDevice:
-            return self.get_qf_measurements()
-
-        elif device_type == DeviceType.VmMeasurementDevice:
-            return self.get_vm_measurements()
-
-        elif device_type == DeviceType.IfMeasurementDevice:
-            return self.get_if_measurements()
-
-        elif device_type == DeviceType.LoadLikeDevice:
-            return self.get_load_like_devices()
-
-        elif device_type == DeviceType.BranchDevice:
-            return self.get_branches_wo_hvdc()
-
-        elif device_type == DeviceType.NoDevice:
-            return list()
-
-        elif device_type == DeviceType.TimeDevice:
-            return self.get_time_array()
-
-        elif device_type == DeviceType.ModellingAuthority:
-            return self.get_modelling_authorities()
-
-        else:
-            raise Exception('Element type not understood ' + str(device_type))
-
-    def set_elements_by_type(self, device_type: DeviceType,
-                             devices: List[ALL_DEV_TYPES],
-                             logger: Logger = Logger()):
-        """
-        Set a list of elements all at once
-        :param device_type: DeviceType
-        :param devices: list of devices
-        :param logger: Logger
-        """
-        if device_type == DeviceType.LoadDevice:
-            self.loads = devices
-
-        elif device_type == DeviceType.StaticGeneratorDevice:
-            self.static_generators = devices
-
-        elif device_type == DeviceType.GeneratorDevice:
-            self.generators = devices
-
-        elif device_type == DeviceType.BatteryDevice:
-            self.batteries = devices
-
-        elif device_type == DeviceType.ShuntDevice:
-            self.shunts = devices
-
-        elif device_type == DeviceType.ExternalGridDevice:
-            self.external_grids = devices
-
-        elif device_type == DeviceType.CurrentInjectionDevice:
-            self.current_injections = devices
-
-        elif device_type == DeviceType.ControllableShuntDevice:
-            self.controllable_shunts = devices
-
-        elif device_type == DeviceType.LineDevice:
-            for d in devices:
-                # this is done to detect those lines that should be transformers
-                self.add_line(d, logger=logger)
-
-        elif device_type == DeviceType.Transformer2WDevice:
-            self.transformers2w = devices
-
-        elif device_type == DeviceType.Transformer3WDevice:
-            self.transformers3w = devices
-
-        elif device_type == DeviceType.WindingDevice:
-            self.windings = devices
-
-        elif device_type == DeviceType.SeriesReactanceDevice:
-            self.series_reactances = devices
-
-        elif device_type == DeviceType.HVDCLineDevice:
-            self.hvdc_lines = devices
-
-        elif device_type == DeviceType.UpfcDevice:
-            self.upfc_devices = devices
-
-        elif device_type == DeviceType.VscDevice:
-            for elm in devices:
-                elm.correct_buses_connection()
-            self.vsc_devices = devices
-
-        elif device_type == DeviceType.BranchGroupDevice:
-            self.branch_groups = devices
-
-        elif device_type == DeviceType.BusDevice:
-            self.buses = devices
-
-        elif device_type == DeviceType.OverheadLineTypeDevice:
-            self.overhead_line_types = devices
-
-        elif device_type == DeviceType.TransformerTypeDevice:
-            self.transformer_types = devices
-
-        elif device_type == DeviceType.UnderGroundLineDevice:
-            self.underground_cable_types = devices
-
-        elif device_type == DeviceType.SequenceLineDevice:
-            self.sequence_line_types = devices
-
-        elif device_type == DeviceType.WireDevice:
-            self.wire_types = devices
-
-        elif device_type == DeviceType.DCLineDevice:
-            self.dc_lines = devices
-
-        elif device_type == DeviceType.SwitchDevice:
-            self.switch_devices = devices
-
-        elif device_type == DeviceType.SubstationDevice:
-            self.substations = devices
-
-        elif device_type == DeviceType.VoltageLevelDevice:
-            self.voltage_levels = devices
-
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            self.connectivity_nodes = devices
-
-        elif device_type == DeviceType.BusBarDevice:
-            self.bus_bars = devices
-
-        elif device_type == DeviceType.AreaDevice:
-            self.areas = devices
-
-        elif device_type == DeviceType.ZoneDevice:
-            self.zones = devices
-
-        elif device_type == DeviceType.CountryDevice:
-            self.countries = devices
-
-        elif device_type == DeviceType.CommunityDevice:
-            self.communities = devices
-
-        elif device_type == DeviceType.RegionDevice:
-            self.regions = devices
-
-        elif device_type == DeviceType.MunicipalityDevice:
-            self.municipalities = devices
-
-        elif device_type == DeviceType.ContingencyDevice:
-            self.contingencies = devices
-
-        elif device_type == DeviceType.ContingencyGroupDevice:
-            self.contingency_groups = devices
-
-        elif device_type == DeviceType.Technology:
-            self.technologies = devices
-
-        elif device_type == DeviceType.InvestmentDevice:
-            self.investments = devices
-
-        elif device_type == DeviceType.InvestmentsGroupDevice:
-            self.investments_groups = devices
-
-        elif device_type == DeviceType.FuelDevice:
-            self.fuels = devices
-
-        elif device_type == DeviceType.EmissionGasDevice:
-            self.emission_gases = devices
-
-        elif device_type == DeviceType.GeneratorTechnologyAssociation:
-            self.generators_technologies = devices
-
-        elif device_type == DeviceType.GeneratorFuelAssociation:
-            self.generators_fuels = devices
-
-        elif device_type == DeviceType.GeneratorEmissionAssociation:
-            self.generators_emissions = devices
-
-        elif device_type == DeviceType.ConnectivityNodeDevice:
-            self.connectivity_nodes = devices
-
-        elif device_type == DeviceType.FluidNodeDevice:
-            self.fluid_nodes = devices
-
-        elif device_type == DeviceType.FluidPathDevice:
-            self.fluid_paths = devices
-
-        elif device_type == DeviceType.FluidTurbineDevice:
-            self.turbines = devices
-
-        elif device_type == DeviceType.FluidPumpDevice:
-            self.pumps = devices
-
-        elif device_type == DeviceType.FluidP2XDevice:
-            self.p2xs = devices
-
-        elif device_type == DeviceType.BranchDevice:
-            for d in devices:
-                self.add_branch(d)  # each branch needs to be converted accordingly
-
-        elif device_type == DeviceType.PiMeasurementDevice:
-            self.pi_measurements = devices
-
-        elif device_type == DeviceType.QiMeasurementDevice:
-            self.qi_measurements = devices
-
-        elif device_type == DeviceType.PfMeasurementDevice:
-            self.pf_measurements = devices
-
-        elif device_type == DeviceType.QfMeasurementDevice:
-            self.qf_measurements = devices
-
-        elif device_type == DeviceType.VmMeasurementDevice:
-            self.vm_measurements = devices
-
-        elif device_type == DeviceType.IfMeasurementDevice:
-            self.if_measurements = devices
-
-        elif device_type == DeviceType.ModellingAuthority:
-            self.modelling_authorities = devices
-
-        else:
-            raise Exception('Element type not understood ' + str(device_type))
-
-    def delete_elements_by_type(self, obj: ALL_DEV_TYPES):
-        """
-        Get set of elements and their parent nodes
-        :param obj: device object to delete
-        :return: List of elements, it raises an exception if the elements are unknown
-        """
-
-        element_type = obj.device_type
-
-        if element_type == DeviceType.LoadDevice:
-            self.loads.remove(obj)
-
-        elif element_type == DeviceType.StaticGeneratorDevice:
-            self.static_generators.remove(obj)
-
-        elif element_type == DeviceType.GeneratorDevice:
-            self.generators.remove(obj)
-
-        elif element_type == DeviceType.BatteryDevice:
-            self.batteries.remove(obj)
-
-        elif element_type == DeviceType.ShuntDevice:
-            self.shunts.remove(obj)
-
-        elif element_type == DeviceType.ExternalGridDevice:
-            self.external_grids.remove(obj)
-
-        elif element_type == DeviceType.CurrentInjectionDevice:
-            self.current_injections.remove(obj)
-
-        elif element_type == DeviceType.ControllableShuntDevice:
-            self.controllable_shunts.remove(obj)
-
-        elif element_type == DeviceType.LineDevice:
-            return self.delete_line(obj)
-
-        elif element_type == DeviceType.Transformer2WDevice:
-            return self.delete_transformer2w(obj)
-
-        elif element_type == DeviceType.Transformer3WDevice:
-            return self.delete_transformer3w(obj)
-
-        elif element_type == DeviceType.WindingDevice:
-            return self.delete_winding(obj)
-
-        elif element_type == DeviceType.SeriesReactanceDevice:
-            return self.delete_series_reactance(obj)
-
-        elif element_type == DeviceType.HVDCLineDevice:
-            return self.delete_hvdc_line(obj)
-
-        elif element_type == DeviceType.UpfcDevice:
-            return self.delete_upfc_converter(obj)
-
-        elif element_type == DeviceType.VscDevice:
-            return self.delete_vsc_converter(obj)
-
-        elif element_type == DeviceType.BusDevice:
-            return self.delete_bus(obj, delete_associated=True)
-
-        elif element_type == DeviceType.ConnectivityNodeDevice:
-            return self.delete_connectivity_node(obj)
-
-        elif element_type == DeviceType.BranchGroupDevice:
-            return self.delete_branch_group(obj)
-
-        elif element_type == DeviceType.BusBarDevice:
-            return self.delete_bus_bar(obj)
-
-        elif element_type == DeviceType.OverheadLineTypeDevice:
-            return self.delete_overhead_line(obj)
-
-        elif element_type == DeviceType.TransformerTypeDevice:
-            return self.delete_transformer_type(obj)
-
-        elif element_type == DeviceType.UnderGroundLineDevice:
-            return self.delete_underground_line(obj)
-
-        elif element_type == DeviceType.SequenceLineDevice:
-            return self.delete_sequence_line(obj)
-
-        elif element_type == DeviceType.WireDevice:
-            return self.delete_wire(obj)
-
-        elif element_type == DeviceType.DCLineDevice:
-            return self.delete_dc_line(obj)
-
-        elif element_type == DeviceType.SubstationDevice:
-            return self.delete_substation(obj)
-
-        elif element_type == DeviceType.VoltageLevelDevice:
-            return self.delete_voltage_level(obj)
-
-        elif element_type == DeviceType.AreaDevice:
-            return self.delete_area(obj)
-
-        elif element_type == DeviceType.ZoneDevice:
-            return self.delete_zone(obj)
-
-        elif element_type == DeviceType.CountryDevice:
-            return self.delete_country(obj)
-
-        elif element_type == DeviceType.CommunityDevice:
-            return self.delete_community(obj)
-
-        elif element_type == DeviceType.RegionDevice:
-            return self.delete_region(obj)
-
-        elif element_type == DeviceType.MunicipalityDevice:
-            return self.delete_municipality(obj)
-
-        elif element_type == DeviceType.ContingencyDevice:
-            return self.delete_contingency(obj)
-
-        elif element_type == DeviceType.ContingencyGroupDevice:
-            return self.delete_contingency_group(obj)
-
-        elif element_type == DeviceType.Technology:
-            return self.delete_technology(obj)
-
-        elif element_type == DeviceType.InvestmentDevice:
-            return self.delete_investment(obj)
-
-        elif element_type == DeviceType.InvestmentsGroupDevice:
-            return self.delete_investment_groups(obj)
-
-        elif element_type == DeviceType.FuelDevice:
-            return self.delete_fuel(obj)
-
-        elif element_type == DeviceType.EmissionGasDevice:
-            return self.delete_emission_gas(obj)
-
-        elif element_type == DeviceType.GeneratorTechnologyAssociation:
-            return self.delete_generator_technology(obj)
-
-        elif element_type == DeviceType.GeneratorFuelAssociation:
-            return self.delete_generator_fuel(obj)
-
-        elif element_type == DeviceType.GeneratorEmissionAssociation:
-            return self.delete_generator_emission(obj)
-
-        elif element_type == DeviceType.FluidNodeDevice:
-            return self.delete_fluid_node(obj)
-
-        elif element_type == DeviceType.FluidTurbineDevice:
-            return self.delete_fluid_turbine(obj)
-
-        elif element_type == DeviceType.FluidP2XDevice:
-            return self.delete_fluid_p2x(obj)
-
-        elif element_type == DeviceType.FluidPumpDevice:
-            return self.delete_fluid_pump(obj)
-
-        elif element_type == DeviceType.FluidPathDevice:
-            return self.delete_fluid_path(obj)
-
-        elif element_type == DeviceType.PiMeasurementDevice:
-            return self.delete_pi_measurement(obj)
-
-        elif element_type == DeviceType.QiMeasurementDevice:
-            return self.delete_qi_measurement(obj)
-
-        elif element_type == DeviceType.PfMeasurementDevice:
-            return self.delete_pf_measurement(obj)
-
-        elif element_type == DeviceType.QfMeasurementDevice:
-            return self.delete_qf_measurement(obj)
-
-        elif element_type == DeviceType.VmMeasurementDevice:
-            return self.delete_vm_measurement(obj)
-
-        elif element_type == DeviceType.IfMeasurementDevice:
-            return self.delete_if_measurement(obj)
-
-        elif element_type == DeviceType.ModellingAuthority:
-            return self.delete_modelling_authority(obj)
-
-        else:
-            raise Exception('Element type not understood ' + str(element_type))
-
-    def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
-        """
-        Get a dictionary of all elements
-        :return: Dict[idtag] -> object
-        """
-        data = dict()
-        for key, tpe in self.device_type_name_dict.items():
-            elements = self.get_elements_by_type(device_type=tpe)
-
-            for elm in elements:
-                data[elm.idtag] = elm
-
-        return data
-
-    def get_all_elements_dict_by_type(self, add_locations: bool = False) -> dict[Callable[[], Any], Union[dict[str, ALL_DEV_TYPES], Any]]:
-        """
-        Get a dictionary of all elements by type
-        :return:
-        """
-
-        data = dict()
-        for key, tpe in self.device_type_name_dict.items():
-            data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe,
-                                                             use_secondary_key=False)
-
-        # add locations
-        if add_locations:
-            data[DeviceType.LineLocation.value] = self.get_elements_dict_by_type(element_type=DeviceType.LineLocation,
-                                                                                 use_secondary_key=False)
-
-        return data
-
-    def get_elements_dict_by_type(self, element_type: DeviceType,
-                                  use_secondary_key=False) -> Dict[str, ALL_DEV_TYPES]:
-        """
-        Get dictionary of elements
-        :param element_type: element type (Bus, Line, etc...)
-        :param use_secondary_key: use the code as dictionary key? otherwise the idtag is used
-        :return: Dict[str, dev.EditableDevice]
-        """
-
-        if use_secondary_key:
-            return {elm.code: elm for elm in self.get_elements_by_type(element_type)}
-        else:
-            return {elm.idtag: elm for elm in self.get_elements_by_type(element_type)}
 
     def copy(self) -> "MultiCircuit":
         """
@@ -2547,101 +331,6 @@ class MultiCircuit:
 
         return cpy
 
-    def clear(self) -> None:
-        """
-        Clear the multi-circuit (remove the bus and branch objects)
-        """
-
-        for key, elm_list in self.objects_with_profiles.items():
-            for elm in elm_list:
-                self.get_elements_by_type(device_type=elm.device_type).clear()
-
-    def get_catalogue_dict(self, branches_only=False):
-        """
-        Returns a dictionary with the catalogue types and the associated list of objects.
-
-        Arguments:
-
-            **branches_only** (bool, False): Only branch types
-        """
-        # 'Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers'
-
-        if branches_only:
-
-            catalogue_dict = {'Overhead lines': self.overhead_line_types,
-                              'Transformers': self.transformer_types,
-                              'Underground lines': self.underground_cable_types,
-                              'Sequence lines': self.sequence_line_types}
-        else:
-            catalogue_dict = {'Wires': self.wire_types,
-                              'Overhead lines': self.overhead_line_types,
-                              'Underground lines': self.underground_cable_types,
-                              'Sequence lines': self.sequence_line_types,
-                              'Transformers': self.transformer_types}
-
-        return catalogue_dict
-
-    def get_catalogue_dict_by_name(self, type_class: str = None):
-        """
-        Get the catalogue elements by name
-        :param type_class:
-        :return:
-        """
-        d = dict()
-
-        # ['Wires', 'Overhead lines', 'Underground lines', 'Sequence lines', 'Transformers']
-
-        if type_class is None:
-            tpes = [self.overhead_line_types,
-                    self.underground_cable_types,
-                    self.wire_types,
-                    self.transformer_types,
-                    self.sequence_line_types]
-            name_prop = ''
-
-        elif type_class == 'Wires':
-            tpes = self.wire_types
-            name_prop = 'name'
-
-        elif type_class == 'Overhead lines':
-            tpes = self.overhead_line_types
-            name_prop = 'name'
-
-        elif type_class == 'Underground lines':
-            tpes = self.underground_cable_types
-            name_prop = 'name'
-
-        elif type_class == 'Sequence lines':
-            tpes = self.sequence_line_types
-            name_prop = 'name'
-
-        elif type_class == 'Transformers':
-            tpes = self.transformer_types
-            name_prop = 'name'
-
-        else:
-            tpes = list()
-            name_prop = 'name'
-
-        # make dictionary
-        for tpe in tpes:
-            d[getattr(tpe, name_prop)] = tpe
-
-        return d
-
-    def get_time_profile_as_list(self):
-        """
-        Get the profiles dictionary
-        mainly used in json export
-        """
-        if self.time_profile is not None:
-            # recommended way to get the unix datetimes
-            arr = (self.time_profile - pd.Timestamp("1970-01-01")) // pd.Timedelta("1s")
-            # t = (self.time_profile.array.astype(int) * 1e-9).tolist()  # UNIX time in seconds
-            return arr.tolist()
-        else:
-            return list()
-
     def build_graph(self):
         """
         Returns a networkx DiGraph object of the grid.
@@ -2650,7 +339,7 @@ class MultiCircuit:
 
         bus_dictionary = dict()
 
-        for i, bus in enumerate(self.buses):
+        for i, bus in enumerate(self._buses):
             graph.add_node(i)
             bus_dictionary[bus.idtag] = i
 
@@ -2704,1485 +393,20 @@ class MultiCircuit:
 
         return graph_real_power_flow
 
-    def create_profiles(self, steps, step_length, step_unit, time_base: dateslib.datetime = dateslib.datetime.now()):
-        """
-        Set the default profiles in all the objects enabled to have profiles.
-        :param steps: Number of time steps
-        :param step_length: Time length (1, 2, 15, ...)
-        :param step_unit: Unit of the time step ("h", "m" or "s")
-        :param time_base: Date to start from
-        """
-
-        index = np.empty(steps, dtype=object)
-        for i in range(steps):
-            if step_unit == 'h':
-                index[i] = time_base + dateslib.timedelta(hours=i * step_length)
-            elif step_unit == 'm':
-                index[i] = time_base + dateslib.timedelta(minutes=i * step_length)
-            elif step_unit == 's':
-                index[i] = time_base + dateslib.timedelta(seconds=i * step_length)
-
-        index = pd.DatetimeIndex(index)
-
-        self.format_profiles(index)
-
-    def format_profiles(self, index: pd.DatetimeIndex):
-        """
-        Format the pandas profiles in place using a time index.
-        :param index: Time profile
-        """
-
-        self.time_profile = pd.to_datetime(index, dayfirst=True)
-
-        for elm in self.buses:
-            elm.create_profiles(index)
-
-        for devs_list in self.get_injection_devices_lists():
-            for elm in devs_list:
-                elm.create_profiles(index)
-
-        for devs_list in self.get_branch_lists():
-            for elm in devs_list:
-                elm.create_profiles(index)
-
-        for devs_list in self.get_fluid_lists():
-            for elm in devs_list:
-                elm.create_profiles(index)
-
-    def set_time_profile(self, unix_data: IntVec):
-        """
-        Set unix array as time array
-        :param unix_data: array of seconds since 1970
-        """
-        # try parse
-        try:
-            self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
-        except Exception as e:
-            print("Error", e)
-            # it may come in nanoseconds instead of seconds...
-            self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
-
-        self.ensure_profiles_exist()
-
-        for elm in self.buses:
-            elm.create_profiles(self.time_profile)
-
-        for lst in self.get_branch_lists():
-            for elm in lst:
-                elm.create_profiles(self.time_profile)
-
-        for lst in self.get_injection_devices_lists():
-            for elm in lst:
-                elm.create_profiles(self.time_profile)
-
-    def ensure_profiles_exist(self) -> None:
-        """
-        Format the pandas profiles in place using a time index.
-        """
-        if self.time_profile is None:
-            raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
-
-        for elm in self.buses:
-            elm.ensure_profiles_exist(self.time_profile)
-
-        for branch_list in self.get_branch_lists():
-            for elm in branch_list:
-                elm.ensure_profiles_exist(self.time_profile)
-
-        for lst in self.get_injection_devices_lists():
-            for elm in lst:
-                elm.ensure_profiles_exist(self.time_profile)
-
-    def get_bus_dict(self, by_idtag=False) -> Dict[str, dev.Bus]:
-        """
-        Return dictionary of buses
-        :param by_idtag if true, the key is the idtag else the key is the name
-        :return: dictionary of buses {name:object}
-        """
-        if by_idtag:
-            return {b.idtag: b for b in self.buses}
-        else:
-            return {b.name: b for b in self.buses}
-
-    def get_bus_index_dict(self) -> Dict[dev.Bus, int]:
-        """
-        Return dictionary of buses
-        :return: dictionary of buses {name:object}
-        """
-        return {b: i for i, b in enumerate(self.buses)}
-
-    def add_bus(self, obj: Union[None, dev.Bus] = None) -> dev.Bus:
-        """
-        Add a :ref:`Bus<bus>` object to the grid.
-
-        Arguments:
-
-            **obj** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-        """
-        if obj is None:
-            obj = dev.Bus()
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-
-        self.buses.append(obj)
-
-        return obj
-
-    def delete_bus(self, obj: dev.Bus, delete_associated=False):
-        """
-        Delete a :ref:`Bus<bus>` object from the grid.
-        :param obj: :ref:`Bus<bus>` object
-        :param delete_associated:
-        """
-
-        # remove associated Branches in reverse order
-        for branch_list in self.get_branch_lists():
-            for i in range(len(branch_list) - 1, -1, -1):
-                if branch_list[i].bus_from == obj:
-                    if delete_associated:
-                        self.delete_branch(branch_list[i])
-                    else:
-                        branch_list[i].bus_from = None
-                elif branch_list[i].bus_to == obj:
-                    if delete_associated:
-                        self.delete_branch(branch_list[i])
-                    else:
-                        branch_list[i].bus_to = None
-
-        # remove the associated injection devices
-        for inj_list in self.get_injection_devices_lists():
-            for i in range(len(inj_list) - 1, -1, -1):
-                if inj_list[i].bus == obj:
-                    if delete_associated:
-                        self.delete_injection_device(inj_list[i])
-                    else:
-                        inj_list[i].bus = None
-
-        # remove associations in bus_bars
-        for cn in self.connectivity_nodes:
-            if cn.default_bus == obj:
-                cn.default_bus = None  # remove the association
-
-        # remove the bus itself
-        if obj in self.buses:
-            self.buses.remove(obj)
-
-    def add_line(self, obj: dev.Line, logger: Union[Logger, DataLogger] = Logger()):
-        """
-        Add a line object
-        :param obj: Line instance
-        :param logger: Logger to record events
-        """
-        if obj.should_this_be_a_transformer():
-            tr = obj.get_equivalent_transformer()
-            self.add_transformer2w(tr)
-            # print('Converted {} ({}) to a transformer'.format(obj.name, obj.idtag))
-            logger.add_warning("Converted line to transformer due to excessive nominal voltage difference",
-                               device=obj.idtag)
-        else:
-            if self.time_profile is not None:
-                obj.create_profiles(self.time_profile)
-            self.lines.append(obj)
-
-    def add_dc_line(self, obj: dev.DcLine):
-        """
-        Add a line object
-        :param obj: Line instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.dc_lines.append(obj)
-
-    def add_transformer2w(self, obj: dev.Transformer2W):
-        """
-        Add a transformer object
-        :param obj: Transformer2W instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.transformers2w.append(obj)
-
-    def add_winding(self, obj: dev.Winding):
-        """
-        Add a winding object
-        :param obj: Winding instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.windings.append(obj)
-
-    def add_transformer3w(self, obj: dev.Transformer3W):
-        """
-        Add a transformer object
-        :param obj: Transformer3W instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.transformers3w.append(obj)
-        self.add_bus(obj.bus0)  # add the middle transformer
-        self.add_winding(obj.winding1)
-        self.add_winding(obj.winding2)
-        self.add_winding(obj.winding3)
-
-    def add_hvdc(self, obj: dev.HvdcLine):
-        """
-        Add a hvdc line object
-        :param obj: HvdcLine instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.hvdc_lines.append(obj)
-
-    def add_vsc(self, obj: dev.VSC):
-        """
-        Add a hvdc line object
-        :param obj: HvdcLine instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.vsc_devices.append(obj)
-
-    def add_upfc(self, obj: dev.UPFC):
-        """
-        Add a UPFC object
-        :param obj: UPFC instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.upfc_devices.append(obj)
-
-    def add_switch(self, obj: dev.Switch):
-        """
-        Add a Switch object
-        :param obj: Switch instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.switch_devices.append(obj)
-
-    def add_branch(self, obj: Union[BRANCH_TYPES, dev.Branch]) -> None:
-        """
-        Add any branch object (it's type will be infered here)
-        :param obj: any class inheriting from ParentBranch
-        """
-
-        if obj.device_type == DeviceType.LineDevice:
-            self.add_line(obj)
-
-        elif obj.device_type == DeviceType.DCLineDevice:
-            self.add_dc_line(obj)
-
-        elif obj.device_type == DeviceType.Transformer2WDevice:
-            self.add_transformer2w(obj)
-
-        elif obj.device_type == DeviceType.HVDCLineDevice:
-            self.add_hvdc(obj)
-
-        elif obj.device_type == DeviceType.VscDevice:
-            self.add_vsc(obj)
-
-        elif obj.device_type == DeviceType.UpfcDevice:
-            self.add_upfc(obj)
-
-        elif obj.device_type == DeviceType.WindingDevice:
-            self.add_winding(obj)
-
-        elif obj.device_type == DeviceType.SwitchDevice:
-            self.add_switch(obj)
-
-        elif obj.device_type == DeviceType.BranchDevice:
-
-            if obj.should_this_be_a_transformer():
-                self.add_transformer2w(obj.get_equivalent_transformer())
-            else:
-                self.add_line(obj.get_equivalent_line())
-        else:
-            raise Exception(f'Unrecognized branch type {obj.device_type.value}')
-
-    def delete_branch(self, obj: BRANCH_TYPES):
-        """
-        Delete a :ref:`Branch<branch>` object from the grid.
-
-        Arguments:
-
-            **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
-        """
-        for branch_list in self.get_branch_lists():
-            try:
-                branch_list.remove(obj)
-            except ValueError:  # element not found ...
-                pass
-
-    def delete_injection_device(self, obj: INJECTION_DEVICE_TYPES):
-        """
-        Delete a :ref:`Branch<branch>` object from the grid.
-
-        Arguments:
-
-            **obj** (:ref:`Branch<branch>`): :ref:`Branch<branch>` object
-        """
-        for inj_list in self.get_injection_devices_lists():
-            try:
-                inj_list.remove(obj)
-            except ValueError:  # element not found ...
-                pass
-
-    def delete_line(self, obj: dev.Line):
-        """
-        Delete line
-        :param obj: Line instance
-        """
-        self.lines.remove(obj)
-
-    def delete_dc_line(self, obj: dev.DcLine):
-        """
-        Delete line
-        :param obj: Line instance
-        """
-        self.dc_lines.remove(obj)
-
-    def delete_transformer2w(self, obj: dev.Transformer2W):
-        """
-        Delete transformer
-        :param obj: Transformer2W instance
-        """
-        self.transformers2w.remove(obj)
-
-    def delete_switch(self, obj: dev.Switch):
-        """
-        Delete transformer
-        :param obj: Transformer2W instance
-        """
-        self.switch_devices.remove(obj)
-
-    def delete_winding(self, obj: dev.Winding):
-        """
-        Delete winding
-        :param obj: Winding instance
-        """
-        for tr3 in self.transformers3w:
-
-            if obj == tr3.winding1:
-                tr3.bus1 = None
-                # tr3.winding1 = None
-                # if tr3.graphic_obj is not None:
-                #     tr3.graphic_obj.connection_lines[0] = None
-
-            elif obj == tr3.winding2:
-                tr3.bus2 = None
-                # tr3.winding2 = None
-                # if tr3.graphic_obj is not None:
-                #     tr3.graphic_obj.connection_lines[1] = None
-
-            if obj == tr3.winding3:
-                tr3.bus3 = None
-                # tr3.winding3 = None
-                # if tr3.graphic_obj is not None:
-                #     tr3.graphic_obj.connection_lines[2] = None
-
-        # self.windings.remove(obj)
-
-    def delete_transformer3w(self, obj: dev.Transformer3W):
-        """
-        Delete transformer
-        :param obj: Transformer2W instance
-        """
-        self.transformers3w.remove(obj)
-        self.delete_winding(obj.winding1)
-        self.delete_winding(obj.winding2)
-        self.delete_winding(obj.winding3)
-        self.delete_bus(obj.bus0, delete_associated=True)  # also remove the middle bus
-
-    def delete_hvdc_line(self, obj: dev.HvdcLine):
-        """
-        Delete HVDC line
-        :param obj:
-        """
-        self.hvdc_lines.remove(obj)
-
-    def delete_vsc_converter(self, obj: dev.VSC):
-        """
-        Delete VSC
-        :param obj: VSC Instance
-        """
-        self.vsc_devices.remove(obj)
-
-    def delete_upfc_converter(self, obj: dev.UPFC):
-        """
-        Delete VSC
-        :param obj: VSC Instance
-        """
-        self.upfc_devices.remove(obj)
-
-    def add_load(self, bus: dev.Bus, api_obj=None):
-        """
-        Add a :ref:`Load<load>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Load<load>`): :ref:`Load<load>` object
-        """
-        if api_obj is None:
-            api_obj = dev.Load()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        if api_obj.name == 'Load':
-            api_obj.name += '@' + bus.name
-
-        self.loads.append(api_obj)
-
-        return api_obj
-
-    def add_generator(self, bus: dev.Bus, api_obj: Union[dev.Generator, None] = None):
-        """
-        Add a generator
-        :param bus: Bus object
-        :param api_obj: Generator object
-        :return: Generator object (created if api_obj is None)
-        """
-
-        if api_obj is None:
-            api_obj = dev.Generator()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        self.generators.append(api_obj)
-
-        return api_obj
-
-    def delete_generator(self, obj: dev.Generator):
-        """
-        Delete a generator
-        :param obj:
-        :return:
-        """
-        self.generators.remove(obj)
-
-    def add_static_generator(self, bus: dev.Bus, api_obj: Union[dev.StaticGenerator, None] = None):
-        """
-        Add a generator
-        :param bus: Bus object
-        :param api_obj: StaticGenerator object
-        :return: StaticGenerator object (created if api_obj is None)
-        """
-
-        if api_obj is None:
-            api_obj = dev.StaticGenerator()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        self.static_generators.append(api_obj)
-
-        return api_obj
-
-    def add_external_grid(self, bus: dev.Bus, api_obj: Union[None, dev.ExternalGrid] = None):
-        """
-        Add an external grid
-        :param bus: Bus object
-        :param api_obj: api_obj, if None, create a new one
-        :return:
-        """
-
-        if api_obj is None:
-            api_obj = dev.ExternalGrid()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        if api_obj.name == 'External grid':
-            api_obj.name += '@' + bus.name
-
-        self.external_grids.append(api_obj)
-
-        return api_obj
-
-    def add_battery(self, bus: dev.Bus, api_obj=None):
-        """
-        Add a :ref:`Battery<battery>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Battery<battery>`): :ref:`Battery<battery>` object
-        """
-        if api_obj is None:
-            api_obj = dev.Battery()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        self.batteries.append(api_obj)
-
-        return api_obj
-
-    def add_shunt(self, bus: dev.Bus, api_obj=None):
-        """
-        Add a :ref:`Shunt<shunt>` object to a :ref:`Bus<bus>`.
-
-        Arguments:
-
-            **bus** (:ref:`Bus<bus>`): :ref:`Bus<bus>` object
-
-            **api_obj** (:ref:`Shunt<shunt>`): :ref:`Shunt<shunt>` object
-        """
-        if api_obj is None:
-            api_obj = dev.Shunt()
-        api_obj.bus = bus
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        self.shunts.append(api_obj)
-
-        return api_obj
-
-    def add_wire(self, obj: dev.Wire):
-        """
-        Add Wire to the collection
-        :param obj: Wire instance
-        """
-        if obj is not None:
-            if isinstance(obj, dev.Wire):
-                self.wire_types.append(obj)
-            else:
-                print('The template is not a wire!')
-
-    def delete_wire(self, obj: dev.Wire):
-        """
-        Delete wire from the collection
-        :param obj: Wire object
-        """
-        for tower in self.overhead_line_types:
-            for elm in tower.wires_in_tower:
-                if elm.template == obj:
-                    elm.template = None
-
-        self.wire_types.remove(obj)
-
-    def add_overhead_line(self, obj: dev.OverheadLineType):
-        """
-        Add overhead line (tower) template to the collection
-        :param obj: Tower instance
-        """
-        if obj is not None:
-            if isinstance(obj, dev.OverheadLineType):
-                self.overhead_line_types.append(obj)
-            else:
-                print('The template is not an overhead line!')
-
-    def delete_line_template_dependency(self, obj):
-        """
-        Search a branch template from lines and transformers and delete it
-        :param obj:
-        :return:
-        """
-        for elm in self.lines:
-            if elm.template == obj:
-                elm.template = None
-
-    def delete_transformer_template_dependency(self, obj: dev.TransformerType):
-        """
-        Search a branch template from lines and transformers and delete it
-        :param obj:
-        :return:
-        """
-        for elm in self.transformers2w:
-            if elm.template == obj:
-                elm.template = None
-
-    def delete_overhead_line(self, obj: dev.OverheadLineType):
-        """
-        Delete tower from the collection
-        :param obj: OverheadLineType
-        """
-
-        self.delete_line_template_dependency(obj=obj)
-        self.overhead_line_types.remove(obj)
-
-    def add_underground_line(self, obj: dev.UndergroundLineType):
-        """
-        Add underground line
-        :param obj: UndergroundLineType instance
-        """
-        if obj is not None:
-            if isinstance(obj, dev.UndergroundLineType):
-                self.underground_cable_types.append(obj)
-            else:
-                print('The template is not an underground line!')
-
-    def delete_underground_line(self, obj):
-        """
-        Delete underground line
-        :param obj:
-        """
-        self.delete_line_template_dependency(obj=obj)
-        self.underground_cable_types.remove(obj)
-
-    def add_sequence_line(self, obj: dev.SequenceLineType):
-        """
-        Add sequence line to the collection
-        :param obj: SequenceLineType instance
-        """
-        if obj is not None:
-            if isinstance(obj, dev.SequenceLineType):
-                self.sequence_line_types.append(obj)
-            else:
-                print('The template is not a sequence line!')
-
-    def delete_sequence_line(self, obj):
-        """
-        Delete sequence line from the collection
-        :param obj:
-        """
-        self.delete_line_template_dependency(obj=obj)
-        self.sequence_line_types.remove(obj)
-        return True
-
-    def add_transformer_type(self, obj: dev.TransformerType):
-        """
-        Add transformer template
-        :param obj: TransformerType instance
-        """
-        if obj is not None:
-            if isinstance(obj, dev.TransformerType):
-                self.transformer_types.append(obj)
-            else:
-                print('The template is not a transformer!')
-
-    def delete_transformer_type(self, obj: dev.TransformerType):
-        """
-        Delete transformer type from the collection
-        :param obj
-        """
-        self.delete_transformer_template_dependency(obj=obj)
-        self.transformer_types.remove(obj)
-
     def apply_all_branch_types(self) -> Logger:
         """
         Apply all the branch types
         """
         logger = Logger()
-        for branch in self.lines:
+        for branch in self._lines:
             if branch.template is not None:
                 branch.apply_template(branch.template, self.Sbase, logger=logger)
 
-        for branch in self.transformers2w:
+        for branch in self._transformers2w:
             if branch.template is not None:
                 branch.apply_template(branch.template, self.Sbase, logger=logger)
 
         return logger
-
-    def add_substation(self, obj: dev.Substation):
-        """
-        Add Substation
-        :param obj: Substation object
-        """
-        self.substations.append(obj)
-
-    def delete_substation(self, obj: dev.Substation):
-        """
-        Delete Substation
-        :param obj: Substation object
-        """
-        for elm in self.buses:
-            if elm.substation == obj:
-                elm.substation = None
-
-        self.substations.remove(obj)
-
-    def get_bus_bars(self) -> List[dev.BusBar]:
-        """
-        Get all bus bars
-        """
-        return self.bus_bars
-
-    def get_bus_bars_number(self) -> int:
-        """
-        Get all bus-bars number
-        :return:
-        """
-        return len(self.bus_bars)
-
-    def add_bus_bar(self, obj: dev.BusBar):
-        """
-        Add Substation
-        :param obj: BusBar object
-        """
-        self.bus_bars.append(obj)
-
-        # add the internal connectivity node
-        self.add_connectivity_node(obj.cn)
-
-    def delete_bus_bar(self, obj: dev.BusBar):
-        """
-        Delete Substation
-        :param obj: Substation object
-        """
-        for elm in self.connectivity_nodes:
-            if elm.bus_bar == obj:
-                elm.bus_bar = None
-
-        self.bus_bars.remove(obj)
-
-    def get_connectivity_nodes(self) -> List[dev.ConnectivityNode]:
-        """
-        Get all connectivity nodes
-        """
-        return self.connectivity_nodes
-
-    def add_connectivity_node(self, obj: dev.ConnectivityNode):
-        """
-        Add Substation
-        :param obj: BusBar object
-        """
-        self.connectivity_nodes.append(obj)
-
-    def delete_connectivity_node(self, obj: dev.ConnectivityNode):
-        """
-        Delete Substation
-        :param obj: Substation object
-        """
-        for elm in self.bus_bars:
-            elm.connectivity_node = None
-
-        self.connectivity_nodes.remove(obj)
-
-    def add_area(self, obj: dev.Area):
-        """
-        Add area
-        :param obj: Area object
-        """
-        self.areas.append(obj)
-
-    def delete_area(self, obj: dev.Area):
-        """
-        Delete area
-        :param obj: Area
-        """
-        for elm in self.buses:
-            if elm.area == obj:
-                elm.area = None
-
-        self.areas.remove(obj)
-
-    def add_zone(self, obj: dev.Zone):
-        """
-        Add zone
-        :param obj: Zone object
-        """
-        self.zones.append(obj)
-
-    def add_contingency_group(self, obj: dev.ContingencyGroup):
-        """
-        Add contingency group
-        :param obj: ContingencyGroup
-        """
-        self.contingency_groups.append(obj)
-
-    def delete_contingency_group(self, obj):
-        """
-        Delete zone
-        :param obj: index
-        """
-        self.contingency_groups.remove(obj)
-
-    def get_contingency_group_names(self) -> List[str]:
-        """
-        Get list of contingency group names
-        :return:
-        """
-        return [e.name for e in self.contingency_groups]
-
-    def get_contingency_group_dict(self) -> Dict[str, List[dev.Contingency]]:
-        """
-        Get a dictionary of group idtags related to list of contingencies
-        :return:
-        """
-        d = dict()
-
-        for cnt in self.contingencies:
-            if cnt.group.idtag not in d:
-                d[cnt.group.idtag] = [cnt]
-            else:
-                d[cnt.group.idtag].append(cnt)
-
-        return d
-
-    def get_branches_wo_hvdc_dict(self) -> Dict[str, int]:
-        """
-        Get dictionary of branches (excluding HVDC)
-        the key is the idtag, the value is the branch position
-        :return: Dict[str, int]
-        """
-        return {e.idtag: ei for ei, e in enumerate(self.get_branches_wo_hvdc())}
-
-    def add_contingency(self, obj: dev.Contingency):
-        """
-        Add a contingency
-        :param obj: Contingency
-        """
-        self.contingencies.append(obj)
-
-    def delete_contingency(self, obj):
-        """
-        Delete zone
-        :param obj: index
-        """
-        self.contingencies.remove(obj)
-
-    def add_investments_group(self, obj: dev.InvestmentsGroup):
-        """
-        Add investments group
-        :param obj: InvestmentsGroup
-        """
-        self.investments_groups.append(obj)
-
-    def delete_investment_groups(self, obj):
-        """
-        Delete zone
-        :param obj: index
-        """
-        self.investments_groups.remove(obj)
-
-    def add_investment(self, obj: dev.Investment):
-        """
-        Add investment
-        :param obj: Investment
-        """
-        self.investments.append(obj)
-
-    def delete_investment(self, obj):
-        """
-        Delete zone
-        :param obj: index
-        """
-        self.investments.remove(obj)
-
-    def add_technology(self, obj: dev.Technology):
-        """
-        Add technology
-        :param obj: Technology
-        """
-        self.technologies.append(obj)
-
-    def delete_technology(self, obj):
-        """
-        Delete zone
-        :param obj: index
-        """
-        # todo: remove dependencies
-        self.technologies.remove(obj)
-
-    def delete_zone(self, obj):
-        """
-        Delete zone
-        :param obj: index
-        """
-        for elm in self.buses:
-            if elm.zone == obj:
-                elm.zone = None
-
-        self.zones.remove(obj)
-
-    def get_countries(self) -> List[dev.Country]:
-        """
-        Get all countries
-        """
-        return self.countries
-
-    def get_country_number(self) -> int:
-        """
-        Get country number
-        :return:
-        """
-        return len(self.countries)
-
-    def add_country(self, obj: dev.Country):
-        """
-        Add country
-        :param obj:  object
-        """
-        self.countries.append(obj)
-
-    def delete_country(self, obj):
-        """
-        Delete country
-        :param obj: index
-        """
-        for elm in self.buses:
-            if elm.country == obj:
-                elm.country = None
-
-        self.countries.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # series_reactances
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_series_reactances(self) -> List[dev.SeriesReactance]:
-        """
-        List of series_reactances
-        :return: List[dev.SeriesReactance]
-        """
-        return self.series_reactances
-
-    def get_series_reactances_number(self) -> int:
-        """
-        Size of the list of series_reactances
-        :return: size of series_reactances
-        """
-        return len(self.series_reactances)
-
-    def get_series_reactance_at(self, i: int) -> dev.SeriesReactance:
-        """
-        Get series_reactance at i
-        :param i: index
-        :return: SeriesReactance
-        """
-        return self.series_reactances[i]
-
-    def get_series_reactance_names(self) -> StrVec:
-        """
-        Array of series_reactance names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.series_reactances])
-
-    def add_series_reactance(self, obj: dev.SeriesReactance):
-        """
-        Add a SeriesReactance object
-        :param obj: SeriesReactance instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.series_reactances.append(obj)
-
-    def delete_series_reactance(self, obj: dev.SeriesReactance) -> None:
-        """
-        Add a SeriesReactance object
-        :param obj: SeriesReactance instance
-        """
-
-        self.series_reactances.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # communities
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_communities(self) -> List[dev.Community]:
-        """
-        List of communities
-        :return: List[dev.Community]
-        """
-        return self.communities
-
-    def get_communities_number(self) -> int:
-        """
-        Size of the list of communities
-        :return: size of communities
-        """
-        return len(self.communities)
-
-    def get_community_at(self, i: int) -> dev.Community:
-        """
-        Get community at i
-        :param i: index
-        :return: Community
-        """
-        return self.communities[i]
-
-    def get_community_names(self) -> StrVec:
-        """
-        Array of community names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.communities])
-
-    def add_community(self, obj: dev.Community):
-        """
-        Add a Community object
-        :param obj: Community instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.communities.append(obj)
-
-    def delete_community(self, obj: dev.Community) -> None:
-        """
-        Add a Community object
-        :param obj: Community instance
-        """
-
-        self.communities.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # regions
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_regions(self) -> List[dev.Region]:
-        """
-        List of regions
-        :return: List[dev.Region]
-        """
-        return self.regions
-
-    def get_regions_number(self) -> int:
-        """
-        Size of the list of regions
-        :return: size of regions
-        """
-        return len(self.regions)
-
-    def get_region_at(self, i: int) -> dev.Region:
-        """
-        Get region at i
-        :param i: index
-        :return: Region
-        """
-        return self.regions[i]
-
-    def get_region_names(self) -> StrVec:
-        """
-        Array of region names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.regions])
-
-    def add_region(self, obj: dev.Region):
-        """
-        Add a Region object
-        :param obj: Region instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.regions.append(obj)
-
-    def delete_region(self, obj: dev.Region) -> None:
-        """
-        Add a Region object
-        :param obj: Region instance
-        """
-
-        self.regions.remove(obj)
-
-    # ----------------------------------------------------------------------------------------------------------------------
-    # municipalities
-    # ----------------------------------------------------------------------------------------------------------------------
-
-    def get_municipalities(self) -> List[dev.Municipality]:
-        """
-        List of municipalities
-        :return: List[dev.Municipality]
-        """
-        return self.municipalities
-
-    def get_municipalities_number(self) -> int:
-        """
-        Size of the list of municipalities
-        :return: size of municipalities
-        """
-        return len(self.municipalities)
-
-    def get_municipality_at(self, i: int) -> dev.Municipality:
-        """
-        Get municipality at i
-        :param i: index
-        :return: Municipality
-        """
-        return self.municipalities[i]
-
-    def get_municipality_names(self) -> StrVec:
-        """
-        Array of municipality names
-        :return: StrVec
-        """
-        return np.array([e.name for e in self.municipalities])
-
-    def add_municipality(self, obj: dev.Municipality):
-        """
-        Add a Municipality object
-        :param obj: Municipality instance
-        """
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-        self.municipalities.append(obj)
-
-    def delete_municipality(self, obj: dev.Municipality) -> None:
-        """
-        Add a Municipality object
-        :param obj: Municipality instance
-        """
-
-        self.municipalities.remove(obj)
-
-    def add_fuel(self, obj: dev.Fuel):
-        """
-        Add Fuel
-        :param obj: Fuel object
-        """
-        self.fuels.append(obj)
-
-    def delete_fuel(self, obj):
-        """
-        Delete Fuel
-        :param obj: index
-        """
-        self.fuels.remove(obj)
-
-    def add_emission_gas(self, obj: dev.EmissionGas):
-        """
-        Add EmissionGas
-        :param obj: EmissionGas object
-        """
-        self.emission_gases.append(obj)
-
-    def delete_emission_gas(self, obj: dev.EmissionGas):
-        """
-        Delete Substation
-        :param obj: index
-        """
-        # store the associations
-        rels = list()
-        for elm in self.generators_emissions:
-            if elm.emission == obj:
-                rels.append(elm)
-
-        # delete the assciations
-        for elm in rels:
-            self.delete_generator_emission(elm)
-
-        # delete the gas
-        self.emission_gases.remove(obj)
-
-    def add_generator_technology(self, obj: dev.GeneratorTechnology):
-        """
-        Add GeneratorTechnology
-        :param obj: GeneratorTechnology object
-        """
-        self.generators_technologies.append(obj)
-
-    def delete_generator_technology(self, obj: dev.GeneratorTechnology):
-        """
-        Delete GeneratorTechnology
-        :param obj: GeneratorTechnology
-        """
-        # store the associations
-        rels = list()
-        for elm in self.generators_technologies:
-            if elm.technology == obj:
-                rels.append(elm)
-
-        # delete the associations
-        for elm in rels:
-            self.delete_generator_technology(elm)
-
-        # delete the technology
-        self.generators_technologies.remove(obj)
-
-    def add_generator_fuel(self, obj: dev.GeneratorFuel):
-        """
-        Add GeneratorFuel
-        :param obj: GeneratorFuel object
-        """
-        self.generators_fuels.append(obj)
-
-    def delete_generator_fuel(self, obj: dev.GeneratorFuel):
-        """
-        Delete GeneratorFuel
-        :param obj: GeneratorFuel
-        """
-        # store the associations
-        rels = list()
-        for elm in self.generators_fuels:
-            if elm.fuel == obj:
-                rels.append(elm)
-
-        # delete the assciations
-        for elm in rels:
-            self.delete_generator_fuel(elm)
-
-        # delete the fuel
-        self.generators_fuels.remove(obj)
-
-    def add_generator_emission(self, obj: dev.GeneratorEmission):
-        """
-        Add GeneratorFuel
-        :param obj: GeneratorFuel object
-        """
-        self.generators_emissions.append(obj)
-
-    def delete_generator_emission(self, obj: dev.GeneratorEmission):
-        """
-        Delete GeneratorFuel
-        :param obj: GeneratorFuel
-        """
-        # todo: delete dependencies
-        self.generators_emissions.remove(obj)
-
-    def add_fluid_node(self, obj: dev.FluidNode):
-        """
-        Add fluid node
-        :param obj: FluidNode
-        """
-        self.fluid_nodes.append(obj)
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-
-    def delete_fluid_node(self, obj: dev.FluidNode):
-        """
-        Delete fluid node
-        :param obj: FluidNode
-        """
-        # delete dependencies
-        for fluid_path in reversed(self.fluid_paths):
-            if fluid_path.source == obj or fluid_path.target == obj:
-                self.delete_fluid_path(fluid_path)
-
-        self.fluid_nodes.remove(obj)
-
-    def get_fluid_nodes(self) -> List[dev.FluidNode]:
-        """
-
-        :return:
-        """
-        return self.fluid_nodes
-
-    def get_fluid_nodes_number(self) -> int:
-        """
-
-        :return:
-        """
-        return len(self.fluid_nodes)
-
-    def get_fluid_node_names(self) -> StrVec:
-        """
-        List of fluid node names
-        :return:
-        """
-        return np.array([e.name for e in self.fluid_nodes])
-
-    def add_fluid_path(self, obj: dev.FluidPath):
-        """
-        Add fluid path
-        :param obj:FluidPath
-        """
-        self.fluid_paths.append(obj)
-
-        if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
-
-    def delete_fluid_path(self, obj: dev.FluidPath):
-        """
-        Delete fuid path
-        :param obj: FluidPath
-        """
-        self.fluid_paths.remove(obj)
-
-    def get_fluid_paths(self) -> List[dev.FluidPath]:
-        """
-
-        :return:
-        """
-        return self.fluid_paths
-
-    def get_fluid_path_names(self) -> StrVec:
-        """
-        List of fluid paths names
-        :return:
-        """
-        return np.array([e.name for e in self.fluid_paths])
-
-    def get_fluid_paths_number(self) -> int:
-        """
-
-        :return:
-        """
-        return len(self.fluid_paths)
-
-    def add_fluid_turbine(self, node: dev.FluidNode, api_obj: Union[dev.FluidTurbine, None]) -> dev.FluidTurbine:
-        """
-        Add fluid turbine
-        :param node: Fluid node to add to
-        :param api_obj: FluidTurbine
-        """
-
-        if api_obj is None:
-            api_obj = dev.FluidTurbine()
-        api_obj.plant = node
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        self.turbines.append(api_obj)
-
-        return api_obj
-
-    def delete_fluid_turbine(self, obj: dev.FluidTurbine):
-        """
-        Delete fuid turbine
-        :param obj: FluidTurbine
-        """
-        self.turbines.remove(obj)
-
-    def get_fluid_turbines(self) -> List[dev.FluidTurbine]:
-        """
-        Returns a list of :ref:`Load<load>` objects in the grid.
-        """
-        return self.turbines.copy()
-
-    def get_fluid_turbines_number(self) -> int:
-        """
-        :return: number of total turbines in the network
-        """
-        return len(self.turbines)
-
-    def get_fluid_turbines_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`Turbine<turbine>` names.
-        """
-        return np.array([elm.name for elm in self.turbines])
-
-    def add_fluid_pump(self, node: dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
-        """
-        Add fluid pump
-        :param node: Fluid node to add to
-        :param api_obj:FluidPump
-        """
-        if api_obj is None:
-            api_obj = dev.FluidTurbine()
-        api_obj.plant = node
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        self.pumps.append(api_obj)
-
-        return api_obj
-
-    def delete_fluid_pump(self, obj: dev.FluidPump):
-        """
-        Delete fuid pump
-        :param obj: FluidPump
-        """
-        self.pumps.remove(obj)
-
-    def get_fluid_pumps(self) -> List[dev.FluidPump]:
-        """
-        Returns a list of :ref:`Load<load>` objects in the grid.
-        """
-        return self.pumps
-
-    def get_fluid_pumps_number(self) -> int:
-        """
-        :return: number of total pumps in the network
-        """
-        return len(self.pumps)
-
-    def get_fluid_pumps_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`Pump<pump>` names.
-        """
-        return np.array([elm.name for elm in self.pumps])
-
-    def add_fluid_p2x(self, node: dev.FluidNode,
-                      api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
-        """
-        Add power to x
-        :param node: Fluid node to add to
-        :param api_obj:FluidP2x
-        """
-        if api_obj is None:
-            api_obj = dev.FluidTurbine()
-        api_obj.plant = node
-
-        if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
-
-        self.p2xs.append(api_obj)
-
-        return api_obj
-
-    def delete_fluid_p2x(self, obj: dev.FluidP2x):
-        """
-        Delete fuid pump
-        :param obj: FluidP2x
-        """
-        self.p2xs.remove(obj)
-
-    def get_fluid_p2xs(self) -> List[dev.FluidP2x]:
-        """
-        Returns a list of :ref:`Load<load>` objects in the grid.
-        """
-        return self.p2xs
-
-    def get_fluid_p2xs_number(self) -> int:
-        """
-        :return: number of total pumps in the network
-        """
-        return len(self.p2xs)
-
-    def get_fluid_p2xs_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`P2X<P2X>` names.
-        """
-        return np.array([elm.name for elm in self.p2xs])
-
-    def get_fluid_injection_number(self) -> int:
-        """
-        Get number of fluid injections
-        :return: int
-        """
-        return self.get_fluid_turbines_number() + self.get_fluid_pumps_number() + self.get_fluid_p2xs_number()
-
-    def get_fluid_injection_names(self) -> StrVec:
-        """
-        Returns a list of :ref:`Injection<Injection>` names.
-        Sort by order: turbines, pumps, p2xs
-        """
-        names = list()
-        for elm in self.turbines:
-            names.append(elm.name)
-
-        for elm in self.pumps:
-            names.append(elm.name)
-
-        for elm in self.p2xs:
-            names.append(elm.name)
-
-        return np.array(names)
-
-    def get_fluid_injections(self) -> List[FLUID_TYPES]:
-        """
-        Returns a list of :ref:`Injection<Injection>` names.
-        Sort by order: turbines, pumps, p2xs
-        """
-        return self.turbines + self.pumps + self.p2xs
 
     def convert_line_to_hvdc(self, line: dev.Line) -> dev.HvdcLine:
         """
@@ -4192,6 +416,8 @@ class MultiCircuit:
         """
         hvdc = dev.HvdcLine(bus_from=line.bus_from,
                             bus_to=line.bus_to,
+                            cn_from=line.cn_from,
+                            cn_to=line.cn_to,
                             name='HVDC Line',
                             active=line.active,
                             rate=line.rate,
@@ -4216,6 +442,8 @@ class MultiCircuit:
         """
         transformer = dev.Transformer2W(bus_from=line.bus_from,
                                         bus_to=line.bus_to,
+                                        cn_from=line.cn_from,
+                                        cn_to=line.cn_to,
                                         name='Transformer',
                                         active=line.active,
                                         rate=line.rate,
@@ -4271,7 +499,7 @@ class MultiCircuit:
         batt.vset_prof = gen.Vset_prof
 
         # add device to the circuit
-        self.add_battery(gen.bus, batt)
+        self.add_battery(bus=gen.bus, api_obj=batt, cn=gen.cn)
 
         # delete the line from the circuit
         self.delete_injection_device(gen)
@@ -4286,6 +514,8 @@ class MultiCircuit:
         """
         vsc = dev.VSC(bus_from=line.bus_from,
                       bus_to=line.bus_to,
+                      cn_from=line.cn_from,
+                      cn_to=line.cn_to,
                       name='VSC',
                       active=line.active,
                       rate=line.rate,
@@ -4314,6 +544,8 @@ class MultiCircuit:
         """
         upfc = dev.UPFC(bus_from=line.bus_from,
                         bus_to=line.bus_to,
+                        cn_from=line.cn_from,
+                        cn_to=line.cn_to,
                         name='UPFC',
                         active=line.active,
                         rate=line.rate,
@@ -4339,12 +571,41 @@ class MultiCircuit:
         """
         series_reactance = dev.SeriesReactance(bus_from=line.bus_from,
                                                bus_to=line.bus_to,
+                                               cn_from=line.cn_from,
+                                               cn_to=line.cn_to,
                                                name='Series reactance',
                                                active=line.active,
                                                rate=line.rate,
                                                r=line.R,
                                                x=line.X,
                                                )
+
+        series_reactance.active_prof = line.active_prof
+        series_reactance.rate_prof = line.rate_prof
+
+        # add device to the circuit
+        self.add_series_reactance(series_reactance)
+
+        # delete the line from the circuit
+        self.delete_line(line)
+
+        return series_reactance
+
+    def convert_line_to_switch(self, line: dev.Line) -> dev.Switch:
+        """
+        Convert a line to voltage source converter
+        :param line: Line instance
+        :return: SeriesReactance
+        """
+        series_reactance = dev.Switch(bus_from=line.bus_from,
+                                      bus_to=line.bus_to,
+                                      cn_from=line.cn_from,
+                                      cn_to=line.cn_to,
+                                      name='Switch',
+                                      active=line.active,
+                                      rate=line.rate,
+                                      r=line.R,
+                                      x=line.X)
 
         series_reactance.active_prof = line.active_prof
         series_reactance.rate_prof = line.rate_prof
@@ -4440,7 +701,7 @@ class MultiCircuit:
             gen_names = list()
             bat_names = list()
 
-            for elm in self.loads:
+            for elm in self._loads:
                 load_names.append(elm.name)
                 P.append(elm.P_prof)
                 Q.append(elm.Q_prof)
@@ -4451,13 +712,13 @@ class MultiCircuit:
                 G.append(elm.G_prof)
                 B.append(elm.B_prof)
 
-            for elm in self.generators:
+            for elm in self._generators:
                 gen_names.append(elm.name)
 
                 P_gen.append(elm.P_prof)
                 V_gen.append(elm.Vset_prof)
 
-            for elm in self.batteries:
+            for elm in self._batteries:
                 bat_names.append(elm.name)
                 gen_names.append(elm.name)
                 P_gen.append(elm.P_prof)
@@ -4497,17 +758,8 @@ class MultiCircuit:
         """
         Set the profiles state at the index t as the default values.
         """
-        for bus in self.buses:
-            bus.set_profile_values(t)
-
-        for elm in self.get_injection_devices():
-            elm.set_profile_values(t)
-
-        for elm in self.get_fluid_devices():
-            elm.set_profile_values(t)
-
-        for branch in self.get_branches():
-            branch.set_profile_values(t)
+        for device in self.items_declared():
+            device.set_profile_values(t)
 
         self.snapshot_time = self.time_profile[t]
 
@@ -4521,7 +773,7 @@ class MultiCircuit:
         Cf = lil_matrix((m, n))
         Ct = lil_matrix((m, n))
 
-        bus_dict = {bus: i for i, bus in enumerate(self.buses)}
+        bus_dict = {bus: i for i, bus in enumerate(self._buses)}
 
         k = 0
         for branch_list in self.get_branch_lists():
@@ -4561,68 +813,9 @@ class MultiCircuit:
         """
         Get the mean coordinates of the system (lat, lon)
         """
-        coord = np.array([b.get_coordinates() for b in self.buses])
+        coord = np.array([b.get_coordinates() for b in self._buses])
 
         return coord.mean(axis=0).tolist()
-
-    def add_circuit(self, circuit: "MultiCircuit"):
-        """
-        Add a circuit to this circuit
-        :param circuit: Circuit to insert
-        :return: Nothing
-        """
-
-        # add profiles if required
-        if self.time_profile is not None:
-
-            for bus in circuit.buses:
-                bus.create_profiles(index=self.time_profile)
-
-            for lst in [circuit.lines, circuit.transformers2w, circuit.hvdc_lines]:
-                for branch in lst:
-                    branch.create_profiles(index=self.time_profile)
-
-        self.add_devices_list(self.buses, circuit.buses)
-        self.add_devices_list(self.lines, circuit.lines)
-        self.add_devices_list(self.transformers2w, circuit.transformers2w)
-        self.add_devices_list(self.windings, circuit.windings)
-        self.add_devices_list(self.transformers3w, circuit.transformers3w)
-        self.add_devices_list(self.hvdc_lines, circuit.hvdc_lines)
-        self.add_devices_list(self.vsc_devices, circuit.vsc_devices)
-        self.add_devices_list(self.upfc_devices, circuit.upfc_devices)
-        self.add_devices_list(self.dc_lines, circuit.dc_lines)
-
-        self.add_devices_list(self.switch_devices, circuit.switch_devices)
-        self.add_devices_list(self.areas, circuit.areas)
-        self.add_devices_list(self.zones, circuit.zones)
-        self.add_devices_list(self.substations, circuit.substations)
-        self.add_devices_list(self.countries, circuit.countries)
-
-        self.add_devices_list(self.technologies, circuit.technologies)
-
-        self.add_devices_list(self.overhead_line_types, circuit.overhead_line_types)
-        self.add_devices_list(self.wire_types, circuit.wire_types)
-        self.add_devices_list(self.underground_cable_types, circuit.underground_cable_types)
-        self.add_devices_list(self.sequence_line_types, circuit.sequence_line_types)
-        self.add_devices_list(self.transformer_types, circuit.transformer_types)
-
-        return circuit.buses
-
-    @staticmethod
-    def add_devices_list(original_list, new_list):
-        """
-        Add a list of devices to another keeping coherence
-        :param original_list:
-        :param new_list:
-        :return:
-        """
-        existing_uuids = {e.idtag for e in original_list}
-
-        for elm in new_list:
-            if elm.idtag in existing_uuids:
-                print(elm.name, 'uuid is repeated..generating new one')
-                elm.generate_uuid()
-            original_list.append(elm)
 
     def snapshot_balance(self):
         """
@@ -4636,19 +829,19 @@ class MultiCircuit:
                 'Loads': 0.0,
                 'Balance': 0.0}
 
-        for gen in self.generators:
+        for gen in self._generators:
             if gen.active:
                 data['Generators'] = data['Generators'] + gen.P
 
-        for gen in self.static_generators:
+        for gen in self._static_generators:
             if gen.active:
                 data['Static generators'] = data['Static generators'] + gen.P
 
-        for gen in self.batteries:
+        for gen in self._batteries:
             if gen.active:
                 data['Batteries'] = data['Batteries'] + gen.P
 
-        for load in self.loads:
+        for load in self._loads:
             if load.active:
                 data['Loads'] = data['Loads'] + load.P
 
@@ -4728,10 +921,10 @@ class MultiCircuit:
         :return Logger object
         """
 
-        n = len(self.buses)
+        n = len(self._buses)
         lon = np.zeros(n)
         lat = np.zeros(n)
-        for i, bus in enumerate(self.buses):
+        for i, bus in enumerate(self._buses):
             lon[i] = bus.longitude
             lat[i] = bus.latitude
 
@@ -4758,7 +951,7 @@ class MultiCircuit:
             y -= y_max - 100  # 100 is a healthy offset
 
         # assign the values
-        for i, bus in enumerate(self.buses):
+        for i, bus in enumerate(self._buses):
             if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.x = x[i]
                 bus.y = y[i]
@@ -4774,10 +967,10 @@ class MultiCircuit:
         :param offset_y:
         :return:
         """
-        n = len(self.buses)
+        n = len(self._buses)
         x = np.zeros(n)
         y = np.zeros(n)
-        for i, bus in enumerate(self.buses):
+        for i, bus in enumerate(self._buses):
             x[i] = bus.x * factor + offset_x
             y[i] = bus.y * factor + offset_y
 
@@ -4796,7 +989,7 @@ class MultiCircuit:
         lat = lonlat[1]
 
         # assign the values
-        for i, bus in enumerate(self.buses):
+        for i, bus in enumerate(self._buses):
             if destructive or (bus.x == 0.0 and bus.y == 0.0):
                 bus.latitude = lat[i]
                 bus.longitude = lon[i]
@@ -4822,7 +1015,7 @@ class MultiCircuit:
             d[str(name)] = (lat, lon)
 
         # assign the values
-        for i, bus in enumerate(self.buses):
+        for i, bus in enumerate(self._buses):
             if bus.name in d.keys():
                 lat, lon = d[bus.name]
                 bus.latitude = lat
@@ -4843,8 +1036,8 @@ class MultiCircuit:
         """
         areas_dict = {elm: k for k, elm in enumerate(self.get_areas())}
 
-        lst = np.zeros(len(self.buses), dtype=int)
-        for k, bus in enumerate(self.buses):
+        lst = np.zeros(len(self._buses), dtype=int)
+        for k, bus in enumerate(self._buses):
             if bus.area is not None:
                 lst[k] = areas_dict.get(bus.area, 0)
             else:
@@ -4857,7 +1050,7 @@ class MultiCircuit:
         :return:
         """
         lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self.buses):
+        for k, bus in enumerate(self._buses):
             if bus.area == area:
                 lst.append((k, bus))
         return lst
@@ -4868,7 +1061,7 @@ class MultiCircuit:
         :return:
         """
         lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self.buses):
+        for k, bus in enumerate(self._buses):
             if bus.area in areas:
                 lst.append((k, bus))
         return lst
@@ -4879,7 +1072,7 @@ class MultiCircuit:
         :return:
         """
         lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self.buses):
+        for k, bus in enumerate(self._buses):
             if bus.zone == zone:
                 lst.append((k, bus))
         return lst
@@ -4922,7 +1115,7 @@ class MultiCircuit:
         :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
         """
         lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.hvdc_lines):
+        for k, branch in enumerate(self._hvdc_lines):
             if branch.bus_from.area in a1 and branch.bus_to.area in a2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
@@ -4951,7 +1144,7 @@ class MultiCircuit:
         :param a2: list of receiving areas
         :return: Connectivity of the Branches to each sending or receiving area groups (Branches, 2)
         """
-        area_dict = {a: i for i, a in enumerate(self.areas)}
+        area_dict = {a: i for i, a in enumerate(self._areas)}
 
         area1_list = [area_dict[a] for a in a1]
         area2_list = [area_dict[a] for a in a2]
@@ -4980,8 +1173,8 @@ class MultiCircuit:
         Get the area-branches information
         :return: area_names, bus_area_indices, F, T, hvdc_F, hvdc_T
         """
-        area_dict = {elm: i for i, elm in enumerate(self.get_areas())}
-        bus_dict = self.get_bus_index_dict()
+        area_dict: Dict[dev.Area, int] = {elm: i for i, elm in enumerate(self.get_areas())}
+        bus_dict: Dict[dev.Bus, int] = self.get_bus_index_dict()
 
         area_names = [a.name for a in self.get_areas()]
         bus_area_indices = np.array([area_dict.get(b.area, 0) for b in self.get_buses()])
@@ -5034,6 +1227,31 @@ class MultiCircuit:
 
                 if devices_by_type is None:
                     groups[elm.bus] = {elm.device_type: [elm]}
+                else:
+                    lst = devices_by_type.get(elm.device_type, None)
+                    if lst is None:
+                        devices_by_type[elm.device_type] = [elm]
+                    else:
+                        devices_by_type[elm.device_type].append(elm)
+
+        return groups
+
+    def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode,
+                                                          Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[ConnectivityNode, Dict[DeviceType, List[Injection devs]]
+        """
+        groups: Dict[dev.ConnectivityNode, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
+
+        for lst in self.get_injection_devices_lists():
+
+            for elm in lst:
+
+                devices_by_type = groups.get(elm.cn, None)
+
+                if devices_by_type is None:
+                    groups[elm.cn] = {elm.device_type: [elm]}
                 else:
                     lst = devices_by_type.get(elm.device_type, None)
                     if lst is None:
@@ -5178,39 +1396,6 @@ class MultiCircuit:
 
         return list_of_deleted
 
-    def re_index_time(self, year=None, hours_per_step=1.0):
-        """
-        Generate sequential time steps to correct the time_profile
-        :param year: base year, if None, this year is taken
-        :param hours_per_step: number of hours per step, by default 1 hour by step
-        """
-        if year is None:
-            t0 = dateslib.datetime.now()
-            year = t0.year
-
-        t0 = dateslib.datetime(year=year, month=1, day=1)
-        self.re_index_time2(t0=t0, step_size=hours_per_step, step_unit='h')
-
-    def re_index_time2(self, t0, step_size, step_unit):
-        """
-        Generate sequential time steps to correct the time_profile
-        :param t0: base time
-        :param step_size: number of hours per step, by default 1 hour by step
-        :param step_unit: 'h', 'm', 's'
-        """
-        nt = self.get_time_number()
-
-        if step_unit == 'h':
-            tm = [t0 + dateslib.timedelta(hours=t * step_size) for t in range(nt)]
-        elif step_unit == 'm':
-            tm = [t0 + dateslib.timedelta(minutes=t * step_size) for t in range(nt)]
-        elif step_unit == 's':
-            tm = [t0 + dateslib.timedelta(seconds=t * step_size) for t in range(nt)]
-        else:
-            raise Exception("Unsupported time unit")
-
-        self.time_profile = pd.to_datetime(tm)
-
     def set_generators_active_profile_from_their_active_power(self):
         """
         Modify the generators active profile to match the active power profile
@@ -5235,51 +1420,14 @@ class MultiCircuit:
         for ld in self.get_loads():
             ld.active_prof.set(ld.P_prof.toarray().astype(bool))
 
-    def set_contingencies(self, contingencies: List[dev.Contingency]):
-        """
-        Set contingencies and contingency groups to circuit
-        :param contingencies: List of contingencies
-        :return:
-        """
-        devices = self.get_contingency_devices()
-        groups = dict()
-
-        devices_code_dict = {d.code: d for d in devices}
-        devices_key_dict = {d.idtag: d for d in devices}
-        devices_dict = {**devices_code_dict, **devices_key_dict}
-
-        logger = Logger()
-
-        for contingency in contingencies:
-            if contingency.code in devices_dict.keys() or contingency.idtag in devices_dict.keys():
-                # ensure proper device_idtag and code
-                element = devices_dict[contingency.code]
-                contingency.device_idtag = element.idtag
-                contingency.code = element.code
-
-                self.contingencies.append(contingency)
-
-                if contingency.group.idtag not in groups.keys():
-                    groups[contingency.group.idtag] = contingency.group
-            else:
-                logger.add_info(
-                    msg='Contingency element not found in circuit',
-                    device=contingency.code,
-                )
-
-        for group in groups.values():
-            self.contingency_groups.append(group)
-
-        return logger
-
     def get_voltage_guess(self) -> CxVec:
         """
         Get the buses stored voltage guess
         :return: array of complex voltages per bus
         """
-        v = np.zeros(len(self.buses), dtype=complex)
+        v = np.zeros(len(self._buses), dtype=complex)
 
-        for i, bus in enumerate(self.buses):
+        for i, bus in enumerate(self._buses):
             if bus.active:
                 v[i] = cmath.rect(bus.Vm0, bus.Va0)
 
@@ -5412,53 +1560,13 @@ class MultiCircuit:
 
         return val
 
-    def get_generator_indexing_dict(self) -> Dict[str, int]:
-        """
-        Get a dictionary that relates the generator uuid's with their index
-        :return: Dict[str, int]
-        """
-        gen_index_dict: Dict[str, int] = dict()
-        for k, elm in enumerate(self.get_generators()):
-            gen_index_dict[elm.idtag] = k  # associate the idtag to the index
-        return gen_index_dict
-
-    def get_fuel_indexing_dict(self) -> Dict[str, int]:
-        """
-        Get a dictionary that relates the fuel uuid's with their index
-        :return: Dict[str, int]
-        """
-        index_dict: Dict[str, int] = dict()
-        for k, elm in enumerate(self.get_fuels()):
-            index_dict[elm.idtag] = k  # associate the idtag to the index
-        return index_dict
-
-    def get_emissions_indexing_dict(self) -> Dict[str, int]:
-        """
-        Get a dictionary that relates the fuel uuid's with their index
-        :return: Dict[str, int]
-        """
-        index_dict: Dict[str, int] = dict()
-        for k, elm in enumerate(self.get_emissions()):
-            index_dict[elm.idtag] = k  # associate the idtag to the index
-        return index_dict
-
-    def get_technology_indexing_dict(self) -> Dict[str, int]:
-        """
-        Get a dictionary that relates the fuel uuid's with their index
-        :return: Dict[str, int]
-        """
-        index_dict: Dict[str, int] = dict()
-        for k, elm in enumerate(self.technologies):
-            index_dict[elm.idtag] = k  # associate the idtag to the index
-        return index_dict
-
     def get_fuel_rates_sparse_matrix(self) -> csc_matrix:
         """
         Get the fuel rates matrix with relation to the generators
         should be used to get the fuel amounts by: Rates_mat x Pgen
         :return: CSC sparse matrix (n_fuel, n_gen)
         """
-        nfuel = len(self.fuels)
+        nfuel = len(self._fuels)
         gen_index_dict = self.get_generator_indexing_dict()
         fuel_index_dict = self.get_fuel_indexing_dict()
         nelm = len(gen_index_dict)
@@ -5466,7 +1574,7 @@ class MultiCircuit:
         gen_fuel_rates_matrix: lil_matrix = lil_matrix((nfuel, nelm), dtype=float)
 
         # create associations between generators and fuels
-        for entry in self.generators_fuels:
+        for entry in self._generators_fuels:
             gen_idx = gen_index_dict[entry.generator.idtag]
             fuel_idx = fuel_index_dict[entry.fuel.idtag]
             gen_fuel_rates_matrix[fuel_idx, gen_idx] = entry.rate
@@ -5479,7 +1587,7 @@ class MultiCircuit:
         should be used to get the fuel amounts by: Rates_mat x Pgen
         :return: CSC sparse matrix (n_emissions, n_gen)
         """
-        nemissions = len(self.emission_gases)
+        nemissions = len(self._emission_gases)
         gen_index_dict = self.get_generator_indexing_dict()
         em_index_dict = self.get_emissions_indexing_dict()
         nelm = len(gen_index_dict)
@@ -5487,7 +1595,7 @@ class MultiCircuit:
         gen_emissions_rates_matrix: lil_matrix = lil_matrix((nemissions, nelm), dtype=float)
 
         # create associations between generators and emissions
-        for entry in self.generators_emissions:
+        for entry in self._generators_emissions:
             gen_idx = gen_index_dict[entry.generator.idtag]
             em_idx = em_index_dict[entry.emission.idtag]
             gen_emissions_rates_matrix[em_idx, gen_idx] = entry.rate
@@ -5500,7 +1608,7 @@ class MultiCircuit:
         should be used to get the generatio per technology by: Tech_mat x Pgen
         :return: CSC sparse matrix (n_tech, n_gen)
         """
-        ntech = len(self.technologies)
+        ntech = len(self._technologies)
         gen_index_dict = self.get_generator_indexing_dict()
         tech_index_dict = self.get_technology_indexing_dict()
         nelm = len(gen_index_dict)
@@ -5508,7 +1616,7 @@ class MultiCircuit:
         gen_tech_proportions_matrix: lil_matrix = lil_matrix((ntech, nelm), dtype=int)
 
         # create associations between generators and technologies
-        for i, entry in enumerate(self.generators_technologies):
+        for i, entry in enumerate(self._generators_technologies):
             gen_idx = gen_index_dict[entry.generator.idtag]
             tech_idx = tech_index_dict[entry.technology.idtag]
             gen_tech_proportions_matrix[tech_idx, gen_idx] = entry.proportion
@@ -5548,11 +1656,14 @@ class MultiCircuit:
             if elm.bus == bus2:
                 elm.bus = bus1
 
-    def compare_circuits(self, grid2: "MultiCircuit", detailed_profile_comparison: bool = True) -> Tuple[bool, Logger]:
+    def compare_circuits(self, grid2: "MultiCircuit",
+                         detailed_profile_comparison: bool = True,
+                         skip_internals: bool = False) -> Tuple[bool, Logger]:
         """
         Compare this circuit with another circuits for equality
         :param grid2: MultiCircuit
         :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
+        :param skip_internals: skip non visible properties
         :return: equal?, Logger with the comparison information
         """
         logger = Logger()
@@ -5566,11 +1677,11 @@ class MultiCircuit:
         else:
             nt = self.get_time_number()
 
-        if self.snapshot_time != grid2.snapshot_time:
+        if (self.snapshot_time != grid2.snapshot_time) and not skip_internals:
             logger.add_error(msg="Different snapshot times",
                              device_class="snapshot time",
-                             value=str(grid2.get_snapshot_time_unix),
-                             expected_value=self.get_snapshot_time_unix)
+                             value=str(grid2.get_snapshot_time_unix()),
+                             expected_value=self.get_snapshot_time_unix())
 
         # for each category
         for key, template_elms_list in self.objects_with_profiles.items():
@@ -5584,118 +1695,223 @@ class MultiCircuit:
 
                 if len(elms1) != len(elms2):
                     logger.add_error(msg="Different number of elements",
-                                     device_class=template_elm.device_type.value)
+                                     device_class=template_elm.device_type.value,
+                                     value=len(elms2),
+                                     expected_value=len(elms1))
 
                 # for every property
                 for prop_name, prop in template_elm.registered_properties.items():
 
-                    # for every pair of elements:
-                    for elm1, elm2 in zip(elms1, elms2):
+                    if skip_internals:
+                        analyze = prop.display
+                    else:
+                        analyze = True
 
-                        # compare the snapshot values
-                        v1 = elm1.get_property_value(prop=prop, t_idx=None)
-                        v2 = elm2.get_property_value(prop=prop, t_idx=None)
+                    if analyze:
+                        # for every pair of elements:
+                        for elm1, elm2 in zip(elms1, elms2):
 
-                        if v1 != v2:
-                            logger.add_error(msg="Different snapshot values",
-                                             device_class=template_elm.device_type.value,
-                                             device_property=prop.name,
-                                             value=v2,
-                                             expected_value=v1)
+                            # compare the snapshot values
+                            v1 = elm1.get_property_value(prop=prop, t_idx=None)
+                            v2 = elm2.get_property_value(prop=prop, t_idx=None)
 
-                        if prop.has_profile():
-                            p1 = elm1.get_profile_by_prop(prop=prop)
-                            p2 = elm1.get_profile_by_prop(prop=prop)
-
-                            if p1 != p2:
-                                logger.add_error(msg="Different profile values",
+                            if v1 != v2:
+                                logger.add_error(msg="Different snapshot values",
                                                  device_class=template_elm.device_type.value,
                                                  device_property=prop.name,
-                                                 object_value=p2,
-                                                 expected_object_value=p1)
+                                                 value=v2,
+                                                 expected_value=v1)
 
-                            if detailed_profile_comparison:
-                                for t_idx in range(nt):
+                            if prop.has_profile():
+                                p1 = elm1.get_profile_by_prop(prop=prop)
+                                p2 = elm1.get_profile_by_prop(prop=prop)
 
-                                    v1 = p1[t_idx]
-                                    v2 = p2[t_idx]
+                                if p1 != p2:
+                                    logger.add_error(msg="Different profile values",
+                                                     device_class=template_elm.device_type.value,
+                                                     device_property=prop.name,
+                                                     object_value=p2,
+                                                     expected_object_value=p1)
 
-                                    if v1 != v2:
-                                        logger.add_error(msg="Different time series values",
-                                                         device_class=template_elm.device_type.value,
-                                                         device_property=prop.name,
-                                                         device=str(elm1),
-                                                         value=v2,
-                                                         expected_value=v1)
+                                if detailed_profile_comparison:
+                                    for t_idx in range(nt):
 
-                                    v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
-                                    v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+                                        v1 = p1[t_idx]
+                                        v2 = p2[t_idx]
 
-                                    if v1 != v1b:
-                                        logger.add_error(
-                                            msg="Profile getting values differ with different getter methods!",
-                                            device_class=template_elm.device_type.value,
-                                            device_property=prop.name,
-                                            device=str(elm1),
-                                            value=v1b,
-                                            expected_value=v1)
+                                        if v1 != v2:
+                                            logger.add_error(msg="Different time series values",
+                                                             device_class=template_elm.device_type.value,
+                                                             device_property=prop.name,
+                                                             device=str(elm1),
+                                                             value=v2,
+                                                             expected_value=v1)
 
-                                    if v2 != v2b:
-                                        logger.add_error(
-                                            msg="Profile getting values differ with different getter methods!",
-                                            device_class=template_elm.device_type.value,
-                                            device_property=prop.name,
-                                            device=str(elm1),
-                                            value=v1b,
-                                            expected_value=v1)
+                                        v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                                        v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+
+                                        if v1 != v1b:
+                                            logger.add_error(
+                                                msg="Profile getting values differ with different getter methods!",
+                                                device_class=template_elm.device_type.value,
+                                                device_property=prop.name,
+                                                device=str(elm1),
+                                                value=v1b,
+                                                expected_value=v1)
+
+                                        if v2 != v2b:
+                                            logger.add_error(
+                                                msg="Profile getting values differ with different getter methods!",
+                                                device_class=template_elm.device_type.value,
+                                                device_property=prop.name,
+                                                device=str(elm1),
+                                                value=v1b,
+                                                expected_value=v1)
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
-    def convert_to_node_breaker(self) -> None:
+    def differentiate_circuits(self, base_grid: "MultiCircuit",
+                               detailed_profile_comparison: bool = True) -> Tuple[bool, Logger, "MultiCircuit"]:
         """
-        Convert this MultiCircuit from bus/branch to node/breaker network model
+        Compare this circuit with another circuits for equality
+        :param base_grid: MultiCircuit used as comparison base
+        :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
+        :return: equal?, Logger with the comparison information, Multicircuit with the elements that have changed
+        """
+        logger = Logger()
+
+        dgrid = MultiCircuit(name=self.name + " increment")
+        dgrid.comments = f"Incremental grid created from {self.name} using {base_grid.name} as base."
+
+        if self.get_time_number() != base_grid.get_time_number():
+            nt = 0
+            logger.add_error(msg="Different number of time steps",
+                             device_class="time",
+                             value=base_grid.get_time_number(),
+                             expected_value=self.get_time_number())
+        else:
+            nt = self.get_time_number()
+
+        if self.snapshot_time != base_grid.snapshot_time:
+            logger.add_error(msg="Different snapshot times",
+                             device_class="snapshot time",
+                             value=str(base_grid.get_snapshot_time_unix),
+                             expected_value=self.get_snapshot_time_unix)
+
+        # get a dictionary of all the elements of the other circuit
+        base_elements_dict = base_grid.get_all_elements_dict()
+
+        for elm_from_here in self.items():  # for every device...
+            action = ActionType.NoAction
+
+            # try to search for the counterpart in the base circuit
+            elm_from_base = base_elements_dict.get(elm_from_here.idtag, None)
+
+            if elm_from_base is None:
+                # not found in the base, add it
+                action = ActionType.Add
+
+            else:
+                # check differences
+                for prop_name, prop in elm_from_here.registered_properties.items():
+
+                    # compare the snapshot values
+                    v1 = elm_from_here.get_property_value(prop=prop, t_idx=None)
+                    v2 = elm_from_base.get_property_value(prop=prop, t_idx=None)
+
+                    if v1 != v2:
+                        logger.add_info(msg="Different snapshot values",
+                                        device_class=elm_from_here.device_type.value,
+                                        device_property=prop.name,
+                                        value=v2,
+                                        expected_value=v1)
+                        action = ActionType.Modify
+
+                    if prop.has_profile():
+                        p1 = elm_from_here.get_profile_by_prop(prop=prop)
+                        p2 = elm_from_here.get_profile_by_prop(prop=prop)
+
+                        if p1 != p2:
+                            logger.add_info(msg="Different profile values",
+                                            device_class=elm_from_here.device_type.value,
+                                            device_property=prop.name,
+                                            object_value=p2,
+                                            expected_object_value=p1)
+                            action = ActionType.Modify
+
+                        if detailed_profile_comparison:
+                            for t_idx in range(nt):
+
+                                v1 = p1[t_idx]
+                                v2 = p2[t_idx]
+
+                                if v1 != v2:
+                                    logger.add_info(msg="Different time series values",
+                                                    device_class=elm_from_here.device_type.value,
+                                                    device_property=prop.name,
+                                                    device=str(elm_from_here),
+                                                    value=v2,
+                                                    expected_value=v1)
+                                    action = ActionType.Modify
+
+                                v1b = elm_from_here.get_property_value(prop=prop, t_idx=t_idx)
+                                v2b = elm_from_base.get_property_value(prop=prop, t_idx=t_idx)
+
+                                if v1 != v1b:
+                                    logger.add_info(
+                                        msg="Profile values differ with different getter methods!",
+                                        device_class=elm_from_here.device_type.value,
+                                        device_property=prop.name,
+                                        device=str(elm_from_here),
+                                        value=v1b,
+                                        expected_value=v1)
+                                    action = ActionType.Modify
+
+                                if v2 != v2b:
+                                    logger.add_info(
+                                        msg="Profile getting values differ with different getter methods!",
+                                        device_class=elm_from_here.device_type.value,
+                                        device_property=prop.name,
+                                        device=str(elm_from_here),
+                                        value=v1b,
+                                        expected_value=v1)
+                                    action = ActionType.Modify
+
+            if action != ActionType.NoAction:
+                new_element = elm_from_here.copy(forced_new_idtag=False)
+                new_element.action = action
+                dgrid.add_element(obj=new_element)
+                logger.add_info(msg="Device added in the diff circuit",
+                                device_class=new_element.device_type.value,
+                                device_property=new_element.name, )
+
+        # if any error in the logger, bad
+        return logger.error_count() == 0, logger, dgrid
+
+    def add_circuit(self, circuit: "MultiCircuit") -> Logger:
+        """
+        Add a circuit to this circuit
+        :param circuit: Circuit to insert
+        :return: Nothing
         """
 
-        bbcn = dict()
-        for bus in self.buses:
-            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
-            self.add_bus_bar(bus_bar)
-            bbcn[bus.idtag] = bus_bar.cn
-            bus_bar.cn.code = bus.code  # for soft checking later
-            # bus_bar.cn.default_bus = bus
+        logger = Logger()
 
-        # branches
-        for elm in self.get_branches():
-            # Create two new connectivity nodes
-            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
-            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
-            self.add_connectivity_node(cnfrom)
-            self.add_connectivity_node(cnto)
-            elm.cn_to = cnto
-            elm.cn_from = cnfrom
-            # Create two new switches
-            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
-                             cn_from=bbcn[elm.bus_from.idtag],
-                             cn_to=cnfrom,
-                             active=True)
-            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
-                             cn_from=cnto,
-                             cn_to=bbcn[elm.bus_to.idtag],
-                             active=True)
-            self.add_switch(sw1)
-            self.add_switch(sw2)
+        # add profiles if required
+        if self.time_profile is not None:
 
-        # injections
-        for elm in self.get_injection_devices():
-            # TODO: Add the posibbility to add a switch here too
-            elm.cn = bbcn[elm.bus.idtag]
+            for bus in circuit._buses:
+                bus.create_profiles(index=self.time_profile)
 
-        # Removing original buses
-        # if not keep_buses:
-        bidx = [b for b in self.get_buses()]
-        for b in bidx:
-            self.delete_bus(b)
+            for lst in [circuit._lines, circuit._transformers2w, circuit._hvdc_lines]:
+                for branch in lst:
+                    branch.create_profiles(index=self.time_profile)
+
+        for api_object in circuit.items():
+            self.add_or_replace_object(api_obj=api_object, logger=logger)
+
+        return logger
 
     def clean_branches(self,
                        nt: int,
@@ -5766,7 +1982,7 @@ class MultiCircuit:
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated branch",
                             device=elm.idtag,
                             device_class=elm.device_type.value)
@@ -5815,7 +2031,7 @@ class MultiCircuit:
                     elements_to_delete.append(elm)
 
         for elm in elements_to_delete:
-            self.delete_elements_by_type(obj=elm)
+            self.delete_element(obj=elm)
             logger.add_info("Deleted isolated injection",
                             device=elm.idtag,
                             device_class=elm.device_type.value)
@@ -5829,7 +2045,7 @@ class MultiCircuit:
         contingencies_to_delete = list()
 
         # pass 1: detect the "null" contingencies
-        for elm in self.contingencies:
+        for elm in self._contingencies:
             if elm.device_idtag not in all_dev.keys():
                 contingencies_to_delete.append(elm)
 
@@ -5841,14 +2057,14 @@ class MultiCircuit:
                             device_class=elm.device_type.value)
 
         # pass 3: count how many times a group is refferenced
-        group_counter = np.zeros(len(self.contingency_groups), dtype=int)
-        group_dict = {elm: i for i, elm in enumerate(self.contingency_groups)}
-        for elm in self.contingencies:
+        group_counter = np.zeros(len(self._contingency_groups), dtype=int)
+        group_dict = {elm: i for i, elm in enumerate(self._contingency_groups)}
+        for elm in self._contingencies:
             group_idx = group_dict[elm.group]
             group_counter[group_idx] += 1
 
         # pass 4: delete unrefferenced groups
-        groups_to_delete = [elm for i, elm in enumerate(self.contingency_groups) if group_counter[i] == 0]
+        groups_to_delete = [elm for i, elm in enumerate(self._contingency_groups) if group_counter[i] == 0]
         for elm in groups_to_delete:
             self.delete_contingency_group(obj=elm)
             logger.add_info("Deleted isolated contingency group",
@@ -5864,7 +2080,7 @@ class MultiCircuit:
         contingencies_to_delete = list()
 
         # pass 1: detect the "null" contingencies
-        for elm in self.investments:
+        for elm in self._investments:
             if elm.device_idtag not in all_dev.keys():
                 contingencies_to_delete.append(elm)
 
@@ -5876,17 +2092,40 @@ class MultiCircuit:
                             device_class=elm.device_type.value)
 
         # pass 3: count how many times a group is refferenced
-        group_counter = np.zeros(len(self.investments_groups), dtype=int)
-        group_dict = {elm: i for i, elm in enumerate(self.investments_groups)}
-        for elm in self.investments:
+        group_counter = np.zeros(len(self._investments_groups), dtype=int)
+        group_dict = {elm: i for i, elm in enumerate(self._investments_groups)}
+        for elm in self._investments:
             group_idx = group_dict[elm.group]
             group_counter[group_idx] += 1
 
         # pass 4: delete unrefferenced groups
-        groups_to_delete = [elm for i, elm in enumerate(self.investments_groups) if group_counter[i] == 0]
+        groups_to_delete = [elm for i, elm in enumerate(self._investments_groups) if group_counter[i] == 0]
         for elm in groups_to_delete:
             self.delete_investment_groups(obj=elm)
             logger.add_info("Deleted isolated investment group",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+    def clean_technologies(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+        """
+        Clean the investments and investment groups
+        :param all_dev:
+        :param logger: Logger
+        """
+        elements_to_delete = list()
+
+        # pass 1: detect the "null" contingencies
+        for elm_lst in [self._generators_emissions,
+                        self._generators_fuels,
+                        self._generators_technologies]:
+            for elm in elm_lst:
+                if elm.generator not in all_dev.keys():
+                    elements_to_delete.append(elm)
+
+        # pass 2: delete the "null" elements
+        for elm in elements_to_delete:
+            self.delete_element(obj=elm)
+            logger.add_info("Deleted isolated investment",
                             device=elm.idtag,
                             device_class=elm.device_type.value)
 
@@ -5895,8 +2134,8 @@ class MultiCircuit:
         Clean dead references
         """
         logger = Logger()
-        bus_set = set(self.buses)
-        cn_set = set(self.connectivity_nodes)
+        bus_set = set(self._buses)
+        cn_set = set(self._connectivity_nodes)
         all_dev = self.get_all_elements_dict()
         nt = self.get_time_number()
 
@@ -5904,43 +2143,485 @@ class MultiCircuit:
         self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
         self.clean_contingencies(all_dev=all_dev, logger=logger)
         self.clean_investments(all_dev=all_dev, logger=logger)
+        self.clean_technologies(all_dev=all_dev, logger=logger)
 
         return logger
 
-    # def split_line(self, line: dev.Line, position: float) -> Tuple["Line", "Line", Bus]:
-    #     """
-    #     Split a branch by a given distance
-    #     :param position: per unit distance measured from the "from" bus (0 ~ 1)
-    #     :return: the two new Branches and the mid short circuited bus
-    #     """
-    #
-    #     assert (0.0 < position < 1.0)
-    #
-    #     # Each of the Branches will have the proportional impedance
-    #     # Bus_from           Middle_bus            Bus_To
-    #     # o----------------------o--------------------o
-    #     #   >-------- x -------->|
-    #     #   (x: distance measured in per unit (0~1)
-    #
-    #     middle_bus = line.bus_from.copy()
-    #     middle_bus.name += ' split'
-    #
-    #     # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
-    #     middle_bus.X = line.bus_from.x + (line.bus_to.x - line.bus_from.x) * position
-    #     middle_bus.y = line.bus_from.y + (line.bus_to.y - line.bus_from.y) * position
-    #
-    #     props_to_scale = ['R', 'R0', 'X', 'X0', 'B', 'B0', 'length']  # list of properties to scale
-    #
-    #     br1 = line.copy()
-    #     br1.bus_from = line.bus_from
-    #     br1.bus_to = middle_bus
-    #     for p in props_to_scale:
-    #         setattr(br1, p, getattr(line, p) * position)
-    #
-    #     br2 = line.copy()
-    #     br2.bus_from = middle_bus
-    #     br2.bus_to = line.bus_to
-    #     for p in props_to_scale:
-    #         setattr(br2, p, getattr(line, p) * (1.0 - position))
-    #
-    #     return br1, br2, middle_bus
+    def convert_to_node_breaker(self) -> None:
+        """
+        Convert this MultiCircuit in-place from bus/branch to node/breaker network model
+        """
+
+        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
+        for bus in self._buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
+            self.add_bus_bar(bus_bar)
+            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
+            bus_bar.cn.code = bus.code  # for soft checking later
+            if bus_bar.cn.default_bus:
+                bus_bar.cn.default_bus.code = bus.code  # for soft checking later
+
+        # add the cn's at the branches
+        for lst in [self.get_branches(), self.get_switches()]:
+            for elm in lst:
+                if elm.bus_from:
+                    elm.cn_from = bus_to_busbar_cn.get(elm.bus_from.idtag, None)
+                if elm.bus_to:
+                    elm.cn_to = bus_to_busbar_cn.get(elm.bus_to.idtag, None)
+
+        # add the cn's at the branches
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
+                if elm.bus:
+                    elm.cn = bus_to_busbar_cn.get(elm.bus.idtag, None)
+
+    def convert_to_node_breaker_adding_switches(self) -> None:
+        """
+        Convert this MultiCircuit in-place from bus/branch to node/breaker network model,
+        adding switches at the extremes of every branch
+        """
+
+        bus_to_busbar_cn = dict()  # relate a bus to its equivalent busbar's cn
+        for bus in self._buses:
+            bus_bar = dev.BusBar(name='Artificial_BusBar_{}'.format(bus.name))
+            self.add_bus_bar(bus_bar)
+            bus_to_busbar_cn[bus.idtag] = bus_bar.cn
+            bus_bar.cn.code = bus.code  # for soft checking later
+            if bus_bar.cn.default_bus:
+                bus_bar.cn.default_bus.code = bus.code  # for soft checking later
+
+        # branches
+        for elm in self.get_branches():
+            # Create two new connectivity nodes
+            cnfrom = dev.ConnectivityNode(name='Artificial_CN_from_L{}'.format(elm.name))
+            cnto = dev.ConnectivityNode(name='Artificial_CN_to_L{}'.format(elm.name))
+            self.add_connectivity_node(cnfrom)
+            self.add_connectivity_node(cnto)
+            elm.cn_to = cnto
+            elm.cn_from = cnfrom
+
+            # Create two new switches
+            sw1 = dev.Switch(name='Artificial_SW_from_L{}'.format(elm.name),
+                             cn_from=bus_to_busbar_cn[elm.bus_from.idtag],
+                             cn_to=cnfrom,
+                             active=True)
+            sw2 = dev.Switch(name='Artificial_SW_to_L{}'.format(elm.name),
+                             cn_from=cnto,
+                             cn_to=bus_to_busbar_cn[elm.bus_to.idtag],
+                             active=True)
+            self.add_switch(sw1)
+            self.add_switch(sw2)
+
+        # injections
+        for elm in self.get_injection_devices():
+            # TODO: Add the posibbility to add a switch here too
+            elm.cn = bus_to_busbar_cn[elm.bus.idtag]
+
+        # Removing original buses
+        bidx = [b for b in self.get_buses()]
+        for b in bidx:
+            self.delete_bus(b)
+
+    def process_topology_at(self,
+                            t_idx: Union[int, None] = None,
+                            logger: Union[Logger, None] = None,
+                            debug: int = 0) -> tp.TopologyProcessorInfo:
+        """
+        Topology processor finding the Buses that calculate a certain node-breaker topology
+        This function fill the bus pointers into the grid object, and adds any new bus required for simulation
+        :param t_idx: Time index, None for the Snapshot
+        :param logger: Logger object
+        :param debug: Debug level
+        :return: TopologyProcessorInfo
+        """
+
+        if logger is None:
+            logger = Logger()
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Compose the candidate nodes (buses)
+        # --------------------------------------------------------------------------------------------------------------
+        process_info = tp.TopologyProcessorInfo()
+
+        # traverse connectivity nodes
+        for cn in self.get_connectivity_nodes():
+
+            if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
+                # create a new candidate
+                candidate_bus = dev.Bus(name=f"Candidate from {cn.name}",
+                                        code=cn.code,  # for soft checking
+                                        Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
+                                        )
+
+                cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
+                process_info.add_new_candidate(candidate_bus)
+            else:
+                # pick the default candidate
+                candidate_bus = cn.default_bus
+                candidate_bus.code = cn.code  # for soft checking
+
+            # register
+            process_info.add_candidate(candidate_bus)
+            process_info.cn_to_candidate[cn] = candidate_bus
+
+        nbus_candidate = process_info.candidate_number()
+        bus_active = process_info.get_candidate_active(t_idx=t_idx)
+
+        # get a list of all branches
+        all_branches = self.get_switches() + self.get_branches()
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Create the connectivity matrices
+        # --------------------------------------------------------------------------------------------------------------
+        nbr = len(all_branches)
+
+        # declare the matrices
+        Cf = lil_matrix((nbr, nbus_candidate))
+        Ct = lil_matrix((nbr, nbus_candidate))
+        br_active = np.empty(nbr, dtype=int)
+
+        # fill matrices approprietly
+        for i, elm in enumerate(all_branches):
+
+            if elm.device_type == DeviceType.SwitchDevice:
+                br_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
+            else:
+                # non switches form islands, because we want islands to be
+                # the set of candidates to fuse into one
+                br_active[i] = 0
+
+            # if elm.cn_from is not None and elm.cn_to is not None:
+            #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
+            #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
+            f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
+            Cf[i, f] = br_active[i]
+            Ct[i, t] = br_active[i]
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Compose the adjacency matrix from the connectivity information
+        # --------------------------------------------------------------------------------------------------------------
+        A = tp.get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
+                                    C_branch_bus_t=Ct.tocsc(),
+                                    branch_active=br_active,
+                                    bus_active=bus_active)
+
+        if debug >= 2:
+            candidate_names = process_info.get_candidate_names()
+            br_names = [br.name for br in all_branches]
+            C = Cf + Ct
+            df = pd.DataFrame(data=C.toarray(), columns=candidate_names, index=br_names)
+            print(df.replace(to_replace=0.0, value="-"))
+
+            print("A:")
+
+            df = pd.DataFrame(data=A.toarray(), columns=candidate_names, index=candidate_names)
+            print(df.replace(to_replace=0.0, value="-"))
+            print()
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Perform the topology search, this will find candidate buses that reduce to be the same bus
+        # --------------------------------------------------------------------------------------------------------------
+        islands = tp.find_islands(adj=A, active=bus_active)  # each island is finally a single calculation element
+
+        if debug >= 1:
+            for i, island in enumerate(islands):
+                print(f"island {i}:", island)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Generate auxiliary structures that derive from the topology results
+        # --------------------------------------------------------------------------------------------------------------
+        final_buses = process_info.apply_results(islands=islands)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Apply the results to the grid object
+        # --------------------------------------------------------------------------------------------------------------
+
+        # Add any extra bus that may arise from the calculation
+        grid_buses_set = {b for b in self.get_buses()}
+        for bus_device in final_buses:
+            if bus_device not in grid_buses_set:
+                self.add_bus(bus_device)
+                if logger:
+                    logger.add_info("Bus added to grid", device=bus_device.name)
+
+        # map the buses to the branches from their connectivity nodes
+        for i, elm in enumerate(all_branches):
+            if elm.cn_from is not None:
+                elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
+
+            if elm.cn_to is not None:
+                elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
+
+        for dev_lst in self.get_injection_devices_lists():
+            for elm in dev_lst:
+                if elm.cn is not None:
+                    elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
+
+        # return the TopologyProcessorInfo
+        return process_info
+
+    def split_line(self,
+                   original_line: Union[dev.Line],
+                   position: float,
+                   extra_km: float):
+        """
+
+        :param original_line:
+        :param position:
+        :param extra_km:
+        :return:
+        """
+
+        # Each of the Branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
+
+        name = original_line.name + ' split'
+        mid_sub = dev.Substation(name=name,
+                                 area=original_line.bus_from.area,
+                                 zone=original_line.bus_from.zone,
+                                 country=original_line.bus_from.country)
+
+        mid_vl = dev.VoltageLevel(name=name, substation=mid_sub)
+
+        mid_bus = dev.Bus(name=name,
+                          Vnom=original_line.bus_from.Vnom,
+                          vmin=original_line.bus_from.Vmin,
+                          vmax=original_line.bus_from.Vmax,
+                          voltage_level=mid_vl,
+                          substation=mid_sub,
+                          area=original_line.bus_from.area,
+                          zone=original_line.bus_from.zone,
+                          country=original_line.bus_from.country)
+
+        position_a = position + (extra_km / original_line.length) if original_line.length > 0.0 else position
+
+        # create first split
+        br1 = dev.Line(name=original_line.name + ' split 1',
+                       bus_from=original_line.bus_from,
+                       bus_to=mid_bus,
+                       r=original_line.R * position_a,
+                       x=original_line.X * position_a,
+                       b=original_line.B * position_a,
+                       r0=original_line.R0 * position_a,
+                       x0=original_line.X0 * position_a,
+                       b0=original_line.B0 * position_a,
+                       r2=original_line.R2 * position_a,
+                       x2=original_line.X2 * position_a,
+                       b2=original_line.B2 * position_a,
+                       length=original_line.length * position_a,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        position_c = ((1.0 - position) + (extra_km / original_line.length)
+                      if original_line.length > 0.0 else (1.0 - position))
+
+        br2 = dev.Line(name=original_line.name + ' split 2',
+                       bus_from=mid_bus,
+                       bus_to=original_line.bus_to,
+                       r=original_line.R * position_c,
+                       x=original_line.X * position_c,
+                       b=original_line.B * position_c,
+                       r0=original_line.R0 * position_c,
+                       x0=original_line.X0 * position_c,
+                       b0=original_line.B0 * position_c,
+                       r2=original_line.R2 * position_c,
+                       x2=original_line.X2 * position_c,
+                       b2=original_line.B2 * position_c,
+                       length=original_line.length * position_c,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # deactivate the original line
+        original_line.active = False
+        original_line.active_prof.fill(False)
+
+        # add to gridcal the new 2 lines and the bus
+        self.add_substation(obj=mid_sub)
+        self.add_voltage_level(obj=mid_vl)
+        self.add_bus(mid_bus)
+        self.add_line(br1)
+        self.add_line(br2)
+
+        # add new stuff as new investment
+        inv_group = dev.InvestmentsGroup(name=original_line.name + ' split', category='Line split')
+        self.add_investments_group(inv_group)
+        self.add_investment(dev.Investment(name=mid_bus.name, device_idtag=mid_bus.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=br1.name, device_idtag=br1.idtag, group=inv_group))
+        self.add_investment(dev.Investment(name=br2.name, device_idtag=br2.idtag, group=inv_group))
+
+        # include the deactivation of the original line
+        self.add_investment(dev.Investment(name=original_line.name,
+                                           device_idtag=original_line.idtag,
+                                           status=False, group=inv_group))
+
+        return mid_sub, mid_vl, mid_bus, br1, br2
+
+    def split_line_int_out(self,
+                           original_line: Union[dev.Line],
+                           position: float,
+                           km_io: float):
+        """
+
+        :param original_line:
+        :param position:
+        :param km_io:
+        :return:
+        """
+
+        # Each of the Branches will have the proportional impedance
+        # Bus_from           Middle_bus            Bus_To
+        # o----------------------o--------------------o
+        #   >-------- x -------->|
+        #   (x: distance measured in per unit (0~1)
+
+        # C(x, y) = (x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+
+        B1 = dev.Bus(name=original_line.name + ' split bus 1',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        B2 = dev.Bus(name=original_line.name + ' split bus 2',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        mid_sub = dev.Substation(name=original_line.name + ' new bus',
+                                 area=original_line.bus_from.area,
+                                 zone=original_line.bus_from.zone,
+                                 country=original_line.bus_from.country)
+        mid_vl = dev.VoltageLevel(name=original_line.name + ' new bus',
+                                  substation=mid_sub)
+        B3 = dev.Bus(name=original_line.name + ' new bus',
+                     Vnom=original_line.bus_from.Vnom,
+                     vmin=original_line.bus_from.Vmin,
+                     vmax=original_line.bus_from.Vmax,
+                     voltage_level=mid_vl,
+                     substation=mid_sub,
+                     area=original_line.bus_from.area,
+                     zone=original_line.bus_from.zone,
+                     country=original_line.bus_from.country)
+
+        # create first split
+        br1 = dev.Line(name=original_line.name + ' split 1',
+                       bus_from=original_line.bus_from,
+                       bus_to=B1,
+                       r=original_line.R * position,
+                       x=original_line.X * position,
+                       b=original_line.B * position,
+                       r0=original_line.R0 * position,
+                       x0=original_line.X0 * position,
+                       b0=original_line.B0 * position,
+                       r2=original_line.R2 * position,
+                       x2=original_line.X2 * position,
+                       b2=original_line.B2 * position,
+                       length=original_line.length * position,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        position_c = 1.0 - position
+        br2 = dev.Line(name=original_line.name + ' split 2',
+                       bus_from=B2,
+                       bus_to=original_line.bus_to,
+                       r=original_line.R * position_c,
+                       x=original_line.X * position_c,
+                       b=original_line.B * position_c,
+                       r0=original_line.R0 * position_c,
+                       x0=original_line.X0 * position_c,
+                       b0=original_line.B0 * position_c,
+                       r2=original_line.R2 * position_c,
+                       x2=original_line.X2 * position_c,
+                       b2=original_line.B2 * position_c,
+                       length=original_line.length * position_c,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # kilometers of the in/out appart from the original line
+        proportion_io = km_io / original_line.length
+
+        br3 = dev.Line(name=original_line.name + ' in',
+                       bus_from=B1,
+                       bus_to=B3,
+                       r=original_line.R * proportion_io,
+                       x=original_line.X * proportion_io,
+                       b=original_line.B * proportion_io,
+                       r0=original_line.R0 * proportion_io,
+                       x0=original_line.X0 * proportion_io,
+                       b0=original_line.B0 * proportion_io,
+                       r2=original_line.R2 * proportion_io,
+                       x2=original_line.X2 * proportion_io,
+                       b2=original_line.B2 * proportion_io,
+                       length=original_line.length * proportion_io,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        br4 = dev.Line(name=original_line.name + ' out',
+                       bus_from=B3,
+                       bus_to=B2,
+                       r=original_line.R * proportion_io,
+                       x=original_line.X * proportion_io,
+                       b=original_line.B * proportion_io,
+                       r0=original_line.R0 * proportion_io,
+                       x0=original_line.X0 * proportion_io,
+                       b0=original_line.B0 * proportion_io,
+                       r2=original_line.R2 * proportion_io,
+                       x2=original_line.X2 * proportion_io,
+                       b2=original_line.B2 * proportion_io,
+                       length=original_line.length * proportion_io,
+                       rate=original_line.rate,
+                       contingency_factor=original_line.contingency_factor,
+                       protection_rating_factor=original_line.protection_rating_factor)
+
+        # deactivate the original line
+        original_line.active = False
+        original_line.active_prof.fill(False)
+
+        # add to gridcal the new 2 lines and the bus
+        self.add_substation(obj=mid_sub)
+        self.add_voltage_level(obj=mid_vl)
+        self.add_bus(B1)
+        self.add_bus(B2)
+        self.add_bus(B3)
+        self.add_line(br1)
+        self.add_line(br2)
+        self.add_line(br3)
+        self.add_line(br4)
+
+        # add new stuff as new investment
+        inv_group = dev.InvestmentsGroup(name=original_line.name + ' in/out', category='Line in/out')
+        self.add_investments_group(inv_group)
+        self.add_investment(
+            dev.Investment(name=B1.name, device_idtag=B1.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=B2.name, device_idtag=B2.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=B3.name, device_idtag=B3.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br1.name, device_idtag=br1.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br2.name, device_idtag=br2.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br3.name, device_idtag=br3.idtag, status=True, group=inv_group))
+        self.add_investment(
+            dev.Investment(name=br4.name, device_idtag=br4.idtag, status=True, group=inv_group))
+
+        # include the deactivation of the original line
+        self.add_investment(dev.Investment(name=original_line.name,
+                                           device_idtag=original_line.idtag,
+                                           status=False, group=inv_group))
+
+        return mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4

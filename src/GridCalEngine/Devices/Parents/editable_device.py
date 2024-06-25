@@ -17,11 +17,15 @@
 import random
 import uuid
 import numpy as np
-from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
-                                        HvdcControlType)
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
+from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
+                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
+                                        HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
+                                        CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
+                                        InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
+                                        ZonalGrouping, MIPSolvers, AcOpfMode, ReactivePowerControlMode,
+                                        BranchImpedanceMode, FaultType)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -38,6 +42,22 @@ GCPROP_TYPES = Union[
     Type[ConverterControlType],
     Type[TapModuleControl],
     Type[TapAngleControl],
+    Type[ActionType],
+    Type[AvailableTransferMode],
+    Type[ContingencyMethod],
+    Type[CpfParametrization],
+    Type[CpfStopAt],
+    Type[InvestmentEvaluationMethod],
+    Type[InvestmentsEvaluationObjectives],
+    Type[NodalCapacityMethod],
+    Type[SolverType],
+    Type[TimeGrouping],
+    Type[ZonalGrouping],
+    Type[MIPSolvers],
+    Type[AcOpfMode],
+    Type[ReactivePowerControlMode],
+    Type[BranchImpedanceMode],
+    Type[FaultType]
 ]
 
 
@@ -139,6 +159,7 @@ class GCProp:
                 'mandatory': False,
                 'max_chars': '',
                 "descriptions": self.definition,
+                "has_profile": self.has_profile(),
                 'comment': ''}
 
     def __str__(self):
@@ -146,6 +167,24 @@ class GCProp:
 
     def __repr__(self):
         return "prop:" + self.name
+
+
+def get_action_symbol(action: ActionType):
+    """
+
+    :param action:
+    :return:
+    """
+    if action == ActionType.NoAction:
+        return "."
+    elif action == ActionType.Add:
+        return "+"
+    elif action == ActionType.Delete:
+        return "-"
+    elif action == ActionType.Modify:
+        return "~"
+    else:
+        return ""
 
 
 class EditableDevice:
@@ -177,6 +216,8 @@ class EditableDevice:
 
         self.comment: str = comment
 
+        self.action: ActionType = ActionType.NoAction
+
         # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()
 
@@ -186,12 +227,14 @@ class EditableDevice:
         # list of properties that cannot be edited
         self.non_editable_properties: List[str] = list()
 
-
         self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='action', units='', tpe=ActionType,
+                      definition='Object action to perform.\nOnly used for model merging.',
+                      display=False)
         self.register(key='comment', units='', tpe=str, definition='User comment')
 
     def __str__(self) -> str:
@@ -199,10 +242,10 @@ class EditableDevice:
         Name of the object
         :return: string
         """
-        return self.name
+        return str(self.name)
 
     def __repr__(self) -> str:
-        return self.idtag + '::' + self.name
+        return get_action_symbol(self.action) + "::" + self.idtag + '::' + self.name
 
     def __hash__(self) -> int:
         # alternatively, return hash(repr(self))
@@ -264,9 +307,9 @@ class EditableDevice:
 
     def register(self,
                  key: str,
-                 units: str,
                  tpe: GCPROP_TYPES,
-                 definition: str,
+                 units: str = "",
+                 definition: str = "",
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
@@ -351,8 +394,8 @@ class EditableDevice:
             obj = getattr(self, name)
             if properties.tpe in [str, float, int, bool]:
                 data.append(obj)
-            elif properties.tpe == DeviceType.GeneratorQCurve:
-                data.append(obj.str())
+            # elif properties.tpe == DeviceType.GeneratorQCurve:
+            #     data.append(obj.str())
             else:
                 # if the object is not of a primary type, get the idtag instead
                 if hasattr(obj, 'idtag'):
@@ -653,7 +696,7 @@ class EditableDevice:
         """
         return getattr(self, prop.profile_name)
 
-    def copy(self):
+    def copy(self, forced_new_idtag: bool = False):
         """
         Create a deep copy of this object
         """
@@ -661,12 +704,12 @@ class EditableDevice:
 
         try:
             new_obj = tpe(name=self.name,
-                          idtag=self.idtag,
+                          idtag=uuid.uuid4().hex if forced_new_idtag else self.idtag,
                           code=self.code,
                           device_type=self.device_type)
         except TypeError:
             new_obj = tpe(name=self.name,
-                          idtag=self.idtag,
+                          idtag=uuid.uuid4().hex if forced_new_idtag else self.idtag,
                           code=self.code)
 
         for prop_name, value in self.__dict__.items():

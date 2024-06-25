@@ -15,11 +15,13 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import io
+import numpy as np
 import pandas as pd
-from typing import List, Union
+from typing import List, Union, Any
 from datetime import datetime
 from PySide6 import QtCore, QtGui, QtWidgets
-
+from PySide6.QtWidgets import QApplication, QDialog, QTableView, QVBoxLayout, QPushButton, QHBoxLayout
+from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.GuiFunctions import ObjectsModel, get_list_model, get_checked_indices
@@ -30,7 +32,7 @@ class NewProfilesStructureDialogue(QtWidgets.QDialog):
     New profile dialogue window
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(NewProfilesStructureDialogue, self).__init__()
         self.setObjectName("self")
         # self.resize(200, 71)
@@ -500,7 +502,20 @@ class CheckListDialogue(QtWidgets.QDialog):
     New profile dialogue window
     """
 
-    def __init__(self, objects_list: List[str], title='Select objects'):
+    def __init__(self,
+                 objects_list: List[str],
+                 title='Select objects',
+                 ask_for_group_name: bool = False,
+                 group_label: str = "",
+                 group_text: str = ""):
+        """
+
+        :param objects_list: List of names to display
+        :param title: Window title
+        :param ask_for_group_name: Ask for a group name (i.e. investments group name...)
+        :param group_label: Name of the property
+        :param group_text: Tentative group name
+        """
         QtWidgets.QDialog.__init__(self)
         self.setObjectName("self")
         self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.NoContextMenu)
@@ -512,7 +527,13 @@ class CheckListDialogue(QtWidgets.QDialog):
         self.label1 = QtWidgets.QLabel()
         self.label1.setText("Selected objects")
 
-        # min voltage
+        self.group_label = QtWidgets.QLabel()
+        self.group_label.setText(group_label)
+        self.group_name_text = QtWidgets.QTextEdit()
+        self.group_name_text.setText(group_text)
+        self.group_name_text.setMaximumHeight(30)
+
+        # list
         self.list_view = QtWidgets.QListView()
         self.mdl = get_list_model(objects_list, checks=True, check_value=True)
         self.list_view.setModel(self.mdl)
@@ -523,6 +544,10 @@ class CheckListDialogue(QtWidgets.QDialog):
         self.accept_btn.clicked.connect(self.accept_click)
 
         # add all to the GUI
+        if ask_for_group_name:
+            self.main_layout.addWidget(self.group_label)
+            self.main_layout.addWidget(self.group_name_text)
+
         self.main_layout.addWidget(self.label1)
         self.main_layout.addWidget(self.list_view)
         self.main_layout.addWidget(self.accept_btn)
@@ -533,6 +558,13 @@ class CheckListDialogue(QtWidgets.QDialog):
 
         h = 260
         self.resize(h, int(0.8 * h))
+
+    def get_group_text(self) -> str:
+        """
+        Get the group text
+        :return: string
+        """
+        return self.group_name_text.toPlainText()
 
     def accept_click(self):
         """
@@ -805,23 +837,217 @@ class CustomQuestionDialogue(QtWidgets.QDialog):
         self.accept()
 
 
+class ArrayTableModel(QAbstractTableModel):
+    """
+    ArrayTableModel
+    """
+
+    def __init__(self, data: List[np.ndarray], headers: List[str]):
+        super().__init__()
+
+        self._data = data
+        self.headers = headers
+
+    def get_data(self) -> List[np.ndarray]:
+        """
+        Get the model internal data
+        :return: list of arrays
+        """
+        return self._data
+
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        """
+
+        :param parent:
+        :return:
+        """
+        return self._data[0].shape[0]
+
+    def columnCount(self, parent: QModelIndex = QModelIndex()):
+        """
+
+        :param parent:
+        :return:
+        """
+        return len(self._data)  # We have two columns, one for each array
+
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = Qt.DisplayRole) -> Any:
+        """
+
+        :param section:
+        :param orientation:
+        :param role:
+        :return:
+        """
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return self.headers[section]
+            if orientation == Qt.Vertical:
+                return section  # To show row numbers starting from 0
+        return None
+
+    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Union[None, str]:
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
+        if not index.isValid():
+            return None
+
+        if role == Qt.DisplayRole:
+            row = index.row()
+            column = index.column()
+            return str(self._data[column][row])
+
+        return None
+
+    def setData(self, index: QModelIndex, value: float, role=Qt.EditRole):
+        """
+
+        :param index:
+        :param value:
+        :param role:
+        :return:
+        """
+        if not index.isValid():
+            return False
+
+        if role == Qt.EditRole:
+            row = index.row()
+            column = index.column()
+            try:
+                value = float(value)
+            except ValueError:
+                return False
+
+            self._data[column][row] = value
+
+            self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
+            return True
+
+        return False
+
+    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+        """
+
+        :param index:
+        :return:
+        """
+        if not index.isValid():
+            return Qt.NoItemFlags
+        return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+
+    def insertRows(self, position: int, rows=1, parent=QModelIndex()):
+        """
+
+        :param position:
+        :param rows:
+        :param parent:
+        :return:
+        """
+        self.beginInsertRows(parent, position, position + rows - 1)
+
+        for i in range(len(self._data)):
+            self._data[i] = np.insert(self._data[i], position, [0] * rows)
+
+        self.endInsertRows()
+        return True
+
+    def removeRows(self, position: int, rows=1, parent=QModelIndex()):
+        """
+
+        :param position:
+        :param rows:
+        :param parent:
+        :return:
+        """
+        self.beginRemoveRows(parent, position, position + rows - 1)
+
+        for i in range(len(self._data)):
+            self._data[i] = np.delete(self._data[i], slice(position, position + rows))
+
+        self.endRemoveRows()
+        return True
+
+
+class ArrayEditor(QDialog):
+    """
+    ArrayEditor
+    """
+
+    def __init__(self):
+        QDialog.__init__(self)
+
+        self.setWindowTitle("Array Editor")
+
+        self._g_steps = np.arange(10)
+        self._b_steps = np.arange(10)
+        self.model = ArrayTableModel(data=[self._g_steps, self._b_steps], headers=["G", "B"])
+
+        self.table_view = QTableView()
+        self.table_view.setModel(self.model)
+
+        self.add_button = QPushButton("Add")
+        self.delete_button = QPushButton("Delete")
+
+        self.add_button.clicked.connect(self.add_row)
+        self.delete_button.clicked.connect(self.delete_row)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.table_view)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.add_button)
+        button_layout.addWidget(self.delete_button)
+
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+    def add_row(self):
+        """
+        Add row
+        """
+        row_count = self.model.rowCount()
+        self.model.insertRows(row_count, 1)
+
+    def delete_row(self):
+        """
+        Delete the selected rows
+        """
+        selected_indexes = self.table_view.selectionModel().selectedIndexes()
+
+        rows = list({index.row() for index in selected_indexes})
+        rows.sort(reverse=True)
+        for r in rows:
+            self.model.removeRows(position=r, rows=1)
+
+
 if __name__ == "__main__":
     import sys
-    from PySide6.QtWidgets import QApplication
+
+    # from PySide6.QtWidgets import QApplication
+    #
+    # app = QApplication(sys.argv)
+    # # window = InputNumberDialogue(min_value=3,
+    # #                              max_value=10,
+    # #                              default_value=3,
+    # #                              is_int=True,
+    # #                              title="stuff",
+    # #                              text="valor? fsd..xcfh.dfgbhdfbflb.lsdfnblsndf.bnsdf.bn.xdfnb.xdfbñlxdhfn.blxnd",
+    # #                              suffix=' cosas')
+    #
+    # window = CustomQuestionDialogue(title="My question",
+    #                                 question="What do you want " * 10,
+    #                                 answer1="Go home",
+    #                                 answer2="stay here")
+    #
+    # window.show()
+    # sys.exit(app.exec_())
 
     app = QApplication(sys.argv)
-    # window = InputNumberDialogue(min_value=3,
-    #                              max_value=10,
-    #                              default_value=3,
-    #                              is_int=True,
-    #                              title="stuff",
-    #                              text="valor? fsd..xcfh.dfgbhdfbflb.lsdfnblsndf.bnsdf.bn.xdfnb.xdfbñlxdhfn.blxnd",
-    #                              suffix=' cosas')
-
-    window = CustomQuestionDialogue(title="My question",
-                                    question="What do you want " * 10,
-                                    answer1="Go home",
-                                    answer2="stay here")
-
+    window = ArrayEditor()
+    window.resize(400, 300)
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

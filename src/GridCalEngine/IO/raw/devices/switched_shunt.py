@@ -155,16 +155,16 @@ class RawSwitchedShunt(RawObject):
                                unit=Unit.get_pu())
 
         for i in range(8):
-            self.register_property(property_name="S{}".format(i+1),
-                                   rawx_key="s{}".format(i+1),
+            self.register_property(property_name="S{}".format(i + 1),
+                                   rawx_key="s{}".format(i + 1),
                                    class_type=int,
                                    description="Initial switched shunt status of one for in-service "
                                                "and zero for out-of-service for block i",
                                    min_value=0,
                                    max_value=1)
         for i in range(8):
-            self.register_property(property_name="N{}".format(i+1),
-                                   rawx_key="n{}".format(i+1),
+            self.register_property(property_name="N{}".format(i + 1),
+                                   rawx_key="n{}".format(i + 1),
                                    class_type=int,
                                    description="Number of steps for block i",
                                    min_value=0,
@@ -183,33 +183,61 @@ class RawSwitchedShunt(RawObject):
         :param version:
         :param logger:
         """
+
+        field_values = data[0]
+
+        def parse_dynamic_fields(fields: list[str], values: list):
+            """
+
+            :param fields:
+            :param values:
+            :return:
+            """
+            for index, value in enumerate(values):
+                field = fields[index]
+                setattr(self, field, value)
+
         if version >= 35:
-
-            var = [self.N1, self.B1,
-                   self.N2, self.B2,
-                   self.N3, self.B3,
-                   self.N4, self.B4,
-                   self.N5, self.B5,
-                   self.N6, self.B6,
-                   self.N7, self.B7,
-                   self.N8, self.B8, ]
-
             self.I, self.ID, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-            self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *var = data[0]
+                self.SWREG, self.NREG, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = field_values
+
+            parse_dynamic_fields(
+                [
+                    'S1', 'N1', 'B1',
+                    'S2', 'N2', 'B2',
+                    'S3', 'N3', 'B3',
+                    'S4', 'N4', 'B4',
+                    'S5', 'N5', 'B5',
+                    'S6', 'N6', 'B6',
+                    'S7', 'N7', 'B7',
+                    'S8', 'N8', 'B8'
+                ],
+                dynamic_values)
 
         elif version >= 29 <= 34:
-
-            var = [self.N1, self.B1,
-                   self.N2, self.B2,
-                   self.N3, self.B3,
-                   self.N4, self.B4,
-                   self.N5, self.B5,
-                   self.N6, self.B6,
-                   self.N7, self.B7,
-                   self.N8, self.B8, ]
+            rest = []
 
             self.I, self.MODSW, self.ADJM, self.STAT, self.VSWHI, self.VSWLO, \
-            self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *var = data[0]
+                self.SWREM, self.RMPCT, self.RMIDNT, self.BINIT, *dynamic_values = field_values
+
+            parse_dynamic_fields(
+                [
+                    'N1', 'B1',
+                    'N2', 'B2',
+                    'N3', 'B3',
+                    'N4', 'B4',
+                    'N5', 'B5',
+                    'N6', 'B6',
+                    'N7', 'B7',
+                    'N8', 'B8'
+                ],
+                dynamic_values)
+
+            # In this version, the RAW format does not support the S.
+            # S is set to 1 by default.
+            for i in range(1, 9):
+                if getattr(self, f"N{i}") != 0:
+                    setattr(self, f"S{i}", 1)
         else:
             logger.add_warning('Shunt not implemented for the version', str(version))
 
@@ -249,6 +277,5 @@ class RawSwitchedShunt(RawObject):
         """
         Get the element PSSE ID
         :return: 
-        """        
+        """
         return "{0}_{1}".format(self.I, self.ID)
-

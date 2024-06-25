@@ -193,8 +193,7 @@ def test_topology_reduction():
     """
     for grid_ in [createExampleGridTest2(), createExampleGridTest1(), createExampleGridDiagram1()]:
 
-        topodriver = TopologyProcessorDriver(grid=grid_)
-        topodriver.run()
+        grid_.process_topology_at(t_idx=None)
 
         assert grid_.buses, "Buses creation failed"
 
@@ -209,25 +208,74 @@ def test_topology_reduction():
                 assert t.bus3, "Transformer3w without bus3 associated"
 
 
-def test_topology_rts():
+def test_topology_rts() -> None:
     """
     This function tests topology reduction for Bus/branch model networks
     """
     for fname in [os.path.join('data', 'grids', 'case24_ieee_rts.m')]:
-        grid_ = FileOpen(fname).open()
+        grid = FileOpen(fname).open()
 
         # Original grid to compare its topology with reduced topology after creating a Node/Breaker model from it
-        originalgrid = grid_.copy()
+        original_grid = grid.copy()
 
-        grid_.convert_to_node_breaker()  # Converting to Node/Breaker model
-        topodriver = TopologyProcessorDriver(grid=grid_)
-        topodriver.run()  # Processing topology from new grid
+        grid.convert_to_node_breaker_adding_switches()  # Converting to Node/Breaker model
+        processor_info = grid.process_topology_at(t_idx=None)  # Processing topology from new grid
 
         # Comparing bus considering bus number assigned
-        for ln in range(len(grid_.get_lines())):
-            loriginal = originalgrid.lines[ln]
-            lnb = grid_.lines[ln]
-
+        for loriginal, lnb in zip(grid.get_lines(), original_grid.get_lines()):
             assert loriginal.bus_to.code == lnb.bus_to.code
             assert loriginal.bus_from.code == lnb.bus_from.code
-        print("")
+
+
+def test_topology_NL_microgrid() -> None:
+    fname = os.path.join('data', 'grids', 'CGMES_2_4_15', 'micro_grid_NL_T1.zip')
+    grid = FileOpen(fname).open()
+    logger = Logger()
+
+    info = grid.process_topology_at(debug=1, logger=logger)
+
+    cn_per_bus = info.get_cn_lists_per_bus()
+
+    bus_names = ['NL_TR_BUS2', 'N1230822413', 'NL_Busbar__4', 'NL-Busbar_2', 'N1230992195',
+                 'TN_Border_GY11', 'TN_Border_MA11', 'TN_Border_AL11', 'TN_Border_ST23', 'TN_Border_ST24']
+
+    cn_names = ['NL_TR_BUS2', 'NL_TR_BUS1', 'N1230822396', 'N1230822413', 'NL-Busbar_5', 'NL_Busbar__4', 'NL-Busbar_3',
+                'NL-Busbar_2', 'NL-_Busbar_1', 'N1230992201', 'N1230992198', 'N1230992195', 'N1230992231',
+                'N1230992228', 'Border_GY11', 'Border_ST23', 'Border_ST24', 'Border_MA11', 'Border_AL11']
+
+    cn_to_bus = {
+
+        # Green bus
+        'NL-_Busbar_1': '',
+        'N1230992201': '',
+        'N1230992198': '',
+        'N1230992195': '',
+
+        # ocre system bus 1
+        'NL_TR_BUS2': 'NL_TR_BUS2',
+        'NL-Busbar_5': 'NL_TR_BUS2',
+
+        # ocre system bus 2
+        'N1230822413': 'N1230822413',
+        'NL-Busbar_3': 'N1230822413',
+
+        # all purple bus
+        'NL-Busbar_2': '',
+        'NL_TR_BUS1': '',
+        'NL_Busbar__4': '',
+        'N1230992228': '',
+        'N1230992231': '',
+        'N1230822396': '',
+
+        # frontier buses (5 of them)
+        'Border_GY11': 'TN_Border_GY11',
+        'Border_ST23': 'TN_Border_ST23',
+        'Border_ST24': 'TN_Border_ST24',
+        'Border_MA11': 'TN_Border_MA11',
+        'Border_AL11': 'TN_Border_AL11'
+    }
+    # NOTE: Probably the candidate nodes are causing trouble here
+
+    logger.print()
+
+    print()

@@ -21,11 +21,11 @@ import numba as nb
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes, DeviceType
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_options import AvailableTransferCapacityOptions
+from GridCalEngine.enumerations import StudyResultsType, AvailableTransferMode, ResultTypes, DeviceType, SimulationTypes
 
 
 @nb.njit()
@@ -463,58 +463,6 @@ class AvailableTransferCapacityResults(ResultsTemplate):
                                 idx_device_type=DeviceType.NoDevice)
         else:
             raise Exception('Result type not understood:' + str(result_type))
-
-
-class AvailableTransferCapacityOptions:
-    """
-    AvailableTransferCapacityOptions
-    """
-
-    def __init__(self, distributed_slack=True, correct_values=True, use_provided_flows=False,
-                 bus_idx_from=list(), bus_idx_to=list(), idx_br=list(), sense_br=list(), Pf=None,
-                 idx_hvdc_br=list(), sense_hvdc_br=list(), Pf_hvdc=None,
-                 dT=100.0, threshold=0.02, mode: AvailableTransferMode = AvailableTransferMode.Generation,
-                 max_report_elements=-1, use_clustering=False, cluster_number=200):
-        """
-
-        :param distributed_slack:
-        :param correct_values:
-        :param use_provided_flows:
-        :param bus_idx_from:
-        :param bus_idx_to:
-        :param idx_br:
-        :param sense_br:
-        :param Pf:
-        :param idx_hvdc_br:
-        :param sense_hvdc_br:
-        :param Pf_hvdc:
-        :param dT:
-        :param threshold:
-        :param mode:
-        :param max_report_elements: maximum number of elements to show in the report (-1 for all)
-        :param use_clustering:
-        """
-        self.distributed_slack = distributed_slack
-        self.correct_values = correct_values
-        self.use_provided_flows = use_provided_flows
-        self.bus_idx_from = bus_idx_from
-        self.bus_idx_to = bus_idx_to
-        self.inter_area_branch_idx = idx_br
-        self.inter_area_branch_sense = sense_br
-        self.Pf = Pf
-
-        self.idx_hvdc_br = idx_hvdc_br
-        self.inter_area_hvdc_branch_sense = sense_hvdc_br
-        self.Pf_hvdc = Pf_hvdc
-
-        self.dT = dT
-        self.threshold = threshold
-        self.mode = mode
-
-        self.max_report_elements = max_report_elements
-
-        self.use_clustering = use_clustering
-        self.cluster_number = cluster_number
 
 
 class AvailableTransferCapacityDriver(DriverTemplate):

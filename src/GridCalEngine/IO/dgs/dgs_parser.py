@@ -633,7 +633,7 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
         buses_dict[ID] = i
         bus_name = buses['loc_name'][i].decode(codification)  # BUS_Name
         vnom = buses['uknom'][i]
-        bus = dev.Bus(name=bus_name, vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, active=True)
+        bus = dev.Bus(name=bus_name, Vnom=vnom, vmin=0.9, vmax=1.1, xpos=x, ypos=-y, active=True)
         circuit.add_bus(bus)
 
     ####################################################################################################################
@@ -779,18 +779,15 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
             Irated = np.double(lines_rate[type_idx])  # kA
             Smax = Irated * vbase  # MVA
 
-            line = dev.Branch(bus_from=bus_from, bus_to=bus_to,
-                              name=lines['loc_name'][i].decode(codification),
-                              r=r,
-                              x=l,
-                              g=1e-20,
-                              b=b,
-                              rate=Smax,
-                              tap=1,
-                              shift_angle=0,
-                              active=status, mttf=0, mttr=0)
+            line = dev.Line(bus_from=bus_from, bus_to=bus_to,
+                            name=lines['loc_name'][i].decode(codification),
+                            r=r,
+                            x=l,
+                            b=b,
+                            rate=Smax,
+                            active=status, mttf=0, mttr=0)
 
-            circuit.add_branch(line)
+            circuit.add_line(line)
 
             # # put all in the correct column
             # line_[brd.F_BUS] = bus1
@@ -913,22 +910,21 @@ def data_to_grid_object(data, pos_dict, codification="utf-8") -> MultiCircuit:
 
                 status = 1 - transformers['outserv'][i]
 
-                trafo = dev.Branch(bus_from=bus_from,
-                                   bus_to=bus_to,
-                                   name=transformers['loc_name'][i].decode(codification),
-                                   r=Zs.real,
-                                   x=Zs.imag,
-                                   g=Ysh.real,
-                                   b=Ysh.imag,
-                                   rate=Smax,
-                                   tap=1.0,
-                                   shift_angle=0.0,
-                                   active=status,
-                                   mttf=0,
-                                   mttr=0,
-                                   branch_type=dev.BranchType.Transformer)
+                trafo = dev.Transformer2W(bus_from=bus_from,
+                                          bus_to=bus_to,
+                                          name=transformers['loc_name'][i].decode(codification),
+                                          r=Zs.real,
+                                          x=Zs.imag,
+                                          g=Ysh.real,
+                                          b=Ysh.imag,
+                                          rate=Smax,
+                                          tap_module=1.0,
+                                          tap_phase=0.0,
+                                          active=status,
+                                          mttf=0,
+                                          mttr=0, )
 
-                circuit.add_branch(trafo)
+                circuit.add_transformer2w(trafo)
 
             else:
                 warn('Transformer type not found!')

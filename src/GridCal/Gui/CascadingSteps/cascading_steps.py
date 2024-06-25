@@ -18,7 +18,7 @@ import sys
 from PySide6 import QtWidgets, QtGui
 
 from GridCal.Gui.CascadingSteps.gui import Ui_Dialog
-from GridCalEngine.enumerations import SolverType
+from GridCalEngine.enumerations import SolverType, SimulationTypes
 import GridCalEngine.Simulations as sim
 from GridCal.Gui.messages import warning_msg
 
@@ -63,7 +63,7 @@ class CascadingStepsGUI(QtWidgets.QDialog):
         if len(self.gridcal_main.circuit.get_buses()) > 0:
 
             self.gridcal_main.LOCK()
-            if self.gridcal_main.session.exists(sim.SimulationTypes.Cascade_run):
+            if self.gridcal_main.session.exists(SimulationTypes.Cascade_run):
                 options = self.gridcal_main.get_selected_power_flow_options()
                 options.solver_type = SolverType.LM
                 max_isl = self.gridcal_main.ui.cascading_islands_spinBox.value()
@@ -86,9 +86,9 @@ class CascadingStepsGUI(QtWidgets.QDialog):
         """
         if len(self.gridcal_main.circuit.get_buses()) > 0:
 
-            if not self.gridcal_main.session.is_this_running(sim.SimulationTypes.Cascade_run):
+            if not self.gridcal_main.session.is_this_running(SimulationTypes.Cascade_run):
 
-                self.gridcal_main.add_simulation(sim.SimulationTypes.Cascade_run)
+                self.gridcal_main.add_simulation(SimulationTypes.Cascade_run)
 
                 self.gridcal_main.LOCK()
 

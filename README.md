@@ -231,7 +231,7 @@ import GridCalEngine.api as gce
 grid = gce.MultiCircuit()
 
 # Add the buses and the generators and loads attached
-bus1 = gce.Bus('Bus 1', vnom=20)
+bus1 = gce.Bus('Bus 1', Vnom=20)
 # bus1.is_slack = True  # we may mark the bus a slack
 grid.add_bus(bus1)
 
@@ -240,22 +240,22 @@ gen1 = gce.Generator('Slack Generator', vset=1.0)
 grid.add_generator(bus1, gen1)
 
 # add bus 2 with a load attached
-bus2 = gce.Bus('Bus 2', vnom=20)
+bus2 = gce.Bus('Bus 2', Vnom=20)
 grid.add_bus(bus2)
 grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
 
 # add bus 3 with a load attached
-bus3 = gce.Bus('Bus 3', vnom=20)
+bus3 = gce.Bus('Bus 3', Vnom=20)
 grid.add_bus(bus3)
 grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
 
 # add bus 4 with a load attached
-bus4 = gce.Bus('Bus 4', vnom=20)
+bus4 = gce.Bus('Bus 4', Vnom=20)
 grid.add_bus(bus4)
 grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
 
 # add bus 5 with a load attached
-bus5 = gce.Bus('Bus 5', vnom=20)
+bus5 = gce.Bus('Bus 5', Vnom=20)
 grid.add_bus(bus5)
 grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
@@ -799,7 +799,7 @@ branches = main_circuit.get_branches()
 # manually generate the contingencies
 for i, br in enumerate(branches):
     # add a contingency group
-    group = ContingencyGroup(name="contingency {}".format(i+1))
+    group = ContingencyGroup(name="contingency {}".format(i + 1))
     main_circuit.add_contingency_group(group)
 
     # add the branch contingency to the groups, only groups are failed at once
@@ -809,9 +809,9 @@ for i, br in enumerate(branches):
 # add a special contingency
 group = ContingencyGroup(name="Special contingency")
 main_circuit.add_contingency_group(group)
-main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag, 
+main_circuit.add_contingency(Contingency(device_idtag=branches[3].idtag,
                                          name=branches[3].name, group=group))
-main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag, 
+main_circuit.add_contingency(Contingency(device_idtag=branches[5].idtag,
                                          name=branches[5].name, group=group))
 
 pf_options = PowerFlowOptions(solver_type=SolverType.NR)
@@ -819,7 +819,7 @@ pf_options = PowerFlowOptions(solver_type=SolverType.NR)
 # declare the contingency options
 options_ = ContingencyAnalysisOptions(use_provided_flows=False,
                                       Pf=None,
-                                      engine=ContingencyMethod.PowerFlow,
+                                      contingency_method=ContingencyMethod.PowerFlow,
                                       # if no power flow options are provided 
                                       # a linear power flow is used
                                       pf_options=pf_options)
@@ -889,9 +889,9 @@ m_circuit.add_bus(b1)
 m_circuit.add_bus(b2)
 m_circuit.add_bus(b3)
 
-m_circuit.add_branch(br1)
-m_circuit.add_branch(br2)
-m_circuit.add_branch(br3)
+m_circuit.add_line(br1)
+m_circuit.add_line(br2)
+m_circuit.add_line(br3)
 
 # Declare the simulation driver and run
 se = StateEstimation(circuit=m_circuit)

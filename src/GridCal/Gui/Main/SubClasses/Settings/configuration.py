@@ -16,14 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
 import os
-import qdarktheme
 from typing import Dict, Union, Any
 from PySide6 import QtWidgets
 
+import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
-from GridCal.Gui.Diagrams.DiagramEditorWidget.diagram_editor_widget import DiagramEditorWidget
-from GridCal.Gui.Diagrams.DiagramEditorWidget.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
 
 
 def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],
@@ -108,14 +108,16 @@ class ConfigurationMain(ResultsMain):
 
         if self.ui.dark_mode_checkBox.isChecked():
             set_dark_mode()
+
             qdarktheme.setup_theme(theme='dark',
                                    custom_colors=custom_colors,
                                    additional_qss="QToolTip {color: white; background-color: black; border: 0px; }")
+
             # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.set_dark_mode()
 
             self.colour_diagrams()
@@ -127,11 +129,12 @@ class ConfigurationMain(ResultsMain):
             qdarktheme.setup_theme(theme='light',
                                    custom_colors=custom_colors,
                                    additional_qss="QToolTip {color: black; background-color: white; border: 0px;}")
+
             # note: The 0px border on the tooltips allow it to render properly
 
             diagram = self.get_selected_diagram_widget()
             if diagram is not None:
-                if isinstance(diagram, DiagramEditorWidget):
+                if isinstance(diagram, SchematicWidget):
                     diagram.set_light_mode()
 
             self.colour_diagrams()
@@ -184,7 +187,8 @@ class ConfigurationMain(ResultsMain):
                 "max_branch_size": self.ui.max_branch_size_spinBox,
                 "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
                 "map_tile_provider": self.ui.tile_provider_comboBox,
-                "plotting_style": self.ui.plt_style_comboBox
+                "plotting_style": self.ui.plt_style_comboBox,
+                "video_fps": self.ui.fps_spinBox
             },
             "machine_learning": {
                 "clustering": {
@@ -197,6 +201,7 @@ class ConfigurationMain(ResultsMain):
                 "investments_evaluation": {
                     "investment_evaluation_method": self.ui.investment_evaluation_method_ComboBox,
                     "max_investments_evluation_number": self.ui.max_investments_evluation_number_spinBox,
+                    "investment_evaluation_obj_func": self.ui.investment_evaluation_objfunc_ComboBox,
                 }
             },
             "linear": {
@@ -275,6 +280,10 @@ class ConfigurationMain(ResultsMain):
 
                 "ntc_opt_consider_contingencies": self.ui.consider_ntc_contingencies_checkBox,
             },
+            "nodal_hosting_capacity": {
+                "method": self.ui.nodal_capacity_method_comboBox,
+                "sense": self.ui.nodal_capacity_sense_SpinBox
+            },
             "general": {
                 "base_power": self.ui.sbase_doubleSpinBox,
                 "frequency": self.ui.fbase_doubleSpinBox,
@@ -294,7 +303,8 @@ class ConfigurationMain(ResultsMain):
             "file": {
                 "store_results_in_file": self.ui.saveResultsCheckBox,
                 "current_boundary_set": self.current_boundary_set,
-                "cgmes_selected_version": self.ui.cgmes_version_comboBox
+                "cgmes_selected_version": self.ui.cgmes_version_comboBox,
+                "cgmes_single_profile_per_file": self.ui.cgmes_single_profile_per_file_checkBox
             }
         }
 
@@ -395,7 +405,9 @@ class ConfigurationMain(ResultsMain):
                 except json.decoder.JSONDecodeError as e:
                     print(e)
                     self.save_gui_config()
-                    print("Config file was erroneous, wrote a new one")
+                    print("GUI config file was erroneous, wrote a new one")
+
+
 
     def select_cgmes_boundary_set(self):
         """

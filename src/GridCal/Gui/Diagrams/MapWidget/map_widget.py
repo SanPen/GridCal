@@ -23,6 +23,9 @@ Some semantics:
     map   the whole map
     view  is the view of the map through the widget
           (view may be smaller than map, or larger)
+          
+xgeo: longitude
+ygeo: latitude
 """
 import math
 from typing import List, Dict, Union, Tuple, Callable
@@ -44,8 +47,6 @@ from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 # version number of the widget
 __version__ = '0.5'
-
-from GridCalEngine.IO.matpower.matpower_branch_definitions import QT
 
 
 class MapWidget(QWidget):
@@ -160,13 +161,12 @@ class MapWidget(QWidget):
     BoxSelectPenWidth = 2
 
     def __init__(self,
-                 parent: QWidget,
+                 parent: Union[None, QWidget],
                  tile_src: Tiles,
                  start_level: int,
                  zoom_callback: Callable[[int], None],
-                 position_callback: Callable[[float, float], None],
-                 **kwargs):
-        """Initialize the pySlipQt widget.
+                 position_callback: Callable[[float, float], None]):
+        """Initialize the widget.
 
         parent       the GUI parent widget
         tile_src     a Tiles object, source of tiles
@@ -174,7 +174,7 @@ class MapWidget(QWidget):
         kwargs       keyword args passed through to the underlying QLabel
         """
 
-        super().__init__(parent, **kwargs)  # inherit all parent object setup
+        QWidget.__init__(self, parent)  # inherit all parent object setup
 
         # remember the tile source object
         self.tile_src = tile_src
@@ -248,6 +248,13 @@ class MapWidget(QWidget):
         self.view_rlon = 0
         self.view_blat = 0
         self.view_tlat = 0
+
+        self.startLat = 0
+        self.startLon = 0
+        self.startLev = 1
+
+        self.start_X = 0
+        self.start_Y = 0
 
         # some cursors
         self.standard_cursor = QCursor(self.StandardCursor)
@@ -333,24 +340,41 @@ class MapWidget(QWidget):
 
         self.pressed = False
         self.disableMove = False
+        self.inItem = False
+        self.startHe = 360
+        self.startWi = 240
 
         # Set initial zoom level (change the values as needed)
-        # initial_zoom_factor = 1
-        # self.devXFact = 22.8
-        # self.devYFact = 33.0
-        initial_zoom_factor = 0.47
-        self.devXFact = 48.3
-        self.devYFact = 61.9
+        initial_zoom_factor = 1
         self.schema_zoom = 1
         self.view.scale(initial_zoom_factor, initial_zoom_factor)
-        self.remapSchema()
 
         self.selTempDistance = 20
+
+        self.selectedItems = []
 
     def convertToQMouseEvent(self, sceneMouseEvent):
         # Get relevant information from QGraphicsSceneMouseEvent
         pos = sceneMouseEvent.screenPos()
         button = sceneMouseEvent.button()
+        buttons = sceneMouseEvent.buttons()
+        modifiers = sceneMouseEvent.modifiers()
+
+        # Create a new QMouseEvent using the extracted information
+        qMouseEvent = QMouseEvent(
+            QEvent.MouseMove,  # Event type (assuming MouseMove for this example)
+            pos,  # Position in screen coordinates
+            button,  # Pressed button
+            buttons,  # Buttons currently pressed
+            modifiers  # Keyboard modifiers
+        )
+
+        return qMouseEvent
+
+    def convertToQMouseEvent_wheel(self, sceneMouseEvent):
+        # Get relevant information from QGraphicsSceneMouseEvent
+        pos = sceneMouseEvent.screenPos()
+        button = Qt.MouseButton.NoButton
         buttons = sceneMouseEvent.buttons()
         modifiers = sceneMouseEvent.modifiers()
 
@@ -372,6 +396,12 @@ class MapWidget(QWidget):
         if event.type() == QEvent.GraphicsSceneMousePress:
             self.pressed = True
             self.disableMove = False
+            b = event.button()
+            if b == Qt.RightButton:
+                if not self.inItem:
+                    for item in self.selectedItems:
+                        item.deSelectItem()
+                    self.selectedItems.clear()
 
         if event.type() == QEvent.GraphicsSceneMouseRelease:
             self.pressed = False
@@ -386,6 +416,10 @@ class MapWidget(QWidget):
 
             zoomInitial = self.level
 
+            mouse_event = self.convertToQMouseEvent_wheel(event)
+            self.mouse_x = mouse_event.x() / 1.5
+            self.mouse_y = mouse_event.y() / 1.5
+
             if event.delta() > 0:
                 new_level = self.level + 1
             else:
@@ -394,9 +428,9 @@ class MapWidget(QWidget):
             val = self.zoom_level(new_level, self.mouse_x, self.mouse_y)
             if val:
                 if event.delta() > 0:
-                    self.zoom_in()
+                    self.diagram_zoom_in()
                 else:
-                    self.zoom_out()
+                    self.diagram_zoom_out()
             else:
                 self.level = zoomInitial
                 val = self.zoom_level(zoomInitial, self.mouse_x, self.mouse_y)
@@ -517,15 +551,15 @@ class MapWidget(QWidget):
                 # check each layer for a box select event, work on copy of
                 # '.layer_z_order' as user response could change layer order
                 for lid in self.layer_z_order[:]:
-                    l = self.layer_mapping[lid]
+                    layer = self.layer_mapping[lid]
                     # if layer visible and selectable
-                    if l.selectable and l.visible:
-                        if l.map_rel:
+                    if layer.selectable and layer.visible:
+                        if layer.map_rel:
                             # map-relative, get all points selected (if any)
-                            result = self.layerBSelHandler[l.type](l, ll_g, tr_g)
+                            result = self.layerBSelHandler[layer.type](layer, ll_g, tr_g)
                         else:
                             # view-relative
-                            result = self.layerBSelHandler[l.type](l, ll_v, tr_v)
+                            result = self.layerBSelHandler[layer.type](layer, ll_v, tr_v)
 
                         if result:
                             (sel, data, relsel) = result
@@ -558,10 +592,10 @@ class MapWidget(QWidget):
                     # check each layer for a point select handler, we work on a
                     # copy as user click-handler code could change order
                     for lid in self.layer_z_order[:]:
-                        l = self.layer_mapping[lid]
+                        layer = self.layer_mapping[lid]
                         # if layer visible and selectable
-                        if l.selectable and l.visible:
-                            result = self.layerPSelHandler[l.type](l, clickpt_v, clickpt_g)
+                        if layer.selectable and layer.visible:
+                            result = self.layerPSelHandler[layer.type](layer, clickpt_v, clickpt_g)
                             if result:
                                 (sel, relsel) = result
 
@@ -617,17 +651,24 @@ class MapWidget(QWidget):
         else:
             log('mouseDoubleClickEvent: unknown button')
 
-    def centerSchema(self):
-        '''
+    def centerSchema(self) -> None:
+        """
         This function centers the schema relative to the map according to lat. and long.
-        :return:
-        '''
+        """
 
-        level, xgeo, ygeo = self.get_level_and_position()
-        if xgeo is not None:
-            xgeo = xgeo * self.devXFact  # TODO: improve transforming function from adhoc values to true transformer
-            ygeo = -ygeo * self.devYFact  # TODO: improve transforming function from adhoc values to true transformer
-            point = QPointF(xgeo, ygeo)
+        he = self.view.height()
+        wi = self.view.width()
+
+        level, longitude, latitude = self.get_level_and_position()
+
+        if self.startLon is not None:
+            x, y = self.geo_to_view(longitude=longitude, latitude=latitude)
+            sx, sy = self.geo_to_view(longitude=self.startLon, latitude=self.startLat)
+
+            dx = x + (self.startWi - wi)/2 + (x - sx) * 1 / self.schema_zoom
+            dy = y + (self.startHe - he)/2 + (y - sy) * 1 / self.schema_zoom
+
+            point = QPointF(dx, dy)
             self.view.centerOn(point)
 
     def mouseMoveEvent(self, event: QMouseEvent):
@@ -744,26 +785,30 @@ class MapWidget(QWidget):
 
         # self.centerSchema()
 
-    def zoom_in(self):
-        # Translate the scene to make the center point correspond to the origin
+    def diagram_zoom_in(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom * self.zoom_factor
         self.view.scale(self.zoom_factor, self.zoom_factor)
-        self.remapSchema()
 
-    def zoom_out(self):
-        # Translate the scene to make the center point correspond to the origin
+        self.rescaleGraphics()
+
+    def diagram_zoom_out(self):
+        """
+        Translate the scene to make the center point correspond to the origin
+        :return:
+        """
         self.schema_zoom = self.schema_zoom / self.zoom_factor
         self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
-        self.remapSchema()
 
-    def remapSchema(self):
-        a = 0
-        # if self.schema_zoom > 0 and self.schema_zoom < 22:
-        #     self.change_size_and_pen_width_all(0.5,0.5)
-        # if self.schema_zoom >= 22:
-        #     self.change_size_and_pen_width_all(0.2,0.5)
+        self.rescaleGraphics()
 
-    def resizeEvent(self, event: QResizeEvent = None):
+    def rescaleGraphics(self):
+        pass
+
+    def resizeEvent(self, event: QResizeEvent = None, updateDisplacement = True):
         """
         Widget resized, recompute some state.
         """
@@ -793,6 +838,10 @@ class MapWidget(QWidget):
         self.centerSchema()
 
     def enterEvent(self, event: QEnterEvent):
+        """
+
+        :param event:
+        """
         self.setFocus()
 
     def leaveEvent(self, event: QEvent):
@@ -869,7 +918,8 @@ class MapWidget(QWidget):
         painter.end()
 
     def normalize_key_after_drag(self, delta_x=None, delta_y=None):
-        """After drag, set "key" tile correctly.
+        """
+        After drag, set "key" tile correctly.
 
         delta_x  the X amount dragged (pixels), None if not dragged in X
         delta_y  the Y amount dragged (pixels), None if not dragged in Y
@@ -988,7 +1038,8 @@ class MapWidget(QWidget):
                         if self.key_tile_yoffset < self.max_key_yoffset:
                             self.key_tile_yoffset = self.max_key_yoffset
 
-    def tile_frac_to_parts(self, t_frac, length):
+    @staticmethod
+    def tile_frac_to_parts(t_frac, length):
         """Split a tile coordinate into integer and fractional parts.
 
         frac  a fractional tile coordinate
@@ -1003,7 +1054,8 @@ class MapWidget(QWidget):
         return int_part, frac_part
 
     # UNUSED
-    def tile_parts_to_frac(self, t_coord, t_offset, length):
+    @staticmethod
+    def tile_parts_to_frac(t_coord, t_offset, length):
         """Convert a tile coord plus offset to a fractional tile value.
 
         t_coord   the tile integer coordinate
@@ -1171,7 +1223,7 @@ class MapWidget(QWidget):
             if map_rel:
                 pt, ex = self.pex_point(place=entry.placement,
                                         xgeo=entry.x,
-                                        ygeo=entry.y,
+                                        latitude=entry.y,
                                         x_off=entry.offset_x,
                                         y_off=entry.offset_y,
                                         radius=entry.radius)
@@ -1219,7 +1271,7 @@ class MapWidget(QWidget):
             if map_rel:
                 pt, ex = self.pex_extent(place=entry.placement,
                                          xgeo=entry.lon,
-                                         ygeo=entry.lat,
+                                         latitude=entry.lat,
                                          x_off=entry.offset_x,
                                          y_off=entry.offset_y,
                                          w=entry.w,
@@ -1291,7 +1343,7 @@ class MapWidget(QWidget):
             if map_rel:
                 (pt, ex) = self.pex_extent(place=entry.placement,
                                            xgeo=entry.lon,
-                                           ygeo=entry.lat,
+                                           latitude=entry.lat,
                                            x_off=entry.offset_x,
                                            y_off=entry.offset_y,
                                            w=w,
@@ -1404,7 +1456,7 @@ class MapWidget(QWidget):
                 polygon = QPolygon([QPoint(x, y) for x, y in poly])
                 painter.drawPolyline(polygon)
 
-    def geo_to_view(self, xgeo: float, ygeo: float) -> Union[None, Tuple[float, float]]:
+    def geo_to_view(self, longitude: float, latitude: float) -> Union[None, Tuple[float, float]]:
         """Convert a geo coord to view.
 
         geo  tuple (xgeo, ygeo)
@@ -1414,8 +1466,8 @@ class MapWidget(QWidget):
         """
 
         # convert the Geo position to tile coordinates
-        if xgeo is not None:
-            tx, ty = self.tile_src.Geo2Tile(xgeo, ygeo)
+        if longitude is not None:
+            tx, ty = self.tile_src.Geo2Tile(longitude=longitude, latitude=latitude)
 
             # using the key_tile_* variables to convert to view coordinates
             xview = (tx - self.key_tile_left) * self.tile_width + self.key_tile_xoffset
@@ -1426,7 +1478,7 @@ class MapWidget(QWidget):
             return None
 
     # UNUSED
-    def geo_to_view_masked(self, xgeo: float, ygeo: float) -> Union[None, Tuple[float, float]]:
+    def geo_to_view_masked(self, longitude: float, latitude: float) -> Union[None, Tuple[float, float]]:
         """Convert a geo (lon+lat) position to view pixel coords.
 
         geo  tuple (xgeo, ygeo)
@@ -1435,8 +1487,8 @@ class MapWidget(QWidget):
         if point is off-view.
         """
 
-        if self.view_llon <= xgeo <= self.view_rlon and self.view_blat <= ygeo <= self.view_tlat:
-            return self.geo_to_view(xgeo, ygeo)
+        if self.view_llon <= longitude <= self.view_rlon and self.view_blat <= latitude <= self.view_tlat:
+            return self.geo_to_view(longitude, latitude)
 
         return None
 
@@ -1451,7 +1503,7 @@ class MapWidget(QWidget):
         Note: the 'key' tile information must be correct.
         """
 
-        min_xgeo, max_xgeo, min_ygeo, max_ygeo = self.tile_src.GetExtent()
+        min_lon, max_lon, min_lat, max_lat = self.tile_src.GetExtent()
 
         x_from_key = xview - self.key_tile_xoffset
         y_from_key = yview - self.key_tile_yoffset
@@ -1460,20 +1512,20 @@ class MapWidget(QWidget):
         xtile = self.key_tile_left + x_from_key / self.tile_width
         ytile = self.key_tile_top + y_from_key / self.tile_height
 
-        xgeo, ygeo = self.tile_src.Tile2Geo(xtile, ytile)
+        longitude, latitude = self.tile_src.Tile2Geo(xtile, ytile)
 
         if self.wrap_x and self.wrap_y:
-            return xgeo, ygeo
+            return longitude, latitude
 
         if not self.wrap_x:
-            if not (min_xgeo <= xgeo <= max_xgeo):
+            if not (min_lon <= longitude <= max_lon):
                 return None, None
 
         if not self.wrap_y:
-            if not (min_ygeo <= ygeo <= max_ygeo):
+            if not (min_lat <= latitude <= max_lat):
                 return None, None
 
-        return xgeo, ygeo
+        return longitude, latitude
 
     ######
     # PEX - Point & EXtension.
@@ -1484,7 +1536,7 @@ class MapWidget(QWidget):
     # tuple (lx, rx, ty, by) [left, right, top, bottom].
     ######
 
-    def pex_point(self, place: Place, xgeo: float, ygeo: float, x_off: float, y_off: float, radius: float):
+    def pex_point(self, place: Place, xgeo: float, latitude: float, x_off: float, y_off: float, radius: float):
         """Convert point object geo position to point & extent in view coords.
 
         place         placement string
@@ -1500,7 +1552,7 @@ class MapWidget(QWidget):
         """
 
         # get point view coords
-        xview, yview = self.geo_to_view(xgeo, ygeo)
+        xview, yview = self.geo_to_view(xgeo, latitude)
         point = self.point_placement(place, xview, yview, x_off, y_off)
         (px, py) = point
 
@@ -1548,7 +1600,7 @@ class MapWidget(QWidget):
 
         return point, extent
 
-    def pex_extent(self, place: Place, xgeo: float, ygeo: float, x_off: float, y_off: float, w: int, h: int,
+    def pex_extent(self, place: Place, xgeo: float, latitude: float, x_off: float, y_off: float, w: int, h: int,
                    image=False):
         """Convert object geo position to position & extent in view coords.
 
@@ -1569,7 +1621,7 @@ class MapWidget(QWidget):
         """
 
         # get point view coords
-        vpoint = self.geo_to_view(xgeo, ygeo)
+        vpoint = self.geo_to_view(xgeo, latitude)
         (vpx, vpy) = vpoint
 
         # get extent limits
@@ -1695,8 +1747,8 @@ class MapWidget(QWidget):
 
         # get polygon/line points in perturbed view coordinates
         view_points = []
-        for xgeo, ygeo in poly:
-            xview, yview = self.geo_to_view(xgeo, ygeo)
+        for lon, lat in poly:
+            xview, yview = self.geo_to_view(longitude=lon, latitude=lat)
             point = self.point_placement(place, xview, yview, x_off, y_off)
             view_points.append(point)
 
@@ -1844,6 +1896,21 @@ class MapWidget(QWidget):
 
         return x, y
 
+    def easy_lat_lon_to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
+        """
+
+        :param lat:
+        :param lon:
+        :return:
+        """
+        point, extent = self.pex_point(place=Place.Center,
+                                       xgeo=lat,
+                                       latitude=lon,
+                                       x_off=0.0,
+                                       y_off=0.0,
+                                       radius=1)
+        return point[0], point[1]
+
     @staticmethod
     def extent_placement(place: Place, x: float, y: float, x_off: float, y_off: float, w: int, h: int,
                          image: bool = False):
@@ -1942,13 +2009,13 @@ class MapWidget(QWidget):
 
         # if not given cursor coords, assume view centre
         if view_x is None:
-            view_x = self.view_width // 2
+            view_x = self.view_width // 4
 
         if view_y is None:
-            view_y = self.view_height // 2
+            view_y = self.view_height // 4
 
         # get geo coords of view point
-        xgeo, ygeo = self.view_to_geo(view_x, view_y)
+        longitude, latitude = self.view_to_geo(view_x, view_y)
 
         # get tile source to use the new level
         result = self.tile_src.UseLevel(level)
@@ -1964,10 +2031,10 @@ class MapWidget(QWidget):
             self.map_llon, self.map_rlon, self.map_blat, self.map_tlat = self.tile_src.extent
 
             # finally, pan to original map centre (updates widget)
-            self.pan_position(xgeo, ygeo, view_x, view_y)
+            self.pan_position(longitude, latitude, view_x, view_y)
 
             # to set some state variables
-            self.resizeEvent()
+            self.resizeEvent(updateDisplacement = False)
 
             # raise the EVT_PYSLIPQT_LEVEL event
             LevelEvent(level=level).emit_event()
@@ -1976,7 +2043,7 @@ class MapWidget(QWidget):
 
         return result
 
-    def pan_position(self, xgeo: float, ygeo: float, view_x: int = None, view_y: int = None):
+    def pan_position(self, longitude: float, latitude: float, view_x: int = None, view_y: int = None):
         """Pan the given geo position in the current map zoom level.
 
         geo   a tuple (xgeo, ygeo)
@@ -1999,11 +2066,11 @@ class MapWidget(QWidget):
 
         # log(f'view_x={view_x}, view_y={view_y}')
 
-        if xgeo is None:
+        if longitude is None:
             return
 
         # convert the geo posn to a tile position
-        (tile_x, tile_y) = self.tile_src.Geo2Tile(xgeo, ygeo)
+        (tile_x, tile_y) = self.tile_src.Geo2Tile(longitude, latitude)
 
         # determine what the new key tile should be
         # figure out number of tiles from centre point to edges
@@ -2077,7 +2144,7 @@ class MapWidget(QWidget):
                     self.key_tile_top = self.num_tiles_y - int_tiles - 1
                     self.key_tile_yoffset = -int((1.0 - (tiles_showing - int_tiles)) * self.tile_height)
 
-    def zoom_level_position(self, level: int, xgeo: float, ygeo: float):
+    def zoom_level_position(self, level: int, longitude: float, latitude: float):
         """Zoom to a map level and pan to the given position in the map.
 
         level  map level to zoom to
@@ -2085,7 +2152,7 @@ class MapWidget(QWidget):
         """
 
         if self.zoom_level(level):
-            self.pan_position(xgeo, ygeo)
+            self.pan_position(longitude, latitude)
 
     def get_i18n_kw(self, kwargs, kws, default):
         """Get alternate international keyword value.
@@ -2117,11 +2184,11 @@ class MapWidget(QWidget):
         """
 
         view_x, view_y = self.point_placement_view(place, 0, 0, 0, 0, )
-        xgeo, ygeo = self.view_to_geo(view_x, view_y)
+        longitude, latitude = self.view_to_geo(view_x, view_y)
 
-        return self.level, xgeo, ygeo
+        return self.level, longitude, latitude
 
-    def set_key_from_centre(self, xgeo: float, ygeo: float):
+    def set_key_from_centre(self, longitude: float, latitude: float):
         """Set 'key' tile stuff from given geo at view centre.
 
         geo  geo coords of centre of view
@@ -2131,10 +2198,10 @@ class MapWidget(QWidget):
             self.tile_width
             self.tile_height
         """
-        if xgeo is None:
+        if longitude is None:
             return
 
-        ctile_tx, ctile_ty = self.tile_src.Geo2Tile(xgeo, ygeo)
+        ctile_tx, ctile_ty = self.tile_src.Geo2Tile(longitude, latitude)
 
         int_ctile_tx = int(ctile_tx)
         int_ctile_ty = int(ctile_ty)
@@ -2322,7 +2389,7 @@ class MapWidget(QWidget):
             if layer.map_rel:
                 vp, _ = self.pex_point(place=entry.placement,
                                        xgeo=entry.x,
-                                       ygeo=entry.y,
+                                       latitude=entry.y,
                                        x_off=entry.offset_x,
                                        y_off=entry.offset_y,
                                        radius=entry.radius)
@@ -2384,7 +2451,7 @@ class MapWidget(QWidget):
             if layer.map_rel:
                 vp, _ = self.pex_point(place=entry.placement,
                                        xgeo=entry.x,
-                                       ygeo=entry.y,
+                                       latitude=entry.y,
                                        x_off=entry.offset_x,
                                        y_off=entry.offset_y,
                                        radius=entry.radius)
@@ -2445,7 +2512,7 @@ class MapWidget(QWidget):
             if layer.map_rel:
                 _, e = self.pex_extent(place=entry.placement,
                                        xgeo=entry.lon,
-                                       ygeo=entry.lat,
+                                       latitude=entry.lat,
                                        x_off=entry.offset_x,
                                        y_off=entry.offset_y,
                                        w=entry.w,
@@ -2504,7 +2571,7 @@ class MapWidget(QWidget):
             if layer.map_rel:
                 _, e = self.pex_extent(place=entry.placement,
                                        xgeo=entry.lon,
-                                       ygeo=entry.lat,
+                                       latitude=entry.lat,
                                        x_off=entry.offset_x,
                                        y_off=entry.offset_y,
                                        w=entry.w,
@@ -2566,7 +2633,7 @@ class MapWidget(QWidget):
             if layer.map_rel:
                 vp, ex = self.pex_point(place=entry.placement,
                                         xgeo=entry.lon,
-                                        ygeo=entry.lat,
+                                        latitude=entry.lat,
                                         x_off=0,
                                         y_off=0,
                                         radius=entry.radius)
@@ -2636,7 +2703,7 @@ class MapWidget(QWidget):
             if layer.map_rel:
                 vp, ex = self.pex_point(place=entry.placement,
                                         xgeo=entry.lon,
-                                        ygeo=entry.lat,
+                                        latitude=entry.lat,
                                         x_off=0,
                                         y_off=0,
                                         radius=entry.radius)
@@ -3845,25 +3912,25 @@ class MapWidget(QWidget):
          self.map_blat, self.map_tlat) = self.tile_src.extent
 
         # to set some state variables
-        self.resizeEvent()
+        self.resizeEvent(updateDisplacement = False)
 
         # raise level change event
         LevelEvent(level=level).emit_event()
 
         return True
 
-    def GotoPosition(self, xgeo: float, ygeo: float):
+    def GotoPosition(self, longitude: float, latitude: float):
         """Set view to centre on a geo position in the current level.
 
         geo  a tuple (xgeo,ygeo) to centre view on
 
         Recalculates the key tile info.
         """
-        if xgeo is None:
+        if longitude is None:
             return
 
         # get fractional tile coords of required centre of view
-        xtile, ytile = self.tile_src.Geo2Tile(xgeo, ygeo)
+        xtile, ytile = self.tile_src.Geo2Tile(longitude=longitude, latitude=latitude)
 
         # get view size in half widths and height
         w2 = self.view_width / 2
@@ -3898,7 +3965,7 @@ class MapWidget(QWidget):
         # redraw the display
         self.update()
 
-        self.position_callback(xgeo, ygeo)
+        self.position_callback(longitude, latitude)
 
     def GotoLevelAndPosition(self, level: int, longitude: float, latitude: float):
         """Goto a map level and set view to centre on a position.
@@ -3910,7 +3977,7 @@ class MapWidget(QWidget):
         """
 
         if self.GotoLevel(level):
-            self.GotoPosition(xgeo=longitude, ygeo=latitude)
+            self.GotoPosition(longitude=longitude, latitude=latitude)
 
     def ZoomToArea(self, longitude: float, latitude: float, size: int):
         """Set view to level and position to view an area.
@@ -3955,8 +4022,8 @@ class MapWidget(QWidget):
         log('ChangeTileSet: tile_src=%s' % str(tile_src))
 
         # get level and geo position of view centre
-        level, xgeo, ygeo = self.get_level_and_position()
-        log('level=%s, geo=(%s, %s)' % (str(level), str(xgeo), str(ygeo)))
+        level, longitude, latitude = self.get_level_and_position()
+        log('level=%s, geo=(%s, %s)' % (str(level), str(longitude), str(latitude)))
 
         # remember old tileset
         old_tileset = self.tile_src
@@ -4006,10 +4073,41 @@ class MapWidget(QWidget):
                                    str(tile_src), str(tile_src.levels)))
 
         # TODO: MUST SET KEY TILE STUFF HERE
-        self.set_key_from_centre(xgeo, ygeo)
+        self.set_key_from_centre(longitude, latitude)
 
         # back to old level+centre, and refresh the display
         #        self.GotoLevelAndPosition(level, geo)
-        self.zoom_level_position(level, xgeo, ygeo)
+        self.zoom_level_position(level, longitude, latitude)
 
         return old_tileset
+
+    def haversine_distance(self, lat1, lon1, lat2, lon2):
+        R = 6371  # Earth radius in kilometers
+        dLat = math.radians(lat2 - lat1)
+        dLon = math.radians(lon2 - lon1)
+        a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(math.radians(lat1)) * math.cos(
+            math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        return R * c
+
+    def compare_options(self, it1, it2):
+        # Extract coordinates
+        first_last_lat, first_last_long = float(it1.line_container.api_object.locations.data[-1].lat), float(
+            it1.line_container.api_object.locations.data[-1].long)
+        second_first_lat, second_first_long = float(it2.line_container.api_object.locations.data[0].lat), float(
+            it2.line_container.api_object.locations.data[0].long)
+
+        # Calculate distances for both configurations
+        distance_1_to_2 = self.haversine_distance(first_last_lat, first_last_long, second_first_lat, second_first_long)
+
+        second_last_lat, second_last_long = float(it2.line_container.api_object.locations.data[-1].lat), float(
+            it2.line_container.api_object.locations.data[-1].long)
+        first_first_lat, first_first_long = float(it1.line_container.api_object.locations.data[0].lat), float(
+            it1.line_container.api_object.locations.data[0].long)
+
+        distance_2_to_1 = self.haversine_distance(second_last_lat, second_last_long, first_first_lat, first_first_long)
+
+        if distance_1_to_2 <= distance_2_to_1:
+            return it1, it2
+        else:
+            return it2, it1

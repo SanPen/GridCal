@@ -15,12 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Union, Tuple
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from scipy.sparse import csc_matrix, csr_matrix, diags
-from GridCalEngine.basic_structures import IntVec, Vec
+from scipy.sparse import csc_matrix, diags, csr_matrix
+from GridCalEngine.basic_structures import IntVec, Vec, Logger
+from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
 @nb.njit(cache=True)
@@ -336,4 +339,294 @@ def compute_connectivity_with_hvdc(branch_active: IntVec,
     Cf = sp.vstack([br_states_diag * Cf_, hvdc_states_diag * Cf_hvdc])
     Ct = sp.vstack([br_states_diag * Ct_, hvdc_states_diag * Ct_hvdc])
 
+    return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())
+
+
+class TopologyProcessorInfo:
+    """
+    TopologyProcessorInfo
+    """
+
+    def __init__(self) -> None:
+
+        # list of buses that appear because of connectivity nodes
+        self.new_candidates: List[Bus] = list()
+
+        # list of final candidate buses for reduction
+        self.candidates: List[Bus] = list()
+
+        # map of ConnectivityNodes to candidate Buses
+        self.cn_to_candidate: dict[ConnectivityNode, Bus] = dict()
+
+        # integer position of the candidate bus matching a connectivity node
+        self.candidate_to_int_dict = dict()
+
+        # map of ConnectivityNodes to final Buses
+        self.cn_to_final_bus: dict[ConnectivityNode, Bus] = dict()
+
+    def get_connection_indices(self, elm: BRANCH_TYPES, logger: Logger) -> Tuple[int, int, bool]:
+        """
+        Get connection indices
+        :param elm:
+        :param logger:
+        :return: f, t, ok
+        """
+        # if elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is not None:
+        #     # All properties are not None
+        #     f = self.get_candidate_pos_from_cn(elm.cn_from)
+        #     t = self.get_candidate_pos_from_cn(elm.cn_to)
+        #
+        # elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is None:
+        #     # bus_to is None
+        #     f = self.get_candidate_pos_from_cn(elm.cn_from)
+        #     t = self.get_candidate_pos_from_cn(elm.cn_to)
+        #
+        # elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is not None:
+        #     # bus_from is None
+        #     f = self.get_candidate_pos_from_cn(elm.cn_from)
+        #     t = self.get_candidate_pos_from_cn(elm.cn_to)
+        #
+        # elif elm.cn_from is not None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is None:
+        #     # bus_from and bus_to are None
+        #     f = self.get_candidate_pos_from_cn(elm.cn_from)
+        #     t = self.get_candidate_pos_from_cn(elm.cn_to)
+        #
+        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is not None:
+        #     # cn_to is None
+        #     f = self.get_candidate_pos_from_cn(elm.cn_from)
+        #     t = self.get_candidate_pos_from_bus(elm.bus_to)
+        #
+        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is None:
+        #     # cn_to and bus_to are None
+        #     # raise ValueError("No to connection provided!")
+        #     logger.add_error(msg="No to connection provided!", device=elm.name)
+        #     return -1, -1, False
+        #
+        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is not None:
+        #     # cn_to and bus_from are None
+        #     f = self.get_candidate_pos_from_cn(elm.cn_from)
+        #     t = self.get_candidate_pos_from_bus(elm.bus_to)
+        #
+        # elif elm.cn_from is not None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is None:
+        #     # cn_to, bus_from, and bus_to are None
+        #     # raise ValueError("No to connection provided!")
+        #     logger.add_error(msg="No to connection provided!", device=elm.name)
+        #     return -1, -1, False
+        #
+        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is not None:
+        #     # cn_from is None
+        #     f = self.get_candidate_pos_from_bus(elm.bus_from)
+        #     t = self.get_candidate_pos_from_cn(elm.cn_to)
+        #
+        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is not None and elm.bus_to is None:
+        #     # cn_from and bus_to are None
+        #     f = self.get_candidate_pos_from_bus(elm.bus_from)
+        #     t = self.get_candidate_pos_from_cn(elm.cn_to)
+        #
+        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is not None:
+        #     # cn_from and bus_from are None
+        #     # raise ValueError("No from connection provided!")
+        #     logger.add_error(msg="No to connection provided!", device=elm.name)
+        #     return -1, -1, False
+        #
+        # elif elm.cn_from is None and elm.cn_to is not None and elm.bus_from is None and elm.bus_to is None:
+        #     # cn_from, bus_from, and bus_to are None
+        #     # raise ValueError("No from connection provided!")
+        #     logger.add_error(msg="No to connection provided!", device=elm.name)
+        #     return -1, -1, False
+        #
+        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is not None:
+        #     # cn_from and cn_to are None
+        #     f = self.get_candidate_pos_from_bus(elm.bus_from)
+        #     t = self.get_candidate_pos_from_bus(elm.bus_to)
+        #
+        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is not None and elm.bus_to is None:
+        #     # cn_from, cn_to, and bus_to are None
+        #     # raise ValueError("No to connection provided!")
+        #     logger.add_error(msg="No to connection provided!", device=elm.name)
+        #     return -1, -1, False
+        #
+        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is not None:
+        #     # cn_from, cn_to, and bus_from are None
+        #     # raise ValueError("No from connection provided!")
+        #     logger.add_error(msg="No to connection provided!", device=elm.name)
+        #     return -1, -1, False
+        #
+        # elif elm.cn_from is None and elm.cn_to is None and elm.bus_from is None and elm.bus_to is None:
+        #     # All properties are None
+        #     # raise ValueError("isolated branch!")
+        #     logger.add_error(msg="Isolated branch!", device=elm.name)
+        #     return -1, -1, False
+        #
+        # else:
+        #     # All properties are None
+        #     # raise ValueError("isolated branch!")
+        #     logger.add_error(msg="Isolated branch!", device=elm.name)
+        #     return -1, -1, False
+
+        fr_obj, to_obj, ok = elm.get_from_and_to_objects(logger=logger)
+
+        if ok:
+            if isinstance(fr_obj, ConnectivityNode):
+                f = self.get_candidate_pos_from_cn(fr_obj)
+            elif isinstance(fr_obj, Bus):
+                f = self.get_candidate_pos_from_bus(fr_obj)
+            else:
+                f = -1
+
+            if isinstance(to_obj, ConnectivityNode):
+                t = self.get_candidate_pos_from_cn(to_obj)
+            elif isinstance(to_obj, Bus):
+                t = self.get_candidate_pos_from_bus(to_obj)
+            else:
+                t = -1
+
+            if f == t:
+                # raise ValueError("Loop connected branch!")
+                logger.add_error(msg="Loop connected branch!", device=elm.name)
+                return -1, -1, False
+
+            return f, t, True
+
+        else:
+            logger.add_error(msg="No to connection provided!", device=elm.name)
+            return -1, -1, False
+
+    def add_new_candidate(self, new_candidate: Bus):
+        """
+
+        :param new_candidate:
+        :return:
+        """
+        self.new_candidates.append(new_candidate)
+
+    def add_candidate(self, new_candidate: Bus):
+        """
+
+        :param new_candidate:
+        :return:
+        """
+        self.candidate_to_int_dict[new_candidate] = len(self.candidates)
+        self.candidates.append(new_candidate)
+
+    def candidate_number(self) -> int:
+        """
+        Number of candidates
+        :return: integer
+        """
+        return len(self.candidates)
+
+    def get_candidate_pos_from_cn(self, cn: ConnectivityNode) -> int:
+        """
+        Get the integer position of the candidate bus matching a connectivity node
+        :param cn: ConnectivityNode
+        :return: integer
+        """
+        candidate = self.cn_to_candidate[cn]
+        return self.candidate_to_int_dict[candidate]
+
+    def get_candidate_pos_from_bus(self, bus: Bus) -> int:
+        """
+        Get the integer position of the candidate bus matching
+        :param bus: Bus
+        :return: integer
+        """
+        return self.candidate_to_int_dict[bus]
+
+    def get_candidate_active(self, t_idx: Union[None, int]) -> IntVec:
+        """
+        Get the active array of candidate buses at a time index
+        :param t_idx: time index
+        :return: Array of bus active
+        """
+        bus_active = np.ones(self.candidate_number(), dtype=int)
+
+        for i, elm in enumerate(self.candidates):
+            bus_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
+
+        return bus_active
+
+    def apply_results(self, islands: List[List[int]]) -> List[Bus]:
+        """
+        Apply the topology results
+        :param islands: rsults from the topology search
+        :return: list of final buses
+        """
+        final_buses = list()
+        # print("Islands:")
+        for island in islands:
+            # print(",".join([self.candidates[i].name for i in island]))
+
+            island_bus = self.candidates[island[0]]
+
+            # pick the first bus from each island
+            final_buses.append(island_bus)
+
+            for cn, candidate_bus in self.cn_to_candidate.items():
+                for i in island:
+                    if candidate_bus == self.candidates[i]:
+                        self.cn_to_final_bus[cn] = island_bus
+
+        return final_buses
+
+    def get_final_bus(self, cn: ConnectivityNode) -> Bus:
+        """
+        Get the final Bus that should map to a connectivity node
+        :param cn: ConnectivityNode
+        :return: Final calculation Bus
+        """
+        return self.cn_to_final_bus[cn]
+
+    def get_cn_lists_per_bus(self) -> Dict[Bus, List[ConnectivityNode]]:
+        """
+        Invert cn_to_final_bus
+        :return: Dict[Bus, List[ConnectivityNode]]
+        """
+        data = dict()
+
+        for cn, bus in self.cn_to_final_bus.items():
+
+            lst = data.get(bus, None)
+
+            if lst is None:
+                data[bus] = [cn]
+            else:
+                lst.append(cn)
+
+        return data
+
+    def get_candidate_names(self) -> List[str]:
+        """
+
+        :return:
+        """
+        return [c.name for c in self.candidates]
+
+
+def compute_connectivity_acdc_isolated(branch_active: IntVec,
+                                       Cf_: csc_matrix,
+                                       Ct_: csc_matrix,
+                                       vsc_active: Union[None, IntVec] = None,
+                                       Cf_vsc: Union[None, csc_matrix] = None,
+                                       Ct_vsc: Union[None, csc_matrix] = None,
+                                       vsc_branch_idx: Union[None, IntVec] = None) -> ConnectivityMatrices:
+    """
+    Remove the VSC branches from the connectivity matrices by setting rows indexed by vsc_branch_idx to zero.
+    """
+
+    # Convert matrices to LIL format for efficient row manipulation
+    Cf = Cf_.tolil()
+    Ct = Ct_.tolil()
+
+    # Set rows corresponding to VSC branches to zero
+    for idx in vsc_branch_idx:
+        Cf[idx, :] = 0
+        Ct[idx, :] = 0
+
+    # print("(topology.py) Modified Cf:")
+    # print(Cf)
+    # print("(topology.py) Modified Ct:")
+    # print(Ct)
+
+    # Convert back to CSC format for efficient matrix operations
     return ConnectivityMatrices(Cf=Cf.tocsc(), Ct=Ct.tocsc())

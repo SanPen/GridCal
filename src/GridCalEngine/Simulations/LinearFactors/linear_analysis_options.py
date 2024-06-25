@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
-class LinearAnalysisOptions:
+class LinearAnalysisOptions(OptionsTemplate):
     """
     LinearAnalysisOptions
     """
@@ -33,6 +34,8 @@ class LinearAnalysisOptions:
         :param ptdf_threshold: threshold for PTDF's to be converted to sparse
         :param lodf_threshold: threshold for LODF's to be converted to sparse
         """
+        OptionsTemplate.__init__(self, name="LinearAnalysisOptions")
+
         self.distribute_slack = distribute_slack
 
         self.correct_values = correct_values
@@ -40,3 +43,8 @@ class LinearAnalysisOptions:
         self.ptdf_threshold = ptdf_threshold
 
         self.lodf_threshold = lodf_threshold
+
+        self.register(key="distribute_slack", tpe=bool)
+        self.register(key="correct_values", tpe=bool)
+        self.register(key="ptdf_threshold", tpe=float)
+        self.register(key="lodf_threshold", tpe=float)

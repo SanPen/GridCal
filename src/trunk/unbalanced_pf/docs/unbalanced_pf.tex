@@ -1,0 +1,975 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[english]{isodate}
+\usepackage[parfill]{parskip}
+
+\usepackage{graphicx}
+%%
+% Just some sample text
+\usepackage{lipsum}
+\usepackage{tabularx}
+\usepackage{xcolor} % for colour
+\usepackage{colortbl}
+\usepackage{lettrine}
+\usepackage{csquotes}
+\usepackage{placeins}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{steinmetz}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{nccmath}
+\usepackage{relsize}
+\usepackage[sorting=none]{biblatex} %Imports biblatex package
+\usepackage{tikz}
+\usepackage{circuitikz}
+
+\usepackage[colorlinks=true,allcolors=black]{hyperref}
+
+\addbibresource{refs.bib} %Import the bibliography file
+
+\usepackage{geometry}
+ \geometry{
+	a4paper,
+	total={170mm,257mm},
+	left=20mm,
+	top=20mm,
+}
+
+
+
+\title{\textbf{Unbalanced power flow}}
+
+\author{Josep Fanals i Batllori}
+
+
+
+\begin{document}
+	
+	\maketitle
+
+	The power flow problem is typically formulated under a set of hypothesis. Mainly, loads are balanced and lines are transposed. These assumptions are widely accepted for transmission systems. However, their validity starts suffering at the distribution level due to the presence of unbalances in the demand, the use of single-phase lines, non-transpositions, neutral conductors, etc. This document provides a modelling approach for distribution networks, and the subsequent power flow formulation required to handle such unbalanced systems. Initially, only the most common power system components are considered, such as loads, generators, transformers, and lines. 
+
+	\section{Modelling}
+	The main reference for modelling the main devices is the textbook "Distribution System Modeling and Analysis" by William H. Kersting~\cite{kersting2018distribution}.
+
+	\subsection{Overhead lines}
+	Overhead lines are those that are not buried underground. The general notation for an overhead line is shown in Figure~\ref{fig:ovline}, where it involves three phases, a neutral conductor, and ground.
+
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			% \draw[line width=0.7mm] (2,0) to [short] (2,-3);
+			% \draw[line width=0.7mm] (7,0) to [short] (7,-3);
+			\draw[line width=0.7mm] (2,-0.1) to [short] (2,-0.9);
+			\draw[line width=0.7mm] (2,-1.1) to [short] (2,-1.9);
+			\draw[line width=0.7mm] (2,-2.1) to [short] (2,-2.9);
+			\draw[line width=0.7mm] (7,-0.1) to [short] (7,-0.9);
+			\draw[line width=0.7mm] (7,-1.1) to [short] (7,-1.9);
+			\draw[line width=0.7mm] (7,-2.1) to [short] (7,-2.9);
+			\draw (2,-0.5) to [short, i=$\underline{i}_a$] (7,-0.5);
+			\draw (2,-1.5) to [short, i=$\underline{i}_b$] (7,-1.5);
+			\draw (2,-2.5) to [short, i=$\underline{i}_c$] (7,-2.5);
+			\draw (2.5,-3.5) to [short, i=$\underline{i}_n$] (6.5,-3.5);
+			\draw (2.5,-3.5) to [short] (2.5,-4.5);
+			\draw (6.5,-3.5) to [short] (6.5,-4.5);
+			\node at (1.5,-0.5) {$\underline{v}_{fa}$};
+			\node at (1.5,-1.5) {$\underline{v}_{fb}$};
+			\node at (1.5,-2.5) {$\underline{v}_{fc}$};
+			\node at (7.5,-0.5) {$\underline{v}_{ta}$};
+			\node at (7.5,-1.5) {$\underline{v}_{tb}$};
+			\node at (7.5,-2.5) {$\underline{v}_{tc}$};
+			\draw (2.0,-4.5) to [short] (3.0,-4.5);
+			\draw (6.0,-4.5) to [short] (7.0,-4.5);
+			\draw (2.75,-4.5) to [short] (2.75,-5);
+			\draw (6.25,-4.5) to [short] (6.25,-5);
+			\draw (2.75,-5) to [short, i=$\underline{i}_g$] (6.25,-5);
+			\node at (8.0,-4.2) {$\rho$};
+
+			\draw[dashed] (0,-4) .. controls (2,-3.7) and (4,-3.9) .. (6,-3.8) 
+								 .. controls (7,-3.7) .. (9,-4);
+			\end{circuitikz}		
+			\caption{Representation of an overhead line.}
+			\label{fig:ovline}
+	\end{figure}
+	\FloatBarrier
+
+	It is assumed that the neutral conductor is connected to ground on the two sides of the line. While this consideration may not always hold true, it is a common practice in conventional distribution systems (akin to the TT scheme in Spain). Also, the reference point for all voltage is the ground, with a resistivity denoted by $\rho$. The ground can be seen as a conductor as well. There is no conductor installed there per se, yet the ground has a finite electrical conductivity, 
+
+	While transmission systems could be simplified to a single-phase model, distribution systems require a much more detailed model. In this sense, the voltage drop along a phase is caused by its current, but also by the rest of the currents. It is derived from Figure~\ref{fig:ovline} that a total of five currents has to be considered. The global relationship between currents and voltages can be established between impedances as:
+	\begin{equation}
+		\begin{pmatrix}
+			\underline{v}_{fa} - \underline{v}_{ta} \\
+			\underline{v}_{fb} - \underline{v}_{tb} \\
+			\underline{v}_{fc} - \underline{v}_{tc} \\
+			0 \\
+			0 \\
+		\end{pmatrix}
+	= \begin{pmatrix}
+		\underline{z}_{aa} & \underline{z}_{ab} & \underline{z}_{ac} & \underline{z}_{an} & \underline{z}_{ag} \\
+		\underline{z}_{ba} & \underline{z}_{bb} & \underline{z}_{bc} & \underline{z}_{bn} & \underline{z}_{bg} \\
+		\underline{z}_{ca} & \underline{z}_{cb} & \underline{z}_{cc} & \underline{z}_{cn} & \underline{z}_{cg} \\
+		\underline{z}_{na} & \underline{z}_{nb} & \underline{z}_{nc} & \underline{z}_{nn} & \underline{z}_{ng} \\
+		\underline{z}_{ga} & \underline{z}_{gb} & \underline{z}_{gc} & \underline{z}_{gn} & \underline{z}_{gg} \\
+	\end{pmatrix}
+	\begin{pmatrix}
+		\underline{i}_{a} \\
+		\underline{i}_{b} \\
+		\underline{i}_{c} \\
+		\underline{i}_{n} \\
+		\underline{i}_{g} \\
+	\end{pmatrix}.
+	\label{eq:comp1}
+	\end{equation}
+	Diagonal impedance terms are caused by the self-impedance of the line (constituted by the resistance and the self-inductance of the line), whereas the off-diagonal terms are only due to the mutual impedance between phases. The diagonal term for the $m$ conductor, per unit length, is:
+	\begin{equation}
+			\underline{z}_{mm} = r_m + j 2\pi f 2\cdot 10^{-7} \ln \frac{1}{\text{GMR}_m}, 
+	\end{equation}
+	where $r_m$ is the resistance per unit length, $f$ is the frequency, and $\text{GMR}_m$ is the geometric mean radius of the conductor, roughly $r\cdot e^{-1/4}$, being $r$ the radius of such conductor. 
+	
+	The mutual impedance between two conductors $m$ and $k$ is given by:
+	\begin{equation}
+		\underline{z}_{mk} = j 2\pi f 2\cdot 10^{-7} \ln \frac{1}{D_{mk}},
+	\end{equation}
+	where $D_{mk}$ is the distance between conductors $m$ and $k$. 
+
+	From the expressions above it can be inferred that computing the ground term is not straightforward, given its unknown radius and the undetermined distances between the active conductors and the core of the ground. Carson's equations were derived to circumvent such barriers and embed the ground in the model. Thus, the impedances are modified accounting for the effect of the ground. The equations that follow use the single-term approximation of Carson's original expressions~\cite{krolo2018computation}. These are found to be satisfactory to study low-frequency phenomena (such as the power flow being it a quasi-static problem). 
+	
+	Diagonal terms take the following form:
+		\begin{equation}
+			\underline{\hat{z}}_{mm} = r_m + j 2\pi f 2\cdot 10^{-7} \ln \frac{1}{\text{GMR}_m} + j\frac{\omega \mu_0}{2\pi}\ln \frac{D_e}{r} + \frac{\omega \mu_0}{8}, 
+	\end{equation}
+	where $\mu_0$ is the magnetic permeability of the vacuum, equal to $4\pi \cdot 10^{-7}$~H/m, and $D_e$ is given by:
+	\begin{equation}
+		D_e \approx 659 \sqrt{\frac{\rho}{f}}.
+	\end{equation}
+
+	Off-diagonal components are given by:	
+	\begin{equation}
+		\underline{\hat{z}}_{mk} = j 2\pi f 2\cdot 10^{-7} \ln \frac{1}{D_{mk}} + \frac{\omega \mu_0}{8} + j \frac{\omega \mu_0}{2\pi} \ln \frac{D_e}{D_{mk}}.
+	\end{equation}
+	The hat symbol is used to denote the modified impedance terms (also called primitive terms).
+
+	More accurate expressions were proposed by Dubanton~\cite{dubanton1969calcul}, taking into account the distance between the conductors and ground, but at this stage the single-term approximation is deemed sufficient for the power flow problem.	
+
+	With these transformations, the complete expression in~\eqref{eq:comp1} becomes:
+	\begin{equation}
+		\begin{pmatrix}
+			\underline{v}_{fa} - \underline{v}_{ta} \\
+			\underline{v}_{fb} - \underline{v}_{tb} \\
+			\underline{v}_{fc} - \underline{v}_{tc} \\
+			0 \\
+		\end{pmatrix}
+	= \begin{pmatrix}
+		\underline{\hat{z}}_{aa} & \underline{\hat{z}}_{ab} & \underline{\hat{z}}_{ac} & \underline{\hat{z}}_{an} \\ 
+		\underline{\hat{z}}_{ba} & \underline{\hat{z}}_{bb} & \underline{\hat{z}}_{bc} & \underline{\hat{z}}_{bn} \\
+		\underline{\hat{z}}_{ca} & \underline{\hat{z}}_{cb} & \underline{\hat{z}}_{cc} & \underline{\hat{z}}_{cn} \\
+		\underline{\hat{z}}_{na} & \underline{\hat{z}}_{nb} & \underline{\hat{z}}_{nc} & \underline{\hat{z}}_{nn} \\
+	\end{pmatrix}
+	\begin{pmatrix}
+		\underline{i}_{a} \\
+		\underline{i}_{b} \\
+		\underline{i}_{c} \\
+		\underline{i}_{n} \\
+	\end{pmatrix}.
+	\label{eq:comp2}
+	\end{equation}
+	As the neutral is grounded on both its sides, its voltage drop is zero, and thus the last row of the matrix is non-informative. By applying Kron's reduction, the system can be simplified to a three-phase model. This way,~\eqref{eq:comp2} is compacted as:
+	\begin{equation}
+		\begin{pmatrix}
+			\underline{\bm{v}}_{f,abc} - \underline{\bm{v}}_{t,abc} \\
+			\bm{0} \\
+		\end{pmatrix}
+		= \begin{pmatrix}
+			\underline{\hat{\bm{z}}}_{abc,abc} & \underline{\hat{\bm{z}}}_{abc,n} \\
+			\underline{\hat{\bm{z}}}_{n,abc} & \underline{\hat{\bm{z}}}_{n,n} \\
+		\end{pmatrix}
+		\begin{pmatrix}
+			\underline{\bm{i}}_{abc} \\
+			\underline{\bm{i}}_{n} \\
+		\end{pmatrix},
+		\label{eq:comp3}
+	\end{equation}
+	hence, from the last equation, the neutral current can be found:
+	\begin{equation}
+		\underline{\bm{i}}_n = - \underline{\hat{\bm{z}}}_{n,n}^{-1} \underline{\hat{\bm{z}}}_{n,abc} \underline{\bm{i}}_{abc}.
+	\end{equation}
+	If plugged into~\eqref{eq:comp3}, the following equation is obtained:
+	\begin{equation}
+		\underline{\bm{v}}_{f,abc} - \underline{\bm{v}}_{t,abc} = (\underline{\hat{\bm{z}}}_{abc,abc}  - \underline{\hat{\bm{z}}}_{abc,n} \underline{\hat{\bm{z}}}_{n,n}^{-1} \underline{\hat{\bm{z}}}_{n,abc}) \underline{\bm{i}}_{abc}.
+	\end{equation}
+	The resulting impedance matrix is denoted by:
+	\begin{equation}
+		\bar{\underline{\bm{z}}}_{abc} = \underline{\hat{\bm{z}}}_{abc,abc}  - \underline{\hat{\bm{z}}}_{abc,n} \underline{\hat{\bm{z}}}_{n,n}^{-1} \underline{\hat{\bm{z}}}_{n,abc},
+	\end{equation}
+	and the resulting complete model for the overhead line is:
+	\begin{equation}
+		\begin{pmatrix}
+			\underline{v}_{fa} - \underline{v}_{ta} \\
+			\underline{v}_{fb} - \underline{v}_{tb} \\
+			\underline{v}_{fc} - \underline{v}_{tc} \\
+		\end{pmatrix}
+		= 
+		\begin{pmatrix}
+			\bar{\underline{z}_{aa}} & \bar{\underline{z}_{ab}} & \bar{\underline{z}_{ac}} \\
+			\bar{\underline{z}_{ba}} & \bar{\underline{z}_{bb}} & \bar{\underline{z}_{bc}} \\
+			\bar{\underline{z}_{ca}} & \bar{\underline{z}_{cb}} & \bar{\underline{z}_{cc}} \\
+		\end{pmatrix}	
+		\begin{pmatrix}
+			\underline{i}_a \\
+			\underline{i}_b \\
+			\underline{i}_c \\
+		\end{pmatrix}.
+		\label{eq:comp4}
+	\end{equation}	
+	In case a given phase is not present, the impedance entries corresponding to its row and column indices are removed from the matrix. For example, assuming a non-existent $b$ phase, the system in~\eqref{eq:comp4} would be:
+		\begin{equation}
+		\begin{pmatrix}
+			\underline{v}_{fa} - \underline{v}_{ta} \\
+			\underline{v}_{fb} - \underline{v}_{tb} \\
+			\underline{v}_{fc} - \underline{v}_{tc} \\
+		\end{pmatrix}
+		= 
+		\begin{pmatrix}
+			\bar{\underline{z}_{aa}} & 0 & \bar{\underline{z}_{ac}} \\
+			0 & 0 & 0 \\
+			\bar{\underline{z}_{ca}} & 0 & \bar{\underline{z}_{cc}} \\
+		\end{pmatrix}	
+		\begin{pmatrix}
+			\underline{i}_a \\
+			0 \\
+			\underline{i}_c \\
+		\end{pmatrix}.
+		\label{eq:comp5}
+	\end{equation}	
+	The risk of relying on~\eqref{eq:comp5} is the fact the associated impedance matrix is singular. This will not be a problem if the forward/backward sweep method is employed, but it could potentially pose issues when using the Newton-Raphson method. As a result, we suggest introducing non-zero terms in the diagonal of the impedance matrix to avoid singularities:
+		\begin{equation}
+		\begin{pmatrix}
+			\underline{v}_{fa} - \underline{v}_{ta} \\
+			\underline{v}_{fb} - \underline{v}_{tb} \\
+			\underline{v}_{fc} - \underline{v}_{tc} \\
+		\end{pmatrix}
+		= 
+		\begin{pmatrix}
+			\bar{\underline{z}_{aa}} & 0 & \bar{\underline{z}_{ac}} \\
+			0 & 0_x & 0 \\
+			\bar{\underline{z}_{ca}} & 0 & \bar{\underline{z}_{cc}} \\
+		\end{pmatrix}	
+		\begin{pmatrix}
+			\underline{i}_a \\
+			0 \\
+			\underline{i}_c \\
+		\end{pmatrix}.
+		\label{eq:comp6}
+	\end{equation}	
+	where $0_x$ stands for a small non-zero value.
+
+	On a side note, it is sometimes the case that sequence impedance matrices are used instead of phase impedance matrices. The sequence impedance matrix is obtained by applying a transformation to the phase impedance matrix. The transformation is given by:
+	\begin{equation}
+		\bar{\underline{\bm{z}}_{012}} = \bm{A}_s^{-1} \bar{\underline{\bm{z}}_{abc}} \bm{A}_s,
+	\end{equation}
+	where $\bm{A}_s$ is the sequence transformation matrix. From Fortescue's theory~\cite{fortescue1918method}: 
+	\begin{equation}
+		\bm{A}_s = \begin{pmatrix}
+			1 & 1 & 1 \\
+			1 & \underline{a}^2 & \underline{a} \\
+			1 & \underline{a} & \underline{a}^2 \\
+		\end{pmatrix},
+	\end{equation}
+	where $\underline{a}=e^{j\frac{2\pi}{3}}$.
+
+	The development above applies to the series impedance matrix. It could be stated there are capacitive effects that need to be taken into account. However, assuming the unbalanced power flow is mainly applied to distribution grids, where both the voltage level and the length are inferior to that of transmission systems, they will simply be disregarded. 
+
+
+
+	\subsection{Loads}
+	Loads are best represented with their so-called equivalent ZIP model as shown in Figure~\ref{fig:load}. 
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+			\draw[line width=0.7mm] (0,0) to [short] (7,0);
+			\draw (0.6,0) to[generic, l=$G_{12}+jB_{12}$] (0.6,-3);
+			\draw (3.5,0) to [isource, l=$I^\text{re}_{12} + jI^\text{im}_{12}$] (3.5,-3);
+			\draw (6.4,0) to [cute european voltage source, l=$P_{12}+jQ_{12}$] (6.4,-3);
+			\draw (0,-3) to [short] (7,-3);
+			\node at (3.5,0.35) {$\underline{V}_1$};
+			\node at (3.5,-3.35) {$\underline{V}_2$};
+			\end{circuitikz}		
+			\caption{Representation of a load with its ZIP model.}
+			\label{fig:load}
+	\end{figure}
+	\FloatBarrier
+	The ZIP model treats the load as a combination of a specified admittance, current and power demand. The load is interfaced to the grid by converting it to a complex power expression given by:
+	\begin{equation}
+		\underline{S}_{12} = P_{12} + jQ_{12} + (\underline{V}_1 - \underline{V}_2) (I_{12}^\text{re} + jI_{12}^\text{im})^* + (\underline{V}_1 - \underline{V}_2) (\underline{V}_1 - \underline{V}_2)^* (G_{12} + jB_{12})^* ,
+	\end{equation}
+	where it is considered that the load is connected between two nodes $1$ and $2$, with the sign convention going from node $1$ to $2$. These nodes can represent two phases (e.g. phases $a$ and $b$) or a phase and the neutral. As the neutral is meant to be grounded, its voltage will be set to zero.
+
+	Loads exist in two configurations: delta and star (sometimes referred to as wye). The star scheme is shown in Figure~\ref{fig:delta_star}. 
+
+	\begin{figure}[!htb]
+		\centering
+
+		\begin{subfigure}{0.45\textwidth}
+			\centering
+		\begin{circuitikz}[american]
+			% \draw[line width=0.7mm] (-1,0) to [short] (1,0);
+			\draw (-3, 0.68) to [short] (3, 0.68);
+			\draw (-3, 1.18) to [short] (3, 1.18);
+			\draw (-3, 1.68) to [short] (3, 1.68);
+			\draw (0,0) to [isource, l=$\underline{S}_{a}$, -*] (0,-2);
+			\draw (-1.732,-3) to [isource, l=$\underline{S}_{b}$, -*] (0,-2);
+			\draw (1.732,-3) to [isource, l_=$\underline{S}_{c}$, -*] (0,-2);
+			\draw (-1.732,-3) to [short, -*] (-1.732,1.18);
+			\draw (1.732,-3) to [short, -*] (1.732,0.68);
+			\draw (0,0) to [short, -*] (0,1.68);
+			\draw (0,-2) to [short] (0,-2.75);
+			\draw (-0.25,-2.75) to [short] (0.25,-2.75);
+			\node at (-3.5,1.68) {$a$};
+			\node at (-3.5,1.18) {$b$};
+			\node at (-3.5,0.68) {$c$};
+			\node at (-3.5,0.18) {$n$};
+			\draw (0,-2) to [short] (-2,0.18);
+			\draw (-2,0.18) to [short] (-3,0.18);
+			\end{circuitikz}		
+
+			\caption{Representation of a star load.}
+			\label{fig:load_star}
+		\end{subfigure}
+		\begin{subfigure}{0.45\textwidth}
+			\centering
+		\begin{circuitikz}[american]
+			% \draw[line width=0.7mm] (-1,0) to [short] (1,0);
+			\draw (-3, 0) to [short] (3, 0);
+			\draw (-3, 0.5) to [short] (3, 0.5);
+			\draw (-3, 1) to [short] (3, 1);
+			\draw (0,-0.25) to [isource, l_=$\underline{S}_{ab}$, *-*] (-1.732,-1.25-2);
+			\draw (-1.732,-1.25-2) to [isource, l=$\underline{S}_{bc}$, *-*] (1.732,-1.25-2);
+			\draw (1.732,-1.25-2) to [isource, l_=$\underline{S}_{ca}$, *-*] (0,-0.25);
+
+			\draw (-1.732,-3.25) to [short, -*] (-1.732,0.5);
+			\draw (1.732,-3.25) to [short, -*] (1.732,0.0);
+			\draw (0,-0.25) to [short, -*] (0,1);
+			\end{circuitikz}		
+
+			\caption{Representation of a delta load.}
+			\label{fig:load_delta}
+		\end{subfigure}
+		\caption{Star and delta configurations for power loads.}
+		\label{fig:delta_star}
+	\end{figure}
+	\FloatBarrier
+	It makes more sense to operate with star loads as the neutral is assumed to be distributed and grounded at the same time. Delta configurations are more common in transmission systems, where the neutral is not present.
+
+	\subsection{Generators}
+	Generators are modelled as ideal voltage sources for the unbalanced power flow. There could be various valid assumptions to be made, yet here it is considered that voltage magnitudes and active powers are set. This situation is akin to dealing with a PV bus in the regular power flow problem. If no individual phase powers are provided, it will be assumed the three of them are equal, while the three voltage magnitudes are also assumed to be the same and equal to $v$. The underlying equations are:
+	\begin{equation}
+		\begin{cases}
+			P_a = \Re{(ve^{j\delta_a} \, \underline{i}_a^*)} \\
+			P_b = \Re{(ve^{j\delta_b} \, \underline{i}_b^*)} \\
+			P_c = \Re{(ve^{j\delta_c} \, \underline{i}_c^*)} \\
+		\end{cases}
+	\end{equation}
+	The slack generator, typically the one with the highest nominal power, will have specified phases in the voltages and free active power, behaving such as a traditional slack bus. 
+
+	The generator model is depicted in Figure~\ref{fig:gen}. Generators are expected to be solidly grounded, and voltages referred to this ground point.
+
+	\begin{figure}[!htb]
+		\centering
+		\begin{circuitikz}[american]
+		\draw (0,0) to [sV, -*] (3,0);		
+		\draw (0,-1) to [sV, *-*] (3,-1);		
+		\draw (0,-2) to [sV, -*] (3,-2);		
+		\draw (0,-2) to [short] (0,0);
+		\draw (0,-1) to [short] (-1,-1);
+		\draw (-1,-1) to [short] (-1,-2.5);
+		\draw (-0.75,-2.5) to [short] (-1.25,-2.5);
+		\node at (6.25,0.0) {$a$};
+		\node at (6.25,-1.0) {$b$};
+		\node at (6.25,-2.0) {$c$};
+		\draw (3,0) to [short, i=$\underline{i}_a$] (6.0,0);
+		\draw (3,-1) to [short, i=$\underline{i}_b$] (6.0,-1);
+		\draw (3,-2) to [short, i=$\underline{i}_c$] (6.0,-2);
+		\node at (3.0,0.35) {$ve^{j\delta_a}$};
+		\node at (3.0,-0.65) {$ve^{j(\delta_b)}$};
+		\node at (3.0,-1.65) {$ve^{j(\delta_c)}$};
+		\end{circuitikz}
+		\caption{General representation of a synchronous generator.}
+		\label{fig:gen}
+	\end{figure}
+
+	\subsection{Transformers}
+	Transformers are best modelled through sequence components. The positive and the negative sequence impedance is the same, usually simplified to a given series reactance. In conventional per-unit modelling, the transformer is symbolized as indicated in Figure~\ref{fig:trafo1}.
+	
+	\begin{figure}[!htb] \centering \tiny
+		\begin{circuitikz}[european]
+		\thicklines
+		
+		\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+		
+		\draw (2,0) to [voosource] (4,0);
+		\draw (4,0) to [R, european] (4,-2);
+		\draw (4,0) to [R, european] (6,0);
+		\draw (6,0) to [R, european] (6,-2);
+		\draw (1.5,0) to [short, *-, i=$\underline{I}_f$] (2.5,0);
+		\draw (7,0) to [short, *-, i_=$\underline{I}_t$] (6,0);
+		
+		\draw (1.5,-2) to [open, v^=$v_f$] (1.5,0);
+		\draw (7,-2) to [open, v_=$v_t$] (7,0);
+		
+		\draw (1.5,-2) to [short, *-*] (7,-2);
+		
+		\node at (1.3,0) {$f$};
+		\node at (7.2,0) {$t$};
+		
+		\node at (5,0.3) {$\underline{Z}_s$};
+		\node at (4.5,-1) {$\frac{\underline{Y}_{p}}{2}$};
+		\node at (6.5,-1) {$\frac{\underline{Y}_{p}}{2}$};
+		\node at (3,0.4) {$me^{j\theta}:1$};
+		
+		\end{circuitikz}
+		\caption{Transformer model derived from the FUBM~\cite{alvarez2021universal}.}
+		\label{fig:trafo1}
+		\end{figure}
+	The associated admittance matrix is a 2x2 object of the form:
+	\begin{equation}
+		\underline{\bm{Y}}_{\text{tr}}=
+		\begin{pmatrix}
+			\underline{Y}_{ff} & \underline{Y}_{ft} \\
+			\underline{Y}_{tf} & \underline{Y}_{tt} \\
+		\end{pmatrix}.
+	\end{equation}
+	The matrix further developed becomes the following for the positive sequence:
+	\begin{equation}
+		\underline{\bm{Y}}_1 = \begin{pmatrix}
+			\frac{\underline{Y}_s + \underline{Y}_p/2}{m^2u_f^2} & - \frac{\underline{Y}_s}{me^{-j\theta}u_{f}u_{t}} \\ \addlinespace
+			- \frac{\underline{Y}_s}{me^{j\theta}u_{t}u_{f}} & \frac{\underline{Y}_s + \underline{Y}_p/2}{u_{t}^2}  \\
+		\end{pmatrix},
+	\end{equation}
+	where $u_{f}$ and $u_{t}$ are virtual taps on the from and to side. The negative sequence matrix is the same as the positive sequence matrix, just with a shift on the sign of $\theta$:
+		\begin{equation}
+		\underline{\bm{Y}}_2 = \begin{pmatrix}
+			\frac{\underline{Y}_s + \underline{Y}_p/2}{m^2u_f^2} & - \frac{\underline{Y}_s}{me^{j\theta}u_{f}u_{t}} \\ \addlinespace
+			- \frac{\underline{Y}_s}{me^{-j\theta}u_{t}u_{f}} & \frac{\underline{Y}_s + \underline{Y}_p/2}{u_{t}^2}  \\
+		\end{pmatrix}.
+	\end{equation}
+ 	The zero sequence impedance is more closely linked to the grounding of the transformer and the winding scheme. Zero sequence transformer models are shown in Figure~\ref{fig:trafo}. The zero sequence admittance terms will be inferred from the diagrams.
+
+	At the end, four sequence admittance matrices will be derived. Explicitly:
+
+	\begin{equation}
+		\begin{split}
+		\underline{\bm{Y}}_{012,ff} = 
+		\begin{pmatrix}
+			\underline{Y}_{0,ff} & 0 & 0 \\
+			0 & \underline{Y}_{1,ff} & 0 \\
+			0 & 0 & \underline{Y}_{2,ff} \\
+		\end{pmatrix}, \:
+		\underline{\bm{Y}}_{012,ft} &= 
+		\begin{pmatrix}
+			\underline{Y}_{0,ft} & 0 & 0 \\
+			0 & \underline{Y}_{1,ft} & 0 \\
+			0 & 0 & \underline{Y}_{2,ft} \\
+		\end{pmatrix}, \\ \addlinespace
+		\underline{\bm{Y}}_{012,ft} = 
+		\begin{pmatrix}
+			\underline{Y}_{0,ft} & 0 & 0 \\
+			0 & \underline{Y}_{1,ft} & 0 \\
+			0 & 0 & \underline{Y}_{2,ft} \\
+		\end{pmatrix}, \:
+		\underline{\bm{Y}}_{012,tt} &= 
+		\begin{pmatrix}
+			\underline{Y}_{0,tt} & 0 & 0 \\
+			0 & \underline{Y}_{1,tt} & 0 \\
+			0 & 0 & \underline{Y}_{2,tt} \\
+		\end{pmatrix}. \\
+	\end{split}
+	\end{equation}
+
+		\begin{figure}[!htb] \centering \tiny
+			\begin{circuitikz}[european]
+			\thicklines
+			
+			\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+			
+			\draw   (7,0) to [voosource,] (8,0);
+			\draw   (8,0) to [R, european] (10,0);
+			\draw   (10,0) to [R, european] (10,-2);
+			\draw   (10,0) to [R, european,] (12,0);
+			\draw   (6,0) to [short, *-, i=$\underline{I}_f$] (6.5,0);
+			\draw   (12,0) to [short, *-, i_=$\underline{I}_t$] (11.5,0);
+				
+			\draw   (6,-2) to [short, *-*] (12,-2);
+			\draw   (6,0)  to [short, -] (7, 0);
+		
+			\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+			\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+		
+			\node at (5.8,0) {$f$};
+			\node at (12.2,0) {$t$};
+			
+			\node at (9,0.4) {$\underline{Z}_s$};
+			\node at (11,0.4) {$3\underline{Z}_E$};
+			\node at (10.5,-1) {$\frac{\underline{Y}_{p}}{2}$};
+			\node at (7.5,0.5) {$me^{j\theta_{sh}}$:1};
+		
+			\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+			\node at (-0.2,0) {$f$};
+			\node at (3.2,0) {$t$};
+		
+			\draw   (1.8,0) to (1.8,-0.18);
+			\draw   (1.8,0) to (1.926,0.1);
+			\draw   (1.8,0) to (1.674,0.1);
+			\draw   (1.8,0) to (1.9,0);
+			\draw   (1.9,0) to (1.9,-0.07);
+			\draw   (1.85,-0.07) to (1.95,-0.07);
+			\draw   (1.88,-0.07) to (1.85,-0.1);
+			\draw   (1.91,-0.07) to (1.88,-0.1);
+			\draw   (1.94,-0.07) to (1.91,-0.1);
+			
+			\node at (2,-0.5) {$\underline{Z}_E$};
+		
+			\draw   (1.2,0) to (1.2,-0.18);
+			\draw   (1.2,0) to (1.326,0.1);
+			\draw   (1.2,0) to (1.074,0.1);
+			\draw   (1.2,0) to (1.3,0);
+			\draw   (1.3,0) to (1.3,-0.07);
+			\draw   (1.25,-0.07) to (1.35,-0.07);
+			\draw   (1.28,-0.07) to (1.25,-0.1);
+			\draw   (1.31,-0.07) to (1.28,-0.1);
+			\draw   (1.34,-0.07) to (1.31,-0.1);
+		
+			\end{circuitikz}\\
+		
+			\begin{circuitikz}[european]
+				\thicklines
+				
+				\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+				
+				\draw   (7,0) to [voosource] (8,0);
+				\draw   (8,0) to [R, european] (10,0);
+				\draw   (10,0) to [R, european] (10,-2);
+				\draw   (6,0) to [short, *-, i=$\underline{I}_f$] (6.5,0);
+					
+				\draw   (6,-2) to [short, *-*] (12,-2);
+				\draw   (6,0)  to [short, -] (7, 0);
+				\draw   (10,0) to [short, -*] (10.5,0);
+				\draw   (11.5,0) to [short, *-*] (12,0);
+			
+				\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+				\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+			
+				\node at (5.8,0) {$f$};
+				\node at (12.2,0) {$t$};
+				
+				\node at (9,0.4) {$\underline{Z}_s$};
+				\node at (10.5,-1) {$\frac{\underline{Y}_{p}}{2}$};
+				\node at (7.5,0.5) {$me^{j\theta_{sh}}$:1};
+			
+				\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+				\node at (-0.2,0) {$f$};
+				\node at (3.2,0) {$t$};
+		
+				\draw   (1.2,0) to (1.2,-0.18);
+				\draw   (1.2,0) to (1.326,0.1);
+				\draw   (1.2,0) to (1.074,0.1);
+				\draw   (1.2,0) to (1.3,0);
+				\draw   (1.3,0) to (1.3,-0.07);
+				\draw   (1.25,-0.07) to (1.35,-0.07);
+				\draw   (1.28,-0.07) to (1.25,-0.1);
+				\draw   (1.31,-0.07) to (1.28,-0.1);
+				\draw   (1.34,-0.07) to (1.31,-0.1);
+		
+				\draw   (1.8,0) to (1.8,-0.18);
+				\draw   (1.8,0) to (1.926,0.1);
+				\draw   (1.8,0) to (1.674,0.1);
+			
+			
+			\end{circuitikz} \\
+		
+			\begin{circuitikz}[european]
+				\thicklines
+				
+				\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+		
+				\draw (6.5,0) to [R, european] (7.5,0);
+				
+				\draw   (7.5,0) to [voosource] (8.5,0);
+				\draw   (8.5,0) to [R, european] (10,0);
+				\draw   (10,0) to [short, -] (10,-2);
+				\draw   (6,0) to [short, *-, i=$\underline{I}_f$] (6.5,0);
+					
+				\draw   (6,-2) to [short, *-*] (12,-2);
+				% \draw   (6,0)  to [short, -] (7, 0);
+				\draw   (10,0) to [short, -*] (10.5,0);
+				\draw   (11.5,0) to [short, *-*] (12,0);
+			
+				\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+				\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+			
+				\node at (5.8,0) {$f$};
+				\node at (12.2,0) {$t$};
+				
+				\node at (9.25,0.4) {$\underline{Z}_s$};
+				\node at (8.0,0.5) {$me^{j\theta_{sh}}$:1};
+				\node at (7,0.4) {$3\underline{Z}_E$};
+			
+				\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+				\node at (-0.2,0) {$f$};
+				\node at (3.2,0) {$t$};
+		
+				\draw   (1.2,0) to (1.2,-0.18);
+				\draw   (1.2,0) to (1.326,0.1);
+				\draw   (1.2,0) to (1.074,0.1);
+				\draw   (1.2,0) to (1.3,0);
+				\draw   (1.3,0) to (1.3,-0.07);
+				\draw   (1.25,-0.07) to (1.35,-0.07);
+				\draw   (1.28,-0.07) to (1.25,-0.1);
+				\draw   (1.31,-0.07) to (1.28,-0.1);
+				\draw   (1.34,-0.07) to (1.31,-0.1);
+		
+				\node at (1.1,-0.5) {$\underline{Z}_E$};
+		
+				\draw   (1.63,-0.2) to (1.98,-0.2);
+				\draw   (1.63,-0.2) to (1.8,0.1);
+				\draw   (1.98,-0.2) to (1.8,0.1);
+				
+			\end{circuitikz}\\
+		
+			\begin{circuitikz}[european]
+				\thicklines
+				
+				\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+				
+				\draw   (7,0) to [voosource,*-] (8,0);
+				\draw   (8,0) to [R, european] (10,0);
+				\draw   (10,0) to [R, european] (10,-2);
+					
+				\draw   (6,-2) to [short, *-*] (12,-2);
+				\draw   (6,0)  to [short, *-*] (6.5, 0);
+				\draw   (10,0) to [short, -*] (10.5,0);
+				\draw   (11.5,0) to [short, *-*] (12,0);
+			
+				\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+				\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+			
+				\node at (5.8,0) {$f$};
+				\node at (12.2,0) {$t$};
+				
+				\node at (9,0.4) {$\underline{Z}_s$};
+				\node at (10.5,-1) {$\frac{\underline{Y}_{p}}{2}$};
+				\node at (7.5,0.5) {$me^{j\theta_{sh}}$:1};
+			
+				\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+				\node at (-0.2,0) {$f$};
+				\node at (3.2,0) {$t$};
+			
+				\draw   (1.2,0) to (1.2,-0.18);
+				\draw   (1.2,0) to (1.326,0.1);
+				\draw   (1.2,0) to (1.074,0.1);
+		
+				\draw   (1.8,0) to (1.8,-0.18);
+				\draw   (1.8,0) to (1.926,0.1);
+				\draw   (1.8,0) to (1.674,0.1);
+			
+			\end{circuitikz}\\
+
+			\begin{circuitikz}[european]
+				\thicklines
+				
+				\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+				
+				\draw   (7,0) to [voosource,*-] (8,0);
+				\draw   (8,0) to [R, european] (10,0);
+				\draw   (10,0) to [short, -] (10,-2);
+					
+				\draw   (6,-2) to [short, *-*] (12,-2);
+				\draw   (6,0)  to [short, *-*] (6.5, 0);
+				\draw   (10,0) to [short, -*] (10.5,0);
+				\draw   (11.5,0) to [short, *-*] (12,0);
+			
+				\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+				\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+			
+				\node at (5.8,0) {$f$};
+				\node at (12.2,0) {$t$};
+				
+				\node at (9,0.4) {$\underline{Z}_s$};
+				\node at (7.5,0.5) {$me^{j\theta_{sh}}$:1};
+			
+				\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+				\node at (-0.2,0) {$f$};
+				\node at (3.2,0) {$t$};
+			
+		
+				\draw   (1.2,0) to (1.2,-0.18);
+				\draw   (1.2,0) to (1.326,0.1);
+				\draw   (1.2,0) to (1.074,0.1);
+		
+				\draw   (1.63,-0.2) to (1.98,-0.2);
+				\draw   (1.63,-0.2) to (1.8,0.1);
+				\draw   (1.98,-0.2) to (1.8,0.1);
+				
+			\end{circuitikz}\\
+		
+			\begin{circuitikz}[european]
+				\thicklines
+				
+				\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+				
+				\draw   (8,0) to [R, european] (10,0);
+				\draw   (10,0) to [short, -] (10,-2);
+					
+				\draw   (6,-2) to [short, *-*] (12,-2);
+				\draw   (6,0)  to [short, *-*] (6.5, 0);
+				\draw   (10,0) to [short, -*] (10.5,0);
+				\draw   (11.5,0) to [short, *-*] (12,0);
+				\draw   (7.5, 0) to [short, *-] (8,0);
+				\draw   (8,0) to [short,-] (8,-2);
+			
+				\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+				\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+			
+				\node at (5.8,0) {$f$};
+				\node at (12.2,0) {$t$};
+				
+				\node at (9,0.4) {$\underline{Z}_s$};
+			
+				\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+				\node at (-0.2,0) {$f$};
+				\node at (3.2,0) {$t$};
+		
+				\draw   (1.03,-0.18) to (1.38,-0.18);
+				\draw   (1.03,-0.18) to (1.2,0.12);
+				\draw   (1.38,-0.18) to (1.2,0.12);
+		
+				\draw   (1.63,-0.18) to (1.98,-0.18);
+				\draw   (1.63,-0.18) to (1.8,0.12);
+				\draw   (1.98,-0.18) to (1.8,0.12);
+				
+			\end{circuitikz}\\
+		
+			\begin{circuitikz}[european]
+				\thicklines
+				
+				\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+		
+				\draw (6.5,0) to [R, european] (7.5,0);
+				
+				\draw   (7.5,0) to [short] (8.5,0);
+				\draw   (8.5,0) to [R, european] (10,0);
+				\draw   (10,0) to [R, european, l=$\frac{\underline{Y}_p}{2}$] (10,-2);
+				\draw   (6,0) to [short, *-, i=$\underline{I}_f$] (6.5,0);
+					
+				\draw   (6,-2) to [short, *-*] (12,-2);
+				\draw   (10,0) to [short] (10.5,0);
+				\draw   (11.5,0) to [short, -*] (12,0);
+		
+				\draw   (10.5,0) to [voosource] (11.5,0);
+			
+				\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+				\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+			
+				\node at (5.8,0) {$f$};
+				\node at (12.2,0) {$t$};
+				
+				\node at (9.25,0.4) {$\underline{Z}_s$};
+				\node at (11.0,0.5) {$me^{j\theta_{sh}}$:1};
+				\node at (7,0.4) {$3\underline{Z}_E$};
+			
+				\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+				\node at (-0.2,0) {$f$};
+				\node at (3.2,0) {$t$};
+		
+				\draw   (1.2,0) to (1.2,-0.18);
+				\draw   (1.2,0) to (1.326,0.1);
+				\draw   (1.2,0) to (1.074,0.1);
+				\draw   (1.2,0) to (1.3,0);
+				\draw   (1.3,0) to (1.3,-0.07);
+				\draw   (1.25,-0.07) to (1.35,-0.07);
+				\draw   (1.28,-0.07) to (1.25,-0.1);
+				\draw   (1.31,-0.07) to (1.28,-0.1);
+				\draw   (1.34,-0.07) to (1.31,-0.1);
+		
+				\node at (1.1,-0.5) {$\underline{Z}_E$};
+		
+				\draw   (1.2+0.65,0) to (1.2+0.65,-0.18);
+				\draw   (1.2+0.65,0) to (1.326+0.65,0.1);
+				\draw   (1.2+0.65,0) to (1.074+0.65,0.1);
+		
+			\end{circuitikz}\\
+		
+			\begin{circuitikz}[european]
+				\thicklines
+				
+				\ctikzset{resistors/scale=0.6, sources/scale=0.75, csources/scale=0.75};
+				
+				\draw   (7,0) to [voosource,*-] (8,0);
+				\draw   (8,0) to [R, european] (10,0);
+				\draw   (10,0) to [R, european, l=$\frac{\underline{Y}_p}{2}$] (10,-2);
+					
+				\draw   (6,-2) to [short, *-*] (12,-2);
+				\draw   (6,0)  to [short, *-*] (6.5, 0);
+				\draw 	(10,0) to [R, european] (11.5,0);
+				\draw   (11.5,0) to [short, -*] (12,0);
+			
+				\draw   (5.5,-2) to [open, v^=$v_f$] (5.5,0);
+				\draw   (12,-2) to [open, v_=$v_t$] (12,0);
+			
+				\node at (5.8,0) {$f$};
+				\node at (12.2,0) {$t$};
+				
+				\node at (9,0.4) {$\underline{Z}_s$};
+				\node at (7.5,0.5) {$me^{j\theta_{sh}}$:1};
+				\node at (10.75,0.4) {$3\underline{Z}_E$};
+			
+				\draw   (0,0) to [oosourcetrans, sources/scale=1.5, *-* ] (3,0);
+				\node at (-0.2,0) {$f$};
+				\node at (3.2,0) {$t$};
+			
+				\draw   (1.03,-0.18) to (1.38,-0.18);
+				\draw   (1.03,-0.18) to (1.2,0.12);
+				\draw   (1.38,-0.18) to (1.2,0.12);
+		
+				\draw   (1.8,0) to (1.8,-0.18);
+				\draw   (1.8,0) to (1.926,0.1);
+				\draw   (1.8,0) to (1.674,0.1);
+				\draw   (1.8,0) to (1.9,0);
+				\draw   (1.9,0) to (1.9,-0.07);
+				\draw   (1.85,-0.07) to (1.95,-0.07);
+				\draw   (1.88,-0.07) to (1.85,-0.1);
+				\draw   (1.91,-0.07) to (1.88,-0.1);
+				\draw   (1.94,-0.07) to (1.91,-0.1);
+				
+				\node at (2,-0.5) {$\underline{Z}_E$};
+		
+				% \draw   (1.2,0) to (1.2,-0.18);
+				% \draw   (1.2,0) to (1.326,0.1);
+				% \draw   (1.2,0) to (1.074,0.1);
+		
+				% \draw   (1.63,-0.2) to (1.98,-0.2);
+				% \draw   (1.63,-0.2) to (1.8,0.1);
+				% \draw   (1.98,-0.2) to (1.8,0.1);
+			\end{circuitikz}\\
+			\caption{Equivalent circuits depending on winding connections for the zero sequence. Adapted from~\cite{tleis2007power}.}
+			\label{fig:trafo}
+		\end{figure}
+	Then, four $abc$ admittance matrices are obtained by applying the transformation as:
+	\begin{equation}
+		\bar{\underline{\bm{Y}}_{abc}} = \bm{A}_s {\underline{\bm{Y}}_{012}}\bm{A}_s^{-1}.
+	\end{equation}
+
+	\section{Power flow formulation}
+	Once the main devices expected in conventional power systems are modelled, an algorithm to solve the associated power flow problem has to be derived. It is common practice to employ the backward/forward sweep method to solve the power flow problem in radial distribution systems~\cite{rupa2014power}. Its applicability to meshed systems faints, as it is not straightforward to establish clear directions. Of course, the iterative process resembles that of the Gauss-Seidel method, with its inherent suboptimal convergence properties. It should be much better to extend the Newton-Raphson method, which is a more general approach to solving non-linear systems of equations. The only downside of relying on the Newton-Raphson method, under these conditions, is the need to compute the admittance matrix of power lines through the impedance matrix (with the subsequent inverse operation). This is computationally expensive and may make such a method less competitive. 
+
+	The development that follows is inspired by the balanced power flow, which aims at solving the following algebraic equations:
+	\begin{equation}
+		\bm{S} = [\bm{V}](\bm{Y}\bm{V})^*,
+	\end{equation}
+	where the vectors $\bm{S}$ and $\bm{V}$ are of length $n$, being $n$ the number of buses, and $[\cdot]$ the operator that diagonalizes the vector inside. The bus admittance matrix $\bm{Y}$ has a size of $n \times n$. Note the underlines related to complex magnitudes are dismissed to simplify the notation. Such equations are then sliced according to the type of bus, conventionally as slack, PV or PQ, split in real and imaginary sides, and solved iteratively by building a well-known Jacobian (see~\cite{zimmerman2010ac} for instance). 
+
+	There are virtually no differences in the unbalanced power flow, only that the vectors are of length $3\times n$ and the admittance matrix is of size $3n \times 3n$. Several ways to pile the vectors and matrices are possible, but the most practical is to stack the magnitudes in the following order: 
+	\begin{equation}
+		\begin{pmatrix}
+			S_{1,a} \\
+			S_{1,b} \\
+			S_{1,c} \\
+			S_{2,a} \\
+			S_{2,b} \\
+			S_{2,c} \\
+			\vdots \\
+			S_{n,a} \\
+			S_{n,b} \\
+			S_{n,c} \\
+		\end{pmatrix} = 
+		\begin{bmatrix}
+			V_{1,a} \\
+			V_{1,b} \\
+			V_{1,c} \\
+			V_{2,a} \\
+			V_{2,b} \\
+			V_{2,c} \\
+			\vdots \\
+			V_{n,a} \\
+			V_{n,b} \\
+			V_{n,c} \\
+		\end{bmatrix}
+		\begin{pmatrix}
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{11,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} &
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{12,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} &
+			...	&
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{1n,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} \\
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{11,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} &
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{12,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} &
+			...	 &
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{1n,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} \\
+			\vdots & \vdots & \ddots & \vdots \\
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{11,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} &
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{12,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} &
+			...	&
+			\begin{pmatrix}
+				 &  &  \\
+				 & Y_{1n,abc}^* &  \\
+				 &  &  \\
+			\end{pmatrix} \\
+		\end{pmatrix}
+		\begin{pmatrix}
+			V_{1,a}^* \\
+			V_{1,b}^* \\
+			V_{1,c}^* \\
+			V_{2,a}^* \\
+			V_{2,b}^* \\
+			V_{2,c}^* \\
+			\vdots \\
+			V_{n,a}^* \\
+			V_{n,b}^* \\
+			V_{n,c}^* \\
+		\end{pmatrix}.
+	\end{equation}
+	There is only a nuance to add into consideration. The power terms for delta loads are specified between phases, yet the adopted approach requires an input of single-phase powers. One quick fix is to convert the delta-connected loads into star-connected loads (with a disconnected neutral), which is a common practice in power flow analysis.
+
+	The rest of the calculation procedure should follow the approach already implemented in GridCal for the balanced power flow. The complexity of the unbalanced power flow is found on the modelling aspect, rather than on the resolution process.
+
+
+	
+	\printbibliography
+	
+\end{document}

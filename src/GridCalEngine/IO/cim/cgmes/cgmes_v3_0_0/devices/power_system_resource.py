@@ -25,6 +25,10 @@ class PowerSystemResource(IdentifiedObject):
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.location import Location
 		self.Location: Location | None = None
+		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.control import Control
+		self.Controls: Control | None = None
+		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.measurement import Measurement
+		self.Measurements: Measurement | None = None
 
 		self.register_property(
 			name='Location',
@@ -32,5 +36,21 @@ class PowerSystemResource(IdentifiedObject):
 			multiplier=UnitMultiplier.none,
 			unit=UnitSymbol.none,
 			description='''Location of this power system resource.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='Controls',
+			class_type=Control,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''The controller outputs used to actually govern a regulating device, e.g. the magnetization of a synchronous machine or capacitor bank breaker actuator.''',
+			profiles=[]
+		)
+		self.register_property(
+			name='Measurements',
+			class_type=Measurement,
+			multiplier=UnitMultiplier.none,
+			unit=UnitSymbol.none,
+			description='''The measurements associated with this power system resource.''',
 			profiles=[]
 		)

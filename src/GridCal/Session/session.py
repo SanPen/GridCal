@@ -45,72 +45,22 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import S
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import (StochasticPowerFlowDriver,
                                                                                StochasticPowerFlowResults)
 from GridCalEngine.Simulations.Clustering.clustering_driver import ClusteringDriver, ClusteringResults
-from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingDriver, CascadingResults
-from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisDriver, InputsAnalysisResults
+from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingResults
+from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver import (InvestmentsEvaluationDriver,
                                                                                            InvestmentsEvaluationResults)
-from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver, SigmaAnalysisResults
-from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults
-from GridCalEngine.Simulations.NTC.ntc_ts_driver import (OptimalNetTransferCapacityTimeSeriesDriver,
-                                                         OptimalNetTransferCapacityTimeSeriesResults)
+from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
+from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityResults
+from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
+                                                                              NodalCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
-from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import ResultTypes
+from GridCalEngine.enumerations import ResultTypes, SimulationTypes
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 from GridCalEngine.basic_structures import Logger
-
 from GridCal.Session.results_model import ResultsModel
-
-DRIVER_OBJECTS = Union[
-    AvailableTransferCapacityDriver,
-    AvailableTransferCapacityTimeSeriesDriver,
-    ContingencyAnalysisDriver,
-    ContingencyAnalysisTimeSeriesDriver,
-    ContinuationPowerFlowDriver,
-    LinearAnalysisDriver,
-    LinearAnalysisTimeSeriesDriver,
-    OptimalPowerFlowDriver,
-    OptimalPowerFlowTimeSeriesDriver,
-    PowerFlowDriver,
-    PowerFlowTimeSeriesDriver,
-    ShortCircuitDriver,
-    StochasticPowerFlowDriver,
-    ClusteringDriver,
-    CascadingDriver,
-    SigmaAnalysisDriver,
-    OptimalNetTransferCapacityDriver,
-    OptimalNetTransferCapacityTimeSeriesDriver,
-    NodeGroupsDriver,
-    InputsAnalysisDriver,
-    InvestmentsEvaluationDriver,
-    TopologyProcessorDriver
-]
-
-RESULTS_OBJECTS = Union[
-    AvailableTransferCapacityResults,
-    AvailableTransferCapacityTimeSeriesResults,
-    ContingencyAnalysisResults,
-    ContingencyAnalysisTimeSeriesResults,
-    ContinuationPowerFlowResults,
-    LinearAnalysisResults,
-    LinearAnalysisTimeSeriesResults,
-    OptimalPowerFlowResults,
-    OptimalPowerFlowTimeSeriesResults,
-    PowerFlowResults,
-    PowerFlowTimeSeriesResults,
-    ShortCircuitResults,
-    StochasticPowerFlowResults,
-    ClusteringResults,
-    CascadingResults,
-    SigmaAnalysisResults,
-    OptimalNetTransferCapacityResults,
-    OptimalNetTransferCapacityTimeSeriesResults,
-    InputsAnalysisResults,
-    InvestmentsEvaluationResults
-]
 
 
 class GcThread(QThread):
@@ -370,8 +320,7 @@ class SimulationSession:
 
         # get the results' object dictionary
         if study_name == AvailableTransferCapacityDriver.tpe.value:
-            drv = AvailableTransferCapacityDriver(grid=grid,
-                                                  options=None)
+            drv = AvailableTransferCapacityDriver(grid=grid, options=None)
 
         elif study_name == AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             drv = AvailableTransferCapacityTimeSeriesDriver(grid=grid,
@@ -380,8 +329,7 @@ class SimulationSession:
                                                             clustering_results=None)
 
         elif study_name == ContingencyAnalysisDriver.tpe.value:
-            drv = ContingencyAnalysisDriver(grid=grid,
-                                            options=None)
+            drv = ContingencyAnalysisDriver(grid=grid, options=None)
 
         elif study_name == ContingencyAnalysisTimeSeriesDriver.tpe.value:
             drv = ContingencyAnalysisTimeSeriesDriver(grid=grid,
@@ -397,8 +345,7 @@ class SimulationSession:
                                               opf_results=None)
 
         elif study_name == LinearAnalysisDriver.tpe.value:
-            drv = LinearAnalysisDriver(grid=grid,
-                                       options=None)
+            drv = LinearAnalysisDriver(grid=grid, options=None)
 
         elif study_name == ContinuationPowerFlowDriver.tpe.value:
             drv = LinearAnalysisTimeSeriesDriver(grid=grid,
@@ -407,8 +354,7 @@ class SimulationSession:
                                                  clustering_results=None)
 
         elif study_name == OptimalPowerFlowDriver.tpe.value:
-            drv = OptimalPowerFlowDriver(grid=grid,
-                                         options=None)
+            drv = OptimalPowerFlowDriver(grid=grid, options=None)
 
         elif study_name == OptimalPowerFlowTimeSeriesDriver.tpe.value:
             drv = OptimalPowerFlowTimeSeriesDriver(grid=grid,
@@ -416,9 +362,14 @@ class SimulationSession:
                                                    time_indices=time_indices,
                                                    clustering_results=None)
 
+        elif study_name == NodalCapacityTimeSeriesDriver.tpe.value:
+            drv = NodalCapacityTimeSeriesDriver(grid=grid,
+                                                options=None,
+                                                time_indices=time_indices,
+                                                clustering_results=None)
+
         elif study_name == PowerFlowDriver.tpe.value:
-            drv = PowerFlowDriver(grid=grid,
-                                  options=None)
+            drv = PowerFlowDriver(grid=grid, options=None)
 
         elif study_name == PowerFlowTimeSeriesDriver.tpe.value:
             drv = PowerFlowTimeSeriesDriver(grid=grid,
@@ -434,12 +385,13 @@ class SimulationSession:
                                      opf_results=None)
 
         elif study_name == StochasticPowerFlowDriver.tpe.value:
-            drv = StochasticPowerFlowDriver(grid=grid,
-                                            options=None)
+            drv = StochasticPowerFlowDriver(grid=grid, options=None)
 
         elif study_name == ClusteringDriver.tpe.value:
-            drv = ClusteringDriver(grid=grid,
-                                   options=None)
+            drv = ClusteringDriver(grid=grid, options=None)
+
+        elif study_name == InvestmentsEvaluationDriver.tpe.value:
+            drv = InvestmentsEvaluationDriver(grid=grid, options=None)
 
         else:
             warn(f"Session {study_name} not implemented for disk retrieval :/")
@@ -517,7 +469,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.TimeSeries_run)
+        drv, results = self.get_driver_results(SimulationTypes.PowerFlowTimeSeries_run)
         return results
 
     @property
@@ -526,7 +478,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.OPF_run)[1]
+        drv, results = self.get_driver_results(SimulationTypes.OPF_run)
         return results
 
     @property
@@ -629,6 +581,15 @@ class SimulationSession:
         return results
 
     @property
+    def nodal_capacity_optimization_ts(self) -> NodalCapacityTimeSeriesResults:
+        """
+
+        :return:
+        """
+        drv, results = self.get_driver_results(SimulationTypes.NodalCapacityTimeSeries_run)
+        return results
+
+    @property
     def stochastic_power_flow(self) -> StochasticPowerFlowResults:
         """
 
@@ -670,7 +631,7 @@ class SimulationSession:
 
         :return:
         """
-        drv, results = self.get_driver_results(SimulationTypes.InvestmestsEvaluation_run)
+        drv, results = self.get_driver_results(SimulationTypes.InvestmentsEvaluation_run)
         return results
 
     @property

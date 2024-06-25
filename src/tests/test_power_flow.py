@@ -44,12 +44,8 @@ def test_ieee_grids():
         print(solver_type)
 
         options = PowerFlowOptions(solver_type,
-                                   verbose=False,
-                                   initialize_with_existing_solution=False,
-                                   multi_core=False,
-                                   dispatch_storage=True,
+                                   verbose=0,
                                    control_q=ReactivePowerControlMode.NoControl,
-                                   control_p=True,
                                    retry_with_other_methods=False)
 
         for f1, f2 in files:
@@ -95,11 +91,7 @@ def test_dc_pf_ieee14():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False,
-                               dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14.m')
@@ -140,11 +132,7 @@ def test_dc_pf_ieee14_ps():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False,
-                               dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14_ps.m')
@@ -198,3 +186,20 @@ def test_zip() -> None:
 
     assert np.allclose(Vm_psse, Vm, atol=1e-3)
     assert np.allclose(Va_psse, Va, atol=1e-3)
+
+
+def test_controllable_shunt() -> None:
+    """
+    This tests that the controllable shunt is indeed controlling voltage at 1.02 at the third bus
+    """
+    options = PowerFlowOptions()
+
+    fname = os.path.join('data', 'grids', 'Controllable_shunt_example.gridcal')
+    main_circuit = FileOpen(fname).open()
+    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow.run()
+
+    Vm = np.abs(power_flow.results.voltage)
+    Vm_test = np.array([[1., 1.0164564, 1.02]])
+
+    assert np.allclose(Vm_test, Vm, atol=1e-3)

@@ -76,7 +76,8 @@ class AdmittanceMatrices:
 
         self.Gsw = Gsw
 
-    def modify_taps(self, m, m2, tau, tau2, idx=None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
+    def modify_taps(self, m: Vec, m2: Vec, tau: Vec, tau2: Vec,
+                    idx: Union[IntVec, None] = None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
         """
         Compute the new admittance matrix given the tap variation
         :param m: previous tap module
@@ -88,21 +89,26 @@ class AdmittanceMatrices:
         """
 
         if idx is None:
+            # update all primitives
             self.yff = ((self.yff - self.Gsw) * (m * m) / (m2 * m2)) + self.Gsw
             self.yft = self.yft * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
             self.ytf = self.ytf * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
             self.ytt = self.ytt
         else:
-            yff = self.yff.copy()
-            yft = self.yft.copy()
-            ytf = self.ytf.copy()
-            ytt = self.ytt.copy()
+            # add arrays must have the same size as idx
+            lidx = len(idx)
+            assert len(m) == lidx
+            assert len(m2) == lidx
+            assert len(tau) == lidx
+            assert len(tau2) == lidx
 
-            yff[idx] = ((yff[idx] - self.Gsw[idx]) * (m * m) / (m2 * m2)) + self.Gsw[idx]
-            yft[idx] = yft[idx] * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
-            ytf[idx] = ytf[idx] * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
+            # update primitives signaled by idx
+            self.yff[idx] = ((self.yff[idx] - self.Gsw[idx]) * (m * m) / (m2 * m2)) + self.Gsw[idx]
+            self.yft[idx] = self.yft[idx] * (m * np.exp(-1.0j * tau)) / (m2 * np.exp(-1.0j * tau2))
+            self.ytf[idx] = self.ytf[idx] * (m * np.exp(1.0j * tau)) / (m2 * np.exp(1.0j * tau2))
+            self.ytt[idx] = self.ytt[idx]
 
-        # compose the matrices
+        # update the matrices
         self.Yf = sp.diags(self.yff) * self.Cf + sp.diags(self.yft) * self.Ct
         self.Yt = sp.diags(self.ytf) * self.Cf + sp.diags(self.ytt) * self.Ct
         self.Ybus = self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)
@@ -536,6 +542,16 @@ class FastDecoupledAdmittanceMatrices:
     def __init__(self, B1: sp.csc_matrix, B2: sp.csc_matrix):
         self.B1 = B1
         self.B2 = B2
+
+
+class GeneralisedACDCAdmittanceMatrices:
+    """
+    Admittance matrices for the generalised AC-DC power flow
+    """
+
+    def __init__(self, Yac: sp.csc_matrix, Ydc: sp.csc_matrix):
+        self.Yac = Yac
+        self.Ydc = Ydc
 
 
 def compute_fast_decoupled_admittances(X: Vec,

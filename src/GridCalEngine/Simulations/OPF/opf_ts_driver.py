@@ -20,13 +20,12 @@ import numpy as np
 import pandas as pd
 from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType
+from GridCalEngine.enumerations import SolverType, TimeGrouping, EngineType, SimulationTypes
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.Simulations.OPF.simple_dispatch_ts import run_simple_dispatch_ts
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
@@ -128,6 +127,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         contingency_groups_used=self.options.contingency_groups_used,
                                          unit_Commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
                                          all_generators_fixed=False,
@@ -261,7 +261,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.report_text('Making groups...')
 
         # get the partition points of the time series
-        groups = get_time_groups(t_array=self.grid.time_profile[self.time_indices], grouping=self.options.grouping)
+        groups = get_time_groups(t_array=self.grid.time_profile[self.time_indices], grouping=self.options.time_grouping)
 
         n = len(groups)
         i = 1
@@ -291,6 +291,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          zonal_grouping=self.options.zonal_grouping,
                                          skip_generation_limits=self.options.skip_generation_limits,
                                          consider_contingencies=self.options.consider_contingencies,
+                                         contingency_groups_used=self.options.contingency_groups_used,
                                          unit_Commitment=self.options.unit_commitment,
                                          ramp_constraints=self.options.unit_commitment,
                                          all_generators_fixed=False,
@@ -418,7 +419,7 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         if self.engine == EngineType.GridCal:
 
-            if self.options.grouping == TimeGrouping.NoGrouping:
+            if self.options.time_grouping == TimeGrouping.NoGrouping:
                 self.opf()
             else:
                 if self.time_indices is None:

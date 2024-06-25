@@ -6,6 +6,7 @@ simplify the massive original class.
 The subclasses inheritance order is:
 
 BaseMainGui
+ServerMain
 CompiledArraysMain
 DiagramsMain
 ObjectsTableMain

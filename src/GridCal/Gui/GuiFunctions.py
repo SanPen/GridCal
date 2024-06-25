@@ -1208,7 +1208,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                  editable=False,
                  transposed=False,
                  check_unique: Union[None, List[str]] = None,
-                 dictionary_of_lists: Union[None, Dict[str, List[ALL_DEV_TYPES]]] = None):
+                 dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
         """
 
         :param objects: list of objects associated to the editor
@@ -1317,9 +1317,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 delegate = ComboDelegate(self.parent, objects, values)
                 F(i, delegate)
 
-            elif tpe.value in self.dictionary_of_lists.keys():
+            elif tpe in self.dictionary_of_lists:
                 # foreign key objects drop-down
-                objs = self.dictionary_of_lists[str(tpe.value)]
+                objs = self.dictionary_of_lists[tpe]
                 delegate = ComboDelegate(parent=self.parent,
                                          objects=[None] + objs,
                                          object_names=['None'] + [x.name for x in objs])
@@ -1539,7 +1539,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         return None
 
-    def copy_to_column(self, index):
+    def copy_to_column(self, index: QtCore.QModelIndex) -> None:
         """
         Copy the value pointed by the index to all the other cells in the column
         :param index: QModelIndex instance
@@ -2434,7 +2434,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 #         return True
 
 
-def get_list_model(lst: List[Union[str, DeviceType]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
+def get_list_model(lst: List[Union[str, ALL_DEV_TYPES]], checks=False, check_value=False) -> QtGui.QStandardItemModel:
     """
     Pass a list to a list model
     """
@@ -2577,6 +2577,21 @@ def get_checked_indices(mdl: QtGui.QStandardItemModel()) -> IntVec:
             idx.append(row)
 
     return np.array(idx)
+
+
+def get_checked_values(mdl: QtGui.QStandardItemModel()) -> List[str]:
+    """
+    Get a list of the selected values in a QStandardItemModel
+    :param mdl:
+    :return:
+    """
+    idx = list()
+    for row in range(mdl.rowCount()):
+        item = mdl.item(row)
+        if item.checkState() == QtCore.Qt.CheckState.Checked:
+            idx.append(item.text())
+
+    return idx
 
 
 def fill_model_from_dict(parent: QtGui.QStandardItem,
@@ -2836,3 +2851,36 @@ def add_menu_entry(menu: QtWidgets.QMenu,
         entry.triggered.connect(function_ptr)
 
     return entry
+
+
+def create_spinbox(value: float, minimum: float, maximum: float, decimals: int = 4) -> QtWidgets.QDoubleSpinBox:
+    """
+
+    :param value:
+    :param minimum:
+    :param maximum:
+    :param decimals:
+    :return:
+    """
+    sn_spinner = QtWidgets.QDoubleSpinBox()
+    sn_spinner.setMinimum(minimum)
+    sn_spinner.setMaximum(maximum)
+    sn_spinner.setDecimals(decimals)
+    sn_spinner.setValue(value)
+    return sn_spinner
+
+
+def create_int_spinbox(value: int, minimum: int, maximum: int) -> QtWidgets.QSpinBox:
+    """
+
+    :param value:
+    :param minimum:
+    :param maximum:
+    :return:
+    """
+    sn_spinner = QtWidgets.QSpinBox()
+    sn_spinner.setMinimum(minimum)
+    sn_spinner.setMaximum(maximum)
+    sn_spinner.setValue(value)
+    return sn_spinner
+

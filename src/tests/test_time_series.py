@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-import numpy as np
 
 from GridCalEngine.api import *
 from tests.zip_file_mgmt import open_data_frame_from_zip
@@ -27,13 +26,9 @@ def test_time_series():
     print('Reading...')
     main_circuit = FileOpen(fname).open()
 
-    pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  multi_core=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=True)
+    pf_options = PowerFlowOptions(solver_type=SolverType.NR,
+                                  verbose=0,
+                                  control_q=ReactivePowerControlMode.NoControl)
 
     ts = PowerFlowTimeSeriesDriver(grid=main_circuit, options=pf_options, time_indices=np.arange(0, 96))
     ts.run()

@@ -366,3 +366,56 @@ class Line(BranchParent):
         self.B = np.round(B / Ybase, 6)
         self.rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
         self.length = length
+
+    def copyData(self, second_Line):
+        self.copy()
+        self.busfrom = getattr(second_Line, 'bus_from', None)
+        self.busto = getattr(second_Line, 'bus_to', None)
+        self.cnfrom = getattr(second_Line, 'cn_from', None)
+        self.cnto = getattr(second_Line, 'cn_to', None)
+        self.name = second_Line.name
+        self.idtag = second_Line.idtag
+        self.code = second_Line.code
+        self.R = second_Line.R
+        self.X = second_Line.X
+        self.B = second_Line.B
+        self.rate = second_Line.rate
+        self.active = second_Line.active
+        self.tolerance = second_Line.tolerance
+        self.Cost = second_Line.Cost
+        self.mttf = second_Line.mttf
+        self.mttr = second_Line.mttr
+        self.r_fault = second_Line.r_fault
+        self.x_fault = second_Line.x_fault
+        self.fault_pos = second_Line.fault_pos
+        self.length = second_Line.length
+        self.temp_base = second_Line.temp_base
+        self.temp_oper = second_Line.temp_oper
+        self.alpha = second_Line.alpha
+        self.template = second_Line.template
+        self.contingency_factor = second_Line.contingency_factor
+        self.protection_rating_factor = second_Line.protection_rating_factor
+        self.contingency_enabled = second_Line.contingency_enabled
+        self.monitor_loading = second_Line.monitor_loading
+        self.R0 = second_Line.R0
+        self.X0 = second_Line.X0
+        self.B0 = second_Line.B0
+        self.R2 = second_Line.R2
+        self.X2 = second_Line.X2
+        self.B2 = second_Line.B2
+        self.capex = second_Line.capex
+        self.opex = second_Line.opex
+        self.build_status = second_Line.build_status
+
+        # # Fetch all attributes from second_Line dynamically
+        # attributes = [attr for attr in dir(second_Line) if
+        #               not attr.startswith('__') and not callable(getattr(second_Line, attr))]
+        #
+        # # Using getattr to fetch each attribute, defaulting to None if not found
+        # for attr in attributes:
+        #     if not attr == 'locations':
+        #         try:
+        #             # Try setting the attribute, if it is writable
+        #             setattr(self, attr, getattr(second_Line, attr, None))
+        #         except AttributeError as e:
+        #             print(f"Cannot set protected attribute {attr}: {str(e)}")

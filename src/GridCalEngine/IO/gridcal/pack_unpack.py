@@ -26,7 +26,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import DiagramType, DeviceType, SubObjectType, TransformerControlType
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TransformerControlType)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -172,7 +172,7 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
 
             headers = object_sample.registered_properties.keys()
 
-            lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
+            lists_of_objects: List[ALL_DEV_TYPES] = circuit.get_elements_by_type(object_sample.device_type)
 
             obj = list()
             profiles = dict()
@@ -402,6 +402,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
         elif prop.tpe == SubObjectType.TapChanger:
             data[name] = obj.to_dict()
 
+        elif prop.tpe == SubObjectType.Array:
+            data[name] = list(obj)
+
         else:
             # if the object is not of a primary type, get the idtag instead
             if hasattr(obj, 'idtag'):
@@ -422,7 +425,7 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
 
 def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     """
-
+    Transform a MultiCircuit into a collection of Json files
     :param circuit:
     :return:
     """
@@ -974,7 +977,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         for property_name, gc_prop in template_elm.registered_properties.items():
 
             # search for the property in the json
-            property_value = searc_property_into_json(json_entry, gc_prop)
+            property_value = searc_property_into_json(json_entry=json_entry, prop=gc_prop)
 
             if property_value is not None:
 
@@ -1038,6 +1041,11 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     # get the line locations object and fill it with the json data
                                     locations_obj: dev.TapChanger = elm.get_snapshot_value(prop=gc_prop)
                                     locations_obj.parse(property_value)
+
+                                elif gc_prop.tpe == SubObjectType.Array:
+
+                                    val = np.array(property_value)
+                                    elm.set_snapshot_value(gc_prop.name, val)
 
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
@@ -1117,7 +1125,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
     return devices, devices_dict
 
 
-def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dict[str, Any]]],
+def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]],
                        text_func: Union[Callable, None] = None,
                        progress_func: Union[Callable, None] = None,
                        logger: Logger = Logger()) -> MultiCircuit:
@@ -1217,9 +1225,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                 elements_dict_by_type[template_elm.device_type] = devices_dict
 
                 # add the devices to the circuit
-                circuit.set_elements_by_type(device_type=template_elm.device_type,
-                                             devices=devices,
-                                             logger=logger)
+                circuit.set_elements_list_by_type(device_type=template_elm.device_type,
+                                                  devices=devices,
+                                                  logger=logger)
 
             else:
                 # no objects of this type
@@ -1275,9 +1283,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
                     elements_dict_by_type[template_elm.device_type] = devices_dict
 
                     # add the devices to the circuit
-                    circuit.set_elements_by_type(device_type=template_elm.device_type,
-                                                 devices=devices,
-                                                 logger=logger)
+                    circuit.set_elements_list_by_type(device_type=template_elm.device_type,
+                                                      devices=devices,
+                                                      logger=logger)
                 else:
                     # branch is a legacy structure, so we can avoid reporting its absence
                     if object_type_key != 'branch':
@@ -1312,12 +1320,16 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, Dict, pd.DataFrame, Dic
     # create diagrams --------------------------------------------------------------------------------------------------
     if text_func is not None:
         text_func("Parsing diagrams...")
-    if 'diagrams' in data.keys():
 
-        if len(data['diagrams']):
+    # try to get the get the list of diagrams
+    list_of_diagrams: List[Dict[str, Any]] = data.get('diagrams', None)
+
+    if list_of_diagrams is not None:
+
+        if len(list_of_diagrams):
             obj_dict = circuit.get_all_elements_dict_by_type(add_locations=True)
 
-            for diagram_dict in data['diagrams']:
+            for diagram_dict in list_of_diagrams:
 
                 if diagram_dict['type'] in [DiagramType.Schematic.value, "bus-branch"]:
                     diagram = dev.SchematicDiagram()

@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
 from GridCalEngine.Devices.Diagrams.base_diagram import BaseDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import DiagramType
 from GridCalEngine.basic_structures import Logger
 
@@ -60,9 +60,37 @@ class MapDiagram(BaseDiagram):
         data['latitude'] = self.latitude
         return data
 
+    def set_center(self) -> None:
+        """
+        Set the middle coordinates as diagram origin
+        :return: Nothing
+        """
+        if len(self.data):
+            self.longitude, self.latitude = self.get_middle_coordinates()
+
+    def get_middle_coordinates(self) -> Tuple[float, float]:
+        """
+        Find the middle coordinates as diagram origin
+        :return: Longitude and Latitude
+        """
+        lon = 0.0
+        lat = 0.0
+        count = 0
+        for dev_tpe_str, points_group in self.data.items():
+            for idtag, location in points_group.locations.items():
+                lon += location.longitude
+                lat += location.latitude
+                count += 1
+
+        if count > 0:
+            lat /= count
+            lon /= count
+
+        return lon, lat
+
     def parse_data(self,
                    data: Dict[str, Dict[str, Dict[str, Union[int, float]]]],
-                   obj_dict: Dict[str, Dict[str, EditableDevice]],
+                   obj_dict: Dict[str, Dict[str, ALL_DEV_TYPES]],
                    logger: Logger):
         """
         Parse file data ito this class

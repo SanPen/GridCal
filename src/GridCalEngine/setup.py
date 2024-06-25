@@ -52,11 +52,11 @@ package_data = {'GridCalEngine': ['LICENSE.txt', 'setup.py'], }
 
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',
-                "numpy>=1.19.0",
+                "numpy>=1.19.0,<2.0.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
                 "pandas>=1.0",
-                "ortools>=9.8.0",
+                "ortools>=9.8.0,<=9.9.3963",
                 "xlwt>=1.3.0",
                 "xlrd>=1.1.0",
                 "matplotlib>=2.1.1",
@@ -75,7 +75,9 @@ dependencies = ['setuptools>=41.0.1',
                 "windpowerlib",
                 "pvlib",
                 "hyperopt",
-                "rdflib"
+                "rdflib",
+                "pymoo>=0.6",
+                "websockets",
                 ]
 
 extras_require = {

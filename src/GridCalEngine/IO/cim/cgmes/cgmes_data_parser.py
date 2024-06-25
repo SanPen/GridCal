@@ -423,7 +423,7 @@ class CgmesDataParser(BaseCircuit):
             self.emit_progress((i + 1) / len(data) * 100)
             i += 1
 
-        self.emit_text('Done!')
+        self.emit_text('Parsing done!')
 
     # def set_cgmes_version(self, profile):
     #     if profile == "":

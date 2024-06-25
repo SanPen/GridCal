@@ -17,7 +17,7 @@
 
 import pandas as pd
 from collections.abc import Callable
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 from enum import Enum, EnumMeta
 
 from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets import Cgmes_2_4_15_Assets
@@ -32,28 +32,17 @@ from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.enumerations import CGMESVersions
 
 
-def find_attribute(referenced_object, obj, property_name, association_inverse_dict, class_dict):
-    for inverse, current in association_inverse_dict.items():
-        c_class = str(current).split('.')[0]
-        c_prop = str(current).split('.')[-1]
-
-        if isinstance(obj, class_dict.get(c_class)) and c_prop == property_name:
-            i_class = str(inverse).split('.')[0]
-            i_prop = str(inverse).split('.')[-1]
-            if isinstance(referenced_object, class_dict.get(i_class)) and i_prop in vars(referenced_object):
-                return i_prop
-            else:
-                continue
-        else:
-            continue
-    return None
+def find_attribute(obj: Base,
+                   property_name: str,
+                   association_inverse_dict: Dict[Tuple[str, str], str]):
+    return association_inverse_dict.get((obj.tpe, property_name))
 
 
 def find_references(elements_by_type: Dict[str, List[Base]],
                     all_objects_dict: Dict[str, Base],
                     all_objects_dict_boundary: Union[Dict[str, Base], None],
-                    association_inverse_dict,
-                    class_dict,
+                    association_inverse_dict: Dict[Tuple[str, str], str],
+                    class_dict: Dict[str, Base],
                     logger: DataLogger,
                     mark_used: bool) -> None:
     """
@@ -65,11 +54,14 @@ def find_references(elements_by_type: Dict[str, List[Base]],
     :param logger: DataLogger
     :param mark_used: mark objects as used?
     :return: Nothing, it is done in place
+    :param class_dict: Dictionary containing the class name in key and type of the objects in value.
+    :param association_inverse_dict: Containing the name of the attributes which associate with each other.
     """
     added_from_the_boundary_set = list()
-
+    # Store dictionary values in local variables
+    elements_by_type_items = elements_by_type.items()
     # find cross-references
-    for class_name, elements in elements_by_type.items():
+    for class_name, elements in elements_by_type_items:
         for element in elements:  # for every element of the type
             if mark_used:
                 element.used = True
@@ -137,32 +129,13 @@ def find_references(elements_by_type: Dict[str, List[Base]],
 
                                 # set the referenced object in the property
                                 setattr(element, property_name, referenced_object)
-
                                 # register the inverse reference
-                                ref_attribute = find_attribute(referenced_object=referenced_object,
-                                                               obj=element,
+                                ref_attribute = find_attribute(obj=element,
                                                                property_name=property_name,
-                                                               association_inverse_dict=association_inverse_dict,
-                                                               class_dict=class_dict)
+                                                               association_inverse_dict=association_inverse_dict)
                                 if ref_attribute is not None:
                                     referenced_object.add_reference(element, ref_attribute)
 
-                                # check that the type matches the expected type
-                                # if cim_prop.class_type in [ConnectivityNodeContainer, Base]:
-                                #     # the container class is too generic...
-                                #     pass
-                                # else:
-                                #     if not isinstance(referenced_object, cim_prop.class_type) and \
-                                #             cim_prop.class_type != EquipmentContainer:
-                                #         # if the class specification does not match but the
-                                #         # required type is also not a generic polymorphic object ...
-                                #         cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">", "")
-                                #         logger.add_error(msg='Object type different from expected',
-                                #                          device=element.rdfid,
-                                #                          device_class=class_name,
-                                #                          device_property=property_name,
-                                #                          value=referenced_object.tpe,
-                                #                          expected_value=cls)
                             else:
 
                                 # I want to know that it was not found
@@ -206,33 +179,13 @@ def find_references(elements_by_type: Dict[str, List[Base]],
 
                                     # set the referenced object in the property
                                     referenced_object_list.add(referenced_object)
-
                                     # register the inverse reference
-                                    ref_attribute = find_attribute(referenced_object=referenced_object,
-                                                                   obj=element,
+                                    ref_attribute = find_attribute(obj=element,
                                                                    property_name=property_name,
-                                                                   association_inverse_dict=association_inverse_dict,
-                                                                   class_dict=class_dict)
+                                                                   association_inverse_dict=association_inverse_dict)
                                     if ref_attribute is not None:
                                         referenced_object.add_reference(element, ref_attribute)
 
-                                    # check that the type matches the expected type
-                                    # if cim_prop.class_type in [ConnectivityNodeContainer, Base]:
-                                    #     # the container class is too generic...
-                                    #     pass
-                                    # else:
-                                    #     if not isinstance(referenced_object, cim_prop.class_type) and \
-                                    #             cim_prop.class_type != EquipmentContainer:
-                                    #         # if the class specification does not match but the
-                                    #         # required type is also not a generic polymorphic object ...
-                                    #         cls = str(cim_prop.class_type).split('.')[-1].replace("'", "").replace(">",
-                                    #                                                                                "")
-                                    #         logger.add_error(msg='Object type different from expected',
-                                    #                          device=element.rdfid,
-                                    #                          device_class=class_name,
-                                    #                          device_property=property_name,
-                                    #                          value=referenced_object.tpe,
-                                    #                          expected_value=cls)
                                 else:
 
                                     # I want to know that it was not found
@@ -276,13 +229,6 @@ def find_references(elements_by_type: Dict[str, List[Base]],
                     else:
                         pass
 
-            # check the object rules
-            # todo: is it Ok?
-            # if isinstance(element, LoadResponseCharacteristic):
-            #     check_load_response_characteristic(load_response_characteristic=element, logger=logger)
-            # else:
-            #     check(logger=logger)
-
     # modify the elements_by_type here adding the elements from the boundary set
     # all_elements_dict was modified in the previous loop
     for referenced_object in added_from_the_boundary_set:
@@ -311,8 +257,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
     :param logger:DataLogger
     :return: None
     """
-    import time
-    start = time.time()
     for class_name, objects_dict in data.items():
 
         objects_list = list()
@@ -323,6 +267,8 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
             if object_template is not None:
 
                 parsed_object = object_template(rdfid=rdfid, tpe=class_name)
+                if all_objects_dict_boundary is None:
+                    parsed_object.boundary_set = True
                 parsed_object.parse_dict(data=object_data, logger=logger)
 
                 found = all_objects_dict.get(parsed_object.rdfid, None)
@@ -339,9 +285,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                 logger.add_error("Class not recognized", device_class=class_name)
 
         elements_by_type[class_name] = objects_list
-    endt = time.time()
-    print("data to object: ", endt - start, "sec")
-    start = time.time()
     # replace refferences by actual objects
     find_references(elements_by_type=elements_by_type,
                     all_objects_dict=all_objects_dict,
@@ -350,8 +293,6 @@ def convert_data_to_objects(data: Dict[str, Dict[str, Dict[str, str]]],
                     class_dict=class_dict,
                     logger=logger,
                     mark_used=True)
-    endt = time.time()
-    print("find references: ", endt - start, "sec")
 
 
 def is_valid_cgmes(cgmes_version) -> bool:
@@ -412,6 +353,30 @@ class CgmesCircuit(BaseCircuit):
         self.data: Dict[str, Dict[str, Dict[str, str]]] = dict()
         self.boundary_set: Dict[str, Dict[str, Dict[str, str]]] = dict()
 
+    def get_cn_to_bb_dict(self) -> Tuple[dict, dict]:
+        """
+        Get a dictionary of the ConnectivityNodes to the BusBars
+        Get a dictionary of the TopologicalNode to the BusBars
+        :return: cn_to_bb_dict, tn_to_bb_dict
+        """
+        data_bb = dict()
+        data_tn = dict()
+        bb_tpe = self.cgmes_assets.class_dict.get("BusbarSection", None)
+
+        if bb_tpe is not None:
+
+            # find the terminal -> CN links
+            for terminal in self.cgmes_assets.Terminal_list:
+                if isinstance(terminal.ConductingEquipment, bb_tpe):
+
+                    if terminal.ConnectivityNode is not None:
+                        data_bb[terminal.ConnectivityNode] = terminal.ConductingEquipment
+
+                    if terminal.TopologicalNode is not None:
+                        data_tn[terminal.TopologicalNode] = terminal.ConductingEquipment
+
+        return data_bb, data_tn
+
     def parse_files(self, data_parser: CgmesDataParser, delete_unused=True, detect_circular_references=False):
         """
         Parse CGMES files into this class
@@ -425,11 +390,13 @@ class CgmesCircuit(BaseCircuit):
         #                               progress_func=self.progress_func,
         #                               logger=self.logger)
         # data_parser.load_files(files=files)
-        import time
+
+        self.emit_text("Processing CGMES model")
+        self.emit_progress(20)
         # set the data
         self.set_data(data=data_parser.data,
                       boundary_set=data_parser.boudary_set)
-
+        self.emit_progress(25)
         # convert the dictionaries to the internal class model for the boundary set
         # do not mark the boundary set objects as used
         convert_data_to_objects(data=self.boundary_set,
@@ -439,7 +406,8 @@ class CgmesCircuit(BaseCircuit):
                                 class_dict=self.cgmes_assets.class_dict,
                                 association_inverse_dict=self.cgmes_assets.association_inverse_dict,
                                 logger=self.logger)
-        start = time.time()
+
+        self.emit_progress(33)
         # convert the dictionaries to the internal class model,
         # this marks as used only the boundary set objects that are referenced,
         # this allows to delete the excess of boundary set objects later
@@ -450,9 +418,9 @@ class CgmesCircuit(BaseCircuit):
                                 class_dict=self.cgmes_assets.class_dict,
                                 association_inverse_dict=self.cgmes_assets.association_inverse_dict,
                                 logger=self.logger)
-        endt = time.time()
-        print("Data to objects time: ", endt - start, "sec")
+
         # Assign the data from all_objects_dict to the appropriate lists in the circuit
+        self.emit_progress(42)
         self.assign_data_to_lists()
 
         if delete_unused:
@@ -462,6 +430,7 @@ class CgmesCircuit(BaseCircuit):
         if detect_circular_references:
             # for reporting porpuses, detect the circular references in the model due to polymorphism
             self.detect_circular_references()
+        self.emit_progress(50)
 
     def assign_data_to_lists(self) -> None:
         """

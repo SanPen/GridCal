@@ -2,7 +2,14 @@ import os
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
+from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
 from GridCalEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
+from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import NodalCapacityTimeSeriesDriver
+from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_options import NodalCapacityOptions
+import numpy as np
+import pandas as pd
+import math
+from GridCalEngine.enumerations import NodalCapacityMethod
 
 
 def example_3bus_acopf():
@@ -100,7 +107,7 @@ def linn5bus_example():
     grid = gce.MultiCircuit()
 
     # Add the buses and the generators and loads attached
-    bus1 = gce.Bus('Bus 1', vnom=20)
+    bus1 = gce.Bus('Bus 1', Vnom=20)
     # bus1.is_slack = True  # we may mark the bus a slack
     grid.add_bus(bus1)
 
@@ -111,22 +118,22 @@ def linn5bus_example():
     grid.add_generator(bus1, gen1)
 
     # add bus 2 with a load attached
-    bus2 = gce.Bus('Bus 2', vnom=20)
+    bus2 = gce.Bus('Bus 2', Vnom=20)
     grid.add_bus(bus2)
     grid.add_load(bus2, gce.Load('load 2', P=40, Q=20))
 
     # add bus 3 with a load attached
-    bus3 = gce.Bus('Bus 3', vnom=20)
+    bus3 = gce.Bus('Bus 3', Vnom=20)
     grid.add_bus(bus3)
     grid.add_load(bus3, gce.Load('load 3', P=25, Q=15))
 
     # add bus 4 with a load attached
-    bus4 = gce.Bus('Bus 4', vnom=20)
+    bus4 = gce.Bus('Bus 4', Vnom=20)
     grid.add_bus(bus4)
     grid.add_load(bus4, gce.Load('load 4', P=40, Q=20))
 
     # add bus 5 with a load attached
-    bus5 = gce.Bus('Bus 5', vnom=20)
+    bus5 = gce.Bus('Bus 5', Vnom=20)
     grid.add_bus(bus5)
     grid.add_load(bus5, gce.Load('load 5', P=50, Q=20))
 
@@ -230,10 +237,47 @@ def case9():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
 
     grid = gce.FileOpen(file_path).open()
+
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
-                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFslacks)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                            optimize_nodal_capacity=True,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([5]))
+
+
+def case14_linear_vs_nonlinear():
+    """
+    IEEE14
+    """
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'IEEE 14 zip costs.gridcal')
+
+    grid = gce.FileOpen(file_path).open()
+
+    # Nonlinear OPF
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFstd)
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                            optimize_nodal_capacity=True,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10, 11]))
+
+    print('Nonlinear P nodal capacity: ', res.nodal_capacity)
+
+    # Linear OPF
+    res = run_linear_opf_ts(grid=grid,
+                            optimize_nodal_capacity=True,
+                            time_indices=None,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10, 11]))
+
+    print('Linear P nodal capacity: ', res.nodal_capacity_vars.P)
     print('')
 
 
@@ -355,20 +399,31 @@ def casehvdc():
     cwd = os.getcwd()
 
     # Go back two directories
-    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..'))
 
-    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'entrada_a_aopf.raw')
+    file_path = os.path.join(new_directory, 'REE Grids', 'entrada_a_aopf.raw')
 
     grid = gce.FileOpen(file_path).open()
+
+    for gen in grid.generators:
+        gen.qmin_set = -0.8 * gen.Snom
+        gen.qmax_set = 0.8 * gen.Snom
 
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
 
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFslacks,
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFstd,
                                               verbose=1, ips_iterations=150, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-8,
+                                              ips_iterations=50, verbose=1, acopf_mode=AcOpfMode.ACOPFslacks)
+    res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True,
+                            optimize_nodal_capacity=False,
+                            nodal_capacity_sign=-1.0,
+                            capacity_nodes_idx=np.array([10]))
+    # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    print('')
 
 
 def caseREE():
@@ -380,10 +435,14 @@ def caseREE():
     # Go back two directories
     new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..', '..'))
 
-    # file_path = os.path.join(new_directory, 'REE Grids', 'entrada_a_aopf.raw')
-    file_path = 'C:/Users/J/Documents/ree_opf/entrada_a_aopf.raw'
+    file_path = os.path.join(new_directory, 'REE Grids', 'entrada_a_aopf.raw')
+    # file_path = 'C:/Users/J/Documents/ree_opf/entrada_a_aopf.raw'
 
     grid = gce.FileOpen(file_path).open()
+
+    for gen in grid.generators:
+        gen.qmin_set = -0.8 * gen.Snom
+        gen.qmax_set = 0.8 * gen.Snom
 
     disp_areas = ['A11', 'A15']
     dict_bus_lims = {'21215': [230, 225],
@@ -393,20 +452,23 @@ def caseREE():
                      '15005': [410, 405],
                      '15015': [410, 405]}
     tol = 1e-4
-    vm_cost = 1e2
+    vm_cost = 1e4
     i = 0
     for gen in grid.generators:
         if gen.bus.area.name in disp_areas:
             # P limits -> restrict them very close to P
             print(f'Select generator {i}')
-            gen.Pmax = gen.P + tol
-            gen.Pmin = gen.P - tol
+            # gen.Pmax = gen.P #+ tol
+            # gen.Pmin = gen.P #- tol
             # Tanmax -> set pf close to 0 to get large tanmax
-            gen.Pf = tol
+            # gen.Pf = tol
         else:
-            gen.enabled_dispatch = False
-            gen.Pmax = gen.P + tol
-            gen.Pmin = gen.P - tol
+
+            # gen.enabled_dispatch = False
+            gen.Pmax = gen.P  # + tol
+            gen.Pmin = gen.P  # - tol
+            # gen.Qmax = abs(math.tan(math.acos(gen.Pf)) * gen.P)
+            # gen.Qmin = -abs(math.tan(math.acos(gen.Pf)) * gen.P)
 
         # i += 1
 
@@ -429,10 +491,34 @@ def caseREE():
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
 
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFstd,
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFslacks,
                                               verbose=1, ips_iterations=100, ips_tolerance=1e-8)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+
+
+def case_nodalcap():
+    cwd = os.getcwd()
+
+    # Go back two directories
+    new_directory = os.path.abspath(os.path.join(cwd, '..', '..', '..'))
+
+    file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case9.m')
+
+    grid = gce.FileOpen(file_path).open()
+    grid.time_profile = pd.DatetimeIndex(["1/1/2020 10:00:00+00:00"])
+    options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
+    power_flow = gce.PowerFlowDriver(grid, options)
+    power_flow.run()
+
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFslacks,
+                                              verbose=1, ips_iterations=150, ips_tolerance=1e-8)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
+    nc_options = NodalCapacityOptions(opf_options=opf_options, capacity_nodes_idx=np.array([2, 3, 6]),
+                                      nodal_capacity_sign=-1.0, method=NodalCapacityMethod.NonlinearOptimization)
+    case = NodalCapacityTimeSeriesDriver(grid=grid, time_indices=np.array([0]), options=nc_options)
+    case.run()
+    # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
 if __name__ == '__main__':
@@ -441,6 +527,7 @@ if __name__ == '__main__':
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
+    # case14_linear_vs_nonlinear()
     # case14()
     # case_gb()
     # case6ww()
@@ -449,3 +536,4 @@ if __name__ == '__main__':
     # casepegase13k()
     # casehvdc()
     caseREE()
+    # case_nodalcap()

@@ -58,13 +58,14 @@ from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
-from GridCal.Gui.Diagrams.DiagramEditorWidget.generic_graphics import IS_DARK
+from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
 from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
                                get_sequence_lines_catalogue)
 
 
 def terminate_thread(thread):
-    """Terminates a python thread from another thread.
+    """
+    Terminates a python thread from another thread.
 
     :param thread: a threading.Thread instance
     """
@@ -224,6 +225,8 @@ class BaseMainGui(QMainWindow):
         # doubleSpinBox
         self.ui.fbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
         self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
+
+        self.ui.grid_name_line_edit.textChanged.connect(self.change_circuit_name)
 
     def LOCK(self, val: bool = True) -> None:
         """
@@ -410,7 +413,8 @@ class BaseMainGui(QMainWindow):
                        self.delete_and_reduce_driver,
                        self.export_all_thread_object,
                        self.find_node_groups_driver,
-                       self.file_sync_thread]
+                       self.file_sync_thread,
+                       ]
         return all_threads
 
     def get_all_threads(self) -> List[GcThread]:
@@ -552,7 +556,7 @@ class BaseMainGui(QMainWindow):
         update the drop down menus that display dates
         """
         if self.circuit.time_profile is not None:
-            mdl = gf.get_list_model(self.circuit.time_profile)
+            mdl = gf.get_list_model([str(e) for e in self.circuit.time_profile])
             # setup profile sliders
             t = len(self.circuit.time_profile) - 1
             self.setup_sim_indices(0, t)
@@ -650,7 +654,7 @@ class BaseMainGui(QMainWindow):
         branches = self.circuit.get_branches()
 
         if len(branches) > 0:
-            pf_results = self.session.power_flow()
+            pf_results = self.session.power_flow
 
             if pf_results is not None:
                 factor = self.ui.branch_rating_doubleSpinBox.value()
@@ -731,6 +735,13 @@ class BaseMainGui(QMainWindow):
         self.circuit.change_base(Sbase_new)
 
         self.circuit.fBase = self.ui.fbase_doubleSpinBox.value()
+
+    def change_circuit_name(self):
+        """
+
+        :return:
+        """
+        self.circuit.name = self.ui.grid_name_line_edit.text().strip()
 
     def add_default_catalogue(self) -> None:
         """

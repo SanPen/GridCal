@@ -22,13 +22,12 @@ from typing import Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.results_table import ResultsTable
-from GridCalEngine.enumerations import ResultTypes, DeviceType
+from GridCalEngine.enumerations import ResultTypes, DeviceType, SimulationTypes
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_coefficients_josep, \
-    sigma_function
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import (helm_coefficients_josep,
+                                                                                  sigma_function)
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.Simulations.driver_types import SimulationTypes
 from GridCalEngine.basic_structures import Vec
 
 
@@ -125,9 +124,9 @@ class SigmaAnalysisResults:  # TODO: inherit from ResultsTemplate
                             arrowprops=dict(arrowstyle="->"))
         annot.set_visible(False)
 
-        ax.set_title('$\Sigma$ plot')
-        ax.set_xlabel('$\sigma_{re}$')
-        ax.set_ylabel('$\sigma_{im}$')
+        ax.set_title(r'$\Sigma$ plot')
+        ax.set_xlabel(r'$\sigma_{re}$')
+        ax.set_ylabel(r'$\sigma_{im}$')
 
         def update_annotation(ind):
             pos = sc.get_offsets()[ind["ind"][0]]
@@ -252,8 +251,60 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
 
     calculation_inputs = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
 
-    if len(calculation_inputs) > 1:
+    if len(calculation_inputs) == 0:
+        return results
 
+    elif len(calculation_inputs) == 1:
+        if len(calculation_inputs[0].vd) > 0:
+            # only one island
+            calculation_input = calculation_inputs[0]
+
+            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=calculation_input.Ybus,
+                                                                   Yseries=calculation_input.Yseries,
+                                                                   V0=calculation_input.Vbus,
+                                                                   S0=calculation_input.Sbus,
+                                                                   Ysh0=calculation_input.Yshunt,
+                                                                   pq=calculation_input.pq,
+                                                                   pv=calculation_input.pv,
+                                                                   sl=calculation_input.vd,
+                                                                   pqpv=calculation_input.pqpv,
+                                                                   tolerance=options.tolerance,
+                                                                   max_coeff=options.max_iter,
+                                                                   verbose=False,
+                                                                   logger=logger)
+
+            # compute the sigma values
+            n = calculation_input.nbus
+            sig_re = np.zeros(n, dtype=float)
+            sig_im = np.zeros(n, dtype=float)
+
+            try:
+                if iter_ > 1:
+                    sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
+                    sig_re[calculation_input.pqpv] = np.real(sigma)
+                    sig_im[calculation_input.pqpv] = np.imag(sigma)
+                else:
+                    sig_re = np.zeros(n, dtype=float)
+                    sig_im = np.zeros(n, dtype=float)
+            except np.linalg.LinAlgError:
+                print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
+                sig_re = np.zeros(n, dtype=float)
+                sig_im = np.zeros(n, dtype=float)
+
+            sigma_distances = sigma_distance(sig_re, sig_im)
+
+            # store the results
+            island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
+            island_results.lambda_value = 1.0
+            island_results.Sbus = calculation_input.Sbus
+            island_results.sigma_re = sig_re
+            island_results.sigma_im = sig_im
+            island_results.distances = sigma_distances
+            island_results.converged = converged
+            results.apply_from_island(island_results, calculation_input.original_bus_idx)
+        else:
+            logger.add_error('There are no slack nodes')
+    else:
         # simulate each island and merge the results
         for i, calculation_input in enumerate(calculation_inputs):
 
@@ -275,27 +326,27 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
 
                 # compute the sigma values
                 n = calculation_input.nbus
-                Sig_re = np.zeros(n, dtype=float)
-                Sig_im = np.zeros(n, dtype=float)
+                sig_re = np.zeros(n, dtype=float)
+                sig_im = np.zeros(n, dtype=float)
 
                 try:
-                    Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
-                    Sig_re[calculation_input.pqpv] = np.real(Sigma)
-                    Sig_im[calculation_input.pqpv] = np.imag(Sigma)
+                    sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
+                    sig_re[calculation_input.pqpv] = np.real(sigma)
+                    sig_im[calculation_input.pqpv] = np.imag(sigma)
                 except np.linalg.LinAlgError:
                     print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
-                    Sigma = np.zeros(n, dtype=complex)
-                    Sig_re = np.zeros(n, dtype=float)
-                    Sig_im = np.zeros(n, dtype=float)
+                    sigma = np.zeros(n, dtype=complex)
+                    sig_re = np.zeros(n, dtype=float)
+                    sig_im = np.zeros(n, dtype=float)
 
-                sigma_distances = sigma_distance(Sig_re, Sig_im)
+                sigma_distances = sigma_distance(sig_re, sig_im)
 
                 # store the results
                 island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
                 island_results.lambda_value = 1.0
                 island_results.Sbus = calculation_input.Sbus
-                island_results.sigma_re = Sig_re
-                island_results.sigma_im = Sig_im
+                island_results.sigma_re = sig_re
+                island_results.sigma_im = sig_im
                 island_results.distances = sigma_distances
                 island_results.converged = converged
 
@@ -306,57 +357,6 @@ def multi_island_sigma(multi_circuit: MultiCircuit,
 
             else:
                 logger.add_info('No slack nodes in the island', str(i))
-    else:
-
-        if len(calculation_inputs[0].vd) > 0:
-            # only one island
-            calculation_input = calculation_inputs[0]
-
-            U, X, Q, V, iter_, converged = helm_coefficients_josep(Ybus=calculation_input.Ybus,
-                                                                   Yseries=calculation_input.Yseries,
-                                                                   V0=calculation_input.Vbus,
-                                                                   S0=calculation_input.Sbus,
-                                                                   Ysh0=calculation_input.Yshunt,
-                                                                   pq=calculation_input.pq,
-                                                                   pv=calculation_input.pv,
-                                                                   sl=calculation_input.vd,
-                                                                   pqpv=calculation_input.pqpv,
-                                                                   tolerance=options.tolerance,
-                                                                   max_coeff=options.max_iter,
-                                                                   verbose=False,
-                                                                   logger=logger)
-
-            # compute the sigma values
-            n = calculation_input.nbus
-            Sig_re = np.zeros(n, dtype=float)
-            Sig_im = np.zeros(n, dtype=float)
-
-            try:
-                if iter_ > 1:
-                    Sigma = sigma_function(U, X, iter_ - 1, calculation_input.Vbus[calculation_input.vd])
-                    Sig_re[calculation_input.pqpv] = np.real(Sigma)
-                    Sig_im[calculation_input.pqpv] = np.imag(Sigma)
-                else:
-                    Sig_re = np.zeros(n, dtype=float)
-                    Sig_im = np.zeros(n, dtype=float)
-            except np.linalg.LinAlgError:
-                print('numpy.linalg.LinAlgError: Matrix is singular to machine precision.')
-                Sig_re = np.zeros(n, dtype=float)
-                Sig_im = np.zeros(n, dtype=float)
-
-            sigma_distances = sigma_distance(Sig_re, Sig_im)
-
-            # store the results
-            island_results = SigmaAnalysisResults(n=len(calculation_input.Vbus))
-            island_results.lambda_value = 1.0
-            island_results.Sbus = calculation_input.Sbus
-            island_results.sigma_re = Sig_re
-            island_results.sigma_im = Sig_im
-            island_results.distances = sigma_distances
-            island_results.converged = converged
-            results.apply_from_island(island_results, calculation_input.original_bus_idx)
-        else:
-            logger.add_error('There are no slack nodes')
 
     return results
 
