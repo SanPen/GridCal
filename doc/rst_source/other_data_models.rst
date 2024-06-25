@@ -4444,16 +4444,17 @@ Area
 
 .. table::
 
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
-      name     class_type  unit  mandatory  max_chars     descriptions      has_profile  comment
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
-    idtag      str               False                 Unique ID            False               
-    name       str               False                 Name of the device.  False               
-    code       str               False                 Secondary ID         False               
-    comment    str               False                 User comment         False               
-    longitude  float       deg   False                 longitude.           False               
-    latitude   float       deg   False                 latitude.            False               
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+      name       class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag      str                    False                 Unique ID                                               False               
+    name       str                    False                 Name of the device.                                     False               
+    code       str                    False                 Secondary ID                                            False               
+    action     enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment    str                    False                 User comment                                            False               
+    longitude  float            deg   False                 longitude.                                              False               
+    latitude   float            deg   False                 latitude.                                               False               
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Battery
@@ -4467,6 +4468,7 @@ Battery
     idtag                     str                        False                 Unique ID                                                                   False               
     name                      str                        False                 Name of the device.                                                         False               
     code                      str                        False                 Secondary ID                                                                False               
+    action                    enum ActionType            False                 Object action to perform. Only used for model merging.                      False               
     comment                   str                        False                 User comment                                                                False               
     bus                       Bus                        False                 Connection bus                                                              True                
     cn                        Connectivity Node          False                 Connection connectivity node                                                False               
@@ -4527,6 +4529,7 @@ Branch
     idtag                     str                       False                 Unique ID                                                                                                                                                                                                                                 False               
     name                      str                       False                 Name of the device.                                                                                                                                                                                                                       False               
     code                      str                       False                 Secondary ID                                                                                                                                                                                                                              False               
+    action                    enum ActionType           False                 Object action to perform. Only used for model merging.                                                                                                                                                                                    False               
     comment                   str                       False                 User comment                                                                                                                                                                                                                              False               
     bus_from                  Bus                       False                 Name of the bus at the "from" side                                                                                                                                                                                                        False               
     bus_to                    Bus                       False                 Name of the bus at the "to" side                                                                                                                                                                                                          False               
@@ -4568,14 +4571,15 @@ Branch group
 
 .. table::
 
-    =======  ==========  ====  =========  =========  ===================  ===========  =======
-     name    class_type  unit  mandatory  max_chars     descriptions      has_profile  comment
-    =======  ==========  ====  =========  =========  ===================  ===========  =======
-    idtag    str               False                 Unique ID            False               
-    name     str               False                 Name of the device.  False               
-    code     str               False                 Secondary ID         False               
-    comment  str               False                 User comment         False               
-    =======  ==========  ====  =========  =========  ===================  ===========  =======
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+     name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag    str                    False                 Unique ID                                               False               
+    name     str                    False                 Name of the device.                                     False               
+    code     str                    False                 Secondary ID                                            False               
+    action   enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment  str                    False                 User comment                                            False               
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Bus
@@ -4583,40 +4587,41 @@ Bus
 
 .. table::
 
-    =============  =============  ======  =========  =========  ===============================================================================================  ===========  =======
-        name        class_type     unit   mandatory  max_chars                                           descriptions                                            has_profile  comment
-    =============  =============  ======  =========  =========  ===============================================================================================  ===========  =======
-    idtag          str                    False                 Unique ID                                                                                        False               
-    name           str                    False                 Name of the device.                                                                              False               
-    code           str                    False                 Secondary ID                                                                                     False               
-    comment        str                    False                 User comment                                                                                     False               
-    active         bool                   False                 Is the bus active? used to disable the bus.                                                      True                
-    is_slack       bool                   False                 Force the bus to be of slack type.                                                               False               
-    is_dc          bool                   False                 Is this bus of DC type?.                                                                         False               
-    is_internal    bool                   False                 Is this bus part of a composite transformer, such as  a 3-winding transformer or a fluid node?.  False               
-    Vnom           float          kV      False                 Nominal line voltage of the bus.                                                                 False               
-    Vm0            float          p.u.    False                 Voltage module guess.                                                                            False               
-    Va0            float          rad.    False                 Voltage angle guess.                                                                             False               
-    Vmin           float          p.u.    False                 Lower range of allowed voltage module.                                                           False               
-    Vmax           float          p.u.    False                 Higher range of allowed voltage module.                                                          False               
-    Vm_cost        float          e/unit  False                 Cost of over and under voltages                                                                  False               
-    angle_min      float          rad.    False                 Lower range of allowed voltage angle.                                                            False               
-    angle_max      float          rad.    False                 Higher range of allowed voltage angle.                                                           False               
-    angle_cost     float          e/unit  False                 Cost of over and under angles                                                                    False               
-    r_fault        float          p.u.    False                 Resistance of the fault.This is used for short circuit studies.                                  False               
-    x_fault        float          p.u.    False                 Reactance of the fault.This is used for short circuit studies.                                   False               
-    x              float          px      False                 x position in pixels.                                                                            False               
-    y              float          px      False                 y position in pixels.                                                                            False               
-    h              float          px      False                 height of the bus in pixels.                                                                     False               
-    w              float          px      False                 Width of the bus in pixels.                                                                      False               
-    country        Country                False                 Country of the bus                                                                               False               
-    area           Area                   False                 Area of the bus                                                                                  False               
-    zone           Zone                   False                 Zone of the bus                                                                                  False               
-    substation     Substation             False                 Substation of the bus.                                                                           False               
-    voltage_level  Voltage level          False                 Voltage level of the bus.                                                                        False               
-    longitude      float          deg     False                 longitude of the bus.                                                                            False               
-    latitude       float          deg     False                 latitude of the bus.                                                                             False               
-    =============  =============  ======  =========  =========  ===============================================================================================  ===========  =======
+    =============  ===============  ======  =========  =========  ===============================================================================================  ===========  =======
+        name         class_type      unit   mandatory  max_chars                                           descriptions                                            has_profile  comment
+    =============  ===============  ======  =========  =========  ===============================================================================================  ===========  =======
+    idtag          str                      False                 Unique ID                                                                                        False               
+    name           str                      False                 Name of the device.                                                                              False               
+    code           str                      False                 Secondary ID                                                                                     False               
+    action         enum ActionType          False                 Object action to perform. Only used for model merging.                                           False               
+    comment        str                      False                 User comment                                                                                     False               
+    active         bool                     False                 Is the bus active? used to disable the bus.                                                      True                
+    is_slack       bool                     False                 Force the bus to be of slack type.                                                               False               
+    is_dc          bool                     False                 Is this bus of DC type?.                                                                         False               
+    is_internal    bool                     False                 Is this bus part of a composite transformer, such as  a 3-winding transformer or a fluid node?.  False               
+    Vnom           float            kV      False                 Nominal line voltage of the bus.                                                                 False               
+    Vm0            float            p.u.    False                 Voltage module guess.                                                                            False               
+    Va0            float            rad.    False                 Voltage angle guess.                                                                             False               
+    Vmin           float            p.u.    False                 Lower range of allowed voltage module.                                                           False               
+    Vmax           float            p.u.    False                 Higher range of allowed voltage module.                                                          False               
+    Vm_cost        float            e/unit  False                 Cost of over and under voltages                                                                  False               
+    angle_min      float            rad.    False                 Lower range of allowed voltage angle.                                                            False               
+    angle_max      float            rad.    False                 Higher range of allowed voltage angle.                                                           False               
+    angle_cost     float            e/unit  False                 Cost of over and under angles                                                                    False               
+    r_fault        float            p.u.    False                 Resistance of the fault.This is used for short circuit studies.                                  False               
+    x_fault        float            p.u.    False                 Reactance of the fault.This is used for short circuit studies.                                   False               
+    x              float            px      False                 x position in pixels.                                                                            False               
+    y              float            px      False                 y position in pixels.                                                                            False               
+    h              float            px      False                 height of the bus in pixels.                                                                     False               
+    w              float            px      False                 Width of the bus in pixels.                                                                      False               
+    country        Country                  False                 Country of the bus                                                                               False               
+    area           Area                     False                 Area of the bus                                                                                  False               
+    zone           Zone                     False                 Zone of the bus                                                                                  False               
+    substation     Substation               False                 Substation of the bus.                                                                           False               
+    voltage_level  Voltage level            False                 Voltage level of the bus.                                                                        False               
+    longitude      float            deg     False                 longitude of the bus.                                                                            False               
+    latitude       float            deg     False                 latitude of the bus.                                                                             False               
+    =============  ===============  ======  =========  =========  ===============================================================================================  ===========  =======
 
 
 BusBar
@@ -4624,16 +4629,17 @@ BusBar
 
 .. table::
 
-    =============  =================  ====  =========  =========  ===================================  ===========  =======
-        name          class_type      unit  mandatory  max_chars             descriptions              has_profile  comment
-    =============  =================  ====  =========  =========  ===================================  ===========  =======
-    idtag          str                      False                 Unique ID                            False               
-    name           str                      False                 Name of the device.                  False               
-    code           str                      False                 Secondary ID                         False               
-    comment        str                      False                 User comment                         False               
-    voltage_level  Voltage level            False                 Substation voltage level (optional)  False               
-    cn             Connectivity Node        False                 Internal connectvity node            False               
-    =============  =================  ====  =========  =========  ===================================  ===========  =======
+    =============  =================  ====  =========  =========  ======================================================  ===========  =======
+        name          class_type      unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =============  =================  ====  =========  =========  ======================================================  ===========  =======
+    idtag          str                      False                 Unique ID                                               False               
+    name           str                      False                 Name of the device.                                     False               
+    code           str                      False                 Secondary ID                                            False               
+    action         enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment        str                      False                 User comment                                            False               
+    voltage_level  Voltage level            False                 Substation voltage level (optional)                     False               
+    cn             Connectivity Node        False                 Internal connectvity node                               False               
+    =============  =================  ====  =========  =========  ======================================================  ===========  =======
 
 
 Comunity
@@ -4641,17 +4647,18 @@ Comunity
 
 .. table::
 
-    =========  ==========  ====  =========  =========  =========================================================================  ===========  =======
-      name     class_type  unit  mandatory  max_chars                                descriptions                                 has_profile  comment
-    =========  ==========  ====  =========  =========  =========================================================================  ===========  =======
-    idtag      str               False                 Unique ID                                                                  False               
-    name       str               False                 Name of the device.                                                        False               
-    code       str               False                 Secondary ID                                                               False               
-    comment    str               False                 User comment                                                               False               
-    longitude  float       deg   False                 longitude.                                                                 False               
-    latitude   float       deg   False                 latitude.                                                                  False               
-    country    Country           False                 Substation country, altenativelly this can be obtained from the community  False               
-    =========  ==========  ====  =========  =========  =========================================================================  ===========  =======
+    =========  ===============  ====  =========  =========  =========================================================================  ===========  =======
+      name       class_type     unit  mandatory  max_chars                                descriptions                                 has_profile  comment
+    =========  ===============  ====  =========  =========  =========================================================================  ===========  =======
+    idtag      str                    False                 Unique ID                                                                  False               
+    name       str                    False                 Name of the device.                                                        False               
+    code       str                    False                 Secondary ID                                                               False               
+    action     enum ActionType        False                 Object action to perform. Only used for model merging.                     False               
+    comment    str                    False                 User comment                                                               False               
+    longitude  float            deg   False                 longitude.                                                                 False               
+    latitude   float            deg   False                 latitude.                                                                  False               
+    country    Country                False                 Substation country, altenativelly this can be obtained from the community  False               
+    =========  ===============  ====  =========  =========  =========================================================================  ===========  =======
 
 
 Connectivity Node
@@ -4659,19 +4666,20 @@ Connectivity Node
 
 .. table::
 
-    =============  =============  ====  =========  =========  =====================================================  ===========  =======
-        name        class_type    unit  mandatory  max_chars                      descriptions                       has_profile  comment
-    =============  =============  ====  =========  =========  =====================================================  ===========  =======
-    idtag          str                  False                 Unique ID                                              False               
-    name           str                  False                 Name of the device.                                    False               
-    code           str                  False                 Secondary ID                                           False               
-    comment        str                  False                 User comment                                           False               
-    Vnom           float          kV    False                 Nominal line voltage of the cn.                        False               
-    dc             bool                 False                 is this a DC connectivity node?                        False               
-    internal       bool                 False                 is internal of a busbar?                               False               
-    default_bus    Bus                  False                 Default bus to use for topology processing (optional)  False               
-    voltage_level  Voltage level        False                 Voltage level of this connectivity node (optional)     False               
-    =============  =============  ====  =========  =========  =====================================================  ===========  =======
+    =============  ===============  ====  =========  =========  ======================================================  ===========  =======
+        name         class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =============  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag          str                    False                 Unique ID                                               False               
+    name           str                    False                 Name of the device.                                     False               
+    code           str                    False                 Secondary ID                                            False               
+    action         enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment        str                    False                 User comment                                            False               
+    Vnom           float            kV    False                 Nominal line voltage of the cn.                         False               
+    dc             bool                   False                 is this a DC connectivity node?                         False               
+    internal       bool                   False                 is internal of a busbar?                                False               
+    default_bus    Bus                    False                 Default bus to use for topology processing (optional)   False               
+    voltage_level  Voltage level          False                 Voltage level of this connectivity node (optional)      False               
+    =============  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Contingency
@@ -4679,18 +4687,19 @@ Contingency
 
 .. table::
 
-    ============  =================  ====  =========  =========  =================================================  ===========  =======
-        name         class_type      unit  mandatory  max_chars                    descriptions                     has_profile  comment
-    ============  =================  ====  =========  =========  =================================================  ===========  =======
-    idtag         str                      False                 Unique ID                                          False               
-    name          str                      False                 Name of the device.                                False               
-    code          str                      False                 Secondary ID                                       False               
-    comment       str                      False                 User comment                                       False               
-    device_idtag  str                      False                 Unique ID                                          False               
-    prop          str                      False                 Name of the object property to change (active, %)  False               
-    value         float                    False                 Property value                                     False               
-    group         Contingency Group        False                 Contingency group                                  False               
-    ============  =================  ====  =========  =========  =================================================  ===========  =======
+    ============  =================  ====  =========  =========  ======================================================  ===========  =======
+        name         class_type      unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    ============  =================  ====  =========  =========  ======================================================  ===========  =======
+    idtag         str                      False                 Unique ID                                               False               
+    name          str                      False                 Name of the device.                                     False               
+    code          str                      False                 Secondary ID                                            False               
+    action        enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment       str                      False                 User comment                                            False               
+    device_idtag  str                      False                 Unique ID                                               False               
+    prop          str                      False                 Name of the object property to change (active, %)       False               
+    value         float                    False                 Property value                                          False               
+    group         Contingency Group        False                 Contingency group                                       False               
+    ============  =================  ====  =========  =========  ======================================================  ===========  =======
 
 
 Contingency Group
@@ -4698,15 +4707,16 @@ Contingency Group
 
 .. table::
 
-    ========  ==========  ====  =========  =========  ==========================================  ===========  =======
-      name    class_type  unit  mandatory  max_chars                 descriptions                 has_profile  comment
-    ========  ==========  ====  =========  =========  ==========================================  ===========  =======
-    idtag     str               False                 Unique ID                                   False               
-    name      str               False                 Name of the device.                         False               
-    code      str               False                 Secondary ID                                False               
-    comment   str               False                 User comment                                False               
-    category  str               False                 Some tag to category the contingency group  False               
-    ========  ==========  ====  =========  =========  ==========================================  ===========  =======
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
+      name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag     str                    False                 Unique ID                                               False               
+    name      str                    False                 Name of the device.                                     False               
+    code      str                    False                 Secondary ID                                            False               
+    action    enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment   str                    False                 User comment                                            False               
+    category  str                    False                 Some tag to category the contingency group              False               
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Controllable shunt
@@ -4714,26 +4724,33 @@ Controllable shunt
 
 .. table::
 
-    =============  =================  =====  =========  =========  ================================================  ===========  =======
-        name          class_type      unit   mandatory  max_chars                    descriptions                    has_profile  comment
-    =============  =================  =====  =========  =========  ================================================  ===========  =======
-    idtag          str                       False                 Unique ID                                         False               
-    name           str                       False                 Name of the device.                               False               
-    code           str                       False                 Secondary ID                                      False               
-    comment        str                       False                 User comment                                      False               
-    bus            Bus                       False                 Connection bus                                    True                
-    cn             Connectivity Node         False                 Connection connectivity node                      False               
-    active         bool                      False                 Is the load active?                               True                
-    mttf           float              h      False                 Mean time to failure                              False               
-    mttr           float              h      False                 Mean time to recovery                             False               
-    capex          float              e/MW   False                 Cost of investment. Used in expansion planning.   False               
-    opex           float              e/MWh  False                 Cost of operation. Used in expansion planning.    False               
-    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.  False               
-    Cost           float              e/MWh  False                 Cost of not served energy. Used in OPF.           True                
-    step           int                       False                 Device tap step                                   True                
-    is_nonlinear   bool                      False                 Is non-linear?                                    False               
-    is_controlled  bool                      False                 Is controlled?                                    False               
-    =============  =================  =====  =========  =========  ================================================  ===========  =======
+    ============  =================  =====  =========  =========  =====================================================================  ===========  =======
+        name         class_type      unit   mandatory  max_chars                              descriptions                               has_profile  comment
+    ============  =================  =====  =========  =========  =====================================================================  ===========  =======
+    idtag         str                       False                 Unique ID                                                              False               
+    name          str                       False                 Name of the device.                                                    False               
+    code          str                       False                 Secondary ID                                                           False               
+    action        enum ActionType           False                 Object action to perform. Only used for model merging.                 False               
+    comment       str                       False                 User comment                                                           False               
+    bus           Bus                       False                 Connection bus                                                         True                
+    cn            Connectivity Node         False                 Connection connectivity node                                           False               
+    active        bool                      False                 Is the load active?                                                    True                
+    mttf          float              h      False                 Mean time to failure                                                   False               
+    mttr          float              h      False                 Mean time to recovery                                                  False               
+    capex         float              e/MW   False                 Cost of investment. Used in expansion planning.                        False               
+    opex          float              e/MWh  False                 Cost of operation. Used in expansion planning.                         False               
+    build_status  enum BuildStatus          False                 Branch build status. Used in expansion planning.                       False               
+    Cost          float              e/MWh  False                 Cost of not served energy. Used in OPF.                                True                
+    G             float              MW     False                 Active power                                                           True                
+    B             float              MVAr   False                 Reactive power                                                         True                
+    G0            float              MW     False                 Zero sequence active power of the impedance component at V=1.0 p.u.    True                
+    B0            float              MVAr   False                 Zero sequence reactive power of the impedance component at V=1.0 p.u.  True                
+    is_nonlinear  bool                      False                 Is non-linear?                                                         False               
+    g_steps       Array                     False                 Conductance incremental steps                                          False               
+    b_steps       Array                     False                 Susceptance incremental steps                                          False               
+    step          int                       False                 Device tap step                                                        True                
+    Vset          float              p.u.   False                 Set voltage. This is used for controlled shunts.                       True                
+    ============  =================  =====  =========  =========  =====================================================================  ===========  =======
 
 
 Country
@@ -4741,16 +4758,17 @@ Country
 
 .. table::
 
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
-      name     class_type  unit  mandatory  max_chars     descriptions      has_profile  comment
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
-    idtag      str               False                 Unique ID            False               
-    name       str               False                 Name of the device.  False               
-    code       str               False                 Secondary ID         False               
-    comment    str               False                 User comment         False               
-    longitude  float       deg   False                 longitude.           False               
-    latitude   float       deg   False                 latitude.            False               
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+      name       class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag      str                    False                 Unique ID                                               False               
+    name       str                    False                 Name of the device.                                     False               
+    code       str                    False                 Secondary ID                                            False               
+    action     enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment    str                    False                 User comment                                            False               
+    longitude  float            deg   False                 longitude.                                              False               
+    latitude   float            deg   False                 latitude.                                               False               
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Current injection
@@ -4758,25 +4776,26 @@ Current injection
 
 .. table::
 
-    ============  =================  =====  =========  =========  =====================================================  ===========  =======
-        name         class_type      unit   mandatory  max_chars                      descriptions                       has_profile  comment
-    ============  =================  =====  =========  =========  =====================================================  ===========  =======
-    idtag         str                       False                 Unique ID                                              False               
-    name          str                       False                 Name of the device.                                    False               
-    code          str                       False                 Secondary ID                                           False               
-    comment       str                       False                 User comment                                           False               
-    bus           Bus                       False                 Connection bus                                         True                
-    cn            Connectivity Node         False                 Connection connectivity node                           False               
-    active        bool                      False                 Is the load active?                                    True                
-    mttf          float              h      False                 Mean time to failure                                   False               
-    mttr          float              h      False                 Mean time to recovery                                  False               
-    capex         float              e/MW   False                 Cost of investment. Used in expansion planning.        False               
-    opex          float              e/MWh  False                 Cost of operation. Used in expansion planning.         False               
-    build_status  enum BuildStatus          False                 Branch build status. Used in expansion planning.       False               
-    Cost          float              e/MWh  False                 Cost of not served energy. Used in OPF.                True                
-    Ir            float              MW     False                 Active power of the current component at V=1.0 p.u.    True                
-    Ii            float              MVAr   False                 Reactive power of the current component at V=1.0 p.u.  True                
-    ============  =================  =====  =========  =========  =====================================================  ===========  =======
+    ============  =================  =====  =========  =========  ======================================================  ===========  =======
+        name         class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    ============  =================  =====  =========  =========  ======================================================  ===========  =======
+    idtag         str                       False                 Unique ID                                               False               
+    name          str                       False                 Name of the device.                                     False               
+    code          str                       False                 Secondary ID                                            False               
+    action        enum ActionType           False                 Object action to perform. Only used for model merging.  False               
+    comment       str                       False                 User comment                                            False               
+    bus           Bus                       False                 Connection bus                                          True                
+    cn            Connectivity Node         False                 Connection connectivity node                            False               
+    active        bool                      False                 Is the load active?                                     True                
+    mttf          float              h      False                 Mean time to failure                                    False               
+    mttr          float              h      False                 Mean time to recovery                                   False               
+    capex         float              e/MW   False                 Cost of investment. Used in expansion planning.         False               
+    opex          float              e/MWh  False                 Cost of operation. Used in expansion planning.          False               
+    build_status  enum BuildStatus          False                 Branch build status. Used in expansion planning.        False               
+    Cost          float              e/MWh  False                 Cost of not served energy. Used in OPF.                 True                
+    Ir            float              MW     False                 Active power of the current component at V=1.0 p.u.     True                
+    Ii            float              MVAr   False                 Reactive power of the current component at V=1.0 p.u.   True                
+    ============  =================  =====  =========  =========  ======================================================  ===========  =======
 
 
 DC line
@@ -4790,6 +4809,7 @@ DC line
     idtag                     str                       False                 Unique ID                                                                                                                    False               
     name                      str                       False                 Name of the device.                                                                                                          False               
     code                      str                       False                 Secondary ID                                                                                                                 False               
+    action                    enum ActionType           False                 Object action to perform. Only used for model merging.                                                                       False               
     comment                   str                       False                 User comment                                                                                                                 False               
     bus_from                  Bus                       False                 Name of the bus at the "from" side                                                                                           False               
     bus_to                    Bus                       False                 Name of the bus at the "to" side                                                                                             False               
@@ -4821,16 +4841,17 @@ Emission
 
 .. table::
 
-    =======  ==========  ====  =========  =========  ===========================  ===========  =======
-     name    class_type  unit  mandatory  max_chars         descriptions          has_profile  comment
-    =======  ==========  ====  =========  =========  ===========================  ===========  =======
-    idtag    str               False                 Unique ID                    False               
-    name     str               False                 Name of the device.          False               
-    code     str               False                 Secondary ID                 False               
-    comment  str               False                 User comment                 False               
-    cost     float       e/t   False                 Cost of emissions (e / ton)  True                
-    color    str               False                 Color to paint               False               
-    =======  ==========  ====  =========  =========  ===========================  ===========  =======
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+     name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag    str                    False                 Unique ID                                               False               
+    name     str                    False                 Name of the device.                                     False               
+    code     str                    False                 Secondary ID                                            False               
+    action   enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment  str                    False                 User comment                                            False               
+    cost     float            e/t   False                 Cost of emissions (e / ton)                             True                
+    color    str                    False                 Color to paint                                          False               
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 External grid
@@ -4844,6 +4865,7 @@ External grid
     idtag                  str                             False                 Unique ID                                                                  False               
     name                   str                             False                 Name of the device.                                                        False               
     code                   str                             False                 Secondary ID                                                               False               
+    action                 enum ActionType                 False                 Object action to perform. Only used for model merging.                     False               
     comment                str                             False                 User comment                                                               False               
     bus                    Bus                             False                 Connection bus                                                             True                
     cn                     Connectivity Node               False                 Connection connectivity node                                               False               
@@ -4868,19 +4890,20 @@ Fluid P2X
 
 .. table::
 
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
-        name          class_type      unit   mandatory  max_chars                    descriptions                    has_profile  comment
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
-    idtag          str                       False                 Unique ID                                         False               
-    name           str                       False                 Name of the device.                               False               
-    code           str                       False                 Secondary ID                                      False               
-    comment        str                       False                 User comment                                      False               
-    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit      False               
-    max_flow_rate  float             m3/s    False                 maximum fluid flow                                False               
-    plant          Fluid node                False                 Connection reservoir/node                         False               
-    generator      Generator                 False                 Electrical machine                                False               
-    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.  False               
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
+        name          class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
+    idtag          str                       False                 Unique ID                                               False               
+    name           str                       False                 Name of the device.                                     False               
+    code           str                       False                 Secondary ID                                            False               
+    action         enum ActionType           False                 Object action to perform. Only used for model merging.  False               
+    comment        str                       False                 User comment                                            False               
+    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit            False               
+    max_flow_rate  float             m3/s    False                 maximum fluid flow                                      False               
+    plant          Fluid node                False                 Connection reservoir/node                               False               
+    generator      Generator                 False                 Electrical machine                                      False               
+    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.        False               
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
 
 
 Fluid Pump
@@ -4888,19 +4911,20 @@ Fluid Pump
 
 .. table::
 
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
-        name          class_type      unit   mandatory  max_chars                    descriptions                    has_profile  comment
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
-    idtag          str                       False                 Unique ID                                         False               
-    name           str                       False                 Name of the device.                               False               
-    code           str                       False                 Secondary ID                                      False               
-    comment        str                       False                 User comment                                      False               
-    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit      False               
-    max_flow_rate  float             m3/s    False                 maximum fluid flow                                False               
-    plant          Fluid node                False                 Connection reservoir/node                         False               
-    generator      Generator                 False                 Electrical machine                                False               
-    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.  False               
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
+        name          class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
+    idtag          str                       False                 Unique ID                                               False               
+    name           str                       False                 Name of the device.                                     False               
+    code           str                       False                 Secondary ID                                            False               
+    action         enum ActionType           False                 Object action to perform. Only used for model merging.  False               
+    comment        str                       False                 User comment                                            False               
+    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit            False               
+    max_flow_rate  float             m3/s    False                 maximum fluid flow                                      False               
+    plant          Fluid node                False                 Connection reservoir/node                               False               
+    generator      Generator                 False                 Electrical machine                                      False               
+    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.        False               
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
 
 
 Fluid Turbine
@@ -4908,19 +4932,20 @@ Fluid Turbine
 
 .. table::
 
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
-        name          class_type      unit   mandatory  max_chars                    descriptions                    has_profile  comment
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
-    idtag          str                       False                 Unique ID                                         False               
-    name           str                       False                 Name of the device.                               False               
-    code           str                       False                 Secondary ID                                      False               
-    comment        str                       False                 User comment                                      False               
-    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit      False               
-    max_flow_rate  float             m3/s    False                 maximum fluid flow                                False               
-    plant          Fluid node                False                 Connection reservoir/node                         False               
-    generator      Generator                 False                 Electrical machine                                False               
-    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.  False               
-    =============  ================  ======  =========  =========  ================================================  ===========  =======
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
+        name          class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
+    idtag          str                       False                 Unique ID                                               False               
+    name           str                       False                 Name of the device.                                     False               
+    code           str                       False                 Secondary ID                                            False               
+    action         enum ActionType           False                 Object action to perform. Only used for model merging.  False               
+    comment        str                       False                 User comment                                            False               
+    efficiency     float             MWh/m3  False                 Power plant energy production per fluid unit            False               
+    max_flow_rate  float             m3/s    False                 maximum fluid flow                                      False               
+    plant          Fluid node                False                 Connection reservoir/node                               False               
+    generator      Generator                 False                 Electrical machine                                      False               
+    build_status   enum BuildStatus          False                 Branch build status. Used in expansion planning.        False               
+    =============  ================  ======  =========  =========  ======================================================  ===========  =======
 
 
 Fluid node
@@ -4928,23 +4953,24 @@ Fluid node
 
 .. table::
 
-    =============  ================  ========  =========  =========  ================================================  ===========  =======
-        name          class_type       unit    mandatory  max_chars                    descriptions                    has_profile  comment
-    =============  ================  ========  =========  =========  ================================================  ===========  =======
-    idtag          str                         False                 Unique ID                                         False               
-    name           str                         False                 Name of the device.                               False               
-    code           str                         False                 Secondary ID                                      False               
-    comment        str                         False                 User comment                                      False               
-    min_level      float             hm3       False                 Minimum amount of fluid at the node/reservoir     False               
-    max_level      float             hm3       False                 Maximum amount of fluid at the node/reservoir     False               
-    min_soc        float             p.u.      False                 Minimum SOC of fluid at the node/reservoir        True                
-    max_soc        float             p.u.      False                 Maximum SOC of fluid at the node/reservoir        True                
-    initial_level  float             hm3       False                 Initial level of the node/reservoir               False               
-    bus            Bus                         False                 Electrical bus.                                   False               
-    build_status   enum BuildStatus            False                 Branch build status. Used in expansion planning.  False               
-    spillage_cost  float             e/(m3/s)  False                 Cost of nodal spillage                            True                
-    inflow         float             m3/s      False                 Flow of fluid coming from the rain                True                
-    =============  ================  ========  =========  =========  ================================================  ===========  =======
+    =============  ================  ========  =========  =========  ======================================================  ===========  =======
+        name          class_type       unit    mandatory  max_chars                       descriptions                       has_profile  comment
+    =============  ================  ========  =========  =========  ======================================================  ===========  =======
+    idtag          str                         False                 Unique ID                                               False               
+    name           str                         False                 Name of the device.                                     False               
+    code           str                         False                 Secondary ID                                            False               
+    action         enum ActionType             False                 Object action to perform. Only used for model merging.  False               
+    comment        str                         False                 User comment                                            False               
+    min_level      float             hm3       False                 Minimum amount of fluid at the node/reservoir           False               
+    max_level      float             hm3       False                 Maximum amount of fluid at the node/reservoir           False               
+    min_soc        float             p.u.      False                 Minimum SOC of fluid at the node/reservoir              True                
+    max_soc        float             p.u.      False                 Maximum SOC of fluid at the node/reservoir              True                
+    initial_level  float             hm3       False                 Initial level of the node/reservoir                     False               
+    bus            Bus                         False                 Electrical bus.                                         False               
+    build_status   enum BuildStatus            False                 Branch build status. Used in expansion planning.        False               
+    spillage_cost  float             e/(m3/s)  False                 Cost of nodal spillage                                  True                
+    inflow         float             m3/s      False                 Flow of fluid coming from the rain                      True                
+    =============  ================  ========  =========  =========  ======================================================  ===========  =======
 
 
 Fluid path
@@ -4952,19 +4978,20 @@ Fluid path
 
 .. table::
 
-    =========  ==============  ====  =========  =========  ===================  ===========  =======
-      name       class_type    unit  mandatory  max_chars     descriptions      has_profile  comment
-    =========  ==============  ====  =========  =========  ===================  ===========  =======
-    idtag      str                   False                 Unique ID            False               
-    name       str                   False                 Name of the device.  False               
-    code       str                   False                 Secondary ID         False               
-    comment    str                   False                 User comment         False               
-    source     Fluid node            False                 Source node          False               
-    target     Fluid node            False                 Target node          False               
-    min_flow   float           m3/s  False                 Minimum flow         False               
-    max_flow   float           m3/s  False                 Maximum flow         False               
-    locations  Line locations        False                 Locations            False               
-    =========  ==============  ====  =========  =========  ===================  ===========  =======
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+      name       class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag      str                    False                 Unique ID                                               False               
+    name       str                    False                 Name of the device.                                     False               
+    code       str                    False                 Secondary ID                                            False               
+    action     enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment    str                    False                 User comment                                            False               
+    source     Fluid node             False                 Source node                                             False               
+    target     Fluid node             False                 Target node                                             False               
+    min_flow   float            m3/s  False                 Minimum flow                                            False               
+    max_flow   float            m3/s  False                 Maximum flow                                            False               
+    locations  Line locations         False                 Locations                                               False               
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Fuel
@@ -4972,16 +4999,17 @@ Fuel
 
 .. table::
 
-    =======  ==========  ====  =========  =========  ======================  ===========  =======
-     name    class_type  unit  mandatory  max_chars       descriptions       has_profile  comment
-    =======  ==========  ====  =========  =========  ======================  ===========  =======
-    idtag    str               False                 Unique ID               False               
-    name     str               False                 Name of the device.     False               
-    code     str               False                 Secondary ID            False               
-    comment  str               False                 User comment            False               
-    cost     float       e/t   False                 Cost of fuel (e / ton)  True                
-    color    str               False                 Color to paint          False               
-    =======  ==========  ====  =========  =========  ======================  ===========  =======
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+     name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag    str                    False                 Unique ID                                               False               
+    name     str                    False                 Name of the device.                                     False               
+    code     str                    False                 Secondary ID                                            False               
+    action   enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment  str                    False                 User comment                                            False               
+    cost     float            e/t   False                 Cost of fuel (e / ton)                                  True                
+    color    str                    False                 Color to paint                                          False               
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Generator
@@ -4995,6 +5023,7 @@ Generator
     idtag                     str                        False                 Unique ID                                                                   False               
     name                      str                        False                 Name of the device.                                                         False               
     code                      str                        False                 Secondary ID                                                                False               
+    action                    enum ActionType            False                 Object action to perform. Only used for model merging.                      False               
     comment                   str                        False                 User comment                                                                False               
     bus                       Bus                        False                 Connection bus                                                              True                
     cn                        Connectivity Node          False                 Connection connectivity node                                                False               
@@ -5042,17 +5071,18 @@ Generator Emission
 
 .. table::
 
-    =========  ==========  =====  =========  =========  ==================================================  ===========  =======
-      name     class_type  unit   mandatory  max_chars                     descriptions                     has_profile  comment
-    =========  ==========  =====  =========  =========  ==================================================  ===========  =======
-    idtag      str                False                 Unique ID                                           False               
-    name       str                False                 Name of the device.                                 False               
-    code       str                False                 Secondary ID                                        False               
-    comment    str                False                 User comment                                        False               
-    generator  Generator          False                 Generator                                           False               
-    emission   Emission           False                 Emission                                            False               
-    rate       float       t/MWh  False                 Emissions rate of the gas in the generator (t/MWh)  False               
-    =========  ==========  =====  =========  =========  ==================================================  ===========  =======
+    =========  ===============  =====  =========  =========  ======================================================  ===========  =======
+      name       class_type     unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =========  ===============  =====  =========  =========  ======================================================  ===========  =======
+    idtag      str                     False                 Unique ID                                               False               
+    name       str                     False                 Name of the device.                                     False               
+    code       str                     False                 Secondary ID                                            False               
+    action     enum ActionType         False                 Object action to perform. Only used for model merging.  False               
+    comment    str                     False                 User comment                                            False               
+    generator  Generator               False                 Generator                                               False               
+    emission   Emission                False                 Emission                                                False               
+    rate       float            t/MWh  False                 Emissions rate of the gas in the generator (t/MWh)      False               
+    =========  ===============  =====  =========  =========  ======================================================  ===========  =======
 
 
 Generator Fuel
@@ -5060,17 +5090,18 @@ Generator Fuel
 
 .. table::
 
-    =========  ==========  =====  =========  =========  ======================================  ===========  =======
-      name     class_type  unit   mandatory  max_chars               descriptions               has_profile  comment
-    =========  ==========  =====  =========  =========  ======================================  ===========  =======
-    idtag      str                False                 Unique ID                               False               
-    name       str                False                 Name of the device.                     False               
-    code       str                False                 Secondary ID                            False               
-    comment    str                False                 User comment                            False               
-    generator  Generator          False                 Generator                               False               
-    fuel       Fuel               False                 Fuel                                    False               
-    rate       float       t/MWh  False                 Fuel consumption rate in the generator  False               
-    =========  ==========  =====  =========  =========  ======================================  ===========  =======
+    =========  ===============  =====  =========  =========  ======================================================  ===========  =======
+      name       class_type     unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =========  ===============  =====  =========  =========  ======================================================  ===========  =======
+    idtag      str                     False                 Unique ID                                               False               
+    name       str                     False                 Name of the device.                                     False               
+    code       str                     False                 Secondary ID                                            False               
+    action     enum ActionType         False                 Object action to perform. Only used for model merging.  False               
+    comment    str                     False                 User comment                                            False               
+    generator  Generator               False                 Generator                                               False               
+    fuel       Fuel                    False                 Fuel                                                    False               
+    rate       float            t/MWh  False                 Fuel consumption rate in the generator                  False               
+    =========  ===============  =====  =========  =========  ======================================================  ===========  =======
 
 
 Generator Technology
@@ -5078,17 +5109,18 @@ Generator Technology
 
 .. table::
 
-    ==========  ==========  ====  =========  =========  ===================================================  ===========  =======
-       name     class_type  unit  mandatory  max_chars                     descriptions                      has_profile  comment
-    ==========  ==========  ====  =========  =========  ===================================================  ===========  =======
-    idtag       str               False                 Unique ID                                            False               
-    name        str               False                 Name of the device.                                  False               
-    code        str               False                 Secondary ID                                         False               
-    comment     str               False                 User comment                                         False               
-    generator   Generator         False                 Generator object                                     False               
-    technology  Technology        False                 Technology object                                    False               
-    proportion  float       p.u.  False                 Share of the generator associated to the technology  False               
-    ==========  ==========  ====  =========  =========  ===================================================  ===========  =======
+    ==========  ===============  ====  =========  =========  ======================================================  ===========  =======
+       name       class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    ==========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag       str                    False                 Unique ID                                               False               
+    name        str                    False                 Name of the device.                                     False               
+    code        str                    False                 Secondary ID                                            False               
+    action      enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment     str                    False                 User comment                                            False               
+    generator   Generator              False                 Generator object                                        False               
+    technology  Technology             False                 Technology object                                       False               
+    proportion  float            p.u.  False                 Share of the generator associated to the technology     False               
+    ==========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 HVDC Line
@@ -5102,6 +5134,7 @@ HVDC Line
     idtag                     str                           False                 Unique ID                                                                                    False               
     name                      str                           False                 Name of the device.                                                                          False               
     code                      str                           False                 Secondary ID                                                                                 False               
+    action                    enum ActionType               False                 Object action to perform. Only used for model merging.                                       False               
     comment                   str                           False                 User comment                                                                                 False               
     bus_from                  Bus                           False                 Name of the bus at the "from" side                                                           False               
     bus_to                    Bus                           False                 Name of the bus at the "to" side                                                             False               
@@ -5147,6 +5180,7 @@ Investment
     idtag         str                      False                 Unique ID                                                                 False               
     name          str                      False                 Name of the device.                                                       False               
     code          str                      False                 Secondary ID                                                              False               
+    action        enum ActionType          False                 Object action to perform. Only used for model merging.                    False               
     comment       str                      False                 User comment                                                              False               
     device_idtag  str                      False                 Unique ID                                                                 False               
     CAPEX         float              Me    False                 Capital expenditures. This is the initial investment.                     False               
@@ -5161,15 +5195,16 @@ Investments Group
 
 .. table::
 
-    ========  ==========  ====  =========  =========  ==========================================  ===========  =======
-      name    class_type  unit  mandatory  max_chars                 descriptions                 has_profile  comment
-    ========  ==========  ====  =========  =========  ==========================================  ===========  =======
-    idtag     str               False                 Unique ID                                   False               
-    name      str               False                 Name of the device.                         False               
-    code      str               False                 Secondary ID                                False               
-    comment   str               False                 User comment                                False               
-    category  str               False                 Some tag to category the contingency group  False               
-    ========  ==========  ====  =========  =========  ==========================================  ===========  =======
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
+      name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag     str                    False                 Unique ID                                               False               
+    name      str                    False                 Name of the device.                                     False               
+    code      str                    False                 Secondary ID                                            False               
+    action    enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment   str                    False                 User comment                                            False               
+    category  str                    False                 Some tag to category the contingency group              False               
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Line
@@ -5183,6 +5218,7 @@ Line
     idtag                     str                       False                 Unique ID                                                                                                                                                                                                                                 False               
     name                      str                       False                 Name of the device.                                                                                                                                                                                                                       False               
     code                      str                       False                 Secondary ID                                                                                                                                                                                                                              False               
+    action                    enum ActionType           False                 Object action to perform. Only used for model merging.                                                                                                                                                                                    False               
     comment                   str                       False                 User comment                                                                                                                                                                                                                              False               
     bus_from                  Bus                       False                 Name of the bus at the "from" side                                                                                                                                                                                                        False               
     bus_to                    Bus                       False                 Name of the bus at the "to" side                                                                                                                                                                                                          False               
@@ -5233,6 +5269,7 @@ Load
     idtag         str                       False                 Unique ID                                                False               
     name          str                       False                 Name of the device.                                      False               
     code          str                       False                 Secondary ID                                             False               
+    action        enum ActionType           False                 Object action to perform. Only used for model merging.   False               
     comment       str                       False                 User comment                                             False               
     bus           Bus                       False                 Connection bus                                           True                
     cn            Connectivity Node         False                 Connection connectivity node                             False               
@@ -5257,14 +5294,15 @@ Modelling Authority
 
 .. table::
 
-    =======  ==========  ====  =========  =========  ===================  ===========  =======
-     name    class_type  unit  mandatory  max_chars     descriptions      has_profile  comment
-    =======  ==========  ====  =========  =========  ===================  ===========  =======
-    idtag    str               False                 Unique ID            False               
-    name     str               False                 Name of the device.  False               
-    code     str               False                 Secondary ID         False               
-    comment  str               False                 User comment         False               
-    =======  ==========  ====  =========  =========  ===================  ===========  =======
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+     name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag    str                    False                 Unique ID                                               False               
+    name     str                    False                 Name of the device.                                     False               
+    code     str                    False                 Secondary ID                                            False               
+    action   enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment  str                    False                 User comment                                            False               
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Municipality
@@ -5272,17 +5310,18 @@ Municipality
 
 .. table::
 
-    =========  ==========  ====  =========  =========  ===========================================================================  ===========  =======
-      name     class_type  unit  mandatory  max_chars                                 descriptions                                  has_profile  comment
-    =========  ==========  ====  =========  =========  ===========================================================================  ===========  =======
-    idtag      str               False                 Unique ID                                                                    False               
-    name       str               False                 Name of the device.                                                          False               
-    code       str               False                 Secondary ID                                                                 False               
-    comment    str               False                 User comment                                                                 False               
-    longitude  float       deg   False                 longitude.                                                                   False               
-    latitude   float       deg   False                 latitude.                                                                    False               
-    region     Region            False                 Substation region, altenativelly this can be obtained from the municipality  False               
-    =========  ==========  ====  =========  =========  ===========================================================================  ===========  =======
+    =========  ===============  ====  =========  =========  ===========================================================================  ===========  =======
+      name       class_type     unit  mandatory  max_chars                                 descriptions                                  has_profile  comment
+    =========  ===============  ====  =========  =========  ===========================================================================  ===========  =======
+    idtag      str                    False                 Unique ID                                                                    False               
+    name       str                    False                 Name of the device.                                                          False               
+    code       str                    False                 Secondary ID                                                                 False               
+    action     enum ActionType        False                 Object action to perform. Only used for model merging.                       False               
+    comment    str                    False                 User comment                                                                 False               
+    longitude  float            deg   False                 longitude.                                                                   False               
+    latitude   float            deg   False                 latitude.                                                                    False               
+    region     Region                 False                 Substation region, altenativelly this can be obtained from the municipality  False               
+    =========  ===============  ====  =========  =========  ===========================================================================  ===========  =======
 
 
 Region
@@ -5290,17 +5329,18 @@ Region
 
 .. table::
 
-    =========  ==========  ====  =========  =========  ========================================================================  ===========  =======
-      name     class_type  unit  mandatory  max_chars                                descriptions                                has_profile  comment
-    =========  ==========  ====  =========  =========  ========================================================================  ===========  =======
-    idtag      str               False                 Unique ID                                                                 False               
-    name       str               False                 Name of the device.                                                       False               
-    code       str               False                 Secondary ID                                                              False               
-    comment    str               False                 User comment                                                              False               
-    longitude  float       deg   False                 longitude.                                                                False               
-    latitude   float       deg   False                 latitude.                                                                 False               
-    community  Comunity          False                 Substation community, altenativelly this can be obtained from the region  False               
-    =========  ==========  ====  =========  =========  ========================================================================  ===========  =======
+    =========  ===============  ====  =========  =========  ========================================================================  ===========  =======
+      name       class_type     unit  mandatory  max_chars                                descriptions                                has_profile  comment
+    =========  ===============  ====  =========  =========  ========================================================================  ===========  =======
+    idtag      str                    False                 Unique ID                                                                 False               
+    name       str                    False                 Name of the device.                                                       False               
+    code       str                    False                 Secondary ID                                                              False               
+    action     enum ActionType        False                 Object action to perform. Only used for model merging.                    False               
+    comment    str                    False                 User comment                                                              False               
+    longitude  float            deg   False                 longitude.                                                                False               
+    latitude   float            deg   False                 latitude.                                                                 False               
+    community  Comunity               False                 Substation community, altenativelly this can be obtained from the region  False               
+    =========  ===============  ====  =========  =========  ========================================================================  ===========  =======
 
 
 Sequence line
@@ -5308,22 +5348,23 @@ Sequence line
 
 .. table::
 
-    =======  ==========  ======  =========  =========  ==========================================  ===========  =======
-     name    class_type   unit   mandatory  max_chars                 descriptions                 has_profile  comment
-    =======  ==========  ======  =========  =========  ==========================================  ===========  =======
-    idtag    str                 False                 Unique ID                                   False               
-    name     str                 False                 Name of the device.                         False               
-    code     str                 False                 Secondary ID                                False               
-    comment  str                 False                 User comment                                False               
-    Imax     float       kA      False                 Current rating of the line                  False               
-    Vnom     float       kV      False                 Voltage rating of the line                  False               
-    R        float       Ohm/km  False                 Positive-sequence resistance per km         False               
-    X        float       Ohm/km  False                 Positive-sequence reactance per km          False               
-    B        float       uS/km   False                 Positive-sequence shunt susceptance per km  False               
-    R0       float       Ohm/km  False                 Zero-sequence resistance per km             False               
-    X0       float       Ohm/km  False                 Zero-sequence reactance per km              False               
-    B0       float       uS/km   False                 Zero-sequence shunt susceptance per km      False               
-    =======  ==========  ======  =========  =========  ==========================================  ===========  =======
+    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
+     name      class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
+    idtag    str                      False                 Unique ID                                               False               
+    name     str                      False                 Name of the device.                                     False               
+    code     str                      False                 Secondary ID                                            False               
+    action   enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment  str                      False                 User comment                                            False               
+    Imax     float            kA      False                 Current rating of the line                              False               
+    Vnom     float            kV      False                 Voltage rating of the line                              False               
+    R        float            Ohm/km  False                 Positive-sequence resistance per km                     False               
+    X        float            Ohm/km  False                 Positive-sequence reactance per km                      False               
+    B        float            uS/km   False                 Positive-sequence shunt susceptance per km              False               
+    R0       float            Ohm/km  False                 Zero-sequence resistance per km                         False               
+    X0       float            Ohm/km  False                 Zero-sequence reactance per km                          False               
+    B0       float            uS/km   False                 Zero-sequence shunt susceptance per km                  False               
+    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
 Series reactance
@@ -5337,6 +5378,7 @@ Series reactance
     idtag                     str                       False                 Unique ID                                                                                                                                                                                                                                 False               
     name                      str                       False                 Name of the device.                                                                                                                                                                                                                       False               
     code                      str                       False                 Secondary ID                                                                                                                                                                                                                              False               
+    action                    enum ActionType           False                 Object action to perform. Only used for model merging.                                                                                                                                                                                    False               
     comment                   str                       False                 User comment                                                                                                                                                                                                                              False               
     bus_from                  Bus                       False                 Name of the bus at the "from" side                                                                                                                                                                                                        False               
     bus_to                    Bus                       False                 Name of the bus at the "to" side                                                                                                                                                                                                          False               
@@ -5381,6 +5423,7 @@ Shunt
     idtag         str                       False                 Unique ID                                                              False               
     name          str                       False                 Name of the device.                                                    False               
     code          str                       False                 Secondary ID                                                           False               
+    action        enum ActionType           False                 Object action to perform. Only used for model merging.                 False               
     comment       str                       False                 User comment                                                           False               
     bus           Bus                       False                 Connection bus                                                         True                
     cn            Connectivity Node         False                 Connection connectivity node                                           False               
@@ -5403,25 +5446,26 @@ Static Generator
 
 .. table::
 
-    ============  =================  =====  =========  =========  ================================================  ===========  =======
-        name         class_type      unit   mandatory  max_chars                    descriptions                    has_profile  comment
-    ============  =================  =====  =========  =========  ================================================  ===========  =======
-    idtag         str                       False                 Unique ID                                         False               
-    name          str                       False                 Name of the device.                               False               
-    code          str                       False                 Secondary ID                                      False               
-    comment       str                       False                 User comment                                      False               
-    bus           Bus                       False                 Connection bus                                    True                
-    cn            Connectivity Node         False                 Connection connectivity node                      False               
-    active        bool                      False                 Is the load active?                               True                
-    mttf          float              h      False                 Mean time to failure                              False               
-    mttr          float              h      False                 Mean time to recovery                             False               
-    capex         float              e/MW   False                 Cost of investment. Used in expansion planning.   False               
-    opex          float              e/MWh  False                 Cost of operation. Used in expansion planning.    False               
-    build_status  enum BuildStatus          False                 Branch build status. Used in expansion planning.  False               
-    Cost          float              e/MWh  False                 Cost of not served energy. Used in OPF.           True                
-    P             float              MW     False                 Active power                                      True                
-    Q             float              MVAr   False                 Reactive power                                    True                
-    ============  =================  =====  =========  =========  ================================================  ===========  =======
+    ============  =================  =====  =========  =========  ======================================================  ===========  =======
+        name         class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    ============  =================  =====  =========  =========  ======================================================  ===========  =======
+    idtag         str                       False                 Unique ID                                               False               
+    name          str                       False                 Name of the device.                                     False               
+    code          str                       False                 Secondary ID                                            False               
+    action        enum ActionType           False                 Object action to perform. Only used for model merging.  False               
+    comment       str                       False                 User comment                                            False               
+    bus           Bus                       False                 Connection bus                                          True                
+    cn            Connectivity Node         False                 Connection connectivity node                            False               
+    active        bool                      False                 Is the load active?                                     True                
+    mttf          float              h      False                 Mean time to failure                                    False               
+    mttr          float              h      False                 Mean time to recovery                                   False               
+    capex         float              e/MW   False                 Cost of investment. Used in expansion planning.         False               
+    opex          float              e/MWh  False                 Cost of operation. Used in expansion planning.          False               
+    build_status  enum BuildStatus          False                 Branch build status. Used in expansion planning.        False               
+    Cost          float              e/MWh  False                 Cost of not served energy. Used in OPF.                 True                
+    P             float              MW     False                 Active power                                            True                
+    Q             float              MVAr   False                 Reactive power                                          True                
+    ============  =================  =====  =========  =========  ======================================================  ===========  =======
 
 
 Substation
@@ -5429,23 +5473,28 @@ Substation
 
 .. table::
 
-    ============  ============  ====  =========  =========  ===========================================================================  ===========  =======
-        name       class_type   unit  mandatory  max_chars                                 descriptions                                  has_profile  comment
-    ============  ============  ====  =========  =========  ===========================================================================  ===========  =======
-    idtag         str                 False                 Unique ID                                                                    False               
-    name          str                 False                 Name of the device.                                                          False               
-    code          str                 False                 Secondary ID                                                                 False               
-    comment       str                 False                 User comment                                                                 False               
-    longitude     float         deg   False                 longitude.                                                                   False               
-    latitude      float         deg   False                 latitude.                                                                    False               
-    area          Area                False                 Substation area, altenativelly this can be obtained from the zone            False               
-    zone          Zone                False                 Substation area                                                              False               
-    country       Country             False                 Substation country, altenativelly this can be obtained from the community    False               
-    community     Comunity            False                 Substation community, altenativelly this can be obtained from the region     False               
-    region        Region              False                 Substation region, altenativelly this can be obtained from the municipality  False               
-    municipality  Municipality        False                 Substation municipality                                                      False               
-    address       str                 False                 Substation address                                                           False               
-    ============  ============  ====  =========  =========  ===========================================================================  ===========  =======
+    =================  ===============  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
+          name           class_type     unit   mandatory  max_chars                                                                                                           descriptions                                                                                                           has_profile  comment
+    =================  ===============  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
+    idtag              str                     False                 Unique ID                                                                                                                                                                                                                       False               
+    name               str                     False                 Name of the device.                                                                                                                                                                                                             False               
+    code               str                     False                 Secondary ID                                                                                                                                                                                                                    False               
+    action             enum ActionType         False                 Object action to perform. Only used for model merging.                                                                                                                                                                          False               
+    comment            str                     False                 User comment                                                                                                                                                                                                                    False               
+    longitude          float            deg    False                 longitude.                                                                                                                                                                                                                      False               
+    latitude           float            deg    False                 latitude.                                                                                                                                                                                                                       False               
+    area               Area                    False                 Substation area, altenativelly this can be obtained from the zone                                                                                                                                                               False               
+    zone               Zone                    False                 Substation area                                                                                                                                                                                                                 False               
+    country            Country                 False                 Substation country, altenativelly this can be obtained from the community                                                                                                                                                       False               
+    community          Comunity                False                 Substation community, altenativelly this can be obtained from the region                                                                                                                                                        False               
+    region             Region                  False                 Substation region, altenativelly this can be obtained from the municipality                                                                                                                                                     False               
+    municipality       Municipality            False                 Substation municipality                                                                                                                                                                                                         False               
+    address            str                     False                 Substation address                                                                                                                                                                                                              False               
+    irradiation        float            W/m^2  False                 Substation solar irradiation                                                                                                                                                                                                    True                
+    temparature        float            ºC     False                 Substation temperature                                                                                                                                                                                                          True                
+    wind_speed         float            m/s    False                 Substation wind speed at 80m above the ground                                                                                                                                                                                   True                
+    terrain_roughness  float                   False                 This value is ised for wind speed extrapolation. Typical values: Not rough (sand, snow, sea): 0~0.02 Slightly rough (grass, cereal field): 0.02~0.2 Rough (forest, small houses): 1.0~1.5 Very rough (Large buildings):1.0~4.0  False               
+    =================  ===============  =====  =========  =========  ==============================================================================================================================================================================================================================  ===========  =======
 
 
 Switch
@@ -5459,6 +5508,7 @@ Switch
     idtag                     str                       False                 Unique ID                                                                          False               
     name                      str                       False                 Name of the device.                                                                False               
     code                      str                       False                 Secondary ID                                                                       False               
+    action                    enum ActionType           False                 Object action to perform. Only used for model merging.                             False               
     comment                   str                       False                 User comment                                                                       False               
     bus_from                  Bus                       False                 Name of the bus at the "from" side                                                 False               
     bus_to                    Bus                       False                 Name of the bus at the "to" side                                                   False               
@@ -5489,18 +5539,19 @@ Technology
 
 .. table::
 
-    =======  ==========  ====  =========  =========  ========================  ===========  =======
-     name    class_type  unit  mandatory  max_chars        descriptions        has_profile  comment
-    =======  ==========  ====  =========  =========  ========================  ===========  =======
-    idtag    str               False                 Unique ID                 False               
-    name     str               False                 Name of the device.       False               
-    code     str               False                 Secondary ID              False               
-    comment  str               False                 User comment              False               
-    name2    str               False                 Name 2 of the technology  False               
-    name3    str               False                 Name 3 of the technology  False               
-    name4    str               False                 Name 4 of the technology  False               
-    color    str               False                 Color to paint            False               
-    =======  ==========  ====  =========  =========  ========================  ===========  =======
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+     name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag    str                    False                 Unique ID                                               False               
+    name     str                    False                 Name of the device.                                     False               
+    code     str                    False                 Secondary ID                                            False               
+    action   enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment  str                    False                 User comment                                            False               
+    name2    str                    False                 Name 2 of the technology                                False               
+    name3    str                    False                 Name 3 of the technology                                False               
+    name4    str                    False                 Name 4 of the technology                                False               
+    color    str                    False                 Color to paint                                          False               
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Tower
@@ -5508,24 +5559,25 @@ Tower
 
 .. table::
 
-    =================  ==========  ======  =========  =========  ===================================  ===========  =======
-          name         class_type   unit   mandatory  max_chars             descriptions              has_profile  comment
-    =================  ==========  ======  =========  =========  ===================================  ===========  =======
-    idtag              str                 False                 Unique ID                            False               
-    name               str                 False                 Name of the device.                  False               
-    code               str                 False                 Secondary ID                         False               
-    comment            str                 False                 User comment                         False               
-    earth_resistivity  float       Ohm/m3  False                 Earth resistivity                    False               
-    frequency          float       Hz      False                 Frequency                            False               
-    R1                 float       Ohm/km  False                 Positive sequence resistance         False               
-    X1                 float       Ohm/km  False                 Positive sequence reactance          False               
-    Bsh1               float       uS/km   False                 Positive sequence shunt susceptance  False               
-    R0                 float       Ohm/km  False                 Zero-sequence resistance             False               
-    X0                 float       Ohm/km  False                 Zero sequence reactance              False               
-    Bsh0               float       uS/km   False                 Zero sequence shunt susceptance      False               
-    Imax               float       kA      False                 Current rating of the tower          False               
-    Vnom               float       kV      False                 Voltage rating of the line           False               
-    =================  ==========  ======  =========  =========  ===================================  ===========  =======
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
+          name           class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
+    idtag              str                      False                 Unique ID                                               False               
+    name               str                      False                 Name of the device.                                     False               
+    code               str                      False                 Secondary ID                                            False               
+    action             enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment            str                      False                 User comment                                            False               
+    earth_resistivity  float            Ohm/m3  False                 Earth resistivity                                       False               
+    frequency          float            Hz      False                 Frequency                                               False               
+    R1                 float            Ohm/km  False                 Positive sequence resistance                            False               
+    X1                 float            Ohm/km  False                 Positive sequence reactance                             False               
+    Bsh1               float            uS/km   False                 Positive sequence shunt susceptance                     False               
+    R0                 float            Ohm/km  False                 Zero-sequence resistance                                False               
+    X0                 float            Ohm/km  False                 Zero sequence reactance                                 False               
+    Bsh0               float            uS/km   False                 Zero sequence shunt susceptance                         False               
+    Imax               float            kA      False                 Current rating of the tower                             False               
+    Vnom               float            kV      False                 Voltage rating of the line                              False               
+    =================  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
 Transformer
@@ -5539,6 +5591,7 @@ Transformer
     idtag                     str                                 False                 Unique ID                                                                                                                                                                                                                                 False               
     name                      str                                 False                 Name of the device.                                                                                                                                                                                                                       False               
     code                      str                                 False                 Secondary ID                                                                                                                                                                                                                              False               
+    action                    enum ActionType                     False                 Object action to perform. Only used for model merging.                                                                                                                                                                                    False               
     comment                   str                                 False                 User comment                                                                                                                                                                                                                              False               
     bus_from                  Bus                                 False                 Name of the bus at the "from" side                                                                                                                                                                                                        False               
     bus_to                    Bus                                 False                 Name of the bus at the "to" side                                                                                                                                                                                                          False               
@@ -5604,21 +5657,22 @@ Transformer type
 
 .. table::
 
-    =======  ==========  ====  =========  =========  ========================================  ===========  =======
-     name    class_type  unit  mandatory  max_chars                descriptions                has_profile  comment
-    =======  ==========  ====  =========  =========  ========================================  ===========  =======
-    idtag    str               False                 Unique ID                                 False               
-    name     str               False                 Name of the device.                       False               
-    code     str               False                 Secondary ID                              False               
-    comment  str               False                 User comment                              False               
-    HV       float       kV    False                 Nominal voltage al the high voltage side  False               
-    LV       float       kV    False                 Nominal voltage al the low voltage side   False               
-    Sn       float       MVA   False                 Nominal power                             False               
-    Pcu      float       kW    False                 Copper losses                             False               
-    Pfe      float       kW    False                 Iron losses                               False               
-    I0       float       %     False                 No-load current                           False               
-    Vsc      float       %     False                 Short-circuit voltage                     False               
-    =======  ==========  ====  =========  =========  ========================================  ===========  =======
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+     name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag    str                    False                 Unique ID                                               False               
+    name     str                    False                 Name of the device.                                     False               
+    code     str                    False                 Secondary ID                                            False               
+    action   enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment  str                    False                 User comment                                            False               
+    HV       float            kV    False                 Nominal voltage al the high voltage side                False               
+    LV       float            kV    False                 Nominal voltage al the low voltage side                 False               
+    Sn       float            MVA   False                 Nominal power                                           False               
+    Pcu      float            kW    False                 Copper losses                                           False               
+    Pfe      float            kW    False                 Iron losses                                             False               
+    I0       float            %     False                 No-load current                                         False               
+    Vsc      float            %     False                 Short-circuit voltage                                   False               
+    =======  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Transformer3W
@@ -5626,36 +5680,37 @@ Transformer3W
 
 .. table::
 
-    ========  ==========  ====  =========  =========  =============================  ===========  =======
-      name    class_type  unit  mandatory  max_chars          descriptions           has_profile  comment
-    ========  ==========  ====  =========  =========  =============================  ===========  =======
-    idtag     str               False                 Unique ID                      False               
-    name      str               False                 Name of the device.            False               
-    code      str               False                 Secondary ID                   False               
-    comment   str               False                 User comment                   False               
-    bus0      Bus               False                 Middle point connection bus.   False               
-    bus1      Bus               False                 Bus 1.                         False               
-    bus2      Bus               False                 Bus 2.                         False               
-    bus3      Bus               False                 Bus 3.                         False               
-    active    bool              False                 Is active?                     True                
-    winding1  Winding           False                 Winding 1.                     False               
-    winding2  Winding           False                 Winding 2.                     False               
-    winding3  Winding           False                 Winding 3.                     False               
-    V1        float       kV    False                 Side 1 rating                  False               
-    V2        float       kV    False                 Side 2 rating                  False               
-    V3        float       kV    False                 Side 3 rating                  False               
-    r12       float       p.u.  False                 Resistance measured from 1->2  False               
-    r23       float       p.u.  False                 Resistance measured from 2->3  False               
-    r31       float       p.u.  False                 Resistance measured from 3->1  False               
-    x12       float       p.u.  False                 Reactance measured from 1->2   False               
-    x23       float       p.u.  False                 Reactance measured from 2->3   False               
-    x31       float       p.u.  False                 Reactance measured from 3->1   False               
-    rate12    float       MVA   False                 Rating measured from 1->2      False               
-    rate23    float       MVA   False                 Rating measured from 2->3      False               
-    rate31    float       MVA   False                 Rating measured from 3->1      False               
-    x         float       px    False                 x position                     False               
-    y         float       px    False                 y position                     False               
-    ========  ==========  ====  =========  =========  =============================  ===========  =======
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
+      name      class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag     str                    False                 Unique ID                                               False               
+    name      str                    False                 Name of the device.                                     False               
+    code      str                    False                 Secondary ID                                            False               
+    action    enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment   str                    False                 User comment                                            False               
+    bus0      Bus                    False                 Middle point connection bus.                            False               
+    bus1      Bus                    False                 Bus 1.                                                  False               
+    bus2      Bus                    False                 Bus 2.                                                  False               
+    bus3      Bus                    False                 Bus 3.                                                  False               
+    active    bool                   False                 Is active?                                              True                
+    winding1  Winding                False                 Winding 1.                                              False               
+    winding2  Winding                False                 Winding 2.                                              False               
+    winding3  Winding                False                 Winding 3.                                              False               
+    V1        float            kV    False                 Side 1 rating                                           False               
+    V2        float            kV    False                 Side 2 rating                                           False               
+    V3        float            kV    False                 Side 3 rating                                           False               
+    r12       float            p.u.  False                 Resistance measured from 1->2                           False               
+    r23       float            p.u.  False                 Resistance measured from 2->3                           False               
+    r31       float            p.u.  False                 Resistance measured from 3->1                           False               
+    x12       float            p.u.  False                 Reactance measured from 1->2                            False               
+    x23       float            p.u.  False                 Reactance measured from 2->3                            False               
+    x31       float            p.u.  False                 Reactance measured from 3->1                            False               
+    rate12    float            MVA   False                 Rating measured from 1->2                               False               
+    rate23    float            MVA   False                 Rating measured from 2->3                               False               
+    rate31    float            MVA   False                 Rating measured from 3->1                               False               
+    x         float            px    False                 x position                                              False               
+    y         float            px    False                 y position                                              False               
+    ========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 UPFC
@@ -5669,6 +5724,7 @@ UPFC
     idtag                     str                       False                 Unique ID                                                                          False               
     name                      str                       False                 Name of the device.                                                                False               
     code                      str                       False                 Secondary ID                                                                       False               
+    action                    enum ActionType           False                 Object action to perform. Only used for model merging.                             False               
     comment                   str                       False                 User comment                                                                       False               
     bus_from                  Bus                       False                 Name of the bus at the "from" side                                                 False               
     bus_to                    Bus                       False                 Name of the bus at the "to" side                                                   False               
@@ -5709,22 +5765,23 @@ Underground line
 
 .. table::
 
-    =======  ==========  ======  =========  =========  ==========================================  ===========  =======
-     name    class_type   unit   mandatory  max_chars                 descriptions                 has_profile  comment
-    =======  ==========  ======  =========  =========  ==========================================  ===========  =======
-    idtag    str                 False                 Unique ID                                   False               
-    name     str                 False                 Name of the device.                         False               
-    code     str                 False                 Secondary ID                                False               
-    comment  str                 False                 User comment                                False               
-    Imax     float       kA      False                 Current rating of the line                  False               
-    Vnom     float       kV      False                 Voltage rating of the line                  False               
-    R        float       Ohm/km  False                 Positive-sequence resistance per km         False               
-    X        float       Ohm/km  False                 Positive-sequence reactance per km          False               
-    B        float       uS/km   False                 Positive-sequence shunt susceptance per km  False               
-    R0       float       Ohm/km  False                 Zero-sequence resistance per km             False               
-    X0       float       Ohm/km  False                 Zero-sequence reactance per km              False               
-    B0       float       uS/km   False                 Zero-sequence shunt susceptance per km      False               
-    =======  ==========  ======  =========  =========  ==========================================  ===========  =======
+    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
+     name      class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
+    idtag    str                      False                 Unique ID                                               False               
+    name     str                      False                 Name of the device.                                     False               
+    code     str                      False                 Secondary ID                                            False               
+    action   enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment  str                      False                 User comment                                            False               
+    Imax     float            kA      False                 Current rating of the line                              False               
+    Vnom     float            kV      False                 Voltage rating of the line                              False               
+    R        float            Ohm/km  False                 Positive-sequence resistance per km                     False               
+    X        float            Ohm/km  False                 Positive-sequence reactance per km                      False               
+    B        float            uS/km   False                 Positive-sequence shunt susceptance per km              False               
+    R0       float            Ohm/km  False                 Zero-sequence resistance per km                         False               
+    X0       float            Ohm/km  False                 Zero-sequence reactance per km                          False               
+    B0       float            uS/km   False                 Zero-sequence shunt susceptance per km                  False               
+    =======  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
 VSC
@@ -5738,6 +5795,7 @@ VSC
     idtag                     str                                   False                 Unique ID                                                                          False               
     name                      str                                   False                 Name of the device.                                                                False               
     code                      str                                   False                 Secondary ID                                                                       False               
+    action                    enum ActionType                       False                 Object action to perform. Only used for model merging.                             False               
     comment                   str                                   False                 User comment                                                                       False               
     bus_from                  Bus                                   False                 Name of the bus at the "from" side                                                 False               
     bus_to                    Bus                                   False                 Name of the bus at the "to" side                                                   False               
@@ -5789,16 +5847,17 @@ Voltage level
 
 .. table::
 
-    ==========  ==========  ====  =========  =========  =====================================  ===========  =======
-       name     class_type  unit  mandatory  max_chars              descriptions               has_profile  comment
-    ==========  ==========  ====  =========  =========  =====================================  ===========  =======
-    idtag       str               False                 Unique ID                              False               
-    name        str               False                 Name of the device.                    False               
-    code        str               False                 Secondary ID                           False               
-    comment     str               False                 User comment                           False               
-    Vnom        float       kV    False                 Nominal voltage                        False               
-    substation  Substation        False                 Substation of this bus bar (optional)  False               
-    ==========  ==========  ====  =========  =========  =====================================  ===========  =======
+    ==========  ===============  ====  =========  =========  ======================================================  ===========  =======
+       name       class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    ==========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag       str                    False                 Unique ID                                               False               
+    name        str                    False                 Name of the device.                                     False               
+    code        str                    False                 Secondary ID                                            False               
+    action      enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment     str                    False                 User comment                                            False               
+    Vnom        float            kV    False                 Nominal voltage                                         False               
+    substation  Substation             False                 Substation of this Voltage level (optional)             False               
+    ==========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 
 Winding
@@ -5812,6 +5871,7 @@ Winding
     idtag                     str                                 False                 Unique ID                                                                                                                                                                                                                                 False               
     name                      str                                 False                 Name of the device.                                                                                                                                                                                                                       False               
     code                      str                                 False                 Secondary ID                                                                                                                                                                                                                              False               
+    action                    enum ActionType                     False                 Object action to perform. Only used for model merging.                                                                                                                                                                                    False               
     comment                   str                                 False                 User comment                                                                                                                                                                                                                              False               
     bus_from                  Bus                                 False                 Name of the bus at the "from" side                                                                                                                                                                                                        False               
     bus_to                    Bus                                 False                 Name of the bus at the "to" side                                                                                                                                                                                                          False               
@@ -5877,18 +5937,19 @@ Wire
 
 .. table::
 
-    ===========  ==========  ======  =========  =========  ======================================  ===========  =======
-       name      class_type   unit   mandatory  max_chars               descriptions               has_profile  comment
-    ===========  ==========  ======  =========  =========  ======================================  ===========  =======
-    idtag        str                 False                 Unique ID                               False               
-    name         str                 False                 Name of the device.                     False               
-    code         str                 False                 Secondary ID                            False               
-    comment      str                 False                 User comment                            False               
-    r            float       Ohm/km  False                 resistance of the conductor             False               
-    x            float       Ohm/km  False                 reactance of the conductor              False               
-    gmr          float       m       False                 Geometric Mean Radius of the conductor  False               
-    max_current  float       kA      False                 Maximum current of the conductor        False               
-    ===========  ==========  ======  =========  =========  ======================================  ===========  =======
+    ===========  ===============  ======  =========  =========  ======================================================  ===========  =======
+       name        class_type      unit   mandatory  max_chars                       descriptions                       has_profile  comment
+    ===========  ===============  ======  =========  =========  ======================================================  ===========  =======
+    idtag        str                      False                 Unique ID                                               False               
+    name         str                      False                 Name of the device.                                     False               
+    code         str                      False                 Secondary ID                                            False               
+    action       enum ActionType          False                 Object action to perform. Only used for model merging.  False               
+    comment      str                      False                 User comment                                            False               
+    r            float            Ohm/km  False                 resistance of the conductor                             False               
+    x            float            Ohm/km  False                 reactance of the conductor                              False               
+    gmr          float            m       False                 Geometric Mean Radius of the conductor                  False               
+    max_current  float            kA      False                 Maximum current of the conductor                        False               
+    ===========  ===============  ======  =========  =========  ======================================================  ===========  =======
 
 
 Zone
@@ -5896,16 +5957,17 @@ Zone
 
 .. table::
 
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
-      name     class_type  unit  mandatory  max_chars     descriptions      has_profile  comment
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
-    idtag      str               False                 Unique ID            False               
-    name       str               False                 Name of the device.  False               
-    code       str               False                 Secondary ID         False               
-    comment    str               False                 User comment         False               
-    longitude  float       deg   False                 longitude.           False               
-    latitude   float       deg   False                 latitude.            False               
-    area       Area              False                 Area of this zone.   False               
-    =========  ==========  ====  =========  =========  ===================  ===========  =======
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+      name       class_type     unit  mandatory  max_chars                       descriptions                       has_profile  comment
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
+    idtag      str                    False                 Unique ID                                               False               
+    name       str                    False                 Name of the device.                                     False               
+    code       str                    False                 Secondary ID                                            False               
+    action     enum ActionType        False                 Object action to perform. Only used for model merging.  False               
+    comment    str                    False                 User comment                                            False               
+    longitude  float            deg   False                 longitude.                                              False               
+    latitude   float            deg   False                 latitude.                                               False               
+    area       Area                   False                 Area of this zone.                                      False               
+    =========  ===============  ====  =========  =========  ======================================================  ===========  =======
 
 

@@ -110,7 +110,7 @@ The complete vector of variables is structured as follows:
 
 .. math::
 
-    x = [v, \theta, P_g, Q_g, sl_{sf}, sl_{st}, sl_{vmax}, sl_{vmin}, m_p, \tau, P_{DC}]
+    x = [v, \theta, P_g, Q_g, {sl}_{sf}, {sl}_{st}, {sl}_{vmax}, {sl}_{vmin}, m_p, \tau, {P}_{DC}]
 
 The size is the following: 
 
@@ -136,7 +136,7 @@ When the slack variables are used, the objective function will be modified to in
 
 .. math::
 
-    \min f(x) = c_2^{\top} Pg^2 + c_1^{\top} Pg + c_0 + c_{s}^{\top} (sl_{sf} + sl_{st}) + c_v^{\top} (sl_{vmax} + sl_{vmin})
+    \min f(x) = c_2^{\top} Pg^2 + c_1^{\top} Pg + c_0 + {c}_{s}^{\top} ({sl}_{sf} + {sl}_{st}) + c_v^{\top} ({sl}_{vmax} + {sl}_{vmin})
 
 where :math:`c_s` and :math:`c_v` are the vectors with the penalties associated to the branches and voltage slack variables.
 
@@ -150,7 +150,7 @@ at each iteration to compute the power flow equations:
 
 .. math::
     S^{bus} = V \cdot I_{bus}^* = V \cdot (Y_{bus}^* V^*)\\
-    G^{S} = S^{bus} + S_d - C_g[:, gen_{disp_idx}] (Pg + jQg) - Cg[:, gen_{undisp_idx}] Sg_undisp\\
+    G^{S} = S^{bus} + S_d - C_g[:, {gen}_{disp_idx}] (Pg + jQg) - Cg[:, {gen}_{undisp_idx}] Sg_undisp\\
 
 where the operation :math:`(\cdot)` is the element-wise multiplication of two vectors, and the brackets denote the slicing of the vectors or matrices using the indexes of the problem.
 
@@ -180,8 +180,8 @@ This last conditions has to hold on both ends of the line, and it is a quadratic
 
 .. math::
 
-    H^{sf} = S^{f^{*}} \cdot S^{f} - S_{max}^2\\
-    H^{st} = S^{t^{*}} \cdot S^{t} - S_{max}^2
+    H^{sf} = S^{f^{*}} \cdot S^{f} - {S}_{max}^2\\
+    H^{st} = S^{t^{*}} \cdot S^{t} - {S}_{max}^2
 
 The rest of the conditions are straight-forward linear inequalities for the maximum and minimum bounds, and are not displayed for simplicity. The complete vector of inequality constraints is:
 
@@ -235,30 +235,43 @@ To find the optimization step :math:`\delta y_i`, we will solve the following ma
 .. math::
     -J(y_i) \delta y_i = f(y_i)
 
-Where :math:`J(y_i)` is the jacobian matrix of the system of equations described in the previous section, and :math:`f(y_i)` is a vector with the value of these expressions.
-For this general optimization problem, we can reduce the size of this system using the same methodology used in MATPOWER's Interior Point Solver (MIPS), where the reduced system is the following:
+Where :math:`J(y_i)` is the jacobian matrix of the system of equations described in the previous section,
+and :math:`f(y_i)` is a vector with the value of these expressions.
+For this general optimization problem, we can reduce the size of this system using the same methodology used
+in MATPOWER's Interior Point Solver (MIPS), where the reduced system is the following:
 
 .. math::
 
-    \begin{matrix}
-    \textbf{M} & \textbf{G_{X}^{\top}} \\
-    \textbf{G_{X}} & \textbf{0} \\
-    \end{matrix}
-    \times
-    \begin{matrix}
-    \Delta X\\
-    \Delta \lambda \\
-    \end{matrix}
+    \begin{bmatrix}
+        {M}      & {G}_{X}^{\top} \\
+        {G}_{X}  & 0 \\
+    \end{bmatrix}
+        \times
+    \begin{bmatrix}
+        \Delta X\\
+        \Delta \lambda \\
+    \end{bmatrix}
     =
-    \begin{matrix}
-    - \textbf{N}\\
-    - \textbf{G(X)}\\
-    \end{matrix} \\
+    \begin{bmatrix}
+        - N\\
+        - G(X)\\
+    \end{bmatrix} \\
 
-    \textbf{M} = L_{XX} + H_{X}^{\top} [Z]^{-1}[\mu]H_{X}\\
-    \textbf{N} = L_{X} + H_{X}^{\top} [Z]^{-1}(\gamma \textbf(1_{n_i}) +[\mu]H(X))\\
-    L_{X} = f_X^{\top} + G_X^{\top}\lambda + H_X^{\top}\mu\\
-    L_{XX} = f_{XX} + G_{XX}(\lambda) + H_{XX}(\mu)
+.. math::
+
+    {M} = {L}_{XX} + {H}_{X}^{\top} [Z]^{-1}[\mu]H_{X}
+
+.. math::
+
+    {N} = {L}_{X} + {H}_{X}^{\top} [Z]^{-1}(\gamma \textbf({1}_{n_i}) +[\mu]H(X))
+
+.. math::
+
+    {L}_{X} = f_X^{\top} + G_X^{\top}\lambda + H_X^{\top}\mu
+
+.. math::
+
+    {L}_{XX} = {f}_{XX} + {G}_{XX}(\lambda) + {H}_{XX}(\mu)
 
 where the subindex :math:`X` and :math:`XX` indicate the first and second gradient with respect to the variables vector. 
 
@@ -266,13 +279,14 @@ where the subindex :math:`X` and :math:`XX` indicate the first and second gradie
 3.3. Updating step
 ^^^^^^^^^^^^^^^^^^^^
 
-The Newton-Raphson system will be solved for every given step, and will yield the step distances for the variables (X) and the \lambda multiplier. 
+The Newton-Raphson system will be solved for every given step, and will yield the step distances for the variables
+(X) and the :math:`\lambda` multiplier.
 To update the other two objects of the state vector of the complete system, we will use the following relations:
 
 .. math::
 
     \Delta Z = -H(X) -Z - H_X \Delta X\\
-    \Delta \mu = -\mu + [Z]^{-1}(\gamma \textbf(1_{n_i}) - [\mu]\Delta Z)
+    \Delta \mu = -\mu + [Z]^{-1}(\gamma \textbf({1}_{n_i}) - [\mu]\Delta Z)
 
 We could proceed to directly add the obtained displacements to the variables and multipliers, but there are two things to be considered. Firstly, we set a step control to ensure that the next step does not increase the error by more than a set margin. The next block of code includes all the logic behind this control:
 
@@ -309,12 +323,14 @@ We could proceed to directly add the obtained displacements to the variables and
             dmu = alpha * dmu
 
 
-Then, as explained earlier, the conditions that :math:`\mu` and Z are always positive are enforced outside the algebraic system. This is done ensuring that the step length of a negative displacement is limited in case it ends below 0.
+Then, as explained earlier, the conditions that :math:`\mu` and Z are always positive are enforced outside the
+algebraic system. This is done ensuring that the step length of a negative displacement is limited in case it
+ends below 0.
 
  .. math::
 
-    \alpha_p = min(\tau \cdot min_{\Delta Z_m < 0}((-Z_m / \Delta Z_m), 1))\\
-    \alpha_d = min(\tau \cdot min_{\Delta \mu_m < 0}((-\mu_m / \Delta \mu_m), 1))
+    \alpha_p = min(\tau \cdot {min}_{\Delta Z_m < 0}((-Z_m / \Delta Z_m), 1))\\
+    \alpha_d = min(\tau \cdot {min}_{\Delta \mu_m < 0}((-\mu_m / \Delta \mu_m), 1))
 
 Where :math:`\tau` is a parameter slightly below 1. Now, we are ready to update the values for the variables and multiplier, then update the :math:`\gamma` parameter, and finally start a new iteration if the convergence criteria is not met.
 
@@ -324,7 +340,7 @@ Where :math:`\tau` is a parameter slightly below 1. Now, we are ready to update 
     Z = Z + \alpha_p \Delta Z\\
     \lambda = \lambda + \alpha_d \Delta \lambda\\
     \mu = \mu + \alpha_d \Delta \mu\\
-    \gamma = \sigma \frac{Z^{\top} \mu}{n_{ineq}}
+    \gamma = \sigma \frac{Z^{\top} \mu}{{n}_{ineq}}
 
 With \sigma set as a value between 0 and 1 (set by default at 0.1)
 
@@ -332,19 +348,22 @@ With \sigma set as a value between 0 and 1 (set by default at 0.1)
 4. Calculation of derivatives
 -------------------------------
 
-In the solving process of the Newton-Raphson, the first and second derivatives of the objective function and constraints have to be calculated. 
+In the solving process of the Newton-Raphson, the first and second derivatives of the objective function and
+constraints have to be calculated.
 
 4.1. Objective function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The objective function is a quadratic function that only has dependency with respect to the active power, so its first and second derivatives are:
+The objective function is a quadratic function that only has dependency with respect to the active power,
+so its first and second derivatives are:
 
 .. math::
     f = c_2^{\top} Pg^2 + c_1^{\top} Pg + c_0\\
     f_X[2nbus:2nbus+ng] = 2 (c_2 \cdot Pg) + c_1\\
-    f_{XX}[2nbus : 2nbus + ng, 2nbus : 2nbus + ng] = 2 [c_2]
+    {f}_{XX}[2nbus : 2nbus + ng, 2nbus : 2nbus + ng] = 2 [c_2]
 
-where :math:`(a\cdot b)` expresses the element-wise multiplication of two vectors, :math:`nbus` is the number of buses and :math:`ng` is the number of generators. 
+where :math:`(a\cdot b)` expresses the element-wise multiplication of two vectors, :math:`nbus` is the number
+of buses and :math:`ng` is the number of generators.
 
 In case the slack variables are used, the gradient vector will have some additional terms:
 
@@ -355,14 +374,16 @@ In case the slack variables are used, the gradient vector will have some additio
     f_X[npfvar + 2m : npfvar + 2m + nbus] = c_v\\
     f_X[npfvar + 2m + nbus : npfvar + 2m + 2nbus] = c_v
 
-where :math:`m` is the number of monitored branches and :math:`npfvar = 2nbus + 2ng` is the number of variables in the base power flow problem.
+where :math:`m` is the number of monitored branches and :math:`npfvar = 2nbus + 2ng` is the number of variables
+in the base power flow problem.
 
 
 4.2. Equality constraints
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The equality constraints associated with fixed setpoints (such as PV buses and slack reference) are straight-forward and not shown in here. The relevant derivatives are 
-those associated with the power flow equations. The derivatives that are calculated with respect to the base power flow variables can be found at MATPOWER's documentation, while the 
+The equality constraints associated with fixed setpoints (such as PV buses and slack reference) are straight-forward
+and not shown in here. The relevant derivatives are those associated with the power flow equations. The derivatives
+that are calculated with respect to the base power flow variables can be found at MATPOWER's documentation, while the
 derivatives with respect to the transformer variables have been developed during this work.
 
 4.2.1. First derivatives
@@ -373,25 +394,28 @@ The first derivatives of the power flow equations with respect to the variables 
 .. math::
     \frac{dG^{S}}{dX} = \frac{dS^{bus}}{dX} +  C_g[:, gen_{disp_idx}]\frac{d(Pg + jQg)}{dX} \\ 
 
-The derivatives with respect to the power variables are linear and straight-forward, while the derivatives with respect to voltage and transformer variables are more complicated, 
-and involve dealing with the derivatives with respect to the bus injection vector. Following Matpower's work for the base power flow variables, we get:
+The derivatives with respect to the power variables are linear and straight-forward, while the derivatives with
+respect to voltage and transformer variables are more complicated, and involve dealing with the derivatives with
+respect to the bus injection vector. Following Matpower's work for the base power flow variables, we get:
 
 .. math:: 
     Ibus = Ybus V\\
     \frac{dG^{S}}{dv} = [V] ([Ibus]^* + Ybus^* [V]^*) \left[\frac{1}{v}\right] \\
     \frac{dG^{S}}{d\theta} = j[V] ([Ibus]^* - Ybus^* [V]^*)\\
-    \frac{dG^{S}}{dP_g} = -C_g[:, gen_{disp_idx}]\\
-    \frac{dG^{S}}{dQ_g} = -jC_g[:, gen_{disp_idx}]
+    \frac{dG^{S}}{dP_g} = -C_g[:, {gen}_{disp_idx}]\\
+    \frac{dG^{S}}{dQ_g} = -jC_g[:, {gen}_{disp_idx}]
 
-When dealing with derivatives with respect to the transformer variables, the approach chosen has been to decompose the S^{bus} vector into the *from* and *to* branch power vectors, in order to 
-avoid dealing with the derivatives of the full admittance matrix, which would mean dealing with higher order tensors. The decomposition used was:
+When dealing with derivatives with respect to the transformer variables, the approach chosen has been to decompose
+the S^{bus} vector into the *from* and *to* branch power vectors, in order to avoid dealing with the derivatives
+of the full admittance matrix, which would mean dealing with higher order tensors. The decomposition used was:
 
 .. math::
     S^{bus} = {C_f}^{\top} S^{f} + {C_t}^{\top} S^{t} \\
     \frac{dS^{bus}}{dX} = {C_f}^{\top} \frac{dS^{f}}{dX} + {C_t}^{\top} \frac{dS^{t}}{dX}
 
-The following expressions extracted from the Flexible Universal Branch Model (FUBM) can be used to obtain the derivatives. Let :math:`k := (f_k, t_k)` describe a branch between 
-buses :math:`f` and :math:`t` that includes a transformer with the tap variables :math:`(m_{p_k}, \tau_k)`. The branch powers in both directions can be described as: 
+The following expressions extracted from the Flexible Universal Branch Model (FUBM) can be used to obtain the
+derivatives. Let :math:`k := (f_k, t_k)` describe a branch between buses :math:`f` and :math:`t` that includes a
+transformer with the tap variables :math:`(m_{p_k}, \tau_k)`. The branch powers in both directions can be described as:
 
 .. math::
     S^{f_k} = V_{f_k} {Y_{ff_k}}^* {V_{f_k}}^* + V_{f_k} Y_{ft_k} {V_{t_k}}^* \\
@@ -401,17 +425,22 @@ buses :math:`f` and :math:`t` that includes a transformer with the tap variables
     Y_{tf_k} = -\frac{y_{s_k}}{m_{p_k}} {e}^{\text{ }j\tau_k} \\
     Y_{tt_k} = y_{s_k}
 
-with :math:`y_{s_k} = \frac{1}{R_k+jX_k}` the series admittance of the branch. A note should be done regarding :math:`(m_p, \tau)`. Even though not all the lines will include transformers,
-and even less have controllable transformers, the admittances are calculated using these values for the tap ratio and the phase shift. In case there is no transformer, their value will be set to 
-:math:`(1, 0)`, and the derivatives will be 0. In case there is a transformer but it is not controllable, the derivatives will be 0 as well, and the values for the tap variables will take the
-nominal value obtained from the grid file. This means, the following derivatives will only be computed for the branches included in the subsets :math:`k_m` and :math:`k_\tau`.
+with :math:`y_{s_k} = \frac{1}{R_k+jX_k}` the series admittance of the branch. A note should be done
+regarding :math:`(m_p, \tau)`. Even though not all the lines will include transformers, and even less have
+controllable transformers, the admittances are calculated using these values for the tap ratio and the
+phase shift. In case there is no transformer, their value will be set to :math:`(1, 0)`, and the derivatives
+will be 0. In case there is a transformer but it is not controllable, the derivatives will be 0 as well, and
+the values for the tap variables will take the nominal value obtained from the grid file. This means, the following
+derivatives will only be computed for the branches included in the subsets :math:`k_m` and :math:`k_\tau`.
 
 Branches with transformers with module control
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-The variable vector :math:`m_p` only contains those transformers which are in a branch included in the list :math:`k_m`, meaning the matrices :math:`\frac{dS_{f/t}}{dm_p}` will be sized 
-:math:`nbus \text{ }\times\text{ } ntapm`. Let :math:`k` be a branch with a transformer :math:`(m_{p_i}, \tau_i)` with module control, and :math:`V_f = C_f V`, :math:`V_t = C_t V` 
-the voltages at the *from* and *to* buses. The first derivatives with respect to the module are calculated as follows:
+The variable vector :math:`m_p` only contains those transformers which are in a branch included in the
+list :math:`k_m`, meaning the matrices :math:`\frac{dS_{f/t}}{dm_p}` will be sized
+:math:`nbus \text{ }\times\text{ } ntapm`. Let :math:`k` be a branch with a transformer :math:`(m_{p_i}, \tau_i)`
+with module control, and :math:`V_f = C_f V`, :math:`V_t = C_t V` the voltages at the *from* and *to* buses.
+The first derivatives with respect to the module are calculated as follows:
 
 .. math::
     \frac{{dS}^{f}}{dm_{p}}_{ki} = -2\frac{{y_{s_k}}^*}{{m_{p_i}}^3} V_{f_k} {V_{f_k}}^* + \frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{\text{ }j\tau_i}} V_{f_k}{V_{t_k}}^*\\
@@ -420,8 +449,9 @@ the voltages at the *from* and *to* buses. The first derivatives with respect to
 Branches with transformers with phase control
 ++++++++++++++++++++++++++++++++++++++++++++++
 
-We proceed similarly, this time with the transformers which are in a branch included in the list :math:`k_\tau` (note that some of them will already appear in the previous list, which 
-means they will have crossed second derivatives). The matrices :math:`\frac{dS_{f/t}}{d\tau}` will be sized :math:`nbus \text{ }\times\text{ } ntapt`. The 
+We proceed similarly, this time with the transformers which are in a branch included in the list :math:`k_\tau`
+(note that some of them will already appear in the previous list, which means they will have crossed second derivatives).
+The matrices :math:`\frac{dS_{f/t}}{d\tau}` will be sized :math:`nbus \text{ }\times\text{ } ntapt`. The
 first derivatives with respect to the phase shift are calculated as follows:
 
 .. math::
@@ -429,7 +459,8 @@ first derivatives with respect to the phase shift are calculated as follows:
     \frac{{dS}^{t}}{d\tau}_{ki} = -j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{-j\tau_i}} V_{t_k} {V_{f_k}}^*
 
 
-The final step to get the derivatives with respect to the transformer variables is to recover the :math:`\frac{dSbus}{dX}` using the compositions of the *from* and *to* branch power vectors:
+The final step to get the derivatives with respect to the transformer variables is to recover
+the :math:`\frac{dSbus}{dX}` using the compositions of the *from* and *to* branch power vectors:
 
 .. math::
     \frac{dS^{bus}}{dm_p} = {C_f}^{\top} \frac{dS^{f}}{dm_p} + {C_t}^{\top} \frac{dS^{t}}{dm_p}\\
@@ -438,15 +469,18 @@ The final step to get the derivatives with respect to the transformer variables 
 4.2.2. Second derivatives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Developing the second derivatives is quite more complicated. The only terms of the hessian matrix :math:`G_{XX}(\lambda)` that are non-zero are those that depend on the voltage variables and the 
-transformer variables, since the first derivatives with respect to power variables are constant. We start off by developing the full expression of the Lagrangian gradient, were these second 
+Developing the second derivatives is quite more complicated. The only terms of the hessian
+matrix :math:`G_{XX}(\lambda)` that are non-zero are those that depend on the voltage variables and the
+transformer variables, since the first derivatives with respect to power variables are constant.
+We start off by developing the full expression of the Lagrangian gradient, were these second
 derivatives appear:
 
 .. math:: 
     L_X = \nabla(f_X) + \nabla(\lambda^{\top} G_X) + \nabla(\mu^{\top} H_X)\\
 
-which means that the second derivative is not the direct derivative of the first derivative, since it has to include the multiplier. In addition, since 
-the constraints have been separated into real and imaginary, the active and reactive power multipliers :math:`\lambda_p = \lambda[0 : nbus]` and :math:`\lambda_q = \lambda[nbus : 2nbus]` 
+which means that the second derivative is not the direct derivative of the first derivative, since it has
+to include the multiplier. In addition, since the constraints have been separated into real and imaginary,
+the active and reactive power multipliers :math:`\lambda_p = \lambda[0 : nbus]` and :math:`\lambda_q = \lambda[nbus : 2nbus]`
 have to be added to the corresponding constraints accordingly. The following second derivatives with respect 
 to the voltage variables have been adapted from Matpower's work to include this real and imaginary separation:
 
@@ -462,7 +496,8 @@ where:
     F_p = [\lambda_p] [V] (Ybus^*[V]^* - [Ibus]^*) \\
     C_p = [\lambda_p] [V] Ybus^*[V]^* 
 
-And identically, but using :math:`\lambda_q`, for the reactive power derivatives. To compose again the full hessian matrix, the following expressions are used:
+And identically, but using :math:`\lambda_q`, for the reactive power derivatives. To compose again the full
+hessian matrix, the following expressions are used:
 
 .. math:: 
     G_{vv} = \mathcal{R}(G_{vv_p}) + \mathcal{I}(G_{vv_q}) \\
@@ -470,7 +505,8 @@ And identically, but using :math:`\lambda_q`, for the reactive power derivatives
     G_{\theta v} = G_{v\theta}^{\top}
     G_{\theta\theta} = \mathcal{R}(G_{\theta\theta_p}) + \mathcal{I}(G_{\theta\theta_q}) 
 
-This ensures that only the active power balance is multiplied by the active power multiplier, and equally for the reactive power balance. 
+This ensures that only the active power balance is multiplied by the active power multiplier,
+and equally for the reactive power balance.
 
 Now, following the path used in the first derivatives with respect to the transformer variables, the second derivatives of the branch powers have to be obtained. In this case, there 
 will be crossed derivatives with respect to the voltage variables of both buses involved, which will make the process considerably more complex.
