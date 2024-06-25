@@ -17,6 +17,7 @@
 import numpy as np
 from typing import Dict, List, Tuple, Union
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
+from GridCalEngine.Devices import LineLocations
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -272,6 +273,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             is_slack = True
 
         volt_lev, substat, country = None, None, None
+        longitude, latitude = 0.0, 0.0
         if cgmes_elm.ConnectivityNodeContainer:
             volt_lev = find_object_by_idtag(
                 object_list=gc_model.voltage_levels,
@@ -297,6 +299,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                     print(f'No substation found for BUS {cgmes_elm.name}')
                 else:
                     country = substat.country
+                    longitude = substat.longitude
+                    latitude = substat.latitude
         else:
             logger.add_warning(msg='Missing voltage level.',
                                device=cgmes_elm.rdfid,
@@ -318,8 +322,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                               substation=substat,
                               voltage_level=volt_lev,
                               country=country,
-                              # latitude=0.0,
-                              # longitude=0.0,
+                              latitude=latitude,
+                              longitude=longitude,
                               Vm0=vm,
                               Va0=va)
 
@@ -714,6 +718,19 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                        b0=b0,
                                        rate=rate,
                                        length=cgmes_elm.length)
+                # if cgmes_elm.Location:
+                #     longitude = cgmes_elm.Location.PositionPoints.xPosition
+                #     latitude = cgmes_elm.Location.PositionPoints.yPosition
+                #     seq_number = cgmes_elm.Location.PositionPoints.sequenceNumber
+                #     pos_id = cgmes_elm.Location.PositionPoints.uuid
+                #     line_locations = LineLocations()
+                #     for cgmes_loc in ...:
+                #         line_locations.add(latitude=latitude,
+                #                            longitude=longitude,
+                #                            sequence=seq_number,
+                #                            idtag=pos_id)
+
+                    # gcdev_elm.locations = line_locations
                 gcdev_model.add_line(gcdev_elm, logger=logger)
             else:
                 logger.add_error(msg='Not exactly two terminals',
@@ -1126,17 +1143,27 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
     for device_list in [cgmes_model.cgmes_assets.Substation_list]:
 
         for cgmes_elm in device_list:
-            gcdev_elm = gcdev.Substation(
-                name=cgmes_elm.name,
-                idtag=cgmes_elm.uuid,
-                code=cgmes_elm.description,
-                # latitude=0.0,     # later from GL profile/Location class
-                # longitude=0.0
-            )
+
             region = find_object_by_idtag(
                 object_list=gcdev_model.communities,
                 target_idtag=cgmes_elm.Region.uuid
             )
+
+            if cgmes_elm.Location:
+                longitude = cgmes_elm.Location.PositionPoints.xPosition
+                latitude = cgmes_elm.Location.PositionPoints.yPosition
+            else:
+                latitude = 0.0
+                longitude = 0.0
+
+            gcdev_elm = gcdev.Substation(
+                name=cgmes_elm.name,
+                idtag=cgmes_elm.uuid,
+                code=cgmes_elm.description,
+                latitude=latitude,     # later from GL profile/Location class
+                longitude=longitude
+            )
+
             if region is not None:
                 gcdev_elm.community = region
             else:
@@ -1177,6 +1204,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
         volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
 
     return volt_lev_dict
+
 
 def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                       gcdev_model: MultiCircuit,
