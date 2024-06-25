@@ -27,11 +27,11 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_scaled import MVRSM_mo_scaled
 from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_pareto import MVRSM_mo_pareto
-from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.stop_crits import StochStopCriterion
+from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.stop_crits import StochStopCriterion
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
-from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.NSGA_3 import NSGA_3
-from GridCalEngine.Simulations.InvestmentsEvaluation.NumericalMethods.random_eval import random_trial
+from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 import NSGA_3
+from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.random_eval import random_trial
 from GridCalEngine.Utils.scores import get_overload_score, get_voltage_phase_score, get_voltage_module_score
 from GridCalEngine.enumerations import (InvestmentEvaluationMethod, SimulationTypes, EngineType,
                                         InvestmentsEvaluationObjectives)

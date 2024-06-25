@@ -422,8 +422,9 @@ def casehvdc():
                             optimize_nodal_capacity=False,
                             nodal_capacity_sign=-1.0,
                             capacity_nodes_idx=np.array([10]))
-    #run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
+    # run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
     print('')
+
 
 def caseREE():
     """
@@ -457,17 +458,17 @@ def caseREE():
         if gen.bus.area.name in disp_areas:
             # P limits -> restrict them very close to P
             print(f'Select generator {i}')
-            #gen.Pmax = gen.P #+ tol
-            #gen.Pmin = gen.P #- tol
+            # gen.Pmax = gen.P #+ tol
+            # gen.Pmin = gen.P #- tol
             # Tanmax -> set pf close to 0 to get large tanmax
-            #gen.Pf = tol
+            # gen.Pf = tol
         else:
 
-            #gen.enabled_dispatch = False
-            gen.Pmax = gen.P #+ tol
-            gen.Pmin = gen.P #- tol
-            #gen.Qmax = abs(math.tan(math.acos(gen.Pf)) * gen.P)
-            #gen.Qmin = -abs(math.tan(math.acos(gen.Pf)) * gen.P)
+            # gen.enabled_dispatch = False
+            gen.Pmax = gen.P  # + tol
+            gen.Pmin = gen.P  # - tol
+            # gen.Qmax = abs(math.tan(math.acos(gen.Pf)) * gen.P)
+            # gen.Qmin = -abs(math.tan(math.acos(gen.Pf)) * gen.P)
 
         # i += 1
 
@@ -526,13 +527,13 @@ if __name__ == '__main__':
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
-    #case14_linear_vs_nonlinear()
+    # case14_linear_vs_nonlinear()
     # case14()
     # case_gb()
     # case6ww()
     # case_pegase89()
     # case300()
     # casepegase13k()
-    #casehvdc()
+    # casehvdc()
     caseREE()
     # case_nodalcap()

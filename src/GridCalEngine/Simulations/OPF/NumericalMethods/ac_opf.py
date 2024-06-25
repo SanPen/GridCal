@@ -323,7 +323,6 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac, compute_hess, admittanc
     :param nig: Number of dispatchable generators
     :param Sg_undis: undispatchable complex power
     :param ctQ: Boolean that indicates if the Reactive control applies
-    :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
     :param h: Tolerance used for the autodiferentiation
     :return: return the resulting error between the autodif and the analytic derivation
     """
@@ -516,7 +515,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param Sbus_pf: Sbus initial solution
     :param voltage_pf: Voltage initial solution
     :param plot_error: Plot the error evolution. Default: False
-    :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param optimize_nodal_capacity:
     :param nodal_capacity_sign:
     :param capacity_nodes_idx:
@@ -784,7 +782,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         overloads_st = (np.power(np.power(rates[br_mon_idx], 2) + sl_st, 0.5) - rates[br_mon_idx]) * Sbase
 
     else:
-        pass
+        overloads_sf = np.zeros_like(rates)
+        overloads_st = np.zeros_like(rates)
 
     hvdc_power = nc.hvdc_data.Pset.copy()
     hvdc_power[hvdc_disp_idx] = Pfdc
@@ -810,8 +809,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_slvmin = pd.DataFrame(data={'Slacks Vmin': sl_vmin})
         df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm}, index=k_m)
         df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt}, index=k_tau)
-        if optimize_nodal_capacity:
-            df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': slcap * nc.Sbase}, index=capacity_nodes_idx)
 
         print()
         print("Bus:\n", df_bus)
@@ -824,6 +821,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Slacks:\n", df_slvmax)
         print("Slacks:\n", df_slvmin)
         if optimize_nodal_capacity:
+            df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': slcap * nc.Sbase}, index=capacity_nodes_idx)
             print("Nodal Capacity:\n", df_nodal_cap)
         print("Error", result.error)
         print("Gamma", result.gamma)
@@ -833,7 +831,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         result.plot_error()
 
     if not result.converged or result.converged:
-        logger.entries = list()
+
         for bus in range(nbus):
             if abs(result.dlam[bus]) >= 1e-3:
                 logger.add_warning('Nodal Power Balance convergence tolerance not achieved',

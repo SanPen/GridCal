@@ -17,14 +17,15 @@
 
 from typing import Union
 import numpy as np
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 from GridCalEngine.Simulations import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import NodalCapacityMethod
+from GridCalEngine.enumerations import NodalCapacityMethod, SubObjectType, DeviceType
 from GridCalEngine.basic_structures import IntVec
 
 
-class NodalCapacityOptions:
+class NodalCapacityOptions(OptionsTemplate):
     """
-    NodalCapacityOptions
+    Nodal Capacity Options
     """
 
     def __init__(self,
@@ -39,7 +40,14 @@ class NodalCapacityOptions:
         :param nodal_capacity_sign: if > 0 the generation is maximized, if < 0 the load is maximized
         :param method: NodalCapacityMethod
         """
+        OptionsTemplate.__init__(self, name="NodalCapacityOptions")
+
         self.opf_options = opf_options if opf_options is not None else OptimalPowerFlowOptions()
         self.capacity_nodes_idx = capacity_nodes_idx if capacity_nodes_idx is not None else np.zeros(0, dtype=int)
-        self.method = method
+        self.method: NodalCapacityMethod = method
         self.nodal_capacity_sign = nodal_capacity_sign
+
+        self.register(key="opf_options", tpe=DeviceType.SimulationOptionsDevice)
+        self.register(key="capacity_nodes_idx", tpe=SubObjectType.Array)
+        self.register(key="method", tpe=NodalCapacityMethod)
+        self.register(key="nodal_capacity_sign", tpe=float)
