@@ -207,8 +207,14 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
     else:
         b = psse_elm.BINIT
 
+    vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
+
+    # TODO: Add the remote control bus
+
     elm = dev.ControllableShunt(name='Switched shunt ' + name,
                                 active=bool(psse_elm.STAT),
+                                B=b,
+                                vset=vset,
                                 code=name)
 
     n_list = []

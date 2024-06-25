@@ -1151,7 +1151,7 @@ class SchematicWidget(BaseDiagramWidget):
 
             if delete_from_db:
                 try:
-                    self.circuit.delete_elements_by_type(obj=device)
+                    self.circuit.delete_element(obj=device)
                 except ValueError as e:
                     print("SchamaticWidget.remove_element", e)
 

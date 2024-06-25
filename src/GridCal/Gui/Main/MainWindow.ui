@@ -8711,6 +8711,7 @@ QProgressBar::chunk{
      <addaction name="actionExport_all_the_device_s_profiles"/>
      <addaction name="actionExport_contingencies"/>
      <addaction name="actionExport_all_results"/>
+     <addaction name="actionExport_circuit_differential"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -9007,7 +9008,7 @@ QProgressBar::chunk{
     <string>Expand distances</string>
    </property>
    <property name="shortcut">
-    <string>F3</string>
+    <string>Ctrl+Alt++</string>
    </property>
   </action>
   <action name="actionSmaller_nodes">
@@ -9022,7 +9023,7 @@ QProgressBar::chunk{
     <string>Shrink distances</string>
    </property>
    <property name="shortcut">
-    <string>F2</string>
+    <string>Ctrl+Alt+-</string>
    </property>
   </action>
   <action name="actionPower_flow_Stochastic">
@@ -9992,6 +9993,15 @@ QProgressBar::chunk{
    </property>
    <property name="toolTip">
     <string>Record video of the schematic</string>
+   </property>
+  </action>
+  <action name="actionExport_circuit_differential">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/export_pickle.svg</normaloff>:/Icons/icons/export_pickle.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Circuit differential</string>
    </property>
   </action>
  </widget>

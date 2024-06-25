@@ -18,52 +18,12 @@
 import time
 import requests
 import asyncio
-import websockets
-import numpy as np
-import json
 from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
 from PySide6 import QtCore
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.remote import gather_model_as_jsons_for_communication, RemoteInstruction, RemoteJob
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-
-
-class CustomJsonizer(json.JSONEncoder):
-    """
-    Class to serialize json while catching unserializable data like np._bool
-    """
-
-    def default(self, obj):
-        """
-        Override the default
-        :param obj:
-        :return:
-        """
-        return super().encode(bool(obj)) if isinstance(obj, np.bool_) else super().default(obj)
-
-
-async def try_send(ws, chunk: str) -> bool:
-    """
-    Send a chunk of data to the websocket server
-    :param ws:
-    :param chunk: text chunk
-    :return: success?
-    """
-    n_retry = 0
-    while n_retry < 10:
-        try:
-            await ws.send(chunk.encode(encoding='utf-8'))
-            return True
-        except websockets.exceptions.ConnectionClosedError as e:
-            n_retry += 1
-
-    return False
-
-
-def upload_progress_monitor(encoder, read, total):
-    # Your progress monitoring logic here
-    print(f"Progress: {read}/{total} bytes")
 
 
 async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]], endpoint_url: str):
@@ -90,10 +50,12 @@ class JobsModel(QtCore.QAbstractTableModel):
         """
         QtCore.QAbstractTableModel.__init__(self)
         self.jobs: List[RemoteJob] = list()
-        self.headers = ["Job id", "User", "Grid name", "Job Type", "Status"]
+        self.headers = ["Job id", "User", "Grid name", "Job Type", "Status", "Progress"]
 
     def clear(self):
-
+        """
+        Clear jobs
+        """
         self.jobs.clear()
 
     def parse_data(self, data: List[Dict[str, Union[str, Dict[str, Any]]]]):
@@ -156,6 +118,8 @@ class JobsModel(QtCore.QAbstractTableModel):
                 return job.instruction.operation.value
             elif index.column() == 4:
                 return job.status.value
+            elif index.column() == 4:
+                return job.progress
             else:
                 return ""
         return None
@@ -252,7 +216,10 @@ class ServerDriver(QThread):
             self.status_func(txt)
 
     def base_url(self):
-
+        """
+        Base URL of the service
+        :return:
+        """
         return f"http://{self.url}:{self.port}"
 
     def is_running(self) -> bool:
@@ -360,6 +327,43 @@ class ServerDriver(QThread):
             response.raise_for_status()
 
         self.get_jobs()
+
+    def download_results(self, job_id: str, api_key: str, local_filename: str):
+        """
+
+        :param job_id:
+        :param api_key:
+        :param local_filename:
+        :return:
+        """
+        url = f"{self.base_url()}/download_results/{job_id}"
+
+        headers = {
+            "accept": "application/json",
+            "API-Key": api_key
+        }
+
+        print("Started download...")
+
+        chunk_size = 1024 * 1024  # 1 MB
+        sent = 0
+        # Stream the download to avoid loading the entire file into memory
+        with requests.get(url, headers=headers, stream=True) as response:
+
+            if response.status_code == 200:
+
+                with open(local_filename, "wb") as file:
+                    for chunk in response.iter_content(chunk_size=chunk_size):  # 1MB chunks
+                        if chunk:  # Filter out keep-alive chunks
+                            file.write(chunk)
+                            sent += chunk_size
+                            self.progress_text.emit(f"Sent {sent / chunk_size} MBytes")
+
+            else:
+                print(response.status_code, response.text)
+
+        self.progress_text.emit(f"Downloaded file saved as {local_filename}")
+        print(f"Downloaded file saved as {local_filename}")
 
     def cancel_job(self, job_id: str, api_key: str) -> dict:
         """

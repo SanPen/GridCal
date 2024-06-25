@@ -201,6 +201,22 @@ def get_psse_transformer2w(transformer: dev.Transformer2W, bus_dict: Dict[dev.Bu
     psse_transformer.J = bus_dict[transformer.bus_to]
     psse_transformer.CKT = ckt
 
+    psse_transformer.CW = 1
+    # WINDV1 is the Winding 1 off-nominal turns ratio in pu of Winding1 bus base voltage
+    psse_transformer.WINDV1 = transformer.tap_module
+    psse_transformer.WINDV2 = 1.0
+
+    psse_transformer.CZ = 1
+    # 1 for resistance and reactance in pu on system MVA base and winding voltage base
+    # translating: impedances in the system base, do noting
+    psse_transformer.R1_2 = transformer.R
+    psse_transformer.X1_2 = transformer.X
+
+    psse_transformer.CM = 1
+    # 1 for complex  admittance  in pu  on  system  MVA  base  and Winding 1 bus voltage base
+    psse_transformer.MAG1 = transformer.G
+    psse_transformer.MAG2 = transformer.B
+
     return psse_transformer
 
 
@@ -226,7 +242,7 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.ANG2 = transformer.winding2.tap_phase
     psse_transformer.ANG3 = transformer.winding3.tap_phase
 
-    i, j, k, ckt = psse_transformer.code.split("_", 3)
+    i, j, k, ckt = transformer.code.split("_", 3)
 
     psse_transformer.I = bus_dict[transformer.bus1]
     psse_transformer.J = bus_dict[transformer.bus2]
@@ -260,6 +276,7 @@ def get_psse_branch(branch: dev.Line, bus_dict: Dict[dev.Bus, int], ckt: int) ->
     psse_branch.ST = 1 if branch.active else 0
     psse_branch.idtag = branch.idtag
     psse_branch.LEN = branch.length
+    psse_branch.RATE1 = branch.rate
 
     return psse_branch
 

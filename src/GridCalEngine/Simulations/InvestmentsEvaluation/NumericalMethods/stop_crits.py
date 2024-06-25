@@ -20,6 +20,10 @@ from scipy import stats
 
 
 class StopCriterion:
+    """
+    StopCriterion:
+    """
+
     def add(self, x):
         """
         Updates the criterion result based on a new observation.

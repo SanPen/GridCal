@@ -17,7 +17,7 @@
 import warnings
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Tuple, Union, Any, Set
+from typing import List, Dict, Tuple, Union, Any, Set, Generator
 import datetime as dateslib
 
 from GridCalEngine.basic_structures import IntVec, StrVec
@@ -296,6 +296,34 @@ class Assets:
                     self.device_type_name_dict[key] = elm.device_type
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Device iterators
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def item_types(self) -> Generator[DeviceType, None, None]:
+        """
+        Iterator of all the objects in the MultiCircuit
+        """
+        for key, tpe in self.device_type_name_dict.items():
+            yield tpe
+
+    def items_declared(self) -> Generator[ALL_DEV_TYPES, None, None]:
+        """
+        Iterator of the declared objects in the MultiCircuit
+        """
+        for key, elm_type_list in self.objects_with_profiles.items():
+            for elm in elm_type_list:
+                yield elm
+
+    def items(self) -> Generator[ALL_DEV_TYPES, None, None]:
+        """
+        Iterator of all the objects in the MultiCircuit
+        """
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(device_type=tpe)
+            for elm in elements:
+                yield elm
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Time profile
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -415,6 +443,77 @@ class Assets:
             raise Exception("Unsupported time unit")
 
         self._time_profile = pd.to_datetime(tm)
+
+    def create_profiles(self, steps, step_length, step_unit, time_base: dateslib.datetime = dateslib.datetime.now()):
+        """
+        Set the default profiles in all the objects enabled to have profiles.
+        :param steps: Number of time steps
+        :param step_length: Time length (1, 2, 15, ...)
+        :param step_unit: Unit of the time step ("h", "m" or "s")
+        :param time_base: Date to start from
+        """
+
+        index = np.empty(steps, dtype=object)
+        for i in range(steps):
+            if step_unit == 'h':
+                index[i] = time_base + dateslib.timedelta(hours=i * step_length)
+            elif step_unit == 'm':
+                index[i] = time_base + dateslib.timedelta(minutes=i * step_length)
+            elif step_unit == 's':
+                index[i] = time_base + dateslib.timedelta(seconds=i * step_length)
+
+        index = pd.DatetimeIndex(index)
+
+        self.format_profiles(index)
+
+    def format_profiles(self, index: pd.DatetimeIndex):
+        """
+        Format the pandas profiles in place using a time index.
+        :param index: Time profile
+        """
+
+        self.time_profile = pd.to_datetime(index, dayfirst=True)
+
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(device_type=tpe)
+            for elm in elements:
+                elm.create_profiles(index)
+
+    def set_time_profile(self, unix_data: IntVec):
+        """
+        Set unix array as time array
+        :param unix_data: array of seconds since 1970
+        """
+        # try parse
+        try:
+            self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
+        except Exception as e:
+            print("Error", e)
+            # it may come in nanoseconds instead of seconds...
+            self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
+
+        self.ensure_profiles_exist()
+
+    def ensure_profiles_exist(self) -> None:
+        """
+        Format the pandas profiles in place using a time index.
+        """
+        if self.time_profile is None:
+            raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
+
+        for key, tpe in self.device_type_name_dict.items():
+            elements = self.get_elements_by_type(device_type=tpe)
+            for elm in elements:
+                elm.ensure_profiles_exist(self.time_profile)
+
+    def delete_profiles(self):
+        """
+        Delete the time profiles
+        :return:
+        """
+        for elm in self.items():
+            elm.delete_profiles()
+        self.time_profile = None
 
     # ------------------------------------------------------------------------------------------------------------------
     # Snapshot time
@@ -1339,7 +1438,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'Load':
             if bus is not None:
@@ -1404,7 +1503,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'gen':
             if bus is not None:
@@ -1492,7 +1591,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'External grid':
             if bus is not None:
@@ -1557,7 +1656,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'shunt':
             if bus is not None:
@@ -1626,7 +1725,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'batt':
             if bus is not None:
@@ -1691,7 +1790,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'StaticGen':
             if bus is not None:
@@ -1766,7 +1865,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'CInj':
             api_obj.name += '@' + bus.name
@@ -1846,7 +1945,7 @@ class Assets:
         api_obj.cn = cn
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         if api_obj.name == 'CShutn':
             if bus is not None:
@@ -3723,7 +3822,9 @@ class Assets:
     def turbines(self, value: List[dev.FluidTurbine]):
         self._turbines = value
 
-    def add_fluid_turbine(self, node: dev.FluidNode, api_obj: Union[dev.FluidTurbine, None]) -> dev.FluidTurbine:
+    def add_fluid_turbine(self,
+                          node: Union[None, dev.FluidNode] = None,
+                          api_obj: Union[dev.FluidTurbine, None] = None) -> dev.FluidTurbine:
         """
         Add fluid turbine
         :param node: Fluid node to add to
@@ -3735,7 +3836,7 @@ class Assets:
         api_obj.plant = node
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         self._turbines.append(api_obj)
 
@@ -3782,7 +3883,9 @@ class Assets:
     def pumps(self, value: List[dev.FluidPump]):
         self._pumps = value
 
-    def add_fluid_pump(self, node: dev.FluidNode, api_obj: Union[dev.FluidPump, None]) -> dev.FluidPump:
+    def add_fluid_pump(self,
+                       node: Union[None, dev.FluidNode] = None,
+                       api_obj: Union[dev.FluidPump, None] = None) -> dev.FluidPump:
         """
         Add fluid pump
         :param node: Fluid node to add to
@@ -3793,7 +3896,7 @@ class Assets:
         api_obj.plant = node
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         self._pumps.append(api_obj)
 
@@ -3840,8 +3943,9 @@ class Assets:
     def p2xs(self, value: List[dev.FluidP2x]):
         self._p2xs = value
 
-    def add_fluid_p2x(self, node: dev.FluidNode,
-                      api_obj: Union[dev.FluidP2x, None]) -> dev.FluidP2x:
+    def add_fluid_p2x(self,
+                      node: Union[None, dev.FluidNode] = None,
+                      api_obj: Union[dev.FluidP2x, None] = None) -> dev.FluidP2x:
         """
         Add power to x
         :param node: Fluid node to add to
@@ -3852,7 +3956,7 @@ class Assets:
         api_obj.plant = node
 
         if self.time_profile is not None:
-            api_obj.create_profiles(self.time_profile)
+            api_obj.ensure_profiles_exist(self.time_profile)
 
         self._p2xs.append(api_obj)
 
@@ -4181,11 +4285,10 @@ class Assets:
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
         """
-        return [self.get_loads(),
-                self.get_external_grids(),
-                self.get_static_generators(),
-                self.get_controllable_shunts(),
-                self.get_current_injections()]
+        return [self.loads,
+                self.static_generators,
+                self.external_grids,
+                self.current_injections]
 
     def get_load_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
@@ -4209,49 +4312,97 @@ class Assets:
         return n
 
     # ------------------------------------------------------------------------------------------------------------------
-    # Generation like devices
+    # Shunt-like devices
     # ------------------------------------------------------------------------------------------------------------------
+    def get_shunt_like_devices_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
+        """
+        Get a list of all devices that behave like a shunt
+        :return: List of Lists of Shunt devices
+        """
+        return [self.shunts,
+                self.controllable_shunts]
 
-    def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
+    def get_shunt_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of Shunt devices
+        """
+        elms = list()
+        for lst in self.get_shunt_like_devices_lists():
+            elms += lst
+        return elms
+
+    def get_shunt_like_device_number(self) -> int:
         """
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
         """
-        return (self.get_generators()
-                + self.get_batteries())
+        n = 0
+        for lst in self.get_shunt_like_devices_lists():
+            n += len(lst)
+
+        return n
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Generation like devices
+    # ------------------------------------------------------------------------------------------------------------------
+    def get_generation_like_lists(self) -> List[List[INJECTION_DEVICE_TYPES]]:
+        """
+        Get a list with the fluid injections lists
+        :return:
+        """
+        return [self._generators, self._batteries]
+
+    def get_generation_like_number(self) -> int:
+        """
+        Get number of fluid injections
+        :return: int
+        """
+        count = 0
+        for lst in self.get_generation_like_lists():
+            count += len(lst)
+        return count
+
+    def get_generation_like_names(self) -> StrVec:
+        """
+        Returns a list of :ref:`Injection<Injection>` names.
+        Sort by order: turbines, pumps, p2xs
+        """
+        names = list()
+        for lst in self.get_generation_like_lists():
+            for elm in lst:
+                names.append(elm.name)
+        return np.array(names)
+
+    def get_generation_like_devices(self) -> List[INJECTION_DEVICE_TYPES]:
+        """
+        Returns a list of :ref:`Injection<Injection>` names.
+        Sort by order: turbines, pumps, p2xs
+        """
+        elms = list()
+        for lst in self.get_generation_like_lists():
+            elms += lst
+        return elms
 
     # ------------------------------------------------------------------------------------------------------------------
     # Fluid injections
     # ------------------------------------------------------------------------------------------------------------------
-
-    def get_fluid_devices(self) -> List[FLUID_TYPES]:
+    def get_fluid_injection_lists(self) -> List[List[FLUID_TYPES]]:
         """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
+        Get a list with the fluid injections lists
+        :return:
         """
-        return (self.get_fluid_nodes()
-                + self.get_fluid_paths()
-                + self.get_fluid_pumps()
-                + self.get_fluid_turbines()
-                + self.get_fluid_p2xs())
-
-    def get_fluid_lists(self) -> List[List[FLUID_TYPES]]:
-        """
-        Get a list of all devices that can inject or subtract power from a node
-        :return: List of EditableDevice
-        """
-        return [self.get_fluid_nodes(),
-                self.get_fluid_paths(),
-                self.get_fluid_pumps(),
-                self.get_fluid_turbines(),
-                self.get_fluid_p2xs()]
+        return [self._turbines, self._pumps, self._p2xs]
 
     def get_fluid_injection_number(self) -> int:
         """
         Get number of fluid injections
         :return: int
         """
-        return self.get_fluid_turbines_number() + self.get_fluid_pumps_number() + self.get_fluid_p2xs_number()
+        count = 0
+        for lst in self.get_fluid_injection_lists():
+            count += len(lst)
+        return count
 
     def get_fluid_injection_names(self) -> StrVec:
         """
@@ -4259,15 +4410,9 @@ class Assets:
         Sort by order: turbines, pumps, p2xs
         """
         names = list()
-        for elm in self._turbines:
-            names.append(elm.name)
-
-        for elm in self._pumps:
-            names.append(elm.name)
-
-        for elm in self._p2xs:
-            names.append(elm.name)
-
+        for lst in self.get_fluid_injection_lists():
+            for elm in lst:
+                names.append(elm.name)
         return np.array(names)
 
     def get_fluid_injections(self) -> List[FLUID_TYPES]:
@@ -4275,7 +4420,10 @@ class Assets:
         Returns a list of :ref:`Injection<Injection>` names.
         Sort by order: turbines, pumps, p2xs
         """
-        return self._turbines + self._pumps + self._p2xs
+        elms = list()
+        for lst in self.get_fluid_injection_lists():
+            elms += lst
+        return elms
 
     # ------------------------------------------------------------------------------------------------------------------
     # Contingency devices
@@ -4286,7 +4434,7 @@ class Assets:
         Get a list of devices susceptible to be included in contingencies
         :return: list of devices
         """
-        return self.get_branches() + self.get_generators()
+        return self.get_branches() + self.get_injection_devices()
 
     # ------------------------------------------------------------------------------------------------------------------
     #
@@ -4295,67 +4443,6 @@ class Assets:
     #
     #
     # ------------------------------------------------------------------------------------------------------------------
-    def create_profiles(self, steps, step_length, step_unit, time_base: dateslib.datetime = dateslib.datetime.now()):
-        """
-        Set the default profiles in all the objects enabled to have profiles.
-        :param steps: Number of time steps
-        :param step_length: Time length (1, 2, 15, ...)
-        :param step_unit: Unit of the time step ("h", "m" or "s")
-        :param time_base: Date to start from
-        """
-
-        index = np.empty(steps, dtype=object)
-        for i in range(steps):
-            if step_unit == 'h':
-                index[i] = time_base + dateslib.timedelta(hours=i * step_length)
-            elif step_unit == 'm':
-                index[i] = time_base + dateslib.timedelta(minutes=i * step_length)
-            elif step_unit == 's':
-                index[i] = time_base + dateslib.timedelta(seconds=i * step_length)
-
-        index = pd.DatetimeIndex(index)
-
-        self.format_profiles(index)
-
-    def format_profiles(self, index: pd.DatetimeIndex):
-        """
-        Format the pandas profiles in place using a time index.
-        :param index: Time profile
-        """
-
-        self.time_profile = pd.to_datetime(index, dayfirst=True)
-
-        for key, tpe in self.device_type_name_dict.items():
-            elements = self.get_elements_by_type(device_type=tpe)
-            for elm in elements:
-                elm.create_profiles(index)
-
-    def set_time_profile(self, unix_data: IntVec):
-        """
-        Set unix array as time array
-        :param unix_data: array of seconds since 1970
-        """
-        # try parse
-        try:
-            self.time_profile = pd.to_datetime(np.array(unix_data), unit='s', origin='unix')
-        except Exception as e:
-            print("Error", e)
-            # it may come in nanoseconds instead of seconds...
-            self.time_profile = pd.to_datetime(np.array(unix_data) / 1e9, unit='s', origin='unix')
-
-        self.ensure_profiles_exist()
-
-    def ensure_profiles_exist(self) -> None:
-        """
-        Format the pandas profiles in place using a time index.
-        """
-        if self.time_profile is None:
-            raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
-
-        for key, tpe in self.device_type_name_dict.items():
-            elements = self.get_elements_by_type(device_type=tpe)
-            for elm in elements:
-                elm.ensure_profiles_exist(self.time_profile)
 
     def get_elements_by_type(self, device_type: DeviceType) -> Union[pd.DatetimeIndex, List[ALL_DEV_TYPES]]:
         """
@@ -4561,9 +4648,9 @@ class Assets:
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
-    def set_elements_by_type(self, device_type: DeviceType,
-                             devices: List[ALL_DEV_TYPES],
-                             logger: Logger = Logger()):
+    def set_elements_list_by_type(self, device_type: DeviceType,
+                                  devices: List[ALL_DEV_TYPES],
+                                  logger: Logger = Logger()):
         """
         Set a list of elements all at once
         :param device_type: DeviceType
@@ -4755,7 +4842,185 @@ class Assets:
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
-    def delete_elements_by_type(self, obj: ALL_DEV_TYPES) -> None:
+    def add_element(self, obj: ALL_DEV_TYPES) -> None:
+        """
+        Add a device in its corresponding list
+        :param obj: device object to add
+        :return: Nothing
+        """
+
+        if obj.device_type == DeviceType.LoadDevice:
+            self.add_load(api_obj=obj)
+
+        elif obj.device_type == DeviceType.StaticGeneratorDevice:
+            self.add_static_generator(api_obj=obj)
+
+        elif obj.device_type == DeviceType.GeneratorDevice:
+            self.add_generator(api_obj=obj)
+
+        elif obj.device_type == DeviceType.BatteryDevice:
+            self.add_battery(api_obj=obj)
+
+        elif obj.device_type == DeviceType.ShuntDevice:
+            self.add_shunt(api_obj=obj)
+
+        elif obj.device_type == DeviceType.ExternalGridDevice:
+            self.add_external_grid(api_obj=obj)
+
+        elif obj.device_type == DeviceType.CurrentInjectionDevice:
+            self.add_current_injection(api_obj=obj)
+
+        elif obj.device_type == DeviceType.ControllableShuntDevice:
+            self.add_controllable_shunt(api_obj=obj)
+
+        elif obj.device_type == DeviceType.LineDevice:
+            self.add_line(obj=obj)
+
+        elif obj.device_type == DeviceType.Transformer2WDevice:
+            self.add_transformer2w(obj=obj)
+
+        elif obj.device_type == DeviceType.Transformer3WDevice:
+            self.add_transformer3w(obj=obj)
+
+        elif obj.device_type == DeviceType.WindingDevice:
+            self.add_winding(obj=obj)
+
+        elif obj.device_type == DeviceType.SeriesReactanceDevice:
+            self.add_series_reactance(obj=obj)
+
+        elif obj.device_type == DeviceType.HVDCLineDevice:
+            self.add_hvdc(obj=obj)
+
+        elif obj.device_type == DeviceType.UpfcDevice:
+            self.add_upfc(obj=obj)
+
+        elif obj.device_type == DeviceType.VscDevice:
+            self.add_vsc(obj=obj)
+
+        elif obj.device_type == DeviceType.BusDevice:
+            self.add_bus(obj=obj)
+
+        elif obj.device_type == DeviceType.ConnectivityNodeDevice:
+            self.add_connectivity_node(obj=obj)
+
+        elif obj.device_type == DeviceType.BranchGroupDevice:
+            self.add_branch_group(obj=obj)
+
+        elif obj.device_type == DeviceType.BusBarDevice:
+            self.add_bus_bar(obj=obj)
+
+        elif obj.device_type == DeviceType.OverheadLineTypeDevice:
+            self.add_overhead_line(obj=obj)
+
+        elif obj.device_type == DeviceType.TransformerTypeDevice:
+            self.add_transformer_type(obj=obj)
+
+        elif obj.device_type == DeviceType.UnderGroundLineDevice:
+            self.add_underground_line(obj=obj)
+
+        elif obj.device_type == DeviceType.SequenceLineDevice:
+            self.add_sequence_line(obj=obj)
+
+        elif obj.device_type == DeviceType.WireDevice:
+            self.add_wire(obj=obj)
+
+        elif obj.device_type == DeviceType.DCLineDevice:
+            self.add_dc_line(obj=obj)
+
+        elif obj.device_type == DeviceType.SubstationDevice:
+            self.add_substation(obj=obj)
+
+        elif obj.device_type == DeviceType.VoltageLevelDevice:
+            self.add_voltage_level(obj=obj)
+
+        elif obj.device_type == DeviceType.AreaDevice:
+            self.add_area(obj=obj)
+
+        elif obj.device_type == DeviceType.ZoneDevice:
+            self.add_zone(obj=obj)
+
+        elif obj.device_type == DeviceType.CountryDevice:
+            self.add_country(obj=obj)
+
+        elif obj.device_type == DeviceType.CommunityDevice:
+            self.add_community(obj=obj)
+
+        elif obj.device_type == DeviceType.RegionDevice:
+            self.add_region(obj=obj)
+
+        elif obj.device_type == DeviceType.MunicipalityDevice:
+            self.add_municipality(obj=obj)
+
+        elif obj.device_type == DeviceType.ContingencyDevice:
+            self.add_contingency(obj=obj)
+
+        elif obj.device_type == DeviceType.ContingencyGroupDevice:
+            self.add_contingency_group(obj=obj)
+
+        elif obj.device_type == DeviceType.Technology:
+            self.add_technology(obj=obj)
+
+        elif obj.device_type == DeviceType.InvestmentDevice:
+            self.add_investment(obj=obj)
+
+        elif obj.device_type == DeviceType.InvestmentsGroupDevice:
+            self.add_investments_group(obj=obj)
+
+        elif obj.device_type == DeviceType.FuelDevice:
+            self.add_fuel(obj=obj)
+
+        elif obj.device_type == DeviceType.EmissionGasDevice:
+            self.add_emission_gas(obj=obj)
+
+        elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
+            self.add_generator_technology(obj=obj)
+
+        elif obj.device_type == DeviceType.GeneratorFuelAssociation:
+            self.add_generator_fuel(obj=obj)
+
+        elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
+            self.add_generator_emission(obj=obj)
+
+        elif obj.device_type == DeviceType.FluidNodeDevice:
+            self.add_fluid_node(obj=obj)
+
+        elif obj.device_type == DeviceType.FluidTurbineDevice:
+            self.add_fluid_turbine(api_obj=obj)
+
+        elif obj.device_type == DeviceType.FluidP2XDevice:
+            self.add_fluid_p2x(api_obj=obj)
+
+        elif obj.device_type == DeviceType.FluidPumpDevice:
+            self.add_fluid_pump(api_obj=obj)
+
+        elif obj.device_type == DeviceType.FluidPathDevice:
+            self.add_fluid_path(obj=obj)
+
+        elif obj.device_type == DeviceType.PiMeasurementDevice:
+            self.add_pi_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.QiMeasurementDevice:
+            self.add_qi_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.PfMeasurementDevice:
+            self.add_pf_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.QfMeasurementDevice:
+            self.add_qf_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.VmMeasurementDevice:
+            self.add_vm_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.IfMeasurementDevice:
+            self.add_if_measurement(obj=obj)
+
+        elif obj.device_type == DeviceType.ModellingAuthority:
+            self.add_modelling_authority(obj=obj)
+
+        else:
+            raise Exception('Element type not understood ' + str(obj.device_type))
+
+    def delete_element(self, obj: ALL_DEV_TYPES) -> None:
         """
         Get set of elements and their parent nodes
         :param obj: device object to delete
@@ -4932,6 +5197,42 @@ class Assets:
 
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
+
+    def add_or_replace_object(self, api_obj: ALL_DEV_TYPES, logger: Logger) -> bool:
+        """
+        Add or replace an object based on the UUID
+        :param api_obj: Any asset
+        :param logger: Logger object
+        :return: replaced?
+        """
+
+        object_type_list: List[ALL_DEV_TYPES] = self.get_elements_by_type(device_type=api_obj.device_type)
+
+        found = False
+        found_idx = -1
+        for i, obj in enumerate(object_type_list):
+            if obj.idtag == api_obj.idtag:
+                found = True
+                found_idx = i
+                break
+
+        if found:
+            # replace
+            object_type_list[found_idx] = api_obj
+
+            logger.add_info("Element replaced",
+                            device_class=api_obj.device_type.value,
+                            device=api_obj.name)
+
+        else:
+            # add
+            self.add_element(obj=api_obj)
+
+            logger.add_info("Element added",
+                            device_class=api_obj.device_type.value,
+                            device=api_obj.name)
+
+        return found
 
     def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
         """

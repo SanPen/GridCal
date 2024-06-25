@@ -14,9 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import numpy as np
-from typing import List, Tuple
-from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QComboBox
 
 from GridCal.Gui.GuiFunctions import create_spinbox, create_int_spinbox, get_list_model
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger, TapChangerTypes
@@ -56,7 +54,9 @@ class TransformerTapsEditor(QDialog):
             TapChangerTypes.Asymmetrical.value: TapChangerTypes.Asymmetrical,
             TapChangerTypes.VoltageRegulation.value: TapChangerTypes.VoltageRegulation,
         }
-        self.tap_changer_types.setModel(get_list_model(list(self.tap_changer_types_dict.keys())))
+        lst = list(self.tap_changer_types_dict.keys())
+        self.tap_changer_types.setModel(get_list_model(lst))
+        self.tap_changer_types.setCurrentIndex(lst.index(self.api_object.tc_type.value))
 
         self.layout.addWidget(QLabel("Tap changer type"))
         self.layout.addWidget(self.tap_changer_types)
@@ -96,3 +96,5 @@ class TransformerTapsEditor(QDialog):
         self.api_object.tc_type = self.tap_changer_types_dict[self.tap_changer_types.currentText()]
 
         self.api_object.recalc()
+
+        self.close()

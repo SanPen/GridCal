@@ -891,6 +891,42 @@ class WindingsConnection(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+class ActionType(Enum):
+    """
+    ActionType
+    """
+    NoAction = 'No action'
+    Add = 'Add'
+    Modify = 'Modify'
+    Delete = 'Delete'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ActionType[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
 class DeviceType(Enum):
     """
     Device types
@@ -1015,6 +1051,7 @@ class SubObjectType(Enum):
     GeneratorQCurve = 'Generator Q curve'
     LineLocations = 'Line locations'
     TapChanger = 'Tap changer'
+    Array = "Array"
 
     def __str__(self) -> str:
         return str(self.value)
@@ -1754,6 +1791,3 @@ class ContingencyFilteringMethods(Enum):
             return ContingencyFilteringMethods[s]
         except KeyError:
             return s
-
-
-
