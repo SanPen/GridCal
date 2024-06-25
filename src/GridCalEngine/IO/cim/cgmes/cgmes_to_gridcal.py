@@ -17,6 +17,7 @@
 import numpy as np
 from typing import Dict, List, Tuple, Union
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
+from GridCalEngine.Devices import LineLocations
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -272,6 +273,7 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             is_slack = True
 
         volt_lev, substat, country = None, None, None
+        longitude, latitude = 0.0, 0.0
         if cgmes_elm.ConnectivityNodeContainer:
             volt_lev = find_object_by_idtag(
                 object_list=gc_model.voltage_levels,
@@ -297,6 +299,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                     print(f'No substation found for BUS {cgmes_elm.name}')
                 else:
                     country = substat.country
+                    longitude = substat.longitude
+                    latitude = substat.latitude
         else:
             logger.add_warning(msg='Missing voltage level.',
                                device=cgmes_elm.rdfid,
@@ -318,8 +322,8 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
                               substation=substat,
                               voltage_level=volt_lev,
                               country=country,
-                              # latitude=0.0,
-                              # longitude=0.0,
+                              latitude=latitude,
+                              longitude=longitude,
                               Vm0=vm,
                               Va0=va)
 
@@ -709,6 +713,14 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                        b0=b0,
                                        rate=rate,
                                        length=cgmes_elm.length)
+                if cgmes_elm.Location:
+                    longitude = cgmes_elm.Location.PositionPoints.xPosition
+                    latitude = cgmes_elm.Location.PositionPoints.yPosition
+                    seq_number = cgmes_elm.Location.PositionPoints.sequenceNumber
+                    pos_id = cgmes_elm.Location.PositionPoints.uuid
+                    line_locations = LineLocations()
+                    line_locations.add(latitude=latitude, longitude=longitude,sequence=seq_number,idtag=pos_id)
+                    gcdev_elm.locations = line_locations
                 gcdev_model.add_line(gcdev_elm, logger=logger)
             else:
                 logger.add_error(msg='Not exactly two terminals',
