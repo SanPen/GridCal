@@ -1893,7 +1893,7 @@ class MultiCircuit(Assets):
         """
         Add a circuit to this circuit
         :param circuit: Circuit to insert
-        :return: Nothing
+        :return: Logger
         """
 
         logger = Logger()
