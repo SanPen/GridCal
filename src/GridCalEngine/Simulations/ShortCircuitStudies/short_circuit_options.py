@@ -29,15 +29,15 @@ class ShortCircuitOptions(OptionsTemplate):
                  mid_line_fault: bool = False,
                  branch_index: int = 0,
                  branch_fault_locations: float = 0.5,
-                 fault_r: complex = 1e-20,
-                 fault_x: float = 0.0,
+                 fault_r: float = 1e-20,
+                 fault_x: float = 1e-20,
                  verbose: int = 0):
         """
 
         :param bus_index: Index of the bus failed (used if mid_line_fault is False)
         :param fault_type: fault type among 3x, LG, LL and LLG possibilities
         :param mid_line_fault: Is the fault occurring at the middle of a line?
-        :param branch_index: Index of the failed branch in case of mid line fault
+        :param branch_index: Index of the failed branch in case of a line fault (used if mid_line_fault is True)
         :param branch_fault_locations: per unit location of the fault measured from the "from" bus
         :param fault_r: Fault resistance
         :param fault_x: Fault reactance
@@ -56,6 +56,7 @@ class ShortCircuitOptions(OptionsTemplate):
         self.branch_fault_locations = branch_fault_locations
 
         self.branch_fault_r = fault_r
+
         self.branch_fault_x = fault_x
 
         self.verbose = verbose

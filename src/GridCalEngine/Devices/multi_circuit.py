@@ -1173,8 +1173,8 @@ class MultiCircuit(Assets):
         Get the area-branches information
         :return: area_names, bus_area_indices, F, T, hvdc_F, hvdc_T
         """
-        area_dict = {elm: i for i, elm in enumerate(self.get_areas())}
-        bus_dict = self.get_bus_index_dict()
+        area_dict: Dict[dev.Area, int] = {elm: i for i, elm in enumerate(self.get_areas())}
+        bus_dict: Dict[dev.Bus, int] = self.get_bus_index_dict()
 
         area_names = [a.name for a in self.get_areas()]
         bus_area_indices = np.array([area_dict.get(b.area, 0) for b in self.get_buses()])

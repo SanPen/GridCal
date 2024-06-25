@@ -20,7 +20,7 @@ import pandas as pd
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.enumerations import FaultType
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat, Mat, BoolVec, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
@@ -31,13 +31,13 @@ class ShortCircuitResults(ResultsTemplate):
         A **ShortCircuitResults** object is create as an attribute of the
         :ref:`ShortCircuitResults<pf_mp>` (as ShortCircuitResults.results) when the power flow is run. It
         provides access to the simulation results through its class attributes.
-        :param n:
-        :param m:
-        :param n_hvdc:
-        :param bus_names:
-        :param branch_names:
-        :param hvdc_names:
-        :param bus_types:
+        :param n: number of nodes
+        :param m: number of branches (without HVDC)
+        :param n_hvdc: number of HVDC lines
+        :param bus_names: array of bus names
+        :param branch_names: array of branch names
+        :param hvdc_names: array of HVDC names
+        :param bus_types: array of bus types
         """
 
         ResultsTemplate.__init__(self,
@@ -95,11 +95,11 @@ class ShortCircuitResults(ResultsTemplate):
         self.hvdc_names = hvdc_names
 
         # vars for the inter-area computation
-        self.F = None
-        self.T = None
-        self.hvdc_F = None
-        self.hvdc_T = None
-        self.bus_area_indices = list()
+        self.F = np.zeros(m, dtype=int)
+        self.T = np.zeros(m, dtype=int)
+        self.hvdc_F = np.zeros(n_hvdc, dtype=int)
+        self.hvdc_T = np.zeros(n_hvdc, dtype=int)
+        self.bus_area_indices = np.zeros(n, dtype=int)
         self.area_names = area_names
 
         self.Sbus1 = np.zeros(n, dtype=complex)
@@ -141,7 +141,58 @@ class ShortCircuitResults(ResultsTemplate):
         self.sc_type = FaultType.ph3
         self.SCpower = np.zeros(n, dtype=complex)
 
-        # TODO: Register results
+        # Register results
+        self.register(name='bus_names', tpe=StrVec)
+        self.register(name='branch_names', tpe=StrVec)
+        self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='bus_types', tpe=IntVec)
+
+        self.register(name='F', tpe=IntVec)
+        self.register(name='T', tpe=IntVec)
+        self.register(name='hvdc_F', tpe=IntVec)
+        self.register(name='hvdc_T', tpe=IntVec)
+        self.register(name='bus_area_indices', tpe=IntVec)
+        self.register(name='area_names', tpe=IntVec)
+
+        self.register(name='Sbus1', tpe=CxVec)
+        self.register(name='voltage1', tpe=CxVec)
+        self.register(name='Sf1', tpe=CxVec)
+        self.register(name='St1', tpe=CxVec)
+        self.register(name='If1', tpe=CxVec)
+        self.register(name='It1', tpe=CxVec)
+        self.register(name='Vbranch1', tpe=CxVec)
+        self.register(name='loading1', tpe=CxVec)
+        self.register(name='losses1', tpe=CxVec)
+
+        self.register(name='Sbus0', tpe=CxVec)
+        self.register(name='voltage0', tpe=CxVec)
+        self.register(name='Sf0', tpe=CxVec)
+        self.register(name='St0', tpe=CxVec)
+        self.register(name='If0', tpe=CxVec)
+        self.register(name='It0', tpe=CxVec)
+        self.register(name='Vbranch0', tpe=CxVec)
+        self.register(name='loading0', tpe=CxVec)
+        self.register(name='losses0', tpe=CxVec)
+
+        self.register(name='Sbus2', tpe=CxVec)
+        self.register(name='voltage2', tpe=CxVec)
+        self.register(name='Sf2', tpe=CxVec)
+        self.register(name='St2', tpe=CxVec)
+        self.register(name='If2', tpe=CxVec)
+        self.register(name='It2', tpe=CxVec)
+        self.register(name='Vbranch2', tpe=CxVec)
+        self.register(name='loading2', tpe=CxVec)
+        self.register(name='losses2', tpe=CxVec)
+
+        self.register(name='hvdc_losses', tpe=Vec)
+        self.register(name='hvdc_Pf', tpe=Vec)
+        self.register(name='hvdc_Pt', tpe=Vec)
+        self.register(name='hvdc_loading', tpe=Vec)
+
+        self.register(name='sc_bus_index', tpe=int)
+        self.register(name='sc_type', tpe=FaultType)
+        self.register(name='SCpower', tpe=CxVec)
+
 
     @property
     def elapsed(self):
@@ -197,8 +248,13 @@ class ShortCircuitResults(ResultsTemplate):
         self.loading2[br_idx] = results.loading2
         self.losses2[br_idx] = results.losses2
 
-    def get_inter_area_flows(self, sequence=1):
-
+    def get_inter_area_sequence_flows(self, sequence: int = 1):
+        """
+        Get the inter are flows per sequence
+        :param sequence: Sequence number 0, 1, 2
+        :return:
+        """
+        assert sequence in [0, 1, 2]
         na = len(self.area_names)
         x = np.zeros((na, na), dtype=complex)
 
