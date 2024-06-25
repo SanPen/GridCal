@@ -84,9 +84,17 @@ def power_flow_ts(grid: MultiCircuit,
 
     return driver.results
 
+
 def acopf(grid: MultiCircuit,
           pf_options: PowerFlowOptions = PowerFlowOptions(),
           opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions()) -> NonlinearOPFResults:
+    """
+    Run AC Optimal Power Flow
+    :param grid: MultiCircuit instance
+    :param pf_options: Power Flow Options instance (optional)
+    :param opf_options: Optimal Power Flow Options instance (optional)
+    :return: AC Optimal Power Flow results
+    """
 
     acopf_res = run_nonlinear_opf(grid=grid,
                                   pf_options=pf_options,
@@ -95,4 +103,3 @@ def acopf(grid: MultiCircuit,
                                   pf_init=True)
 
     return acopf_res
-
