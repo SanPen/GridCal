@@ -63,7 +63,7 @@ dependencies = ['setuptools>=41.0.1',
                 "qtconsole>=4.5.4",
                 "openpyxl>=2.4.9",
                 "chardet>=3.0.4",  # for the psse files character detection
-                "scikit-learn>=0.18",
+                "scikit-learn>=1.5.0",
                 "geopy>=1.16",
                 "pytest>=7.2",
                 "h5py>=2.9.0",
