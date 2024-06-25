@@ -2096,6 +2096,29 @@ class MultiCircuit(Assets):
                             device=elm.idtag,
                             device_class=elm.device_type.value)
 
+    def clean_technologies(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+        """
+        Clean the investments and investment groups
+        :param all_dev:
+        :param logger: Logger
+        """
+        elements_to_delete = list()
+
+        # pass 1: detect the "null" contingencies
+        for elm_lst in [self._generators_emissions,
+                        self._generators_fuels,
+                        self._generators_technologies]:
+            for elm in elm_lst:
+                if elm.generator not in all_dev.keys():
+                    elements_to_delete.append(elm)
+
+        # pass 2: delete the "null" elements
+        for elm in elements_to_delete:
+            self.delete_element(obj=elm)
+            logger.add_info("Deleted isolated investment",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
     def clean(self) -> Logger:
         """
         Clean dead references
@@ -2110,6 +2133,7 @@ class MultiCircuit(Assets):
         self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
         self.clean_contingencies(all_dev=all_dev, logger=logger)
         self.clean_investments(all_dev=all_dev, logger=logger)
+        self.clean_technologies(all_dev=all_dev, logger=logger)
 
         return logger
 

@@ -169,6 +169,24 @@ class GCProp:
         return "prop:" + self.name
 
 
+def get_action_symbol(action: ActionType):
+    """
+
+    :param action:
+    :return:
+    """
+    if action == ActionType.NoAction:
+        return "."
+    elif action == ActionType.Add:
+        return "+"
+    elif action == ActionType.Delete:
+        return "-"
+    elif action == ActionType.Modify:
+        return "~"
+    else:
+        return ""
+
+
 class EditableDevice:
     """
     This is the main device class from which all inherit
@@ -227,7 +245,7 @@ class EditableDevice:
         return str(self.name)
 
     def __repr__(self) -> str:
-        return self.idtag + '::' + self.name
+        return get_action_symbol(self.action) + "::" + self.idtag + '::' + self.name
 
     def __hash__(self) -> int:
         # alternatively, return hash(repr(self))
