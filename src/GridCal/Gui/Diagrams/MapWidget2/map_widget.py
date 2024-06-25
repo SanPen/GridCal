@@ -295,8 +295,8 @@ class MapView(QGraphicsView):
         if self.startLon is not None and longitude is not None and latitude is not None:
             sx, sy = self.map_widget.geo_to_view(longitude=self.startLon, latitude=self.startLat)
 
-            dx = (-sx + (128 * self.schema_zoom) + wi / 2) / self.schema_zoom
-            dy = (-sy + (128 * self.schema_zoom) + he / 2) / self.schema_zoom
+            dx = -10 / self.schema_zoom + (-sx + (128 * self.schema_zoom) + wi / 2) / self.schema_zoom
+            dy = -10 / self.schema_zoom + (-sy + (128 * self.schema_zoom) + he / 2) / self.schema_zoom
 
             point = QPointF(dx, dy)
             self.map_widget.view.centerOn(point)
