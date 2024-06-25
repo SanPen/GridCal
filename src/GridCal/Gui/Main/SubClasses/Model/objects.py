@@ -216,7 +216,7 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.ContingencyDevice:
             elm = dev.Contingency()
-            dictionary_of_lists = {DeviceType.ContingencyGroupDevice: self.circuit.contingency_groups, }
+            dictionary_of_lists = {DeviceType.ContingencyGroupDevice: self.circuit.get_contingency_groups(), }
 
         elif elm_type == DeviceType.ContingencyGroupDevice:
             elm = dev.ContingencyGroup()
@@ -453,7 +453,7 @@ class ObjectsTableMain(DiagramsMain):
                 for obj in selected_objects:
 
                     # delete from the database
-                    self.circuit.delete_elements_by_type(obj=obj)
+                    self.circuit.delete_element(obj=obj)
 
                     # delete from all diagrams
                     for diagram in self.diagram_widgets_list:
@@ -545,7 +545,7 @@ class ObjectsTableMain(DiagramsMain):
                 self.circuit.add_bus(dev.Bus(name=f'Bus {self.circuit.get_bus_number() + 1}'))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
-                group = dev.ContingencyGroup(name=f"Contingency group {len(self.circuit.contingency_groups) + 1}")
+                group = dev.ContingencyGroup(name=f"Contingency group {len(self.circuit.get_contingency_groups()) + 1}")
                 self.circuit.add_contingency_group(group)
 
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:

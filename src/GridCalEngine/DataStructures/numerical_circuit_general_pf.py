@@ -1755,16 +1755,6 @@ class NumericalCircuit:
 
         return Qmax_bus / self.Sbase, Qmin_bus / self.Sbase
 
-    def compute_susceptance_limits(self):
-        """
-        Compute susceptance limits
-        :return:
-        """
-        Bmin = self.load_data.get_b_min_per_bus() / self.Sbase
-        Bmax = self.load_data.get_b_max_per_bus() / self.Sbase
-
-        return Bmax, Bmin
-
     def get_inter_areas_branches(self, buses_areas_1, buses_areas_2):
         """
         Get the Branches that join two areas
@@ -2041,7 +2031,7 @@ class NumericalCircuit:
                 Cf=self.Cf,
                 Ct=self.Ct,
                 C_bus_shunt=self.shunt_data.C_bus_elm.tocsc(),
-                shunt_admittance=self.shunt_data.admittance,
+                shunt_admittance=self.shunt_data.Y,
                 shunt_active=self.shunt_data.active,
                 ys=Ys,
                 B=self.branch_data.B,

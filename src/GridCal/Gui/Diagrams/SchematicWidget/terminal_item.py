@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt, QPointF, QRectF, QRect
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import (QGraphicsRectItem, QGraphicsItem, QGraphicsEllipseItem, QGraphicsSceneMouseEvent)
 
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget

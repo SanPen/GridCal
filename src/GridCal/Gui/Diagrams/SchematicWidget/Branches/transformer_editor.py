@@ -14,50 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import numpy as np
-from typing import List, Tuple
+
+from typing import List
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox
-from GridCal.Gui.GuiFunctions import get_list_model
-from GridCalEngine.Devices.Branches.transformer import Transformer2W, TransformerType
-
-
-def reverse_transformer_short_circuit_study(transformer_obj: Transformer2W,
-                                            Sbase: float) -> Tuple[float, float, float, float, float]:
-    """
-    Get the short circuit study values from the impedance values
-    :param transformer_obj: Transformer2W
-    :param Sbase: base power in MVA (100 MVA)
-    :return: Pfe, Pcu, Vsc, I0, Sn
-    """
-
-    # Change the impedances to the system base
-    base_change = Sbase / (transformer_obj.rate + 1e-9)
-
-    R = transformer_obj.R / base_change
-    X = transformer_obj.X / base_change
-    G = transformer_obj.G / base_change
-    B = transformer_obj.B / base_change
-    Sn = transformer_obj.rate
-
-    zsc = np.sqrt(R * R + X * X)
-    Vsc = 100.0 * zsc
-    Pcu = R * Sn * 1000.0
-
-    if abs(G) > 0.0 and abs(B) > 0.0:
-        zl = 1.0 / complex(G, B)
-        rfe = zl.real
-        xm = zl.imag
-
-        Pfe = 1000.0 * Sn / rfe
-
-        k = 1 / (rfe * rfe) + 1 / (xm * xm)
-        I0 = 100.0 * np.sqrt(k)
-    else:
-        Pfe = 0
-        I0 = 0
-
-    return Pfe, Pcu, Vsc, I0, Sn
+from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QComboBox
+from GridCal.Gui.GuiFunctions import get_list_model, create_spinbox
+from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 
 
 class TransformerEditor(QDialog):
@@ -98,7 +61,11 @@ class TransformerEditor(QDialog):
         self.Vf = self.transformer_obj.bus_from.Vnom
         self.Vt = self.transformer_obj.bus_to.Vnom
 
-        Pfe, Pcu, Vsc, I0, Sn = reverse_transformer_short_circuit_study(transformer_obj=self.transformer_obj,
+        Pfe, Pcu, Vsc, I0, Sn = reverse_transformer_short_circuit_study(R=self.transformer_obj.R,
+                                                                        X=self.transformer_obj.X,
+                                                                        G=self.transformer_obj.G,
+                                                                        B=self.transformer_obj.B,
+                                                                        rate=self.transformer_obj.rate,
                                                                         Sbase=Sbase)
 
         # ------------------------------------------------------------------------------------------
@@ -128,39 +95,19 @@ class TransformerEditor(QDialog):
         self.load_template_btn.clicked.connect(self.load_template_btn_click)
 
         # Sn
-        self.sn_spinner = QDoubleSpinBox()
-        self.sn_spinner.setMinimum(0)
-        self.sn_spinner.setMaximum(9999999)
-        self.sn_spinner.setDecimals(6)
-        self.sn_spinner.setValue(Sn)
+        self.sn_spinner = create_spinbox(value=Sn, minimum=0, maximum=999999, decimals=6)
 
         # Pcu
-        self.pcu_spinner = QDoubleSpinBox()
-        self.pcu_spinner.setMinimum(0)
-        self.pcu_spinner.setMaximum(9999999)
-        self.pcu_spinner.setDecimals(6)
-        self.pcu_spinner.setValue(Pcu)
+        self.pcu_spinner = create_spinbox(value=Pcu, minimum=0, maximum=999999, decimals=6)
 
         # Pfe
-        self.pfe_spinner = QDoubleSpinBox()
-        self.pfe_spinner.setMinimum(0)
-        self.pfe_spinner.setMaximum(9999999)
-        self.pfe_spinner.setDecimals(6)
-        self.pfe_spinner.setValue(Pfe)
+        self.pfe_spinner = create_spinbox(value=Pfe, minimum=0, maximum=999999, decimals=6)
 
         # I0
-        self.I0_spinner = QDoubleSpinBox()
-        self.I0_spinner.setMinimum(0)
-        self.I0_spinner.setMaximum(9999999)
-        self.I0_spinner.setDecimals(6)
-        self.I0_spinner.setValue(I0)
+        self.I0_spinner = create_spinbox(value=I0, minimum=0, maximum=999999, decimals=6)
 
         # Vsc
-        self.vsc_spinner = QDoubleSpinBox()
-        self.vsc_spinner.setMinimum(0)
-        self.vsc_spinner.setMaximum(9999999)
-        self.vsc_spinner.setDecimals(6)
-        self.vsc_spinner.setValue(Vsc)
+        self.vsc_spinner = create_spinbox(value=Vsc, minimum=0, maximum=999999, decimals=6)
 
         # accept button
         self.accept_btn = QPushButton()
@@ -233,7 +180,7 @@ class TransformerEditor(QDialog):
 
         return lst
 
-    def get_template(self):
+    def get_template(self) -> TransformerType:
         """
         Fabricate template values from the branch values
         :return: TransformerType instance

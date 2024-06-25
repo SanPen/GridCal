@@ -27,10 +27,7 @@ def test_lhs():
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
                                   verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  multi_core=False, dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=True)
+                                  control_q=ReactivePowerControlMode.NoControl)
     print('Running LHC...')
     lhs_sim = StochasticPowerFlowDriver(main_circuit,
                                         pf_options,

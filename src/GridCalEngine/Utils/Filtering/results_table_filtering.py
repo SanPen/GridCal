@@ -18,7 +18,7 @@ from typing import Tuple, Any, List
 import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import BoolVec, Mat
-from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, CompOps, FilterSubject,
+from GridCalEngine.Utils.Filtering.filtering import (MasterFilter, Filter, FilterOps, FilterSubject,
                                                      is_numeric, parse_expression)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 

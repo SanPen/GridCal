@@ -20,37 +20,47 @@ from typing import TYPE_CHECKING, List, Union
 import logging
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPen, QBrush
-from GridCal.Gui.Diagrams.MapWidget.Schema.segment import Segment
+from PySide6.QtGui import QColor, QPen
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCalEngine.Devices import LineLocation
 from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.enumerations import DeviceType
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
+
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Diagrams.MapWidget.Schema.node_graphic_item import NodeGraphicItem
-    from GridCal.Gui.Diagrams.MapWidget.Schema.substation_graphic_item import SubstationGraphicItem
-    from GridCal.Gui.Diagrams.MapWidget.Schema.voltage_level_graphic_item import VoltageLevelGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class MapTemplateLine:
+class MapLineContainer(GenericDiagramWidget):
     """
     Represents a polyline in the map
     """
 
-    def __init__(self, editor: GridMapWidget, api_object: BRANCH_TYPES):
+    def __init__(self,
+                 editor: GridMapWidget,
+                 api_object: BRANCH_TYPES,
+                 draw_labels: bool = True):
         """
 
         :param editor:
         :param api_object:
         """
-        # self.Parent = parent
-        self.editor = editor
-        self.api_object = api_object
+        GenericDiagramWidget.__init__(self,
+                                      parent=None,
+                                      api_object=api_object,
+                                      editor=editor,
+                                      draw_labels=draw_labels)
+
+        self.editor: GridMapWidget = editor  # re assign to make clear the editor type
+
         self.nodes_list: List[NodeGraphicItem] = list()
-        self.segments_list: List[Segment] = list()
+        self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
         self.original = True
 
@@ -93,7 +103,7 @@ class MapTemplateLine:
         """
         self.nodes_list.append(node)
 
-    def add_segment(self, segment: Segment):
+    def add_segment(self, segment: MapLineSegment):
         """
         Add segment
         :param segment: Connector
@@ -122,6 +132,15 @@ class MapTemplateLine:
         """
         for conector in self.segments_list:
             conector.update_endings()
+
+    def end_update(self) -> None:
+        """
+
+        :return:
+        """
+
+        for conector in self.segments_list:
+            conector.end_update()
 
     def draw_all(self) -> None:
         """
@@ -167,6 +186,20 @@ class MapTemplateLine:
         # second pass: create the segments
         self.redraw_segments()
 
+    def removeNode(self, node: NodeGraphicItem):
+
+        for seg in self.segments_list:
+            if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
+                self.editor.diagram_scene.removeItem(seg)
+
+        self.nodes_list.remove(node)
+
+        for nod in self.nodes_list:
+            if nod.index > node.index:
+                nod.index = nod.index - 1
+
+        self.redraw_segments()
+
     def redraw_segments(self) -> None:
         """
         Draw all segments in the line
@@ -196,10 +229,11 @@ class MapTemplateLine:
             elm1 = connection_elements[i - 1]
             elm2 = connection_elements[i]
             # Assuming Connector takes (scene, node1, node2) as arguments
-            segment_graphic_object = Segment(first=elm1, second=elm2)
+            segment_graphic_object = MapLineSegment(first=elm1,
+                                                    second=elm2,
+                                                    container=self)
 
-            elm1.needsUpdateFirst = True
-            elm2.needsUpdateSecond = True
+            elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
 
             # register the segment in the line
@@ -344,8 +378,8 @@ class MapTemplateLine:
                 api_obj.long = self.nodes_list[idx].lon
                 idx = idx + 1
 
-            l1 = self.editor.create_line(ln1, original=False)
-            l2 = self.editor.create_line(ln2, original=False)
+            l1 = self.editor.add_api_line(ln1, original=False)
+            l2 = self.editor.add_api_line(ln2, original=False)
 
             self.disable_line()
 
@@ -365,5 +399,8 @@ class MapTemplateLine:
         self.enabled = False
         for node in self.nodes_list:
             node.enabled = False
+
         for line in self.segments_list:
-            line.set_line_color(Qt.gray)
+            line.set_enable(val=False)
+
+

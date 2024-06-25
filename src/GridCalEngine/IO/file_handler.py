@@ -14,19 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import os
 import json
 
 from collections.abc import Callable
-from typing import Union, List, Any, Dict
+from typing import Union, List, Any, Dict, TYPE_CHECKING
 
 from GridCalEngine.IO.cim.cgmes.gridcal_to_cgmes import gridcal_to_cgmes, create_cgmes_headers
 from GridCalEngine.IO.cim.cgmes.cgmes_export import CimExporter
-from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
-
 from GridCalEngine.IO.gridcal.json_parser import save_json_file_v3
 from GridCalEngine.IO.gridcal.excel_interface import save_excel, load_from_xls, interpret_excel_v3, interprete_excel_v2
 from GridCalEngine.IO.gridcal.pack_unpack import gather_model_as_data_frames, parse_gridcal_data, gather_model_as_jsons
@@ -53,6 +52,9 @@ from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 
+if TYPE_CHECKING:
+    from GridCalEngine.Simulations.types import DRIVER_OBJECTS
+
 
 class FileSavingOptions:
     """
@@ -61,7 +63,7 @@ class FileSavingOptions:
 
     def __init__(self,
                  cgmes_boundary_set: str = "",
-                 simulation_drivers: List[DriverTemplate] = None,
+                 simulation_drivers: List[DRIVER_OBJECTS] = None,
                  sessions_data: List[DriverToSave] = None,
                  dictionary_of_json_files: Dict[str, Dict[str, Any]] = None,
                  cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
@@ -82,7 +84,7 @@ class FileSavingOptions:
 
         self.cgmes_boundary_set: str = cgmes_boundary_set
 
-        self.simulation_drivers = simulation_drivers if simulation_drivers else list()
+        self.simulation_drivers: List[DRIVER_OBJECTS] = simulation_drivers if simulation_drivers else list()
 
         self.sessions_data: List[DriverToSave] = sessions_data if sessions_data else list()
 
@@ -205,7 +207,7 @@ class FileOpen:
                     else:
                         self.logger.add('The file could not be processed')
 
-                elif file_extension.lower() == '.gridcal':
+                elif file_extension.lower() in ['.gridcal', '.dgridcal']:
 
                     # open file content
                     data_dictionary, self.json_files = get_frames_from_zip(self.file_name,
@@ -386,7 +388,7 @@ class FileSave:
         if self.file_name.endswith('.xlsx'):
             logger = self.save_excel()
 
-        elif self.file_name.endswith('.gridcal'):
+        elif self.file_name.endswith('.gridcal') or self.file_name.endswith('.dgridcal'):
             logger = self.save_zip()
 
         elif self.file_name.endswith('.sqlite'):

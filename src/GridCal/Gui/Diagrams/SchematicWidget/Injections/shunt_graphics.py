@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import QPointF, QLineF
 from PySide6.QtGui import QPen, QIcon, QPixmap
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Line
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Injections.shunt import Shunt

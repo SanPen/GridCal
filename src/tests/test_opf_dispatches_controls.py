@@ -25,15 +25,11 @@ def test_opf_hvdc():
     main_circuit = FileOpen(fname).open()
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
-                                          verbose=False,
-                                          initialize_with_existing_solution=False,
-                                          multi_core=False,
-                                          dispatch_storage=True,
+                                          verbose=0,
                                           control_q=ReactivePowerControlMode.NoControl,
-                                          control_p=True,
                                           retry_with_other_methods=False)
 
-    opf_options = OptimalPowerFlowOptions(verbose=False,
+    opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           mip_solver=MIPSolvers.CBC,
@@ -69,15 +65,11 @@ def test_opf_gen():
     main_circuit = FileOpen(fname).open()
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
-                                          verbose=False,
-                                          initialize_with_existing_solution=False,
-                                          multi_core=False,
-                                          dispatch_storage=True,
+                                          verbose=0,
                                           control_q=ReactivePowerControlMode.NoControl,
-                                          control_p=True,
                                           retry_with_other_methods=False)
 
-    opf_options = OptimalPowerFlowOptions(verbose=False,
+    opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           mip_solver=MIPSolvers.CBC,
@@ -115,15 +107,11 @@ def test_opf_line_monitoring():
     main_circuit = FileOpen(fname).open()
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
-                                          verbose=False,
-                                          initialize_with_existing_solution=False,
-                                          multi_core=False,
-                                          dispatch_storage=True,
+                                          verbose=0,
                                           control_q=ReactivePowerControlMode.NoControl,
-                                          control_p=True,
                                           retry_with_other_methods=False)
 
-    opf_options = OptimalPowerFlowOptions(verbose=False,
+    opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           mip_solver=MIPSolvers.CBC,
@@ -163,15 +151,11 @@ def test_opf_hvdc_controls():
     main_circuit = FileOpen(fname).open()
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
-                                          verbose=False,
-                                          initialize_with_existing_solution=False,
-                                          multi_core=False,
-                                          dispatch_storage=True,
+                                          verbose=0,
                                           control_q=ReactivePowerControlMode.NoControl,
-                                          control_p=True,
                                           retry_with_other_methods=False)
 
-    opf_options = OptimalPowerFlowOptions(verbose=False,
+    opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           mip_solver=MIPSolvers.CBC,
@@ -213,15 +197,11 @@ def test_opf_trafo_controls():
     main_circuit = FileOpen(fname).open()
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
-                                          verbose=False,
-                                          initialize_with_existing_solution=False,
-                                          multi_core=False,
-                                          dispatch_storage=True,
+                                          verbose=0,
                                           control_q=ReactivePowerControlMode.NoControl,
-                                          control_p=True,
                                           retry_with_other_methods=False)
 
-    opf_options = OptimalPowerFlowOptions(verbose=False,
+    opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           mip_solver=MIPSolvers.CBC,

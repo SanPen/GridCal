@@ -14,3 +14,22 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.enumerations import DeviceType
+
+
+class OptionsTemplate(EditableDevice):
+    """
+    Options template
+    """
+
+    def __init__(self, name: str):
+        """
+
+        :param name:
+        """
+        EditableDevice.__init__(self, name=name,
+                                idtag=None,
+                                code="",
+                                device_type=DeviceType.SimulationOptionsDevice,
+                                comment="")

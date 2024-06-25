@@ -14,13 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
-class ClusteringAnalysisOptions:
+class ClusteringAnalysisOptions(OptionsTemplate):
 
-    def __init__(self, n_points):
+    def __init__(self, n_points: int):
         """
         Clustering options
         :param n_points: number of points
         """
+        OptionsTemplate.__init__(self, name='Clustering analysis options')
+
         self.n_points = n_points
+
+        self.register(key="n_points", tpe=int)

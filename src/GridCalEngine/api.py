@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, NonlinearOPFResults
 from GridCalEngine.basic_structures import *
 from GridCalEngine.Simulations import *
 from GridCalEngine.IO import *
@@ -82,3 +83,23 @@ def power_flow_ts(grid: MultiCircuit,
     driver.run()
 
     return driver.results
+
+
+def acopf(grid: MultiCircuit,
+          pf_options: PowerFlowOptions = PowerFlowOptions(),
+          opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions()) -> NonlinearOPFResults:
+    """
+    Run AC Optimal Power Flow
+    :param grid: MultiCircuit instance
+    :param pf_options: Power Flow Options instance (optional)
+    :param opf_options: Optimal Power Flow Options instance (optional)
+    :return: AC Optimal Power Flow results
+    """
+
+    acopf_res = run_nonlinear_opf(grid=grid,
+                                  pf_options=pf_options,
+                                  opf_options=opf_options,
+                                  plot_error=False,
+                                  pf_init=True)
+
+    return acopf_res

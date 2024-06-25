@@ -23,8 +23,8 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import (GenericDBWidget, ACTIVE, DEACTIVATED,
-                                                                   FONT_SCALE, EMERGENCY)
+from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
+                                                   FONT_SCALE, EMERGENCY)
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
@@ -43,14 +43,13 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_graphics
 
 from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
-from GridCalEngine.Simulations.Topology.topology_reduction_driver import reduce_buses
 from GridCalEngine.Devices.Substation.busbar import BusBar
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
-class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
+class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -82,7 +81,7 @@ class BusBarGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=busbar, editor=editor, draw_labels=draw_labels)
+        GenericDiagramWidget.__init__(self, parent=parent, api_object=busbar, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0

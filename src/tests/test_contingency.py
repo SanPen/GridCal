@@ -19,7 +19,7 @@ import numpy as np
 from GridCalEngine.api import *
 
 
-def test_contingency():
+def test_contingency() -> None:
     """
     Check that the contingencies match conceptually
     :return:
@@ -28,13 +28,14 @@ def test_contingency():
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
                                   verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
+                                  use_stored_guess=False,
+                                  control_q=ReactivePowerControlMode.NoControl)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PowerFlow)
-    cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
+    options = ContingencyAnalysisOptions(pf_options=pf_options, 
+                                         contingency_method=ContingencyMethod.PowerFlow)
+    
+    cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, 
+                                                     options=options,
                                                      linear_multiple_contingencies=None)
     cont_analysis_driver.run()
     print("")
@@ -57,18 +58,16 @@ def test_linear_contingency():
     fname = os.path.join('data', 'grids', 'IEEE14-2_4_1-3_4_1.gridcal')
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=False)
+                                  verbose=0,
+                                  control_q=ReactivePowerControlMode.NoControl)
 
     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
     linear_analysis.run()
-    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit)
+    linear_multi_contingency = LinearMultiContingencies(grid=main_circuit,
+                                                        contingency_groups_used=main_circuit.get_contingency_groups())
     linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, engine=ContingencyMethod.PTDF)
+    options = ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=ContingencyMethod.PTDF)
     cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, options=options,
                                                      linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver.run()

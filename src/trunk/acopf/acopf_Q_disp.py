@@ -37,12 +37,14 @@ def modify_grid(grid):
 
 
 def run_acopf(grid):
+
     pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl,
                                       ignore_single_node_islands=True,
                                       max_iter=50,
                                       max_outer_loop_iter=1000,
                                       q_steepness_factor=1.0,
                                       tolerance=1e-05)
+
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-4,
                                               acopf_mode=gce.AcOpfMode.ACOPFslacks,
                                               lodf_tolerance=0.05,

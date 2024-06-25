@@ -23,6 +23,7 @@ from GridCalEngine.basic_structures import Vec
 import GridCalEngine.Utils.NumericalMethods.autodiff as ad
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from typing import Callable, Tuple
 
 
@@ -205,7 +206,7 @@ def evaluate_power_flow(x, mu, lmbda, Ybus, Yf, Cg, Sd, slack, no_slack, Yt, fro
                              fxx=fxx.tocsc(), Gxx=Gxx.tocsc(), Hxx=Hxx.tocsc())
 
 
-def ac_optimal_power_flow(nc: gce.NumericalCircuit, pf_options: gce.PowerFlowOptions, verbose=2):
+def ac_optimal_power_flow(nc: NumericalCircuit, pf_options: gce.PowerFlowOptions, verbose=2):
     """
 
     :param nc:

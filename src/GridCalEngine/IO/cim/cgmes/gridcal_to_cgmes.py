@@ -403,12 +403,13 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
             sub_geo_region.name = mc_elm.name
             sub_geo_region.description = mc_elm.code
 
+            region_id = ""
             if hasattr(mc_elm, "country"):
-                region_id = mc_elm.country.idtag
+                if mc_elm.country:
+                    region_id = mc_elm.country.idtag
             elif hasattr(mc_elm, "area"):
-                region_id = mc_elm.area.idtag
-            else:
-                region_id = ""
+                if mc_elm.area:
+                    region_id = mc_elm.area.idtag
 
             region = find_object_by_uuid(
                 cgmes_model=cgmes_model,
@@ -634,12 +635,13 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
         cl.Terminals = create_cgmes_terminal(mc_elm.bus, cl, cgmes_model, logger)
         cl.name = mc_elm.name
 
-        vl = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-            target_uuid=mc_elm.bus.voltage_level.idtag
-        )
-        cl.EquipmentContainer = vl
+        if mc_elm.bus.voltage_level:
+            vl = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                target_uuid=mc_elm.bus.voltage_level.idtag
+            )
+            cl.EquipmentContainer = vl
 
         cl.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
@@ -707,6 +709,8 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                                )  # which Vnom we need?
         line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, line, cgmes_model, logger),
                           create_cgmes_terminal(mc_elm.bus_to, line, cgmes_model, logger)]
+        line.length = mc_elm.length
+
         vnom = line.BaseVoltage.nominalVoltage
 
         if vnom is not None:
@@ -857,12 +861,13 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # condenser = 'condenser'
 
         cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
-        vl = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-            target_uuid=mc_elm.bus.voltage_level.idtag
-        )
-        cgmes_syn.EquipmentContainer = vl
+        if mc_elm.bus.voltage_level:
+            vl = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                target_uuid=mc_elm.bus.voltage_level.idtag
+            )
+            cgmes_syn.EquipmentContainer = vl
 
         cgmes_syn.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                                     object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
@@ -882,11 +887,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cm_transformer, cgmes_model, logger),
                                     create_cgmes_terminal(mc_elm.bus_to, cm_transformer, cgmes_model, logger)]
         cm_transformer.aggregate = False  # what is this?
-        cm_transformer.EquipmentContainer = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.Substation_list,
-            target_uuid=mc_elm.bus_from.substation.idtag
-        )
+        if mc_elm.bus_from.substation:
+            cm_transformer.EquipmentContainer = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.Substation_list,
+                target_uuid=mc_elm.bus_from.substation.idtag
+            )
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
@@ -1063,12 +1069,13 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
         lsc = object_template(rdfid=form_rdfid(mc_elm.idtag))
         lsc.name = mc_elm.name
         lsc.description = mc_elm.code
-        vl = find_object_by_uuid(
-            cgmes_model=cgmes_model,
-            object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
-            target_uuid=mc_elm.bus.voltage_level.idtag
-        )
-        lsc.EquipmentContainer = vl
+        if mc_elm.bus.voltage_level:
+            vl = find_object_by_uuid(
+                cgmes_model=cgmes_model,
+                object_list=cgmes_model.cgmes_assets.VoltageLevel_list,
+                target_uuid=mc_elm.bus.voltage_level.idtag
+            )
+            lsc.EquipmentContainer = vl
 
         lsc.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                               object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
@@ -1114,10 +1121,10 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         sv_voltage = object_template(rdfid=new_rdf_id,
                                      tpe='SvVoltage')
 
-        sv_voltage.TopologicalNode = cgmes_model.cgmes_assets.TopologicalNode_list[i]
+        # sv_voltage.TopologicalNode = cgmes_model.cgmes_assets.TopologicalNode_list[i] todo include boundary
         # as the order of the results is the same as the order of buses (=tn)
-        bv = cgmes_model.cgmes_assets.TopologicalNode_list[i].BaseVoltage
-        sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
+        # bv = cgmes_model.cgmes_assets.TopologicalNode_list[i].BaseVoltage
+        sv_voltage.v = np.abs(voltage) #* bv.nominalVoltage
         sv_voltage.a = np.angle(voltage, deg=True)
 
         # Add the SvVoltage instance to the SvVoltage_list
@@ -1174,7 +1181,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     get_cgmes_geograpical_regions(gc_model, cgmes_model, logger)
     get_cgmes_subgeograpical_regions(gc_model, cgmes_model, logger)
 
-    get_cgmes_base_voltages(gc_model, cgmes_model, logger)  # TODO 46-45
+    get_cgmes_base_voltages(gc_model, cgmes_model, logger)
 
     get_cgmes_substations(gc_model, cgmes_model, logger)
     get_cgmes_voltage_levels(gc_model, cgmes_model, logger)

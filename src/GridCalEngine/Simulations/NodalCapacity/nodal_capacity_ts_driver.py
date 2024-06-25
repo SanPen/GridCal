@@ -153,6 +153,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      zonal_grouping=self.opf_options.zonal_grouping,
                                      skip_generation_limits=self.opf_options.skip_generation_limits,
                                      consider_contingencies=self.opf_options.consider_contingencies,
+                                     contingency_groups_used=self.opf_options.contingency_groups_used,
                                      unit_Commitment=self.opf_options.unit_commitment,
                                      ramp_constraints=self.opf_options.unit_commitment,
                                      all_generators_fixed=False,
@@ -326,7 +327,7 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                                   tol=1e-6,
                                                   max_it=20,
                                                   stop_at=CpfStopAt.Full,
-                                                  verbose=False)
+                                                  verbose=0)
 
         # define the direcion of loading
         base_power = power_flow.results.Sbus / self.grid.Sbase

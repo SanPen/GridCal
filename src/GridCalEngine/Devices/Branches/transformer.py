@@ -24,7 +24,7 @@ from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
                                         TapAngleControl, TapModuleControl, TapChangerTypes)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
-from GridCalEngine.Devices.Branches.transformer_type import TransformerType
+from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
 
@@ -401,8 +401,8 @@ class Transformer2W(ControllableBranchParent):
         :return:
         """
         data = list()
-        for name, properties in self.registered_properties.items():
-            obj = getattr(self, name)
+        for property_name, properties in self.registered_properties.items():
+            obj = getattr(self, property_name)
 
             if properties.tpe == DeviceType.BusDevice:
                 obj = obj.idtag
@@ -498,3 +498,29 @@ class Transformer2W(ControllableBranchParent):
         :return: value in %
         """
         return 100.0 * np.sqrt(self.R * self.R + self.X * self.X)
+
+    def get_transformer_type(self, Sbase: float = 100.0) -> TransformerType:
+        """
+
+        :param Sbase:
+        :return:
+        """
+        Pfe, Pcu, Vsc, I0, Sn = reverse_transformer_short_circuit_study(R=self.R,
+                                                                        X=self.X,
+                                                                        G=self.G,
+                                                                        B=self.B,
+                                                                        rate=self.rate,
+                                                                        Sbase=Sbase)
+
+        tpe = TransformerType(hv_nominal_voltage=self.HV,
+                              lv_nominal_voltage=self.LV,
+                              nominal_power=Sn,
+                              copper_losses=Pcu,
+                              iron_losses=Pfe,
+                              no_load_current=I0,
+                              short_circuit_voltage=Vsc,
+                              gr_hv1=0.5,
+                              gx_hv1=0.5,
+                              name='type from ' + self.name)
+
+        return tpe

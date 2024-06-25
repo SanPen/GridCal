@@ -104,7 +104,7 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    admittances.modify_taps(alltapm0, alltapm, alltapt0, alltapt)
+    admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
 
     Ybus = admittances.Ybus
     Yf = admittances.Yf
@@ -235,7 +235,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    admittances.modify_taps(alltapm0, alltapm, alltapt0, alltapt)
+    admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
 
     Ybus = admittances.Ybus
     Yf = admittances.Yf
@@ -323,7 +323,6 @@ def evaluate_power_flow_debug(x, mu, lmbda, compute_jac, compute_hess, admittanc
     :param nig: Number of dispatchable generators
     :param Sg_undis: undispatchable complex power
     :param ctQ: Boolean that indicates if the Reactive control applies
-    :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
     :param h: Tolerance used for the autodiferentiation
     :return: return the resulting error between the autodif and the analytic derivation
     """
@@ -516,7 +515,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param Sbus_pf: Sbus initial solution
     :param voltage_pf: Voltage initial solution
     :param plot_error: Plot the error evolution. Default: False
-    :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param optimize_nodal_capacity:
     :param nodal_capacity_sign:
     :param capacity_nodes_idx:
@@ -620,8 +618,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
-        c_v = 1000 * (nc.bus_data.cost_v[pq] + 0.1)
+        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
+                           1.0)  # Cost squared since the slack is also squared
+        c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
@@ -779,11 +778,12 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     loading = np.abs(Sf) / (rates + 1e-9)
 
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
-        overloads_sf = (np.power(np.power(rates, 2) + sl_sf, 0.5) - rates)*Sbase
-        overloads_st = (np.power(np.power(rates, 2) + sl_st, 0.5) - rates)*Sbase
+        overloads_sf = (np.power(np.power(rates[br_mon_idx], 2) + sl_sf, 0.5) - rates[br_mon_idx]) * Sbase
+        overloads_st = (np.power(np.power(rates[br_mon_idx], 2) + sl_st, 0.5) - rates[br_mon_idx]) * Sbase
 
     else:
-        pass
+        overloads_sf = np.zeros_like(rates)
+        overloads_st = np.zeros_like(rates)
 
     hvdc_power = nc.hvdc_data.Pset.copy()
     hvdc_power[hvdc_disp_idx] = Pfdc
@@ -809,8 +809,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_slvmin = pd.DataFrame(data={'Slacks Vmin': sl_vmin})
         df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm}, index=k_m)
         df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt}, index=k_tau)
-        if optimize_nodal_capacity:
-            df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': slcap * nc.Sbase}, index=capacity_nodes_idx)
 
         print()
         print("Bus:\n", df_bus)
@@ -823,6 +821,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Slacks:\n", df_slvmax)
         print("Slacks:\n", df_slvmin)
         if optimize_nodal_capacity:
+            df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': slcap * nc.Sbase}, index=capacity_nodes_idx)
             print("Nodal Capacity:\n", df_nodal_cap)
         print("Error", result.error)
         print("Gamma", result.gamma)
@@ -832,7 +831,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         result.plot_error()
 
     if not result.converged or result.converged:
-        logger.entries = list()
+
         for bus in range(nbus):
             if abs(result.dlam[bus]) >= 1e-3:
                 logger.add_warning('Nodal Power Balance convergence tolerance not achieved',
@@ -895,14 +894,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        device=str(br_mon_idx[k]),
                                        device_property="Slack",
                                        value=str(overloads_sf[k]),
-                                       expected_value=f'< {opf_options.ips_tolerance*Sbase}')
+                                       expected_value=f'< {opf_options.ips_tolerance * Sbase}')
 
                 if overloads_st[k] > opf_options.ips_tolerance * Sbase:
                     logger.add_warning('Branch overload in the to sense (MVA)',
                                        device=str(br_mon_idx[k]),
                                        device_property="Slack",
                                        value=str(overloads_st[k]),
-                                       expected_value=f'< {opf_options.ips_tolerance*Sbase}')
+                                       expected_value=f'< {opf_options.ips_tolerance * Sbase}')
 
             for i in range(npq):
                 if sl_vmax[i] > opf_options.ips_tolerance:
