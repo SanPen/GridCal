@@ -71,7 +71,6 @@ class CustomScene(QGraphicsScene):
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
-        print(f"Scene moved to {event.scenePos()}")
         super().mouseMoveEvent(event)
 
 class MapView(QGraphicsView):
@@ -146,7 +145,6 @@ class MapView(QGraphicsView):
         self.map_widget.mouseReleaseEvent(event)
         self.pressed = False
         self.disableMove = True
-        super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         """
@@ -387,7 +385,7 @@ class MapWidget(QWidget):
 
         # keyboard state variables
         self.shift_down = False
-        self.zoom_factor = 4
+        self.zoom_factor = 2
 
         # when dragging, remember the initial start point
         self.start_drag_x: int = 0
@@ -691,20 +689,6 @@ class MapWidget(QWidget):
         """
         Handle a mouse wheel rotation.
         """
-        if event.angleDelta().y() > 0:
-            new_level = self.level + 1
-        else:
-            new_level = self.level - 1
-
-        print(f'wheelEvent: new_level={new_level}')
-
-        view = None
-        if self.mouse_x:
-            view = (self.mouse_x, self.mouse_y)
-
-        print(f'calling .zoom_level({new_level}, view={view})')
-
-        self.zoom_level(new_level, self.mouse_x, self.mouse_y)
 
     def resizeEvent(self, event: QResizeEvent = None, updateDiagram: bool = True):
         """
