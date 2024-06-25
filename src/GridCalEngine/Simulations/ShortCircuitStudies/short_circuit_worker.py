@@ -37,9 +37,9 @@ def short_circuit_post_process(
     Compute the important results for short-circuits
     :param calculation_inputs: instance of Circuit
     :param V: Voltage solution array for the circuit buses
-    :param branch_rates:
-    :param Yf:
-    :param Yt:
+    :param branch_rates: Array of branch ratings
+    :param Yf: From admittance matrix
+    :param Yt: To admittance matrix
     :return: Sf (MVA), If (p.u.), loading (p.u.), losses (MVA), Sbus(MVA)
     """
 
@@ -89,12 +89,12 @@ def short_circuit_ph3(calculation_inputs: NumericalCircuit, Vpf: CxVec, Zf: CxVe
                                   Zf=Zf,
                                   baseMVA=calculation_inputs.Sbase)
 
-    Sfb, Stb, If, It, Vbranch, \
-        loading, losses = short_circuit_post_process(calculation_inputs=calculation_inputs,
-                                                     V=V,
-                                                     branch_rates=calculation_inputs.rates,
-                                                     Yf=calculation_inputs.Yf,
-                                                     Yt=calculation_inputs.Yt)
+    (Sfb, Stb, If, It, Vbranch,
+     loading, losses) = short_circuit_post_process(calculation_inputs=calculation_inputs,
+                                                   V=V,
+                                                   branch_rates=calculation_inputs.rates,
+                                                   Yf=calculation_inputs.Yf,
+                                                   Yt=calculation_inputs.Yt)
 
     # voltage, Sf, loading, losses, error, converged, Qpv
     results = ShortCircuitResults(n=calculation_inputs.nbus,
@@ -130,8 +130,8 @@ def short_circuit_unbalanced(calculation_inputs: NumericalCircuit,
     :param calculation_inputs:
     :param Vpf: Power flow voltage vector applicable to the island
     :param Zf: Short circuit impedance vector applicable to the island
-    :param bus_index:
-    :param fault_type:
+    :param bus_index: Index of the failed bus
+    :param fault_type: FaultType
     :return: short circuit results
     """
 

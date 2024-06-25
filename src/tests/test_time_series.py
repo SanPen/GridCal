@@ -26,13 +26,9 @@ def test_time_series():
     print('Reading...')
     main_circuit = FileOpen(fname).open()
 
-    pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  multi_core=False,
-                                  dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=True)
+    pf_options = PowerFlowOptions(solver_type=SolverType.NR,
+                                  verbose=0,
+                                  control_q=ReactivePowerControlMode.NoControl)
 
     ts = PowerFlowTimeSeriesDriver(grid=main_circuit, options=pf_options, time_indices=np.arange(0, 96))
     ts.run()

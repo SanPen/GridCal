@@ -15,14 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import List, Union
-from GridCalEngine.enumerations import ContingencyMethod
+from GridCalEngine.enumerations import ContingencyMethod, SubObjectType, DeviceType
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
-class ContingencyAnalysisOptions:
+class ContingencyAnalysisOptions(OptionsTemplate):
     """
     Contingency analysis options
     """
@@ -60,6 +61,7 @@ class ContingencyAnalysisOptions:
         :param contingency_method: ContingencyEngine to use (PowerFlow, PTDF, ...)
         :param contingency_groups: List of contingencies to use, if None all will be used
         """
+        OptionsTemplate.__init__(self, name="ContingencyAnalysisOptions")
 
         self.use_provided_flows = use_provided_flows
 
@@ -86,3 +88,17 @@ class ContingencyAnalysisOptions:
         self.contingency_deadband = contingency_deadband
 
         self.contingency_groups: Union[List[ContingencyGroup], None] = contingency_groups
+
+        self.register(key="use_provided_flows", tpe=bool)
+        self.register(key="Pf", tpe=SubObjectType.Array)
+        self.register(key="contingency_method", tpe=ContingencyMethod)
+        self.register(key="pf_options", tpe=DeviceType.SimulationOptionsDevice)
+        self.register(key="lin_options", tpe=DeviceType.SimulationOptionsDevice)
+        self.register(key="use_srap", tpe=bool)
+        self.register(key="srap_max_power", tpe=float)
+        self.register(key="srap_top_n", tpe=int)
+        self.register(key="srap_deadband", tpe=float)
+        self.register(key="srap_rever_to_nominal_rating", tpe=bool)
+        self.register(key="detailed_massive_report", tpe=bool)
+        self.register(key="contingency_deadband", tpe=float)
+        self.register(key="contingency_groups", tpe=SubObjectType.ObjectsList)

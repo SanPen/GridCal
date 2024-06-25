@@ -26,11 +26,9 @@ def test_short_circuit():
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  multi_core=False, dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=True)
+    pf_options = PowerFlowOptions(solver_type=SolverType.NR,
+                                  verbose=0,
+                                  control_q=ReactivePowerControlMode.NoControl)
     ####################################################################################################################
     # PowerFlowDriver
     ####################################################################################################################
@@ -48,7 +46,7 @@ def test_short_circuit():
     ####################################################################################################################
     print('\n\n')
     print('Short Circuit')
-    sc_options = ShortCircuitOptions(bus_index=[16])
+    sc_options = ShortCircuitOptions(bus_index=16)
     # grid, options, pf_options:, pf_results:
     sc = ShortCircuitDriver(grid=main_circuit, options=sc_options, pf_options=pf_options, pf_results=power_flow.results)
     sc.run()
