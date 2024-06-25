@@ -39,7 +39,7 @@ def cgmes_object(p):
     generator.EquipmentContainer.BaseVoltage = BaseVoltage()
     generator.EquipmentContainer.BaseVoltage.nominalVoltage = 2.0
 
-    circuit.SynchronousMachine_list = [generator]
+    circuit.cgmes_assets.SynchronousMachine_list = [generator]
 
     generator.GeneratingUnit = GeneratingUnit("generating_rdfid")
     generator.description = "test description"
@@ -92,7 +92,7 @@ def test_get_gcdev_generators(cgmes_model, calc_node_dict, cn_dict, device_to_te
     multi_circuit = MultiCircuit()
     get_gcdev_generators(cgmes_model, multi_circuit, calc_node_dict, cn_dict, device_to_terminal_dict, logger)
     created_generator = multi_circuit.generators[0]
-    cgmes_syncronous_machine = cgmes_model.SynchronousMachine_list[0]
+    cgmes_syncronous_machine = cgmes_model.cgmes_assets.SynchronousMachine_list[0]
     assert created_generator.idtag == cgmes_syncronous_machine.uuid
     assert created_generator.code == cgmes_syncronous_machine.description
     assert created_generator.name == cgmes_syncronous_machine.name
@@ -123,7 +123,7 @@ def test_get_gcdev_generators_generating_unit_is_none_log_error():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
     cgmes = cgmes_object(p=2)
-    cgmes.SynchronousMachine_list[0].GeneratingUnit = None
+    cgmes.cgmes_assets.SynchronousMachine_list[0].GeneratingUnit = None
     get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1
@@ -134,7 +134,7 @@ def test_get_gcdev_generators_regulating_controls_none_log_warning():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
     cgmes = cgmes_object(p=2)
-    cgmes.SynchronousMachine_list[0].RegulatingControl = None
+    cgmes.cgmes_assets.SynchronousMachine_list[0].RegulatingControl = None
     get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1
@@ -145,7 +145,7 @@ def test_get_gcdev_generators_regulating_control_mode_kind_not_voltage_log_warni
     logger = DataLogger()
     multi_circuit = MultiCircuit()
     cgmes = cgmes_object(p=2)
-    cgmes.SynchronousMachine_list[0].RegulatingControl.mode = "aaa"
+    cgmes.cgmes_assets.SynchronousMachine_list[0].RegulatingControl.mode = "aaa"
     get_gcdev_generators(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                          device_to_terminal_dict_object(), logger)
     assert len(logger.entries) == 1

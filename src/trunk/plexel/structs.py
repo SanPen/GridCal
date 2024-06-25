@@ -26,7 +26,7 @@ def get_enums_dict(cls):
     for t in clr.GetClrType(cls).Assembly.GetTypes():
         if t.IsEnum:
             attributes = list()
-            for en in t.GetEnumNames():
+            for en, tpe in zip(t.GetEnumNames(), t.GetEnumUnderlyingType()):
                 attributes.append(en)
 
             if len(attributes):

@@ -49,9 +49,9 @@ class MeasurementTemplate(EditableDevice):
         self.sigma = uncertainty
         self.api_object: EditableDevice = api_obj
 
-        self.register("value", "", float, "Value of the measurement")
-        self.register("sigma", "", float, "Uncertainty of the measurement")
-        self.register("api_object", "", EditableDevice, "Value of the measurement")
+        self.register("value", tpe=float, definition="Value of the measurement")
+        self.register("sigma", tpe=float, definition="Uncertainty of the measurement")
+        self.register("api_object", tpe=EditableDevice, definition="Value of the measurement")
 
 
 class PiMeasurement(MeasurementTemplate):

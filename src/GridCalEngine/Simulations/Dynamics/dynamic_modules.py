@@ -26,11 +26,17 @@ from matplotlib import pyplot as plt
 
 
 class DiffEqSolver(Enum):
+    """
+    DiffEqSolver
+    """
     EULER = 1,
     RUNGE_KUTTA = 2
 
 
 class DynamicModels(Enum):
+    """
+    DynamicModels
+    """
     NoModel = 0,
     SynchronousGeneratorOrder4 = 1,  # fourth order synchronous machine
     SynchronousGeneratorOrder6 = 2,  # sixth order synchronous machine
@@ -41,6 +47,9 @@ class DynamicModels(Enum):
 
 
 class TransientStabilityEvents:
+    """
+    TransientStabilityEvents
+    """
 
     def __init__(self):
         self.time = list()

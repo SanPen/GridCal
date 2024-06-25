@@ -460,7 +460,6 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     return data
 
 
-
 def search_property(template_elm: ALL_DEV_TYPES,
                     old_props_dict: Dict[str, str],
                     property_to_search: str,

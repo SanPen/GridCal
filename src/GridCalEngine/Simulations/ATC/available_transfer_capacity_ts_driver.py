@@ -22,8 +22,8 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis
-from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import (AvailableTransferCapacityOptions,
-                                                                              compute_atc_list, compute_alpha)
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_atc_list, compute_alpha
+from GridCalEngine.Simulations.ATC.available_transfer_capacity_options import AvailableTransferCapacityOptions
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate

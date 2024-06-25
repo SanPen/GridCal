@@ -25,11 +25,9 @@ def test_monte_carlo():
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR, verbose=False,
-                                  initialize_with_existing_solution=False,
-                                  multi_core=False, dispatch_storage=True,
-                                  control_q=ReactivePowerControlMode.NoControl,
-                                  control_p=True)
+    pf_options = PowerFlowOptions(SolverType.NR,
+                                  verbose=0,
+                                  control_q=ReactivePowerControlMode.NoControl)
 
     ####################################################################################################################
     # Monte Carlo

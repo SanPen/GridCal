@@ -1164,7 +1164,7 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "npa.PowerFlowOptions":
     return npa.PowerFlowOptions(solver_type=solver_type,
                                 retry_with_other_methods=opt.retry_with_other_methods,
                                 verbose=opt.verbose,
-                                initialize_with_existing_solution=opt.initialize_with_existing_solution,
+                                initialize_with_existing_solution=opt.use_stored_guess,
                                 tolerance=opt.tolerance,
                                 max_iter=opt.max_iter,
                                 control_q_mode=q_control_dict[opt.control_Q],
@@ -1213,7 +1213,7 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
                                    flow_control=True,
                                    voltage_control=True,
                                    solver=solver_dict[opf_opt.mip_solver],
-                                   initialize_with_existing_solution=pf_opt.initialize_with_existing_solution,
+                                   initialize_with_existing_solution=pf_opt.use_stored_guess,
                                    verbose=pf_opt.verbose,
                                    max_vm=opf_opt.max_vm,
                                    max_va=opf_opt.max_va)
@@ -1244,7 +1244,7 @@ def get_newton_pa_linear_opf_options(opf_opt: OptimalPowerFlowOptions,
                      TimeGrouping.Hourly: npa.TimeGrouping.Hourly}
 
     opt = npa.LinearOpfOptions(solver=solver_dict[opf_opt.mip_solver],
-                               grouping=grouping_dict[opf_opt.grouping],
+                               grouping=grouping_dict[opf_opt.time_grouping],
                                unit_commitment=opf_opt.unit_commitment,
                                compute_flows=opf_opt.zonal_grouping == ZonalGrouping.NoGrouping,
                                pf_options=get_newton_pa_pf_options(pf_opt))
@@ -1302,7 +1302,7 @@ def newton_pa_pf(circuit: MultiCircuit,
                               pf_options=pf_options,
                               time_indices=time_indices,
                               n_threads=n_threads,
-                              V0=circuit.get_voltage_guess() if pf_opt.initialize_with_existing_solution else None)
+                              V0=circuit.get_voltage_guess() if pf_opt.use_stored_guess else None)
 
     return pf_res
 
