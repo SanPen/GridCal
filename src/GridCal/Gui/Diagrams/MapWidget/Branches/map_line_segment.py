@@ -55,8 +55,8 @@ class MapLineSegment(QGraphicsLineItem):
 
         self.style = Qt.SolidLine
         self.color = Qt.blue
-        self.width = 1
-        self.lineWidth = 3
+        self.width = 0
+        self.lineWidth = 1
         self.scaleSegment = self.lineWidth
         self.setScale(self.scaleSegment)
 

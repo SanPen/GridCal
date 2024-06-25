@@ -119,7 +119,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
     def updatePosition(self) -> None:
         """
-        
+
         :return: 
         """
         real_position = self.pos()
@@ -146,8 +146,9 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for mouse move events.
         """
-        super().mouseMoveEvent(event)
+
         if self.hovered:
+            super().mouseMoveEvent(event)
             self.updatePosition()
             self.editor.update_connectors()
 
@@ -155,8 +156,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for mouse press events.
         """
-        super().mousePressEvent(event)
-        self.editor.disableMove = True
+        self.editor.map.view.disableMove = True
 
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object,
@@ -173,7 +173,6 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for mouse release events.
         """
-        super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.updateDiagram()  # always update
 
