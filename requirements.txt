@@ -36,4 +36,3 @@ websockets
 opencv-python
 setuptools
 packaging
-platypus-opt
