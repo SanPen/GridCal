@@ -4850,28 +4850,28 @@ class Assets:
         """
 
         if obj.device_type == DeviceType.LoadDevice:
-            self.add_load(api_obj=obj)
+            self.add_load(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.StaticGeneratorDevice:
-            self.add_static_generator(api_obj=obj)
+            self.add_static_generator(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.GeneratorDevice:
-            self.add_generator(api_obj=obj)
+            self.add_generator(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.BatteryDevice:
-            self.add_battery(api_obj=obj)
+            self.add_battery(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.ShuntDevice:
-            self.add_shunt(api_obj=obj)
+            self.add_shunt(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.ExternalGridDevice:
-            self.add_external_grid(api_obj=obj)
+            self.add_external_grid(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.CurrentInjectionDevice:
-            self.add_current_injection(api_obj=obj)
+            self.add_current_injection(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.ControllableShuntDevice:
-            self.add_controllable_shunt(api_obj=obj)
+            self.add_controllable_shunt(api_obj=obj, bus=obj.bus, cn=obj.cn)
 
         elif obj.device_type == DeviceType.LineDevice:
             self.add_line(obj=obj)
