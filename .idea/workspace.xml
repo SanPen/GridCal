@@ -654,10 +654,10 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python.endpoints" />
       <item itemvalue="Python.run" />
       <item itemvalue="Python.update_gui_file" />
-      <item itemvalue="Python.ExecuteGridCal" />
       <item itemvalue="Python tests.Nosetests in tests" />
     </list>
     <recent_temporary>
