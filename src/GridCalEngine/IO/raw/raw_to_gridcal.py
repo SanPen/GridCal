@@ -788,10 +788,13 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
 
     # Go through loads
     for psse_load in psse_circuit.loads:
-        bus = psse_bus_dict[psse_load.I]
-        api_obj = get_gridcal_load(psse_load, bus, logger)
+        if psse_load.I in psse_bus_dict:
+            bus = psse_bus_dict[psse_load.I]
+            api_obj = get_gridcal_load(psse_load, bus, logger)
 
-        circuit.add_load(bus, api_obj)
+            circuit.add_load(bus, api_obj)
+        else:
+            logger.add_error("Load bus is missing", psse_load.I, psse_load.I)
 
     # Go through shunts
     for psse_shunt in psse_circuit.fixed_shunts:
