@@ -103,12 +103,11 @@ class SchematicLibraryModel(QStandardItemModel):
     This is the list of draggable items
     """
 
-    def __init__(self, parent: "SchematicWidget" = None) -> None:
+    def __init__(self) -> None:
         """
         Items model to host the draggable icons
-        @param parent:
         """
-        QStandardItemModel.__init__(self, parent)
+        QStandardItemModel.__init__(self)
 
         self.setColumnCount(1)
 

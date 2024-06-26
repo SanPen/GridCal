@@ -34,7 +34,7 @@ from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QTimer, QEvent, QPointF, QRectF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
-                           QResizeEvent, QEnterEvent, QPaintEvent)
+                           QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QVBoxLayout,
                                QGraphicsSceneMouseEvent)
 
@@ -58,25 +58,45 @@ class Place(Enum):
 
 
 class CustomScene(QGraphicsScene):
+    """
+    CustomScene
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setItemIndexMethod(QGraphicsScene.BspTreeIndex)  # For efficient item indexing
+        self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.BspTreeIndex)  # For efficient item indexing
 
     def mousePressEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         print(f"Scene pressed at {event.scenePos()}")
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         print(f"Scene released at {event.scenePos()}")
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         super().mouseMoveEvent(event)
+
 
 class MapView(QGraphicsView):
     """
     MapView
     """
+
     def __init__(self, _scene: QGraphicsScene,
                  map_widget: "MapWidget",
                  start_level: int,
@@ -125,6 +145,11 @@ class MapView(QGraphicsView):
         self.selectedItems = list()
 
     def mousePressEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
         self.map_widget.mousePressEvent(event)
         self.pressed = True
         self.disableMove = False
@@ -175,10 +200,19 @@ class MapView(QGraphicsView):
         self.map_widget.keyPressEvent(event)
 
     def keyReleaseEvent(self, event: QKeyEvent):
+        """
+
+        :param event:
+        :return:
+        """
         self.map_widget.keyReleaseEvent(event)
 
     def wheelEvent(self, event: QWheelEvent):
+        """
 
+        :param event:
+        :return:
+        """
         mouse_event = event
 
         zoomInitial = self.map_widget.level
@@ -207,6 +241,39 @@ class MapView(QGraphicsView):
         self.map_widget.wheelEvent(event)
 
         self.centerSchema()
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        print("dragEnterEvent")
+
+    def dragMoveEvent(self, event: QDragMoveEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        print("dragMoveEvent")
+
+    def dropEvent(self, event: QDropEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        super().dropEvent(event)
+        print("dropEvent")
+
+        if event.mimeData().hasFormat('component/name'):
+            obj_type = event.mimeData().data('component/name')
+
+            print(f"obj_type {obj_type}")
+
+            # if obj_type == self.map_widget..library_model.get_bus_mime_data():
+            #     pass  # create SE
 
     def resizeEvent(self, event: QResizeEvent = None):
         """
@@ -330,11 +397,13 @@ class MapWidget(QWidget):
         # Add the drawing layer
         # -------------------------------------------------------------------------
         self.diagram_scene = CustomScene(self)
+
         self.view = MapView(self.diagram_scene,
                             map_widget=self,
                             start_level=start_level,
                             startLat=startLat,
                             startLon=startLon)
+
         self.view.setBackgroundBrush(Qt.transparent)
 
         # re-map events, because otherwise the view shadows the base widget events

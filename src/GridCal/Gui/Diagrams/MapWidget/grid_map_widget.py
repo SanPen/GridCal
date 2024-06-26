@@ -19,11 +19,13 @@ from typing import Union, List, Tuple, Dict
 import numpy as np
 import math
 from PySide6.QtWidgets import QGraphicsItem
-from PySide6.QtCore import Qt, QSize, QRect
-from PySide6.QtGui import QColor
 from collections.abc import Callable
-from PySide6.QtGui import (QImage, QPainter)
 from PySide6.QtSvg import QSvgGenerator
+from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
+                            QDataStream, QModelIndex)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
+                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
+                           QContextMenuEvent)
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
@@ -111,6 +113,90 @@ def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem) -> Tuple[NodeGra
         return it2, it1
 
 
+class MapLibraryModel(QStandardItemModel):
+    """
+    Items model to host the draggable icons
+    This is the list of draggable items
+    """
+
+    def __init__(self) -> None:
+        """
+        Items model to host the draggable icons
+        """
+        QStandardItemModel.__init__(self)
+
+        self.setColumnCount(1)
+
+        self.substation_name = "Substation"
+
+        self.add(name=self.substation_name, icon_name="bus_icon")
+
+    def add(self, name: str, icon_name: str):
+        """
+        Add element to the library
+        :param name: Name of the element
+        :param icon_name: Icon name, the path is taken care of
+        :return:
+        """
+        _icon = QIcon()
+        _icon.addPixmap(QPixmap(f":/Icons/icons/{icon_name}.svg"))
+        _item = QStandardItem(_icon, name)
+        _item.setToolTip(f"Drag & drop {name} into the schematic")
+        self.appendRow(_item)
+
+    @staticmethod
+    def to_bytes_array(val: str) -> QByteArray:
+        """
+        Convert string to QByteArray
+        :param val: string
+        :return: QByteArray
+        """
+        data = QByteArray()
+        stream = QDataStream(data, QIODevice.WriteOnly)
+        stream.writeQString(val)
+        return data
+
+    def get_substation_mime_data(self) -> QByteArray:
+        """
+
+        :return:
+        """
+        return self.to_bytes_array(self.substation_name)
+
+    def mimeTypes(self) -> List[str]:
+        """
+
+        @return:
+        """
+        return ['component/name']
+
+    def mimeData(self, idxs: List[QModelIndex]) -> QMimeData:
+        """
+
+        @param idxs:
+        @return:
+        """
+        mimedata = QMimeData()
+        for idx in idxs:
+            if idx.isValid():
+                txt = self.data(idx, Qt.DisplayRole)
+
+                data = QByteArray()
+                stream = QDataStream(data, QIODevice.WriteOnly)
+                stream.writeQString(txt)
+
+                mimedata.setData('component/name', data)
+        return mimedata
+
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
+        """
+
+        :param index:
+        :return:
+        """
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+
+
 class GridMapWidget(BaseDiagramWidget):
     """
     GridMapWidget
@@ -154,6 +240,10 @@ class GridMapWidget(BaseDiagramWidget):
                              zoom_callback=self.zoom_callback,
                              position_callback=self.position_callback)
 
+        # library model
+        self.library_model = MapLibraryModel()
+        self.library_view.setModel(self.library_model)
+
         # Any representation on the map must be done after this Goto Function
         self.map.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
 
@@ -161,11 +251,8 @@ class GridMapWidget(BaseDiagramWidget):
         self.map.startLat = latitude
         self.map.startLon = longitude
 
-        he = self.map.view.height()
-        wi = self.map.view.width()
-
-        self.startHe = he
-        self.startWi = wi
+        self.startHe = self.map.view.height()
+        self.startWi = self.map.view.width()
         self.constantLineWidth = True
 
         # draw
@@ -439,6 +526,8 @@ class GridMapWidget(BaseDiagramWidget):
         # create the nodes
         line_container.draw_all()
 
+        # there is not need to add to the scene
+
         return line_container
 
     def add_api_dc_line(self, api_object: DcLine, original: bool = True) -> MapDcLine:
@@ -456,6 +545,8 @@ class GridMapWidget(BaseDiagramWidget):
 
         # create the nodes
         line_container.draw_all()
+
+        # there is not need to add to the scene
 
         return line_container
 
@@ -475,6 +566,8 @@ class GridMapWidget(BaseDiagramWidget):
         # create the nodes
         line_container.draw_all()
 
+        # there is not need to add to the scene
+
         return line_container
 
     def add_api_fluid_path(self, api_object: FluidPath, original: bool = True) -> MapFluidPathLine:
@@ -492,6 +585,8 @@ class GridMapWidget(BaseDiagramWidget):
 
         # create the nodes
         line_container.draw_all()
+
+        # there is not need to add to the scene
 
         return line_container
 
@@ -513,11 +608,11 @@ class GridMapWidget(BaseDiagramWidget):
             for idtag, graphic_object in dev_dict.items():
                 graphic_object.end_update()
 
-    def create_substation(self,
-                          api_object: Substation,
-                          lat: float,
-                          lon: float,
-                          r: float) -> SubstationGraphicItem:
+    def add_api_substation(self,
+                           api_object: Substation,
+                           lat: float,
+                           lon: float,
+                           r: float) -> SubstationGraphicItem:
         """
 
         :param api_object:
@@ -537,11 +632,11 @@ class GridMapWidget(BaseDiagramWidget):
 
         return graphic_object
 
-    def create_voltage_level(self,
-                             substation_graphics: SubstationGraphicItem,
-                             api_object: VoltageLevel,
-                             lat: float, lon: float,
-                             r: float) -> VoltageLevelGraphicItem:
+    def add_api_voltage_level(self,
+                              substation_graphics: SubstationGraphicItem,
+                              api_object: VoltageLevel,
+                              lat: float, lon: float,
+                              r: float) -> VoltageLevelGraphicItem:
         """
 
         :param substation_graphics:
@@ -576,10 +671,10 @@ class GridMapWidget(BaseDiagramWidget):
 
             if category == DeviceType.SubstationDevice.value:
                 for idtag, location in points_group.locations.items():
-                    self.create_substation(api_object=location.api_object,
-                                           lon=location.longitude,
-                                           lat=location.latitude,
-                                           r=0.1)
+                    self.add_api_substation(api_object=location.api_object,
+                                            lon=location.longitude,
+                                            lat=location.latitude,
+                                            r=0.1)
 
         # second pass: create voltage levels
         for category, points_group in diagram.data.items():
@@ -593,11 +688,11 @@ class GridMapWidget(BaseDiagramWidget):
                         substation_graphics = self.graphics_manager.query(elm=objectSubs)
 
                         # draw the voltage level
-                        self.create_voltage_level(substation_graphics=substation_graphics,
-                                                  api_object=location.api_object,
-                                                  lon=objectSubs.longitude,
-                                                  lat=objectSubs.latitude,
-                                                  r=0.01)
+                        self.add_api_voltage_level(substation_graphics=substation_graphics,
+                                                   api_object=location.api_object,
+                                                   lon=objectSubs.longitude,
+                                                   lat=objectSubs.latitude,
+                                                   r=0.01)
 
             elif category == DeviceType.LineDevice.value:
                 for idtag, location in points_group.locations.items():
@@ -646,18 +741,36 @@ class GridMapWidget(BaseDiagramWidget):
 
         if self.graphics_manager.query(elm=elm) is None:
 
-            if isinstance(elm, Bus):
+            if isinstance(elm, Substation):
+                self.add_api_substation(api_object=elm,
+                                        lon=elm.longitude,
+                                        lat=elm.latitude,
+                                        r=0.1)
 
-                if not elm.is_internal:  # 3w transformer buses are not represented
-                    if injections_by_bus is None:
-                        injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+            elif isinstance(elm, VoltageLevel):
 
-                    # TODO: substitute by its substation
-                    graphic_obj = self.add_api_bus(bus=elm,
-                                                   injections_by_tpe=injections_by_bus.get(elm, dict()),
-                                                   explode_factor=1.0)
-                else:
-                    graphic_obj = None
+                if elm.substation is not None:
+                    # get the substation graphic object
+                    substation_graphics = self.graphics_manager.query(elm=elm.substation)
+
+                    # draw the voltage level
+                    self.add_api_voltage_level(substation_graphics=substation_graphics,
+                                               api_object=elm,
+                                               lon=substation_graphics.lon,
+                                               lat=substation_graphics.lat,
+                                               r=0.01)
+
+            elif isinstance(elm, Bus):
+
+                if elm.substation is not None:
+                    # get the substation graphic object
+                    substation_graphics = self.graphics_manager.query(elm=elm.substation)
+
+                    # draw the voltage level
+                    self.add_api_substation(api_object=elm.substation,
+                                            lon=substation_graphics.lon,
+                                            lat=substation_graphics.lat,
+                                            r=0.01)
 
             elif isinstance(elm, FluidNode):
 
@@ -665,34 +778,23 @@ class GridMapWidget(BaseDiagramWidget):
                     injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
 
                 # TODO: maybe new thing?
-                graphic_obj = self.add_api_fluid_node(node=elm,
-                                                      injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
-
-            elif isinstance(elm, BusBar):
-
-                if injections_by_cn is None:
-                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
-
-                # TODO: substitute by its substation
-                graphic_obj = self.add_api_busbar(bus=elm,
-                                                  injections_by_tpe=injections_by_cn.get(elm.cn, dict()))
+                self.add_api_fluid_node(node=elm,
+                                        injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
             elif isinstance(elm, Line):
-                graphic_obj = self.add_api_line(elm)
+                self.add_api_line(elm)
 
             elif isinstance(elm, DcLine):
-                graphic_obj = self.add_api_dc_line(elm)
+                self.add_api_dc_line(elm)
 
             elif isinstance(elm, HvdcLine):
-                graphic_obj = self.add_api_hvdc_line(elm)
+                self.add_api_hvdc_line(elm)
 
             elif isinstance(elm, FluidPath):
-                graphic_obj = self.add_api_fluid_path(elm)
+                self.add_api_fluid_path(elm)
 
             else:
-                graphic_obj = None
-
-            self.add_to_scene(graphic_object=graphic_obj)
+                pass
 
         else:
             logger.add_warning("Device already added", device_class=elm.device_type.value, device=elm.name)
