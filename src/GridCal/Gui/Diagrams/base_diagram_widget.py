@@ -14,35 +14,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import List, Dict, Union, Tuple, Callable
+from __future__ import annotations
+from typing import List, Dict, Union, Tuple, Callable, TYPE_CHECKING
 import numpy as np
 import pandas as pd
 import cv2
 from matplotlib import pyplot as plt
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import (QIcon, QPixmap, QImage)
-from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
-                               QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
-                               QGraphicsItem)
+from PySide6.QtGui import QImage
+from PySide6.QtWidgets import QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QAbstractItemView
 
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Devices.Branches.transformer3w import Transformer3W, Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
-from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.types import BRANCH_TYPES
-from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
-from GridCalEngine.Devices.Substation.substation import Substation
-from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
-from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
@@ -51,8 +44,12 @@ from GridCalEngine.enumerations import DeviceType, SimulationTypes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
+from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GuiFunctions import ObjectsModel
+
+if TYPE_CHECKING:
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget
+    from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel, SchematicWidget
 
 
 class BaseDiagramWidget(QSplitter):
@@ -62,10 +59,11 @@ class BaseDiagramWidget(QSplitter):
     """
 
     def __init__(self,
-                 circuit: Union[None, MultiCircuit] = None,
-                 diagram: Union[SchematicDiagram, MapDiagram, None] = None,
+                 circuit: MultiCircuit,
+                 diagram: Union[SchematicDiagram, MapDiagram],
+                 library_model: Union[MapLibraryModel, SchematicLibraryModel],
                  time_index: Union[None, int] = None,
-                 call_delete_db_element_func: Callable[["SchematicWidget", ALL_DEV_TYPES], None] = None):
+                 call_delete_db_element_func: Callable[[Union[GridMapWidget, SchematicWidget], ALL_DEV_TYPES], None] = None):
         """
         Constructor
         :param circuit:
@@ -87,6 +85,10 @@ class BaseDiagramWidget(QSplitter):
 
         self.library_view.setViewMode(self.library_view.ViewMode.ListMode)
         self.library_view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+
+        # library model
+        self.library_model = library_model
+        self.library_view.setModel(self.library_model)
 
         # create the grid name editor
         self.frame1 = QFrame()

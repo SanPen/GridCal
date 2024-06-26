@@ -21,11 +21,8 @@ import math
 from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
-from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData, QIODevice, QByteArray,
-                            QDataStream, QModelIndex)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
-                           QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
-                           QContextMenuEvent)
+from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
@@ -229,20 +226,19 @@ class GridMapWidget(BaseDiagramWidget):
                                                       start_level=start_level,
                                                       longitude=longitude,
                                                       latitude=latitude) if diagram is None else diagram,
+                                   library_model=MapLibraryModel(),
                                    time_index=0,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
+        # declare the map
         self.map = MapWidget(parent=self,
                              tile_src=tile_src,
                              start_level=start_level,
                              startLat=latitude,
                              startLon=longitude,
+                             editor=self,
                              zoom_callback=self.zoom_callback,
                              position_callback=self.position_callback)
-
-        # library model
-        self.library_model = MapLibraryModel()
-        self.library_view.setModel(self.library_model)
 
         # Any representation on the map must be done after this Goto Function
         self.map.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
@@ -798,6 +794,29 @@ class GridMapWidget(BaseDiagramWidget):
 
         else:
             logger.add_warning("Device already added", device_class=elm.device_type.value, device=elm.name)
+
+    def dropEvent(self, event: QDropEvent):
+        """
+        On element drop...
+        :param event: QDropEvent
+        """
+        super().dropEvent(event)
+
+        if event.mimeData().hasFormat('component/name'):
+            obj_type = event.mimeData().data('component/name')
+
+            point0 = self.map.view.mapToScene(event.position().x(), event.position().y())
+            x0 = point0.x()
+            y0 = point0.y()
+            lat, lon = self.to_lat_lon(x=x0, y=y0)
+
+            print(f"Droped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
+
+            if obj_type == self.library_model.get_substation_mime_data():
+                print("Create substation...")
+                api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}")
+                self.circuit.add_substation(obj=api_object)
+                self.add_api_substation(api_object=api_object, lat=lat, lon=lon, r=0.01)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
