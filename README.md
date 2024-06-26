@@ -198,14 +198,27 @@ import GridCalEngine.api as gce
 my_grid = gce.open_file("my_file.gridcal")
 ```
 
+In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:
+```python
+import GridCalEngine.api as gce
+
+# load a grid from many xml files
+my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
+
+# or from a single zip
+my_grid = gce.open_file("my_cgmes_set_of_files.zip")
+```
+
 GridCal supports a plethora of file formats:
 
 - CIM 16 (.zip and .xml)
-- CGMES 2.4.15 (.zip and .xml)
+- CGMES 2.4.15 and 3.0 (.zip and .xml)
 - PSS/e raw and rawx versions 29 to 35, including USA market excahnge RAW-30 specifics.
 - Matpower .m files directly.
 - DigSilent .DGS (not fully compatible)
 - PowerWorld .EPC (not fully compatible, supports substation coordinates)
+
+
 
 ### Save a grid
 
@@ -218,6 +231,27 @@ my_grid = gce.open_file("my_file.gridcal")
 # save
 gce.save_file(my_grid, "my_file_2.gridcal")
 ```
+
+In the case of saving a model in CGMES mode, we need to specify some things:
+
+```python
+import GridCalEngine.api as gce
+
+# load a grid
+my_grid = gce.open_file("my_file.gridcal")
+
+# run power flow (this is optional and it is used to generate the SV profile)
+pf_results = gce.power_flow(my_grid)
+
+# save the grid in CGMES mode
+gce.save_cgmes_file(grid=my_grid,
+                    filename="My_cgmes_model.zip",
+                    cgmes_boundary_set_path="path_to_the_boundary_set.zip",
+                    cgmes_version=CGMESVersions.v2_4_15,
+                    pf_results=pf_results)
+
+```
+
 
 ### Creating a Grid using the API objects
 
