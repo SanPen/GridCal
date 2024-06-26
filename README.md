@@ -28,6 +28,16 @@ for the future generations.
 GridCal is a software made in the Python programming language. 
 Therefore, it needs a Python interpreter installed in your operative system. 
 
+The GridCal project is divided in three packages:
+
+- GridCalEngine: A package with the database and calculations logic.
+- GridCalServer: A package that serves an API-rest to use GridCalEngine remotelly.
+- GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and `GridCalServer` seamlessly.
+
+To install everything, you only need to install the GridCal package and the others will beinstalled as dependencies.
+
+<img height="200" src="doc/rst_source/figures/Packages.png"/>
+
 ### Standalone setup
 
 If you don't know what is this Python thing, we offer a windows installation:
