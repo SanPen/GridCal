@@ -25,7 +25,6 @@ from scipy.sparse import csc_matrix
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.area import Area
-from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.battery_data import BatteryData
@@ -1022,7 +1021,7 @@ def add_nodal_capacity_formulation(t: Union[int, None],
                                                        ub=0.0,
                                                        name=join("nodal_capacity_", [t, k], "_"))
 
-        # maximize the nodal power injection
+        # minimize the load shedding
         f_obj += 100 * nodal_capacity_sign * nodal_capacity_vars.P[t, k]
 
     return f_obj
@@ -1536,7 +1535,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                       skip_generation_limits: bool = False,
                       consider_contingencies: bool = False,
-                      contingency_groups_used: Union[List[ContingencyGroup], None] = None,
                       unit_Commitment: bool = False,
                       ramp_constraints: bool = False,
                       all_generators_fixed: bool = False,
@@ -1561,23 +1559,22 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param zonal_grouping: Zonal grouping?
     :param skip_generation_limits: Skip the generation limits?
     :param consider_contingencies: Consider the contingencies?
-    :param contingency_groups_used: List of contingency groups to use
     :param unit_Commitment: Formulate unit commitment?
     :param ramp_constraints: Formulate ramp constraints?
     :param all_generators_fixed: All generators take their snapshot or profile values
                                  instead of resorting to dispatcheable status
-    :param lodf_threshold: LODF threshold value to consider contingencies
-    :param maximize_inter_area_flow: Maximize the inter-area flow?
-    :param areas_from: Array of areas "from"
-    :param areas_to: Array of areas "to"
-    :param energy_0: Vector of initial energy for batteries (size: Number of batteries)
+    :param lodf_threshold:
+    :param maximize_inter_area_flow:
+    :param areas_from:
+    :param areas_to:
+    :param energy_0:
     :param fluid_level_0: initial fluid level of the nodes
     :param optimize_nodal_capacity: Optimize the nodal capacity? (optional)
     :param nodal_capacity_sign: if > 0 the generation is maximized, if < 0 the load is maximized
     :param capacity_nodes_idx: Array of bus indices to optimize their nodal capacity for
     :param logger: logger instance
-    :param progress_text: Text progress callback
-    :param progress_func: Numerical progress callback
+    :param progress_text:
+    :param progress_func:
     :param export_model_fname: Export the model into LP and MPS?
     :return: OpfVars
     """
@@ -1597,9 +1594,6 @@ def run_linear_opf_ts(grid: MultiCircuit,
     if capacity_nodes_idx is None:
         active_nodal_capacity = False
         capacity_nodes_idx = np.zeros(0, dtype=int)
-
-    if contingency_groups_used is None:
-        contingency_groups_used = grid.get_contingency_groups()
 
     nt = len(time_indices) if len(time_indices) > 0 else 1
     n = grid.get_bus_number()
@@ -1755,36 +1749,25 @@ def run_linear_opf_ts(grid: MultiCircuit,
 
             # add branch contingencies ---------------------------------------------------------------------------------
             if consider_contingencies:
+                # The contingencies formulation uses the total nodal injection stored in bus_vars,
+                # hence this step goes before the add_linear_node_balance function
 
-                if len(contingency_groups_used) > 0:
-                    # The contingencies formulation uses the total nodal injection stored in bus_vars,
-                    # hence this step goes before the add_linear_node_balance function
+                # compute the PTDF and LODF
+                ls = LinearAnalysis(numerical_circuit=nc, distributed_slack=False, correct_values=True)
+                ls.run()
 
-                    # compute the PTDF and LODF
-                    ls = LinearAnalysis(numerical_circuit=nc,
-                                        distributed_slack=False,
-                                        correct_values=True)
-                    ls.run()
+                # Compute the more generalistic contingency structures
+                mctg = LinearMultiContingencies(grid=grid)
+                mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
-                    # Compute the more generalistic contingency structures
-                    mctg = LinearMultiContingencies(grid=grid,
-                                                    contingency_groups_used=contingency_groups_used)
-
-                    mctg.compute(lodf=ls.LODF,
-                                 ptdf=ls.PTDF,
-                                 ptdf_threshold=lodf_threshold,
-                                 lodf_threshold=lodf_threshold)
-
-                    # formulate the contingencies
-                    f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,
-                                                                           Sbase=nc.Sbase,
-                                                                           branch_data_t=nc.branch_data,
-                                                                           branch_vars=mip_vars.branch_vars,
-                                                                           bus_vars=mip_vars.bus_vars,
-                                                                           prob=lp_model,
-                                                                           linear_multicontingencies=mctg)
-                else:
-                    logger.add_warning(msg="Contingencies enabled, but no contingency groups provided")
+                # formulate the contingencies
+                f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,
+                                                                       Sbase=nc.Sbase,
+                                                                       branch_data_t=nc.branch_data,
+                                                                       branch_vars=mip_vars.branch_vars,
+                                                                       bus_vars=mip_vars.bus_vars,
+                                                                       prob=lp_model,
+                                                                       linear_multicontingencies=mctg)
 
             # add inter area branch flow maximization ------------------------------------------------------------------
             if maximize_inter_area_flow:

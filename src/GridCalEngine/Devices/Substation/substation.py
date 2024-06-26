@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-import numpy as np
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 from GridCalEngine.Devices.Aggregation.area import GenericAreaGroup, Area
 from GridCalEngine.Devices.Aggregation.zone import Zone
@@ -24,28 +23,18 @@ from GridCalEngine.Devices.Aggregation.country import Country
 from GridCalEngine.Devices.Aggregation.community import Community
 from GridCalEngine.Devices.Aggregation.region import Region
 from GridCalEngine.Devices.Aggregation.municipality import Municipality
-from GridCalEngine.Devices.profile import Profile
 
 
 class Substation(GenericAreaGroup):
 
-    def __init__(self,
-                 name='Substation',
-                 idtag: Union[str, None] = None,
-                 code='',
-                 latitude=0.0,
-                 longitude=0.0,
+    def __init__(self, name='Substation', idtag: Union[str, None] = None, code='', latitude=0.0, longitude=0.0,
                  area: Union[Area, None] = None,
                  zone: Union[Zone, None] = None,
                  country: Union[Country, None] = None,
                  community: Union[Community, None] = None,
                  region: Union[Region, None] = None,
                  municipality: Union[Municipality, None] = None,
-                 address: str = "",
-                 irradiation: float = 0.0,
-                 temparature: float = 0.0,
-                 wind_speed: float = 0.0,
-                 terrain_roughness: float = 0.20):
+                 address: str = ""):
         """
 
         :param name:
@@ -60,10 +49,6 @@ class Substation(GenericAreaGroup):
         :param region:
         :param municipality:
         :param address:
-        :param irradiation:
-        :param temparature:
-        :param wind_speed:
-        :param terrain_roughness:
         """
         GenericAreaGroup.__init__(self,
                                   name=name,
@@ -80,17 +65,6 @@ class Substation(GenericAreaGroup):
         self._region: Union[Region, None] = region
         self._municipality: Union[Municipality, None] = municipality
         self.address: str = address
-
-        self.irradiation: float = irradiation
-        self._irradiation_prof = Profile(default_value=irradiation, data_type=float)
-
-        self.temparature: float = temparature
-        self._temparature_prof = Profile(default_value=temparature, data_type=float)
-
-        self.wind_speed: float = wind_speed
-        self._wind_speed_prof = Profile(default_value=wind_speed, data_type=float)
-
-        self.terrain_roughness: float = terrain_roughness
 
         self.register(key="area", units="", tpe=DeviceType.AreaDevice,
                       definition="Substation area, altenativelly this can be obtained from the zone")
@@ -110,28 +84,7 @@ class Substation(GenericAreaGroup):
         self.register(key="municipality", units="", tpe=DeviceType.MunicipalityDevice,
                       definition="Substation municipality")
 
-        self.register(key="address", units="", tpe=str,
-                      definition="Substation address")
-
-        self.register(key="irradiation", units="W/m^2", tpe=float,
-                      definition="Substation solar irradiation",
-                      profile_name="irradiation_prof")
-
-        self.register(key="temparature", units="ºC", tpe=float,
-                      definition="Substation temperature",
-                      profile_name="temparature_prof")
-
-        self.register(key="wind_speed", units="m/s", tpe=float,
-                      definition="Substation wind speed at 80m above the ground",
-                      profile_name="wind_speed_prof")
-
-        self.register(key="terrain_roughness", units="", tpe=float,
-                      definition="This value is ised for wind speed extrapolation.\n"
-                                 "Typical values:\n"
-                                 "Not rough (sand, snow, sea): 0~0.02\n"
-                                 "Slightly rough (grass, cereal field): 0.02~0.2\n"
-                                 "Rough (forest, small houses): 1.0~1.5\n"
-                                 "Very rough (Large buildings):1.0~4.0")
+        self.register(key="address", units="", tpe=str, definition="Substation address")
 
     @property
     def area(self) -> Union[Area, None]:
@@ -266,54 +219,3 @@ class Substation(GenericAreaGroup):
         else:
             raise Exception(
                 str(type(val)) + 'not supported to be set into a municipality of type Union[Municipality, None]')
-
-    @property
-    def irradiation_prof(self) -> Profile:
-        """
-        Irradiation profile
-        :return: Profile
-        """
-        return self._irradiation_prof
-
-    @irradiation_prof.setter
-    def irradiation_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._irradiation_prof = val
-        elif isinstance(val, np.ndarray):
-            self._irradiation_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a irradiation_prof')
-
-    @property
-    def temparature_prof(self) -> Profile:
-        """
-        Temperature profile
-        :return: Profile
-        """
-        return self._temparature_prof
-
-    @temparature_prof.setter
-    def temparature_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._temparature_prof = val
-        elif isinstance(val, np.ndarray):
-            self._temparature_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a temparature_prof')
-
-    @property
-    def wind_speed_prof(self) -> Profile:
-        """
-        wind_speed_prof profile
-        :return: Profile
-        """
-        return self._wind_speed_prof
-
-    @wind_speed_prof.setter
-    def wind_speed_prof(self, val: Union[Profile, np.ndarray]):
-        if isinstance(val, Profile):
-            self._wind_speed_prof = val
-        elif isinstance(val, np.ndarray):
-            self._wind_speed_prof.set(arr=val)
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a wind_speed_prof')

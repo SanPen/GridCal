@@ -69,6 +69,7 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.results: ContingencyAnalysisTimeSeriesResults = ContingencyAnalysisTimeSeriesResults(
             n=0,
             nbr=0,
+            nc=0,
             time_array=(),
             bus_names=(),
             branch_names=(),
@@ -91,28 +92,23 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         time_array = self.grid.time_profile[self.time_indices]
 
-        if self.options.contingency_groups is None:
-            con_names = self.grid.get_contingency_group_names()
-        else:
-            con_names = [con.name for con in self.options.contingency_groups]
-
         results = ContingencyAnalysisTimeSeriesResults(
             n=nb,
             nbr=self.grid.get_branch_number_wo_hvdc(),
+            nc=self.grid.get_contingency_number(),
             time_array=time_array,
             branch_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),
             bus_types=np.ones(nb, dtype=int),
-            con_names=con_names,
+            con_names=self.grid.get_contingency_group_names(),
             clustering_results=self.clustering_results
         )
 
-        # linear_multiple_contingencies = LinearMultiContingencies(grid=self.grid)
+        linear_multiple_contingencies = LinearMultiContingencies(grid=self.grid)
 
         cdriver = ContingencyAnalysisDriver(grid=self.grid,
                                             options=self.options,
-                                            linear_multiple_contingencies=None  # it is computed inside
-                                            )
+                                            linear_multiple_contingencies=linear_multiple_contingencies)
 
         if self.options.contingency_method == ContingencyMethod.PTDF:
             linear = LinearAnalysisTimeSeriesDriver(
@@ -187,6 +183,7 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
         results = ContingencyAnalysisTimeSeriesResults(
             n=nb,
             nbr=self.grid.get_branch_number_wo_hvdc(),
+            nc=self.grid.get_contingency_number(),
             time_array=time_array,
             branch_names=self.grid.get_branch_names_wo_hvdc(),
             bus_names=self.grid.get_bus_names(),

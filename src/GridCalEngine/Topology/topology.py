@@ -19,7 +19,7 @@ from typing import List, Dict, Union, Tuple
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
-from scipy.sparse import csc_matrix, diags, csr_matrix
+from scipy.sparse import csc_matrix, csr_matrix, diags, csr_matrix, lil_matrix
 from GridCalEngine.basic_structures import IntVec, Vec, Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode

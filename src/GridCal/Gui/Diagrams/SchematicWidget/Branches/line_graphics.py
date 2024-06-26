@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QPen, QBrush
+from PySide6.QtGui import QPen, QIcon, QPixmap, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
@@ -122,11 +122,10 @@ class LineGraphicItem(LineGraphicTemplateItem):
             menu = QMenu()
             menu.addSection("Line")
 
-            add_menu_entry(menu=menu,
-                           text="Active",
-                           function_ptr=self.enable_disable_toggle,
-                           checkeable=True,
-                           checked_value=self.api_object.active)
+            pe = menu.addAction('Active')
+            pe.setCheckable(True)
+            pe.setChecked(self.api_object.active)
+            pe.triggered.connect(self.enable_disable_toggle)
 
             add_menu_entry(menu=menu,
                            text="Draw labels",
@@ -134,87 +133,100 @@ class LineGraphicItem(LineGraphicTemplateItem):
                            checkeable=True,
                            checked_value=self.draw_labels)
 
-            add_menu_entry(menu=menu,
-                           text="Editor",
-                           function_ptr=self.edit,
-                           icon_path=":/Icons/icons/edit.svg")
+            ra3 = menu.addAction('Editor')
+            edit_icon = QIcon()
+            edit_icon.addPixmap(QPixmap(":/Icons/icons/edit.svg"))
+            ra3.setIcon(edit_icon)
+            ra3.triggered.connect(self.edit)
 
-            add_menu_entry(menu=menu,
-                           text="Change bus",
-                           function_ptr=self.change_bus,
-                           icon_path=":/Icons/icons/move_bus.svg")
-
-            menu.addSeparator()
-
-            add_menu_entry(menu=menu,
-                           text="Plot profiles",
-                           function_ptr=self.plot_profiles,
-                           icon_path=":/Icons/icons/plot.svg")
-
-            add_menu_entry(menu=menu,
-                           text="Assign rate to profile",
-                           function_ptr=self.assign_rate_to_profile,
-                           icon_path=":/Icons/icons/assign_to_profile.svg")
-
-            add_menu_entry(menu=menu,
-                           text="Assign active state to profile",
-                           function_ptr=self.assign_status_to_profile,
-                           icon_path=":/Icons/icons/assign_to_profile.svg")
-
-            add_menu_entry(menu=menu,
-                           text="Add to catalogue",
-                           function_ptr=self.add_to_catalogue,
-                           icon_path=":/Icons/icons/Catalogue.svg")
-
-            add_menu_entry(menu=menu,
-                           text="Split line",
-                           function_ptr=self.split_line,
-                           icon_path=":/Icons/icons/divide.svg")
-
-            add_menu_entry(menu=menu,
-                           text="Split line with in/out",
-                           function_ptr=self.split_line_in_out,
-                           icon_path=":/Icons/icons/divide.svg")
+            rabf = menu.addAction('Change bus')
+            move_bus_icon = QIcon()
+            move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
+            rabf.setIcon(move_bus_icon)
+            rabf.triggered.connect(self.change_bus)
 
             menu.addSeparator()
 
-            add_menu_entry(menu=menu,
-                           text="Delete",
-                           function_ptr=self.remove,
-                           icon_path=":/Icons/icons/delete3.svg")
+            ra6 = menu.addAction('Plot profiles')
+            plot_icon = QIcon()
+            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
+            ra6.setIcon(plot_icon)
+            ra6.triggered.connect(self.plot_profiles)
+
+            ra4 = menu.addAction('Assign rate to profile')
+            ra4_icon = QIcon()
+            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra4.setIcon(ra4_icon)
+            ra4.triggered.connect(self.assign_rate_to_profile)
+
+            ra5 = menu.addAction('Assign active state to profile')
+            ra5_icon = QIcon()
+            ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
+            ra5.setIcon(ra5_icon)
+            ra5.triggered.connect(self.assign_status_to_profile)
+
+            ra3 = menu.addAction('Add to catalogue')
+            ra3_icon = QIcon()
+            ra3_icon.addPixmap(QPixmap(":/Icons/icons/Catalogue.svg"))
+            ra3.setIcon(ra3_icon)
+            ra3.triggered.connect(self.add_to_catalogue)
+
+            spl = menu.addAction('Split line')
+            spl_icon = QIcon()
+            spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
+            spl.setIcon(spl_icon)
+            spl.triggered.connect(self.split_line)
+
+            spl = menu.addAction('Split line with in/out')
+            spl_icon = QIcon()
+            spl_icon.addPixmap(QPixmap(":/Icons/icons/divide.svg"))
+            spl.setIcon(spl_icon)
+            spl.triggered.connect(self.split_line_in_out)
+
+            # menu.addSeparator()
+
+            ra2 = menu.addAction('Delete')
+            del_icon = QIcon()
+            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
+            ra2.setIcon(del_icon)
+            ra2.triggered.connect(self.remove)
 
             menu.addSection('Convert to')
+            toxfo = menu.addAction('Transformer')
+            toxfo_icon = QIcon()
+            toxfo_icon.addPixmap(QPixmap(":/Icons/icons/to_transformer.svg"))
+            toxfo.setIcon(toxfo_icon)
+            toxfo.triggered.connect(self.to_transformer)
 
-            add_menu_entry(menu=menu,
-                           text="Transformer",
-                           function_ptr=self.to_transformer,
-                           icon_path=":/Icons/icons/to_transformer.svg")
+            tohvdc = menu.addAction('HVDC')
+            tohvdc_icon = QIcon()
+            tohvdc_icon.addPixmap(QPixmap(":/Icons/icons/to_hvdc.svg"))
+            tohvdc.setIcon(tohvdc_icon)
+            tohvdc.triggered.connect(self.to_hvdc)
 
-            add_menu_entry(menu=menu,
-                           text="HVDC",
-                           function_ptr=self.to_hvdc,
-                           icon_path=":/Icons/icons/to_hvdc.svg")
+            tovsc = menu.addAction('VSC')
+            tovsc_icon = QIcon()
+            tovsc_icon.addPixmap(QPixmap(":/Icons/icons/to_vsc.svg"))
+            tovsc.setIcon(tovsc_icon)
+            tovsc.triggered.connect(self.to_vsc)
 
-            add_menu_entry(menu=menu,
-                           text="VSC",
-                           function_ptr=self.to_vsc,
-                           icon_path=":/Icons/icons/to_vsc.svg")
+            toupfc = menu.addAction('UPFC')
+            toupfc_icon = QIcon()
+            toupfc_icon.addPixmap(QPixmap(":/Icons/icons/to_upfc.svg"))
+            toupfc.setIcon(toupfc_icon)
+            toupfc.triggered.connect(self.to_upfc)
 
-            add_menu_entry(menu=menu,
-                           text="UPFC",
-                           function_ptr=self.to_upfc,
-                           icon_path=":/Icons/icons/to_upfc.svg")
-
-            add_menu_entry(menu=menu,
-                           text="Series reactance",
-                           function_ptr=self.to_series_reactance,
-                           icon_path=":/Icons/icons/to_series_reactance.svg")
+            toser = menu.addAction('Series reactance')
+            toser_icon = QIcon()
+            toser_icon.addPixmap(QPixmap(":/Icons/icons/to_series_reactance.svg"))
+            toser.setIcon(toser_icon)
+            toser.triggered.connect(self.to_series_reactance)
 
             menu.exec(event.screenPos())
         else:
             pass
 
-    def plot_profiles(self) -> None:
+    def plot_profiles(self):
         """
         Plot the time series profiles
         @return:

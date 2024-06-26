@@ -19,7 +19,6 @@ from typing import List, Union
 from GridCalEngine.enumerations import SolverType, MIPSolvers, ZonalGrouping, TimeGrouping, AcOpfMode
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 
 
 class OptimalPowerFlowOptions:
@@ -37,7 +36,6 @@ class OptimalPowerFlowOptions:
                  power_flow_options: Union[None, PowerFlowOptions] = None,
                  bus_types=None,
                  consider_contingencies=False,
-                 contingency_groups_used: List[ContingencyGroup] = (),
                  skip_generation_limits=False,
                  lodf_tolerance=0.001,
                  maximize_flows=False,
@@ -95,8 +93,6 @@ class OptimalPowerFlowOptions:
         self.skip_generation_limits = skip_generation_limits
 
         self.consider_contingencies = consider_contingencies
-
-        self.contingency_groups_used: List[ContingencyGroup] = contingency_groups_used
 
         self.lodf_tolerance = lodf_tolerance
 

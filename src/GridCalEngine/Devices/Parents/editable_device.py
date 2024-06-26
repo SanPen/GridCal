@@ -200,7 +200,7 @@ class EditableDevice:
         Name of the object
         :return: string
         """
-        return str(self.name)
+        return self.name
 
     def __repr__(self) -> str:
         return self.idtag + '::' + self.name

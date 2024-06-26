@@ -488,6 +488,40 @@ class SimulationIndices:
         self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
         self.i_vsc = np.array(i_vsc_lst, dtype=int)
 
+    def get_base_voltage(self, nbus, generator_data, battery_data, hvdc_data, branch_data):
+        """
+        GEt the voltage profile based on the devices control voltage
+        :param nbus:
+        :param generator_data:
+        :param battery_data:
+        :param hvdc_data:
+        :param branch_data:
+        :return:
+        """
+        return compose_generator_voltage_profile(
+            nbus=nbus,
+            gen_bus_indices=generator_data.get_bus_indices(),
+            gen_vset=generator_data.v,
+            gen_status=generator_data.active,
+            gen_is_controlled=generator_data.controllable,
+            bat_bus_indices=battery_data.get_bus_indices(),
+            bat_vset=battery_data.v,
+            bat_status=battery_data.active,
+            bat_is_controlled=battery_data.controllable,
+            hvdc_bus_f=hvdc_data.get_bus_indices_f(),
+            hvdc_bus_t=hvdc_data.get_bus_indices_t(),
+            hvdc_status=hvdc_data.active,
+            hvdc_vf=hvdc_data.Vset_f,
+            hvdc_vt=hvdc_data.Vset_t,
+            k_vf_beq=self.k_vf_beq,
+            k_vt_m=self.k_vt_m,
+            i_vf_beq=self.i_vf_beq,
+            i_vt_m=self.i_vt_m,
+            branch_status=branch_data.active,
+            br_vf=branch_data.vf_set,
+            br_vt=branch_data.vt_set
+        )
+
 
 class SimulationIndices2:
     """
@@ -1068,7 +1102,7 @@ class SimulationIndices2:
     def check_subsystem_slacks(self, systems, dict_known_idx, bus_data, verbose=0, strict=0):
         subSystemSlacks = np.zeros(len(systems), dtype=bool)
         # initialise pretty table
-        import prettytable as pt  # TODO: use pandas
+        import prettytable as pt
         table = pt.PrettyTable()
         # add some headers
         table.field_names = ["System", "Slack Buses", "Remarks"]

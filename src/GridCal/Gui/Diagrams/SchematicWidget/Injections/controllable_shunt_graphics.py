@@ -18,11 +18,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6 import QtWidgets, QtGui
 from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt, DeviceType
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_editor import ControllableShuntEditor
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GuiFunctions import add_menu_entry
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -32,7 +30,6 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
     """
     ExternalGrid graphic item
     """
-
     def __init__(self, parent, api_obj: ControllableShunt, editor: SchematicWidget):
         """
 
@@ -91,43 +88,30 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         menu = QtWidgets.QMenu()
         menu.addSection("Controllable shunt")
 
-        add_menu_entry(menu=menu,
-                       text="Active",
-                       checkeable=True,
-                       checked_value=self.api_object.active,
-                       function_ptr=self.enable_disable_toggle)
+        pe = menu.addAction('Active')
+        pe.setCheckable(True)
+        pe.setChecked(self.api_object.active)
+        pe.triggered.connect(self.enable_disable_toggle)
 
-        add_menu_entry(menu=menu,
-                       text="Editor",
-                       function_ptr=self.edit,
-                       icon_path=":/Icons/icons/edit.svg")
+        pa = menu.addAction('Plot profiles')
+        plot_icon = QtGui.QIcon()
+        plot_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/plot.svg"))
+        pa.setIcon(plot_icon)
+        pa.triggered.connect(self.plot)
 
-        add_menu_entry(menu=menu,
-                       text="Plot profiles",
-                       function_ptr=self.plot,
-                       icon_path=":/Icons/icons/plot.svg")
+        da = menu.addAction('Delete')
+        del_icon = QtGui.QIcon()
+        del_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/delete3.svg"))
+        da.setIcon(del_icon)
+        da.triggered.connect(self.remove)
 
-        add_menu_entry(menu=menu,
-                       text="Delete",
-                       function_ptr=self.remove,
-                       icon_path=":/Icons/icons/delete3.svg")
-
-        add_menu_entry(menu=menu,
-                       text="Change bus",
-                       function_ptr=self.change_bus,
-                       icon_path=":/Icons/icons/move_bus.svg")
+        rabf = menu.addAction('Change bus')
+        move_bus_icon = QtGui.QIcon()
+        move_bus_icon.addPixmap(QtGui.QPixmap(":/Icons/icons/move_bus.svg"))
+        rabf.setIcon(move_bus_icon)
+        rabf.triggered.connect(self.change_bus)
 
         menu.exec_(event.screenPos())
-
-    def edit(self):
-        """
-        Call the edit dialogue
-        :return:
-        """
-        dlg = ControllableShuntEditor(api_object=self.api_object)
-        if dlg.exec():
-            self.api_object.g_steps = dlg.get_g_steps()
-            self.api_object.b_steps = dlg.get_b_steps()
 
     def enable_disable_toggle(self):
         """
@@ -186,3 +170,4 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         """
         dictionary_of_lists = {DeviceType.Technology: self.editor.circuit.technologies}
         self.editor.set_editor_model(api_object=self.api_object, dictionary_of_lists=dictionary_of_lists)
+

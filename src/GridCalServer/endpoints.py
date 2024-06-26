@@ -18,15 +18,11 @@ import os
 import json
 from typing import Dict
 from hashlib import sha256
-from fastapi import FastAPI, Header, HTTPException, BackgroundTasks, Response
+from fastapi import FastAPI, Header, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from starlette.responses import StreamingResponse
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction, RemoteJob
 from GridCalEngine.IO.gridcal.pack_unpack import parse_gridcal_data
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import SimulationTypes, JobStatus
-from GridCalEngine.IO.gridcal.zip_interface import save_results_only
-import GridCalEngine.api as gce
 
 app = FastAPI()
 
@@ -38,23 +34,6 @@ __connections__ = set()
 SECRET_KEY = ""
 
 JOBS_LIST: Dict[str, RemoteJob] = dict()
-
-
-def get_fs_folder() -> str:
-    """
-    Get the folder where to save files
-    :return:
-    """
-    return "."
-
-
-def generate_job_file_path(job_id: str):
-    """
-
-    :param job_id:
-    :return:
-    """
-    return os.path.join(get_fs_folder(), f"{job_id}.zip")
 
 
 def verify_api_key(api_key: str = Header(None)):
@@ -98,43 +77,11 @@ async def stream_load_json(json_data):
 
     async def generate():
         """
-        generate
+
         """
         yield json.dumps(json_data).encode()
 
     return StreamingResponse(generate())
-
-
-def run_job(grid: MultiCircuit, job: RemoteJob):
-    """
-
-    :param grid:
-    :param job:
-    :return:
-    """
-    if job.instruction.operation == SimulationTypes.PowerFlow_run:
-        driver = gce.PowerFlowDriver(grid=grid)
-
-    elif job.instruction.operation == SimulationTypes.PowerFlowTimeSeries_run:
-
-        driver = gce.PowerFlowTimeSeriesDriver(grid=grid)
-
-    elif job.instruction.operation == SimulationTypes.OPF_run:
-
-        driver = gce.OptimalPowerFlowDriver(grid=grid)
-
-    elif job.instruction.operation == SimulationTypes.OPFTimeSeries_run:
-
-        driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=grid)
-
-    else:
-        return None
-
-    job.status = JobStatus.Running
-    driver.run()
-    save_results_only(filename_zip=generate_job_file_path(job_id=job.id_tag),
-                      sessions_data=[driver])
-    job.status = JobStatus.Done
 
 
 async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
@@ -142,30 +89,25 @@ async def process_json_data(json_data: Dict[str, Dict[str, Dict[str, str]]]):
     Action called on the upload
     :param json_data: the grid info generated with 'gather_model_as_jsons_for_communication'
     """
-    grid = parse_gridcal_data(data=json_data)
-    print(f'Circuit loaded alright nbus{grid.get_bus_number()}, nbr{grid.get_branch_number()}')
-
-    # with open("mi_red.json", "w") as f:
-    #     f.write(json.dumps(json_data, indent=4))
+    circuit = parse_gridcal_data(data=json_data)
+    print(f'Circuit loaded alright nbus{circuit.get_bus_number()}, nbr{circuit.get_branch_number()}')
 
     if 'instruction' in json_data:
         instruction = RemoteInstruction(data=json_data['instruction'])
 
-        job = RemoteJob(grid=grid, instruction=instruction)
+        job = RemoteJob(grid=circuit, instruction=instruction)
 
         # register the job
         JOBS_LIST[job.id_tag] = job
 
-        # print("Job data\n", job.get_data())
-
-        run_job(grid=grid, job=job)
+        print("Job data\n", job.get_data())
 
     else:
         print('No Instruction found\n\n', json_data)
 
 
 @app.post("/upload/")
-async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
+async def upload_json_background(json_data: dict, background_tasks: BackgroundTasks):
     """
 
     :param json_data:
@@ -175,7 +117,7 @@ async def upload_job(json_data: dict, background_tasks: BackgroundTasks):
     background_tasks.add_task(stream_load_json, json_data)
     background_tasks.add_task(process_json_data, json_data)
 
-    return {"message": "Job processing initiated"}
+    return {"message": "JSON data streaming initiated"}
 
 
 @app.get("/jobs_list")
@@ -214,48 +156,6 @@ async def cancel_job(job_id: str):
 
     job.cancel()
     return {"message": f"Job {job_id} canceled successfully"}
-
-
-@app.get("/download_results/{job_id}")
-async def download_large_file(job_id: str):
-    """
-
-    :return:
-    """
-
-    job = JOBS_LIST.get(job_id, None)
-
-    if job is None:
-        return Response(status_code=404, content="Job not found")
-
-    if job.status != JobStatus.Done:
-        return Response(status_code=405, content="Job not finished yet :/")
-
-    # Path to your large binary file
-    file_path = generate_job_file_path(job_id=job_id)
-
-    # Check if the file exists
-    if not os.path.exists(file_path):
-        return Response(status_code=406, content=f"File not found {file_path}")
-
-    # Function to stream the file
-    def iterfile(chunk_size=1024 * 1024):
-        """
-
-        :param chunk_size:
-        :return:
-        """
-        with open(file_path, "rb") as file:
-            sent = 0
-            while chunk := file.read(chunk_size):  # Read in chunks of 1MB
-                sent += chunk_size
-                job.progress = f"{sent} MB"
-                yield chunk
-
-    print("Sending", job_id)
-
-    # Return a streaming response
-    return StreamingResponse(iterfile(), media_type="application/octet-stream")
 
 
 if __name__ == "__main__":

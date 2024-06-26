@@ -21,7 +21,7 @@ import numpy as np
 from enum import Enum
 import zipfile
 from xml.etree import cElementTree as ElementTree
-from GridCalEngine.Devices import Bus, Generator, Load, Transformer2W, Line
+from GridCalEngine.Devices import Bus, Generator, Branch, Load, BranchType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
@@ -37,7 +37,6 @@ class XmlDictConfig(dict):
     >>> xmldict = XmlDictConfig(root)
     And then use xmldict for what it is... a dict.
     """
-
     def __init__(self, parent_element, text_to_remove=''):
         """
 
@@ -60,12 +59,12 @@ class XmlDictConfig(dict):
 
                 self.update_shim({tag: a_dict})
 
-            elif element.items():  # items() is especialy for attributes
+            elif element.items():    # items() is especialy for attributes
 
                 element_attrib = element.items()
 
                 if element.text:
-                    element_attrib.append((tag, element.text))  # add tag:text if there exist
+                    element_attrib.append((tag, element.text))     # add tag:text if there exist
 
                 self.update_shim({tag: dict(element_attrib)})
             else:
@@ -77,7 +76,7 @@ class XmlDictConfig(dict):
         :param a_dict:
         :return:
         """
-        for og_key in a_dict.keys():  # keys() includes tag and attributes
+        for og_key in a_dict.keys():   # keys() includes tag and attributes
 
             key = og_key.replace(self.text_to_remove, '')
 
@@ -799,7 +798,7 @@ def get_st_generation_sent_out(plexos_results_folder):
     """
     fname = os.path.join(plexos_results_folder, 'Interval', 'ST Generator.Generation Sent Out.csv')
 
-    df = pd.read_csv(fname, index_col='DATETIME')
+    df = pd.read_csv(fname,index_col='DATETIME')
     df = pd.read_csv(fname, index_col='DATETIME')
 
     return df
@@ -880,7 +879,7 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
             if (load_profile != 0).any():
                 load = Load(name='Load@' + name,
                             P=elm.load,
-                            Q=elm.load * 0.8, )
+                            Q=elm.load * 0.8,)
                 load.P_prof = load_profile
                 load.Q_prof = load_profile * 0.8
                 load.ensure_profiles_exist(circuit.time_profile)
@@ -929,16 +928,17 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
             profile = None
             rating = elm.rate_max
 
-        br = Line(bus_from=bus_f,
-                  bus_to=bus_t,
-                  name=name,
-                  active=elm.units,
-                  r=elm.R,
-                  x=elm.X,
-                  rate=rating)
+        br = Branch(bus_from=bus_f,
+                    bus_to=bus_t,
+                    name=name,
+                    active=elm.units,
+                    r=elm.R,
+                    x=elm.X,
+                    rate=rating,
+                    branch_type=BranchType.Line)
         br.rate_prof = profile
         br.ensure_profiles_exist(circuit.time_profile)
-        circuit.add_line(br)
+        circuit.add_branch(br)
 
         if text_func is not None:
             text_func("Creating GridCal model: Buses")
@@ -959,16 +959,17 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
             profile = None
             rating = elm.rate_max
 
-        br = Transformer2W(bus_from=bus_f,
-                           bus_to=bus_t,
-                           name=name,
-                           active=elm.units,
-                           r=elm.R,
-                           x=elm.X,
-                           rate=rating)
+        br = Branch(bus_from=bus_f,
+                    bus_to=bus_t,
+                    name=name,
+                    active=elm.units,
+                    r=elm.R,
+                    x=elm.X,
+                    rate=rating,
+                    branch_type=BranchType.Transformer)
         br.rate_prof = profile
         br.ensure_profiles_exist(circuit.time_profile)
-        circuit.add_transformer2w(br)
+        circuit.add_branch(br)
 
         if text_func is not None:
             text_func("Creating GridCal model: Buses")
@@ -978,3 +979,4 @@ def plx_to_gridcal(mdl: PlxModel, plexos_results_folder, time_indices=None, text
         nn += 1
 
     return circuit
+

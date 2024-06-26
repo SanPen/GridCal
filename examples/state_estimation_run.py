@@ -27,9 +27,9 @@ m_circuit.add_bus(b1)
 m_circuit.add_bus(b2)
 m_circuit.add_bus(b3)
 
-m_circuit.add_line(br1)
-m_circuit.add_line(br2)
-m_circuit.add_line(br3)
+m_circuit.add_branch(br1)
+m_circuit.add_branch(br2)
+m_circuit.add_branch(br3)
 
 # Declare the simulation driver and run
 se = StateEstimation(circuit=m_circuit)

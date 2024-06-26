@@ -29,68 +29,6 @@ from GridCalEngine.Simulations.results_template import DriverToSave
 import GridCalEngine.Devices as dev
 
 
-def save_results_in_zip(f_zip_ptr: zipfile.ZipFile,
-                        filename_zip: str,
-                        sessions_data: List[DriverToSave],
-                        text_func: Union[None, Callable[[str], None]] = None,
-                        progress_func: Union[None, Callable[[float], None]] = None):
-    """
-
-    :param f_zip_ptr:
-    :param filename_zip:
-    :param sessions_data:
-    :param text_func:
-    :param progress_func:
-    :return:
-    """
-    # pre-count the sessions
-    n_items = len(sessions_data)
-
-    # save sessions
-    for i, session_data in enumerate(sessions_data):
-
-        if session_data.results is not None:
-
-            # traverse the registered results
-            for arr_name, arr_prop in session_data.results.data_variables.items():
-
-                filename = 'sessions/' + session_data.name + '/' + session_data.tpe.value + '/' + arr_name
-
-                if text_func is not None:
-                    text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
-
-                # get the array
-                arr = getattr(session_data.results, arr_name)
-
-                with BytesIO() as buffer:
-                    # pack the array into a DataFrame
-
-                    try:
-                        if np.iscomplexobj(arr):
-                            filename += "__complex__"
-                            pd.DataFrame(data=np.c_[arr.real, arr.imag]).to_parquet(buffer)
-                        else:
-                            pd.DataFrame(data=arr).to_parquet(buffer)
-
-                        # save the buffer to the zip file
-                        f_zip_ptr.writestr(filename + ".parquet", buffer.getvalue())
-
-                    except ValueError as e:
-                        warn(str(e))
-
-                if progress_func is not None:
-                    progress_func((i + 1) / n_items * 100)
-
-        # save logger
-        if session_data.logger is not None:
-            filename = 'sessions/' + session_data.name + '/' + session_data.tpe.value + '/logger.parquet'
-            with BytesIO() as buffer:
-                # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
-                session_data.logger.to_df().to_parquet(buffer)
-                # save the buffer to the zip file
-                f_zip_ptr.writestr(filename, buffer.getvalue())
-
-
 def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
                              filename_zip: str,
                              model_data: Dict[str, Dict[str, str]],
@@ -177,36 +115,58 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
 
             i += 1
 
-        # Save the results into the zip file
-        save_results_in_zip(f_zip_ptr=f_zip_ptr,
-                            filename_zip=filename_zip,
-                            sessions_data=sessions_data,
-                            text_func=text_func,
-                            progress_func=progress_func)
+        # pre-count the sessions
+        n_items = len(sessions_data)
+
+        # save sessions
+        i = 0
+        for session_data in sessions_data:
+
+            if session_data.results is not None:
+
+                # traverse the registered results
+                for arr_name, arr_prop in session_data.results.data_variables.items():
+
+                    filename = 'sessions/' + session_data.name + '/' + session_data.tpe.value + '/' + arr_name
+
+                    if text_func is not None:
+                        text_func('Flushing ' + filename + ' to ' + filename_zip + '...')
+
+                    # get the array
+                    arr = getattr(session_data.results, arr_name)
+
+                    with BytesIO() as buffer:
+                        # pack the array into a DataFrame
+
+                        try:
+                            if np.iscomplexobj(arr):
+                                filename += "__complex__"
+                                pd.DataFrame(data=np.c_[arr.real, arr.imag]).to_parquet(buffer)
+                            else:
+                                pd.DataFrame(data=arr).to_parquet(buffer)
+
+                            # save the buffer to the zip file
+                            f_zip_ptr.writestr(filename + ".parquet", buffer.getvalue())
+
+                        except ValueError as e:
+                            warn(str(e))
+
+                    if progress_func is not None:
+                        progress_func((i + 1) / n_items * 100)
+
+                    i += 1
+
+            # save logger
+            if session_data.logger is not None:
+                filename = 'sessions/' + session_data.name + '/' + session_data.tpe.value + '/logger.parquet'
+                with BytesIO() as buffer:
+                    # save the DataFrame to the buffer, protocol4 is to be compatible with python 3.6
+                    session_data.logger.to_df().to_parquet(buffer)
+                    # save the buffer to the zip file
+                    f_zip_ptr.writestr(filename, buffer.getvalue())
 
     if n_failed:
         print('Failed to pickle several profiles, but saved them as csv.\nFor improved speed install Pandas >= 1.2')
-
-
-def save_results_only(filename_zip: str,
-                      sessions_data: List[DriverToSave],
-                      text_func: Union[None, Callable[[str], None]] = None,
-                      progress_func: Union[None, Callable[[float], None]] = None):
-    """
-    Save the results into a new file
-    :param filename_zip: name of the zip file
-    :param sessions_data: Sessions to save
-    :param text_func: Text progress function
-    :param progress_func: Numerical progress function
-    """
-    # open zip file for writing
-    with zipfile.ZipFile(filename_zip, 'w', zipfile.ZIP_DEFLATED) as f_zip_ptr:
-        # Save the results into the zip file
-        save_results_in_zip(f_zip_ptr=f_zip_ptr,
-                            filename_zip=filename_zip,
-                            sessions_data=sessions_data,
-                            text_func=text_func,
-                            progress_func=progress_func)
 
 
 def read_data_frame_from_zip(file_pointer,

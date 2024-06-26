@@ -852,7 +852,7 @@ class CIMImport:
                                                HV=hv,
                                                LV=lv)
 
-                    circuit.add_transformer2w(line)
+                    circuit.add_branch(line)
                 else:
                     self.logger.add_error('Bus not found', elm.rdfid)
 

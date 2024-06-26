@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QIcon, QPixmap, QColor
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
-from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget, ACTIVE
+from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import GenericDBWidget, ACTIVE
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
@@ -52,7 +52,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         :param api_object:
         :param arrow_size:
         """
-        GenericDiagramWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=draw_labels)
+        GenericDBWidget.__init__(self, parent=None, api_object=api_object, editor=editor, draw_labels=draw_labels)
         LineGraphicTemplateItem.__init__(self,
                                          from_port=from_port,
                                          to_port=to_port,

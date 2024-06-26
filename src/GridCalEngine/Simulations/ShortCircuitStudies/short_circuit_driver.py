@@ -25,11 +25,10 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (
                                                                                 short_circuit_unbalanced)
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Devices import Line, Bus
+from GridCalEngine.Devices import Branch, Bus
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.enumerations import FaultType, BranchImpedanceMode, SimulationTypes
-from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
 class ShortCircuitOptions:
@@ -150,7 +149,7 @@ class ShortCircuitDriver(DriverTemplate):
         return Zf
 
     @staticmethod
-    def split_branch(branch: BRANCH_TYPES, fault_position: float, r_fault: float, x_fault: float):
+    def split_branch(branch: Branch, fault_position: float, r_fault: float, x_fault: float):
         """
         Split a branch by a given distance
         :param branch: Branch of a circuit
@@ -181,17 +180,19 @@ class ShortCircuitDriver(DriverTemplate):
         # set the bus fault impedance
         middle_bus.Zf = complex(r_fault, x_fault)
 
-        br1 = Line(bus_from=branch.bus_from,
-                   bus_to=middle_bus,
-                   r=r * fault_position,
-                   x=x * fault_position,
-                   b=b * fault_position)
+        br1 = Branch(bus_from=branch.bus_from,
+                     bus_to=middle_bus,
+                     r=r * fault_position,
+                     x=x * fault_position,
+                     g=g * fault_position,
+                     b=b * fault_position)
 
-        br2 = Line(bus_from=middle_bus,
-                   bus_to=branch.bus_to,
-                   r=r * (1 - fault_position),
-                   x=x * (1 - fault_position),
-                   b=b * (1 - fault_position))
+        br2 = Branch(bus_from=middle_bus,
+                     bus_to=branch.bus_to,
+                     r=r * (1 - fault_position),
+                     x=x * (1 - fault_position),
+                     g=g * (1 - fault_position),
+                     b=b * (1 - fault_position))
 
         return br1, br2, middle_bus
 
@@ -268,14 +269,14 @@ class ShortCircuitDriver(DriverTemplate):
             sc_bus_index = list()
 
             # modify the grid by inserting a mid-line short circuit bus
-            branch = self.grid.get_branches_wo_hvdc()[self.options.branch_index]
+            branch = self.grid.get_branches()[self.options.branch_index]
             br1, br2, middle_bus = self.split_branch(branch=branch,
                                                      fault_position=self.options.branch_fault_locations[0],
                                                      r_fault=self.options.branch_fault_impedance[0].real,
                                                      x_fault=self.options.branch_fault_impedance[0].imag)
 
-            grid.add_line(br1)
-            grid.add_line(br2)
+            grid.add_branch(br1)
+            grid.add_branch(br2)
             grid.add_bus(middle_bus)
             sc_bus_index.append(len(grid.buses) - 1)
 

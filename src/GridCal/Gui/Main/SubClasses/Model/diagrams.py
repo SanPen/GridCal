@@ -157,8 +157,9 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.plt_style_comboBox.currentTextChanged.connect(self.plot_style_change)
 
         # sliders
-        self.ui.diagram_step_slider.sliderReleased.connect(self.colour_diagrams)
+        # self.ui.diagram_step_slider.sliderReleased.connect(self.diagrams_time_slider_change)
         self.ui.diagram_step_slider.valueChanged.connect(self.diagrams_time_slider_change)
+        # self.ui.db_step_slider.sliderReleased.connect(self.objects_time_slider_change)
         self.ui.db_step_slider.valueChanged.connect(self.objects_time_slider_change)
 
         # spinbox change
@@ -289,7 +290,9 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, Union[SchematicWidget, GridMapWidget]):
+            if isinstance(diagram, SchematicWidget):
+                diagram.zoom_out()
+            elif isinstance(diagram, GridMapWidget):
                 diagram.zoom_out()
             else:
                 print("zoom_out: Unsupported diagram type")
@@ -300,19 +303,16 @@ class DiagramsMain(CompiledArraysMain):
         """
 
         if self.circuit.has_time_series:
-            if self.circuit.get_time_number() > 0:
-                self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
-                                                                           max_value=self.simulation_end_index,
-                                                                           time_array=self.circuit.time_profile)
+            self.start_end_dialogue_window = StartEndSelectionDialogue(min_value=self.simulation_start_index,
+                                                                       max_value=self.simulation_end_index,
+                                                                       time_array=self.circuit.time_profile)
 
-                self.start_end_dialogue_window.setModal(True)
-                self.start_end_dialogue_window.exec()
+            self.start_end_dialogue_window.setModal(True)
+            self.start_end_dialogue_window.exec()
 
-                if self.start_end_dialogue_window.is_accepted:
-                    self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
-                                           en=self.start_end_dialogue_window.end_value)
-            else:
-                info_msg("Empty time series :/")
+            if self.start_end_dialogue_window.is_accepted:
+                self.setup_sim_indices(st=self.start_end_dialogue_window.start_value,
+                                       en=self.start_end_dialogue_window.end_value)
         else:
             info_msg("There are no time series :/")
 
@@ -703,8 +703,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.ContingencyAnalysisTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.ContingencyAnalysisTimeSeriesResults = self.session.get_results(
-                    SimulationTypes.ContingencyAnalysisTS_run
-                )
+                    SimulationTypes.ContingencyAnalysisTS_run)
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -775,7 +774,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
-        print("Colour!")
+
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
@@ -1026,12 +1025,12 @@ class DiagramsMain(CompiledArraysMain):
                 tile_source = self.tile_sources.get(diagram.tile_source, defualt_tile_source)
 
                 # create the map widget
-                map_widget = GridMapWidget(tile_src=tile_source,
+                map_widget = GridMapWidget(parent=None,
+                                           tile_src=tile_source,
                                            start_level=diagram.start_level,
                                            longitude=diagram.longitude,
                                            latitude=diagram.latitude,
                                            name=diagram.name,
-                                           circuit=self.circuit,
                                            diagram=diagram)
 
                 # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
@@ -1063,17 +1062,16 @@ class DiagramsMain(CompiledArraysMain):
         # set other default properties of the diagram
         diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
         diagram.start_level = 5
-
-        # diagram.longitude = -15.41
-        # diagram.latitude = 40.11
+        diagram.longitude = -15.41
+        diagram.latitude = 40.11
 
         # create the map widget
-        map_widget = GridMapWidget(tile_src=tile_source,
+        map_widget = GridMapWidget(parent=None,
+                                   tile_src=tile_source,
                                    start_level=diagram.start_level,
                                    longitude=diagram.longitude,
                                    latitude=diagram.latitude,
                                    name=diagram.name,
-                                   circuit=self.circuit,
                                    diagram=diagram,
                                    call_delete_db_element_func=self.call_delete_db_element)
 
@@ -1233,7 +1231,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = self.get_selected_diagram_widget()
         if diagram is not None:
-            if isinstance(diagram, (SchematicWidget, GridMapWidget)):
+            if isinstance(diagram, SchematicWidget):
 
                 # declare the allowed file types
                 files_types = "Scalable Vector Graphics (*.svg);;Portable Network Graphics (*.png)"
@@ -1285,6 +1283,7 @@ class DiagramsMain(CompiledArraysMain):
 
                         # paint and capture
                         for t_idx in range(start_idx, end_idx):
+
                             self.grid_colour_function(diagram=diagram,
                                                       current_study=current_study,
                                                       t_idx=t_idx,
@@ -1421,7 +1420,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
                 names = [elm.type_name + ": " + elm.name for elm in selected]
-                group_text = "Contingency " + str(len(self.circuit.get_contingency_groups()))
+                group_text = "Contingency " + str(len(self.circuit.contingency_groups))
                 self.contingency_checks_diag = CheckListDialogue(objects_list=names,
                                                                  title="Add contingency",
                                                                  ask_for_group_name=True,
@@ -1460,7 +1459,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
 
-                group_name = "Investment " + str(len(self.circuit.get_contingency_groups()))
+                group_name = "Investment " + str(len(self.circuit.contingency_groups))
 
                 # launch selection dialogue to add/remove from the selection
                 names = [elm.type_name + ": " + elm.name for elm in selected]

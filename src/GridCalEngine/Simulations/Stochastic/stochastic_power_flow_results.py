@@ -382,7 +382,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
             labels = self.bus_names
             cdf = CDF(np.abs(self.V_points))
             y_label = '(p.u.)'
-            x_label = r"Probability $P(X \leq x)$"
+            x_label = "Probability $P(X \leq x)$"
             return ResultsTable(data=cdf.arr,
                                 index=cdf.prob,
                                 idx_device_type=DeviceType.NoDevice,
@@ -397,7 +397,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
             labels = self.branch_names
             cdf = CDF(np.abs(self.loading_points.real * 100.0))
             y_label = '(%)'
-            x_label = r'Probability $P(X \leq x)$'
+            x_label = 'Probability $P(X \leq x)$'
             return ResultsTable(data=cdf.arr,
                                 index=cdf.prob,
                                 idx_device_type=DeviceType.NoDevice,
@@ -412,7 +412,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
             labels = self.branch_names
             cdf = CDF(np.abs(self.losses_points))
             y_label = '(MVA)'
-            x_label = r'Probability $P(X \leq x)$'
+            x_label = 'Probability $P(X \leq x)$'
 
             return ResultsTable(data=cdf.arr,
                                 index=cdf.prob,
@@ -428,7 +428,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
             labels = self.branch_names
             cdf = CDF(self.Sbr_points.real)
             y_label = '(MW)'
-            x_label = r'Probability $P(X \leq x)$'
+            x_label = 'Probability $P(X \leq x)$'
             return ResultsTable(data=cdf.arr,
                                 index=cdf.prob,
                                 idx_device_type=DeviceType.NoDevice,
@@ -443,7 +443,7 @@ class StochasticPowerFlowResults(ResultsTemplate):
             labels = self.bus_names
             cdf = CDF(self.S_points.real)
             y_label = '(p.u.)'
-            x_label = r'Probability $P(X \leq x)$'
+            x_label = 'Probability $P(X \leq x)$'
             return ResultsTable(data=cdf.arr,
                                 index=cdf.prob,
                                 idx_device_type=DeviceType.NoDevice,

@@ -132,7 +132,7 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
     Returns:
         Newton Load object
     """
-    name = str(psse_load.I) + '_' + str(psse_load.ID).replace("'", "")
+    name = str(psse_load.I) + '_' + psse_load.ID.replace("'", "")
     name = name.strip()
 
     # GL and BL come in MW and MVAr
@@ -207,14 +207,8 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
     else:
         b = psse_elm.BINIT
 
-    vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
-
-    # TODO: Add the remote control bus
-
     elm = dev.ControllableShunt(name='Switched shunt ' + name,
                                 active=bool(psse_elm.STAT),
-                                B=b,
-                                vset=vset,
                                 code=name)
 
     n_list = []
@@ -636,88 +630,76 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
     if '*' in str(psse_elm.SET1):
         psse_elm.SET1 = 0.0
 
-    if abs(psse_elm.J) == 0:     # STATCOM device
-        if mode == 0:
-            active = False
-        else:
-            active = True
+    if mode == 0:
+        active = False
+    elif mode == 1 and abs(psse_elm.J) > 0:
+        # shunt link
+        sh = dev.Shunt(name='FACTS:' + name1, B=psse_elm.SHMX)
+        circuit.add_shunt(bus1, sh)
+        logger.add_warning('FACTS mode (shunt link) added as shunt', str(mode))
 
-        # TODO add STATCOM obj
+    elif mode == 2:
+        # only shunt device: STATCOM
+        logger.add_warning('FACTS mode (STATCOM) not implemented', str(mode))
 
-    elif abs(psse_elm.J) > 0:    # FACTS series device
+    elif mode == 3 and abs(psse_elm.J) > 0:  # const Z
+        # series and shunt links operating with series link at constant series impedance
+        # sh = Shunt(name='FACTS:' + name1, B=psse_elm.SHMX)
+        # load_from = Load(name='FACTS:' + name1, P=-psse_elm.PDES, Q=-psse_elm.QDES)
+        # gen_to = Generator(name='FACTS:' + name1, active_power=psse_elm.PDES, voltage_module=psse_elm.VSET)
+        # # branch = Line(bus_from=bus1, bus_to=bus2, name='FACTS:' + name1, x=psse_elm.LINX)
+        # circuit.add_shunt(bus1, sh)
+        # circuit.add_load(bus1, load_from)
+        # circuit.add_generator(bus2, gen_to)
+        # # circuit.add_line(branch)
 
-        if mode == 0:
-            active = False
-        elif mode == 1 and abs(psse_elm.J) > 0:
-            # shunt link
-            sh = dev.Shunt(name='FACTS:' + name1, B=psse_elm.SHMX)
-            circuit.add_shunt(bus1, sh)
-            logger.add_warning('FACTS mode (shunt link) added as shunt', str(mode))
+        elm = dev.UPFC(name=name1,
+                       bus_from=bus1,
+                       bus_to=bus2,
+                       code=idtag,
+                       rs=psse_elm.SET1,
+                       xs=psse_elm.SET2 + psse_elm.LINX,
+                       rp=0.0,
+                       xp=1.0 / psse_elm.SHMX if psse_elm.SHMX > 0 else 0.0,
+                       vp=psse_elm.VSET,
+                       Pset=psse_elm.PDES,
+                       Qset=psse_elm.QDES,
+                       rate=psse_elm.IMX + 1e-20)
 
-        elif mode == 2:
-            # only shunt device: STATCOM
-            logger.add_warning('FACTS mode (STATCOM) not implemented', str(mode))
+        circuit.add_upfc(elm)
 
-        elif mode == 3 and abs(psse_elm.J) > 0:  # const Z
-            # series and shunt links operating with series link at constant series impedance
-            # sh = Shunt(name='FACTS:' + name1, B=psse_elm.SHMX)
-            # load_from = Load(name='FACTS:' + name1, P=-psse_elm.PDES, Q=-psse_elm.QDES)
-            # gen_to = Generator(name='FACTS:' + name1, active_power=psse_elm.PDES, voltage_module=psse_elm.VSET)
-            # # branch = Line(bus_from=bus1, bus_to=bus2, name='FACTS:' + name1, x=psse_elm.LINX)
-            # circuit.add_shunt(bus1, sh)
-            # circuit.add_load(bus1, load_from)
-            # circuit.add_generator(bus2, gen_to)
-            # # circuit.add_line(branch)
+    elif mode == 4 and abs(psse_elm.J) > 0:
+        # series and shunt links operating with series link at constant series voltage
+        logger.add_warning('FACTS mode (series+shunt links) not implemented', str(mode))
 
-            elm = dev.UPFC(name=name1,
-                           bus_from=bus1,
-                           bus_to=bus2,
-                           code=idtag,
-                           rs=psse_elm.SET1,
-                           xs=psse_elm.SET2 + psse_elm.LINX,
-                           rp=0.0,
-                           xp=1.0 / psse_elm.SHMX if psse_elm.SHMX > 0 else 0.0,
-                           vp=psse_elm.VSET,
-                           Pset=psse_elm.PDES,
-                           Qset=psse_elm.QDES,
-                           rate=psse_elm.IMX + 1e-20)
+    elif mode == 5 and abs(psse_elm.J) > 0:
+        # master device of an IPFC with P and Q setpoints specified;
+        # another FACTS device must be designated as the slave device
+        # (i.e., its MODE is 6 or 8) of this IPFC.
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
-            circuit.add_upfc(elm)
+    elif mode == 6 and abs(psse_elm.J) > 0:
+        # 6 slave device of an IPFC with P and Q setpoints specified;
+        #  the FACTS device specified in MNAME must be the master
+        #  device (i.e., its MODE is 5 or 7) of this IPFC. The Q setpoint is
+        #  ignored as the master device dictates the active power
+        #  exchanged between the two devices.
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
-        elif mode == 4 and abs(psse_elm.J) > 0:
-            # series and shunt links operating with series link at constant series voltage
-            logger.add_warning('FACTS mode (series+shunt links) not implemented', str(mode))
+    elif mode == 7 and abs(psse_elm.J) > 0:
+        # master device of an IPFC with constant series voltage setpoints
+        # specified; another FACTS device must be designated as the slave
+        # device (i.e., its MODE is 6 or 8) of this IPFC
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
-        elif mode == 5 and abs(psse_elm.J) > 0:
-            # master device of an IPFC with P and Q setpoints specified;
-            # another FACTS device must be designated as the slave device
-            # (i.e., its MODE is 6 or 8) of this IPFC.
-            logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
+    elif mode == 8 and abs(psse_elm.J) > 0:
+        # slave device of an IPFC with constant series voltage setpoints
+        # specified; the FACTS device specified in MNAME must be the
+        # master device (i.e., its MODE is 5 or 7) of this IPFC. The complex
+        # Vd + jVq setpoint is modified during power flow solutions to reflect
+        # the active power exchange determined by the master device
+        logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
 
-        elif mode == 6 and abs(psse_elm.J) > 0:
-            # 6 slave device of an IPFC with P and Q setpoints specified;
-            #  the FACTS device specified in MNAME must be the master
-            #  device (i.e., its MODE is 5 or 7) of this IPFC. The Q setpoint is
-            #  ignored as the master device dictates the active power
-            #  exchanged between the two devices.
-            logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
-
-        elif mode == 7 and abs(psse_elm.J) > 0:
-            # master device of an IPFC with constant series voltage setpoints
-            # specified; another FACTS device must be designated as the slave
-            # device (i.e., its MODE is 6 or 8) of this IPFC
-            logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
-
-        elif mode == 8 and abs(psse_elm.J) > 0:
-            # slave device of an IPFC with constant series voltage setpoints
-            # specified; the FACTS device specified in MNAME must be the
-            # master device (i.e., its MODE is 5 or 7) of this IPFC. The complex
-            # Vd + jVq setpoint is modified during power flow solutions to reflect
-            # the active power exchange determined by the master device
-            logger.add_warning('FACTS mode (IPFC) not implemented', str(mode))
-
-        else:
-            return None
     else:
         return None
 

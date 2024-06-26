@@ -17,9 +17,10 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6 import QtWidgets, QtGui
-from GridCalEngine.Devices.Injections.battery import Battery
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
+from GridCalEngine.Devices.Injections.battery import Battery, DeviceType
+from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Square
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
+from GridCal.Gui.GuiFunctions import ObjectsModel
 from GridCal.Gui.messages import yes_no_question
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

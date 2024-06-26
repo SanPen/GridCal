@@ -24,8 +24,8 @@ from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GuiFunctions import add_menu_entry
-from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
-                                                   FONT_SCALE, EMERGENCY)
+from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import (GenericDBWidget, ACTIVE, DEACTIVATED,
+                                                                   FONT_SCALE, EMERGENCY)
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
@@ -61,7 +61,7 @@ SHUNT_GRAPHICS = Union[
 ]
 
 
-class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
+class BusGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -93,7 +93,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         :param x:
         :param y:
         """
-        GenericDiagramWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=draw_labels)
+        GenericDBWidget.__init__(self, parent=parent, api_object=bus, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0

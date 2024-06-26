@@ -34,8 +34,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
     tpe = SimulationTypes.PowerFlowTimeSeries_run
     name = tpe.value
 
-    def __init__(self,
-                 grid: MultiCircuit,
+    def __init__(self, grid: MultiCircuit,
                  options: Union[PowerFlowOptions, None] = None,
                  time_indices: Union[IntVec, None] = None,
                  opf_time_series_results=None,

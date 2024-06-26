@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from __future__ import annotations
-
 import os
 import chardet
 import datetime
@@ -44,11 +42,7 @@ from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 
 
 def delete_comment(raw_line):
-    """
 
-    :param raw_line:
-    :return:
-    """
     lne = ""
     text_active = False
     for c in raw_line:
@@ -113,7 +107,6 @@ def interpret_line(raw_line, splitter=','):
 
     return parsed
 
-
 #
 # class PSSeRawParser:
 #     """
@@ -137,7 +130,7 @@ def interpret_line(raw_line, splitter=','):
 #
 #         self.logger += logs
 
-def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+def read_and_split(file_name, text_func=None,  progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
     """
     Read the text file and split it into sections
     :return: list of sections, dictionary of sections by type
@@ -175,7 +168,7 @@ def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnySt
                     sections_dict[block_category] = list()
 
                 if i == 0:
-                    sections_dict['info'] = [interpret_line(raw_line=lne, splitter=sep)]  # TODO: Fix the typing
+                    sections_dict['info'] = [interpret_line(raw_line=lne, splitter=sep)]
                 elif i == 1:
                     sections_dict['comment'] = [lne]
                 elif i == 2:
@@ -198,7 +191,7 @@ def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnySt
                         pass
                     else:
                         if lne.strip() != '':
-                            sections_dict[block_category].append(interpret_line(raw_line=lne, splitter=sep))  # TODO: Fix the typing
+                            sections_dict[block_category].append(interpret_line(raw_line=lne, splitter=sep))
 
                 i += 1
             else:
@@ -209,7 +202,7 @@ def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnySt
     return sections_dict
 
 
-def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> PsseCircuit:
+def read_raw(filename, text_func=None,  progress_func=None, logger = Logger()) -> PsseCircuit:
     """
 
     :param filename:
@@ -232,7 +225,7 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
     if text_func is not None:
         text_func("Reading file...")
 
-    sections_dict = read_and_split(file_name=filename, text_func=text_func, progress_func=progress_func)
+    sections_dict = read_and_split(file_name=filename, text_func=text_func,  progress_func=progress_func)
 
     # header -> new grid
     # grid = PSSeGrid(interpret_line(sections[0]))
@@ -381,7 +374,7 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
     return grid
 
 
-def write_raw(file_name: str, psse_model: PsseCircuit, version=33) -> Logger:
+def write_raw(file_name: str, psse_model: PsseCircuit, version = 33) -> Logger:
     """
     Write PsseCircuit as .raw version 33
     :param file_name: name of the file

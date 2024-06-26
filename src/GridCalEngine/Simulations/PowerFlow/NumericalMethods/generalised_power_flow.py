@@ -103,7 +103,7 @@ def compute_autodiff_structures(x, mu, lmbda, compute_jac, compute_hess, admitta
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
+    admittances.modify_taps(alltapm0, alltapm, alltapt0, alltapt)
 
     Ybus = admittances.Ybus
     Yf = admittances.Yf
@@ -233,7 +233,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
+    admittances.modify_taps(alltapm0, alltapm, alltapt0, alltapt)
 
     Ybus = admittances.Ybus
     Yf = admittances.Yf

@@ -118,7 +118,7 @@ def get_gcdev_voltage_dict(cgmes_model: CgmesCircuit,
     v_dict: Dict[str, Tuple[float, float]] = dict()
 
     for e in cgmes_model.cgmes_assets.SvVoltage_list:
-        if e.TopologicalNode and not isinstance(e.TopologicalNode, str):
+        if not isinstance(e.TopologicalNode, str):
             v_dict[e.TopologicalNode.uuid] = (e.v, e.angle)
         else:
             logger.add_error(msg='Missing reference',
@@ -140,7 +140,7 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
 
     con_eq_type = cgmes_model.get_class_type("ConductingEquipment")
     if con_eq_type is None:
-        raise NotImplementedError("Class type missing from assets!")
+        return device_to_terminal_dict
 
     for e in cgmes_model.cgmes_assets.Terminal_list:
         if isinstance(e.ConductingEquipment, con_eq_type):
@@ -242,10 +242,6 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
     """
 
     slack_id = get_slack_id(cgmes_model.cgmes_assets.SynchronousMachine_list)
-    if slack_id is None:
-        logger.add_error(msg="Couldn't find referencePriority 1 in the SynchronousMachines.",
-                         device_class="SynchronousMachine",
-                         device_property="referencePriority")  # TODO error check
 
     # dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
     calc_node_dict: Dict[str, gcdev.Bus] = dict()
@@ -268,8 +264,9 @@ def get_gcdev_calculation_nodes(cgmes_model: CgmesCircuit,
             va = 0.0
 
         is_slack = False
-        if slack_id == cgmes_elm.rdfid:
-            is_slack = True
+        if slack_id is not None:
+            if slack_id == cgmes_elm.rdfid:
+                is_slack = True
 
         volt_lev, substat, country = None, None, None
         if cgmes_elm.ConnectivityNodeContainer:
@@ -355,7 +352,7 @@ def get_gcdev_connectivity_nodes(cgmes_model: CgmesCircuit,
         vnom, vl = 10, None
         if bus is None:
             logger.add_error(msg='No Bus found',
-                             device=cgmes_elm.rdfid,
+                             device=cgmes_elm,
                              device_class=cgmes_elm.tpe)
             default_bus = None
         else:
@@ -524,11 +521,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                         pf = np.cos(np.arctan(cgmes_elm.q / cgmes_elm.p))
                     else:
                         pf = 0.8
-                        logger.add_error(msg='GeneratingUnit p is 0.',
-                                         device=cgmes_elm.rdfid,
-                                         device_class=cgmes_elm.tpe,
-                                         device_property="p",
-                                         value='0')
 
                     technology = tech_dict.get(cgmes_elm.GeneratingUnit.tpe, None)
                     if cgmes_elm.GeneratingUnit.tpe == "WindGeneratingUnit":
@@ -568,7 +560,8 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                      device=cgmes_elm.rdfid,
                                      device_class=cgmes_elm.tpe,
                                      device_property="GeneratingUnit",
-                                     value='None')
+                                     value='None',
+                                     expected_value='Something')
             else:
                 logger.add_error(msg='Not exactly one terminal',
                                  device=cgmes_elm.rdfid,
@@ -648,13 +641,6 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
     rates_dict = dict()
     acline_type = cgmes_model.get_class_type("ACLineSegment")
     for e in cgmes_model.cgmes_assets.CurrentLimit_list:
-        if e.OperationalLimitSet is None:
-            logger.add_error(msg='OperationalLimitSet missing.',
-                             device=e.rdfid,
-                             device_class=e.tpe,
-                             device_property="OperationalLimitSet",
-                             value="None")
-            continue
         if not isinstance(e.OperationalLimitSet, str):
             if isinstance(e.OperationalLimitSet, list):
                 for ols in e.OperationalLimitSet:
@@ -1142,7 +1128,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
 
 def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
                              gcdev_model: MultiCircuit,
-                             logger: DataLogger) -> Dict[str, gcdev.VoltageLevel]:
+                             logger: DataLogger) -> None:
     """
     Convert the CGMES voltage levels to gcdev voltage levels
 
@@ -1150,9 +1136,6 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
     :param gcdev_model: gcdevCircuit
     :param logger:
     """
-    # dictionary relating the VoltageLevel idtag to the gcdev VoltageLevel
-    volt_lev_dict: Dict[str, gcdev.VoltageLevel] = dict()
-
     for cgmes_elm in cgmes_model.cgmes_assets.VoltageLevel_list:
 
         gcdev_elm = gcdev.VoltageLevel(
@@ -1169,9 +1152,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
             gcdev_elm.substation = subs
 
         gcdev_model.add_voltage_level(gcdev_elm)
-        volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
 
-    return volt_lev_dict
 
 def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                       gcdev_model: MultiCircuit,

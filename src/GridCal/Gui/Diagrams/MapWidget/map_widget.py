@@ -161,12 +161,13 @@ class MapWidget(QWidget):
     BoxSelectPenWidth = 2
 
     def __init__(self,
-                 parent: Union[None, QWidget],
+                 parent: QWidget,
                  tile_src: Tiles,
                  start_level: int,
                  zoom_callback: Callable[[int], None],
-                 position_callback: Callable[[float, float], None]):
-        """Initialize the widget.
+                 position_callback: Callable[[float, float], None],
+                 **kwargs):
+        """Initialize the pySlipQt widget.
 
         parent       the GUI parent widget
         tile_src     a Tiles object, source of tiles
@@ -174,7 +175,7 @@ class MapWidget(QWidget):
         kwargs       keyword args passed through to the underlying QLabel
         """
 
-        QWidget.__init__(self, parent)  # inherit all parent object setup
+        super().__init__(parent, **kwargs)  # inherit all parent object setup
 
         # remember the tile source object
         self.tile_src = tile_src
@@ -793,8 +794,6 @@ class MapWidget(QWidget):
         self.schema_zoom = self.schema_zoom * self.zoom_factor
         self.view.scale(self.zoom_factor, self.zoom_factor)
 
-        self.rescaleGraphics()
-
     def diagram_zoom_out(self):
         """
         Translate the scene to make the center point correspond to the origin
@@ -802,11 +801,6 @@ class MapWidget(QWidget):
         """
         self.schema_zoom = self.schema_zoom / self.zoom_factor
         self.view.scale(1.0 / self.zoom_factor, 1.0 / self.zoom_factor)
-
-        self.rescaleGraphics()
-
-    def rescaleGraphics(self):
-        pass
 
     def resizeEvent(self, event: QResizeEvent = None, updateDisplacement = True):
         """

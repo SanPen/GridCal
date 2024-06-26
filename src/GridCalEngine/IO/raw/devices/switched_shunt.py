@@ -187,12 +187,6 @@ class RawSwitchedShunt(RawObject):
         field_values = data[0]
 
         def parse_dynamic_fields(fields: list[str], values: list):
-            """
-
-            :param fields:
-            :param values:
-            :return:
-            """
             for index, value in enumerate(values):
                 field = fields[index]
                 setattr(self, field, value)

@@ -14,12 +14,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import List, Union
+
 from GridCalEngine.enumerations import ContingencyMethod
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
-from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 
 
 class ContingencyAnalysisOptions:
@@ -39,8 +38,7 @@ class ContingencyAnalysisOptions:
                  srap_rever_to_nominal_rating: bool = False,
                  detailed_massive_report: bool = False,
                  contingency_deadband: float = 0.0,
-                 contingency_method=ContingencyMethod.PowerFlow,
-                 contingency_groups: Union[List[ContingencyGroup], None] = None):
+                 engine=ContingencyMethod.PowerFlow):
         """
         ContingencyAnalysisOptions
         :param use_provided_flows: Use the provided flows?
@@ -57,15 +55,14 @@ class ContingencyAnalysisOptions:
                                              Otherwise the objective rating is the contingency rating.
         :param detailed_massive_report: If checked, a massive posibly intractable report is generated.
         :param contingency_deadband: Deadband to report contingencies
-        :param contingency_method: ContingencyEngine to use (PowerFlow, PTDF, ...)
-        :param contingency_groups: List of contingencies to use, if None all will be used
+        :param engine: ContingencyEngine to use (PowerFlow, PTDF, ...)
         """
 
         self.use_provided_flows = use_provided_flows
 
         self.Pf: Vec = Pf
 
-        self.contingency_method = contingency_method
+        self.contingency_method = engine
 
         self.pf_options = pf_options
 
@@ -84,5 +81,3 @@ class ContingencyAnalysisOptions:
         self.detailed_massive_report = detailed_massive_report
 
         self.contingency_deadband = contingency_deadband
-
-        self.contingency_groups: Union[List[ContingencyGroup], None] = contingency_groups

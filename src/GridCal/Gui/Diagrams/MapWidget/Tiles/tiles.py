@@ -14,7 +14,7 @@ from urllib import request
 from urllib.error import HTTPError
 import queue
 from PySide6.QtGui import QPixmap, QColor
-from typing import List, Union
+from typing import List
 from collections.abc import Callable
 from GridCal.Gui.Diagrams.MapWidget.Tiles.base_tiles import BaseTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tile_worker import TileWorker
@@ -91,7 +91,7 @@ class Tiles(BaseTiles):
         self.refresh_tiles_after_days = refetch_days
 
         # callback must be set by higher-level copde
-        self.callback: Union[None, Callable[[int, float, float, QPixmap, bool], None]] = None
+        self.callback: Callable[[int, float, float, QPixmap, bool], None] = None
 
         # calculate a re-request age, if specified
         self.rerequest_age = (time.time() - self.refresh_tiles_after_days * self.SecondsInADay)

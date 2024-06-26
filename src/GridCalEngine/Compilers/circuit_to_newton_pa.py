@@ -183,7 +183,7 @@ def add_npa_contingency_groups(circuit: MultiCircuit,
     """
     d = dict()
 
-    for i, elm in enumerate(circuit.get_contingency_groups()):
+    for i, elm in enumerate(circuit.contingency_groups):
         dev = npa.ContingenciesGroup(uuid=elm.idtag,
                                      secondary_id=str(elm.code),
                                      name=elm.name,
@@ -1644,7 +1644,7 @@ def translate_newton_pa_contingencies(grid: MultiCircuit,
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 
     # declare the results
-    results = ContingencyAnalysisResults(ncon=len(grid.get_contingency_groups()),
+    results = ContingencyAnalysisResults(ncon=len(grid.contingency_groups),
                                          nbr=grid.get_branch_number_wo_hvdc(),
                                          nbus=grid.get_bus_number(),
                                          branch_names=grid.get_branch_names_wo_hvdc(),

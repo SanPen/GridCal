@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import GridCalEngine.api as gc
 
@@ -102,7 +100,7 @@ def compare_inputs(circuit_1, circuit_2, tol=1e-6):
              'Admittances', 'Ybus (real)')
     CheckArr(nc_1.Ybus.tocsc().data.imag, nc_2.Ybus.tocsc().data.imag, tol,
              'Admittances', 'Ybus (imag)')
-    CheckArr(nc_1.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.real,
+    CheckArr(nc_1.Yf.tocsc().data.real, nc_2.Yf.tocsc().data.realdata.real,
              tol, 'Admittances', 'Yf (real)')
     CheckArr(nc_1.Yf.tocsc().data.imag, nc_2.Yf.tocsc().data.imag, tol,
              'Admittances', 'Yf (imag)')
@@ -149,13 +147,8 @@ def CheckArr(arr, arr_expected, tol: float, name: str, test: str):
 # cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\RAW_test_models\IEEE14_from_PF.zip"
 
 # micro_grid assembled
-script_path = os.path.abspath(__file__)
-
-cgmes_files_relative_path = os.path.join('..', 'data', 'grids', 'CGMES_2_4_15', 'micro_grid_assmb_base.zip')
-cgmes_path = os.path.abspath(os.path.join(os.path.dirname(script_path), cgmes_files_relative_path))
-
-raw_relative_path = os.path.join('..', 'data', 'grids', 'RAW', 'micro_grid_assmb_v33.raw')
-raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))
+raw_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_v33.raw"
+cgmes_path = r"C:\Work\gridDigIt Kft\External projects - Documents\REE\test_models\cgmes_v2_4_15\cgmes_micro_grid_assmb_base\micro_grid_assmb_base.zip"
 
 circuit_1 = gc.open_file(raw_path)
 circuit_1.buses.sort(key=lambda obj: obj.name)

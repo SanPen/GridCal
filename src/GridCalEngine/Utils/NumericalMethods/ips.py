@@ -334,7 +334,7 @@ def interior_point_solver(x0: Vec,
 
     feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)
     converged = error <= gamma
-    maxdispl = 0
+
     error_evolution = np.zeros(max_iter + 1)
     feascond_evolution = np.zeros(max_iter + 1)
 
@@ -414,7 +414,7 @@ def interior_point_solver(x0: Vec,
         feascond = max([g_norm, max(ret.H)]) / (1 + max([np.linalg.norm(x, np.Inf), z_norm]))
         gradcond = np.linalg.norm(lx, np.Inf) / (1 + max([lam_norm, mu_norm]))
         error = np.max([feascond, gradcond, gamma])
-        maxdispl = np.max(np.r_[dx, dlam, dz, dmu])
+
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
 
@@ -432,7 +432,6 @@ def interior_point_solver(x0: Vec,
                 print("INEQ:\n", ineq_df)
             print("\tGamma:", gamma)
             print("\tErr:", error)
-            print("\tMax Displacement:", maxdispl)
 
         # Add an iteration step
         iter_counter += 1
@@ -450,7 +449,6 @@ def interior_point_solver(x0: Vec,
         print(f"\tF.obj: {ret.f * 1e4}")
         print(f"\tErr: {error}")
         print(f'\tIterations: {iter_counter}')
-        print(f'\tMax Displacement: {maxdispl}' )
         print(f'\tTime elapsed (s): {t_end - t_start}')
         print(f'\tFeas cond: ', feascond)
 

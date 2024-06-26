@@ -45,22 +45,74 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import S
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import (StochasticPowerFlowDriver,
                                                                                StochasticPowerFlowResults)
 from GridCalEngine.Simulations.Clustering.clustering_driver import ClusteringDriver, ClusteringResults
-from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingResults
-from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisResults
+from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingDriver, CascadingResults
+from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisDriver, InputsAnalysisResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver import (InvestmentsEvaluationDriver,
                                                                                            InvestmentsEvaluationResults)
-from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
-from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityResults
+from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisDriver, SigmaAnalysisResults
+from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults
+from GridCalEngine.Simulations.NTC.ntc_ts_driver import (OptimalNetTransferCapacityTimeSeriesDriver,
+                                                         OptimalNetTransferCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
                                                                               NodalCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
+from GridCalEngine.Simulations.Topology.topology_processor_driver import TopologyProcessorDriver
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import ResultTypes, SimulationTypes
-from GridCalEngine.Simulations.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 from GridCalEngine.basic_structures import Logger
 from GridCal.Session.results_model import ResultsModel
+
+DRIVER_OBJECTS = Union[
+    AvailableTransferCapacityDriver,
+    AvailableTransferCapacityTimeSeriesDriver,
+    ContingencyAnalysisDriver,
+    ContingencyAnalysisTimeSeriesDriver,
+    ContinuationPowerFlowDriver,
+    LinearAnalysisDriver,
+    LinearAnalysisTimeSeriesDriver,
+    OptimalPowerFlowDriver,
+    OptimalPowerFlowTimeSeriesDriver,
+    PowerFlowDriver,
+    PowerFlowTimeSeriesDriver,
+    ShortCircuitDriver,
+    StochasticPowerFlowDriver,
+    ClusteringDriver,
+    CascadingDriver,
+    SigmaAnalysisDriver,
+    OptimalNetTransferCapacityDriver,
+    OptimalNetTransferCapacityTimeSeriesDriver,
+    NodeGroupsDriver,
+    InputsAnalysisDriver,
+    InvestmentsEvaluationDriver,
+    TopologyProcessorDriver,
+    NodalCapacityTimeSeriesDriver
+]
+
+RESULTS_OBJECTS = Union[
+    AvailableTransferCapacityResults,
+    AvailableTransferCapacityTimeSeriesResults,
+    ContingencyAnalysisResults,
+    ContingencyAnalysisTimeSeriesResults,
+    ContinuationPowerFlowResults,
+    LinearAnalysisResults,
+    LinearAnalysisTimeSeriesResults,
+    OptimalPowerFlowResults,
+    OptimalPowerFlowTimeSeriesResults,
+    PowerFlowResults,
+    PowerFlowTimeSeriesResults,
+    ShortCircuitResults,
+    StochasticPowerFlowResults,
+    ClusteringResults,
+    CascadingResults,
+    SigmaAnalysisResults,
+    OptimalNetTransferCapacityResults,
+    OptimalNetTransferCapacityTimeSeriesResults,
+    InputsAnalysisResults,
+    InvestmentsEvaluationResults,
+    NodalCapacityTimeSeriesResults
+]
 
 
 class GcThread(QThread):

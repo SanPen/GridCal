@@ -98,8 +98,14 @@ def load_iPA(file_name) -> MultiCircuit:
                 r = entry['R1'] / Zbase
                 x = entry['X1'] / Zbase
 
-                elm = dev.Line(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x)
-                circuit.add_line(elm)
+                if r > 1e-5:
+                    branch_type = dev.BranchType.Line
+                else:
+                    # mark as "generic branch" the Branches with very low resistance
+                    branch_type = dev.BranchType.Branch
+
+                elm = dev.Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x, branch_type=branch_type)
+                circuit.add_branch(elm)
 
         elif tpe == 2:  # Elemento PQ
 
@@ -124,8 +130,9 @@ def load_iPA(file_name) -> MultiCircuit:
 
             r = entry['R1'] / Zbase
             x = entry['X1'] / Zbase
-            elm = dev.Transformer2W(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x)
-            circuit.add_transformer2w(elm)
+            elm = dev.Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x,
+                             branch_type=dev.BranchType.Transformer)
+            circuit.add_branch(elm)
 
         elif tpe == 5:  # Transformador
 
@@ -134,8 +141,9 @@ def load_iPA(file_name) -> MultiCircuit:
 
             r = entry['R1'] / Zbase
             x = entry['X1'] / Zbase
-            elm = dev.Transformer2W(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x)
-            circuit.add_transformer2w(elm)
+            elm = dev.Branch(bus_from=bus1, bus_to=bus2, name=str(identifier), r=r, x=x,
+                             branch_type=dev.BranchType.Transformer)
+            circuit.add_branch(elm)
 
     # return the circuit
     return circuit

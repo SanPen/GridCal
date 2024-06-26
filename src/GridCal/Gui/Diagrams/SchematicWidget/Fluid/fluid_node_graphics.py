@@ -28,7 +28,7 @@ from GridCalEngine.enumerations import DeviceType, FaultType
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Devices.types import FLUID_TYPES
 
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, FONT_SCALE, GenericDiagramWidget
+from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import ACTIVE, FONT_SCALE, GenericDBWidget
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
@@ -81,7 +81,7 @@ class VerticalWaterIndicator(QGraphicsRectItem):
         self.label.setPlainText(f'{percentage}%')
 
 
-class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
+class FluidNodeGraphicItem(GenericDBWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -96,7 +96,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0,
                  draw_labels: bool = True):
 
-        GenericDiagramWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor, draw_labels=draw_labels)
+        GenericDBWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor, draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0

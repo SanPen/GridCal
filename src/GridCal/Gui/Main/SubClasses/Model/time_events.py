@@ -82,15 +82,11 @@ class TimeEventsMain(ObjectsTableMain):
         """
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
-
             steps, step_length, step_unit, time_base = dlg.get_values()
 
             self.ui.profiles_tableView.setModel(None)
 
-            self.circuit.create_profiles(steps=steps,
-                                         step_length=step_length,
-                                         step_unit=step_unit,
-                                         time_base=time_base)
+            self.circuit.create_profiles(steps, step_length, step_unit, time_base)
 
             self.display_profiles()
 

@@ -22,13 +22,10 @@ from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results 
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingency_analysis import \
-    nonlinear_contingency_analysis
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import \
-    linear_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.nonlinear_contingency_analysis import nonlinear_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.linear_contingency_analysis import linear_contingency_analysis
 from GridCalEngine.Simulations.ContingencyAnalysis.Methods.helm_contingency_analysis import helm_contingency_analysis
-from GridCalEngine.Simulations.ContingencyAnalysis.Methods.optimal_linear_contingency_analysis import \
-    optimal_linear_contingency_analysis
+from GridCalEngine.Simulations.ContingencyAnalysis.Methods.optimal_linear_contingency_analysis import optimal_linear_contingency_analysis
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, newton_pa_contingencies,
                                                           translate_newton_pa_contingencies)
@@ -61,17 +58,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         # Set or create the LinearMultiContingencies
         if linear_multiple_contingencies is None:
-            if options is None:
-                contingency_groups_used = grid.get_contingency_groups()
-            else:
-                contingency_groups_used = (grid.get_contingency_groups()
-                                           if options.contingency_groups is None
-                                           else options.contingency_groups)
-
-            self.linear_multiple_contingencies = LinearMultiContingencies(
-                grid=self.grid,
-                contingency_groups_used=contingency_groups_used
-            )
+            self.linear_multiple_contingencies = LinearMultiContingencies(self.grid)
             self.logger.add_info("Created LinearMultiContingencies because they were not provided")
         else:
             self.linear_multiple_contingencies: LinearMultiContingencies = linear_multiple_contingencies
@@ -116,7 +103,6 @@ class ContingencyAnalysisDriver(DriverTemplate):
             self.logger.add_warning('Tried to use PGM, but failed back to GridCal')
 
         if self.engine == EngineType.GridCal:
-
             if self.options.contingency_method == ContingencyMethod.PowerFlow:
                 self.results = nonlinear_contingency_analysis(
                     grid=self.grid,

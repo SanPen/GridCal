@@ -172,7 +172,7 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
 
             headers = object_sample.registered_properties.keys()
 
-            lists_of_objects: List[ALL_DEV_TYPES] = circuit.get_elements_by_type(object_sample.device_type)
+            lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
 
             obj = list()
             profiles = dict()
@@ -401,9 +401,6 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
 
         elif prop.tpe == SubObjectType.TapChanger:
             data[name] = obj.to_dict()
-
-        elif prop.tpe == SubObjectType.Array:
-            data[name] = list(obj)
 
         else:
             # if the object is not of a primary type, get the idtag instead
@@ -1042,11 +1039,6 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     # get the line locations object and fill it with the json data
                                     locations_obj: dev.TapChanger = elm.get_snapshot_value(prop=gc_prop)
                                     locations_obj.parse(property_value)
-
-                                elif gc_prop.tpe == SubObjectType.Array:
-
-                                    val = np.array(property_value)
-                                    elm.set_snapshot_value(gc_prop.name, val)
 
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
