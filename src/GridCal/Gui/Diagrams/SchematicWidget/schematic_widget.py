@@ -30,9 +30,7 @@ from PySide6.QtCore import (Qt, QPoint, QSize, QPointF, QRect, QRectF, QMimeData
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QPen,
                            QDragEnterEvent, QDragMoveEvent, QDropEvent, QWheelEvent, QKeyEvent, QMouseEvent,
                            QContextMenuEvent)
-from PySide6.QtWidgets import (QGraphicsView, QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame,
-                               QSplitter, QMessageBox, QAbstractItemView, QGraphicsScene, QGraphicsSceneMouseEvent,
-                               QGraphicsItem)
+from PySide6.QtWidgets import (QGraphicsView, QMessageBox, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
@@ -103,12 +101,11 @@ class SchematicLibraryModel(QStandardItemModel):
     This is the list of draggable items
     """
 
-    def __init__(self, parent: "SchematicWidget" = None) -> None:
+    def __init__(self) -> None:
         """
         Items model to host the draggable icons
-        @param parent:
         """
-        QStandardItemModel.__init__(self, parent)
+        QStandardItemModel.__init__(self)
 
         self.setColumnCount(1)
 
@@ -484,15 +481,12 @@ class SchematicWidget(BaseDiagramWidget):
         BaseDiagramWidget.__init__(self,
                                    circuit=circuit,
                                    diagram=diagram,
+                                   library_model=SchematicLibraryModel(),
                                    time_index=time_index,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = SchematicScene(parent=self)  # scene to add to the QGraphicsView
-
-        # library model
-        self.library_model = SchematicLibraryModel()
-        self.library_view.setModel(self.library_model)
 
         # add the actual editor
         self.editor_graphics_view = CustomGraphicsView(self.diagram_scene, parent=self)

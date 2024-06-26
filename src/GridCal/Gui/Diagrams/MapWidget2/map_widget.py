@@ -27,18 +27,20 @@ Some semantics:
 xgeo: longitude
 ygeo: latitude
 """
-from typing import List, Union, Tuple, Callable
+from __future__ import annotations
+from typing import List, Union, Tuple, Callable, TYPE_CHECKING
 from enum import Enum
-import math
-from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QTimer, QEvent, QPointF, QRectF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
-                           QResizeEvent, QEnterEvent, QPaintEvent)
+                           QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QVBoxLayout,
                                QGraphicsSceneMouseEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
+
+if TYPE_CHECKING:
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
 class Place(Enum):
@@ -58,25 +60,46 @@ class Place(Enum):
 
 
 class CustomScene(QGraphicsScene):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setItemIndexMethod(QGraphicsScene.BspTreeIndex)  # For efficient item indexing
+    """
+    CustomScene
+    """
 
-    def mousePressEvent(self, event):
+    def __init__(self, parent: "MapWidget" = None) -> None:
+        super().__init__(parent)
+        self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.BspTreeIndex)  # For efficient item indexing
+
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        """
+
+        :param event:
+        :return:
+        """
         print(f"Scene pressed at {event.scenePos()}")
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         print(f"Scene released at {event.scenePos()}")
         super().mouseReleaseEvent(event)
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+        """
+
+        :param event:
+        :return:
+        """
         super().mouseMoveEvent(event)
+
 
 class MapView(QGraphicsView):
     """
     MapView
     """
+
     def __init__(self, _scene: QGraphicsScene,
                  map_widget: "MapWidget",
                  start_level: int,
@@ -114,6 +137,10 @@ class MapView(QGraphicsView):
         self.startHe = self.height()  # 360
         self.startWi = self.width()  # 240
 
+        # updated later
+        self.view_width = self.width()
+        self.view_height = self.height()
+
         # Set initial zoom level (change the values as needed)
         initial_zoom_factor = 1
         self.schema_zoom = 1
@@ -125,6 +152,11 @@ class MapView(QGraphicsView):
         self.selectedItems = list()
 
     def mousePressEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
         self.map_widget.mousePressEvent(event)
         self.pressed = True
         self.disableMove = False
@@ -175,10 +207,19 @@ class MapView(QGraphicsView):
         self.map_widget.keyPressEvent(event)
 
     def keyReleaseEvent(self, event: QKeyEvent):
+        """
+
+        :param event:
+        :return:
+        """
         self.map_widget.keyReleaseEvent(event)
 
     def wheelEvent(self, event: QWheelEvent):
+        """
 
+        :param event:
+        :return:
+        """
         mouse_event = event
 
         zoomInitial = self.map_widget.level
@@ -207,6 +248,32 @@ class MapView(QGraphicsView):
         self.map_widget.wheelEvent(event)
 
         self.centerSchema()
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        if event.mimeData().hasFormat('component/name'):
+            event.accept()
+
+    def dragMoveEvent(self, event: QDragMoveEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        pass
+
+    def dropEvent(self, event: QDropEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        super().dropEvent(event)
+        self.map_widget.dropEvent(event)
 
     def resizeEvent(self, event: QResizeEvent = None):
         """
@@ -311,6 +378,7 @@ class MapWidget(QWidget):
                  start_level: int,
                  startLat: float,
                  startLon: float,
+                 editor: GridMapWidget,
                  zoom_callback: Callable[[int], None],
                  position_callback: Callable[[float, float, int, int], None]):
         """
@@ -330,11 +398,15 @@ class MapWidget(QWidget):
         # Add the drawing layer
         # -------------------------------------------------------------------------
         self.diagram_scene = CustomScene(self)
+
+        self.editor: GridMapWidget = editor
+
         self.view = MapView(self.diagram_scene,
                             map_widget=self,
                             start_level=start_level,
                             startLat=startLat,
                             startLon=startLon)
+
         self.view.setBackgroundBrush(Qt.transparent)
 
         # re-map events, because otherwise the view shadows the base widget events
@@ -513,7 +585,7 @@ class MapWidget(QWidget):
 
         self.update()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         """
         Mouse button pressed.
         :param event:
@@ -543,7 +615,7 @@ class MapWidget(QWidget):
         else:
             print('mousePressEvent: unknown button')
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         """
         Mouse button was released.
 
@@ -586,7 +658,7 @@ class MapWidget(QWidget):
         else:
             print('mouseReleaseEvent: unknown button')
 
-    def mouseDoubleClickEvent(self, event):
+    def mouseDoubleClickEvent(self, event: QMouseEvent):
         """
 
         :param event:
@@ -721,6 +793,15 @@ class MapWidget(QWidget):
         self.mouse_x = 0
         self.mouse_y = 0
 
+    def dropEvent(self, event: QDropEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        super().dropEvent(event)
+        self.editor.dropEvent(event)
+
     def paintEvent(self, event: QPaintEvent):
         """
         Draw the base map and then the layers on top.
@@ -791,21 +872,20 @@ class MapWidget(QWidget):
         else:
             return None
 
-    # UNUSED
-    def geo_to_view_masked(self, longitude: float, latitude: float) -> Union[None, Tuple[float, float]]:
-        """
-        Convert a geo (lon+lat) position to view pixel coords.
-        Return a tuple (xview, yview) of point if on-view,or None
-        if point is off-view.
-        :param longitude:
-        :param latitude:
-        :return: x, y
-        """
-
-        if self.view_llon <= longitude <= self.view_rlon and self.view_blat <= latitude <= self.view_tlat:
-            return self.geo_to_view(longitude, latitude)
-
-        return None
+    # def geo_to_view_masked(self, longitude: float, latitude: float) -> Union[None, Tuple[float, float]]:
+    #     """
+    #     Convert a geo (lon+lat) position to view pixel coords.
+    #     Return a tuple (xview, yview) of point if on-view,or None
+    #     if point is off-view.
+    #     :param longitude:
+    #     :param latitude:
+    #     :return: x, y
+    #     """
+    #
+    #     if self.view_llon <= longitude <= self.view_rlon and self.view_blat <= latitude <= self.view_tlat:
+    #         return self.geo_to_view(longitude, latitude)
+    #
+    #     return None
 
     def view_to_geo(self, xview: float, yview: float) -> Tuple[Union[None, float], Union[None, float]]:
         """
