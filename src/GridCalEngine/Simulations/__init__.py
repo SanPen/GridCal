@@ -33,3 +33,4 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.Clustering import *
 from GridCalEngine.Simulations.InvestmentsEvaluation import *
 from GridCalEngine.Simulations.NodalCapacity import *
+from GridCalEngine.Simulations.results_template import DriverToSave, ResultsTemplate

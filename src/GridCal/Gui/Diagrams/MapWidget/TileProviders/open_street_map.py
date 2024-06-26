@@ -43,7 +43,7 @@ class OsmTiles(Tiles):
         self.level = min(self.levels)
         self.num_tiles_x, self.num_tiles_y, self.ppd_x, self.ppd_y = self.GetInfo(self.level)
 
-    def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
+    def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[int, int]:
         """
         Convert geo to tile fractional coordinates for level in use.
         geo  tuple of geo coordinates (xgeo, ygeo)
@@ -52,8 +52,8 @@ class OsmTiles(Tiles):
         """
         lat_rad = math.radians(latitude)
         n = 2.0 ** self.level
-        xtile = (longitude + 180.0) / 360.0 * n
-        ytile = ((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n
+        xtile = int((longitude + 180.0) / 360.0 * n)
+        ytile = int(((1.0 - math.log(math.tan(lat_rad) + (1.0 / math.cos(lat_rad))) / math.pi) / 2.0) * n)
 
         return xtile, ytile
 

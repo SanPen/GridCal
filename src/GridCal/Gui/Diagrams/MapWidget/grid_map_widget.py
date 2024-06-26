@@ -17,14 +17,13 @@
 import os
 from typing import Union, List, Tuple, Dict
 import numpy as np
+import math
 from PySide6.QtWidgets import QGraphicsItem
-from PySide6.QtCore import Qt, QSize, QRect
-from PySide6.QtGui import QColor
 from collections.abc import Callable
-from PySide6.QtGui import (QImage, QPainter)
 from PySide6.QtSvg import QSvgGenerator
+from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent)
 
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics import LineGraphicItem
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Substation.busbar import BusBar
@@ -43,19 +42,159 @@ from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 
-from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_hvdc_line import MapHvdcLine
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathLine
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+from GridCal.Gui.Diagrams.MapWidget2.map_widget import MapWidget
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 
+MAP_BRANCH_GRAPHIC_TYPES = Union[
+    MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine
+]
 
-class GridMapWidget(MapWidget, BaseDiagramWidget):
+
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """
+
+    :param lat1:
+    :param lon1:
+    :param lat2:
+    :param lon2:
+    :return:
+    """
+    R = 6371  # Earth radius in kilometers
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(math.radians(lat1)) * math.cos(
+        math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return R * c
+
+
+def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem) -> Tuple[NodeGraphicItem, NodeGraphicItem]:
+    """
+
+    :param it1:
+    :param it2:
+    :return:
+    """
+    # Extract coordinates
+    first_last_lat = float(it1.line_container.api_object.locations.data[-1].lat)
+    first_last_long = float(it1.line_container.api_object.locations.data[-1].long)
+    second_first_lat = float(it2.line_container.api_object.locations.data[0].lat)
+    second_first_long = float(it2.line_container.api_object.locations.data[0].long)
+
+    # Calculate distances for both configurations
+    distance_1_to_2 = haversine_distance(first_last_lat, first_last_long,
+                                         second_first_lat, second_first_long)
+
+    second_last_lat = float(it2.line_container.api_object.locations.data[-1].lat)
+    second_last_long = float(it2.line_container.api_object.locations.data[-1].long)
+    first_first_lat = float(it1.line_container.api_object.locations.data[0].lat)
+    first_first_long = float(it1.line_container.api_object.locations.data[0].long)
+
+    distance_2_to_1 = haversine_distance(second_last_lat, second_last_long,
+                                         first_first_lat, first_first_long)
+
+    if distance_1_to_2 <= distance_2_to_1:
+        return it1, it2
+    else:
+        return it2, it1
+
+
+class MapLibraryModel(QStandardItemModel):
+    """
+    Items model to host the draggable icons
+    This is the list of draggable items
+    """
+
+    def __init__(self) -> None:
+        """
+        Items model to host the draggable icons
+        """
+        QStandardItemModel.__init__(self)
+
+        self.setColumnCount(1)
+
+        self.substation_name = "Substation"
+
+        self.add(name=self.substation_name, icon_name="bus_icon")
+
+    def add(self, name: str, icon_name: str):
+        """
+        Add element to the library
+        :param name: Name of the element
+        :param icon_name: Icon name, the path is taken care of
+        :return:
+        """
+        _icon = QIcon()
+        _icon.addPixmap(QPixmap(f":/Icons/icons/{icon_name}.svg"))
+        _item = QStandardItem(_icon, name)
+        _item.setToolTip(f"Drag & drop {name} into the schematic")
+        self.appendRow(_item)
+
+    @staticmethod
+    def to_bytes_array(val: str) -> QByteArray:
+        """
+        Convert string to QByteArray
+        :param val: string
+        :return: QByteArray
+        """
+        data = QByteArray()
+        stream = QDataStream(data, QIODevice.WriteOnly)
+        stream.writeQString(val)
+        return data
+
+    def get_substation_mime_data(self) -> QByteArray:
+        """
+
+        :return:
+        """
+        return self.to_bytes_array(self.substation_name)
+
+    def mimeTypes(self) -> List[str]:
+        """
+
+        @return:
+        """
+        return ['component/name']
+
+    def mimeData(self, idxs: List[QModelIndex]) -> QMimeData:
+        """
+
+        @param idxs:
+        @return:
+        """
+        mimedata = QMimeData()
+        for idx in idxs:
+            if idx.isValid():
+                txt = self.data(idx, Qt.DisplayRole)
+
+                data = QByteArray()
+                stream = QDataStream(data, QIODevice.WriteOnly)
+                stream.writeQString(txt)
+
+                mimedata.setData('component/name', data)
+        return mimedata
+
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
+        """
+
+        :param index:
+        :return:
+        """
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+
+
+class GridMapWidget(BaseDiagramWidget):
     """
     GridMapWidget
     """
@@ -79,12 +218,6 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param diagram:
         :param call_delete_db_element_func:
         """
-        MapWidget.__init__(self,
-                           parent=None,
-                           tile_src=tile_src,
-                           start_level=start_level,
-                           zoom_callback=self.zoom_callback,
-                           position_callback=self.position_callback)
 
         BaseDiagramWidget.__init__(self,
                                    circuit=circuit,
@@ -93,24 +226,30 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                                                       start_level=start_level,
                                                       longitude=longitude,
                                                       latitude=latitude) if diagram is None else diagram,
+                                   library_model=MapLibraryModel(),
                                    time_index=0,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
+        # declare the map
+        self.map = MapWidget(parent=self,
+                             tile_src=tile_src,
+                             start_level=start_level,
+                             startLat=latitude,
+                             startLon=longitude,
+                             editor=self,
+                             zoom_callback=self.zoom_callback,
+                             position_callback=self.position_callback)
+
         # Any representation on the map must be done after this Goto Function
-        self.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
+        self.map.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
 
-        self.startLev = start_level
-        self.startLat = latitude
-        self.startLon = longitude
+        self.map.startLev = start_level
+        self.map.startLat = latitude
+        self.map.startLon = longitude
 
-        he = self.view.height()
-        wi = self.view.width()
-
-        self.startHe = he
-        self.startWi = wi
+        self.startHe = self.map.view.height()
+        self.startWi = self.map.view.width()
         self.constantLineWidth = True
-        # video pointer
-        # self._video: Union[None, cv2.VideoWriter] = None
 
         # draw
         self.draw()
@@ -160,7 +299,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param graphic_object: Graphic object associated
         """
 
-        self.diagram_scene.addItem(graphic_object)
+        self.map.diagram_scene.addItem(graphic_object)
 
     def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
@@ -170,8 +309,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         api_object = getattr(graphic_object, 'api_object', None)
         if api_object is not None:
             self.graphics_manager.delete_device(api_object)
-        self.diagram_scene.removeItem(graphic_object)
-
+        self.map.diagram_scene.removeItem(graphic_object)
 
     def zoom_callback(self, zoom_level: int) -> None:
         """
@@ -180,44 +318,46 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         """
         self.diagram.start_level = zoom_level
 
-    def position_callback(self, longitude: float, latitude: float) -> None:
+    def position_callback(self, latitude: float, longitude: float, x: int, y: int) -> None:
         """
         Update the diagram central position (useful for saving)
         :param longitude: in deg
         :param latitude: in deg
+        :param x:
+        :param y:
         """
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
+
+        # print(f"Pos lat={latitude}, lon={longitude} x={x}, y={y}")
 
     def zoom_in(self):
         """
         Zoom in
         """
-        if self.level + 1 <= self.max_level:
-            self.zoom_level(level=self.level + 1)
+        if self.map.level + 1 <= self.map.max_level:
+            self.map.zoom_level(level=self.map.level + 1)
 
     def zoom_out(self):
         """
         Zoom out
         """
-        if self.level - 1 >= self.min_level:
-            self.zoom_level(level=self.level - 1)
+        if self.map.level - 1 >= self.map.min_level:
+            self.map.zoom_level(level=self.map.level - 1)
 
     def rescaleGraphics(self):
+        """
 
+        :return:
+        """
         if self.constantLineWidth:
-
-            self.view.setUpdatesEnabled(False)  # Disable updates
-
             for device_type, graphics in self.graphics_manager.graphic_dict.items():
                 for graphic_id, graphic_item in graphics.items():
-                    if isinstance(graphic_item, MapLineContainer):
+                    if isinstance(graphic_item, MAP_BRANCH_GRAPHIC_TYPES):
                         for seg in graphic_item.segments_list:
-                            seg.scaleSegment = seg.lineWidth / self.schema_zoom;
+                            seg.scaleSegment = seg.lineWidth / self.map.view.schema_zoom
                             seg.setScale(seg.scaleSegment)
                             seg.update_endings(True)
-
-            self.view.setUpdatesEnabled(True)  # Disable updates
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
@@ -226,22 +366,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param y:
         :return:
         """
-
-        level, longitude, latitude = self.get_level_and_position()
-
-        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
-
-        he = self.view.height()
-        wi = self.view.width()
-
-        node_gen_dx = self.startWi - wi
-        node_gen_dy = self.startHe - he
-
-        lon, lat = self.view_to_geo(xview=x - node_gen_dx / 2, yview=y - node_gen_dy / 2)
-
-        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
-
-        return lat, lon
+        return self.map.view.to_lat_lon(x=x, y=y)
 
     def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
         """
@@ -250,25 +375,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param lon:
         :return:
         """
-
-        level, longitude, latitude = self.get_level_and_position()
-
-        self.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
-
-        he = self.view.height()
-        wi = self.view.width()
-
-        node_gen_dx = self.startWi - wi
-        node_gen_dy = self.startHe - he
-
-        x, y = self.geo_to_view(longitude=lon, latitude=lat)
-
-        x = x + node_gen_dx / 2
-        y = y + node_gen_dy / 2
-
-        self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
-
-        return x, y
+        return self.map.view.to_x_y(lat=lat, lon=lon)
 
     def update_diagram_element(self,
                                device: ALL_DEV_TYPES,
@@ -293,7 +400,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
     def create_node(self,
-                    line_container: MapLineContainer,
+                    line_container: MAP_BRANCH_GRAPHIC_TYPES,
                     api_object: LineLocation,
                     lat: float, lon: float, index: int) -> NodeGraphicItem:
         """
@@ -324,11 +431,11 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         :return:
         """
-        if len(self.selectedItems) < 2:
+        if len(self.map.view.selectedItems) < 2:
             return 0
 
-        it1 = self.selectedItems[0]
-        it2 = self.selectedItems[1]
+        it1 = self.map.view.selectedItems[0]
+        it2 = self.map.view.selectedItems[1]
 
         if it1 == it2:
             return 0
@@ -337,7 +444,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         newline.copyData(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
 
-        better_first, better_second = self.compare_options(it1, it2)
+        better_first, better_second = compare_options(it1, it2)
 
         first_list = better_first.line_container.api_object.locations.data
         second_list = better_second.line_container.api_object.locations.data
@@ -367,7 +474,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         """
 
         nod = self.graphics_manager.delete_device(node.api_object)
-        self.diagram_scene.removeItem(nod)
+        self.map.diagram_scene.removeItem(nod)
         nod.line_container.removeNode(node)
 
     pass
@@ -379,37 +486,34 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :return:
         """
         sub = self.graphics_manager.delete_device(substation.api_object)
-        self.diagram_scene.removeItem(sub)
+        self.map.diagram_scene.removeItem(sub)
 
-        br_types = [DeviceType.LineDevice, DeviceType.HVDCLineDevice]
+        br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
 
         for ty in br_types:
             lins = self.graphics_manager.get_device_type_list(ty)
             for lin in lins:
-                if lin.api_object.get_substation_from() == substation.api_object or lin.api_object.get_substation_to() == substation.api_object:
+                if (lin.api_object.get_substation_from() == substation.api_object
+                        or lin.api_object.get_substation_to() == substation.api_object):
                     self.removeLine(lin)
 
-    pass
-
-    def removeLine(self, line: MapLineContainer):
+    def removeLine(self, line: MAP_BRANCH_GRAPHIC_TYPES):
         """
         Removes line from diagram and scene
         :param line: Line to remove
         """
         lin = self.graphics_manager.delete_device(line.api_object)
         for seg in lin.segments_list:
-            self.diagram_scene.removeItem(seg)
+            self.map.diagram_scene.removeItem(seg)
 
-    pass
-
-    def add_api_line(self, api_object: BRANCH_TYPES, original: bool = True) -> MapLineContainer:
+    def add_api_line(self, api_object: Line, original: bool = True) -> MapAcLine:
         """
         Adds a line with the nodes and segments
         :param api_object: Any branch type from the database
         :param original:
         :return: MapTemplateLine
         """
-        line_container = MapLineContainer(editor=self, api_object=api_object)
+        line_container = MapAcLine(editor=self, api_object=api_object)
 
         line_container.original = original
 
@@ -417,6 +521,68 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         # create the nodes
         line_container.draw_all()
+
+        # there is not need to add to the scene
+
+        return line_container
+
+    def add_api_dc_line(self, api_object: DcLine, original: bool = True) -> MapDcLine:
+        """
+        Adds a line with the nodes and segments
+        :param api_object: Any branch type from the database
+        :param original:
+        :return: MapTemplateLine
+        """
+        line_container = MapDcLine(editor=self, api_object=api_object)
+
+        line_container.original = original
+
+        self.graphics_manager.add_device(elm=api_object, graphic=line_container)
+
+        # create the nodes
+        line_container.draw_all()
+
+        # there is not need to add to the scene
+
+        return line_container
+
+    def add_api_hvdc_line(self, api_object: HvdcLine, original: bool = True) -> MapHvdcLine:
+        """
+        Adds a line with the nodes and segments
+        :param api_object: Any branch type from the database
+        :param original:
+        :return: MapTemplateLine
+        """
+        line_container = MapHvdcLine(editor=self, api_object=api_object)
+
+        line_container.original = original
+
+        self.graphics_manager.add_device(elm=api_object, graphic=line_container)
+
+        # create the nodes
+        line_container.draw_all()
+
+        # there is not need to add to the scene
+
+        return line_container
+
+    def add_api_fluid_path(self, api_object: FluidPath, original: bool = True) -> MapFluidPathLine:
+        """
+        Adds a line with the nodes and segments
+        :param api_object: Any branch type from the database
+        :param original:
+        :return: MapTemplateLine
+        """
+        line_container = MapFluidPathLine(editor=self, api_object=api_object)
+
+        line_container.original = original
+
+        self.graphics_manager.add_device(elm=api_object, graphic=line_container)
+
+        # create the nodes
+        line_container.draw_all()
+
+        # there is not need to add to the scene
 
         return line_container
 
@@ -438,10 +604,11 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
             for idtag, graphic_object in dev_dict.items():
                 graphic_object.end_update()
 
-    def create_substation(self,
-                          api_object: Substation,
-                          lat: float, lon: float,
-                          r: float) -> SubstationGraphicItem:
+    def add_api_substation(self,
+                           api_object: Substation,
+                           lat: float,
+                           lon: float,
+                           r: float) -> SubstationGraphicItem:
         """
 
         :param api_object:
@@ -452,7 +619,8 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         """
         graphic_object = SubstationGraphicItem(editor=self,
                                                api_object=api_object,
-                                               lat=lat, lon=lon,
+                                               lat=lat,
+                                               lon=lon,
                                                r=r)
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
@@ -460,11 +628,11 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         return graphic_object
 
-    def create_voltage_level(self,
-                             substation_graphics: SubstationGraphicItem,
-                             api_object: VoltageLevel,
-                             lat: float, lon: float,
-                             r: float) -> VoltageLevelGraphicItem:
+    def add_api_voltage_level(self,
+                              substation_graphics: SubstationGraphicItem,
+                              api_object: VoltageLevel,
+                              lat: float, lon: float,
+                              r: float) -> VoltageLevelGraphicItem:
         """
 
         :param substation_graphics:
@@ -474,14 +642,17 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
         :param r:
         :return:
         """
+
+        # The voltage level is created within the substation graphical object,
+        # so there is no need to add it to the scene
         graphic_object = VoltageLevelGraphicItem(parent=substation_graphics,
                                                  editor=self,
                                                  api_object=api_object,
-                                                 lat=lat, lon=lon,
+                                                 lat=lat,
+                                                 lon=lon,
                                                  r=r)
-        self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
-        # self.add_to_scene(graphic_object=graphic_object)
+        self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
         return graphic_object
 
@@ -496,10 +667,10 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
             if category == DeviceType.SubstationDevice.value:
                 for idtag, location in points_group.locations.items():
-                    self.create_substation(api_object=location.api_object,
-                                           lon=location.longitude,
-                                           lat=location.latitude,
-                                           r=0.1)
+                    self.add_api_substation(api_object=location.api_object,
+                                            lon=location.longitude,
+                                            lat=location.latitude,
+                                            r=0.1)
 
         # second pass: create voltage levels
         for category, points_group in diagram.data.items():
@@ -513,30 +684,34 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                         substation_graphics = self.graphics_manager.query(elm=objectSubs)
 
                         # draw the voltage level
-                        self.create_voltage_level(substation_graphics=substation_graphics,
-                                                  api_object=location.api_object,
-                                                  lon=objectSubs.longitude,
-                                                  lat=objectSubs.latitude,
-                                                  r=0.01)
+                        self.add_api_voltage_level(substation_graphics=substation_graphics,
+                                                   api_object=location.api_object,
+                                                   lon=objectSubs.longitude,
+                                                   lat=objectSubs.latitude,
+                                                   r=0.01)
 
             elif category == DeviceType.LineDevice.value:
                 for idtag, location in points_group.locations.items():
-                    line: Line = location.api_object
-                    self.add_api_line(api_object=line, original=True)  # no need to add to the scene
+                    api_object: Line = location.api_object
+                    self.add_api_line(api_object=api_object, original=True)  # no need to add to the scene
 
             elif category == DeviceType.DCLineDevice.value:
-                pass  # TODO: implementar
+                for idtag, location in points_group.locations.items():
+                    api_object: DcLine = location.api_object
+                    self.add_api_dc_line(api_object=api_object, original=True)  # no need to add to the scene
 
             elif category == DeviceType.HVDCLineDevice.value:
                 for idtag, location in points_group.locations.items():
-                    line: Line = location.api_object
-                    self.add_api_line(api_object=line, original=True)  # no need to add to the scene
+                    api_object: HvdcLine = location.api_object
+                    self.add_api_hvdc_line(api_object=api_object, original=True)  # no need to add to the scene
 
             elif category == DeviceType.FluidNodeDevice.value:
                 pass  # TODO: implementar
 
             elif category == DeviceType.FluidPathDevice.value:
-                pass  # TODO: implementar
+                for idtag, location in points_group.locations.items():
+                    api_object: FluidPath = location.api_object
+                    self.add_api_fluid_path(api_object=api_object, original=True)  # no need to add to the scene
 
         # sort voltage levels at the substations
         dev_dict = self.graphics_manager.get_device_type_dict(device_type=DeviceType.SubstationDevice)
@@ -562,18 +737,36 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
 
         if self.graphics_manager.query(elm=elm) is None:
 
-            if isinstance(elm, Bus):
+            if isinstance(elm, Substation):
+                self.add_api_substation(api_object=elm,
+                                        lon=elm.longitude,
+                                        lat=elm.latitude,
+                                        r=0.1)
 
-                if not elm.is_internal:  # 3w transformer buses are not represented
-                    if injections_by_bus is None:
-                        injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
+            elif isinstance(elm, VoltageLevel):
 
-                    # TODO: substitute by its substation
-                    graphic_obj = self.add_api_bus(bus=elm,
-                                                   injections_by_tpe=injections_by_bus.get(elm, dict()),
-                                                   explode_factor=1.0)
-                else:
-                    graphic_obj = None
+                if elm.substation is not None:
+                    # get the substation graphic object
+                    substation_graphics = self.graphics_manager.query(elm=elm.substation)
+
+                    # draw the voltage level
+                    self.add_api_voltage_level(substation_graphics=substation_graphics,
+                                               api_object=elm,
+                                               lon=substation_graphics.lon,
+                                               lat=substation_graphics.lat,
+                                               r=0.01)
+
+            elif isinstance(elm, Bus):
+
+                if elm.substation is not None:
+                    # get the substation graphic object
+                    substation_graphics = self.graphics_manager.query(elm=elm.substation)
+
+                    # draw the voltage level
+                    self.add_api_substation(api_object=elm.substation,
+                                            lon=substation_graphics.lon,
+                                            lat=substation_graphics.lat,
+                                            r=0.01)
 
             elif isinstance(elm, FluidNode):
 
@@ -581,43 +774,49 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
                     injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
 
                 # TODO: maybe new thing?
-                graphic_obj = self.add_api_fluid_node(node=elm,
-                                                      injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
-
-            elif isinstance(elm, BusBar):
-
-                if injections_by_cn is None:
-                    injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
-
-                # TODO: substitute by its substation
-                graphic_obj = self.add_api_busbar(bus=elm,
-                                                  injections_by_tpe=injections_by_cn.get(elm.cn, dict()))
+                self.add_api_fluid_node(node=elm,
+                                        injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
 
             elif isinstance(elm, Line):
-                graphic_obj = self.add_api_line(elm)
+                self.add_api_line(elm)
 
             elif isinstance(elm, DcLine):
-
-                # TODO: implement
-                graphic_obj = self.add_api_dc_line(elm)
+                self.add_api_dc_line(elm)
 
             elif isinstance(elm, HvdcLine):
-
-                # TODO: implement
-                graphic_obj = self.add_api_hvdc(elm)
+                self.add_api_hvdc_line(elm)
 
             elif isinstance(elm, FluidPath):
-
-                # TODO: implement
-                graphic_obj = self.add_api_fluid_path(elm)
+                self.add_api_fluid_path(elm)
 
             else:
-                graphic_obj = None
-
-            self.add_to_scene(graphic_object=graphic_obj)
+                pass
 
         else:
             logger.add_warning("Device already added", device_class=elm.device_type.value, device=elm.name)
+
+    def dropEvent(self, event: QDropEvent):
+        """
+        On element drop...
+        :param event: QDropEvent
+        """
+        super().dropEvent(event)
+
+        if event.mimeData().hasFormat('component/name'):
+            obj_type = event.mimeData().data('component/name')
+
+            point0 = self.map.view.mapToScene(event.position().x(), event.position().y())
+            x0 = point0.x()
+            y0 = point0.y()
+            lat, lon = self.to_lat_lon(x=x0, y=y0)
+
+            print(f"Droped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
+
+            if obj_type == self.library_model.get_substation_mime_data():
+                print("Create substation...")
+                api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}")
+                self.circuit.add_substation(obj=api_object)
+                self.add_api_substation(api_object=api_object, lat=lat, lon=lon, r=0.01)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -756,7 +955,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
             for i, branch in enumerate(branches):
 
                 # try to find the diagram object of the DB object
-                graphic_object: MapLineContainer = self.graphics_manager.query(branch)
+                graphic_object: Union[MapAcLine, MapDcLine] = self.graphics_manager.query(branch)
 
                 if graphic_object:
 
@@ -807,7 +1006,7 @@ class GridMapWidget(MapWidget, BaseDiagramWidget):
             for i, branch in enumerate(hvdc_lines):
 
                 # try to find the diagram object of the DB object
-                graphic_object: MapLineContainer = self.graphics_manager.query(branch)
+                graphic_object: MapHvdcLine = self.graphics_manager.query(branch)
 
                 if graphic_object:
 

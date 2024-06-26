@@ -17,12 +17,13 @@
 from __future__ import annotations
 from typing import Union, TYPE_CHECKING
 from PySide6.QtCore import QPointF
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
+
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
-    from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
 class NodeTemplate(GenericDiagramWidget):
@@ -32,7 +33,7 @@ class NodeTemplate(GenericDiagramWidget):
 
     def __init__(self,
                  api_object: ALL_DEV_TYPES = None,
-                 editor: Union[SchematicWidget, MapWidget, None] = None,
+                 editor: Union[GridMapWidget, None] = None,
                  draw_labels: bool = True,
                  needsUpdate: bool = True,
                  lat: float = 0.0,

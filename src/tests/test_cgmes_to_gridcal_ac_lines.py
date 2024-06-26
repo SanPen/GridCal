@@ -87,6 +87,7 @@ def test_ac_lines(cgmes_model, calc_node_dict, cn_dict, device_to_terminal_dict,
                   expected_b2, expected_cost, expected_r, expected_r0,
                   expected_r2, expected_r_corrected, expected_vf, expected_vt, expected_x, expected_x0, expected_x2,
                   expected_rate, expected_temp_base, expected_temp_oper):
+
     logger = DataLogger()
     multi_circuit = MultiCircuit()
     tn_test.BaseVoltage = BaseVoltage()

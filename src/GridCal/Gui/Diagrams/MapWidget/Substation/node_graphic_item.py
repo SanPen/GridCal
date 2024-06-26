@@ -161,7 +161,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         super().mousePressEvent(event)
 
         if self.enabled:
-            self.editor.disableMove = True
+            self.editor.map.view.disableMove = True
             if event.button() == Qt.RightButton:
                 pass
             elif event.button() == Qt.LeftButton:
@@ -174,7 +174,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.updateDiagram()
-        self.editor.diagram_scene.update()
+        self.editor.map.view._scene.update()
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
@@ -230,7 +230,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :return:
         """
         if not self.itemSelected:
-            self.editor.selectedItems.append(self)
+            self.editor.map.view.selectedItems.append(self)
             self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
         self.itemSelected = True
 

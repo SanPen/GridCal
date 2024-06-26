@@ -24,11 +24,10 @@ from PySide6.QtGui import QColor, QPen
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCalEngine.Devices import LineLocation
 from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.Devices.types import BRANCH_TYPES, FluidPath
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
-
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
@@ -44,7 +43,7 @@ class MapLineContainer(GenericDiagramWidget):
 
     def __init__(self,
                  editor: GridMapWidget,
-                 api_object: BRANCH_TYPES,
+                 api_object: Union[BRANCH_TYPES, FluidPath],
                  draw_labels: bool = True):
         """
 
@@ -187,10 +186,14 @@ class MapLineContainer(GenericDiagramWidget):
         self.redraw_segments()
 
     def removeNode(self, node: NodeGraphicItem):
+        """
 
+        :param node:
+        :return:
+        """
         for seg in self.segments_list:
             if seg.first.api_object == node.api_object or seg.second.api_object == node.api_object:
-                self.editor.diagram_scene.removeItem(seg)
+                self.editor.map.diagram_scene.removeItem(seg)
 
         self.nodes_list.remove(node)
 
@@ -402,5 +405,3 @@ class MapLineContainer(GenericDiagramWidget):
 
         for line in self.segments_list:
             line.set_enable(val=False)
-
-
