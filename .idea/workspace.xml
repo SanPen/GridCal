@@ -28,8 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Check linear vs nonlinear">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor writing fix">
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,6 +131,7 @@
     &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
     &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_nodal_capacity.py.executor&quot;: &quot;Debug&quot;,
     &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
     &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
     &quot;Python.acopf_run.executor&quot;: &quot;Debug&quot;,
@@ -1695,7 +1696,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="509" />
+    <option name="localTasksCounter" value="513" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1728,7 +1729,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="master" />
+                        <option value="204_investments_evaluation" />
                       </list>
                     </value>
                   </entry>
@@ -1741,10 +1742,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="export CGMES: load response char, reg control, get connectivity nodes" />
-    <MESSAGE value="buse" />
-    <MESSAGE value="bus idtag for new TopologicalNodes" />
-    <MESSAGE value="new CGMES export functions" />
     <MESSAGE value="matrix comparisons first version" />
     <MESSAGE value="linear shunt import-export from cgmes" />
     <MESSAGE value="class ReferenceManger trial code" />
@@ -1766,7 +1763,11 @@
     <MESSAGE value="Improved the detection of the simulability with the `valid_for_simulation` function" />
     <MESSAGE value="Make linear nodal capacity work" />
     <MESSAGE value="Check linear vs nonlinear" />
-    <option name="LAST_COMMIT_MESSAGE" value="Check linear vs nonlinear" />
+    <MESSAGE value="Update linear opf docs with nodal capacity" />
+    <MESSAGE value="Add first version of the nodal capacity calculation example" />
+    <MESSAGE value="Add example of nodal capacity with linear and non-linear" />
+    <MESSAGE value="Minor writing fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="Minor writing fix" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2168,12 +2169,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1179</line>
+          <line>1180</line>
           <option name="timeStamp" value="1395" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py</url>
-          <line>1174</line>
+          <line>1175</line>
           <option name="timeStamp" value="1396" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2184,7 +2185,7 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <condition expression="not ok" language="Python" />
           <url>file://$PROJECT_DIR$/src/tests/test_ptdf.py</url>
-          <line>447</line>
+          <line>448</line>
           <option name="timeStamp" value="1404" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2216,6 +2217,16 @@
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/DiagramEditorWidget/Branches/line_editor.py</url>
           <line>47</line>
           <option name="timeStamp" value="1600" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py</url>
+          <line>31</line>
+          <option name="timeStamp" value="1684" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods/NSGA_3.py</url>
+          <line>74</line>
+          <option name="timeStamp" value="1685" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
