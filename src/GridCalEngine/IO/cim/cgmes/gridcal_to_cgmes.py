@@ -760,7 +760,7 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
-        ei.Terminals = create_cgmes_terminal(mc_elm.bus, ei, cgmes_model, logger)
+        ei.Terminals = create_cgmes_terminal(mc_elm.bus, None, ei, cgmes_model, logger)
         ei.regulationCapability = False
 
         cgmes_model.add(ei)
@@ -939,7 +939,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # generatorOrCondenserOrMotor = 'generatorOrCondenserOrMotor'
         # condenser = 'condenser'
 
-        cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, cgmes_syn, cgmes_model, logger)
+        cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, None, cgmes_syn, cgmes_model, logger)
         if mc_elm.bus.voltage_level:
             vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,
@@ -963,8 +963,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
-        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, cm_transformer, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus_to, cm_transformer, cgmes_model, logger)]
+        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, 1, cm_transformer, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus_to, 2, cm_transformer, cgmes_model, logger)]
         cm_transformer.aggregate = False  # what is this?
         if mc_elm.bus_from.substation:
             cm_transformer.EquipmentContainer = find_object_by_uuid(
@@ -1031,9 +1031,9 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
-        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus1, cm_transformer, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus2, cm_transformer, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus3, cm_transformer, cgmes_model, logger)]
+        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus1, 1, cm_transformer, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus2, 2, cm_transformer, cgmes_model, logger),
+                                    create_cgmes_terminal(mc_elm.bus3, 3, cm_transformer, cgmes_model, logger)]
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
@@ -1172,7 +1172,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
             lsc.sections = 0
         lsc.normalSections = lsc.sections
 
-        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, lsc, cgmes_model, logger)
+        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, None, lsc, cgmes_model, logger)
 
         cgmes_model.add(lsc)
 
