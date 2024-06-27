@@ -792,8 +792,10 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                           create_cgmes_terminal(mc_elm.bus_to, 2, line, cgmes_model, logger)]
         line.length = mc_elm.length
 
-        create_cgmes_current_limit(line.Terminals[1], mc_elm.rate, cgmes_model, logger)
-        create_cgmes_current_limit(line.Terminals[2], mc_elm.rate, cgmes_model, logger)
+        current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+        current_rate = np.round(current_rate, 4)
+        create_cgmes_current_limit(line.Terminals[0], current_rate, cgmes_model, logger)
+        create_cgmes_current_limit(line.Terminals[1], current_rate, cgmes_model, logger)
 
 
         vnom = line.BaseVoltage.nominalVoltage
@@ -1197,14 +1199,16 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
     for i, voltage in enumerate(pf_results.voltage):
         object_template = cgmes_model.get_class_type("SvVoltage")
         new_rdf_id = get_new_rdfid()
-        sv_voltage = object_template(rdfid=new_rdf_id,
-                                     tpe='SvVoltage')
+        sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
 
-        # sv_voltage.TopologicalNode = cgmes_model.cgmes_assets.TopologicalNode_list[i] todo include boundary
+        tp_list_with_boundary = (cgmes_model.cgmes_assets.TopologicalNode_list +
+                                 cgmes_model.elements_by_type_boundary.get('TopologicalNode', None))
+        sv_voltage.TopologicalNode = tp_list_with_boundary[i]
+        # todo include boundary?
         # as the order of the results is the same as the order of buses (=tn)
         # bv = cgmes_model.cgmes_assets.TopologicalNode_list[i].BaseVoltage
         sv_voltage.v = np.abs(voltage) #* bv.nominalVoltage
-        sv_voltage.a = np.angle(voltage, deg=True)
+        sv_voltage.angle = np.angle(voltage, deg=True)
 
         # Add the SvVoltage instance to the SvVoltage_list
         cgmes_model.add(sv_voltage)
