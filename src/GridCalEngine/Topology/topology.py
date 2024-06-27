@@ -482,7 +482,6 @@ class TopologyProcessorInfo:
                 t = -1
 
             if f == t:
-                # raise ValueError("Loop connected branch!")
                 logger.add_error(msg="Loop connected branch!", device=elm.name)
                 return -1, -1, False
 

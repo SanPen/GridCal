@@ -902,7 +902,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.cn_from = cn_3
                     gcdev_elm.winding3.cn_to = cn_1
 
-                    gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=False)
+                    # gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=False)  # TODO: Why not adding the middle bus?
+                    gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=True)
 
                 else:
                     logger.add_error(msg='Not exactly three terminals',
