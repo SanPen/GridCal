@@ -363,6 +363,22 @@ def analyze_lines(elements: List[Line],
 
         s = '[' + str(V1) + '-' + str(V2) + ']'
 
+        if elm.bus_from is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from",
+                       message="The bus from is None")
+
+        if elm.bus_to is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_to",
+                       message="The bus to is None")
+
         if V1 > 0 and V2 > 0:
             per = V1 / V2
             if per < (1.0 - branch_connection_voltage_tolerance):
@@ -497,6 +513,22 @@ def analyze_transformers(elements: List[Transformer2W],
     :return:
     """
     for i, elm in enumerate(elements):
+
+        if elm.bus_from is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from",
+                       message="The bus from is None")
+
+        if elm.bus_to is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_to",
+                       message="The bus to is None")
 
         if elm.name == '':
             logger.add(object_type=object_type.value,
@@ -759,6 +791,14 @@ def analyze_generators(elements: List[Generator],
         if time_profile is not None:
             Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
 
+        if obj.bus is None:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
+
         if obj.Vset < v_low:
             logger.add(object_type=object_type.value,
                        element_name=obj,
@@ -886,6 +926,14 @@ def analyze_batteries(elements: List[Battery],
     for k, obj in enumerate(elements):
         Pg += obj.P * obj.active
 
+        if obj.bus is None:
+            logger.add(object_type=object_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
+
         if time_profile is not None:
             Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
 
@@ -978,7 +1026,8 @@ def analyze_batteries(elements: List[Battery],
 
 
 def analyze_static_gen(elements: List[StaticGenerator],
-                       time_profile):
+                       time_profile,
+                       logger: GridErrorLog,):
     """
 
     :param elements:
@@ -994,6 +1043,14 @@ def analyze_static_gen(elements: List[StaticGenerator],
         Pg += obj.P * obj.active
         Qg += obj.Q * obj.active
 
+        if obj.bus is None:
+            logger.add(object_type=obj.device_type.value,
+                       element_name=obj,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
+
         if time_profile is not None:
             Pg_prof += obj.P_prof.toarray() * obj.active_prof.toarray()
             Qg_prof += obj.Q_prof.toarray() * obj.active_prof.toarray()
@@ -1002,7 +1059,8 @@ def analyze_static_gen(elements: List[StaticGenerator],
 
 
 def analyze_load(elements: List[Load],
-                 time_profile):
+                 time_profile,
+                 logger: GridErrorLog,):
     """
 
     :param elements:
@@ -1014,9 +1072,17 @@ def analyze_load(elements: List[Load],
     Pl_prof = 0.0
     Ql_prof = 0.0
 
-    for elm in elements:
+    for k, elm in enumerate(elements):
         Pl += elm.P * elm.active
         Ql += elm.Q * elm.active
+
+        if elm.bus is None:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=k,
+                       severity=LogSeverity.Error,
+                       propty="bus",
+                       message="The bus is None")
 
         if time_profile is not None:
             Pl_prof += elm.P_prof.toarray() * elm.active_prof.toarray()
@@ -1124,7 +1190,8 @@ def grid_analysis(circuit: MultiCircuit,
     Pg_prof += Pgb_prof
 
     Pgs, Qgs, Pgs_prof, Qgs_prof = analyze_static_gen(elements=circuit.get_static_generators(),
-                                                      time_profile=circuit.get_time_array())
+                                                      time_profile=circuit.get_time_array(),
+                                                      logger=logger)
 
     Pg += Pgs
     Pg_prof += Pgs_prof
@@ -1132,7 +1199,8 @@ def grid_analysis(circuit: MultiCircuit,
     Qg_prof += Qgs_prof
 
     Pll, Qll, Pll_prof, Qll_prof = analyze_load(elements=circuit.get_loads(),
-                                                time_profile=circuit.get_time_array())
+                                                time_profile=circuit.get_time_array(),
+                                                logger=logger)
 
     Pl += Pll
     Pl_prof += Pll_prof
