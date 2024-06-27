@@ -326,8 +326,9 @@ class IoMain(ConfigurationMain):
 
                 # assign the loaded circuit
                 self.new_project_now(create_default_diagrams=False)
-                self.circuit = self.open_file_thread_object.circuit
-                self.file_name = self.open_file_thread_object.file_name
+                if self.open_file_thread_object.circuit is not None:
+                    self.circuit = self.open_file_thread_object.circuit
+                    self.file_name = self.open_file_thread_object.file_name
 
                 if self.circuit.has_diagrams():
                     # create the diagrams that came with the file
