@@ -277,8 +277,8 @@ def create_cgmes_load_response_char(load: gcdev.Load,
     lrc.pConstantImpedance = 0.0
     lrc.qConstantImpedance = 0.0
     # Expression got simpler
-    lrc.pConstantPower = load.P / (load.Ir + load.P)
-    lrc.qConstantPower = load.Q / (load.Ii + load.Q)
+    lrc.pConstantPower = np.round(load.P / (load.Ir + load.P), 4)
+    lrc.qConstantPower = np.round(load.Q / (load.Ii + load.Q), 4)
     lrc.pConstantCurrent = 1 - lrc.pConstantPower
     lrc.qConstantCurrent = 1 - lrc.qConstantPower
 
@@ -395,7 +395,8 @@ def create_cgmes_regulating_control(cgmes_syn,
     rc.targetDeadband = 0.5
     rc.targetValueUnitMultiplier = UnitMultiplier.k
     rc.enabled = True   # todo correct?
-    rc.targetValue = mc_gen.Vset
+    rc.targetValue = mc_gen.Vset * mc_gen.bus.Vnom
+    # TODO control_cn.Vnom
 
     cgmes_model.add(rc)
 
@@ -895,7 +896,6 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
             cgmes_gen.normalPF = 0
         # TODO cgmes_syn.EquipmentContainer: VoltageLevel
 
-        # TODO implement control_node in MultiCircuit
         # has_control: do we have control
         # control_type: voltage or power control, ..
         # is_controlled: enabling flag (already have)

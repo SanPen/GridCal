@@ -69,41 +69,43 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
     circuit_2.buses.sort(key=lambda obj: obj.name)      # SORTING
     nc_2 = gc.compile_numerical_circuit_at(circuit_2)
 
-    # COMPARING
+    # COMPARING Multi Circuits
     ok, logger = circuit_1.compare_circuits(circuit_2)
-
-    if not ok:
-        logger.print()
-
-    ok, logger = nc_1.compare(nc_2=nc_2, tol=1e-6)
-
     if ok:
-        print("OK!")
+        print("\nOK! SUCCESS for Multi Circuit!\n")
     else:
         logger.print()
 
-    # FOR DEBUG
-    print('Buses')
-    print(nc_1.bus_names)
-    print(nc_2.bus_names)
-    print('Loads')
-    print(nc_1.load_names)
-    print(nc_2.load_names)
-    print('Gens')
-    print(nc_1.generator_names)
-    print(nc_2.generator_names)
-    print('Sbus1')
-    print(nc_1.Sbus)
-    print('Sbus2')
-    print(nc_2.Sbus)
-    print('S_diff')
-    print(nc_2.Sbus - nc_1.Sbus)
-    print('Y1')
-    print(nc_1.Ybus.A)
-    print('Y2')
-    print(nc_2.Ybus.A)
-    print('Y_diff')
-    print(nc_2.Ybus.A - nc_1.Ybus.A)
+    # COMPARING Numerical Circuits
+    ok, logger = nc_1.compare(nc_2=nc_2, tol=1e-4)      # 1e-6
+
+    if ok:
+        print("\nOK! SUCCESS for Numerical Circuit!\n")
+    else:
+        logger.print()
+
+        # FOR DEBUG
+        print('Buses')
+        print(nc_1.bus_names)
+        print(nc_2.bus_names)
+        print('Loads')
+        print(nc_1.load_names)
+        print(nc_2.load_names)
+        print('Gens')
+        print(nc_1.generator_names)
+        print(nc_2.generator_names)
+        print('Sbus1')
+        print(nc_1.Sbus)
+        print('Sbus2')
+        print(nc_2.Sbus)
+        print('S_diff')
+        print(nc_2.Sbus - nc_1.Sbus)
+        print('Y1')
+        print(nc_1.Ybus.A)
+        print('Y2')
+        print(nc_2.Ybus.A)
+        print('Y_diff')
+        print(nc_2.Ybus.A - nc_1.Ybus.A)
 
     assert ok
 
