@@ -415,7 +415,8 @@ class GridMapWidget(BaseDiagramWidget):
         graphic_object = NodeGraphicItem(editor=self,
                                          line_container=line_container,
                                          api_object=api_object,
-                                         lat=lat, lon=lon,
+                                         lat=lat,
+                                         lon=lon,
                                          index=index,
                                          r=0.005)
 

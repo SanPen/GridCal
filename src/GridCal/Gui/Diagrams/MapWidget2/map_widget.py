@@ -59,7 +59,7 @@ class Place(Enum):
     CenterWest = "cw"
 
 
-class CustomScene(QGraphicsScene):
+class MapScene(QGraphicsScene):
     """
     CustomScene
     """
@@ -282,7 +282,7 @@ class MapView(QGraphicsView):
 
         self.map_widget.resizeEvent(event=event)
 
-    def setSizeDiagram(self):
+    def setSizeDiagram(self) -> None:
         """
 
         :return:
@@ -292,7 +292,7 @@ class MapView(QGraphicsView):
         self.view_width = self.width()
         self.view_height = self.height()
 
-    def setSceneRectDiagram(self):
+    def setSceneRectDiagram(self) -> None:
         """
 
         :return:
@@ -364,7 +364,7 @@ class MapView(QGraphicsView):
         """
 
         x_map, y_map = self.map_widget.geo_to_view(longitude=lon, latitude=lat)
-        point_local = self.mapToParent(QPointF(x_map, y_map))
+        point_local = self.mapToGlobal(QPointF(x_map, y_map))
         x_local = point_local.x()
         y_local = point_local.y()
 
@@ -395,6 +395,9 @@ class MapView(QGraphicsView):
         # self.map_widget.GotoLevelAndPosition(level=or_level, longitude=or_longitude, latitude=or_latitude)
         # level, longitude, latitude = self.map_widget.get_level_and_position()
         #
+        # dx = x - x_local
+        # dy = y - y_local
+
         # return x, y
 
         return x_local, y_local
@@ -449,7 +452,7 @@ class MapWidget(QWidget):
         # -------------------------------------------------------------------------
         # Add the drawing layer
         # -------------------------------------------------------------------------
-        self.diagram_scene = CustomScene(self)
+        self.diagram_scene = MapScene(self)
 
         self.editor: GridMapWidget = editor
 
