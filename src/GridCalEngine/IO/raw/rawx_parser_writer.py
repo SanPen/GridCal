@@ -127,7 +127,9 @@ def write_rawx(file_name: str, circuit: PsseCircuit, logger: Logger = Logger()) 
 
             for element in circuit_val:
                 d = element.get_rawx_dict()
-                elm_data.append(list(d.values()))
+                elm_data.append([
+                    element.get_prop_value(prop=psse_property) for psse_property in d.values()
+                ])
 
                 if len(fields) == 0:
                     fields = list(d.keys())
