@@ -4,7 +4,8 @@ from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, WindGenUnitKind, RegulatingControlModeKind
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile, WindGenUnitKind,
+                                                    RegulatingControlModeKind, UnitMultiplier)
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 # import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
@@ -220,7 +221,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
 #         multi_circuit_model.connectivity_nodes.append(gcdev_elm)
 #
 #
-def create_cgmes_terminal(bus: Bus,
+def create_cgmes_terminal(mc_bus: Bus,
                           seq_num: Union[int, None],
                           cond_eq: Union[None, Base],
                           cgmes_model: CgmesCircuit,
@@ -248,14 +249,14 @@ def create_cgmes_terminal(bus: Bus,
     tn = find_object_by_uuid(
         cgmes_model=cgmes_model,
         object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
-        target_uuid=bus.idtag
+        target_uuid=mc_bus.idtag
     )
     if isinstance(tn, cgmes_model.get_class_type("TopologicalNode")):
         term.TopologicalNode = tn
         term.ConnectivityNode = tn.ConnectivityNodes
     else:
         logger.add_error(msg='No found TopologinalNode',
-                         device=bus,
+                         device=mc_bus,
                          device_class=gcdev.Bus)
 
     cgmes_model.add(term)
@@ -362,27 +363,39 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
     return None
 
 
-def create_cgmes_regulating_control(
-        gen: gcdev.Generator,
-        cgmes_model: CgmesCircuit):
+def create_cgmes_regulating_control(cgmes_syn,
+                                    mc_gen: gcdev.Generator,
+                                    cgmes_model: CgmesCircuit,
+                                    logger: DataLogger):
     """
+    Create Regulating Control for Generators
 
-    :param gen: MultiCircuit Generator
+    :param cgmes_syn: Cgmes Synchronous Machine
+    :param mc_gen: MultiCircuit Generator
     :param cgmes_model: CgmesCircuit
+    :param logger:
     :return:
     """
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("RegulatingControl")
     rc = object_template(rdfid=new_rdf_id)
 
-    rc.name = f'_RC_{gen.name}'
-    rc.RegulatingCondEq = gen
-    # rc.Terminal
+    # RC for EQ
+    rc.name = f'_RC_{mc_gen.name}'
+    rc.shortName = rc.name
+    rc.mode = RegulatingControlModeKind.voltage
+    rc.Terminal = create_cgmes_terminal(mc_bus=mc_gen.bus,
+                                        seq_num=1,
+                                        cond_eq=cgmes_syn,
+                                        cgmes_model=cgmes_model,
+                                        logger=logger)
+
+    rc.RegulatingCondEq = cgmes_syn
     rc.discrete = False
-    # rc.enabled
-    # rc.targetDeadband
-    rc.targetValue = gen.Vset
-    # rc.targetValueUnitMultiplier = 'k'
+    rc.targetDeadband = 0.5
+    rc.targetValueUnitMultiplier = UnitMultiplier.k
+    rc.enabled = True   # todo correct?
+    rc.targetValue = mc_gen.Vset
 
     cgmes_model.add(rc)
 
@@ -887,9 +900,8 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # control_type: voltage or power control, ..
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
-            cgmes_syn.RegulatingControl = create_cgmes_regulating_control(mc_elm, cgmes_model)
-            cgmes_syn.RegulatingControl.mode: RegulatingControlModeKind.voltage
-            cgmes_syn.RegulatingControl.RegulatingCondEq = cgmes_syn
+            cgmes_syn.RegulatingControl = (
+                create_cgmes_regulating_control(cgmes_syn, mc_elm, cgmes_model, logger))
             cgmes_syn.controlEnabled = True
         else:
             cgmes_syn.controlEnabled = False
@@ -941,7 +953,6 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # generatorOrCondenserOrMotor = 'generatorOrCondenserOrMotor'
         # condenser = 'condenser'
 
-        cgmes_syn.Terminals = create_cgmes_terminal(mc_elm.bus, None, cgmes_syn, cgmes_model, logger)
         if mc_elm.bus.voltage_level:
             vl = find_object_by_uuid(
                 cgmes_model=cgmes_model,

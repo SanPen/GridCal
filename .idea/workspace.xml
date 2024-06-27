@@ -1320,7 +1320,7 @@
       <workItem from="1718176367287" duration="9855000" />
       <workItem from="1718549908709" duration="2549000" />
       <workItem from="1718774600655" duration="14584000" />
-      <workItem from="1719476949413" duration="11258000" />
+      <workItem from="1719476949413" duration="15280000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1665,7 +1665,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="524" />
+    <option name="localTasksCounter" value="525" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1699,7 +1699,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="export sv voltage" />
     <MESSAGE value="export cgmes cns from buses" />
     <MESSAGE value="json and ttl files removed (previously used for cgmes export)" />
     <MESSAGE value="attributes added to cgmes generator export" />
@@ -1724,7 +1723,8 @@
     <MESSAGE value="soring and print names for debugging comparison" />
     <MESSAGE value="create op limits and curr lim for cgmes export" />
     <MESSAGE value="seqence num added for cgmes terminal export" />
-    <option name="LAST_COMMIT_MESSAGE" value="seqence num added for cgmes terminal export" />
+    <MESSAGE value="line rate export correction, sv.angle, sv.TP added" />
+    <option name="LAST_COMMIT_MESSAGE" value="line rate export correction, sv.angle, sv.TP added" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2156,7 +2156,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
-          <line>1297</line>
+          <line>1308</line>
           <option name="timeStamp" value="1504" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
