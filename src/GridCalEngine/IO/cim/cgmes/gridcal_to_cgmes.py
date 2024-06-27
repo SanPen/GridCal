@@ -279,8 +279,8 @@ def create_cgmes_load_response_char(load: gcdev.Load,
     # Expression got simpler
     lrc.pConstantPower = np.round(load.P / (load.Ir + load.P), 4)
     lrc.qConstantPower = np.round(load.Q / (load.Ii + load.Q), 4)
-    lrc.pConstantCurrent = 1 - lrc.pConstantPower
-    lrc.qConstantCurrent = 1 - lrc.qConstantPower
+    lrc.pConstantCurrent = np.round(1 - lrc.pConstantPower, 4)
+    lrc.qConstantCurrent = np.round(1 - lrc.qConstantPower, 4)
 
     # Legacy
     # lrc.pConstantCurrent = load.Ir / load.P if load.P != 0.0 else 0
