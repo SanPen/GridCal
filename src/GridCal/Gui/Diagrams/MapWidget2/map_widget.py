@@ -134,8 +134,8 @@ class MapView(QGraphicsView):
         self.pressed = False
         self.disableMove = False
 
-        self.startHe = self.height()  # 360
-        self.startWi = self.width()  # 240
+        self.startHe = None
+        self.startWi = None
 
         # updated later
         self.view_width = self.width()
@@ -319,6 +319,19 @@ class MapView(QGraphicsView):
         :return:
         """
 
+        currHe = self.map_widget.view_height
+        currWi = self.map_widget.view_width
+
+        if self.startHe == None:
+            self.startHe = currHe
+        if self.startWi == None:
+            self.startWi = currWi
+
+        or_level, or_longitude, or_latitude = self.map_widget.get_level_and_position()
+
+        self.map_widget.resize(self.startHe, self.map_widget.height())
+        self.map_widget.resize(self.startWi, self.map_widget.width())
+
         level, longitude, latitude = self.map_widget.get_level_and_position()
 
         self.map_widget.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
@@ -326,6 +339,11 @@ class MapView(QGraphicsView):
         lon, lat = self.map_widget.view_to_geo(xview=x, yview=y)
 
         self.map_widget.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+
+        self.map_widget.resize(currHe, self.map_widget.height())
+        self.map_widget.resize(currWi, self.map_widget.width())
+
+        self.map_widget.GotoLevelAndPosition(level=or_level, longitude=or_longitude, latitude=or_latitude)
 
         return lat, lon
 
@@ -337,6 +355,19 @@ class MapView(QGraphicsView):
         :return:
         """
 
+        currHe = self.map_widget.view_height
+        currWi = self.map_widget.view_width
+
+        if self.startHe == None:
+            self.startHe = currHe
+        if self.startWi == None:
+            self.startWi = currWi
+
+        or_level, or_longitude, or_latitude = self.map_widget.get_level_and_position()
+
+        self.map_widget.resize(self.startHe, self.map_widget.height())
+        self.map_widget.resize(self.startWi, self.map_widget.width())
+
         level, longitude, latitude = self.map_widget.get_level_and_position()
 
         self.map_widget.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
@@ -345,6 +376,11 @@ class MapView(QGraphicsView):
 
         self.map_widget.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
 
+        self.map_widget.resize(currHe, self.map_widget.height())
+        self.map_widget.resize(currWi, self.map_widget.width())
+
+        self.map_widget.GotoLevelAndPosition(level=or_level, longitude=or_longitude, latitude=or_latitude)
+        level, longitude, latitude = self.map_widget.get_level_and_position()
         return x, y
 
     def centerSchema(self) -> None:
