@@ -221,6 +221,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
 #
 #
 def create_cgmes_terminal(bus: Bus,
+                          seq_num: Union[int, None],
                           cond_eq: Union[None, Base],
                           cgmes_model: CgmesCircuit,
                           logger: DataLogger):
@@ -230,8 +231,15 @@ def create_cgmes_terminal(bus: Bus,
     new_rdf_id = get_new_rdfid()
     terminal_template = cgmes_model.get_class_type("Terminal")
     term = terminal_template(new_rdf_id)
-    term.name = bus.name
+    term.name = f'{cond_eq.name} - T{seq_num}'
+    # term.shortName =
+    if seq_num is not None:
+        term.sequenceNumber = seq_num
+
+    # further properties
     # term.phases =
+    # term.energyIdentCodeEic =
+
     cond_eq_type = cgmes_model.get_class_type("ConductingEquipment")
     if cond_eq and isinstance(cond_eq, cond_eq_type):
         term.ConductingEquipment = cond_eq
@@ -381,23 +389,62 @@ def create_cgmes_regulating_control(
     return rc
 
 
-def create_cgmes_current_limits(mc_elm: Union[gcdev.Line,
-                                              # gcdev.Transformer2W,
-                                              # gcdev.Transformer3W
-                                              ],
-                                cgmes_model: CgmesCircuit,
-                                logger: DataLogger):
+def create_cgmes_current_limit(terminal,
+                               rate: float,
+                               # mc_elm: Union[gcdev.Line,
+                               #               # gcdev.Transformer2W,
+                               #               # gcdev.Transformer3W
+                               #               ],
+                               cgmes_model: CgmesCircuit,
+                               logger: DataLogger):
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("CurrentLimit")
     curr_lim = object_template(rdfid=new_rdf_id)
-    curr_lim.name = f'{mc_elm.name} - CL-1'
+    curr_lim.name = f'{terminal.name} - CL-1'
     curr_lim.shortName = f'CL-1'
-    curr_lim.description = f'Ratings for element {mc_elm.name} - Limit'
+    curr_lim.description = f'Ratings for element {terminal.ConductingEquipment.name} - Limit'
 
-    curr_lim.value = mc_elm.rate
-    # curr_lim.OperationalLimitSet
+    curr_lim.value = rate
+
+    op_lim_set_1 = create_operational_limit_set(terminal, cgmes_model, logger)
+    if op_lim_set_1 is not None:
+        curr_lim.OperationalLimitSet = op_lim_set_1
+    else:
+        logger.add_error(msg='No operational limit created')
+
     # curr_lim.OperationalLimitType
+
+    cgmes_model.add(curr_lim)
     return
+
+
+def create_operational_limit_set(terminal,
+                                 cgmes_model: CgmesCircuit,
+                                 logger: DataLogger):
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("OperationalLimitSet")
+    op_lim_set = object_template(rdfid=new_rdf_id)
+    op_lim_set.name = f'OpertinalLimit at Port1'
+    op_lim_set.description = f'OpertinalLimit at Port1'
+
+    terminal_type = cgmes_model.get_class_type('Terminal')
+    if isinstance(terminal, terminal_type):
+        op_lim_set.Terminal = terminal
+
+    cgmes_model.add(op_lim_set)
+    return op_lim_set
+
+
+def create_operational_limit_type(mc_elm: gcdev.Line,
+                                  cgmes_model: CgmesCircuit,
+                                  logger: DataLogger):
+
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("OperationalLimitSet")
+    op_lim_type = object_template(rdfid=new_rdf_id)
+
+    cgmes_model.add(op_lim_type)
+    return op_lim_type
 
 
 # endregion
@@ -661,7 +708,7 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
     for mc_elm in multicircuit_model.loads:
         object_template = cgmes_model.get_class_type("ConformLoad")
         cl = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        cl.Terminals = create_cgmes_terminal(mc_elm.bus, cl, cgmes_model, logger)
+        cl.Terminals = create_cgmes_terminal(mc_elm.bus, None, cl, cgmes_model, logger)
         cl.name = mc_elm.name
 
         if mc_elm.bus.voltage_level:
@@ -741,9 +788,13 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                                target_vnom=mc_elm.get_max_bus_nominal_voltage()
                                                )  # which Vnom we need?
-        line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, line, cgmes_model, logger),
-                          create_cgmes_terminal(mc_elm.bus_to, line, cgmes_model, logger)]
+        line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, 1, line, cgmes_model, logger),
+                          create_cgmes_terminal(mc_elm.bus_to, 2, line, cgmes_model, logger)]
         line.length = mc_elm.length
+
+        create_cgmes_current_limit(line.Terminals[1], mc_elm.rate, cgmes_model, logger)
+        create_cgmes_current_limit(line.Terminals[2], mc_elm.rate, cgmes_model, logger)
+
 
         vnom = line.BaseVoltage.nominalVoltage
 
