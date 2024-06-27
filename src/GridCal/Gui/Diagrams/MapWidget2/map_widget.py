@@ -319,38 +319,41 @@ class MapView(QGraphicsView):
         :return:
         """
 
-        point_local = self.mapToScene(int(x), int(y))
+        point_local = self.mapFromGlobal(QPointF(int(x), int(y)))
         x_local = point_local.x()
         y_local = point_local.y()
         lon_1, lat_1 = self.map_widget.view_to_geo(xview=x_local, yview=y_local)
 
-        currHe = self.map_widget.view_height
-        currWi = self.map_widget.view_width
+        # currHe = self.map_widget.view_height
+        # currWi = self.map_widget.view_width
+        #
+        # if self.startHe == None:
+        #     self.startHe = currHe
+        # if self.startWi == None:
+        #     self.startWi = currWi
+        #
+        # or_level, or_longitude, or_latitude = self.map_widget.get_level_and_position()
+        #
+        # self.map_widget.resize(self.startHe, self.map_widget.height())
+        # self.map_widget.resize(self.startWi, self.map_widget.width())
+        #
+        # level, longitude, latitude = self.map_widget.get_level_and_position()
+        #
+        # self.map_widget.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+        #
+        # lon, lat = self.map_widget.view_to_geo(xview=x, yview=y)
+        #
+        # self.map_widget.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+        #
+        # self.map_widget.resize(currHe, self.map_widget.height())
+        # self.map_widget.resize(currWi, self.map_widget.width())
+        #
+        # self.map_widget.GotoLevelAndPosition(level=or_level, longitude=or_longitude, latitude=or_latitude)
+        #
+        # dlat = lat - lat_1
+        # dlon = lon - lon_1
 
-        if self.startHe == None:
-            self.startHe = currHe
-        if self.startWi == None:
-            self.startWi = currWi
-
-        or_level, or_longitude, or_latitude = self.map_widget.get_level_and_position()
-
-        self.map_widget.resize(self.startHe, self.map_widget.height())
-        self.map_widget.resize(self.startWi, self.map_widget.width())
-
-        level, longitude, latitude = self.map_widget.get_level_and_position()
-
-        self.map_widget.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
-
-        lon, lat = self.map_widget.view_to_geo(xview=x, yview=y)
-
-        self.map_widget.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
-
-        self.map_widget.resize(currHe, self.map_widget.height())
-        self.map_widget.resize(currWi, self.map_widget.width())
-
-        self.map_widget.GotoLevelAndPosition(level=or_level, longitude=or_longitude, latitude=or_latitude)
-
-        return lat, lon
+        return lat_1, lon_1
 
     def to_x_y(self, lat: float, lon: float) -> Tuple[float, float]:
         """
