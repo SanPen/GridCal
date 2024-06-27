@@ -66,10 +66,10 @@ def test_raw_roundtrip():
     # test_grid_name = 'IEEE 14 bus.raw'
     test_grid_name = 'IEEE 30 bus.raw'
 
-    raw_relative_path = os.path.join('..', 'data', 'grids', 'RAW', test_grid_name)
+    raw_relative_path = os.path.join('data', 'grids', 'RAW', test_grid_name)
     raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))
 
-    export_relative_path = os.path.join('export_result', test_grid_name)
+    export_relative_path = os.path.join('output/raw_export_result', test_grid_name)
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
 
     if not os.path.exists(os.path.dirname(export_name)):

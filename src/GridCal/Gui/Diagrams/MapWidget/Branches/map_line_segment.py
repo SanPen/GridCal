@@ -19,12 +19,16 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
-from PySide6.QtWidgets import QGraphicsLineItem
-from GridCalEngine.Devices.types import BRANCH_TYPES
+from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
+
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
+
+from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.enumerations import DeviceType
+
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
@@ -51,8 +55,8 @@ class MapLineSegment(QGraphicsLineItem):
 
         self.style = Qt.SolidLine
         self.color = Qt.blue
-        self.width = 1
-        self.lineWidth = 3
+        self.width = 0
+        self.lineWidth = 1
         self.scaleSegment = self.lineWidth
         self.setScale(self.scaleSegment)
 
@@ -118,6 +122,20 @@ class MapLineSegment(QGraphicsLineItem):
         """
         self.first.needsUpdate = False
         self.second.needsUpdate = False
+
+    def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
+        """
+        mouse press: display the editor
+        :param event:
+        :return:
+        """
+        if self.api_object is not None:
+            self.editor.set_editor_model(api_object=self.api_object,
+                                         dictionary_of_lists={
+                                             DeviceType.BusDevice: self.editor.circuit.get_buses(),
+                                             DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
+                                             DeviceType.BranchGroupDevice: self.editor.circuit.get_branch_groups()
+                                         })
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """

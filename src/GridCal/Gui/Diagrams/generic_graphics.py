@@ -25,7 +25,7 @@ from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
-    from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 try:
     IS_DARK = darkdetect.theme() == "Dark"
@@ -185,7 +185,7 @@ class GenericDiagramWidget:
     def __init__(self,
                  parent,
                  api_object: ALL_DEV_TYPES,
-                 editor: Union[SchematicWidget, MapWidget],
+                 editor: Union[SchematicWidget, GridMapWidget],
                  draw_labels: bool):
         """
         Constructor
@@ -199,7 +199,7 @@ class GenericDiagramWidget:
 
         self.api_object: ALL_DEV_TYPES = api_object
 
-        self.editor: Union[SchematicWidget, MapWidget] = editor
+        self.editor: Union[SchematicWidget, GridMapWidget] = editor
 
         self._draw_labels: bool = draw_labels
 

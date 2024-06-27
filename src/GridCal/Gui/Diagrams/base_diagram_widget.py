@@ -14,31 +14,28 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import List, Dict, Union, Tuple, Callable
+from __future__ import annotations
+from typing import List, Dict, Union, Tuple, Callable, TYPE_CHECKING
 import numpy as np
 import pandas as pd
 import cv2
 from matplotlib import pyplot as plt
 
-from PySide6.QtGui import (QIcon, QPixmap, QImage)
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QImage
+from PySide6.QtWidgets import QListView, QTableView, QVBoxLayout, QHBoxLayout, QFrame, QSplitter, QAbstractItemView
 
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
-from GridCalEngine.Devices.Branches.transformer3w import Transformer3W, Winding
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
-from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Devices.types import BRANCH_TYPES
-from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
-from GridCalEngine.Devices.Substation.substation import Substation
-from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
-from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
@@ -47,20 +44,26 @@ from GridCalEngine.enumerations import DeviceType, SimulationTypes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 import GridCal.Gui.Visualization.palettes as palettes
-from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
+from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.GuiFunctions import ObjectsModel
+
+if TYPE_CHECKING:
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget
+    from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel, SchematicWidget
 
 
-class BaseDiagramWidget:
+class BaseDiagramWidget(QSplitter):
     """
     Common diagram widget to host common functions
     for the schematic and the map
     """
 
     def __init__(self,
-                 circuit: Union[None, MultiCircuit] = None,
-                 diagram: Union[SchematicDiagram, MapDiagram, None] = None,
+                 circuit: MultiCircuit,
+                 diagram: Union[SchematicDiagram, MapDiagram],
+                 library_model: Union[MapLibraryModel, SchematicLibraryModel],
                  time_index: Union[None, int] = None,
-                 call_delete_db_element_func: Callable[["SchematicWidget", ALL_DEV_TYPES], None] = None):
+                 call_delete_db_element_func: Callable[[Union[GridMapWidget, SchematicWidget], ALL_DEV_TYPES], None] = None):
         """
         Constructor
         :param circuit:
@@ -68,6 +71,49 @@ class BaseDiagramWidget:
         :param time_index:
         :param call_delete_db_element_func:
         """
+        QSplitter.__init__(self)
+
+        # --------------------------------------------------------------------------------------------------------------
+        # Widget creation
+        # --------------------------------------------------------------------------------------------------------------
+        # Widget layout and child widgets:
+        self.horizontal_layout = QHBoxLayout(self)
+        self.object_editor_table = QTableView(self)
+
+        # Actual libraryView object
+        self.library_view = QListView(self)
+
+        self.library_view.setViewMode(self.library_view.ViewMode.ListMode)
+        self.library_view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+
+        # library model
+        self.library_model = library_model
+        self.library_view.setModel(self.library_model)
+
+        # create the grid name editor
+        self.frame1 = QFrame()
+        self.frame1_layout = QVBoxLayout()
+        self.frame1_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.frame1_layout.addWidget(self.library_view)
+        self.frame1.setLayout(self.frame1_layout)
+
+        # Add the two objects into a layout
+        splitter2 = QSplitter(self)
+        splitter2.addWidget(self.frame1)
+        splitter2.addWidget(self.object_editor_table)
+        splitter2.setOrientation(Qt.Vertical)
+        self.addWidget(splitter2)
+        # self.addWidget(self.editor_graphics_view)
+
+        # factor 1:10
+        splitter2.setStretchFactor(0, 2)
+        splitter2.setStretchFactor(1, 5)
+
+        # self.setStretchFactor(0, 0)
+        # self.setStretchFactor(1, 2000)
+        # --------------------------------------------------------------------------------------------------------------
+
         # store a reference to the multi circuit instance
         self.circuit: MultiCircuit = circuit
 
@@ -116,12 +162,34 @@ class BaseDiagramWidget:
         """
         self._time_index = time_index
 
+        mdl = self.object_editor_table.model()
+        if isinstance(mdl, ObjectsModel):
+            mdl.set_time_index(time_index=self._time_index)
+
     def get_time_index(self) -> Union[int, None]:
         """
         Get the time index
         :return: int, None
         """
         return self._time_index
+
+    def set_editor_model(self,
+                         api_object: ALL_DEV_TYPES,
+                         dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
+        """
+        Set an api object to appear in the editable table view of the editor
+        :param api_object: any EditableDevice
+        :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
+        """
+        mdl = ObjectsModel(objects=[api_object],
+                           property_list=api_object.property_list,
+                           time_index=self.get_time_index(),
+                           parent=self.object_editor_table,
+                           editable=True,
+                           transposed=True,
+                           dictionary_of_lists=dictionary_of_lists if dictionary_of_lists is not None else dict())
+
+        self.object_editor_table.setModel(mdl)
 
     def set_results_to_plot(self, all_threads: List[DRIVER_OBJECTS]):
         """

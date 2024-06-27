@@ -44,7 +44,7 @@ def clear_qt_layout(layout):
 
 class RosetaExplorerGUI(QMainWindow):
     """
-
+    RosetaExplorerGUI
     """
 
     def __init__(self, parent=None, db_handler: Union[DbHandler, None] = None):
@@ -277,7 +277,7 @@ class RosetaExplorerGUI(QMainWindow):
         """
         Action of filtering the main table data
         """
-        self.properties_proxy_model.setFilterRegExp(self.ui.filterLineEdit.text())
+        self.properties_proxy_model.setFilterRegularExpression(self.ui.filterLineEdit.text())
 
     def set_grid_model(self, circuit: Union[CgmesCircuit, PsseCircuit]):
         """
@@ -348,7 +348,7 @@ class RosetaExplorerGUI(QMainWindow):
         On click on the classes list...
         """
         # get the class type
-        elm_type = self.ui.clasesListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        elm_type = self.ui.clasesListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
         # get the objects list of said class depending on the circuit type
         if isinstance(self.circuit, PsseCircuit):
@@ -467,7 +467,7 @@ class RosetaExplorerGUI(QMainWindow):
         """
 
         if len(self.ui.dbTablesListView.selectedIndexes()) > 0:
-            elm_type = self.ui.dbTablesListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+            elm_type = self.ui.dbTablesListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
             if type(self.circuit) == PsseCircuit:
                 db = self.db_handler.psse_lookup_db
