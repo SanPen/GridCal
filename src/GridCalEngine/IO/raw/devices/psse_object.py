@@ -86,7 +86,8 @@ class RawObject:
         Get the RAWX property dictionsry
         :return: Dict[str, PsseProperty]
         """
-        return {value.rawx_key: self.get_prop_value(prop=value)
+
+        return {value.rawx_key: value
                 for key, value in self.__registered_properties.items()}
 
     def register_property(self,
