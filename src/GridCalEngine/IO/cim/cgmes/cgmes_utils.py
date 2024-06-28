@@ -730,6 +730,7 @@ def get_regulating_control(cgmes_elm,
                            calc_node_dict,
                            cn_dict,
                            logger: DataLogger):
+    control_bus = None
     if cgmes_elm.RegulatingControl is not None:
 
         if cgmes_elm.RegulatingControl.enabled:
@@ -740,7 +741,6 @@ def get_regulating_control(cgmes_elm,
         else:
             is_controlled = False
 
-        control_bus = None
         control_node = None
 
         # TapModuleControl

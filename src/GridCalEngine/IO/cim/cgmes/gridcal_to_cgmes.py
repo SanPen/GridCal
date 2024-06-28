@@ -119,11 +119,13 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
 
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
         fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
-                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
     elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
         fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
                    FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
-                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
     else:
         raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
 
@@ -144,7 +146,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
                    "http://entsoe.eu/CIM/EquipmentShortCircuit/3/1"],
             "SSH": ["http://entsoe.eu/CIM/SteadyStateHypothesis/1/1"],
             "TP": ["http://entsoe.eu/CIM/Topology/4/1"],
-            "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"]
+            "SV": ["http://entsoe.eu/CIM/StateVariables/4/1"],
+            "GL": ["http://entsoe.eu/CIM/GeographicalLocation/2/1"]
         }
     elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
         profile_uris = {
@@ -153,7 +156,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
             "SC": ["http://iec.ch/TC57/ns/CIM/ShortCircuit-EU/3.0"],
             "SSH": ["http://iec.ch/TC57/ns/CIM/SteadyStateHypothesis-EU/3.0"],
             "TP": ["http://iec.ch/TC57/ns/CIM/Topology-EU/3.0"],
-            "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"]
+            "SV": ["http://iec.ch/TC57/ns/CIM/StateVariables-EU/3.0"],
+            "GL": ["http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0"]
         }
     else:
         raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
@@ -167,14 +171,15 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
             fm_list[0].profile.append(prof[2])
     elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
         fm_list[0].profile = profile_uris.get("EQ")
-        fm_list[4].profile = profile_uris.get("OP")
-        fm_list[5].profile = profile_uris.get("SC")
+        fm_list[5].profile = profile_uris.get("OP")
+        fm_list[6].profile = profile_uris.get("SC")
     else:
         raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
 
     fm_list[1].profile = profile_uris.get("SSH")
     fm_list[2].profile = profile_uris.get("TP")
     fm_list[3].profile = profile_uris.get("SV")
+    fm_list[4].profile = profile_uris.get("GL")
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:  # if 2.4 than no need in SV in 3.0 we need all
         fm_list[3].modelingAuthoritySet = None
 
@@ -196,11 +201,20 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
             fm_list[3].DependentOn = [tpbd_id, fm_list[1].rdfid, fm_list[2].rdfid]
         else:
             fm_list[3].DependentOn = [fm_list[1].rdfid, fm_list[2].rdfid]
+        fm_list[2].DependentOn = [fm_list[0].rdfid, eqbd_id]
+        fm_list[4].DependentOn = [fm_list[0].rdfid]
+        if cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
+            fm_list[5].DependentOn = [fm_list[0].rdfid]
+            fm_list[6].DependentOn = [fm_list[0].rdfid]
     except TypeError:
         print("Missing default boundary files")
         fm_list[1].DependentOn = [fm_list[0].rdfid]
         fm_list[2].DependentOn = [fm_list[0].rdfid]
         fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+        fm_list[4].DependentOn = [fm_list[0].rdfid]
+        if cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
+            fm_list[5].DependentOn = [fm_list[0].rdfid]
+            fm_list[6].DependentOn = [fm_list[0].rdfid]
 
     cgmes_model.cgmes_assets.FullModel_list = fm_list
     return cgmes_model
@@ -563,6 +577,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.SubGeographicalRegion_list,
             target_uuid=mc_elm.community.idtag if mc_elm.community is not None else ""  # TODO Community.idtag!
         )
+
         if region is not None:
             substation.Region = region
         else:
@@ -572,6 +587,8 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
                 substation.Region = None
             logger.add_warning(msg='Region not found for Substation',
                                device_class="SubGeographicalRegion")
+
+        add_location(cgmes_model, substation, mc_elm.longitude, mc_elm.latitude, logger)
 
         cgmes_model.add(substation)
 
@@ -643,6 +660,8 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                 vl.TopologicalNode = tn
             else:
                 print(f'Bus.voltage_level.idtag is None for {bus.name}')
+
+            add_location(cgmes_model, tn, bus.longitude, bus.latitude, logger)
 
             cgmes_model.add(tn)
 
@@ -1255,6 +1274,43 @@ def get_cgmes_topological_island():
     pass
 
 
+def make_coordinate_system(cgmes_model: CgmesCircuit,
+                           logger: DataLogger):
+    object_template = cgmes_model.get_class_type("CoordinateSystem")
+    coo_sys = object_template(rdfid=get_new_rdfid())
+
+    coo_sys.name = "EPSG4326"
+    coo_sys.crsUrn = "urn:ogc:def:crs:EPSG::4326"
+    coo_sys.Locations = []
+
+    cgmes_model.add(coo_sys)
+
+
+def add_location(cgmes_model: CgmesCircuit,
+                 device: Base,
+                 longitude: float,
+                 latitude: float,
+                 logger: DataLogger):
+    object_template = cgmes_model.get_class_type("Location")
+    location = object_template(rdfid=get_new_rdfid(), tpe="Location")
+
+    location.CoordinateSystem = cgmes_model.cgmes_assets.CoordinateSystem_list[0]
+    location.PowerSystemResource = device
+
+    position_point_t = cgmes_model.get_class_type("PositionPoint")
+    pos_point = position_point_t(rdfid=get_new_rdfid(), tpe="PositionPoint")
+    pos_point.Location = location
+    pos_point.sequenceNumber = 1
+    pos_point.xPosition = str(longitude)
+    pos_point.yPosition = str(latitude)
+    location.PositionPoint = pos_point
+    cgmes_model.cgmes_assets.CoordinateSystem_list[0].Locations.append(location)
+    cgmes_model.add(location)
+    cgmes_model.add(pos_point)
+
+    device.Location = location
+
+
 # endregion
 
 
@@ -1274,6 +1330,8 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
     get_cgmes_geograpical_regions(gc_model, cgmes_model, logger)
     get_cgmes_subgeograpical_regions(gc_model, cgmes_model, logger)
+
+    make_coordinate_system(cgmes_model, logger)
 
     get_cgmes_base_voltages(gc_model, cgmes_model, logger)
 

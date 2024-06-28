@@ -700,19 +700,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                        b0=b0,
                                        rate=rate,
                                        length=cgmes_elm.length)
-                # if cgmes_elm.Location:
-                #     longitude = cgmes_elm.Location.PositionPoints.xPosition
-                #     latitude = cgmes_elm.Location.PositionPoints.yPosition
-                #     seq_number = cgmes_elm.Location.PositionPoints.sequenceNumber
-                #     pos_id = cgmes_elm.Location.PositionPoints.uuid
-                #     line_locations = LineLocations()
-                #     for cgmes_loc in ...:
-                #         line_locations.add(latitude=latitude,
-                #                            longitude=longitude,
-                #                            sequence=seq_number,
-                #                            idtag=pos_id)
 
-                    # gcdev_elm.locations = line_locations
                 gcdev_model.add_line(gcdev_elm, logger=logger)
             else:
                 logger.add_error(msg='Not exactly two terminals',
