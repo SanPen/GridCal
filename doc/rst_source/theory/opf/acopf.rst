@@ -1,8 +1,12 @@
 AC - Optimal Power Flow using an Interior Point Solver
 ==========================================================
 
-Planning the generation for a given power network is typically done using DC - Optimal Power Flow, a method that relies on approximating the power flow as a linear problem to speed up the process in exchange of precision.
-There are works that seek to solve the full non-linear problem, being one of the most relevant the MATPOWER software. The work described in this technical note integrates the Matpower Interior Point Solver in the GridCal environment using Python with the goal of adding new electrical modelling functionalities (such as including transformer operating point optimization or relaxation of the constraints to have a faster case study methodology).
+Planning the generation for a given power network is typically done using DC - Optimal Power Flow, a method that relies on 
+approximating the power flow as a linear problem to speed up the process in exchange of precision.
+There are works that seek to solve the full non-linear problem, being one of the most relevant the MATPOWER software. 
+The work described in this technical note integrates the Matpower Interior Point Solver in the GridCal environment using Python 
+with the goal of adding new electrical modelling functionalities (such as including transformer operating point optimization or 
+relaxation of the constraints to have a faster case study methodology).
 
 The present document outlines the main additions in this regard, including:
 
@@ -14,16 +18,25 @@ The present document outlines the main additions in this regard, including:
 
 1. Grid model
 ---------------
-The two main objects needed to build an electrical grid are buses and branches. The buses are the points where consumption and generation of electricity occur, and branches are the interconnections between buses that transport electricity from points with excess of generation to points lacking electricity. Some of this buses, known as *slack* buses, serve as references for voltage modulus and phase for the rest of the buses.
+The two main objects needed to build an electrical grid are buses and branches. The buses are the points where consumption 
+and generation of electricity occur, and branches are the interconnections between buses that transport electricity from points 
+with excess of generation to points lacking electricity. Some of this buses, known as *slack* buses, serve as references for voltage 
+modulus and phase for the rest of the buses.
 
-The final topology of the grid will be given by bus connectivity matrices, where the standard direction of the flow is also stored identifying the *from* and the *to* buses as the origin and destination respectively. This distinction is important, as it will determine the direction of the flow alongside the sign of the branch power.
+The final topology of the grid will be given by bus connectivity matrices, where the standard direction of the flow is also stored 
+identifying the *from* and the *to* buses as the origin and destination respectively. This distinction is important, as it will determine 
+the direction of the flow alongside the sign of the branch power.
 
-Generators are the third object that have to be considered when modelling the electrical grid. We need at least 1 generator in order for the grid to have any sense. If only on bus has a generator, we directly identify this node as the *slack* bus. With more generator buses, we will identify those who will be teh reference of the grid (typically will be buses with high and stable power capacity).
-Each grid has its generator connectivity matrix, and each generator has its own cost function, considered to be quadratic in this work as shown in the following chapters.
+Generators are the third object that have to be considered when modelling the electrical grid. We need at least 1 generator in order 
+for the grid to have any sense. If only on bus has a generator, we directly identify this node as the *slack* bus. With more generator 
+buses, we will identify those who will be teh reference of the grid (typically will be buses with high and stable power capacity).
+Each grid has its generator connectivity matrix, and each generator has its own cost function, considered to be quadratic in this 
+work as shown in the following chapters.
 
 Operational limits of each elements have to be gathered to establish the constraints for buses, lines and generators.
 
-GridCal objects are identified by the class *NumericalCircuit*, which can be abreviated as *nc*. We can extract from them all the information needed to construct the grid model as shown in the following table:
+GridCal objects are identified by the class *NumericalCircuit*, which can be abreviated as *nc*. We can extract from them all the 
+information needed to construct the grid model as shown in the following table:
 
 1.1. Numerical Circuit data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -87,7 +100,8 @@ The problem to be solved has the following structure:
          &\quad H(x) \leq 0
     
     
-where :math:`x` is the vector of variables to optimize, :math:`f(x)` is the objective function, :math:`G(x)` is the vector of equality constraints and :math:`H(x)` is the vector of inequality constraints.
+where :math:`x` is the vector of variables to optimize, :math:`f(x)` is the objective function, :math:`G(x)` is the vector of 
+equality constraints and :math:`H(x)` is the vector of inequality constraints.
 
 2.1. Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -122,13 +136,14 @@ with :math:`nsl = 2nbus + 2m` the number of slacks, obtained from the number of 
 
 2.2. Objective function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The objective function of an AC-OPF can be defined in many ways, depending on what are we trying to minimize. We can opt to minimize the cost, heat losses, penalties due to overloads or demand mismatching...
+The objective function of an AC-OPF can be defined in many ways, depending on what are we trying to minimize. We can opt to minimize 
+the cost, heat losses, penalties due to overloads or demand mismatching...
 
 In this model, the objective function to minimize corresponds to the sum of the costs of each generator, considered to be quadratic:
 
 .. math::
 
-    \min f(x) = c_2^{\top} Pg^2 + c_1^{\top} Pg + c_0
+    \min \text{ } f(x) = c_2^{\top} {Pg}^2 + c_1^{\top} Pg + c_0
 
 where :math:`c_2`, :math:`c_1` and :math:`c_0` are the vectors with quadratic, linear and constant costs of the generators.
 
@@ -136,7 +151,7 @@ When the slack variables are used, the objective function will be modified to in
 
 .. math::
 
-    \min f(x) = c_2^{\top} Pg^2 + c_1^{\top} Pg + c_0 + {c}_{s}^{\top} ({sl}_{sf} + {sl}_{st}) + c_v^{\top} ({sl}_{vmax} + {sl}_{vmin})
+    \min \text{ } f(x) = c_2^{\top} {Pg}^2 + c_1^{\top} Pg + c_0 + {c}_{s}^{\top} ({sl}_{sf} + {sl}_{st}) + c_v^{\top} ({sl}_{vmax} + {sl}_{vmin})
 
 where :math:`c_s` and :math:`c_v` are the vectors with the penalties associated to the branches and voltage slack variables.
 
@@ -145,14 +160,15 @@ where :math:`c_s` and :math:`c_v` are the vectors with the penalties associated 
 
 The equality constraints present in the model are the nodal power injection equations, as well as the fixed angle reference and PV voltage magnitude. 
 
-The power flow equations ensure that the power exiting the node equals the power entering. Let :math:`V = ve^{j\theta}` be the vector of complex voltages. The following relationships are calculated
-at each iteration to compute the power flow equations:
+The power flow equations ensure that the power exiting the node equals the power entering. Let :math:`V = ve^{j\theta}` be the 
+vector of complex voltages. The following relationships are calculated at each iteration to compute the power flow equations:
 
 .. math::
     S^{bus} = V \cdot I_{bus}^* = V \cdot (Y_{bus}^* V^*)\\
     G^{S} = S^{bus} + S_d - C_g[:, {gen}_{disp_idx}] (Pg + jQg) - Cg[:, {gen}_{undisp_idx}] Sg_undisp\\
 
-where the operation :math:`(\cdot)` is the element-wise multiplication of two vectors, and the brackets denote the slicing of the vectors or matrices using the indexes of the problem.
+where the operation :math:`(\cdot)` is the element-wise multiplication of two vectors, and the brackets denote the slicing of the 
+vectors or matrices using the indexes of the problem.
 
 Let *link* be the index of one of the links (if there are any). The power flow equations are modified as follows for the buses involved in all the DC links:
 
@@ -160,7 +176,8 @@ Let *link* be the index of one of the links (if there are any). The power flow e
     G^{S}[fdc[link]] += Pf_DC[link]\\
     G^{S}[tdc[link]] -= Pf_DC[link]
 
-There are additional equality balance for PV buses, those buses who have the same maximum and minimum voltage (which means, their voltage module is controlled) and one equality for the primary *slack* bus, setting its angle as 0.
+There are additional equality balance for PV buses, those buses who have the same maximum and minimum voltage (which means, their voltage 
+module is controlled) and one equality for the primary *slack* bus, setting its angle as 0.
 
 .. math::
     G^{PV} = v[pv] - Vm_max[pv]\\
@@ -175,15 +192,17 @@ where the power balance has been split into the real and imaginary parts to solv
 
 2.4. Inequality constraints
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The inequalities correspond to the operational limits for the voltage and power variables, which are dependênt on the bus or generator, and the maximum power allowed through a line. 
-This last conditions has to hold on both ends of the line, and it is a quadratic expression in order to use real-valued conditions:
+The inequalities correspond to the operational limits for the voltage and power variables, which are dependênt on the bus or generator, 
+and the maximum power allowed through a line. This last conditions has to hold on both ends of the line, and it is a quadratic expression 
+in order to use real-valued conditions:
 
 .. math::
 
     H^{sf} = S^{f^{*}} \cdot S^{f} - {S}_{max}^2\\
     H^{st} = S^{t^{*}} \cdot S^{t} - {S}_{max}^2
 
-The rest of the conditions are straight-forward linear inequalities for the maximum and minimum bounds, and are not displayed for simplicity. The complete vector of inequality constraints is:
+The rest of the conditions are straight-forward linear inequalities for the maximum and minimum bounds, and are not displayed for simplicity. 
+The complete vector of inequality constraints is:
 
 .. math::
 
@@ -191,20 +210,28 @@ The rest of the conditions are straight-forward linear inequalities for the maxi
 
 3. KKT conditions and Newton-Raphson method
 --------------------------------------------
-Once we have settled our grid model, we want to obtain the optimal solution of it, which will yield the lowest value possible for the objective function. Since we are facing a non-convex problem, there are multiple local optimal points for this problem. This has to be taken into account prior to make any statements about the solution. The point we obtain when solving these problem is a local optimal point, which can be potentially the global optimal point of the problem. More advanced methods will allow us to determine more accurately if there can be better operating points.
-A general optimization problem, such as the one we are facing were no simplifications can be made, can be solved by imposing the KKT conditions over the variables of it and solving the resulting system of equations with a numerical method. Here, we use the Newton-Raphson method, explained in this section.
+Once we have settled our grid model, we want to obtain the optimal solution of it, which will yield the lowest value possible for the 
+objective function. Since we are facing a non-convex problem, there are multiple local optimal points for this problem. This has to be 
+taken into account prior to make any statements about the solution. The point we obtain when solving these problem is a local optimal point, 
+which can be potentially the global optimal point of the problem. More advanced methods will allow us to determine more accurately if there 
+can be better operating points.
+A general optimization problem, such as the one we are facing were no simplifications can be made, can be solved by imposing the KKT conditions 
+over the variables of it and solving the resulting system of equations with a numerical method. Here, we use the Newton-Raphson 
+method, explained in this section.
 
 3.1. KKT conditions
 ^^^^^^^^^^^^^^^^^^^^^^
-To formulate the problem using the KKT conditions, we will make use of associated multipliers and slack variables for our set of constraints. We can rewrite the optimization problem as follows:
-
+To formulate the problem using the KKT conditions, we will make use of associated multipliers and slack variables for our set of constraints. 
+We can rewrite the optimization problem as follows:
 
 .. math::
     \min & \quad f(x)\\
     s.t. & \quad G(x) = 0\\
          & \quad H(x) + Z = 0
 
-where :math:`Z` is the slack variable associated to the inequality constraints used to transform them into an equality. Then, we introduce the multipliers :math:`\lambda` and :math:`\mu`, which are associated to the equality and inequality constraints respectively. We can now write the expressions of the KKT conditions for the optimization problem:
+where :math:`Z` is the slack variable associated to the inequality constraints used to transform them into an equality. Then, we 
+introduce the multipliers :math:`\lambda` and :math:`\mu`, which are associated to the equality and inequality constraints respectively. 
+We can now write the expressions of the KKT conditions for the optimization problem:
 
 
 .. math::
@@ -214,12 +241,14 @@ where :math:`Z` is the slack variable associated to the inequality constraints u
     H(x) + Z = 0\\
     \mu, Z \geq 0
 
-Note that the second condition makes use of the parameter :math:`\gamma`, which starts off at a non-zero value to improve convergence and is updated each iterative step tending to 0.
-The last condition will be ensured avoiding steps that reduce below 0 both :math:`\mu` and Z, and not through a direct expression.
+Note that the second condition makes use of the parameter :math:`\gamma`, which starts off at a non-zero value to improve convergence and
+is updated each iterative step tending to 0. The last condition will be ensured avoiding steps that reduce below 0 both :math:`\mu` and Z, 
+and not through a direct expression.
 
 3.2. Newton-Raphson method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To solve the previous system of equations, we make use of the Newton-Raphson method. The method consists on updating the vector of unknowns based on the following generalized step:
+To solve the previous system of equations, we make use of the Newton-Raphson method. The method consists on updating the vector of unknowns 
+based on the following generalized step:
 
 .. math::
     y_{i+1} = y_i + \delta y_i = y_i - \frac{f(y_i)}{f'(y_i)}
@@ -288,7 +317,9 @@ To update the other two objects of the state vector of the complete system, we w
     \Delta Z = -H(X) -Z - H_X \Delta X\\
     \Delta \mu = -\mu + [Z]^{-1}(\gamma \textbf({1}_{n_i}) - [\mu]\Delta Z)
 
-We could proceed to directly add the obtained displacements to the variables and multipliers, but there are two things to be considered. Firstly, we set a step control to ensure that the next step does not increase the error by more than a set margin. The next block of code includes all the logic behind this control:
+We could proceed to directly add the obtained displacements to the variables and multipliers, but there are two 
+things to be considered. Firstly, we set a step control to ensure that the next step does not increase the error by more 
+than a set margin. The next block of code includes all the logic behind this control:
 
 .. code-block:: python
 
@@ -329,10 +360,11 @@ ends below 0.
 
  .. math::
 
-    \alpha_p = min(\tau \cdot {min}_{\Delta Z_m < 0}((-Z_m / \Delta Z_m), 1))\\
-    \alpha_d = min(\tau \cdot {min}_{\Delta \mu_m < 0}((-\mu_m / \Delta \mu_m), 1))
+    \alpha_p = \min(\tau \cdot \min(\frac{-Z_m}{\Delta Z_m}), 1) \quad \forall \Delta Z_m < 0 \\
+    \alpha_d = \min(\tau \cdot \min(\frac{-\mu_m}{\Delta \mu_m}), 1) \quad \forall \Delta \mu_m < 0
 
-Where :math:`\tau` is a parameter slightly below 1. Now, we are ready to update the values for the variables and multiplier, then update the :math:`\gamma` parameter, and finally start a new iteration if the convergence criteria is not met.
+Where :math:`\tau` is a parameter slightly below 1. Now, we are ready to update the values for the variables 
+and multiplier, then update the :math:`\gamma` parameter, and finally start a new iteration if the convergence criteria are not met.
 
 .. math::
 
@@ -414,8 +446,8 @@ of the full admittance matrix, which would mean dealing with higher order tensor
     \frac{dS^{bus}}{dX} = {C_f}^{\top} \frac{dS^{f}}{dX} + {C_t}^{\top} \frac{dS^{t}}{dX}
 
 The following expressions extracted from the Flexible Universal Branch Model (FUBM) can be used to obtain the
-derivatives. Let :math:`k := (f_k, t_k)` describe a branch between buses :math:`f` and :math:`t` that includes a
-transformer with the tap variables :math:`(m_{p_k}, \tau_k)`. The branch powers in both directions can be described as:
+derivatives. Let :math:`k := (f_k, t_k)` describe a branch between buses :math:`f_k` and :math:`t_k` that includes a
+transformer with the tap variables :math:`(m_{p_i}, \tau_{i'})`. The branch powers in both directions can be described as:
 
 .. math::
     S^{f_k} = V_{f_k} {Y_{ff_k}}^* {V_{f_k}}^* + V_{f_k} Y_{ft_k} {V_{t_k}}^* \\
@@ -429,7 +461,7 @@ with :math:`y_{s_k} = \frac{1}{R_k+jX_k}` the series admittance of the branch. A
 regarding :math:`(m_p, \tau)`. Even though not all the lines will include transformers, and even less have
 controllable transformers, the admittances are calculated using these values for the tap ratio and the
 phase shift. In case there is no transformer, their value will be set to :math:`(1, 0)`, and the derivatives
-will be 0. In case there is a transformer but it is not controllable, the derivatives will be 0 as well, and
+will be 0. In case there is a non-controllable transformer, the derivatives will be 0 as well, and
 the values for the tap variables will take the nominal value obtained from the grid file. This means, the following
 derivatives will only be computed for the branches included in the subsets :math:`k_m` and :math:`k_\tau`.
 
@@ -437,14 +469,14 @@ Branches with transformers with module control
 +++++++++++++++++++++++++++++++++++++++++++++++
 
 The variable vector :math:`m_p` only contains those transformers which are in a branch included in the
-list :math:`k_m`, meaning the matrices :math:`\frac{dS_{f/t}}{dm_p}` will be sized
-:math:`nbus \text{ }\times\text{ } ntapm`. Let :math:`k` be a branch with a transformer :math:`(m_{p_i}, \tau_i)`
+list :math:`k_m`, meaning the matrices :math:`\frac{{dS}^{f/t}}{dm_p}` will be sized
+:math:`nbus \text{ }\times\text{ } ntapm`. Let :math:`k` be a branch with a transformer :math:`(m_{p_i}, \tau_{i'})`
 with module control, and :math:`V_f = C_f V`, :math:`V_t = C_t V` the voltages at the *from* and *to* buses.
 The first derivatives with respect to the module are calculated as follows:
 
 .. math::
-    \frac{{dS}^{f}}{dm_{p}}_{ki} = -2\frac{{y_{s_k}}^*}{{m_{p_i}}^3} V_{f_k} {V_{f_k}}^* + \frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{\text{ }j\tau_i}} V_{f_k}{V_{t_k}}^*\\
-    \frac{{dS}^{t}}{dm_{p}}_{ki} = \frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{-j\tau_i}} V_{t_k} {V_{f_k}}^* 
+    \frac{{dS}^{f}}{dm_{p}} [k, i] = -2\frac{{y_{s_k}}^*}{{m_{p_i}}^3} V_{f_k} {V_{f_k}}^* + \frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{{dS}^{t}}{dm_{p}} [k, i] = \frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{-j\tau_{i'}}} V_{t_k} {V_{f_k}}^* 
 
 Branches with transformers with phase control
 ++++++++++++++++++++++++++++++++++++++++++++++
@@ -455,8 +487,8 @@ The matrices :math:`\frac{dS_{f/t}}{d\tau}` will be sized :math:`nbus \text{ }\t
 first derivatives with respect to the phase shift are calculated as follows:
 
 .. math::
-    \frac{{dS}^{f}}{d\tau}_{ki} = j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{\text{ }j\tau_i}} V_{f_k}{V_{t_k}}^*\\
-    \frac{{dS}^{t}}{d\tau}_{ki} = -j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{-j\tau_i}} V_{t_k} {V_{f_k}}^*
+    \frac{{dS}^{f}}{d\tau} [k, i'] = j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{{dS}^{t}}{d\tau} [k, i'] = -j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{-j\tau_{i'}}} V_{t_k} {V_{f_k}}^*
 
 
 The final step to get the derivatives with respect to the transformer variables is to recover
@@ -465,6 +497,8 @@ the :math:`\frac{dSbus}{dX}` using the compositions of the *from* and *to* branc
 .. math::
     \frac{dS^{bus}}{dm_p} = {C_f}^{\top} \frac{dS^{f}}{dm_p} + {C_t}^{\top} \frac{dS^{t}}{dm_p}\\
     \frac{dS^{bus}}{d\tau} = {C_f}^{\top} \frac{dS^{f}}{d\tau} + {C_t}^{\top} \frac{dS^{t}}{d\tau}
+
+which, as seen in the complete expression of the equality vector derivative, are directly equivalent to :math:`G_{m}` and :math:`G_{\tau}`, respectively.
 
 4.2.2. Second derivatives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -481,11 +515,24 @@ derivatives appear:
 which means that the second derivative is not the direct derivative of the first derivative, since it has
 to include the multiplier. In addition, since the constraints have been separated into real and imaginary,
 the active and reactive power multipliers :math:`\lambda_p = \lambda[0 : nbus]` and :math:`\lambda_q = \lambda[nbus : 2nbus]`
-have to be added to the corresponding constraints accordingly. The following second derivatives with respect 
-to the voltage variables have been adapted from Matpower's work to include this real and imaginary separation:
+have to be added to the corresponding constraints accordingly. The complete structure of the equality constriants hessian matrix is:
 
 .. math::
-    G_{vv_p} = \left[ \frac{1}{v} \right] (C_p + C_p^{\top}) + \left[ \frac{1}{v^2} \right] \\
+   \begin{bmatrix}
+              & (nbus)       & (nbus)       & (ng) & (ng)     & (k_m)          & (k_\tau) \\
+    (nbus)    & G_{va, va}   & G_{va, vm}   & 0    & 0        & G_{va, \tau}   & G_{va, m}\\
+    (nbus)    & G_{vm, va}   & G_{vm, vm}   & 0    & 0        & G_{vm, \tau}   & G_{vm, m}\\
+    (ng)      & 0            & 0            & 0    & 0        & 0              & 0 \\
+    (ng)      & 0            & 0            & 0    & 0        & 0              & 0 \\
+    (k_m)     & G_{m, va}    & G_{m, vm}    & 0    & 0        & G_{m, \tau}    & G_{m, m}\\
+    (k_\tau)  & G_{\tau, va} & G_{\tau, vm} & 0    & 0        & G_{\tau, \tau} & G_{\tau, m}\\
+    \end{bmatrix}
+
+The following second derivatives with respect to the voltage variables have been adapted from Matpower's
+work to include this real and imaginary separation:
+
+.. math::
+    G_{vv_p} = \left[ \frac{1}{v} \right] (C_p + C_p^{\top}) + \left[ \frac{1}{v} \right] \\
     G_{v\theta_p} = j \left[ \frac{1}{v} \right] (I_p - F_p) \\
     G_{\theta\theta_p} = I_p + F_p \\
 
@@ -505,11 +552,12 @@ hessian matrix, the following expressions are used:
     G_{\theta v} = G_{v\theta}^{\top}
     G_{\theta\theta} = \mathcal{R}(G_{\theta\theta_p}) + \mathcal{I}(G_{\theta\theta_q}) 
 
-This ensures that only the active power balance is multiplied by the active power multiplier,
+This ensures that only the active power balance is multiplied by the active power multiplier, 
 and equally for the reactive power balance.
 
-Now, following the path used in the first derivatives with respect to the transformer variables, the second derivatives of the branch powers have to be obtained. In this case, there 
-will be crossed derivatives with respect to the voltage variables of both buses involved, which will make the process considerably more complex.
+Now, following the path used in the first derivatives with respect to the transformer variables, the second derivatives of the branch powers 
+have to be obtained. In this case, there will be crossed derivatives with respect to the voltage variables of both buses involved, 
+which will make the process considerably more complex.
 
 
 Branches with transformers with module control
@@ -518,37 +566,165 @@ Branches with transformers with module control
 Firstly, the branch power derivatives are calculated for the branches in the list :math:`k_{m}`:
 
 .. math:: 
-    \frac{d^2S^{f}}{dm_p^2}_{ki} = 6\frac{{y_{s_k}}^*}{{m_{p_i}}^4} V_{f_k} {V_{f_k}}^* - 2\frac{{y_{s_k}}^*}{{m_{p_i}}^3{e}^{\text{ }j\tau_i}} V_{f_k}{V_{t_k}}^*\\
-    \frac{d^2S^{t}}{dm_p^2}_{ki} = 2\frac{{y_{s_k}}^*}{{m_{p_i}}^3{e}^{-j\tau_i}} V_{t_k} {V_{f_k}}^* \\
-    
-    \frac{d^2S^{f}}{dm_p d\tau}_{ki} = -2j\frac{{y_{s_k}}^*}{{m_{p_i}^2{e}^{\text{ }j\tau_i}}} V_{f_k}{V_{t_k}}^*\\
-    \frac{d^2S^{t}}{dm_p d\tau}_{ki} = 2j\frac{{y_{s_k}}^*}{{m_{p_i}^2{e}^{-j\tau_i}}} V_{t_k}{V_{f_k}}^*\\
-    \frac{d^2S^{f}}{d\tau^2}_{ki} = -\frac{{y_{s_k}}^*}{{m_{p_i}{e}^{\text{ }j\tau_i}}} V_{f_k}{V_{t_k}}^*\\
-    \frac{d^2S^{t}}{d\tau^2}_{ki} = \frac{{y_{s_k}}^*}{{m_{p_i}{e}^{-j\tau_i}}} V_{t_k}{V_{f_k}}^*
+    \frac{d^2S^{f}}{{dm_p}^2}_{ii} = 6\frac{{y_{s_k}}^*}{{m_{p_i}}^4} V_{f_k} {V_{f_k}}^* - 2\frac{{y_{s_k}}^*}{{m_{p_i}}^3{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{d^2S^{t}}{{dm_p}^2}_{ii} = 2\frac{{y_{s_k}}^*}{{m_{p_i}}^3{e}^{-j\tau_{i'}}} V_{t_k} {V_{f_k}}^* \\
 
-Hessian matrix
-^^^^^^^^^^^^^^^^^^^^^^^^
+    \frac{d^2S^{f}}{\theta_f dm_p}_{fi} = 1j\frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{d^2S^{f}}{\theta_t dm_p}_{ti} = -1j\frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{d^2S^{t}}{\theta_f dm_p}_{fi} = -1j\frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{-j\tau_{i'}}} V_{t_k} {V_{f_k}}^*\\
+    \frac{d^2S^{t}}{\theta_t dm_p}_{ti} = \frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{-j\tau_{i'}}} V_{t_k} {V_{f_k}}^*\\
+
+    \frac{d^2S^{f}}{dv_f dm_p}_{fi} = \frac{1}{v_f} \left(-4\frac{{y_{s_k}}^*}{{m_{p_i}}^3} V_{f_k} {V_{f_k}}^* + \frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\right)\\
+    \frac{d^2S^{f}}{dv_t dm_p}_{ti} = \frac{1}{v_t} \left(\frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\right)\\
+    \frac{d^2S^{t}}{dv_f dm_p}_{fi} = \frac{1}{v_f} \left(\frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{-j\tau_{i'}}} V_{t_k} {V_{f_k}}^*\right)\\
+    \frac{d^2S^{t}}{dv_t dm_p}_{ti} = \frac{1}{v_t} \left(\frac{{y_{s_k}}^*}{{m_{p_i}}^2{e}^{-j\tau_{i'}}} V_{t_k} {V_{f_k}}^*\right)\\
+
+If the branch is also included in the list :math:`k_{\tau}`, the crossed derivatives with respect to the phase shift are then 
+calculated (otherwise, they are 0):
+
+.. math:: 
+
+    \frac{d^2S^{f}}{d\tau dm_p}_{i'i} = -2j\frac{{y_{s_k}}^*}{{{m_{p_i}}^2{e}^{\text{ }j\tau_{i'}}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{d^2S^{t}}{d\tau dm_p}_{i'i} = 2j\frac{{y_{s_k}}^*}{{{m_{p_i}}^2{e}^{-j\tau_{i'}}}} V_{t_k}{V_{f_k}}^*\\
+
+All these values are not stored directly into the hessian matrix, since the multipliers and the contributions of each part of 
+the derivative have to be accounted. The hessian values are introduced using the following expressions:
+
+.. math::
+    G_{m_p, m_p} [i, i] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{{dm_{p_i}}^2}_{ii}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{{dm_{p_i}}^2}_{ii}\lambda_{q_f}) + 
+    \mathcal{R}(\frac{d^{2}S^{t}}{{dm_{p_i}}^2}_{ii}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{{dm_{p_i}}^2}_{ii}\lambda_{q_t}) \right)\\
+    G_{\theta, m_p} [f, i] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{d\theta_f dm_{p_i}}_{fi}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{d\theta_f dm_{p_i}}_{fi}\lambda_{q_f}) + 
+    \mathcal{R}(\frac{d^{2}S^{t}}{d\theta_f dm_{p_i}}_{fi}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{d\theta_f dm_{p_i}}_{fi}\lambda_{q_t}) \right)\\
+    G_{\theta, m_p} [t, i] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{d\theta_t dm_{p_i}}_{ti}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{d\theta_t dm_{p_i}}_{ti}\lambda_{q_f}) +
+    \mathcal{R}(\frac{d^{2}S^{t}}{d\theta_t dm_{p_i}}_{ti}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{d\theta_t dm_{p_i}}_{ti}\lambda_{q_t}) \right)\\
+    G_{v, m_p} [f, i] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{dv_f dm_{p_i}}_{fi}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{dv_f dm_{p_i}}_{fi}\lambda_{q_f}) +
+    \mathcal{R}(\frac{d^{2}S^{t}}{dv_f dm_{p_i}}_{fi}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{dv_f dm_{p_i}}_{fi}\lambda_{q_t}) \right)\\
+
+And, if the branch is also included in the list :math:`k_{\tau}`:
+
 .. math::
 
-   G_XX = \begin{bmatrix}
-     & (pv \cup pq) & (pq) & (ng) & (ng) & (k_\tau) & (k_m) \\
-    (pv \cup pq) & G_{va, va} & G_{va, vm} & 0 & 0 & G_{va, \tau} & G_{va, m}\\
-    (pq) & G_{vm, va} & G_{vm, vm} & 0 & 0 & G_{vm, \tau} & G_{vm, m}\\
-    (ng) & 0 & 0 & 0 & 0 & 0 & 0 \\
-    (ng) & 0 & 0 & 0 & 0 & 0 & 0 \\
-    (k_\tau) & G_{\tau, va} & G_{\tau, vm} & 0 & 0 & G_{\tau, \tau} & G_{\tau, m}\\
-    (k_m) & G_{m, va} & G_{m, vm} & 0 & 0 & G_{m, \tau} & G_{m, m}\\
-    \end{bmatrix}
+    G_{v, m_p} [t, i] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{dv_t dm_{p_i}}_{ti}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{dv_t dm_{p_i}}_{ti}\lambda_{q_f}) +
+    \mathcal{R}(\frac{d^{2}S^{t}}{dv_t dm_{p_i}}_{ti}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{dv_t dm_{p_i}}_{ti}\lambda_{q_t}) \right)\\
+    G_{\tau, m_p} [i', i] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{dm_p d\tau}_{i'i}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{dm_p d\tau}_{i'i}\lambda_{q_f}) +
+    \mathcal{R}(\frac{d^{2}S^{t}}{dm_p d\tau}_{i'i}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{dm_p d\tau}_{i'i}\lambda_{q_t}) \right)\\
+
+Branches with transformers with phase control
++++++++++++++++++++++++++++++++++++++++++++++++
+
+The same procedure is followed for the branches in the list :math:`k_{\tau}`:
+
+.. math:: 
+
+    \frac{d^2S^{f}}{{d\tau}^2}_{i'i'} = \frac{{y_{s_k}}^*}{m_{p_i}{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{d^2S^{t}}{{d\tau}^2}_{i'i'} = \frac{{y_{s_k}}^*}{m_{p_i}{e}^{-j\tau_{i'}}} V_{t_k}{V_{f_k}}^*\\
+
+    \frac{d^2S^{f}}{dv_f d\tau}_{fi'} = 1j \frac{1}{v_f} \left(-2j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\right)\\
+    \frac{d^2S^{f}}{dv_t d\tau}_{ti'} = 1j \frac{1}{v_t} \left(2j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\right)\\
+    \frac{d^2S^{t}}{dv_f d\tau}_{fi'} = -1j \frac{1}{v_f} \left(2j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{-j\tau_{i'}}} V_{t_k}{V_{f_k}}^*\right)\\
+    \frac{d^2S^{t}}{dv_t d\tau}_{ti'} = -1j \frac{1}{v_t} \left(-2j\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{-j\tau_{i'}}} V_{t_k}{V_{f_k}}^*\right)\\
+
+    \frac{d^2S^{f}}{d\theta_f d\tau}_{fi'} = -\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{d^2S^{f}}{d\theta_t d\tau}_{ti'} = \frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{\text{ }j\tau_{i'}}} V_{f_k}{V_{t_k}}^*\\
+    \frac{d^2S^{t}}{d\theta_f d\tau}_{fi'} = -\frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{-j\tau_{i'}}} V_{t_k}{V_{f_k}}^*\\
+    \frac{d^2S^{t}}{d\theta_t d\tau}_{ti'} = \frac{{y_{s_k}}^*}{{m_{p_i}}{e}^{-j\tau_{i'}}} V_{t_k}{V_{f_k}}^*\\
+
+And the hessian values are introduced using the following expressions:
+
+.. math:: 
+
+    G_{\tau, \tau} [i', i'] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{{d\tau}^2}_{i'i'}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{{d\tau}^2}_{i'i'}\lambda_{q_f}) + 
+    \mathcal{R}(\frac{d^{2}S^{t}}{{d\tau}^2}_{i'i'}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{{d\tau}^2}_{i'i'}\lambda_{q_t}) \right)\\
+    G_{v, \tau} [f, i'] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{dv_f d\tau}_{fi'}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{dv_f d\tau}_{fi'}\lambda_{q_f}) + 
+    \mathcal{R}(\frac{d^{2}S^{t}}{dv_f d\tau}_{fi'}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{dv_f d\tau}_{fi'}\lambda_{q_t}) \right)\\
+    G_{v, \tau} [t, i'] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{dv_t d\tau}_{ti'}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{dv_t d\tau}_{ti'}\lambda_{q_f}) + 
+    \mathcal{R}(\frac{d^{2}S^{t}}{dv_t d\tau}_{ti'}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{dv_t d\tau}_{ti'}\lambda_{q_t}) \right)\\
+    G_{\theta, \tau} [f, i'] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{d\theta_f d\tau}_{fi'}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{d\theta_f d\tau}_{fi'}\lambda_{q_f}) +
+    \mathcal{R}(\frac{d^{2}S^{t}}{d\theta_f d\tau}_{fi'}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{d\theta_f d\tau}_{fi'}\lambda_{q_t}) \right)\\
+    G_{\theta, \tau} [t, i'] = \left( \mathcal{R}(\frac{d^{2}S^{f}}{d\theta_t d\tau}_{ti'}\lambda_{p_f}) + \mathcal{I}(\frac{d^{2}S^{f}}{d\theta_t d\tau}_{ti'}\lambda_{q_f}) +
+    \mathcal{R}(\frac{d^{2}S^{t}}{d\theta_t d\tau}_{ti'}\lambda_{p_t}) + \mathcal{I}(\frac{d^{2}S^{t}}{d\theta_t d\tau}_{ti'}\lambda_{q_t}) \right)\\
 
 
+4.3. Inequality constraints
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The inequality constraints derivatives are trivial in most of the cases. The complicated expressions for the branch limits are the ones developed in this section,
+although most of the work has been done during the development of the power flow equations derivatives. Recalling the expression of the branch power limits constraints:
 
+.. math:: 
 
+    H^{sf} = S^{f^{*}} \cdot S^{f} - {S_{max}}^2\\
+    H^{st} = S^{t^{*}} \cdot S^{t} - {S_{max}}^2
 
+we can obtain the first and second derivatives using the following expressions:
 
+.. math:: 
 
+    \frac{dH^{sf}}{dX} = 2 \left( \mathcal{R} ([S^{f}]) \mathcal{R} (\frac{dS^{f}}{dX}) + \mathcal{I} ([S^{f}]) \mathcal{I} (\frac{dS^{f}}{dX}) \right) \\
+    \frac{dH^{st}}{dX} = 2 \left( \mathcal{R} ([S^{t}]) \mathcal{R} (\frac{dS^{t}}{dX}) + \mathcal{I} ([S^{t}]) \mathcal{I} (\frac{dS^{t}}{dX}) \right) \\
+    \frac{d^2H^{sf}}{dXY} = 2 \mathcal{R} \left( \frac{d^2S^{f}}{dXY}([{S_{f,il}}^*]\mu_f) + {\frac{dS^{f}}{dX}}^{\top} [\mu_f] {\frac{dS^{f}}{dY}}^* \right) \\
+    \frac{d^2H^{st}}{dXY} = 2 \mathcal{R} \left( \frac{d^2S^{t}}{dXY}([{S_{t,il}}^*]\mu_t) + {\frac{dS^{t}}{dX}}^{\top} [\mu_t] {\frac{dS^{t}}{dY}}^* \right) 
 
+In order to get the jacobian and hessian matrix, the branch power derivatives are computed in the following sections.
 
+4.3.1. First derivatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As for the equality constraints, we calculate the derivatives with respect to the traditional power flow variables have been obtained from Matpower's work. Note that only the monitored branches are needed, which means 
+that some slicing and intermediate steps are useful before starting:
+
+.. math::
+    V_{f,il} = V_{f}[il, :]\\
+    V_{t,il} = V_{t}[il, :]\\
+    I_{f,il} = Y_{f}[il, :] V \\
+    I_{t,il} = Y_{t}[il, :] V \\
+    S_{f,il} = V_{f,il} \cdot I_{f,il}^*\\ 
+    S_{t,il} = V_{t,il} \cdot I_{t,il}^*\\
+    C_{f,il} = C_f[il, :]\\
+    C_{t,il} = C_t[il, :]\\
+    Y_{f,il} = Y_f[il, :]\\
+    Y_{t,il} = Y_t[il, :]\\
+    E = [V] [\left(\frac{1}{v})]
+
+The derivative are as follows:
+
+.. math:: 
+    \frac{dS^{f}}{dv} = \left( {[I_{f,il}]}^* C_{f,il} E + [V_{f,il}]{Y_{f,il}}^*E^* \right)\\
+    \frac{dS^{t}}{dv} = \left( {[I_{t,il}]}^* C_{t,il} E + [V_{t,il}]{Y_{t,il}}^*E^* \right)\\
+
+    \frac{dS^{f}}{d\theta} = j \left( {[I_{f,il}]}^* C_{f,il} [V] - [V_{f,il}]{Y_{f,il}}^* {[V]}^* \right)\\
+    \frac{dS^{t}}{d\theta} = j \left( {[I_{t,il}]}^* C_{t,il} [V] - [V_{t,il}]{Y_{t,il}}^* {[V]}^* \right)
+
+If there are tap variables, the derivatives obtained for the power flow equations can be used with the proper slicing :math:`[il, :]`.
+
+4.3.2. Second derivatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The second derivatives are calculated using the same approach as the ones for equality constraints. The *from* and *to* multipliers are separated as :math:`\mu_f = \mu[0:m]` and :math:`\mu_t = \mu[m:2m]`, and the following expressions 
+from Matpower are used to calculate the second derivatives with respect to the power flow equations:
+
+.. math:: 
+    \frac{S^f}{dvdv} = \left[ \left( \frac{1}{v} \right)\right] F_f \left[ \left( \frac{1}{v} \right)\right] \\
+    \frac{S^f}{dv\theta} = j \left[ \left( \frac{1}{v} \right)\right] (B_f - {B}^{\top}_f - D_f + E_f ) \\
+    \frac{S^f}{d\theta dv} = \frac{S^f}{dv\theta}^{\top} \\
+    \frac{S^f}{d\theta d\theta} = F_f - D_f - E_f
+
+where:
+
+.. math:: 
+    A_f = {{Y_{f,il}}^*}^{\top} [[S_{f,il}]^* \mu_f] C_{f,il}\\ 
+    B_f = {[V]}^* A_f [V]
+    D_f = [A_f V]{[V]}^*
+    E_f = [{A_f}^{\top} {V}^*][V]
+    F_f = B_f + {B_f}^{\top}
+
+Same procedure but using the *to* branch values for everything to get the derivatives :math:`\frac{d^2S^{t}}{dXY}`. Lastly, the tap variable derivatives can be obtained using the ones obtained in the power flow equations,
+with proper slicing and stacking of the multiplier. For the *l*-monitored-branch an example of this stacking would be:
+
+.. math:: 
+    \frac{d^2S^f}{dvdm_p} [f, i] = {\frac{d^2S^f}{dvdm_p}}_{fi} {S_l}^{f*} \mu_{f}[l]\\
+
+Similarly for every other derivative, branch and direction of the flow.
 
 
 
