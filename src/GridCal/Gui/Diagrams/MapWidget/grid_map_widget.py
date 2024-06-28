@@ -22,7 +22,8 @@ from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
 from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent,
+                           QWheelEvent)
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
@@ -818,6 +819,26 @@ class GridMapWidget(BaseDiagramWidget):
                 api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}")
                 self.circuit.add_substation(obj=api_object)
                 self.add_api_substation(api_object=api_object, lat=lat, lon=lon, r=0.01)
+
+    def wheelEvent(self, event: QWheelEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        max_zoom = self.map.max_level
+        min_zoom = self.map.min_level
+        zoom = self.map.zoom_factor
+        scale = 0.1 + zoom / (max_zoom - min_zoom)
+
+        # rescale lines
+        for dev_tpe in [DeviceType.LineDevice,
+                        DeviceType.DCLineDevice,
+                        DeviceType.HVDCLineDevice,
+                        DeviceType.FluidPathDevice]:
+            graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
+            for key, lne in graphics_dict.items():
+                lne.setWidthScale(scale)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """

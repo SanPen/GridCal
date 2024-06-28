@@ -1131,7 +1131,7 @@ def save_excel(circuit: MultiCircuit, file_path):
     """
     logger = Logger()
 
-    dfs = gather_model_as_data_frames(circuit=circuit)
+    dfs = gather_model_as_data_frames(circuit=circuit, legacy=True)
 
     # flush-save ###################################################################################################
     with pd.ExcelWriter(file_path) as writer:

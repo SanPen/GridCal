@@ -1237,7 +1237,7 @@ class MultiCircuit(Assets):
         return groups
 
     def get_injection_devices_grouped_by_cn(self) -> Dict[dev.ConnectivityNode,
-                                                          Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+    Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
         :return: Dict[ConnectivityNode, Dict[DeviceType, List[Injection devs]]
@@ -2293,9 +2293,10 @@ class MultiCircuit(Assets):
             # if elm.cn_from is not None and elm.cn_to is not None:
             #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
             #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
-            f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
-            Cf[i, f] = br_active[i]
-            Ct[i, t] = br_active[i]
+            if br_active[i]:  # avoid adding zeros
+                f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
+                Cf[i, f] = br_active[i]
+                Ct[i, t] = br_active[i]
 
         # --------------------------------------------------------------------------------------------------------------
         # Compose the adjacency matrix from the connectivity information

@@ -63,6 +63,16 @@ class MapLineContainer(GenericDiagramWidget):
         self.enabled = True
         self.original = True
 
+    def setWidthScale(self, val: float):
+        """
+        Set the width scale of the line
+        :param val:
+        """
+        for segment in self.segments_list:
+            pen = segment.pen()  # get the current pen
+            pen.setWidthF(val)  # Set the fractional thickness of the line
+            segment.setPen(pen)  # Assign the pen to the line item
+
     def clean_segments(self) -> None:
         """
         Remove all segments from the scene

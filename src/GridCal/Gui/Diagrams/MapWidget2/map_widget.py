@@ -755,6 +755,7 @@ class MapWidget(QWidget):
         """
         Handle a mouse wheel rotation.
         """
+        self.editor.wheelEvent(event)
 
     def resizeEvent(self, event: QResizeEvent = None, updateDiagram: bool = True):
         """
