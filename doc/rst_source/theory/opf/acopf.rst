@@ -180,7 +180,7 @@ There are additional equality balance for PV buses, those buses who have the sam
 module is controlled) and one equality for the primary *slack* bus, setting its angle as 0.
 
 .. math::
-    G^{PV} = v[pv] - Vm_max[pv]\\
+    G^{PV} = v[pv] - Vm_{max}[pv]\\
     G^{Th} = \theta[slack]
 
 where we use :math:`Vm_max` directly as for PV buses it will be equal to :math:`Vm_min`. Finally, the structure of the equality constraints vector is:
@@ -674,6 +674,7 @@ As for the equality constraints, we calculate the derivatives with respect to th
 that some slicing and intermediate steps are useful before starting:
 
 .. math::
+
     V_{f,il} = V_{f}[il, :]\\
     V_{t,il} = V_{t}[il, :]\\
     I_{f,il} = Y_{f}[il, :] V \\
@@ -684,7 +685,7 @@ that some slicing and intermediate steps are useful before starting:
     C_{t,il} = C_t[il, :]\\
     Y_{f,il} = Y_f[il, :]\\
     Y_{t,il} = Y_t[il, :]\\
-    E = [V] [\left(\frac{1}{v})]
+    E = [V] [\left(\frac{1}{v}\right)]
 
 The derivative are as follows:
 
