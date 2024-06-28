@@ -134,19 +134,23 @@ def power_flow_ts(grid: MultiCircuit,
 
 def acopf(grid: MultiCircuit,
           pf_options: PowerFlowOptions = PowerFlowOptions(),
-          opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions()) -> NonlinearOPFResults:
+          opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions(),
+          plot_error: bool = False,
+          pf_init: bool = True) -> NonlinearOPFResults:
     """
     Run AC Optimal Power Flow
     :param grid: MultiCircuit instance
     :param pf_options: Power Flow Options instance (optional)
     :param opf_options: Optimal Power Flow Options instance (optional)
+    :param plot_error: Boolean that selects to plot error
+    :param pf_init: Boolean that selects a powerflow initialization of the problem
     :return: AC Optimal Power Flow results
     """
 
     acopf_res = run_nonlinear_opf(grid=grid,
                                   pf_options=pf_options,
                                   opf_options=opf_options,
-                                  plot_error=False,
-                                  pf_init=True)
+                                  plot_error=plot_error,
+                                  pf_init=pf_init)
 
     return acopf_res
