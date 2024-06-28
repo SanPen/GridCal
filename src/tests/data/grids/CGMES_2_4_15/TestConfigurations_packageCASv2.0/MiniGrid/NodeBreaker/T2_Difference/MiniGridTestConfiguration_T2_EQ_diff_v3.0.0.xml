@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:dm="http://iec.ch/TC57/61970-552/DifferenceModel/1#" xmlns:md="http://iec.ch/TC57/61970-552/ModelDescription/1#" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#">
+      <dm:DifferenceModel rdf:about="urn:uuid:253gq62-339-40143-58775-7838ikd200">
+			<md:Model.scenarioTime>2030-01-02T09:00:00</md:Model.scenarioTime>
+			<md:Model.created>2014-10-22T09:01:25.830</md:Model.created>
+            <md:Model.description>CGMES Conformity Assessment: Mini Grid Type 2 Test Configuration. The model is owned by ENTSO-E and is provided by ENTSO-E "as it is". To the fullest extent permitted by law, ENTSO-E shall not be liable for any damages of any kind arising out of the use of the model (including any of its subsequent modifications). ENTSO-E neither warrants, nor represents that the use of the model will not infringe the rights of third parties. Any use of the model shall include a reference to ENTSO-E. ENTSO-E web site is the only official source of information related to the model.</md:Model.description>
+			<md:Model.modelingAuthoritySet>http://A1.de/Planning/ENTSOE/2</md:Model.modelingAuthoritySet>
+            <md:Model.profile>http://entsoe.eu/CIM/EquipmentCore/3/1</md:Model.profile>
+			<md:Model.profile>http://entsoe.eu/CIM/EquipmentShortCircuit/3/1</md:Model.profile>
+            <md:Model.version>4</md:Model.version>
+            <md:Model.Supersedes rdf:resource="urn:uuid:239ecbd2-9a39-11e0-aa80-0800200c9a66" />
+            <dm:preconditions parseType="Statements"> </dm:preconditions>
+            <dm:reverseDifferences parseType="Statements">
+                  <rdf:Description rdf:about="#_c98e36e1-a53a-384c-357e-ab34d9335d77">
+                        <cim:TransformerEnd.grounded>true</cim:TransformerEnd.grounded>
+                  </rdf:Description>
+            </dm:reverseDifferences>
+            <dm:forwardDifferences parseType="Statements">
+                  <rdf:Description rdf:about="#_c98e36e1-a53a-384c-357e-ab34d9335d77">
+                        <cim:TransformerEnd.grounded>false</cim:TransformerEnd.grounded>
+                  </rdf:Description>
+            </dm:forwardDifferences>
+      </dm:DifferenceModel>
+</rdf:RDF>

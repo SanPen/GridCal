@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:dm="http://iec.ch/TC57/61970-552/DifferenceModel/1#" xmlns:md="http://iec.ch/TC57/61970-552/ModelDescription/1#" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#">
+      <dm:DifferenceModel rdf:about="urn:uuid:442le17-240-49347-7847-7232gmj820">
+            <md:Model.scenarioTime>2030-01-02T09:00:00.000</md:Model.scenarioTime>
+			<md:Model.created>2014-10-22T09:01:25.830</md:Model.created>
+            <md:Model.description>CGMES Conformity Assessment: Small Grid HVDC Test Configuration. The model is owned by ENTSO-E and is provided by ENTSO-E "as it is". To the fullest extent permitted by law, ENTSO-E shall not be liable for any damages of any kind arising out of the use of the model (including any of its subsequent modifications). ENTSO-E neither warrants, nor represents that the use of the model will not infringe the rights of third parties. Any use of the model shall include a reference to ENTSO-E. ENTSO-E web site is the only official source of information related to the model.</md:Model.description>
+            <md:Model.modelingAuthoritySet>http://GB/Planning/ENTSOE/2</md:Model.modelingAuthoritySet>
+            <md:Model.profile>http://entsoe.eu/CIM/GeographicalLocation/2/1</md:Model.profile>
+            <md:Model.version>4</md:Model.version>
+            <md:Model.DependentOn rdf:resource="urn:uuid:2399cbd2-9a39-11e0-aa80-0800200c9a66_EU" />
+            <md:Model.Supersedes rdf:resource="urn:uuid:6fdb7290-de0d-11e2-8f45-b8f6b1180b6d"/>
+			<dm:preconditions parseType="Statements"> </dm:preconditions>
+            <dm:reverseDifferences parseType="Statements">
+                  <rdf:Description rdf:about="#_29875e10-c966-11e1-af5f-b8f6b1180b6d">
+                        <cim:Location.PowerSystemResources rdf:resource="#_0473e004-c766-11e1-8775-005056c00008" />
+                  </rdf:Description>
+				   <rdf:Description rdf:about="#_bc24ac70-c98c-11e1-9c61-406c8f32ef58">
+                        <cim:Location.PowerSystemResources rdf:resource="#_0475dbd8-c766-11e1-8775-005056c00008" />
+                  </rdf:Description>
+            </dm:reverseDifferences>
+            <dm:forwardDifferences parseType="Statements">
+                  <rdf:Description rdf:about="#_29875e10-c966-11e1-af5f-b8f6b1180b6d">
+                        <cim:Location.PowerSystemResources rdf:resource="#_11d10c55-94cc-47e4-8e24-bc5ac4d026c0" />
+                  </rdf:Description>
+				   <rdf:Description rdf:about="#_bc24ac70-c98c-11e1-9c61-406c8f32ef58">
+                        <cim:Location.PowerSystemResources rdf:resource="#_d9a49bc9-f4b8-4bfa-9d0f-d18f12f2575b" />
+                  </rdf:Description>
+            </dm:forwardDifferences>
+      </dm:DifferenceModel>
+</rdf:RDF>

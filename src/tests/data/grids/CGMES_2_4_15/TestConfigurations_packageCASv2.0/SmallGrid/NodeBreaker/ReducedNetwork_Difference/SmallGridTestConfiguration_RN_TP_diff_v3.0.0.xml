@@ -1,0 +1,725 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:dm="http://iec.ch/TC57/61970-552/DifferenceModel/1#" xmlns:md="http://iec.ch/TC57/61970-552/ModelDescription/1#" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#">
+      <dm:DifferenceModel rdf:about="urn:uuid:862ws26-307-56939-90204-2478kaw219">
+            <md:Model.scenarioTime>2030-01-02T09:00:00.000</md:Model.scenarioTime>
+			<md:Model.created>2014-10-27T09:01:25.830</md:Model.created>
+            <md:Model.description>CGMES Conformity Assessment: Small Grid Reduced Network Test Configuration. The model is owned by ENTSO-E and is provided by ENTSO-E "as it is". To the fullest extent permitted by law, ENTSO-E shall not be liable for any damages of any kind arising out of the use of the model (including any of its subsequent modifications). ENTSO-E neither warrants, nor represents that the use of the model will not infringe the rights of third parties. Any use of the model shall include a reference to ENTSO-E. ENTSO-E web site is the only official source of information related to the model.</md:Model.description>
+            <md:Model.modelingAuthoritySet>http://GB/Planning/ENTSOE/2</md:Model.modelingAuthoritySet>
+            <md:Model.profile>http://entsoe.eu/CIM/Topology/4/1</md:Model.profile>
+            <md:Model.version>4</md:Model.version>
+            <md:Model.DependentOn rdf:resource="urn:uuid:8168421c-c68f-3376-f16c-c2b7198bcb2e" />
+			<md:Model.DependentOn rdf:resource="urn:uuid:2399cbd1-9a39-11e0-aa80-0800200c9a66" />
+            <md:Model.Supersedes rdf:resource="urn:uuid:ed6c4f89-2fee-fb0b-8276-4d4a5ae4990b" />
+            <dm:preconditions parseType="Statements"> </dm:preconditions>
+            <dm:reverseDifferences parseType="Statements">
+                  <cim:TopologicalNode rdf:ID="_0471bd2a-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>HickryCk</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_047eb579-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_045fe2d7-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>Pokagon</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_045d4ac5-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_045163e5-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>Olive1</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_047d07c9-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_60ee59f3-5ed7-4551-b623-f4346554b22a" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_044a8618-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>Riversde</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_0488c79a-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_0458b6e4-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>SouthBnd</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_04605807-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_047147f0-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>Olive2</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_044be5a3-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_046b066a-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>Kankakee</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_044f6818-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_047ba832-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>Breed</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_044f4102-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_60ee59f3-5ed7-4551-b623-f4346554b22a" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_04684743-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>JacksnRd</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_047eb571-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_04555b87-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>NwCarlsl</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_048a9c58-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_c63f79cc-7953-4ab6-9fa6-f8c729bf895b" />
+                  </cim:TopologicalNode>
+                  <cim:TopologicalNode rdf:ID="_044e7db1-c766-11e1-8775-005056c00008">
+                        <cim:IdentifiedObject.name>X9</cim:IdentifiedObject.name>
+                        <cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_045c8779-c766-11e1-8775-005056c00008" />
+                        <cim:TopologicalNode.BaseVoltage rdf:resource="#_60ee59f3-5ed7-4551-b623-f4346554b22a" />
+                  </cim:TopologicalNode>
+                  <cim:Terminal rdf:about="#_046fe868-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_047c4474-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_046efe08-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_045bc426-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_0479e95d-d92a-4969-93db-6ddb10a58edf">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_278458d3-9d30-4cf2-87f2-215bed916412">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_18d2ef96-c08d-4ba1-845e-fd2b6e1429ec">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_45173284-a83c-48a4-b15c-ef6f9d64bd2f">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_8f5af94b-27d5-44af-a818-c540e41edb9c">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_385e1e8f-7374-4b8d-be76-2bb67c6d9e2a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_083eb0a7-3bf7-48ee-836f-1e028a2ab6cc">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_d4044a90-560c-4e58-aab9-904d48c0b743">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_d0e67777-6a26-431e-900d-10ad01da560f">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_5308ee0e-7e5e-429e-b0b1-98215b612ef4">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_0454e651-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_ff281c70-9aa6-4fa1-86a8-8b6696ef8673">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c447c8fc-9b83-4f8e-87e0-b54c3bbd443a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_d72233dc-c8db-4f74-86c6-6675486fef6d">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_887e1686-7b76-4717-b7b4-12044a4f5e7e">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_1fcb42b5-8aa5-4ab3-abe6-9718e6d35c2f">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_52a7e73f-0d67-4fcc-8d5b-3280bf2cd8f2">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_1baa7b80-bfee-4326-9776-47e4d8ea67ea">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_54b9e847-62f9-41f2-b774-c7a1a6534ef3">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_9007a3ee-287c-45f8-81f4-eb418fe8741b">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_0be35f9d-589c-48fe-8291-6818cba88922">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_044a5f01-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04845acb-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0456e227-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_048a7548-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04834957-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047ba832-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0479fa89-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_046ab848-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_046b0668-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_047b5a14-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04753f92-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04803c17-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_046b2d74-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_06de3d6f-08c3-4b5c-81cd-1b4b4ef897c7">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_ae9ed559-bead-4e93-acc0-84b804e160dd">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_daf56f1b-8281-4633-9e61-8638b574dda5">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_233a1152-b56d-4c05-95e4-41f5f287a2ec">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_2f7e0a65-7a17-4cba-92f2-13f0d0678b8f">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_de5375f0-e1e4-45ac-a558-53635028cebd">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_1eda1896-4299-44b8-854b-9d17f6afcc6b">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_045b7606-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047ba832-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_f1523ea7-9312-4dc4-8534-a66d895c5fa3">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_b68bdfe7-0647-4697-a087-c2b796fa92e4">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_1bae89bf-c3b6-435f-9dc9-429696e941f6">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_045e8340-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04731cb7-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04522734-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_b926f949-0bca-4ada-81ed-e0b951e84039">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_76431597-d640-4ad5-b287-c21ccf1542a2">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_877e1c75-5e16-4703-9eda-154016564d6a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_0fc04886-7a5d-4898-8e3c-c2503c4d2ab1">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_0acc36cd-c202-42e4-a474-c7f0b7f9c35f">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_048433b8-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_dea7cbed-d620-4247-858a-3c11b2165e96">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_a9dccaee-db77-4a30-920a-54dea50bca15">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0462c902-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_1dff9253-8d43-4aa0-b2f7-6d989105f6c6">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_044c0cb9-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_d3bc921e-ed3a-40d2-8af3-21e756fa30eb">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_455ca716-de80-4f48-8e85-17ed4024ce89">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_7bf2648d-6f05-48f0-9cb6-58cc6c0db9b7">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_726fa700-fae4-4444-930c-b061986eeb0e">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_43b8711d-3694-4cb4-a7f6-3c967a89096c">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c8d2e320-9d14-4186-87e9-b494937b1c94">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_d31eb973-cd25-49c8-8bd2-fa559264c7b5">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c462ec7b-4e09-48f7-b24b-6bcbada32d21">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_f293b739-44a4-4cd1-8fea-0ebe010101f4">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_6c4b85ef-7f8b-4f7f-9a88-adbbce13268a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_84281d20-cec3-4a1a-8ca2-fcf007c63a80">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_a8c5f0c9-f630-4850-bae7-8a9769828a3c">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_22ac6f60-34dd-4e1a-937c-12ff7a4be38a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_e8209826-2c02-4a9c-a732-c2b29c2ec42f">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_4b7b0994-9f76-4320-8e05-c9acc68c64a9">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_51a826a1-3275-4713-9a26-8585c2fcd02a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_ba9b7b0a-15ec-401f-945a-825f81df98b7">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_a9d1799d-386e-4a03-983f-90944b44337e">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_48a8a45e-6858-4312-a4ba-c88782b6d294">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_77ea558b-23c4-4514-89ce-8ee308941198">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_3bf47773-5ac8-4504-9dac-324e11bb7de4">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_0fffdf44-0aeb-4b01-8121-5158387855a5">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_6cbd553b-616a-42ef-a1c7-2ef41a71c314">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_43587d59-1b50-44a5-a13a-88f88b75416a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_3c969aaf-f372-46c1-b5d8-e9aea81c78c9">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_07ae1189-ca16-4f66-93ba-ffdc301120ab">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_094d46c3-c7a2-477f-bf9a-47f1c74dc004">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_a86f4777-c09f-4fa4-96d9-745135cbe631">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_d09d170a-328f-4f69-80d7-c9a22c9b5df3">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_7309d62c-c379-42f4-9129-c5ac5c71d53e">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_bb5d3d74-b121-4df6-9ba3-854f26df3e6e">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_462c499a-c88a-4b5d-8e7d-eb0a0632581d">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_506aa92d-7364-4c20-9ecf-281576cdac40">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_8ff7e755-2a0e-4a05-b416-71c18f9a1511">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_6bd1ceae-ad8c-427c-8785-6266d2ec4a93">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_81c16526-ce71-4df2-8e53-a280a52fc9c7">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_8c81288b-ff18-4f34-a4a6-b6efbe8648d7">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_552c3d6c-f1d4-4015-9912-73341a0b317b">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047ba832-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_0528a605-01fb-4ea9-b582-41299a27487e">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047ba832-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_599f548f-6a1e-47cc-9f0f-c7f72358bc54">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047ba832-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_df396064-47d8-444d-b7c0-70a02da75c02">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047ba832-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_afeb88bf-a164-4d1c-a587-628ca2769900">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047ba832-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_2e03331b-3742-4fc0-8708-a1055170545d">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_cbda5e10-7c14-4388-b72a-8590f2ff9ac5">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_b7bc6e66-e0b9-4905-9399-628c3081b553">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_4a73ccf8-8a24-4ed3-af5f-1fbedf7934e3">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_5216354c-8614-428a-9288-0fd41332c3fe">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_8f51d41a-91a3-48b0-ac13-b4556548b5c4">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_a0d712f2-0ab9-43e0-8d3b-adddf334c6e4">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_44bcc4b4-61bc-452e-b752-ffe57d6592dd">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_7b60144b-9674-4465-a2c8-f07d814891f8">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_b00a7472-8214-4e83-b009-9e60ebecefab">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_fd6d33d9-2abd-40a3-a3d4-19f04c44da2d">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_5b698cf7-840d-422f-ba6e-609d8a0a051f">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_f1e8b4b9-73b8-432e-9c16-acd491585985">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_1b47cd99-6e20-4635-b284-6d7d355f513f">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_d491afaa-3369-46ed-a028-dd12d08c4cc5">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_f160ac48-8817-48a2-ab8e-8d091e1f99fb">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_70c773cc-2968-4b05-ae26-9a4d3e6cd44d">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c46dab2b-cbc0-4f03-b381-55c1df3889fb">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_61a90816-1972-4017-aa14-902762128b19">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c3b9fd41-2f99-4d59-ad22-05735e67204a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_560efb1e-a2eb-41d3-bbbe-438d45c7d715">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_4a0a4b94-c2b8-4e26-9eeb-5170210f0ef2">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_8bc6cf1c-f8f0-4bd5-89cc-1edacfee929e">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_ed93937b-2f38-4410-a5d6-b09396897487">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_69673391-a016-458c-bbf3-1cf7f066f686">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_1bbdeb21-492e-4810-a72e-64b241c1b520">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_7a8334c1-5f5a-4572-bbfb-b8aac558a5ea">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_62f8525d-26fa-4ce5-aff9-5fc12d86bd78">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_d4dcbc63-e9fa-4297-8bdf-f6733f727269">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_b10b651b-b45e-4eed-b112-6a56435bc540">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_776df4e6-b6b5-4b94-b1e3-2c130eb29421">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_835c7e59-0e90-403d-adb0-edf3a76cb9c8">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_bcf2ace3-36e4-4dbe-a9e0-9821092c5c9e">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_7a362fad-9cf3-4b6e-b7c7-3157d809bdb6">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_320c9dbd-d0ba-4d8d-acba-29484b28809c">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_5e951dd5-5511-4fd4-ac54-79d5440263f7">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_b5ee60a4-dc3b-4c27-81fd-2006a91711b0">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_53ba2956-c926-4b38-a31e-6875362c2250">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_d5f89750-b709-42d2-9468-5627c54bc1f8">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_5f7ebba2-1bde-4778-b79a-882e00e2ca87">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_8c26bb11-07a0-4f89-be0d-2f1db8376084">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c27ebcf3-97d7-467b-87e1-c7b954115c3a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_6f51cb0c-2272-4bed-84e9-5051fb890fc1">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_374c0fa5-e4de-4426-bd0b-9388ccd1abad">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_046adf51-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045fe2d7-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_044ef2e9-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04720b4a-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0476c633-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04801506-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0455d0b2-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047147f0-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_044b9786-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04880440-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04745535-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04614262-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_044e7db1-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0485452a-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0458b6e4-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0477feb7-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04742e24-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_047a48a1-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04529c66-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0455f7c5-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04555b87-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_04745533-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045163e5-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_047d7cf3-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_0471bd2a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_047e6758-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046b066a-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0476ed4b-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_044a8618-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_046c8d06-c766-11e1-8775-005056c00008">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_04684743-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+            </dm:reverseDifferences>
+            <dm:forwardDifferences parseType="Statements">
+                  <cim:ConnectivityNode rdf:about="#_b02ca9a3-b9e0-40d9-8b9f-80087db805eb">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_0545fd59-23e9-42b2-938c-a333a44e8193">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_ccca56b8-548e-486b-9198-4a922b54b5b5">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_55d09806-35c1-4846-b6a6-53c961e45e02">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_588915b3-8020-4403-9a33-464b7e9c1cc8">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c99abb69-5131-4d06-baa0-ec05d8c713f9">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_7af7f7a0-54aa-4c98-a9c9-895609a35ed8">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_b10c0d26-1900-4c6b-83c2-82b5f67dc8bb">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_a0727c5a-bed4-4d96-9275-a55213940da1">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_792f3aac-459a-4549-9d5d-d82632fa7e4e">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_0ce8021a-b6e5-429f-ba60-2e3ae19a14e2">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_0e6f25d2-0d9c-4ed1-ac2d-d27cbaf76914">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_f344369b-b040-41f6-9b93-8fdb8d4bd2d2">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_fe5a905a-005e-44d0-a972-b85a0425681a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_969aeff3-8f58-4177-86a9-180c53426c4d">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_f6e84345-4bb7-425e-932d-45a976798a33">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_6e0ec73f-d38a-4beb-858e-8f3c60f9861a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_0e84ac0e-a39b-4818-ba92-83a6ea02099e">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_33518f5c-c73f-4f00-ac7b-9a3400e0a673">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_b5d1f11c-83b8-4c95-bbda-8e18467daf45">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_da3352c4-e2b0-4271-ad6c-be007b1c971a">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_765c92a5-e7d9-4e77-a6fb-651c15453102">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_d08f6cde-a2c6-4883-90f3-542ca234b303">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_045b4ef9-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_c5aebad7-7853-49c1-9906-36f1d6f711c9">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_d058a6c1-c685-4048-a9e8-5ea578daf414">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_117dda55-523b-496d-8c63-0dda2e764db4">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_a1af1079-b442-42f6-a506-f9c54b3499f4">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_48893376-ca7c-4b9e-9d05-d9376d20c025">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_3f0b9c71-cc99-4602-ad0c-9ae1ca113cca">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_c6bad344-82fb-42a8-9b44-ed34fc602e15">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_e632f3a5-5271-4425-b025-cf4297154ff8">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_ddb69e2a-8f33-44cb-93fe-604ad8105d50">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_7bc5ee0b-98ba-4335-9c38-84bcf1431518">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_155aeffe-2f1a-4c67-a81e-3391fba7d7a3">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_e7e275b2-11df-4a28-9e62-06145b731644">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_63ce5e1e-c395-402f-9880-aa250594a826">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_a0fa5716-759e-4e57-a1dd-1f9b34e1ce28">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_a56c48bc-f12f-4cd8-9978-bd547a0d02ee">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_29dd11a4-081d-4f49-b1ea-c6a76a6c2f7f">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_046c3ee8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:Terminal rdf:about="#_0feb65f4-7b5d-45e7-bec4-fd00b0f7122c">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_4a27d8d5-80ee-4d51-b1e3-a8f1bfb6ed52">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_aa679fe7-53fc-4c2f-9948-cccb0b90b6bf">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_aab2b18b-ec28-41b5-adc4-e6bc875991b1">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_8fe988ed-17b7-484f-ae96-af6084bb884f">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+                  <cim:ConnectivityNode rdf:about="#_09037b76-856b-465c-a0fe-406c6fa7058f">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_04145a9d-ce67-49a5-8bd7-92632864f5c1">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:ConnectivityNode rdf:about="#_8f8b8672-e6ab-40b9-8d96-b469a0f75827">
+                        <cim:ConnectivityNode.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:ConnectivityNode>
+                  <cim:Terminal rdf:about="#_fb2bdd49-eefc-4cf5-9f77-d3c62f0e9f46">
+                        <cim:Terminal.TopologicalNode rdf:resource="#_047566a8-c766-11e1-8775-005056c00008" />
+                  </cim:Terminal>
+            </dm:forwardDifferences>
+      </dm:DifferenceModel>
+</rdf:RDF>
