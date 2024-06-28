@@ -224,8 +224,8 @@ class MapView(QGraphicsView):
 
         zoomInitial = self.map_widget.level
 
-        self.mouse_x = mouse_event.position().x() * 2
-        self.mouse_y = mouse_event.position().y() * 2
+        self.mouse_x = mouse_event.position().x()
+        self.mouse_y = mouse_event.position().y()
 
         if event.angleDelta().y() > 0:
             new_level = self.map_widget.level + 1
@@ -1427,7 +1427,7 @@ class MapWidget(QWidget):
             view_y = self.view_height // 4
 
         # get geo coords of view point
-        longitude, latitude = self.view_to_geo(view_x, view_y)
+        longitude, latitude = self.view_to_geo_float(view_x, view_y)
 
         # get tile source to use the new level
         result = self.tile_src.UseLevel(level)
