@@ -3,12 +3,14 @@ from typing import Dict, List
 import GridCalEngine.api as gce
 
 
-def test_load_and_run_pf():
+def test_load_and_run_pf() -> None:
     """
 
     :return:
     """
     base_folder = os.path.join("data", "grids", "CGMES_2_4_15", "TestConfigurations_packageCASv2.0")
+
+    logger = gce.Logger()
 
     packs = [
         {"BD": os.path.join(base_folder, 'FullGrid', 'CGMES_v2.4.15_FullGridTestConfiguration_BD_v1.zip'),
@@ -165,6 +167,8 @@ def test_load_and_run_pf():
 
     ]
 
+    n = 0
+    failures = 0
     for data in packs:
         bd = data['BD']
         files = data['Files']
@@ -175,11 +179,30 @@ def test_load_and_run_pf():
             else:
                 lst = [bd, fname]
 
-            print("*" * 200)
-            print("Loading ", bd, fname)
+            # print("*" * 200)
+            # print("Loading ", bd, fname)
 
-            grid = gce.open_file(filename=lst)
+            n += 1
 
-            gce.power_flow(grid)
+            try:
+                grid = gce.open_file(filename=lst)
+            except Exception as e:
+                logger.add_error(msg="Failed loading - " + str(e), device=os.path.basename(fname))
+                grid = None
+                failures += 1
 
-            print("*" * 200)
+            if grid is not None:
+                try:
+                    gce.power_flow(grid)
+                except Exception as e:
+                    logger.add_error(msg="Failed PF - " + str(e), device=os.path.basename(fname))
+                    failures += 1
+
+            # print("*" * 200)
+
+    if logger.has_logs():
+        logger.print()
+        print(f"Failed {failures} out of {n}, {failures/n*100:.2f}%")
+
+    assert not logger.has_logs()
+
