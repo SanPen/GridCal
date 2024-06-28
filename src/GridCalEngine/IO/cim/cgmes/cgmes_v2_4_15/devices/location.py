@@ -20,10 +20,10 @@ from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
-if TYPE_CHECKING:
-    from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.coordinate_system import CoordinateSystem
-    from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
-    from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.position_point import PositionPoint
+#if TYPE_CHECKING:
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.coordinate_system import CoordinateSystem
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_system_resource import PowerSystemResource
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.position_point import PositionPoint
 
 
 class Location(IdentifiedObject):
