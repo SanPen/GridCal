@@ -59,7 +59,7 @@ class Place(Enum):
     CenterWest = "cw"
 
 
-class CustomScene(QGraphicsScene):
+class MapScene(QGraphicsScene):
     """
     CustomScene
     """
@@ -134,8 +134,8 @@ class MapView(QGraphicsView):
         self.pressed = False
         self.disableMove = False
 
-        self.startHe = self.height()  # 360
-        self.startWi = self.width()  # 240
+        self.startHe = None
+        self.startWi = None
 
         # updated later
         self.view_width = self.width()
@@ -224,8 +224,8 @@ class MapView(QGraphicsView):
 
         zoomInitial = self.map_widget.level
 
-        self.mouse_x = mouse_event.position().x() * 2
-        self.mouse_y = mouse_event.position().y() * 2
+        self.mouse_x = mouse_event.position().x()
+        self.mouse_y = mouse_event.position().y()
 
         if event.angleDelta().y() > 0:
             new_level = self.map_widget.level + 1
@@ -282,7 +282,7 @@ class MapView(QGraphicsView):
 
         self.map_widget.resizeEvent(event=event)
 
-    def setSizeDiagram(self):
+    def setSizeDiagram(self) -> None:
         """
 
         :return:
@@ -292,7 +292,7 @@ class MapView(QGraphicsView):
         self.view_width = self.width()
         self.view_height = self.height()
 
-    def setSceneRectDiagram(self):
+    def setSceneRectDiagram(self) -> None:
         """
 
         :return:
@@ -319,13 +319,12 @@ class MapView(QGraphicsView):
         :return:
         """
 
-        level, longitude, latitude = self.map_widget.get_level_and_position()
+        ix, iy = self.map_widget.geo_to_view(longitude=0, latitude=0)
 
-        self.map_widget.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+        x = (x * self.schema_zoom) + ix
+        y = (y * self.schema_zoom) + iy
 
-        lon, lat = self.map_widget.view_to_geo(xview=x, yview=y)
-
-        self.map_widget.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+        lon, lat = self.map_widget.view_to_geo_float(xview=x, yview=y)
 
         return lat, lon
 
@@ -337,13 +336,12 @@ class MapView(QGraphicsView):
         :return:
         """
 
-        level, longitude, latitude = self.map_widget.get_level_and_position()
-
-        self.map_widget.GotoLevelAndPosition(level=self.startLev, longitude=self.startLon, latitude=self.startLat)
+        ix, iy = self.map_widget.geo_to_view(longitude=0.0, latitude=0.0)
 
         x, y = self.map_widget.geo_to_view(longitude=lon, latitude=lat)
 
-        self.map_widget.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+        x = (x - ix) / self.schema_zoom
+        y = (y - iy) / self.schema_zoom
 
         return x, y
 
@@ -352,20 +350,16 @@ class MapView(QGraphicsView):
         This function centers the schema relative to the map according to lat. and long.
         """
 
-        he = self.height()
-        wi = self.width()
+        he = self.map_widget.height() / 2.0
+        wi = self.map_widget.width() / 2.0
 
-        level, longitude, latitude = self.map_widget.get_level_and_position()
+        lon, lat = self.map_widget.view_to_geo_float(xview=wi, yview=he)
 
-        if self.startLon is not None and longitude is not None and latitude is not None:
-            sx, sy = self.map_widget.geo_to_view(longitude=self.startLon, latitude=self.startLat)
+        sx, sy = self.to_x_y(lat=lat, lon=lon)
 
-            dx = -10 / self.schema_zoom + (-sx + (128 * self.schema_zoom) + wi / 2) / self.schema_zoom
-            dy = -10 / self.schema_zoom + (-sy + (128 * self.schema_zoom) + he / 2) / self.schema_zoom
+        point = QPointF(sx - 5 / self.schema_zoom, sy - 5 / self.schema_zoom)
 
-            point = QPointF(dx, dy)
-            self.map_widget.view.centerOn(point)
-
+        self.map_widget.view.centerOn(point)
 
 class MapWidget(QWidget):
     """
@@ -397,7 +391,7 @@ class MapWidget(QWidget):
         # -------------------------------------------------------------------------
         # Add the drawing layer
         # -------------------------------------------------------------------------
-        self.diagram_scene = CustomScene(self)
+        self.diagram_scene = MapScene(self)
 
         self.editor: GridMapWidget = editor
 
@@ -761,6 +755,7 @@ class MapWidget(QWidget):
         """
         Handle a mouse wheel rotation.
         """
+        self.editor.wheelEvent(event)
 
     def resizeEvent(self, event: QResizeEvent = None, updateDiagram: bool = True):
         """
@@ -886,6 +881,35 @@ class MapWidget(QWidget):
     #         return self.geo_to_view(longitude, latitude)
     #
     #     return None
+
+    def view_to_geo_float(self, xview: float, yview: float) -> Tuple[Union[None, float], Union[None, float]]:
+        """
+        Convert a view coords position to a geo coords position.
+        Returns a tuple of geo coords (longitude, latitude) if the cursor is over map
+        tiles, else returns None.
+        Note: the 'key' tile information must be correct.
+        :param xview: x position
+        :param yview: y position
+        :return: longitude, latitude
+        """
+        min_lon, max_lon, min_lat, max_lat = self.tile_src.GetExtent()
+
+        x_from_key = xview - self.key_tile_xoffset
+        y_from_key = yview - self.key_tile_yoffset
+
+        # get view point as tile coordinates
+        xtile: float = self.key_tile_left + x_from_key / self.tile_width
+        ytile: float = self.key_tile_top + y_from_key / self.tile_height
+
+        longitude, latitude = self.tile_src.Tile2Geo(xtile, ytile)
+
+        if not (min_lon <= longitude <= max_lon):
+            return None, None
+
+        if not (min_lat <= latitude <= max_lat):
+            return None, None
+
+        return longitude, latitude
 
     def view_to_geo(self, xview: float, yview: float) -> Tuple[Union[None, float], Union[None, float]]:
         """
@@ -1404,7 +1428,7 @@ class MapWidget(QWidget):
             view_y = self.view_height // 4
 
         # get geo coords of view point
-        longitude, latitude = self.view_to_geo(view_x, view_y)
+        longitude, latitude = self.view_to_geo_float(view_x, view_y)
 
         # get tile source to use the new level
         result = self.tile_src.UseLevel(level)
