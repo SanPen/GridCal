@@ -24,9 +24,13 @@ from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_ac_line_segment,
                                                     get_values_shunt,
-                                                    get_pu_values_power_transformer, get_pu_values_power_transformer3w,
-                                                    get_regulating_control, get_pu_values_power_transformer_end,
-                                                    get_slack_id, find_object_by_idtag)
+                                                    get_pu_values_power_transformer,
+                                                    get_pu_values_power_transformer3w,
+                                                    get_regulating_control,
+                                                    get_pu_values_power_transformer_end,
+                                                    get_slack_id,
+                                                    find_object_by_idtag,
+                                                    find_terms_connections)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.base import Base
 
@@ -160,34 +164,7 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
     return device_to_terminal_dict
 
 
-def find_terms_connections(cgmes_terminal: Base,
-                           calc_node_dict: Dict[str, gcdev.Bus],
-                           cn_dict: Dict[str, gcdev.ConnectivityNode]) -> Tuple[gcdev.Bus, gcdev.ConnectivityNode]:
-    """
 
-    :param cgmes_terminal:
-    :param calc_node_dict:
-    :param cn_dict:
-    :return:
-    """
-
-    if cgmes_terminal is not None:
-        # get the rosetta calculation node if exists
-        if cgmes_terminal.TopologicalNode is not None:
-            calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
-        else:
-            calc_node = None
-
-        # get the gcdev connectivity node if exists
-        if cgmes_terminal.ConnectivityNode is not None:
-            cn = cn_dict.get(cgmes_terminal.ConnectivityNode.uuid, None)
-        else:
-            cn = None
-    else:
-        calc_node = None
-        cn = None
-
-    return calc_node, cn
 
 
 def find_connections(cgmes_elm: Base,
@@ -525,9 +502,14 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
 
                 if cgmes_elm.GeneratingUnit is not None:
 
-                    v_set, is_controlled = get_regulating_control(cgmes_elm=cgmes_elm,
-                                                                  cgmes_enums=cgmes_enums,
-                                                                  logger=logger)
+                    v_set, is_controlled, controlled_bus, controlled_cn = (
+                        get_regulating_control(
+                            cgmes_elm=cgmes_elm,
+                            cgmes_enums=cgmes_enums,
+                            calc_node_dict=calc_node_dict,
+                            cn_dict=cn_dict,
+                            logger=logger
+                        ))
 
                     if cgmes_elm.p != 0.0:
                         pf = np.cos(np.arctan(cgmes_elm.q / cgmes_elm.p))
@@ -560,8 +542,8 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 Qmin=cgmes_elm.minQ,
                                                 vset=v_set,
                                                 is_controlled=is_controlled,
-                                                # control_bus=,  # TODO get controlled gc.bus
-                                                # control_cn=,
+                                                # controlled_bus
+                                                # TODO get controlled gc.bus
                                                 )
 
                     gcdev_model.add_generator(bus=calc_node, api_obj=gcdev_elm, cn=cn)
