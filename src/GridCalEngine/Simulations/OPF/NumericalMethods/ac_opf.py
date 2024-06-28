@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
+import timeit
 import pandas as pd
 from typing import Tuple
 from dataclasses import dataclass
@@ -165,7 +166,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                 nodal_capacity_sign, nslcap, pq, pv, Pf_nondisp, Pdcmax, V_U, V_L,
                                 P_U, P_L, tanmax, Q_U, Q_L, tapm_max, tapm_min, tapt_max, tapt_min, alltapm, alltapt,
                                 k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates, il, nll, ig, nig, Sg_undis, ctQ,
-                                acopf_mode) -> IpsFunctionReturn:
+                                acopf_mode) -> Tuple[IpsFunctionReturn, Vec]:
     """
     A function that computes the optimization model for a NumericalCircuit object and returns the values of the
     equations and their derivatives computed analyitically
@@ -243,31 +244,46 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     Cf = admittances.Cf
     Ct = admittances.Ct
 
+    ts_f = timeit.default_timer()
     f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, nll=nll, c0=c0, c1=c1, c2=c2, c_s=c_s, nslcap=nslcap,
                nodal_capacity_sign=nodal_capacity_sign, c_v=c_v, ig=ig, npq=npq, ndc=ndc, Sbase=Sbase,
                acopf_mode=acopf_mode)
+    te_f = timeit.default_timer()
+
+    ts_g = timeit.default_timer()
     G, Scalc = eval_g(x=x, Ybus=Ybus, Yf=Yf, Cg=Cg, Sd=Sd, ig=ig, nig=nig, nll=nll, nslcap=nslcap,
                       nodal_capacity_sign=nodal_capacity_sign, capacity_nodes_idx=capacity_nodes_idx, npq=npq, pv=pv,
                       f_nd_dc=f_nd_dc, t_nd_dc=t_nd_dc, fdc=fdc, tdc=tdc, Pf_nondisp=Pf_nondisp, k_m=k_m, k_tau=k_tau,
                       Vm_max=V_U, Sg_undis=Sg_undis, slack=slack, acopf_mode=acopf_mode)
+    te_g = timeit.default_timer()
+
+    ts_h = timeit.default_timer()
     H, Sf, St = eval_h(x=x, Yf=Yf, Yt=Yt, from_idx=from_idx, to_idx=to_idx, nslcap=nslcap, pq=pq, k_m=k_m, k_tau=k_tau,
                        Vm_max=V_U, Vm_min=V_L, Pg_max=P_U, Pg_min=P_L, Qg_max=Q_U, Qg_min=Q_L, tapm_max=tapm_max,
                        tapm_min=tapm_min, tapt_max=tapt_max, tapt_min=tapt_min, Pdcmax=Pdcmax,
                        rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ, acopf_mode=acopf_mode)
+    te_h = timeit.default_timer()
 
-    fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf,
-                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, slack=slack,
-                                                       nslcap=nslcap, nodal_capacity_sign=nodal_capacity_sign,
-                                                       capacity_nodes_idx=capacity_nodes_idx, pq=pq,
-                                                       pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, fdc=fdc,
-                                                       tdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
-                                                       F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
-                                                       compute_jac=compute_jac, compute_hess=compute_hess)
+    fx, Gx, Hx, fxx, Gxx, Hxx, der_times = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf,
+                                                                  Ct=Ct, Yf=Yf,
+                                                                  Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig,
+                                                                  slack=slack,
+                                                                  nslcap=nslcap,
+                                                                  nodal_capacity_sign=nodal_capacity_sign,
+                                                                  capacity_nodes_idx=capacity_nodes_idx, pq=pq,
+                                                                  pv=pv, tanmax=tanmax, alltapm=alltapm,
+                                                                  alltapt=alltapt, fdc=fdc,
+                                                                  tdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda,
+                                                                  R=R, X=X,
+                                                                  F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
+                                                                  compute_jac=compute_jac, compute_hess=compute_hess)
+
+    times = np.r_[te_f - ts_f, te_g - ts_g, te_h - ts_h, der_times]
 
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx, Hx=Hx,
                              fxx=fxx, Gxx=Gxx, Hxx=Hxx,
-                             S=Scalc, St=St, Sf=Sf)
+                             S=Scalc, St=St, Sf=Sf), times
 
 
 def evaluate_power_flow_debug(x, mu, lmbda, compute_jac, compute_hess, admittances, Cg, R, X, Sd, slack, from_idx,
@@ -521,6 +537,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     :param logger: Logger
     :return: NonlinearOPFResults
     """
+    loadtimeStart = timeit.default_timer()
 
     # Grab the base power and the costs associated to generation
     Sbase = nc.Sbase
@@ -697,6 +714,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # number of variables
     NV = len(x0)
 
+    loadtimeEnd = timeit.default_timer()
+    times = np.array([])
+    print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
+
     if opf_options.verbose > 0:
         print("x0:", x0)
 
@@ -732,22 +753,25 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                            trust=opf_options.ips_trust_radius)
         else:
             # run the solver with the analytic derivatives
-            result = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
-                                           func=compute_analytic_structures,
-                                           arg=(
-                                               admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc, t_nd_hvdc,
-                                               f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, capacity_nodes_idx,
-                                               nodal_capacity_sign,
-                                               nslcap, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
-                                               Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max, tapt_min,
-                                               alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
-                                               br_mon_idx,
-                                               n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis, pf_options.control_Q,
-                                               opf_options.acopf_mode),
-                                           verbose=opf_options.verbose,
-                                           max_iter=opf_options.ips_iterations,
-                                           tol=opf_options.ips_tolerance,
-                                           trust=opf_options.ips_trust_radius)
+            result, times = interior_point_solver(x0=x0, n_x=NV, n_eq=NE, n_ineq=NI,
+                                                  func=compute_analytic_structures,
+                                                  arg=(
+                                                      admittances, Cg, R, X, Sd, slack, from_idx, to_idx, f_nd_hvdc,
+                                                      t_nd_hvdc,
+                                                      f_disp_hvdc, t_disp_hvdc, n_disp_hvdc, capacity_nodes_idx,
+                                                      nodal_capacity_sign,
+                                                      nslcap, pq, pv, Pf_nondisp, P_hvdc_max, Vm_max, Vm_min, Pg_max,
+                                                      Pg_min, tanmax, Qg_max, Qg_min, tapm_max, tapm_min, tapt_max,
+                                                      tapt_min,
+                                                      alltapm, alltapt, k_m, k_tau, c0, c1, c2, c_s, c_v, Sbase, rates,
+                                                      br_mon_idx,
+                                                      n_br_mon, gen_disp_idx, gen_nondisp_idx, Sg_undis,
+                                                      pf_options.control_Q,
+                                                      opf_options.acopf_mode),
+                                                  verbose=opf_options.verbose,
+                                                  max_iter=opf_options.ips_iterations,
+                                                  tol=opf_options.ips_tolerance,
+                                                  trust=opf_options.ips_trust_radius)
 
     # convert the solution to the problem variables
     (Va, Vm, Pg_dis, Qg_dis, sl_sf, sl_st,
@@ -809,6 +833,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_slvmin = pd.DataFrame(data={'Slacks Vmin': sl_vmin})
         df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm}, index=k_m)
         df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt}, index=k_tau)
+        df_times = pd.DataFrame(data=times[1:], index=list(range(result.iterations)),
+                                columns = ['t_f', 't_g', 't_h', 't_fx', 't_gx',
+                                           't_hx', 't_fxx', 't_gxx', 't_hxx', 't_iter'])
 
         print()
         print("Bus:\n", df_bus)
@@ -826,6 +853,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Error", result.error)
         print("Gamma", result.gamma)
         print("Sf", result.structs.Sf)
+        print('Times:\n', df_times)
 
     if plot_error:
         result.plot_error()

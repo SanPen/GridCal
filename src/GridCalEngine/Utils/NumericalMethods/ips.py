@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Callable, Any, Union, List, Dict
+from typing import Callable, Any, Union, List, Dict, Tuple
 from dataclasses import dataclass
 import numba as nb
 import numpy as np
@@ -244,7 +244,7 @@ def interior_point_solver(x0: Vec,
                           pf_init=False,
                           trust=0.9,
                           verbose: int = 0,
-                          step_control=False) -> IpsSolution:
+                          step_control=False) -> Tuple[IpsSolution, Vec]:
     """
     Solve a non-linear problem of the form:
 
@@ -290,6 +290,8 @@ def interior_point_solver(x0: Vec,
     :param step_control: Use step control to improve the solution process control
     :return: IpsSolution
     """
+
+    times = np.array([np.zeros(10)])
     t_start = timeit.default_timer()
 
     # Init iteration values
@@ -318,7 +320,7 @@ def interior_point_solver(x0: Vec,
 
     # PyPower init
     else:
-        ret = func(x, None, None, False, False, *arg)
+        ret, _ = func(x, None, None, False, False, *arg)
         z0 = 1.0
         z = z0 * np.ones(n_ineq)
         mu = z0 * np.ones(n_ineq)
@@ -330,7 +332,7 @@ def interior_point_solver(x0: Vec,
         mu[kk] = gamma / z[kk]
         mu_diag = diags(mu)
 
-    ret = func(x, mu, lam, True, False, *arg)
+    ret, _ = func(x, mu, lam, True, False, *arg)
 
     feascond = calc_feascond(g=ret.G, h=ret.H, x=x, z=z)
     converged = error <= gamma
@@ -344,9 +346,9 @@ def interior_point_solver(x0: Vec,
     n = np.zeros(n_x + n_eq)
     dlam = None
     while not converged and iter_counter < max_iter:
-
+        ts_iter = timeit.default_timer()
         # Evaluate the functions, gradients and hessians at the current iteration.
-        ret = func(x, mu, lam, True, True, *arg)
+        ret, new_times_i = func(x, mu, lam, True, True, *arg)
         Hx_t = ret.Hx.T
         Gx_t = ret.Gx.T
         # compose the Jacobian
@@ -402,7 +404,7 @@ def interior_point_solver(x0: Vec,
         gamma = 0.1 * mu @ z / n_ineq
 
         # Update fobj, g, h
-        ret = func(x, mu, lam, True, False, *arg)
+        ret, _ = func(x, mu, lam, True, False, *arg)
         Hx_t = ret.Hx.T
         Gx_t = ret.Gx.T
         g_norm = np.linalg.norm(ret.G, np.Inf)
@@ -441,6 +443,11 @@ def interior_point_solver(x0: Vec,
         feascond_evolution[iter_counter] = feascond
         error_evolution[iter_counter] = error
 
+        te_iter = timeit.default_timer()
+        new_times = np.r_[new_times_i, te_iter - ts_iter]
+        times_i = times.copy()
+        times = np.r_[times_i, [new_times]]
+
     t_end = timeit.default_timer()
 
     if verbose > 0:
@@ -455,4 +462,4 @@ def interior_point_solver(x0: Vec,
         print(f'\tFeas cond: ', feascond)
 
     return IpsSolution(x=x, error=error, gamma=gamma, lam=lam, dlam=dlam, mu=mu, z=z, residuals=n, structs=ret,
-                       converged=converged, iterations=iter_counter, error_evolution=error_evolution)
+                       converged=converged, iterations=iter_counter, error_evolution=error_evolution), times
