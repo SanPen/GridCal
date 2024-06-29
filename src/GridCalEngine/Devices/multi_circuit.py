@@ -2091,14 +2091,14 @@ class MultiCircuit(Assets):
                             device=elm.idtag,
                             device_class=elm.device_type.value)
 
-        # pass 3: count how many times a group is refferenced
+        # pass 3: count how many times a group is referenced
         group_counter = np.zeros(len(self._investments_groups), dtype=int)
         group_dict = {elm: i for i, elm in enumerate(self._investments_groups)}
         for elm in self._investments:
             group_idx = group_dict[elm.group]
             group_counter[group_idx] += 1
 
-        # pass 4: delete unrefferenced groups
+        # pass 4: delete unreferenced groups
         groups_to_delete = [elm for i, elm in enumerate(self._investments_groups) if group_counter[i] == 0]
         for elm in groups_to_delete:
             self.delete_investment_groups(obj=elm)

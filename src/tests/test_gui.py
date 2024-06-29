@@ -1,7 +1,7 @@
 import os
 import sys
 import pytest
-from pytestqt.qtbot import QtBot
+# from pytestqt.qtbot import QtBot
 from PySide6.QtTest import QTest
 from GridCal.Gui.Main.GridCalMain import MainGUI, QApplication
 

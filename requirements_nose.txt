@@ -71,3 +71,4 @@ xlwt==1.3.0
 nptyping==2.5.0
 windpowerlib
 pvlib
+pytestqt

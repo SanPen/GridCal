@@ -5,7 +5,7 @@ from scipy.sparse import csc_matrix
 
 
 @nb.njit()
-def example(mat_):
+def example(mat_: CSCMatrixType | csc_matrix) -> float:
 
     return np.sum(mat_.data)
 
