@@ -132,6 +132,11 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
     if not ok:
         logger.print()
 
+    pf1_res = gce.power_flow(circuit)
+    pf2_res = gce.power_flow(circuit2)
+
+    assert np.allclose(np.abs(pf1_res.voltage), np.abs(pf2_res.voltage), atol=1e-5)
+
     assert ok
 
 

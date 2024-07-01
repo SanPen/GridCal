@@ -108,6 +108,26 @@ def get_psse_load(load: dev.Load, bus_dict: Dict[dev.Bus, int], id_number: int) 
     return psse_load
 
 
+def get_psse_load_from_external_grid(load: dev.ExternalGrid, bus_dict: Dict[dev.Bus, int], id_number: int) -> RawLoad:
+    """
+
+    :param load:
+    :param bus_dict:
+    :param id_number:
+    :return:
+    """
+    psse_load = RawLoad()
+
+    psse_load.I = bus_dict[load.bus]
+    psse_load.ID = id_number
+
+    psse_load.PL = load.P
+    psse_load.QL = load.Q
+    psse_load.STATUS = 1 if load.active else 0
+
+    return psse_load
+
+
 def get_psse_fixed_shunt(shunt: dev.Shunt, bus_dict: Dict[dev.Bus, int], id_number: int) -> RawFixedShunt:
     """
 
@@ -415,6 +435,11 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
         psse_circuit.loads.append(get_psse_load(load=load,
                                                 bus_dict=counter.bus_int_dict,
                                                 id_number=counter.get_id(load.bus)))
+
+    for load in grid.external_grids:
+        psse_circuit.loads.append(get_psse_load_from_external_grid(load=load,
+                                                                   bus_dict=counter.bus_int_dict,
+                                                                   id_number=counter.get_id(load.bus)))
 
     for generator in grid.generators:
         psse_circuit.generators.append(get_psse_generator(generator=generator,
