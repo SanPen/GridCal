@@ -40,7 +40,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineCo
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment2
 from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
@@ -69,7 +69,7 @@ ALL_MAP_GRAPHICS = Union[
     VoltageLevelGraphicItem,
     NodeGraphicItem,
     SubstationGraphicItem,
-    MapLineSegment
+    MapLineSegment2
 ]
 
 ALL_GRAPHICS = Union[ALL_BUS_BRACH_GRAPHICS, ALL_MAP_GRAPHICS]

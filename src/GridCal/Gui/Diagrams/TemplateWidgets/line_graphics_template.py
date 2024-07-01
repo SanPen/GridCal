@@ -48,6 +48,7 @@ from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+    from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 
 
@@ -435,7 +436,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
     def __init__(self,
                  from_port: Union[BarTerminalItem, RoundTerminalItem],
                  to_port: Union[BarTerminalItem, RoundTerminalItem, None],
-                 editor: SchematicWidget,
+                 editor: Union[SchematicWidget, GridMapWidget],
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
                  arrow_size=10,

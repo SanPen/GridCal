@@ -25,7 +25,6 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.enumerations import DeviceType
 
-
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
     from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem

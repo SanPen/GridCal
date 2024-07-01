@@ -21,7 +21,7 @@ import logging
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPen
-from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment2
 from GridCalEngine.Devices import LineLocation
 from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
 from GridCalEngine.Devices.types import BRANCH_TYPES, FluidPath
@@ -59,7 +59,7 @@ class MapLineContainer(GenericDiagramWidget):
         self.editor: GridMapWidget = editor  # re assign to make clear the editor type
 
         self.nodes_list: List[NodeGraphicItem] = list()
-        self.segments_list: List[MapLineSegment] = list()
+        self.segments_list: List[MapLineSegment2] = list()
         self.enabled = True
         self.original = True
 
@@ -112,7 +112,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.nodes_list.append(node)
 
-    def add_segment(self, segment: MapLineSegment):
+    def add_segment(self, segment: MapLineSegment2):
         """
         Add segment
         :param segment: Connector
@@ -242,9 +242,10 @@ class MapLineContainer(GenericDiagramWidget):
             elm1 = connection_elements[i - 1]
             elm2 = connection_elements[i]
             # Assuming Connector takes (scene, node1, node2) as arguments
-            segment_graphic_object = MapLineSegment(first=elm1,
-                                                    second=elm2,
-                                                    container=self)
+            segment_graphic_object = MapLineSegment2(first=elm1,
+                                                     second=elm2,
+                                                     container=self,
+                                                     editor=self.editor)
 
             elm2.needsUpdate = True
             segment_graphic_object.needsUpdate = True
@@ -295,7 +296,7 @@ class MapLineContainer(GenericDiagramWidget):
         #                 # draw the segment in the scene
         #                 self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
-        self.update_connectors()
+        # self.update_connectors()
 
     def insert_new_node_at_position(self, index: int):
         """

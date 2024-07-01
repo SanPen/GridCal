@@ -15,16 +15,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QColor, QCursor
-from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
+from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent, QGraphicsScene
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
+from GridCal.Gui.Diagrams.TemplateWidgets.line_graphics_template import LineGraphicTemplateItem
 
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.enumerations import DeviceType
@@ -36,12 +37,48 @@ if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
+class MapLineSegment2(LineGraphicTemplateItem):
+
+    def __init__(self, first: NodeGraphicItem,
+                 second: NodeGraphicItem,
+                 container: MapLineContainer,
+                 editor: GridMapWidget,
+                 width=5,
+                 api_object: Union[BRANCH_TYPES, None] = None,
+                 arrow_size=10,
+                 draw_labels: bool = True):
+        """
+
+        :param first:
+        :param second:
+        :param container:
+        :param editor:
+        :param width:
+        :param api_object:
+        :param arrow_size:
+        :param draw_labels:
+        """
+        LineGraphicTemplateItem.__init__(self,
+                                         from_port=first.terminal,
+                                         to_port=second.terminal,
+                                         editor=editor,
+                                         width=width,
+                                         api_object=api_object,
+                                         arrow_size=arrow_size,
+                                         draw_labels=draw_labels)
+
+        self.container: MapLineContainer = container
+
+
 class MapLineSegment(QGraphicsLineItem):
     """
     Segment joining two NodeGraphicItem
     """
 
-    def __init__(self, first: NodeGraphicItem, second: NodeGraphicItem, container: MapLineContainer):
+    def __init__(self,
+                 first: NodeGraphicItem,
+                 second: NodeGraphicItem,
+                 container: MapLineContainer):
         """
         Segment constructor
         :param first: NodeGraphicItem
@@ -112,8 +149,8 @@ class MapLineSegment(QGraphicsLineItem):
             second_pos = self.second.getRealPos()
 
             # Set the line's starting and ending points
-            self.setLine(first_pos[0] / self.scaleSegment, first_pos[1] / self.scaleSegment,
-                         second_pos[0] / self.scaleSegment, second_pos[1] / self.scaleSegment)
+            # self.setLine(first_pos[0] / self.scaleSegment, first_pos[1] / self.scaleSegment,
+            #              second_pos[0] / self.scaleSegment, second_pos[1] / self.scaleSegment)
 
     def end_update(self) -> None:
         """

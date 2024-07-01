@@ -20,6 +20,7 @@ from PySide6.QtCore import QPointF
 
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
+
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking

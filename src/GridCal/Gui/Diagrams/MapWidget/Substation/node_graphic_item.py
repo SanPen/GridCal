@@ -25,6 +25,7 @@ from PySide6.QtGui import QBrush, QColor, QCursor
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import RoundMapTerminalItem
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
@@ -90,6 +91,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.enabled = True
         self.itemSelected = False
 
+        self._terminal = RoundMapTerminalItem("t", parent=self, editor=self.editor)
+
         # Create a pen with reduced line width
         self.change_pen_width(0.001)
 
@@ -154,7 +157,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             if self.hovered and self.enabled:
                 self.updatePosition()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse press events.
         """

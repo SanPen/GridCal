@@ -21,7 +21,9 @@ from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEven
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import RoundMapTerminalItem
 from GridCal.Gui.GuiFunctions import add_menu_entry
+
 
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
@@ -65,7 +67,10 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                               lat=lat,
                               lon=lon)
 
+
         self.editor: GridMapWidget = editor  # re assign for the types to be clear
+
+        self._terminal = RoundMapTerminalItem("t", parent=self, editor=self.editor)
 
         self.setRect(0.0, 0.0, r, r)
         self.lat = lat
@@ -78,7 +83,6 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             self.y = 0
 
         self.radius = r
-
         self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
@@ -150,7 +154,8 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         if self.hovered:
             super().mouseMoveEvent(event)
             self.updatePosition()
-            self.editor.update_connectors()
+            self._terminal.update()
+            # self.editor.update_connectors()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
