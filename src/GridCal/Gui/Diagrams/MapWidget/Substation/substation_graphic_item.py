@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.GuiFunctions import add_menu_entry
-
+from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
 
@@ -47,7 +47,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                  api_object: Substation,
                  lat: float,
                  lon: float,
-                 r: float = 20.0,
+                 r: float = 0.4,
                  draw_labels: bool = True):
         """
 
@@ -66,20 +66,15 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                               lon=lon)
 
         self.editor: GridMapWidget = editor  # re assign for the types to be clear
+        self.api_object: Substation = api_object
 
-        self.setRect(0.0, 0.0, r, r)
         self.lat = lat
         self.lon = lon
-
-        if lat is not None and lon is not None:
-            self.x, self.y = self.editor.to_x_y(lat=lat, lon=lon)
-        else:
-            self.x = 0
-            self.y = 0
-
         self.radius = r
+        x, y = self.editor.to_x_y(lat=lat, lon=lon)
+        self.setRect(x, y, r, r)
 
-        self.resize(r)
+        # self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
@@ -99,6 +94,16 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.needsUpdate = False
         self.setZValue(1)
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+    def move_to(self, lat: float, lon: float):
+        """
+
+        :param lat:
+        :param lon:
+        :return:
+        """
+        x, y = self.editor.to_x_y(lat=lat, lon=lon)
+        self.setRect(x, y, self.rect().width(), self.rect().height())
 
     def register_voltage_level(self, vl: VoltageLevelGraphicItem):
         """
@@ -205,45 +210,38 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         menu = QMenu()
 
         add_menu_entry(menu=menu,
-                       text="New",
+                       text="Move to API coordinates",
                        icon_path="",
-                       function_ptr=self.NewFunction)
-
-        add_menu_entry(menu=menu,
-                       text="Copy",
-                       icon_path="",
-                       function_ptr=self.CopyFunction)
+                       function_ptr=self.move_to_api_coordinates)
 
         add_menu_entry(menu=menu,
                        text="Remove",
                        icon_path="",
-                       function_ptr=self.RemoveFunction)
+                       function_ptr=self.remove_function)
 
         menu.exec_(event.screenPos())
 
-    def NewFunction(self):
+    def remove_function(self):
         """
         Function to be called when Action 1 is selected.
         """
-        # Implement the functionality for Action 1 here
-        pass
+        ok = yes_no_question(f"Remove substation {self.api_object.name}?",
+                             "Remove substation graphics")
 
-    def CopyFunction(self):
-        """
-        Function to be called when Action 1 is selected.
-        """
-        # Implement the functionality for Action 1 here
-        pass
+        if ok:
+            self.editor.removeSubstation(self)
 
-    def RemoveFunction(self):
+    def move_to_api_coordinates(self):
         """
-        Function to be called when Action 1 is selected.
+        Function to move the graphics to the Database location
+        :return:
         """
+        ok = yes_no_question(f"Move substation {self.api_object.name} graphics to it's database coordinates?",
+                             "Move substation graphics")
 
-        self.editor.removeSubstation(self)
-
-        # Implement the functionality for Action 1 here
-        pass
+        if ok:
+            self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)
+            self.editor.update_connectors()
 
     def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
@@ -290,13 +288,13 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.updatePosition()
         return self.x, self.y
 
-    def resize(self, new_radius: float) -> None:
-        """
-        Resize the node.
-        :param new_radius: New radius for the node.
-        """
-        self.radius = new_radius
-        self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
+    # def resize(self, new_radius: float) -> None:
+    #     """
+    #     Resize the node.
+    #     :param new_radius: New radius for the node.
+    #     """
+    #     self.radius = new_radius
+    #     self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
     def change_pen_width(self, width: float) -> None:
         """
