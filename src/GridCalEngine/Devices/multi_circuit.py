@@ -2258,7 +2258,7 @@ class MultiCircuit(Assets):
             else:
                 # pick the default candidate
                 candidate_bus = cn.default_bus
-                candidate_bus.code = cn.code  # for soft checking
+                # candidate_bus.code = cn.code  # for soft checking
 
             # register
             process_info.add_candidate(candidate_bus)

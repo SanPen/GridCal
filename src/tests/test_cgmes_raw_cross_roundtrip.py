@@ -44,6 +44,10 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
     circuit = gce.open_file(import_path)
     nc_1 = gce.compile_numerical_circuit_at(circuit)
 
+    # Set the bus numbers for PSSe
+    for i, bus in enumerate(circuit.buses):
+        bus.code = f"{i + 1}"
+
     # run power flow
     pf_options = PowerFlowOptions()
     pf_results = gce.power_flow(circuit, pf_options)
@@ -61,6 +65,7 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
     raw_export = FileSave(circuit=circuit,
                           file_name=export_fname,
                           options=options)
+
     raw_export.save_raw()
 
     circuit_2 = gce.open_file(export_fname)
@@ -68,8 +73,8 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
 
     ok, logger = circuit.compare_circuits(circuit_2)
 
-    if not ok:
-        logger.print()
+    # if not ok:
+    #     logger.print()
 
     ok, logger = nc_1.compare(nc_2=nc_2, tol=1e-6)
 
@@ -118,7 +123,11 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
     circuit2 = gce.open_file([export_fname, boundary_zip_path])
     # compare_inputs(circuit, circuit2)
 
-    ok, logger = circuit.compare_circuits(circuit2)
+    # ok, logger = circuit.compare_circuits(circuit2)
+
+    nc1 = gce.compile_numerical_circuit_at(circuit)
+    nc2 = gce.compile_numerical_circuit_at(circuit2)
+    ok, logger = nc1.compare(nc2)
 
     if not ok:
         logger.print()

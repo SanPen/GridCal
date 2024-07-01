@@ -74,8 +74,8 @@ def get_psse_bus(bus: dev.Bus,
     psse_bus.EVLO = bus.Vmin
     psse_bus.EVHI = bus.Vmax
 
-    psse_bus.AREA = area_dict[bus.area]
-    psse_bus.ZONE = zones_dict[bus.zone]
+    psse_bus.AREA = area_dict.get(bus.area, 0)
+    psse_bus.ZONE = zones_dict.get(bus.zone, 0)
     psse_bus.VM = bus.Vm0
     psse_bus.VA = np.rad2deg(bus.Va0)
 
