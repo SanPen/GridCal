@@ -402,6 +402,43 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             fig.suptitle(result_type.value)
             plt.tight_layout()
+
+            def on_click(event):
+                # Tolerance threshold for clicking near a point
+                tolerance = 0.1 * (ax3[0, 0].get_xlim()[1] - ax3[0, 0].get_xlim()[0])  # adjust as needed
+
+                # Check if the click is within any of the axes
+                for ax in ax3.flatten():
+                    if event.inaxes == ax:
+                        # Get the click coordinates
+                        click_x, click_y = event.xdata, event.ydata
+                        # Convert the scatter plot's offsets to arrays for comparison
+                        scatter = ax.collections[0]  # assuming the scatter plot is the first collection on the axes
+                        offsets = scatter.get_offsets()
+                        scatter_x = offsets[:, 0]
+                        scatter_y = offsets[:, 1]
+                        # Find the closest point
+                        distances = np.hypot(scatter_x - click_x, scatter_y - click_y)
+                        min_idx = distances.argmin()
+                        closest_x, closest_y = scatter_x[min_idx], scatter_y[min_idx]
+                        # Check if the closest point is within the tolerance
+                        if distances[min_idx] < tolerance:
+                            # Use the corresponding index from the DataFrame
+                            compressed_input = inputs['compressed_input'].iloc[min_idx % len(inputs)]
+                            print(
+                                f"Clicked on point: ({closest_x}, {closest_y}), Investment Inputs (binary string): {compressed_input}")
+                            print("Number of potential investments:", len(compressed_input))
+                            print(f"Number of investments activated: {compressed_input.count('1')}")
+                            # Get the column names of the investments
+                            investment_names = investments.columns
+
+                            # Print the names of the investments that are 1s
+                            for name, value in zip(investment_names, compressed_input):
+                                if value == '1':
+                                    print(f"Activated Investment: {name}")
+
+            # Connect the click event with the on_click function
+            cid = fig.canvas.mpl_connect('button_press_event', on_click)
             plt.show()
 
             return ResultsTable(data=data,
