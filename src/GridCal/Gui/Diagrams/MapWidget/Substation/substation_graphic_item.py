@@ -142,14 +142,19 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                                            longitude=long,
                                            graphic_object=self)
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
         """
 
         if self.hovered:
-            super().mouseMoveEvent(event)
+            # super().mouseMoveEvent(event)
             self.updatePosition()
+            pos = self.mapToParent(event.pos())
+            x = pos.x() - self.rect().width() / 2
+            y = pos.y() - self.rect().height() / 2
+            self.setRect(x, y, self.rect().width(), self.rect().height())
+
             self.editor.update_connectors()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
