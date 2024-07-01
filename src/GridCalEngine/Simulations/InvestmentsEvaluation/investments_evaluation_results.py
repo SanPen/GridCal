@@ -73,8 +73,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.calculate_magnitude(value=0)
         self.calculate_tech_score_magnitudes()
 
-        self.losses_scale = None
-        self.voltage_scale = None
+        self.losses_scale = 1.0
+        self.voltage_scale = 1.0
+        self.overload_scale = 1.0
 
         self.register(name='investment_groups_names', tpe=StrVec)
         self.register(name='_combinations', tpe=Vec)
@@ -149,6 +150,16 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
 
+    def scaling_factor(self, max_magnitude, target_magnitude) -> float:
+        if target_magnitude is not None:
+            magnitude_diff = max_magnitude - target_magnitude
+            if magnitude_diff >= 0:
+                scale = 10 ** magnitude_diff
+            else:
+                scale = 1.0 / (10 ** abs(magnitude_diff))
+            return scale
+        return 1.0
+
     def scaling_factor_losses(self, overload_max_magnitude, losses_majority_magnitudes) -> float:
         """
         Calculate the scaling factor based on the difference in magnitude between overload and losses magnitudes.
@@ -179,37 +190,50 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         return voltage_scale
 
     def calculate_tech_score_magnitudes(self):
-        """
-        Calculate the max magnitude of overload score and the magnitudes that appear most in losses and voltage scores
-        """
-        if self.overload_mag:
-            self.overload_max_magnitude = max(self.overload_mag)
-        else:
-            self.overload_max_magnitude = None
+        def get_majority_magnitude(magnitudes):
+            if magnitudes:
+                magnitude_counts = Counter(magnitudes)
+                max_count = max(magnitude_counts.values())
+                majority_magnitudes = [magnitude for magnitude, count in magnitude_counts.items() if count == max_count]
+                return max(majority_magnitudes)
+            return None
 
-        if self.losses_mag:
-            losses_magnitude_counts = Counter(self.losses_mag)
-            losses_max_count = max(losses_magnitude_counts.values())
-            losses_majority_magnitudes = [magnitude for magnitude, count in losses_magnitude_counts.items() if
-                                          count == losses_max_count]
-            self.losses_majority_magnitude = max(losses_majority_magnitudes)
-        else:
-            self.losses_majority_magnitude = None
-
-        if self.voltage_mag:
-            voltage_magnitude_counts = Counter(self.voltage_mag)
-            voltage_max_count = max(voltage_magnitude_counts.values())
-            voltage_majority_magnitudes = [magnitude for magnitude, count in voltage_magnitude_counts.items() if
-                                           count == voltage_max_count]
-            self.voltage_majority_magnitude = max(voltage_majority_magnitudes)
-        else:
-            self.voltage_majority_magnitude = None
+        self.overload_max_magnitude = get_majority_magnitude(self.overload_mag)
+        self.losses_majority_magnitude = get_majority_magnitude(self.losses_mag)
+        self.voltage_majority_magnitude = get_majority_magnitude(self.voltage_mag)
 
         return self.overload_max_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
 
+    # def calculate_tech_score_magnitudes(self):
+    #     """
+    #     Calculate the max magnitude of overload score and the magnitudes that appear most in losses and voltage scores
+    #     """
+    #     if self.overload_mag:
+    #         self.overload_max_magnitude = max(self.overload_mag)
+    #     else:
+    #         self.overload_max_magnitude = None
+    #
+    #     if self.losses_mag:
+    #         losses_magnitude_counts = Counter(self.losses_mag)
+    #         losses_max_count = max(losses_magnitude_counts.values())
+    #         losses_majority_magnitudes = [magnitude for magnitude, count in losses_magnitude_counts.items() if
+    #                                       count == losses_max_count]
+    #         self.losses_majority_magnitude = max(losses_majority_magnitudes)
+    #     else:
+    #         self.losses_majority_magnitude = None
+    #
+    #     if self.voltage_mag:
+    #         voltage_magnitude_counts = Counter(self.voltage_mag)
+    #         voltage_max_count = max(voltage_magnitude_counts.values())
+    #         voltage_majority_magnitudes = [magnitude for magnitude, count in voltage_magnitude_counts.items() if
+    #                                        count == voltage_max_count]
+    #         self.voltage_majority_magnitude = max(voltage_majority_magnitudes)
+    #     else:
+    #         self.voltage_majority_magnitude = None
+    #     print(self.overload_max_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude)
+    #     return self.overload_max_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
     def calculate_magnitude(self, value):
         return int(np.floor(np.log10(np.abs(value)))) if value != 0 else 0
-
 
     def get_objectives(self) -> Mat:
         """
@@ -336,18 +360,31 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         elif result_type == ResultTypes.InvestmentsParetoPlot:
             labels = self._index_names
 
-            # Scale losses and voltage scores to match overload score, creating smooth Pareto curve
-            overload_score = np.sum(self._overload_score)
-            if overload_score != 0:
-                self.calculate_tech_score_magnitudes()
-                self.losses_scale = self.scaling_factor_losses(self.overload_max_magnitude, self.losses_majority_magnitude)
-                self.voltage_scale = self.scaling_factor_voltage(self.overload_max_magnitude, self.voltage_majority_magnitude)
-            else:
-                self.losses_scale = 1
-                self.voltage_scale = 1
+            self.calculate_tech_score_magnitudes()
 
-            columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)", "Voltage cost (M€)"]
-            data = np.c_[self._financial, self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score, self._losses, self._overload_score, self._voltage_score]
+            max_magnitude = max(filter(None, [self.overload_max_magnitude, self.losses_majority_magnitude,
+                                              self.voltage_majority_magnitude]))
+
+            if max_magnitude is not None:
+                self.losses_scale = self.scaling_factor(max_magnitude, self.losses_majority_magnitude)
+                self.voltage_scale = self.scaling_factor(max_magnitude, self.voltage_majority_magnitude)
+                self.overload_scale = self.scaling_factor(max_magnitude, self.overload_max_magnitude)
+
+            # Scale losses and voltage scores to match overload score, creating smooth Pareto curve
+            # overload_score = np.sum(self._overload_score)
+            #
+            # if overload_score != 0:
+            #     self.calculate_tech_score_magnitudes()
+            #     self.losses_scale = self.scaling_factor_losses(self.overload_max_magnitude, self.losses_majority_magnitude)
+            #     self.voltage_scale = self.scaling_factor_voltage(self.overload_max_magnitude, self.voltage_majority_magnitude)
+            # else:
+            #     self.losses_scale = 1
+            #     self.voltage_scale = 1
+
+            columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)",
+                       "Voltage cost (M€)"]
+            data = np.c_[
+                self._financial, self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score, self._losses, self._overload_score, self._voltage_score]
             y_label = ''
             title = ''
 
@@ -357,13 +394,19 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             # Match magnitude of technical score with investment score
             technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
-            max_x_order_of_magnitude = self.calculate_magnitude(max(self._financial))
-            max_y_order_of_magnitude = self.calculate_magnitude(max(self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score))
+            # max_x_order_of_magnitude = self.calculate_magnitude(max(self._financial))
+            # max_y_order_of_magnitude = self.calculate_magnitude(max(self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score))
+            # order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
+            # scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
+
+            max_x_order_of_magnitude = 2
+            max_y_order_of_magnitude = self.calculate_magnitude(
+                max(self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
             scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
 
             # Plot 1: Technical vs investment
-            sc1 = ax3[0, 0].scatter(self._financial, scaled_technical_score, c=self._f_obj, norm=color_norm)
+            sc1 = ax3[0, 0].scatter(self._financial * 10 ** -2, scaled_technical_score, c=self._f_obj, norm=color_norm)
             ax3[0, 0].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[0, 0].set_ylabel('Technical cost (M€)', fontsize=10)
             ax3[0, 0].set_title('Technical vs investment', fontsize=12)
