@@ -17,6 +17,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
+from matplotlib.widgets import Cursor
+
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
@@ -402,6 +404,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             fig.suptitle(result_type.value)
             plt.tight_layout()
+<<<<<<< HEAD
 
             def on_click(event):
                 # Tolerance threshold for clicking near a point
@@ -439,6 +442,50 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             # Connect the click event with the on_click function
             cid = fig.canvas.mpl_connect('button_press_event', on_click)
+=======
+            used_investments = np.zeros(len(self._capex), dtype=object)
+            for i in range(self._combinations.shape[0]):
+                used_investments[i] = ""
+                for j in range(self._combinations.shape[1]):
+                    if self._combinations[i, j] > 0:
+                        name = self.investment_groups_names[j]
+                        used_investments[i] += f"{name},"
+
+            def click_solution(event):
+                # Tolerance threshold for clicking near a point
+                tolerance = 0.1 * (ax3[0, 0].get_xlim()[1] - ax3[0, 0].get_xlim()[0])
+
+                # Check if the click is within the axes
+                if event.inaxes is not None:
+                    click_x, click_y = event.xdata, event.ydata
+
+                    if event.inaxes == ax3[0, 0]:
+                        scatter_plot = sc1
+                    elif event.inaxes == ax3[0, 1]:
+                        scatter_plot = sc2
+                    elif event.inaxes == ax3[1, 0]:
+                        scatter_plot = sc3
+                    elif event.inaxes == ax3[1, 1]:
+                        scatter_plot = sc4
+                    else:
+                        return
+
+                    offsets = scatter_plot.get_offsets()
+                    scatter_x = offsets[:, 0]
+                    scatter_y = offsets[:, 1]
+                    distances = np.hypot(scatter_x - click_x, scatter_y - click_y)
+                    min_idx = distances.argmin()
+
+                    if distances[min_idx] < tolerance:
+                        # print(f"Clicked on point: ({scatter_x[min_idx]}, {scatter_y[min_idx]})")
+                        investment_names = used_investments[min_idx].split(',')
+                        print("Investments made:")
+                        for name in investment_names:
+                            print(name)
+
+            # Connect the click event to the function
+            fig.canvas.mpl_connect('button_press_event', click_solution)
+>>>>>>> 5aa68e58c7e24b2837708429d54fc98cc7899746
             plt.show()
 
             return ResultsTable(data=data,
