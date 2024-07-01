@@ -210,7 +210,7 @@ class EditableDevice:
 
         self._name: str = name
 
-        self.code: str = code
+        self._code: str = code
 
         self.device_type: DeviceType = device_type
 
@@ -275,6 +275,22 @@ class EditableDevice:
         :param val: any string or None
         """
         self._idtag = parse_idtag(val)
+
+    @property
+    def code(self) -> str:
+        """
+        code getter
+        :return: string, hopefully an UUIDv4
+        """
+        return self._code
+
+    @code.setter
+    def code(self, val: Union[str, None]):
+        """
+        code setter
+        :param val: any string or None
+        """
+        self._code = val
 
     def flatten_idtag(self):
         """
