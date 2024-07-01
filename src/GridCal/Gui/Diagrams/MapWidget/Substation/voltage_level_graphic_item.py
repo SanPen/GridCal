@@ -98,7 +98,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         self.needsUpdate = False
         self.setZValue(1)
 
-    def updatePosition(self):
+    def updatePosition(self) -> None:
         """
 
         :return:
@@ -109,7 +109,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         self.y = center_point.y() + real_position.y()
         self.needsUpdate = True
 
-    def updateDiagram(self):
+    def updateDiagram(self) -> None:
         """
 
         :return:
