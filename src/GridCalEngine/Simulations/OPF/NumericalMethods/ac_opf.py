@@ -220,6 +220,8 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
     :return: Object with all the model equations and derivatives stored
     """
+
+    ts_modadm = timeit.default_timer()
     M, N = admittances.Cf.shape
     Ng = len(ig)
     ntapm = len(k_m)
@@ -236,13 +238,17 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
+    if ntapm + ntapt !=0:
+        admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
+    else:
+        pass
 
     Ybus = admittances.Ybus
     Yf = admittances.Yf
     Yt = admittances.Yt
     Cf = admittances.Cf
     Ct = admittances.Ct
+    te_modadm = timeit.default_timer()
 
     ts_f = timeit.default_timer()
     f = eval_f(x=x, Cg=Cg, k_m=k_m, k_tau=k_tau, nll=nll, c0=c0, c1=c1, c2=c2, c_s=c_s, nslcap=nslcap,
@@ -278,7 +284,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                                                                   F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
                                                                   compute_jac=compute_jac, compute_hess=compute_hess)
 
-    times = np.r_[te_f - ts_f, te_g - ts_g, te_h - ts_h, der_times]
+    times = np.r_[te_modadm - ts_modadm, te_f - ts_f, te_g - ts_g, te_h - ts_h, der_times]
 
     return IpsFunctionReturn(f=f, G=G, H=H,
                              fx=fx, Gx=Gx, Hx=Hx,
@@ -834,8 +840,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         df_trafo_m = pd.DataFrame(data={'V (p.u.)': tapm}, index=k_m)
         df_trafo_tau = pd.DataFrame(data={'Tau (rad)': tapt}, index=k_tau)
         df_times = pd.DataFrame(data=times[1:], index=list(range(result.iterations)),
-                                columns = ['t_f', 't_g', 't_h', 't_fx', 't_gx',
-                                           't_hx', 't_fxx', 't_gxx', 't_hxx', 't_iter'])
+                                columns=['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+                                         't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+                                         't_mult', 't_steps', 't_cond', 't_iter'])
 
         print()
         print("Bus:\n", df_bus)
@@ -854,6 +861,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Gamma", result.gamma)
         print("Sf", result.structs.Sf)
         print('Times:\n', df_times)
+        print('Relative times:\n', 100*df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+                                         't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+                                         't_mult', 't_steps', 't_cond', 't_iter']].div(df_times['t_iter'], axis=0))
 
     if plot_error:
         result.plot_error()
