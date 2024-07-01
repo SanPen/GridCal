@@ -50,7 +50,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathL
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget2.map_widget import MapWidget
+from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 import GridCal.Gui.Visualization.visualization as viz
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
