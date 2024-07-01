@@ -23,7 +23,7 @@ from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRect
 
 from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED
-from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
 

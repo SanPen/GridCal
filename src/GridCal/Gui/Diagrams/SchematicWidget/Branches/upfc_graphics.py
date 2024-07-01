@@ -19,9 +19,9 @@ from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GuiFunctions import add_menu_entry
-from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import BarTerminalItem
 from GridCalEngine.Devices.Branches.upfc import UPFC
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.Diagrams.TemplateWidgets.line_graphics_template import LineGraphicTemplateItem
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget

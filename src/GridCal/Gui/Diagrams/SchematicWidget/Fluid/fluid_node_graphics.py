@@ -29,7 +29,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.Devices.types import FLUID_TYPES
 
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, FONT_SCALE, GenericDiagramWidget
-from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import BarTerminalItem, HandleItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem

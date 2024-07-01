@@ -55,7 +55,7 @@ from GridCalEngine.enumerations import DeviceType, SimulationTypes
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Devices.types import BRANCH_TYPES
 
-from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
@@ -70,7 +70,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.vsc_graphics import VscGraphi
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.upfc_graphics import UpfcGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.series_reactance_graphics import SeriesReactanceGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.switch_graphics import SwitchGraphicItem
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.Diagrams.TemplateWidgets.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE

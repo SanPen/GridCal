@@ -18,8 +18,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 from PySide6.QtWidgets import QMenu
 from GridCal.Gui.GuiFunctions import add_menu_entry
-from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
-from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
+from GridCal.Gui.Diagrams.TemplateWidgets.line_graphics_template import LineGraphicTemplateItem
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_editor import TransformerEditor
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_taps_editor import TransformerTapsEditor
