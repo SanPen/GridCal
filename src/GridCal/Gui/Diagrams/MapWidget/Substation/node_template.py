@@ -36,7 +36,6 @@ class NodeTemplate(GenericDiagramWidget):
                  api_object: ALL_DEV_TYPES = None,
                  editor: Union[GridMapWidget, None] = None,
                  draw_labels: bool = True,
-                 needsUpdate: bool = True,
                  lat: float = 0.0,
                  lon: float = 0.0):
         """
@@ -46,8 +45,6 @@ class NodeTemplate(GenericDiagramWidget):
                                       api_object=api_object,
                                       editor=editor,
                                       draw_labels=draw_labels)
-
-        self.needsUpdate: bool = needsUpdate
         self.lat = lat
         self.lon = lon
 

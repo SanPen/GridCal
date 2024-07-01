@@ -19,11 +19,11 @@ from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QBrush, QColor
-from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+from PySide6.QtGui import QBrush, QColor, QPen, QCursor
+# from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import RoundMapTerminalItem
 from GridCal.Gui.GuiFunctions import add_menu_entry
-
 
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
@@ -33,7 +33,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 
 
-class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
+class SubstationGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -49,7 +49,7 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                  api_object: Substation,
                  lat: float,
                  lon: float,
-                 r: float = 20.0,
+                 r: float = 40.0,
                  draw_labels: bool = True):
         """
 
@@ -59,50 +59,56 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :param lon:
         :param r:
         """
-        QtWidgets.QGraphicsRectItem.__init__(self)
-        NodeTemplate.__init__(self,
-                              api_object=api_object,
-                              editor=editor,
-                              draw_labels=draw_labels,
-                              lat=lat,
-                              lon=lon)
 
+        GenericDiagramWidget.__init__(self,
+                                      parent=None,
+                                      api_object=api_object,
+                                      editor=editor,
+                                      draw_labels=draw_labels)
+        QtWidgets.QGraphicsRectItem.__init__(self, None)
 
         self.editor: GridMapWidget = editor  # re assign for the types to be clear
 
+        self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
         self._terminal = RoundMapTerminalItem("t", parent=self, editor=self.editor)
 
-        self.setRect(0.0, 0.0, r, r)
+        # shape the substation
         self.lat = lat
         self.lon = lon
+        self.radius = 50
+        x, y = self.editor.to_x_y(lat=lat, lon=lon)
+        self.setRect(x - self.radius / 2, y - self.radius / 2, self.radius, self.radius)
 
-        if lat is not None and lon is not None:
-            self.x, self.y = self.editor.to_x_y(lat=lat, lon=lon)
-        else:
-            self.x = 0
-            self.y = 0
-
-        self.radius = r
-        self.resize(r)
-        self.setAcceptHoverEvents(True)  # Enable hover events for the item
-        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
-        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
-
-        # Create a pen with reduced line width
-        self.change_pen_width(0.5)
-
-        # self.colorInner = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        # self.colorBorder = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        print(f"Created SE at x:{x}, y:{y}, lat:{lat}, lon:{lon}")
 
         self.colorInner = QColor(255, 100, 100, 100)
         self.colorBorder = QColor(255, 100, 100, 100)
+        self.pen_width = 4
+        self.setPen(QPen(self.colorInner, self.pen_width, self.style))
+        self.setBrush(self.colorBorder)
+        # self.setFlags(self.GraphicsItemFlag.ItemIsSelectable)
+        self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Assign color to the node
-        self.setDefaultColor()
-        self.hovered = False
-        self.needsUpdate = False
-        self.setZValue(1)
-        self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+        # self.setDefaultColor()
+        # self.hovered = False
+        # self.setZValue(1)
+
+    def get_terminal(self) -> RoundMapTerminalItem:
+        """
+        Get the terminal
+        :return:
+        """
+        return self._terminal
+
+    def valid_coordinates(self) -> bool:
+        """
+        Checks if the coordinates are different from 0, 0
+        :return: ok?
+        """
+        return self.lon != 0.0 and self.lat != 0.0
 
     def register_voltage_level(self, vl: VoltageLevelGraphicItem):
         """
@@ -121,129 +127,49 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         for i, vl_graphics in enumerate(sorted_objects):
             vl_graphics.setZValue(i)
 
-    def updatePosition(self) -> None:
-        """
-
-        :return: 
-        """
-        real_position = self.pos()
-        center_point = self.getPos()
-        self.x = center_point.x() + real_position.x()
-        self.y = center_point.y() + real_position.y()
-        self.needsUpdate = True
-
-    def updateDiagram(self):
-        """
-        
-        :return: 
-        """
-        lat, long = self.editor.to_lat_lon(self.x, self.y)
-
-        print(f'Updating SE position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
-
-        self.editor.update_diagram_element(device=self.api_object,
-                                           latitude=lat,
-                                           longitude=long,
-                                           graphic_object=self)
-
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
         """
+        pos = self.mapToParent(event.pos())
+        x = int(pos.x() - self.rect().width() / 2)
+        y = int(pos.y() - self.rect().height() / 2)
+        self.setRect(x, y, self.rect().width(), self.rect().height())
 
-        if self.hovered:
-            super().mouseMoveEvent(event)
-            self.updatePosition()
-            self._terminal.update()
-            # self.editor.update_connectors()
+        self._terminal.update()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.
         """
         self.editor.map.view.disableMove = True
-
-        if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.CountryDevice: self.editor.circuit.get_countries(),
-                                             DeviceType.CommunityDevice: self.editor.circuit.get_communities(),
-                                             DeviceType.RegionDevice: self.editor.circuit.get_regions(),
-                                             DeviceType.MunicipalityDevice: self.editor.circuit.get_municipalities(),
-                                             DeviceType.AreaDevice: self.editor.circuit.get_areas(),
-                                             DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
-                                         })
+        #
+        # if self.api_object is not None:
+        #     self.editor.set_editor_model(api_object=self.api_object,
+        #                                  dictionary_of_lists={
+        #                                      DeviceType.CountryDevice: self.editor.circuit.get_countries(),
+        #                                      DeviceType.CommunityDevice: self.editor.circuit.get_communities(),
+        #                                      DeviceType.RegionDevice: self.editor.circuit.get_regions(),
+        #                                      DeviceType.MunicipalityDevice: self.editor.circuit.get_municipalities(),
+        #                                      DeviceType.AreaDevice: self.editor.circuit.get_areas(),
+        #                                      DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
+        #                                  })
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse release events.
         """
-        self.editor.disableMove = True
-        self.updateDiagram()  # always update
+        self.editor.map.view.disableMove = False
 
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        """
-        Event handler for when the mouse enters the item.
-        """
-        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
-        self.hovered = True
-        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
+        self.lat, self.lon = self.editor.to_lat_lon(x=self.pos().x(),
+                                                    y=self.pos().y())
 
-    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        """
-        Event handler for when the mouse leaves the item.
-        """
-        self.hovered = False
-        self.setDefaultColor()
-        QApplication.instance().restoreOverrideCursor()
+        print(f'Updating SE position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
-    def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
-        """
-
-        :param event:
-        """
-        menu = QMenu()
-
-        add_menu_entry(menu=menu,
-                       text="New",
-                       icon_path="",
-                       function_ptr=self.NewFunction)
-
-        add_menu_entry(menu=menu,
-                       text="Copy",
-                       icon_path="",
-                       function_ptr=self.CopyFunction)
-
-        add_menu_entry(menu=menu,
-                       text="Remove",
-                       icon_path="",
-                       function_ptr=self.RemoveFunction)
-
-        menu.exec_(event.screenPos())
-
-    def NewFunction(self):
-        """
-        Function to be called when Action 1 is selected.
-        """
-        # Implement the functionality for Action 1 here
-        pass
-
-    def CopyFunction(self):
-        """
-        Function to be called when Action 1 is selected.
-        """
-        # Implement the functionality for Action 1 here
-        pass
-
-    def RemoveFunction(self):
-        """
-        Function to be called when Action 1 is selected.
-        """
-
-        self.editor.removeSubstation(self)
-
-        # Implement the functionality for Action 1 here
-        pass
+        self.editor.update_diagram_element(device=self.api_object,
+                                           latitude=self.lat,
+                                           longitude=self.lon,
+                                           graphic_object=self)
 
     def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
@@ -261,14 +187,6 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             pen.setColor(border_color)
             self.setPen(pen)
 
-    def setDefaultColor(self) -> None:
-        """
-
-        :return:
-        """
-        # Example: color assignment
-        self.setNodeColor(self.colorInner, self.colorBorder)
-
     def getPos(self) -> QPointF:
         """
 
@@ -282,21 +200,14 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
         return center_point
 
-    def getRealPos(self) -> Tuple[float, float]:
-        """
-
-        :return:
-        """
-        self.updatePosition()
-        return self.x, self.y
-
-    def resize(self, new_radius: float) -> None:
+    def resize(self, r: float) -> None:
         """
         Resize the node.
-        :param new_radius: New radius for the node.
+        :param r: New radius for the node.
         """
-        self.radius = new_radius
-        self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
+        self.radius = r
+        # self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
+        self.setRect(0.0, 0.0, r, r)
 
     def change_pen_width(self, width: float) -> None:
         """

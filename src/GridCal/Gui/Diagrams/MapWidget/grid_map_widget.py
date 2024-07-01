@@ -818,7 +818,7 @@ class GridMapWidget(BaseDiagramWidget):
                 print("Create substation...")
                 api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}")
                 self.circuit.add_substation(obj=api_object)
-                self.add_api_substation(api_object=api_object, lat=lat, lon=lon, r=0.01)
+                self.add_api_substation(api_object=api_object, lat=lat, lon=lon, r=50)
 
     def wheelEvent(self, event: QWheelEvent):
         """

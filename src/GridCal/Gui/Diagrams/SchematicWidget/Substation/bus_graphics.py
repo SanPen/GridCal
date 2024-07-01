@@ -588,11 +588,6 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             ok = True
 
         if ok:
-            # self.delete_all_connections()
-            #
-            # for g in self.shunt_children:
-            #     self.editor.remove_from_scene(g.nexus)
-
             self.editor.remove_element(device=self.api_object,
                                        graphic_object=self,
                                        delete_from_db=delete_from_db)

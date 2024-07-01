@@ -92,6 +92,7 @@ class MapScene(QGraphicsScene):
         :param event:
         :return:
         """
+
         super().mouseMoveEvent(event)
 
 
@@ -195,6 +196,8 @@ class MapView(QGraphicsView):
         if not self.disableMove:
             self.map_widget.mouseMoveEvent(event)
             self.centerSchema()
+
+
 
         super().mouseMoveEvent(event)
 
@@ -677,7 +680,7 @@ class MapWidget(QWidget):
         If left mouse down, either drag the map or start a box selection.
         If we are off the map, ensure self.mouse_x, etc, are None.
         """
-
+        # print(f"MapWidget {event.x()}, {event.y()}")
         x = event.x()
         y = event.y()
 

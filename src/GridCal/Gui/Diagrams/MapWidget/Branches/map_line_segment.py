@@ -59,8 +59,8 @@ class MapLineSegment2(LineGraphicTemplateItem):
         :param draw_labels:
         """
         LineGraphicTemplateItem.__init__(self,
-                                         from_port=first.terminal,
-                                         to_port=second.terminal,
+                                         from_port=first.get_terminal(),
+                                         to_port=second.get_terminal(),
                                          editor=editor,
                                          width=width,
                                          api_object=api_object,

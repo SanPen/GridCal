@@ -247,9 +247,6 @@ class MapLineContainer(GenericDiagramWidget):
                                                      container=self,
                                                      editor=self.editor)
 
-            elm2.needsUpdate = True
-            segment_graphic_object.needsUpdate = True
-
             # register the segment in the line
             self.add_segment(segment=segment_graphic_object)
 

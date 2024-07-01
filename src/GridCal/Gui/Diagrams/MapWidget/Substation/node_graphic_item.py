@@ -106,6 +106,20 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # Assign color to the node
         self.setDefaultColor()
 
+    def get_terminal(self) -> RoundMapTerminalItem:
+        """
+        Get the terminal
+        :return:
+        """
+        return self._terminal
+
+    def valid_coordinates(self) -> bool:
+        """
+        Checks if the coordinates are different from 0, 0
+        :return: ok?
+        """
+        return self.lon != 0.0 and self.lat != 0.0
+
     def updateRealPos(self) -> None:
         """
 

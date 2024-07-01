@@ -23,7 +23,7 @@ from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QP
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
                                QGraphicsEllipseItem, QGraphicsSceneMouseEvent, QGraphicsTextItem)
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDiagramWidget
-from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import BarTerminalItem, RoundTerminalItem
+from GridCal.Gui.Diagrams.TemplateWidgets.terminal_item import BarTerminalItem, RoundTerminalItem, RoundMapTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.busbar_graphics import BusBarGraphicItem
@@ -434,8 +434,8 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
     """
 
     def __init__(self,
-                 from_port: Union[BarTerminalItem, RoundTerminalItem],
-                 to_port: Union[BarTerminalItem, RoundTerminalItem, None],
+                 from_port: Union[BarTerminalItem, RoundTerminalItem, RoundMapTerminalItem],
+                 to_port: Union[BarTerminalItem, RoundTerminalItem, RoundMapTerminalItem, None],
                  editor: Union[SchematicWidget, GridMapWidget],
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,

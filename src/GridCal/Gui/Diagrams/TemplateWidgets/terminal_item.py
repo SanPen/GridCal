@@ -564,12 +564,12 @@ class RoundMapTerminalItem(QGraphicsEllipseItem):
         else:
             return super(RoundMapTerminalItem, self).itemChange(change, value)
 
-    def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
-        """
-        Start a connection
-        :param event: QGraphicsSceneMouseEvent
-        """
-        self.editor.start_connection(self)
+    # def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
+    #     """
+    #     Start a connection
+    #     :param event: QGraphicsSceneMouseEvent
+    #     """
+    #     self.editor.start_connection(self)
 
     def remove_all_connections(self) -> None:
         """
