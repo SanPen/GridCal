@@ -291,7 +291,7 @@ def interior_point_solver(x0: Vec,
     :return: IpsSolution
     """
 
-    times = np.array([np.zeros(10)])
+    times = np.array([np.zeros(15)])
     t_start = timeit.default_timer()
 
     # Init iteration values
@@ -348,7 +348,10 @@ def interior_point_solver(x0: Vec,
     while not converged and iter_counter < max_iter:
         ts_iter = timeit.default_timer()
         # Evaluate the functions, gradients and hessians at the current iteration.
-        ret, new_times_i = func(x, mu, lam, True, True, *arg)
+        if iter_counter == 0:
+            ret, new_times_0 = func(x, mu, lam, True, True, *arg)
+        else:
+            new_times_0 = 0
         Hx_t = ret.Hx.T
         Gx_t = ret.Gx.T
         # compose the Jacobian
@@ -362,12 +365,15 @@ def interior_point_solver(x0: Vec,
         r = - np.r_[n, ret.G]
 
         # Find the reduced problem residuals and split them
+        ts_nrstep = timeit.default_timer()
         dx, dlam = split(linear_solver(jac, r), n_x)
-
+        te_nrstep = timeit.default_timer()
         # Calculate the inequalities residuals using the reduced problem residuals
+
+        ts_mult = timeit.default_timer()
         dz = - ret.H - z - ret.Hx @ dx
         dmu = - mu + z_inv @ (gamma * e - mu * dz)
-
+        te_mult = timeit.default_timer()
         # Step control as in PyPower
         if step_control:
             l0 = ret.f + np.dot(lam, ret.G) + np.dot(mu, ret.H + z) - gamma * np.sum(np.log(z))
@@ -393,9 +399,10 @@ def interior_point_solver(x0: Vec,
             dmu = alpha * dmu
 
         # Compute the maximum step allowed
+        ts_steps = timeit.default_timer()
         alpha_p = step_calculation(z, dz)
         alpha_d = step_calculation(mu, dmu)
-
+        te_steps = timeit.default_timer()
         # Update the values of the variables and multipliers
         x += dx * alpha_p
         z += dz * alpha_p
@@ -403,8 +410,10 @@ def interior_point_solver(x0: Vec,
         mu += dmu * alpha_d
         gamma = 0.1 * mu @ z / n_ineq
 
-        # Update fobj, g, h
-        ret, _ = func(x, mu, lam, True, False, *arg)
+        # Update fobj, g, h, calculate next step.
+        ret, new_times_i = func(x, mu, lam, True, True, *arg)
+
+        ts_conds = timeit.default_timer()
         Hx_t = ret.Hx.T
         Gx_t = ret.Gx.T
         g_norm = np.linalg.norm(ret.G, np.Inf)
@@ -419,7 +428,7 @@ def interior_point_solver(x0: Vec,
         maxdispl = np.max(np.r_[dx, dlam, dz, dmu])
         z_inv = diags(1.0 / z)
         mu_diag = diags(mu)
-
+        te_conds = timeit.default_timer()
         converged = feascond < tol and gradcond < tol and gamma < tol
 
         if verbose > 1:
@@ -443,8 +452,10 @@ def interior_point_solver(x0: Vec,
         feascond_evolution[iter_counter] = feascond
         error_evolution[iter_counter] = error
 
+
+
         te_iter = timeit.default_timer()
-        new_times = np.r_[new_times_i, te_iter - ts_iter]
+        new_times = np.r_[new_times_i+new_times_0, te_nrstep - ts_nrstep, te_mult - ts_mult, te_steps - ts_steps, te_conds - ts_conds, te_iter - ts_iter]
         times_i = times.copy()
         times = np.r_[times_i, [new_times]]
 
