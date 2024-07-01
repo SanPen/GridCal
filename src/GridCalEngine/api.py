@@ -21,6 +21,7 @@ from GridCalEngine.IO import *
 from GridCalEngine.Devices import *
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import *
+from GridCalEngine.Topology.detect_substations import detect_substations
 
 
 def open_file(filename: Union[str, List[str]]) -> MultiCircuit:
