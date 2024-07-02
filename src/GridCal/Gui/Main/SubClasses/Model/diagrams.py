@@ -26,6 +26,7 @@ from pandas.plotting import register_matplotlib_converters
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.object_model import ObjectsModel
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
@@ -1210,7 +1211,7 @@ class DiagramsMain(CompiledArraysMain):
 
         # modify the time index in the current DB objects model
         mdl = self.ui.dataStructureTableView.model()
-        if isinstance(mdl, gf.ObjectsModel):
+        if isinstance(mdl, ObjectsModel):
             mdl.set_time_index(time_index=idx2)
 
     def objects_diagram_time_slider_texts(self):

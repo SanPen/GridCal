@@ -24,7 +24,8 @@ from PySide6.QtWidgets import QApplication, QDialog, QTableView, QVBoxLayout, QP
 from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCal.Gui.GuiFunctions import ObjectsModel, get_list_model, get_checked_indices
+from GridCal.Gui.GuiFunctions import get_list_model, get_checked_indices
+from GridCal.Gui.object_model import ObjectsModel
 
 
 class NewProfilesStructureDialogue(QtWidgets.QDialog):

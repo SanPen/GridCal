@@ -24,6 +24,8 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, com
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.object_model import ObjectsModel
+from GridCal.Gui.profiles_model import ProfilesModel
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
@@ -84,7 +86,7 @@ class ObjectsTableMain(DiagramsMain):
         # Set context menu policy to CustomContextMenu
         self.ui.dataStructureTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
 
-    def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
+    def create_objects_model(self, elements, elm_type: DeviceType) -> ObjectsModel:
         """
         Generate the objects' table model
         :param elements: list of elements
@@ -303,12 +305,12 @@ class ObjectsTableMain(DiagramsMain):
         else:
             raise Exception(f'elm_type not understood: {elm_type.value}')
 
-        mdl = gf.ObjectsModel(objects=elements,
-                              property_list=elm.property_list,
-                              time_index=self.get_db_slider_index(),
-                              parent=self.ui.dataStructureTableView,
-                              editable=True,
-                              dictionary_of_lists=dictionary_of_lists)
+        mdl = ObjectsModel(objects=elements,
+                           property_list=elm.property_list,
+                           time_index=self.get_db_slider_index(),
+                           parent=self.ui.dataStructureTableView,
+                           editable=True,
+                           dictionary_of_lists=dictionary_of_lists)
 
         return mdl
 
@@ -334,12 +336,12 @@ class ObjectsTableMain(DiagramsMain):
 
                     elements = self.get_current_objects_model_view().objects
 
-                    mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
-                                           elements=elements,
-                                           device_type=dev_type,
-                                           magnitude=magnitude,
-                                           data_format=mtype,
-                                           parent=self.ui.profiles_tableView)
+                    mdl = ProfilesModel(time_array=self.circuit.get_time_array(),
+                                        elements=elements,
+                                        device_type=dev_type,
+                                        magnitude=magnitude,
+                                        data_format=mtype,
+                                        parent=self.ui.profiles_tableView)
                 else:
                     mdl = None
 
@@ -757,7 +759,7 @@ class ObjectsTableMain(DiagramsMain):
         else:
             return t_idx
 
-    def get_current_objects_model_view(self) -> gf.ObjectsModel:
+    def get_current_objects_model_view(self) -> ObjectsModel:
         """
         Get the current ObjectsModel from the GUI
         :return: ObjectsModel
@@ -1047,7 +1049,7 @@ class ObjectsTableMain(DiagramsMain):
                              "Detect substations")
 
         if ok:
-            val = 1.0 / (10.0**self.ui.rxThresholdSpinBox.value())
+            val = 1.0 / (10.0 ** self.ui.rxThresholdSpinBox.value())
             detect_substations(grid=self.circuit,
                                r_x_threshold=val)
 
