@@ -67,7 +67,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.losses_mag = []
         self.voltage_mag = []
 
-        self.overload_max_magnitude = None
+        self.overload_majority_magnitude = None
         self.losses_majority_magnitude = None
         self.voltage_majority_magnitude = None
         self.calculate_magnitude(value=0)
@@ -151,6 +151,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._index_names[eval_idx] = index_name
 
     def scaling_factor(self, max_magnitude, target_magnitude) -> float:
+        """ Calculate the scaling factor for a technical score """
         if target_magnitude is not None:
             magnitude_diff = max_magnitude - target_magnitude
             if magnitude_diff >= 0:
@@ -160,36 +161,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             return scale
         return 1.0
 
-    def scaling_factor_losses(self, overload_max_magnitude, losses_majority_magnitudes) -> float:
-        """
-        Calculate the scaling factor based on the difference in magnitude between overload and losses magnitudes.
-        """
-        losses_scale = None
-        if losses_majority_magnitudes is not None:
-            magnitude_diff_losses = overload_max_magnitude - losses_majority_magnitudes
-            if magnitude_diff_losses >= 0:
-                losses_scale = 10 ** magnitude_diff_losses
-            else:
-                losses_scale = 1.0 / (10 ** abs(magnitude_diff_losses))
-
-        return losses_scale
-
-    def scaling_factor_voltage(self, overload_max_magnitude, voltage_majority_magnitudes) -> float:
-        """
-        Calculate the scaling factor based on the difference in magnitude between overload and voltage magnitudes.
-        """
-        voltage_scale = None
-
-        if voltage_majority_magnitudes is not None:
-            magnitude_diff_voltage = overload_max_magnitude - voltage_majority_magnitudes - 1
-            if magnitude_diff_voltage >= 0:
-                voltage_scale = 10 ** magnitude_diff_voltage
-            else:
-                voltage_scale = 1.0 / (10 ** abs(magnitude_diff_voltage))
-
-        return voltage_scale
-
     def calculate_tech_score_magnitudes(self):
+        """ Calculate the magnitudes that appear each technical score, new tech scores may be added """
         def get_majority_magnitude(magnitudes):
             if magnitudes:
                 magnitude_counts = Counter(magnitudes)
@@ -198,40 +171,12 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                 return max(majority_magnitudes)
             return None
 
-        self.overload_max_magnitude = get_majority_magnitude(self.overload_mag)
+        self.overload_majority_magnitude = get_majority_magnitude(self.overload_mag)
         self.losses_majority_magnitude = get_majority_magnitude(self.losses_mag)
         self.voltage_majority_magnitude = get_majority_magnitude(self.voltage_mag)
 
-        return self.overload_max_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
+        return self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
 
-    # def calculate_tech_score_magnitudes(self):
-    #     """
-    #     Calculate the max magnitude of overload score and the magnitudes that appear most in losses and voltage scores
-    #     """
-    #     if self.overload_mag:
-    #         self.overload_max_magnitude = max(self.overload_mag)
-    #     else:
-    #         self.overload_max_magnitude = None
-    #
-    #     if self.losses_mag:
-    #         losses_magnitude_counts = Counter(self.losses_mag)
-    #         losses_max_count = max(losses_magnitude_counts.values())
-    #         losses_majority_magnitudes = [magnitude for magnitude, count in losses_magnitude_counts.items() if
-    #                                       count == losses_max_count]
-    #         self.losses_majority_magnitude = max(losses_majority_magnitudes)
-    #     else:
-    #         self.losses_majority_magnitude = None
-    #
-    #     if self.voltage_mag:
-    #         voltage_magnitude_counts = Counter(self.voltage_mag)
-    #         voltage_max_count = max(voltage_magnitude_counts.values())
-    #         voltage_majority_magnitudes = [magnitude for magnitude, count in voltage_magnitude_counts.items() if
-    #                                        count == voltage_max_count]
-    #         self.voltage_majority_magnitude = max(voltage_majority_magnitudes)
-    #     else:
-    #         self.voltage_majority_magnitude = None
-    #     print(self.overload_max_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude)
-    #     return self.overload_max_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
     def calculate_magnitude(self, value):
         return int(np.floor(np.log10(np.abs(value)))) if value != 0 else 0
 
@@ -362,24 +307,13 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             self.calculate_tech_score_magnitudes()
 
-            max_magnitude = max(filter(None, [self.overload_max_magnitude, self.losses_majority_magnitude,
+            max_magnitude = max(filter(None, [self.overload_majority_magnitude, self.losses_majority_magnitude,
                                               self.voltage_majority_magnitude]))
 
             if max_magnitude is not None:
                 self.losses_scale = self.scaling_factor(max_magnitude, self.losses_majority_magnitude)
                 self.voltage_scale = self.scaling_factor(max_magnitude, self.voltage_majority_magnitude)
-                self.overload_scale = self.scaling_factor(max_magnitude, self.overload_max_magnitude)
-
-            # Scale losses and voltage scores to match overload score, creating smooth Pareto curve
-            # overload_score = np.sum(self._overload_score)
-            #
-            # if overload_score != 0:
-            #     self.calculate_tech_score_magnitudes()
-            #     self.losses_scale = self.scaling_factor_losses(self.overload_max_magnitude, self.losses_majority_magnitude)
-            #     self.voltage_scale = self.scaling_factor_voltage(self.overload_max_magnitude, self.voltage_majority_magnitude)
-            # else:
-            #     self.losses_scale = 1
-            #     self.voltage_scale = 1
+                self.overload_scale = self.scaling_factor(max_magnitude, self.overload_majority_magnitude)
 
             columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)",
                        "Voltage cost (M€)"]
@@ -394,12 +328,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             # Match magnitude of technical score with investment score
             technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
-            # max_x_order_of_magnitude = self.calculate_magnitude(max(self._financial))
-            # max_y_order_of_magnitude = self.calculate_magnitude(max(self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score))
-            # order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
-            # scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
-
-            max_x_order_of_magnitude = 2
+            max_x_order_of_magnitude = 2   # set to 2 so that costs are in the hundreds of millions
             max_y_order_of_magnitude = self.calculate_magnitude(
                 max(self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
