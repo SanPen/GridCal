@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
@@ -28,7 +28,6 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
 
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.enumerations import DeviceType
-
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
@@ -99,19 +98,18 @@ class MapLineSegment(QGraphicsLineItem):
         # self.arrow_to_1.set_colour(color, w, style)
         # self.arrow_to_2.set_colour(color, w, style)
 
-    def update_endings(self, force = False) -> None:
+    def update_endings(self, force=False) -> None:
         """
         Update the endings of this segment
         """
 
         # Get the positions of the first and second objects
         if self.first.needsUpdate or self.second.needsUpdate or force:
-            first_pos = self.first.getRealPos()
-            second_pos = self.second.getRealPos()
-
             # Set the line's starting and ending points
-            self.setLine(first_pos[0], first_pos[1],
-                         second_pos[0], second_pos[1])
+            self.setLine(self.first.rect().x(),
+                         self.first.rect().y(),
+                         self.second.rect().x(),
+                         self.second.rect().y())
 
     def end_update(self) -> None:
         """
