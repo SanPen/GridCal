@@ -181,11 +181,11 @@ class Assets:
         # emission gasses
         self._emission_gases: List[dev.EmissionGas] = list()
 
-        self._generators_technologies: List[dev.GeneratorTechnology] = list()
-
-        self._generators_fuels: List[dev.GeneratorFuel] = list()
-
-        self._generators_emissions: List[dev.GeneratorEmission] = list()
+        # self._generators_technologies: List[dev.GeneratorTechnology] = list()
+        #
+        # self._generators_fuels: List[dev.GeneratorFuel] = list()
+        #
+        # self._generators_emissions: List[dev.GeneratorEmission] = list()
 
         # fluids
         self._fluid_nodes: List[dev.FluidNode] = list()
@@ -263,9 +263,6 @@ class Assets:
                 dev.Technology(),
                 dev.Fuel(),
                 dev.EmissionGas(),
-                dev.GeneratorTechnology(),
-                dev.GeneratorFuel(),
-                dev.GeneratorEmission(),
             ],
             "Catalogue": [
                 dev.Wire(),
@@ -3585,113 +3582,113 @@ class Assets:
     # Generator - Technology
     # ------------------------------------------------------------------------------------------------------------------
 
-    @property
-    def generators_technologies(self) -> List[dev.GeneratorTechnology]:
-        """
-        Get list of GeneratorTechnology association objects
-        :return:
-        """
-        return self._generators_technologies
-
-    @generators_technologies.setter
-    def generators_technologies(self, value: List[dev.GeneratorTechnology]):
-        self._generators_technologies = value
-
-    def add_generator_technology(self, obj: dev.GeneratorTechnology):
-        """
-        Add GeneratorTechnology
-        :param obj: GeneratorTechnology object
-        """
-        self._generators_technologies.append(obj)
-
-    def delete_generator_technology(self, obj: dev.GeneratorTechnology):
-        """
-        Delete GeneratorTechnology
-        :param obj: GeneratorTechnology
-        """
-        # store the associations
-        rels = list()
-        for elm in self._generators_technologies:
-            if elm.technology == obj:
-                rels.append(elm)
-
-        # delete the associations
-        for elm in rels:
-            self.delete_generator_technology(elm)
-
-        # delete the technology
-        self._generators_technologies.remove(obj)
+    # @property
+    # def generators_technologies(self) -> List[dev.GeneratorTechnology]:
+    #     """
+    #     Get list of GeneratorTechnology association objects
+    #     :return:
+    #     """
+    #     return self._generators_technologies
+    #
+    # @generators_technologies.setter
+    # def generators_technologies(self, value: List[dev.GeneratorTechnology]):
+    #     self._generators_technologies = value
+    #
+    # def add_generator_technology(self, obj: dev.GeneratorTechnology):
+    #     """
+    #     Add GeneratorTechnology
+    #     :param obj: GeneratorTechnology object
+    #     """
+    #     self._generators_technologies.append(obj)
+    #
+    # def delete_generator_technology(self, obj: dev.GeneratorTechnology):
+    #     """
+    #     Delete GeneratorTechnology
+    #     :param obj: GeneratorTechnology
+    #     """
+    #     # store the associations
+    #     rels = list()
+    #     for elm in self._generators_technologies:
+    #         if elm.technology == obj:
+    #             rels.append(elm)
+    #
+    #     # delete the associations
+    #     for elm in rels:
+    #         self.delete_generator_technology(elm)
+    #
+    #     # delete the technology
+    #     self._generators_technologies.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Generotor - Fuels
     # ------------------------------------------------------------------------------------------------------------------
 
-    @property
-    def generators_fuels(self) -> List[dev.GeneratorFuel]:
-        """
-        Get list of Generator fuels associations
-        :return:
-        """
-        return self._generators_fuels
-
-    @generators_fuels.setter
-    def generators_fuels(self, value: List[dev.GeneratorFuel]):
-        self._generators_fuels = value
-
-    def add_generator_fuel(self, obj: dev.GeneratorFuel):
-        """
-        Add GeneratorFuel
-        :param obj: GeneratorFuel object
-        """
-        self._generators_fuels.append(obj)
-
-    def delete_generator_fuel(self, obj: dev.GeneratorFuel):
-        """
-        Delete GeneratorFuel
-        :param obj: GeneratorFuel
-        """
-        # store the associations
-        rels = list()
-        for elm in self._generators_fuels:
-            if elm.fuel == obj:
-                rels.append(elm)
-
-        # delete the assciations
-        for elm in rels:
-            self.delete_generator_fuel(elm)
-
-        # delete the fuel
-        self._generators_fuels.remove(obj)
+    # @property
+    # def generators_fuels(self) -> List[dev.GeneratorFuel]:
+    #     """
+    #     Get list of Generator fuels associations
+    #     :return:
+    #     """
+    #     return self._generators_fuels
+    #
+    # @generators_fuels.setter
+    # def generators_fuels(self, value: List[dev.GeneratorFuel]):
+    #     self._generators_fuels = value
+    #
+    # def add_generator_fuel(self, obj: dev.GeneratorFuel):
+    #     """
+    #     Add GeneratorFuel
+    #     :param obj: GeneratorFuel object
+    #     """
+    #     self._generators_fuels.append(obj)
+    #
+    # def delete_generator_fuel(self, obj: dev.GeneratorFuel):
+    #     """
+    #     Delete GeneratorFuel
+    #     :param obj: GeneratorFuel
+    #     """
+    #     # store the associations
+    #     rels = list()
+    #     for elm in self._generators_fuels:
+    #         if elm.fuel == obj:
+    #             rels.append(elm)
+    #
+    #     # delete the assciations
+    #     for elm in rels:
+    #         self.delete_generator_fuel(elm)
+    #
+    #     # delete the fuel
+    #     self._generators_fuels.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Generator - Emissions
     # ------------------------------------------------------------------------------------------------------------------
 
-    @property
-    def generators_emissions(self) -> List[dev.GeneratorEmission]:
-        """
-        Get list of generator associations
-        :return:
-        """
-        return self._generators_emissions
-
-    @generators_emissions.setter
-    def generators_emissions(self, value: List[dev.GeneratorEmission]):
-        self._generators_emissions = value
-
-    def add_generator_emission(self, obj: dev.GeneratorEmission):
-        """
-        Add GeneratorFuel
-        :param obj: GeneratorFuel object
-        """
-        self._generators_emissions.append(obj)
-
-    def delete_generator_emission(self, obj: dev.GeneratorEmission):
-        """
-        Delete GeneratorFuel
-        :param obj: GeneratorFuel
-        """
-        self._generators_emissions.remove(obj)
+    # @property
+    # def generators_emissions(self) -> List[dev.GeneratorEmission]:
+    #     """
+    #     Get list of generator associations
+    #     :return:
+    #     """
+    #     return self._generators_emissions
+    #
+    # @generators_emissions.setter
+    # def generators_emissions(self, value: List[dev.GeneratorEmission]):
+    #     self._generators_emissions = value
+    #
+    # def add_generator_emission(self, obj: dev.GeneratorEmission):
+    #     """
+    #     Add GeneratorFuel
+    #     :param obj: GeneratorFuel object
+    #     """
+    #     self._generators_emissions.append(obj)
+    #
+    # def delete_generator_emission(self, obj: dev.GeneratorEmission):
+    #     """
+    #     Delete GeneratorFuel
+    #     :param obj: GeneratorFuel
+    #     """
+    #     self._generators_emissions.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Fluid nodes

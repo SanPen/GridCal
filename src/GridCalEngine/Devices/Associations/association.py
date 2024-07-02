@@ -14,8 +14,29 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
-from GridCalEngine.Devices.Associations.association import GCAssociation
-# from GridCalEngine.Devices.Associations.generator_fuel import GeneratorFuel
-# from GridCalEngine.Devices.Associations.generator_emission import GeneratorEmission
-# from GridCalEngine.Devices.Associations.generator_technology import GeneratorTechnology
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.types import ASSOCIATION_TYPE
+
+
+class GCAssociation:
+    """
+    GridCal relationship object
+    """
+
+    def __init__(self, api_object: ASSOCIATION_TYPE, value: float = 1.0):
+        self.api_object: ASSOCIATION_TYPE = api_object
+
+        self.value = value
+
+    def to_dict(self):
+        """
+
+        :return:
+        """
+        return {
+            "elm": self.api_object.idtag,
+            "value": self.value
+        }

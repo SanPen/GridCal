@@ -19,7 +19,6 @@ from GridCalEngine.Devices.Aggregation import *
 from GridCalEngine.Devices.Branches import *
 from GridCalEngine.Devices.Injections import *
 from GridCalEngine.Devices.Substation import *
-from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Fluid import *
 from GridCalEngine.Devices.measurement import *
 
@@ -97,9 +96,6 @@ ALL_DEV_TYPES = Union[
     Zone,
     TransformerType,
     EmissionGas,
-    GeneratorEmission,
-    GeneratorFuel,
-    GeneratorTechnology,
     BranchGroup,
     LineLocations,
     LineLocation,
@@ -115,3 +111,6 @@ ALL_DEV_TYPES = Union[
 ]
 
 CONNECTION_TYPE = Union[ConnectivityNode, Bus, None]
+
+
+ASSOCIATION_TYPE = Union[Fuel, Technology, EmissionGas]

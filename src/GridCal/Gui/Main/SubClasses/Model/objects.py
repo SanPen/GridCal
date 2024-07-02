@@ -255,20 +255,20 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.TransformerTypeDevice:
             elm = dev.TransformerType()
 
-        elif elm_type == DeviceType.GeneratorTechnologyAssociation:
-            elm = dev.GeneratorTechnology()
-            dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.Technology: self.circuit.technologies, }
-
-        elif elm_type == DeviceType.GeneratorFuelAssociation:
-            elm = dev.GeneratorFuel()
-            dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.FuelDevice: self.circuit.get_fuels(), }
-
-        elif elm_type == DeviceType.GeneratorEmissionAssociation:
-            elm = dev.GeneratorEmission()
-            dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.EmissionGasDevice: self.circuit.emission_gases, }
+        # elif elm_type == DeviceType.GeneratorTechnologyAssociation:
+        #     elm = dev.GeneratorTechnology()
+        #     dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
+        #                            DeviceType.Technology: self.circuit.technologies, }
+        #
+        # elif elm_type == DeviceType.GeneratorFuelAssociation:
+        #     elm = dev.GeneratorFuel()
+        #     dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
+        #                            DeviceType.FuelDevice: self.circuit.get_fuels(), }
+        #
+        # elif elm_type == DeviceType.GeneratorEmissionAssociation:
+        #     elm = dev.GeneratorEmission()
+        #     dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
+        #                            DeviceType.EmissionGasDevice: self.circuit.emission_gases, }
 
         elif elm_type == DeviceType.FluidNodeDevice:
             elm = dev.FluidNode()
@@ -606,20 +606,20 @@ class ObjectsTableMain(DiagramsMain):
                 obj = dev.EmissionGas(name=name)
                 self.circuit.add_emission_gas(obj)
 
-            elif elm_type == DeviceType.GeneratorTechnologyAssociation.value:
-
-                obj = dev.GeneratorTechnology()
-                self.circuit.add_generator_technology(obj)
-
-            elif elm_type == DeviceType.GeneratorFuelAssociation.value:
-
-                obj = dev.GeneratorFuel()
-                self.circuit.add_generator_fuel(obj)
-
-            elif elm_type == DeviceType.GeneratorEmissionAssociation.value:
-
-                obj = dev.GeneratorEmission()
-                self.circuit.add_generator_emission(obj)
+            # elif elm_type == DeviceType.GeneratorTechnologyAssociation.value:
+            #
+            #     obj = dev.GeneratorTechnology()
+            #     self.circuit.add_generator_technology(obj)
+            #
+            # elif elm_type == DeviceType.GeneratorFuelAssociation.value:
+            #
+            #     obj = dev.GeneratorFuel()
+            #     self.circuit.add_generator_fuel(obj)
+            #
+            # elif elm_type == DeviceType.GeneratorEmissionAssociation.value:
+            #
+            #     obj = dev.GeneratorEmission()
+            #     self.circuit.add_generator_emission(obj)
 
             elif elm_type == DeviceType.ModellingAuthority.value:
 

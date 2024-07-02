@@ -15,9 +15,10 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union
+from typing import Union, List
 import numpy as np
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Associations.association import GCAssociation
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType
@@ -89,6 +90,8 @@ class InjectionParent(EditableDevice):
 
         self.build_status = build_status
 
+        self.technologies: List[GCAssociation] = list()
+
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus',
                       editable=False, profile_name="bus_prof")
 
@@ -109,6 +112,10 @@ class InjectionParent(EditableDevice):
 
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
                       profile_name='Cost_prof')
+
+        self.register(key='technologies', units='', tpe=float,
+                      definition='List of technologies',
+                      associated_type=DeviceType.Technology, display=False)
 
     @property
     def bus(self) -> Bus:
