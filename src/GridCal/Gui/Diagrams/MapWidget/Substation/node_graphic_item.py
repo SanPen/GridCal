@@ -150,7 +150,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         Event handler for mouse move events.
         """
         if self.enabled:
-            # super().mouseMoveEvent(event)
             pos = self.mapToParent(event.pos())
             x = pos.x() - self.rect().width() / 2
             y = pos.y() - self.rect().height() / 2

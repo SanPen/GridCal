@@ -153,13 +153,11 @@ class SubstationGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
 
         if self.hovered:
-            # super().mouseMoveEvent(event)
             self.updatePosition()
             pos = self.mapToParent(event.pos())
             x = pos.x() - self.rect().width() / 2
             y = pos.y() - self.rect().height() / 2
             self.setRect(x, y, self.rect().width(), self.rect().height())
-
             self.editor.update_connectors()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):

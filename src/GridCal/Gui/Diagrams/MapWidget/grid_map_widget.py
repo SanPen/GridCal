@@ -356,8 +356,6 @@ class GridMapWidget(BaseDiagramWidget):
                 for graphic_id, graphic_item in graphics.items():
                     if isinstance(graphic_item, MAP_BRANCH_GRAPHIC_TYPES):
                         for seg in graphic_item.segments_list:
-                            seg.scaleSegment = seg.lineWidth / self.map.view.schema_zoom
-                            seg.setScale(seg.scaleSegment)
                             seg.update_endings(True)
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
@@ -818,19 +816,22 @@ class GridMapWidget(BaseDiagramWidget):
         :param event:
         :return:
         """
-        max_zoom = self.map.max_level
-        min_zoom = self.map.min_level
-        zoom = self.map.zoom_factor
-        scale = 0.1 + zoom / (max_zoom - min_zoom)
 
-        # rescale lines
-        for dev_tpe in [DeviceType.LineDevice,
-                        DeviceType.DCLineDevice,
-                        DeviceType.HVDCLineDevice,
-                        DeviceType.FluidPathDevice]:
-            graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
-            for key, lne in graphics_dict.items():
-                lne.setWidthScale(scale)
+        pass
+
+        # max_zoom = self.map.max_level
+        # min_zoom = self.map.min_level
+        # zoom = self.map.zoom_factor
+        # scale = 0.1 + (zoom - min_zoom) / (max_zoom - min_zoom)
+        #
+        # # rescale lines
+        # for dev_tpe in [DeviceType.LineDevice,
+        #                 DeviceType.DCLineDevice,
+        #                 DeviceType.HVDCLineDevice,
+        #                 DeviceType.FluidPathDevice]:
+        #     graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
+        #     for key, lne in graphics_dict.items():
+        #         lne.setWidthScale(scale)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """

@@ -55,10 +55,7 @@ class MapLineSegment(QGraphicsLineItem):
 
         self.style = Qt.SolidLine
         self.color = Qt.blue
-        self.width = 0
-        self.lineWidth = 1
-        self.scaleSegment = self.lineWidth
-        self.setScale(self.scaleSegment)
+        self.width = 0.1
 
         self.set_colour(self.color, self.width, self.style)
         self.update_endings()
@@ -84,7 +81,7 @@ class MapLineSegment(QGraphicsLineItem):
         """
         return self.container.editor
 
-    def set_colour(self, color: QColor, w: int, style: Qt.PenStyle):
+    def set_colour(self, color: QColor, w: float, style: Qt.PenStyle):
         """
         Set color and style
         :param color: QColor instance
@@ -94,6 +91,7 @@ class MapLineSegment(QGraphicsLineItem):
         """
 
         pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        pen.setWidthF(w)
 
         self.setPen(pen)
         # self.arrow_from_1.set_colour(color, w, style)
@@ -112,8 +110,8 @@ class MapLineSegment(QGraphicsLineItem):
             second_pos = self.second.getRealPos()
 
             # Set the line's starting and ending points
-            self.setLine(first_pos[0] / self.scaleSegment, first_pos[1] / self.scaleSegment,
-                         second_pos[0] / self.scaleSegment, second_pos[1] / self.scaleSegment)
+            self.setLine(first_pos[0], first_pos[1],
+                         second_pos[0], second_pos[1])
 
     def end_update(self) -> None:
         """
