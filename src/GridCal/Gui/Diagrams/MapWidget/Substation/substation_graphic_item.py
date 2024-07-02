@@ -68,6 +68,9 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                               lat=lat,
                               lon=lon)
 
+        self.is_from_sub = False
+        self.is_to_sub = False
+        self.line_container = None
         self.editor: GridMapWidget = editor  # re assign for the types to be clear
         self.api_object: Substation = api_object
 
@@ -242,7 +245,30 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        icon_path="",
                        function_ptr=self.remove_function)
 
+        add_menu_entry(menu=menu,
+                       text="ADD node",
+                       icon_path="",
+                       function_ptr=self.add_function)
+
         menu.exec_(event.screenPos())
+
+    def add_function(self):
+        """
+
+        :return:
+        """
+
+        if self.line_container != None:
+
+            if self.is_from_sub:
+                self.line_container.insert_new_node_at_position(0)
+
+            if self.is_to_sub:
+                self.line_container.insert_new_node_at_position(len(self.line_container.nodes_list))
+
+            # Implement the functionality for Action 1 here
+
+        pass
 
     def remove_function(self):
         """
