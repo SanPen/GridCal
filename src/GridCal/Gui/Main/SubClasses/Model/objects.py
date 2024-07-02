@@ -20,6 +20,7 @@ from PySide6 import QtGui, QtCore, QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
+from GridCal.Gui.associations_model import AssociationsModel
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
@@ -85,6 +86,9 @@ class ObjectsTableMain(DiagramsMain):
 
         # Set context menu policy to CustomContextMenu
         self.ui.dataStructureTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
+
+        # combobox change
+        self.ui.associationsComboBox.currentTextChanged.connect(self.display_associations)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> ObjectsModel:
         """
@@ -349,6 +353,39 @@ class ObjectsTableMain(DiagramsMain):
             else:
                 self.ui.profiles_tableView.setModel(None)
 
+    def display_associations(self):
+        """
+        Display the association table
+        :return:
+        """
+        dev_type_text = self.get_db_object_selected_type()
+
+        if dev_type_text is not None:
+
+            elements = self.get_current_objects_model_view().objects
+
+            association_prperty_name = self.ui.associationsComboBox.currentText()
+
+            if len(elements) > 0:
+
+                gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
+
+                associated_objects = self.circuit.get_elements_by_type(device_type=gc_prop.associated_type)
+
+                if len(associated_objects) > 0:
+                    mdl = AssociationsModel(objects=elements,
+                                            associated_objects=associated_objects,
+                                            gc_prop=gc_prop,
+                                            parent=self.ui.associationsTableView)
+
+                    self.ui.associationsTableView.setModel(mdl)
+                else:
+                    self.ui.associationsTableView.setModel(None)
+            else:
+                self.ui.associationsTableView.setModel(None)
+        else:
+            self.ui.associationsTableView.setModel(None)
+
     def display_objects_filter(self, elements: List[ALL_DEV_TYPES]):
         """
         Display a list of elements that comes from a filter
@@ -362,6 +399,9 @@ class ObjectsTableMain(DiagramsMain):
 
             # display time series
             self.display_profiles()
+
+            # display associations
+            self.display_associations()
 
         else:
             self.ui.dataStructureTableView.setModel(None)
@@ -413,10 +453,21 @@ class ObjectsTableMain(DiagramsMain):
                 ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
                 self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
                 self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
+
+                # update the associations view
+                assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])
+                self.ui.associationsComboBox.setModel(assoc_mdl)
+
             else:
                 self.ui.dataStructureTableView.setModel(None)
+                self.ui.device_type_magnitude_comboBox.setModel(None)
+                self.ui.device_type_magnitude_comboBox_2.setModel(None)
+                self.ui.associationsComboBox.setModel(None)
         else:
             self.ui.dataStructureTableView.setModel(None)
+            self.ui.device_type_magnitude_comboBox.setModel(None)
+            self.ui.device_type_magnitude_comboBox_2.setModel(None)
+            self.ui.associationsComboBox.setModel(None)
 
     def get_selected_objects(self) -> List[ALL_DEV_TYPES]:
         """

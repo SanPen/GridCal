@@ -247,7 +247,10 @@ class FloatDelegate(QtWidgets.QItemDelegate):
 
     commitData = QtCore.Signal(object)
 
-    def __init__(self, parent: QtWidgets.QTableView, min_: float = -1e200, max_: float = 1e200) -> None:
+    def __init__(self, parent: QtWidgets.QTableView,
+                 min_: float = -1e200,
+                 max_: float = 1e200,
+                 decimals: int = 6) -> None:
         """
         Constructor
         :param parent: QTableView parent object
@@ -255,6 +258,7 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         QtWidgets.QItemDelegate.__init__(self, parent)
         self.min = min_
         self.max = max_
+        self.decimals = decimals
 
     @QtCore.Slot()
     def returnPressed(self):
@@ -274,7 +278,7 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         editor = QtWidgets.QDoubleSpinBox(parent)
         editor.setMaximum(self.max)
         editor.setMinimum(self.min)
-        editor.setDecimals(8)
+        editor.setDecimals(self.decimals)
         editor.editingFinished.connect(self.returnPressed)
         return editor
 

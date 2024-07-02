@@ -21,7 +21,7 @@ from typing import Union, List
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
-from GridCalEngine.Devices.Associations.association import GCAssociation
+from GridCalEngine.Devices.Associations.association import Association
 from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Devices.profile import Profile
@@ -185,8 +185,8 @@ class Generator(GeneratorParent):
         self._Cost2_prof = Profile(default_value=Cost2, data_type=float)
         self._Cost0_prof = Profile(default_value=Cost0, data_type=float)
 
-        self.emissions: List[GCAssociation] = list()
-        self.fuels: List[GCAssociation] = list()
+        self.emissions: List[Association] = list()
+        self.fuels: List[Association] = list()
 
         # Dynamic vars
         # self.Ra = Ra
@@ -248,11 +248,11 @@ class Generator(GeneratorParent):
 
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
 
-        self.register(key='emissions', units='', tpe=float,
+        self.register(key='emissions', units='', tpe=SubObjectType.AssociationsList,
                       definition='List of emissions',
                       associated_type=DeviceType.EmissionGasDevice, display=False)
 
-        self.register(key='fuels', units='', tpe=float,
+        self.register(key='fuels', units='', tpe=SubObjectType.AssociationsList,
                       definition='List of fuels',
                       associated_type=DeviceType.FuelDevice, display=False)
 

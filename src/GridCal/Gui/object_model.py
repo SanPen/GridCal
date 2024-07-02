@@ -22,7 +22,7 @@ from enum import EnumMeta
 from GridCal.Gui.GuiFunctions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
                                       ComplexDelegate, LineLocationsDelegate)
 from GridCalEngine.Devices import Bus, ContingencyGroup
-from GridCalEngine.Devices.Parents.editable_device import GCProp
+from GridCalEngine.Devices.Parents.editable_device import GCProp, GCPROP_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
@@ -37,7 +37,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                  objects: List[ALL_DEV_TYPES],
                  property_list: List[GCProp],
                  time_index: Union[int, None],
-                 parent=None,
+                 parent: QtWidgets.QTableView = None,
                  editable=False,
                  transposed=False,
                  check_unique: Union[None, List[str]] = None,
@@ -57,21 +57,27 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.time_index_: Union[int, None] = time_index
 
-        self.property_list = property_list
-
-        self.attributes = [p.name for p in self.property_list]
-
-        self.attribute_types = [p.tpe for p in self.property_list]
-
-        self.units = [p.units for p in self.property_list]
-
-        self.tips = [p.definition for p in self.property_list]
+        self.editable = editable
 
         self.objects: List[ALL_DEV_TYPES] = objects
 
-        self.editable = editable
+        self.property_list: List[GCProp] = list()
+        self.attributes: List[str] = list()
+        self.attribute_types: List[GCPROP_TYPES] = list()
+        self.units: List[str] = list()
+        self.tips: List[str] = list()
+        self.non_editable_attributes: List[str] = list()
 
-        self.non_editable_attributes = [p.name for p in self.property_list if not p.editable]
+        for p in property_list:
+            if p.display:
+                self.property_list.append(p)
+                self.attributes.append(p.name)
+                self.attribute_types.append(p.tpe)
+                self.units.append(p.units)
+                self.tips.append(p.definition)
+
+                if not p.editable:
+                    self.non_editable_attributes.append(p.name)
 
         self.check_unique = check_unique if check_unique is not None else list()
 

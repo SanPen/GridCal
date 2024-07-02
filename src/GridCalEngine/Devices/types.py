@@ -113,4 +113,4 @@ ALL_DEV_TYPES = Union[
 CONNECTION_TYPE = Union[ConnectivityNode, Bus, None]
 
 
-ASSOCIATION_TYPE = Union[Fuel, Technology, EmissionGas]
+ASSOCIATION_TYPES = Union[Fuel, Technology, EmissionGas]

@@ -15,23 +15,26 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Union, List
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:
-    from GridCalEngine.Devices.types import ASSOCIATION_TYPE
+    from GridCalEngine.Devices.types import ASSOCIATION_TYPES, ALL_DEV_TYPES
 
 
-class GCAssociation:
+class Association:
     """
     GridCal relationship object
     """
 
-    def __init__(self, api_object: ASSOCIATION_TYPE, value: float = 1.0):
-        self.api_object: ASSOCIATION_TYPE = api_object
+    def __init__(self, api_object: Union[None, ASSOCIATION_TYPES] = None, value: float = 1.0):
+
+        self.api_object: ASSOCIATION_TYPES = api_object
 
         self.value = value
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Union[str, float]]:
         """
 
         :return:
@@ -40,3 +43,18 @@ class GCAssociation:
             "elm": self.api_object.idtag,
             "value": self.value
         }
+
+    def parse(self,
+              data: Dict[str, Union[str, float]],
+              elements_dict: Dict[str, ALL_DEV_TYPES]) -> None:
+        """
+
+        :param data:
+        :param elements_dict:
+        :return:
+        """
+        idtag = data['elm']
+        self.api_object = elements_dict.get(idtag, None)
+        self.value = float(data['value'])
+        return idtag
+

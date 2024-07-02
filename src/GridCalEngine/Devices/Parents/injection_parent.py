@@ -18,10 +18,10 @@
 from typing import Union, List
 import numpy as np
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.Devices.Associations.association import GCAssociation
+from GridCalEngine.Devices.Associations.association import Association
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.enumerations import BuildStatus, DeviceType, SubObjectType
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
 
@@ -90,7 +90,7 @@ class InjectionParent(EditableDevice):
 
         self.build_status = build_status
 
-        self.technologies: List[GCAssociation] = list()
+        self.technologies: List[Association] = list()
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus',
                       editable=False, profile_name="bus_prof")
@@ -113,7 +113,7 @@ class InjectionParent(EditableDevice):
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
                       profile_name='Cost_prof')
 
-        self.register(key='technologies', units='', tpe=float,
+        self.register(key='technologies', units='', tpe=SubObjectType.AssociationsList,
                       definition='List of technologies',
                       associated_type=DeviceType.Technology, display=False)
 

@@ -22,7 +22,7 @@ from GridCalEngine.Devices.Aggregation import *
 from GridCalEngine.Devices.Branches import *
 from GridCalEngine.Devices.Injections import *
 from GridCalEngine.Devices.Substation import *
-# from GridCalEngine.Devices.Associations import *
+from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Diagrams import *
 from GridCalEngine.Devices.Fluid import *
 from GridCalEngine.Devices.multi_circuit import MultiCircuit

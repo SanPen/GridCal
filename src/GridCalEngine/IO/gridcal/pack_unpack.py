@@ -112,9 +112,10 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
         'investments_group': dev.InvestmentsGroup(),
         'investment': dev.Investment(),
 
-        'generator_technology': dev.GeneratorTechnology(),
-        'generator_fuel': dev.GeneratorFuel(),
-        'generator_emission': dev.GeneratorEmission(),
+        # TODO: Handle these legacy types
+        # 'generator_technology': dev.GeneratorTechnology(),
+        # 'generator_fuel': dev.GeneratorFuel(),
+        # 'generator_emission': dev.GeneratorEmission(),
 
         'fluid_node': dev.FluidNode(),
         'fluid_path': dev.FluidPath(),
@@ -400,6 +401,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
 
         elif prop.tpe == SubObjectType.TapChanger:
             data[name] = obj.to_dict()
+
+        elif prop.tpe == SubObjectType.AssociationsList:
+            data[name] = [entry.to_dict() for entry in obj]
 
         elif prop.tpe == SubObjectType.Array:
             data[name] = list(obj)
@@ -1045,6 +1049,27 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                     val = np.array(property_value)
                                     elm.set_snapshot_value(gc_prop.name, val)
+
+                                elif gc_prop.tpe == SubObjectType.AssociationsList:
+
+                                    # get the list of associations
+                                    associations_list = elm.get_snapshot_value(gc_prop)
+
+                                    for entry in property_value:
+
+                                        assoc = dev.Association()
+                                        associated_idtag = assoc.parse(
+                                            data=entry,
+                                            elements_dict=elements_dict_by_type.get(gc_prop.associated_type, {})
+                                        )
+
+                                        if assoc.api_object is not None:
+                                            # add the entry
+                                            associations_list.append(assoc)
+                                        else:
+                                            logger.add_error(f'Association api_object not found',
+                                                             device=elm.name,
+                                                             value=associated_idtag)
 
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")

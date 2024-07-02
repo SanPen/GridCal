@@ -455,7 +455,7 @@ class EditableDevice:
 
         return props, indices
 
-    def get_association_properties(self, obj: "EditableDevice") -> Tuple[List[GCProp], List[int], List[DeviceType]]:
+    def get_association_properties(self) -> Tuple[List[GCProp], List[int], List[DeviceType]]:
         """
         Return the list of properties that contain associate another type
         :param obj:
@@ -514,6 +514,14 @@ class EditableDevice:
         :return: GCProp
         """
         return self.property_list[property_idx]
+
+    def get_property_by_name(self, prop_name: str) -> GCProp:
+        """
+
+        :param prop_name:
+        :return:
+        """
+        return self.registered_properties[prop_name]
 
     def get_property_value_by_idx(self, property_idx: int, t_idx: Union[None, int]) -> Any:
         """

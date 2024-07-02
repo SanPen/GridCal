@@ -732,13 +732,18 @@ class Ui_mainWindow(object):
         self.horizontalLayout_9 = QHBoxLayout(self.frame_17)
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
-        self.relationshipsComboBox = QComboBox(self.frame_17)
-        self.relationshipsComboBox.setObjectName(u"relationshipsComboBox")
-        self.relationshipsComboBox.setMinimumSize(QSize(250, 0))
+        self.associationsComboBox = QComboBox(self.frame_17)
+        self.associationsComboBox.setObjectName(u"associationsComboBox")
+        self.associationsComboBox.setMinimumSize(QSize(250, 0))
 
-        self.horizontalLayout_9.addWidget(self.relationshipsComboBox)
+        self.horizontalLayout_9.addWidget(self.associationsComboBox)
 
-        self.horizontalSpacer_8 = QSpacerItem(812, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.association_label = QLabel(self.frame_17)
+        self.association_label.setObjectName(u"association_label")
+
+        self.horizontalLayout_9.addWidget(self.association_label)
+
+        self.horizontalSpacer_8 = QSpacerItem(794, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_9.addItem(self.horizontalSpacer_8)
 
@@ -752,16 +757,16 @@ class Ui_mainWindow(object):
         self.verticalLayout_14 = QVBoxLayout(self.frame_20)
         self.verticalLayout_14.setObjectName(u"verticalLayout_14")
         self.verticalLayout_14.setContentsMargins(0, 0, 0, 0)
-        self.relationshipsTableView = QTableView(self.frame_20)
-        self.relationshipsTableView.setObjectName(u"relationshipsTableView")
+        self.associationsTableView = QTableView(self.frame_20)
+        self.associationsTableView.setObjectName(u"associationsTableView")
 
-        self.verticalLayout_14.addWidget(self.relationshipsTableView)
+        self.verticalLayout_14.addWidget(self.associationsTableView)
 
 
         self.verticalLayout_11.addWidget(self.frame_20)
 
         icon77 = QIcon()
-        icon77.addFile(u":/Icons/icons/squares.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon77.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.tabWidget_5.addTab(self.tab_2, icon77, "")
         self.tab_16 = QWidget()
         self.tab_16.setObjectName(u"tab_16")
@@ -2633,9 +2638,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.frame_40)
 
-        icon98 = QIcon()
-        icon98.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.settings_tabWidget.addTab(self.transfer_tab, icon98, "")
+        self.settings_tabWidget.addTab(self.transfer_tab, icon77, "")
         self.contingencies_tab = QWidget()
         self.contingencies_tab.setObjectName(u"contingencies_tab")
         self.horizontalLayout_42 = QHBoxLayout(self.contingencies_tab)
@@ -4761,7 +4764,8 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.delete_selected_objects_pushButton.setText("")
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Objects", None))
-        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_2), QCoreApplication.translate("mainWindow", u"Relationships", None))
+        self.association_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_2), QCoreApplication.translate("mainWindow", u"Associations", None))
 #if QT_CONFIG(tooltip)
         self.device_type_magnitude_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Magnitude with profile", None))
 #endif // QT_CONFIG(tooltip)

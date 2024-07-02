@@ -55,7 +55,12 @@ class PandasModel(QtCore.QAbstractTableModel):
     Class to populate a Qt table view with a pandas data frame
     """
 
-    def __init__(self, data: pd.DataFrame, parent=None, editable=False, editable_min_idx=-1, decimals=6):
+    def __init__(self,
+                 data: pd.DataFrame,
+                 parent: QtWidgets.QTableView = None,
+                 editable=False,
+                 editable_min_idx=-1,
+                 decimals=6):
         """
 
         :param data:

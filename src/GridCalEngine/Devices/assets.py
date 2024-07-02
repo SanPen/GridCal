@@ -23,6 +23,7 @@ import datetime as dateslib
 from GridCalEngine.basic_structures import IntVec, StrVec
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.Parents.editable_device import GCPROP_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
@@ -274,9 +275,11 @@ class Assets:
         }
 
         # dictionary of profile magnitudes per object
-        self.profile_magnitudes = dict()
+        self.profile_magnitudes: Dict[str, Tuple[List[str], List[GCPROP_TYPES]]] = dict()
 
         self.device_type_name_dict: Dict[str, DeviceType] = dict()
+
+        self.device_associations: Dict[str, List[str]] = dict()
 
         '''
         self.type_name = 'Shunt'
@@ -289,8 +292,10 @@ class Assets:
                     key = str(elm.device_type.value)
                     profile_attr = list(elm.properties_with_profile.keys())
                     profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
+                    associated_props, indices, associated_types = elm.get_association_properties()
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
+                    self.device_associations[key] = [prop.name for prop in associated_props]
 
     # ------------------------------------------------------------------------------------------------------------------
     # Device iterators
