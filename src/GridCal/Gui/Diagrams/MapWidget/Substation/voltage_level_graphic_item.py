@@ -15,23 +15,22 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor
-from PySide6.QtWidgets import QGraphicsSceneMouseEvent
-from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
+from PySide6.QtWidgets import QGraphicsSceneMouseEvent, QGraphicsEllipseItem
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.enumerations import DeviceType
-
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
     from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 
 
-class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
+class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -46,41 +45,34 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
                  parent: SubstationGraphicItem,
                  editor: GridMapWidget,
                  api_object: VoltageLevel,
-                 lat: float,
-                 lon: float,
-                 r: float = 20.0,
+                 r: float = 0.2,
                  draw_labels: bool = True):
         """
 
+        :param parent:
         :param editor:
         :param api_object:
-        :param lat:
-        :param lon:
         :param r:
+        :param draw_labels:
         """
-        QtWidgets.QGraphicsEllipseItem.__init__(self, parent)
-        NodeTemplate.__init__(self,
-                              api_object=api_object,
-                              editor=editor,
-                              draw_labels=draw_labels,
-                              lat=lat,
-                              lon=lon)
+        parent_center = parent.get_center_pos()
+        GenericDiagramWidget.__init__(self,
+                                      parent=parent,
+                                      api_object=api_object,
+                                      editor=editor,
+                                      draw_labels=draw_labels)
+        QGraphicsEllipseItem.__init__(self, parent_center.x(), parent_center.y(), r, r, parent)
 
         parent.register_voltage_level(vl=self)
 
-        self.lat = lat
-        self.lon = lon
-        x, y = editor.to_x_y(lat=lat, lon=lon)
-        self.x = x
-        self.y = y
+        self.editor: GridMapWidget = editor  # to reinforce the type
+        self.api_object: VoltageLevel = api_object  # to reinforce the type
+
         self.radius = r
+        print(f"VL created at x:{parent_center.x()}, y:{parent_center.y()}")
 
-        # self.editor: GridMapWidget = editor
-        # self.api_object: VoltageLevel = api_object
-
-        self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
-        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
+        # self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
 
         # Create a pen with reduced line width
@@ -89,25 +81,23 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         # self.colorInner = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         # self.colorBorder = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
-        self.colorInner = QColor(255, 100, 100, 100)
-        self.colorBorder = QColor(255, 100, 100, 100)
+        self.colorInner = QColor(50, 80, 175, 100)  # light blue
+        self.colorBorder = QColor(36, 59, 131, 100)  # dark blue
 
         # Assign color to the node
-        self.setDefaultColor()
+        self.setNodeColor(inner_color=self.colorInner, border_color=self.colorBorder)
         self.hovered = False
         self.needsUpdate = False
-        self.setZValue(1)
+        self.setZValue(0)
 
-    def updatePosition(self) -> None:
+    def center_on_substation(self):
         """
-
-        :return:
+        Centers the graphic item on the substation
         """
-        real_position = self.pos()
-        center_point = self.getPos()
-        self.x = center_point.x() + real_position.x()
-        self.y = center_point.y() + real_position.y()
-        self.needsUpdate = True
+        parent_center = self.parent.get_center_pos()
+        xc = parent_center.x() - self.rect().width() / 2
+        yc = parent_center.y() - self.rect().height() / 2
+        self.setRect(xc, yc, self.rect().width(), self.rect().height())
 
     def updateDiagram(self) -> None:
         """
@@ -126,13 +116,13 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
                                            longitude=long,
                                            graphic_object=self)
 
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
         """
         super().mouseMoveEvent(event)
         if self.hovered:
-            self.updatePosition()
+            # self.updatePosition()
             self.editor.update_connectors()
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
@@ -155,7 +145,6 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         """
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
-        self.updateDiagram()  # always update
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
@@ -169,7 +158,7 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         Event handler for when the mouse leaves the item.
         """
         self.hovered = False
-        self.setDefaultColor()
+        self.setNodeColor(self.colorInner, self.colorBorder)
 
     def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
@@ -187,14 +176,6 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
             pen.setColor(border_color)
             self.setPen(pen)
 
-    def setDefaultColor(self) -> None:
-        """
-
-        :return:
-        """
-        # Example: color assignment
-        self.setNodeColor(self.colorInner, self.colorBorder)
-
     def getPos(self) -> QPointF:
         """
 
@@ -207,22 +188,6 @@ class VoltageLevelGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         center_point = bounding_rect.center()
 
         return center_point
-
-    def getRealPos(self) -> Tuple[float, float]:
-        """
-
-        :return:
-        """
-        self.updatePosition()
-        return self.x, self.y
-
-    def resize(self, new_radius: float) -> None:
-        """
-        Resize the node.
-        :param new_radius: New radius for the node.
-        """
-        self.radius = new_radius
-        self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
     def change_pen_width(self, width: float) -> None:
         """

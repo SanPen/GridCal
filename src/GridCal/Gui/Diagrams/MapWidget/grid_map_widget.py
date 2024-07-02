@@ -27,7 +27,6 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
-from GridCalEngine.Devices.Substation.busbar import BusBar
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
@@ -228,7 +227,7 @@ class GridMapWidget(BaseDiagramWidget):
                                                       longitude=longitude,
                                                       latitude=latitude) if diagram is None else diagram,
                                    library_model=MapLibraryModel(),
-                                   time_index=0,
+                                   time_index=None,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
         # declare the map
@@ -588,7 +587,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         return line_container
 
-    def update_connectors(self):
+    def update_connectors(self) -> None:
         """
 
         :return:
@@ -615,7 +614,6 @@ class GridMapWidget(BaseDiagramWidget):
         :param api_object:
         :param lat:
         :param lon:
-        :param r:
         :return:
         """
         graphic_object = SubstationGraphicItem(editor=self,
@@ -630,15 +628,11 @@ class GridMapWidget(BaseDiagramWidget):
 
     def add_api_voltage_level(self,
                               substation_graphics: SubstationGraphicItem,
-                              api_object: VoltageLevel,
-                              lat: float, lon: float) -> VoltageLevelGraphicItem:
+                              api_object: VoltageLevel) -> VoltageLevelGraphicItem:
         """
 
         :param substation_graphics:
         :param api_object:
-        :param lat:
-        :param lon:
-        :param r:
         :return:
         """
 
@@ -646,9 +640,7 @@ class GridMapWidget(BaseDiagramWidget):
         # so there is no need to add it to the scene
         graphic_object = VoltageLevelGraphicItem(parent=substation_graphics,
                                                  editor=self,
-                                                 api_object=api_object,
-                                                 lat=lat,
-                                                 lon=lon)
+                                                 api_object=api_object)
 
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
@@ -682,10 +674,7 @@ class GridMapWidget(BaseDiagramWidget):
 
                         # draw the voltage level
                         self.add_api_voltage_level(substation_graphics=substation_graphics,
-                                                   api_object=location.api_object,
-                                                   lon=objectSubs.longitude,
-                                                   lat=objectSubs.latitude,
-                                                   r=0.01)
+                                                   api_object=location.api_object)
 
             elif category == DeviceType.LineDevice.value:
                 for idtag, location in points_group.locations.items():
@@ -747,9 +736,7 @@ class GridMapWidget(BaseDiagramWidget):
 
                     # draw the voltage level
                     self.add_api_voltage_level(substation_graphics=substation_graphics,
-                                               api_object=elm,
-                                               lon=substation_graphics.lon,
-                                               lat=substation_graphics.lat)
+                                               api_object=elm)
 
             elif isinstance(elm, Bus):
 
@@ -808,7 +795,9 @@ class GridMapWidget(BaseDiagramWidget):
 
             if obj_type == self.library_model.get_substation_mime_data():
                 print("Create substation...")
-                api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}")
+                api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}",
+                                        latitude=lat,
+                                        longitude=lon)
                 self.circuit.add_substation(obj=api_object)
                 self.add_api_substation(api_object=api_object, lat=lat, lon=lon)
 
