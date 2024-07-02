@@ -70,7 +70,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
         for segment in self.segments_list:
             pen = segment.pen()  # get the current pen
-            pen.setWidthF(val)  # Set the fractional thickness of the line
+            pen.setWidthF(val * segment.width)  # Set the fractional thickness of the line
             segment.setPen(pen)  # Assign the pen to the line item
 
     def clean_segments(self) -> None:

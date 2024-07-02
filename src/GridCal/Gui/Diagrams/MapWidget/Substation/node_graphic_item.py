@@ -103,6 +103,15 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # Assign color to the node
         self.setDefaultColor()
 
+    def get_center_pos(self) -> QPointF:
+        """
+
+        :return:
+        """
+        x = self.rect().x() + self.rect().width() / 2
+        y = self.rect().y() + self.rect().height() / 2
+        return QPointF(x, y)
+
     def updateRealPos(self) -> None:
         """
 
@@ -150,11 +159,16 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         Event handler for mouse move events.
         """
         if self.enabled:
-            super().mouseMoveEvent(event)
+            pos = self.mapToParent(event.pos())
+            x = pos.x() - self.rect().width() / 2
+            y = pos.y() - self.rect().height() / 2
+            self.setRect(x, y, self.rect().width(), self.rect().height())
+            self.set_callabacks(pos.x(), pos.y())
+
             if self.hovered and self.enabled:
                 self.updatePosition()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse press events.
         """

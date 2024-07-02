@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
@@ -28,7 +28,6 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
 
 from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.enumerations import DeviceType
-
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
@@ -55,10 +54,13 @@ class MapLineSegment(QGraphicsLineItem):
 
         self.style = Qt.SolidLine
         self.color = Qt.blue
-        self.width = 0
-        self.lineWidth = 1
-        self.scaleSegment = self.lineWidth
-        self.setScale(self.scaleSegment)
+        self.width = 0.1
+
+        self.pos1: QPointF = self.first.get_center_pos()
+        self.pos2: QPointF = self.second.get_center_pos()
+
+        self.first.add_position_change_callback(self.set_from_side_coordinates)
+        self.second.add_position_change_callback(self.set_to_side_coordinates)
 
         self.set_colour(self.color, self.width, self.style)
         self.update_endings()
@@ -84,7 +86,7 @@ class MapLineSegment(QGraphicsLineItem):
         """
         return self.container.editor
 
-    def set_colour(self, color: QColor, w: int, style: Qt.PenStyle):
+    def set_colour(self, color: QColor, w: float, style: Qt.PenStyle):
         """
         Set color and style
         :param color: QColor instance
@@ -94,6 +96,7 @@ class MapLineSegment(QGraphicsLineItem):
         """
 
         pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        pen.setWidthF(w)
 
         self.setPen(pen)
         # self.arrow_from_1.set_colour(color, w, style)
@@ -101,19 +104,38 @@ class MapLineSegment(QGraphicsLineItem):
         # self.arrow_to_1.set_colour(color, w, style)
         # self.arrow_to_2.set_colour(color, w, style)
 
-    def update_endings(self, force = False) -> None:
+    def set_from_side_coordinates(self, x: float, y: float):
+        """
+
+        :param x:
+        :param y:
+        :return:
+        """
+        self.pos1 = QPointF(x, y)
+        self.update_endings()
+
+    def set_to_side_coordinates(self, x: float, y: float):
+        """
+
+        :param x:
+        :param y:
+        :return:
+        """
+        self.pos2 = QPointF(x, y)
+        self.update_endings()
+
+    def update_endings(self, force=False) -> None:
         """
         Update the endings of this segment
         """
-
+        self.setLine(QLineF(self.pos1, self.pos2))
         # Get the positions of the first and second objects
-        if self.first.needsUpdate or self.second.needsUpdate or force:
-            first_pos = self.first.getRealPos()
-            second_pos = self.second.getRealPos()
-
-            # Set the line's starting and ending points
-            self.setLine(first_pos[0] / self.scaleSegment, first_pos[1] / self.scaleSegment,
-                         second_pos[0] / self.scaleSegment, second_pos[1] / self.scaleSegment)
+        # if self.first.needsUpdate or self.second.needsUpdate or force:
+        #     # Set the line's starting and ending points
+        #     self.setLine(self.first.rect().x(),
+        #                  self.first.rect().y(),
+        #                  self.second.rect().x(),
+        #                  self.second.rect().y())
 
     def end_update(self) -> None:
         """
