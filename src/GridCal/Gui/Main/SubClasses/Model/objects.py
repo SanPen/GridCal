@@ -328,7 +328,7 @@ class ObjectsTableMain(DiagramsMain):
 
             if dev_type_text is not None:
 
-                magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+                magnitudes, mag_types = self.circuit.profile_magnitudes.get(dev_type_text, (list(), list()))
 
                 if len(magnitudes) > 0:
                     # get the enumeration univoque association with he device text
@@ -366,7 +366,7 @@ class ObjectsTableMain(DiagramsMain):
 
             association_prperty_name = self.ui.associationsComboBox.currentText()
 
-            if len(elements) > 0:
+            if len(elements) > 0 and association_prperty_name != "":
 
                 gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
 
@@ -376,7 +376,7 @@ class ObjectsTableMain(DiagramsMain):
                     mdl = AssociationsModel(objects=elements,
                                             associated_objects=associated_objects,
                                             gc_prop=gc_prop,
-                                            parent=self.ui.associationsTableView)
+                                            table_view=self.ui.associationsTableView)
 
                     self.ui.associationsTableView.setModel(mdl)
                 else:
@@ -460,14 +460,14 @@ class ObjectsTableMain(DiagramsMain):
 
             else:
                 self.ui.dataStructureTableView.setModel(None)
-                self.ui.device_type_magnitude_comboBox.setModel(None)
-                self.ui.device_type_magnitude_comboBox_2.setModel(None)
-                self.ui.associationsComboBox.setModel(None)
+                self.ui.device_type_magnitude_comboBox.clear()
+                self.ui.device_type_magnitude_comboBox_2.clear()
+                self.ui.associationsComboBox.clear()
         else:
             self.ui.dataStructureTableView.setModel(None)
-            self.ui.device_type_magnitude_comboBox.setModel(None)
-            self.ui.device_type_magnitude_comboBox_2.setModel(None)
-            self.ui.associationsComboBox.setModel(None)
+            self.ui.device_type_magnitude_comboBox.clear()
+            self.ui.device_type_magnitude_comboBox_2.clear()
+            self.ui.associationsComboBox.clear()
 
     def get_selected_objects(self) -> List[ALL_DEV_TYPES]:
         """

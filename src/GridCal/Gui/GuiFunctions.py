@@ -247,7 +247,8 @@ class FloatDelegate(QtWidgets.QItemDelegate):
 
     commitData = QtCore.Signal(object)
 
-    def __init__(self, parent: QtWidgets.QTableView,
+    def __init__(self,
+                 parent: QtWidgets.QTableView,
                  min_: float = -1e200,
                  max_: float = 1e200,
                  decimals: int = 6) -> None:
@@ -289,7 +290,10 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         :param index:
         """
         editor.blockSignals(True)
-        val = float(index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole))
+        try:
+            val = float(index.model().data(index, role=QtCore.Qt.ItemDataRole.DisplayRole))
+        except ValueError:
+            val = 0.0
         editor.setValue(val)
         editor.blockSignals(False)
 

@@ -35,45 +35,42 @@ class AssociationsModel(QtCore.QAbstractTableModel):
                  objects: List[ALL_DEV_TYPES],
                  associated_objects: List[ASSOCIATION_TYPES],
                  gc_prop: GCProp,
-                 parent: QtWidgets.QTableView = None,
+                 table_view: QtWidgets.QTableView,
                  decimals: int = 2):
         """
 
         :param objects:
         :param associated_objects:
         :param gc_prop:
-        :param parent:
+        :param table_view:
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        QtCore.QAbstractTableModel.__init__(self)
 
-        self.parent = parent
+        self._table_view = table_view
 
-        self.objects: List[ALL_DEV_TYPES] = objects
+        self._objects: List[ALL_DEV_TYPES] = objects
 
-        self.associated_objects: List[ASSOCIATION_TYPES] = associated_objects
+        self._associated_objects: List[ASSOCIATION_TYPES] = associated_objects
 
         self._associated_obj_2_idx: Dict[ASSOCIATION_TYPES, int] = dict()
 
-        for i, obj in enumerate(self.associated_objects):
+        for i, obj in enumerate(self._associated_objects):
             self._associated_obj_2_idx[obj] = i
 
-        self.gc_prop = gc_prop
+        self._gc_prop = gc_prop
 
         # relate the objects to the associations
         # [object index][associated object index] -> association
-        self.data: List[Dict[int, Association]] = list()
+        self._sp_data: List[Dict[int, Association]] = list()
 
-        for i, obj in enumerate(self.objects):
-            associations_list: List[Association] = getattr(obj, self.gc_prop.name)
-            self.data.append({self._associated_obj_2_idx[asoc.api_object]: asoc for asoc in associations_list})
+        for i, obj in enumerate(self._objects):
+            associations_list: List[Association] = getattr(obj, self._gc_prop.name)
+            entries_dict = {self._associated_obj_2_idx[asoc.api_object]: asoc for asoc in associations_list}
+            self._sp_data.append(entries_dict)
 
-        self.r = len(self.objects)
+        self._formatter = lambda x: f"%.2f" % x
 
-        self.c = len(self.associated_objects)
-
-        self.formatter = lambda x: f"%.2f" % x
-
-        self.decimals = decimals
+        self._decimals = decimals
 
         self.set_delegates()
 
@@ -84,16 +81,29 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param j: column index
         :return: Association or None
         """
-        return self.data[i].get(j, None)
+        return self._sp_data[i].get(j, None)
+
+    def create_association(self, i: int, j: int, value: float) -> Association:
+        """
+        Get the association at some coordinates
+        :param i: row index
+        :param j: column index
+        :param value: value to associate
+        :return: Association
+        """
+        assoc = Association(api_object=self._associated_objects[j], value=value)
+        associations_list: List[Association] = getattr(self._objects[i], self._gc_prop.name)
+        associations_list.append(assoc)
+        return assoc
 
     def set_delegates(self) -> None:
         """
         Set the cell editor types depending on the attribute_types array
         """
 
-        for i in range(self.c):
-            delegate = FloatDelegate(self.parent, decimals=self.decimals)
-            self.parent.setItemDelegateForColumn(i, delegate)
+        for i in range(len(self._associated_objects)):
+            delegate = FloatDelegate(self._table_view, decimals=self._decimals)
+            self._table_view.setItemDelegateForColumn(i, delegate)
 
     def update(self):
         """
@@ -104,7 +114,7 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         # whatever code
         self.endInsertRows()
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex):
         """
         Get the display mode
         :param index:
@@ -118,7 +128,7 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param parent:
         :return:
         """
-        return self.r
+        return len(self._objects)
 
     def columnCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
@@ -126,7 +136,7 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param parent:
         :return:
         """
-        return self.c
+        return len(self._associated_objects)
 
     def data(self, index: QtCore.QModelIndex, role=None):
         """
@@ -135,15 +145,12 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if len(self.objects) == 0:
-            return None
-
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
                 association = self.get_association(i=index.column(), j=index.row())
                 if association is None:
-                    return ""
+                    return "-"
                 else:
                     return str(association.value)
 
@@ -157,8 +164,16 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if len(self.objects) == 0:
+        if len(self._objects) == 0 or len(self._associated_objects) == 0:
             return True
+
+        association = self.get_association(i=index.column(), j=index.row())
+        if association is None:
+            # create an association
+            self.create_association(i=index.column(), j=index.row(), value=value)
+        else:
+            # there was a previous association, change the value
+            association.value = value
 
         return True
 
@@ -173,21 +188,19 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
-        if len(self.objects) == 0:
-            return None
 
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
             # Normal
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 # return f"H{section}"  #
-                if section < self.c:
-                    return self.associated_objects[section].name
+                # if 0 <= section < len(self._associated_objects):
+                return self._associated_objects[section].name
 
             elif orientation == QtCore.Qt.Orientation.Vertical:
                 # return f"V{section}"  #
-                if section < self.r:
-                    return self.objects[section].name
+                # if 0 <= section < len(self._objects):
+                return self._objects[section].name
 
         # add a tooltip
         # elif role == QtCore.Qt.ItemDataRole.ToolTipRole:
