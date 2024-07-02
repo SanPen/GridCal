@@ -50,7 +50,6 @@ class Generator(GeneratorParent):
                  enabled_dispatch=True,
                  mttf: float = 0.0,
                  mttr: float = 0.0,
-                 technology: Technology = None,
                  q_points=None,
                  use_reactive_power_curve=False,
                  r1: float = 1e-20,
@@ -83,7 +82,6 @@ class Generator(GeneratorParent):
         :param enabled_dispatch: Is the generator enabled for OPF?
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
-        :param technology:  Instance of technology to use
         :param q_points: list of reactive capability curve points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
         :param use_reactive_power_curve: Use the reactive power curve? otherwise use the plain old limits
         :param r1:
@@ -116,8 +114,6 @@ class Generator(GeneratorParent):
                                  srap_enabled=srap_enabled,
                                  build_status=build_status,
                                  device_type=DeviceType.GeneratorDevice)
-
-        self.technology = technology
 
         # is the device active for active power dispatch?
         self.enabled_dispatch = enabled_dispatch
