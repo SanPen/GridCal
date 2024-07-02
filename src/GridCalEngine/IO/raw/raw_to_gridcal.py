@@ -145,7 +145,7 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
     g = psse_load.YP
     b = psse_load.YQ
     ir = psse_load.IP
-    ii = -psse_load.IQ
+    ii = psse_load.IQ
     p = psse_load.PL
     q = psse_load.QL
 
@@ -250,7 +250,8 @@ def get_gridcal_generator(psse_elm: RawGenerator, logger: Logger) -> dev.Generat
                         Snom=psse_elm.MBASE,
                         Pmax=psse_elm.PT,
                         Pmin=psse_elm.PB,
-                        active=bool(psse_elm.STAT))
+                        active=bool(psse_elm.STAT),
+                        power_factor=psse_elm.WPF)
 
     return elm
 

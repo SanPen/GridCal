@@ -64,7 +64,7 @@ def get_psse_bus(bus: dev.Bus,
     :return:
     """
     psse_bus = RawBus()
-    psse_bus.NAME = bus.name
+    psse_bus.NAME = str(bus.name)
     psse_bus.BASKV = bus.Vnom
 
     # TODO: Can it be modified on the UI?
@@ -194,6 +194,7 @@ def get_psse_generator(generator: dev.Generator, bus_dict: Dict[dev.Bus, int], i
     psse_generator.PT = generator.Pmax
     psse_generator.PB = generator.Pmin
     psse_generator.STAT = 1 if generator.active else 0
+    psse_generator.WPF = generator.Pf
 
     return psse_generator
 
