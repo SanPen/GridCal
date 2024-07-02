@@ -163,7 +163,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             x = pos.x() - self.rect().width() / 2
             y = pos.y() - self.rect().height() / 2
             self.setRect(x, y, self.rect().width(), self.rect().height())
-            self.set_callabacks(x, y)
+            self.set_callabacks(pos.x(), pos.y())
 
             if self.hovered and self.enabled:
                 self.updatePosition()
