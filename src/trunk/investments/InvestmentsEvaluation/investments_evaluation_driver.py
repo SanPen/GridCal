@@ -145,7 +145,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=True,
-                                         all_elemnts_dict=self.get_all_elements_dict)
+                                         all_elements_dict=self.get_all_elements_dict)
 
         branches = self.grid.get_branches_wo_hvdc()
         buses = self.grid.get_buses()
@@ -198,7 +198,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         # revert to disabled
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=False,
-                                         all_elemnts_dict=self.get_all_elements_dict)
+                                         all_elements_dict=self.get_all_elements_dict)
 
         # increase evaluations
         self.__eval_index += 1

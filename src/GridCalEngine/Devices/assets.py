@@ -1524,12 +1524,14 @@ class Assets:
         :return:
         """
         self._generators.remove(obj)
-        for dev_lst in [self._generators_technologies,
-                        self._generators_fuels,
-                        self._generators_emissions]:
-            for elm in dev_lst:
-                if elm.generator == obj:
-                    elm.generator = None
+
+        elms_to_del = list()
+        for elm in self._contingencies:
+            if elm.device_idtag == obj.idtag:
+                elms_to_del.append(elm)
+
+        for elm in elms_to_del:
+            self.delete_element(elm)
 
     def get_generator_indexing_dict(self) -> Dict[str, int]:
         """
@@ -3358,13 +3360,16 @@ class Assets:
         Delete zone
         :param obj: index
         """
-        to_del = list()
-        for elm in self._generators_technologies:
-            if elm.technology == obj:
-                to_del.append(elm)
 
-        for elm in to_del:
-            self.delete_generator_technology(elm)
+        for elm_list in self.get_injection_devices_lists():
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.technologies:
+                    if assoc.api_object == obj:
+                        to_del.append(assoc)
+
+                for assoc in to_del:
+                    elm.technologies.remove(assoc)
 
         self._technologies.remove(obj)
 
@@ -3491,13 +3496,15 @@ class Assets:
         :param obj: index
         """
 
-        to_del = list()
-        for elm in self._generators_fuels:
-            if elm.fuel == obj:
-                to_del.append(elm)
+        for elm_list in [self._generators]:
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.fuels:
+                    if assoc.api_object == obj:
+                        to_del.append(assoc)
 
-        for elm in to_del:
-            self.delete_generator_fuel(elm)
+                for assoc in to_del:
+                    elm.fuels.remove(assoc)
 
         self._fuels.remove(obj)
 
@@ -3561,14 +3568,15 @@ class Assets:
         :param obj: index
         """
         # store the associations
-        rels = list()
-        for elm in self._generators_emissions:
-            if elm.emission == obj:
-                rels.append(elm)
+        for elm_list in [self._generators]:
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.emissions:
+                    if assoc.api_object == obj:
+                        to_del.append(assoc)
 
-        # delete the assciations
-        for elm in rels:
-            self.delete_generator_emission(elm)
+                for assoc in to_del:
+                    elm.emissions.remove(assoc)
 
         # delete the gas
         self._emission_gases.remove(obj)
@@ -4214,13 +4222,13 @@ class Assets:
         """
         devices = self.get_branches_wo_hvdc()
         m = len(devices)
-        F = np.zeros(m, dtype=int)
-        T = np.zeros(m, dtype=int)
+        from_idx = np.zeros(m, dtype=int)
+        to_idx = np.zeros(m, dtype=int)
         bus_dict = self.get_bus_index_dict()
         for i, elm in enumerate(devices):
-            F[i] = bus_dict[elm.bus_from]
-            T[i] = bus_dict[elm.bus_to]
-        return F, T
+            from_idx[i] = bus_dict[elm.bus_from]
+            to_idx[i] = bus_dict[elm.bus_to]
+        return from_idx, to_idx
 
     def get_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
         """
@@ -4228,13 +4236,13 @@ class Assets:
         :return: IntVec, IntVec
         """
         m = len(self._hvdc_lines)
-        F = np.zeros(m, dtype=int)
-        T = np.zeros(m, dtype=int)
+        from_idx = np.zeros(m, dtype=int)
+        to_idx = np.zeros(m, dtype=int)
         bus_dict = self.get_bus_index_dict()
         for i, elm in enumerate(self._hvdc_lines):
-            F[i] = bus_dict[elm.bus_from]
-            T[i] = bus_dict[elm.bus_to]
-        return F, T
+            from_idx[i] = bus_dict[elm.bus_from]
+            to_idx[i] = bus_dict[elm.bus_to]
+        return from_idx, to_idx
 
     # ------------------------------------------------------------------------------------------------------------------
     # Injections
@@ -4587,14 +4595,14 @@ class Assets:
         elif device_type == DeviceType.EmissionGasDevice:
             return self._emission_gases
 
-        elif device_type == DeviceType.GeneratorTechnologyAssociation:
-            return self._generators_technologies
-
-        elif device_type == DeviceType.GeneratorFuelAssociation:
-            return self._generators_fuels
-
-        elif device_type == DeviceType.GeneratorEmissionAssociation:
-            return self._generators_emissions
+        # elif device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     return self._generators_technologies
+        #
+        # elif device_type == DeviceType.GeneratorFuelAssociation:
+        #     return self._generators_fuels
+        #
+        # elif device_type == DeviceType.GeneratorEmissionAssociation:
+        #     return self._generators_emissions
 
         elif device_type == DeviceType.ConnectivityNodeDevice:
             return self._connectivity_nodes
@@ -4789,14 +4797,14 @@ class Assets:
         elif device_type == DeviceType.EmissionGasDevice:
             self._emission_gases = devices
 
-        elif device_type == DeviceType.GeneratorTechnologyAssociation:
-            self._generators_technologies = devices
-
-        elif device_type == DeviceType.GeneratorFuelAssociation:
-            self._generators_fuels = devices
-
-        elif device_type == DeviceType.GeneratorEmissionAssociation:
-            self._generators_emissions = devices
+        # elif device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     self._generators_technologies = devices
+        #
+        # elif device_type == DeviceType.GeneratorFuelAssociation:
+        #     self._generators_fuels = devices
+        #
+        # elif device_type == DeviceType.GeneratorEmissionAssociation:
+        #     self._generators_emissions = devices
 
         elif device_type == DeviceType.ConnectivityNodeDevice:
             self._connectivity_nodes = devices
@@ -4974,14 +4982,14 @@ class Assets:
         elif obj.device_type == DeviceType.EmissionGasDevice:
             self.add_emission_gas(obj=obj)
 
-        elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
-            self.add_generator_technology(obj=obj)
-
-        elif obj.device_type == DeviceType.GeneratorFuelAssociation:
-            self.add_generator_fuel(obj=obj)
-
-        elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
-            self.add_generator_emission(obj=obj)
+        # elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     self.add_generator_technology(obj=obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorFuelAssociation:
+        #     self.add_generator_fuel(obj=obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
+        #     self.add_generator_emission(obj=obj)
 
         elif obj.device_type == DeviceType.FluidNodeDevice:
             self.add_fluid_node(obj=obj)
@@ -5152,14 +5160,14 @@ class Assets:
         elif obj.device_type == DeviceType.EmissionGasDevice:
             self.delete_emission_gas(obj)
 
-        elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
-            self.delete_generator_technology(obj)
-
-        elif obj.device_type == DeviceType.GeneratorFuelAssociation:
-            self.delete_generator_fuel(obj)
-
-        elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
-            self.delete_generator_emission(obj)
+        # elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     self.delete_generator_technology(obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorFuelAssociation:
+        #     self.delete_generator_fuel(obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
+        #     self.delete_generator_emission(obj)
 
         elif obj.device_type == DeviceType.FluidNodeDevice:
             self.delete_fluid_node(obj)
