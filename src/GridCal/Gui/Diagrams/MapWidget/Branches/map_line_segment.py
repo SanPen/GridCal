@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from PySide6.QtCore import Qt, QPointF
+from PySide6.QtCore import Qt, QPointF, QLineF
 from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
@@ -55,6 +55,12 @@ class MapLineSegment(QGraphicsLineItem):
         self.style = Qt.SolidLine
         self.color = Qt.blue
         self.width = 0.1
+
+        self.pos1: QPointF = self.first.get_center_pos()
+        self.pos2: QPointF = self.second.get_center_pos()
+
+        self.first.add_position_change_callback(self.set_from_side_coordinates)
+        self.second.add_position_change_callback(self.set_to_side_coordinates)
 
         self.set_colour(self.color, self.width, self.style)
         self.update_endings()
@@ -98,18 +104,38 @@ class MapLineSegment(QGraphicsLineItem):
         # self.arrow_to_1.set_colour(color, w, style)
         # self.arrow_to_2.set_colour(color, w, style)
 
+    def set_from_side_coordinates(self, x: float, y: float):
+        """
+
+        :param x:
+        :param y:
+        :return:
+        """
+        self.pos1 = QPointF(x, y)
+        self.update_endings()
+
+    def set_to_side_coordinates(self, x: float, y: float):
+        """
+
+        :param x:
+        :param y:
+        :return:
+        """
+        self.pos2 = QPointF(x, y)
+        self.update_endings()
+
     def update_endings(self, force=False) -> None:
         """
         Update the endings of this segment
         """
-
+        self.setLine(QLineF(self.pos1, self.pos2))
         # Get the positions of the first and second objects
-        if self.first.needsUpdate or self.second.needsUpdate or force:
-            # Set the line's starting and ending points
-            self.setLine(self.first.rect().x(),
-                         self.first.rect().y(),
-                         self.second.rect().x(),
-                         self.second.rect().y())
+        # if self.first.needsUpdate or self.second.needsUpdate or force:
+        #     # Set the line's starting and ending points
+        #     self.setLine(self.first.rect().x(),
+        #                  self.first.rect().y(),
+        #                  self.second.rect().x(),
+        #                  self.second.rect().y())
 
     def end_update(self) -> None:
         """

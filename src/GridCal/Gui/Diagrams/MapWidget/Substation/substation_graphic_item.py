@@ -164,6 +164,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             x = pos.x() - self.rect().width() / 2
             y = pos.y() - self.rect().height() / 2
             self.setRect(x, y, self.rect().width(), self.rect().height())
+            self.set_callabacks(x, y)
 
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()

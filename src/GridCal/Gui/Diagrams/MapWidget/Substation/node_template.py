@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+from typing import Union, TYPE_CHECKING, List, Callable
 from PySide6.QtCore import QPointF
 
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
@@ -49,6 +49,25 @@ class NodeTemplate(GenericDiagramWidget):
         self.needsUpdate: bool = needsUpdate
         self.lat = lat
         self.lon = lon
+
+        self._callbacks: List[Callable[[float, float], None]] = list()
+
+    def add_position_change_callback(self, fcn: Callable[[float, float], None]):
+        """
+        Add callable function
+        :param fcn: Function that accepts two floats (x, y) to update the positions
+        :return:
+        """
+        self._callbacks.append(fcn)
+
+    def set_callabacks(self, x: float, y: float) -> None:
+        """
+        Call all callback functions with x, y
+        :param x: x position
+        :param y: y position
+        """
+        for fcn in self._callbacks:
+            fcn(x, y)
 
     def valid_coordinates(self) -> bool:
         """
