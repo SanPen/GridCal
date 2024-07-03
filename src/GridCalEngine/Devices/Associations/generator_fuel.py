@@ -14,12 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import Union
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
-from GridCalEngine.Devices import Generator, Fuel
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices import Generator, Fuel
 
 
+# THIS IS A LEGACY OBJECT
 class GeneratorFuel(EditableDevice):
 
     def __init__(self,
@@ -54,4 +57,3 @@ class GeneratorFuel(EditableDevice):
         self.register(key='fuel', units='', tpe=DeviceType.FuelDevice, definition='Fuel')
         self.register(key='rate', units='t/MWh', tpe=float,
                       definition='Fuel consumption rate in the generator')
-

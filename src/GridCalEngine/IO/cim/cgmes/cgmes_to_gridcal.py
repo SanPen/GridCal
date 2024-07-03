@@ -17,7 +17,6 @@
 import numpy as np
 from typing import Dict, List, Tuple, Union
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
-from GridCalEngine.Devices import LineLocations
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -378,7 +377,6 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -532,7 +530,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 code=cgmes_elm.description,
                                                 name=cgmes_elm.name,
                                                 active=True,
-                                                technology=technology,
                                                 Snom=cgmes_elm.ratedS,
                                                 P=-cgmes_elm.p,
                                                 Pmin=cgmes_elm.GeneratingUnit.minOperatingP,
@@ -549,10 +546,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                     gcdev_model.add_generator(bus=calc_node, api_obj=gcdev_elm, cn=cn)
 
                     if technology:
-                        gen_tech = gcdev.GeneratorTechnology(name=gcdev_elm.name + "_" + technology.name,
-                                                             generator=gcdev_elm,
-                                                             technology=technology)
-                        gcdev_model.add_generator_technology(gen_tech)
+                        gcdev_elm.technologies.append(gcdev.Association(api_object=technology, value=1.0))
                         # gcdev_model.add_generator_fuel()
                 else:
                     logger.add_error(msg='SynchronousMachine has no generating unit',
@@ -582,7 +576,6 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -1014,7 +1007,6 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None

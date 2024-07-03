@@ -250,7 +250,8 @@ def get_gridcal_generator(psse_elm: RawGenerator, logger: Logger) -> dev.Generat
                         Snom=psse_elm.MBASE,
                         Pmax=psse_elm.PT,
                         Pmin=psse_elm.PB,
-                        active=bool(psse_elm.STAT))
+                        active=bool(psse_elm.STAT),
+                        power_factor=psse_elm.WPF)
 
     return elm
 

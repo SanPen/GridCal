@@ -16,16 +16,19 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import pandas as pd
+from typing import List
 from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
 
 import GridCal.Gui.GuiFunctions as gf
 from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
 from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
+from GridCal.Gui.profiles_model import ProfilesModel
 
 
 class TimeEventsMain(ObjectsTableMain):
@@ -131,7 +134,7 @@ class TimeEventsMain(ObjectsTableMain):
             magnitude = magnitudes[idx]
 
             dev_type = self.circuit.device_type_name_dict[dev_type_text]
-            objects = self.circuit.get_elements_by_type(dev_type)
+            objects: List[ALL_DEV_TYPES] = self.circuit.get_elements_by_type(dev_type)
 
             if len(objects) > 0:
                 self.profile_input_dialogue = ProfileInputGUI(parent=self,
@@ -216,7 +219,7 @@ class TimeEventsMain(ObjectsTableMain):
             magnitude = magnitudes[idx]
 
             dev_type = self.circuit.device_type_name_dict[dev_type_text]
-            objects = self.circuit.get_elements_by_type(dev_type)
+            objects: List[ALL_DEV_TYPES] = self.circuit.get_elements_by_type(dev_type)
             # Assign profiles
             if len(objects) > 0:
 
@@ -242,19 +245,19 @@ class TimeEventsMain(ObjectsTableMain):
                         array = profile.toarray()
 
                         if operation == '+':
-                            mod_array = (gc_prop + value).astype(gc_prop.tpe)
+                            mod_array = (array + value).astype(gc_prop.tpe)
                             mod_cols.append(i)
 
                         elif operation == '-':
-                            mod_array = (gc_prop - value).astype(gc_prop.tpe)
+                            mod_array = (array - value).astype(gc_prop.tpe)
                             mod_cols.append(i)
 
                         elif operation == '*':
-                            mod_array = (gc_prop * value).astype(gc_prop.tpe)
+                            mod_array = (array * value).astype(gc_prop.tpe)
                             mod_cols.append(i)
 
                         elif operation == '/':
-                            mod_array = (gc_prop / value).astype(gc_prop.tpe)
+                            mod_array = (array / value).astype(gc_prop.tpe)
                             mod_cols.append(i)
 
                         elif operation == 'set':
@@ -342,7 +345,7 @@ class TimeEventsMain(ObjectsTableMain):
                 if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
 
                     dev_type = self.circuit.device_type_name_dict[dev_type_text]
-                    objects = self.circuit.get_elements_by_type(dev_type)
+                    objects: List[ALL_DEV_TYPES] = self.circuit.get_elements_by_type(dev_type)
 
                     # Assign profiles
                     if len(objects) > 0:
@@ -485,7 +488,7 @@ class TimeEventsMain(ObjectsTableMain):
         Copy the current displayed profiles to the clipboard
         """
 
-        mdl: gf.ProfilesModel = self.ui.profiles_tableView.model()
+        mdl: ProfilesModel = self.ui.profiles_tableView.model()
 
         cols = set()
         if len(self.ui.profiles_tableView.selectedIndexes()) > 0:

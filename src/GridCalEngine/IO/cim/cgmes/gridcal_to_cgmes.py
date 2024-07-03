@@ -323,56 +323,57 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
 
     new_rdf_id = get_new_rdfid()
 
-    if gen.technology is None:
-        # Assume general
+    if len(gen.technologies) == 0:
         object_template = cgmes_model.get_class_type("GeneratingUnit")
         sm = object_template(new_rdf_id)
         cgmes_model.add(sm)
         return sm
+    else:
+        for tech_association in gen.technologies:
 
-    if gen.technology.name == 'General':
-        object_template = cgmes_model.get_class_type("GeneratingUnit")
-        sm = object_template(new_rdf_id)
-        cgmes_model.add(sm)
-        return sm
+            if tech_association.api_object.name == 'General':
+                object_template = cgmes_model.get_class_type("GeneratingUnit")
+                sm = object_template(new_rdf_id)
+                cgmes_model.add(sm)
+                return sm
 
-    if gen.technology.name == 'Thermal':
-        object_template = cgmes_model.get_class_type("ThermalGeneratingUnit")
-        tgu = object_template(new_rdf_id)
-        cgmes_model.add(tgu)
-        return tgu
+            if tech_association.api_object.name == 'Thermal':
+                object_template = cgmes_model.get_class_type("ThermalGeneratingUnit")
+                tgu = object_template(new_rdf_id)
+                cgmes_model.add(tgu)
+                return tgu
 
-    if gen.technology.name == 'Hydro':
-        object_template = cgmes_model.get_class_type("HydroGeneratingUnit")
-        hgu = object_template(new_rdf_id)
-        cgmes_model.add(hgu)
-        return hgu
+            if tech_association.api_object.name == 'Hydro':
+                object_template = cgmes_model.get_class_type("HydroGeneratingUnit")
+                hgu = object_template(new_rdf_id)
+                cgmes_model.add(hgu)
+                return hgu
 
-    if gen.technology.name == 'Solar':
-        object_template = cgmes_model.get_class_type("SolarGeneratingUnit")
-        sgu = object_template(new_rdf_id)
-        cgmes_model.add(sgu)
-        return sgu
+            if tech_association.api_object.name == 'Solar':
+                object_template = cgmes_model.get_class_type("SolarGeneratingUnit")
+                sgu = object_template(new_rdf_id)
+                cgmes_model.add(sgu)
+                return sgu
 
-    if gen.technology.name == 'Wind Onshore':
-        object_template = cgmes_model.get_class_type("WindGeneratingUnit")
-        wgu = object_template(new_rdf_id)
-        wgu.windGenUnitType = WindGenUnitKind.onshore
-        cgmes_model.add(wgu)
-        return wgu
+            if tech_association.api_object.name == 'Wind Onshore':
+                object_template = cgmes_model.get_class_type("WindGeneratingUnit")
+                wgu = object_template(new_rdf_id)
+                wgu.windGenUnitType = WindGenUnitKind.onshore
+                cgmes_model.add(wgu)
+                return wgu
 
-    if gen.technology.name == 'Wind Offshore':
-        object_template = cgmes_model.get_class_type("WindGeneratingUnit")
-        wgu = object_template(new_rdf_id)
-        wgu.windGenUnitType = WindGenUnitKind.offshore
-        cgmes_model.add(wgu)
-        return wgu
+            if tech_association.api_object.name == 'Wind Offshore':
+                object_template = cgmes_model.get_class_type("WindGeneratingUnit")
+                wgu = object_template(new_rdf_id)
+                wgu.windGenUnitType = WindGenUnitKind.offshore
+                cgmes_model.add(wgu)
+                return wgu
 
-    if gen.technology.name == 'Nuclear':
-        object_template = cgmes_model.get_class_type("NuclearGeneratingUnit")
-        ngu = object_template(new_rdf_id)
-        cgmes_model.add(ngu)
-        return ngu
+            if tech_association.api_object.name == 'Nuclear':
+                object_template = cgmes_model.get_class_type("NuclearGeneratingUnit")
+                ngu = object_template(new_rdf_id)
+                cgmes_model.add(ngu)
+                return ngu
 
     return None
 

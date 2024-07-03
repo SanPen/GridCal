@@ -21,7 +21,7 @@ from typing import Union
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
-from GridCalEngine.Devices.Aggregation.technology import Technology
+from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Devices.profile import Profile
@@ -185,6 +185,9 @@ class Generator(GeneratorParent):
         self._Cost2_prof = Profile(default_value=Cost2, data_type=float)
         self._Cost0_prof = Profile(default_value=Cost0, data_type=float)
 
+        self.emissions: Associations = Associations(device_type=DeviceType.EmissionGasDevice)
+        self.fuels: Associations = Associations(device_type=DeviceType.FuelDevice)
+
         # Dynamic vars
         # self.Ra = Ra
         # self.Xa = Xa
@@ -244,6 +247,12 @@ class Generator(GeneratorParent):
                       definition='Maximum amount of generation decrease per hour.')
 
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
+
+        self.register(key='emissions', units='', tpe=SubObjectType.Associations,
+                      definition='List of emissions', display=False)
+
+        self.register(key='fuels', units='', tpe=SubObjectType.Associations,
+                      definition='List of fuels', display=False)
 
     @property
     def Pf_prof(self) -> Profile:

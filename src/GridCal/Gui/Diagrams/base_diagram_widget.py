@@ -45,7 +45,7 @@ from GridCalEngine.enumerations import DeviceType, SimulationTypes
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.object_model import ObjectsModel
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget

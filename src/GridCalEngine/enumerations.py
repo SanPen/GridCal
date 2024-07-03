@@ -1055,6 +1055,7 @@ class SubObjectType(Enum):
     TapChanger = 'Tap changer'
     Array = "Array"
     ObjectsList = "ObjectsList"
+    Associations = "AssociationsList"
 
     def __str__(self) -> str:
         return str(self.value)

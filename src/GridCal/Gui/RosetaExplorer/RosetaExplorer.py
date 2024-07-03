@@ -3,14 +3,18 @@ import os.path
 from typing import List, Union
 import webbrowser
 import darkdetect
+import numpy as np
 import pandas as pd
 import GridCal.ThirdParty.qdarktheme as qdarktheme
 # Engine imports
 
 # GUI imports
-from GridCal.Gui.GuiFunctions import *
+from GridCal.Gui.GuiFunctions import get_list_model, get_logger_tree_model
+
+from PySide6 import QtCore, QtWidgets, QtGui
 from GridCal.Gui.messages import *
 from GridCal.Gui.RosetaExplorer.MainWindow import *
+from GridCal.Gui.RosetaExplorer.roseta_objects_model import RosetaObjectsModel, ObjectsModelOld
 from GridCal.Gui.TreeModelViewer.TreeModelViewer import TreeModelViewerGUI
 
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -135,7 +139,7 @@ class RosetaExplorerGUI(QMainWindow):
         self.UNLOCK()
         self.update_combo_boxes()
 
-    def LOCK(self, val=True):
+    def LOCK(self, val: bool = True) -> None:
         """
         Lock the interface to prevent new simulation launches
         :param val:
@@ -145,14 +149,14 @@ class RosetaExplorerGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
         QtGui.QGuiApplication.processEvents()
 
-    def UNLOCK(self):
+    def UNLOCK(self) -> None:
         """
         Unlock the interface
         """
         if not self.any_thread_running():
             self.LOCK(False)
 
-    def create_console(self):
+    def create_console(self) -> None:
         """
         Create console
         """

@@ -15,11 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
-from GridCalEngine.Devices import Generator, Technology
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices import Generator, Technology
 
 
+# THIS IS A LEGACY OBJECT
 class GeneratorTechnology(EditableDevice):
 
     def __init__(self,

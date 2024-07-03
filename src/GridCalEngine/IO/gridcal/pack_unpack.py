@@ -112,9 +112,10 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
         'investments_group': dev.InvestmentsGroup(),
         'investment': dev.Investment(),
 
-        'generator_technology': dev.GeneratorTechnology(),
-        'generator_fuel': dev.GeneratorFuel(),
-        'generator_emission': dev.GeneratorEmission(),
+        # TODO: Handle these legacy types
+        # 'generator_technology': dev.GeneratorTechnology(),
+        # 'generator_fuel': dev.GeneratorFuel(),
+        # 'generator_emission': dev.GeneratorEmission(),
 
         'fluid_node': dev.FluidNode(),
         'fluid_path': dev.FluidPath(),
@@ -401,6 +402,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
         elif prop.tpe == SubObjectType.TapChanger:
             data[name] = obj.to_dict()
 
+        elif prop.tpe == SubObjectType.Associations:
+            data[name] = obj.to_dict()
+
         elif prop.tpe == SubObjectType.Array:
             data[name] = list(obj)
 
@@ -570,7 +574,6 @@ class CreatedOnTheFly:
         self.contingencies: List[dev.Contingency] = list()
 
         self.technologies: Dict[str, dev.Technology] = dict()
-        self.gen2technologies: List[dev.GeneratorTechnology] = list()
 
     def get_create_area(self, property_value):
         """
@@ -634,14 +637,7 @@ class CreatedOnTheFly:
             tech = dev.Technology(name=tech_name)
             self.technologies[tech_name] = tech
 
-        gen2tech = dev.GeneratorTechnology(name=f"{elm.name}_{tech_name}",
-                                           code='',
-                                           idtag=None,
-                                           generator=elm,
-                                           technology=tech,
-                                           proportion=1.0)
-
-        self.gen2technologies.append(gen2tech)
+        elm.technologies.add(dev.Association(api_object=tech, value=1.0))
 
 
 def parse_object_type_from_dataframe(main_df: pd.DataFrame,
@@ -1046,6 +1042,17 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     val = np.array(property_value)
                                     elm.set_snapshot_value(gc_prop.name, val)
 
+                                elif gc_prop.tpe == SubObjectType.Associations:
+
+                                    # get the list of associations
+                                    associations = elm.get_snapshot_value(gc_prop)
+                                    associations.parse(
+                                        data=property_value,
+                                        elements_dict=elements_dict_by_type.get(associations.device_type, {}),
+                                        logger=logger,
+                                        elm_name=elm.name
+                                    )
+
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
 
@@ -1217,8 +1224,6 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     circuit.add_contingency(obj=cont)
                 for tech_name, technology in on_the_fly.technologies.items():
                     circuit.add_technology(obj=technology)
-                for gen2tech in on_the_fly.gen2technologies:
-                    circuit.add_generator_technology(obj=gen2tech)
 
                 # set the dictionary per type for later
                 elements_dict_by_type[template_elm.device_type] = devices_dict

@@ -19,9 +19,6 @@ from GridCalEngine.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
-from GridCalEngine.Devices.Aggregation.technology import Technology
-from GridCalEngine.Devices.Aggregation.fuel import Fuel
-from GridCalEngine.Devices.Aggregation.emission_gas import EmissionGas
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.Aggregation.zone import Zone
 from GridCalEngine.Devices.Aggregation.country import Country

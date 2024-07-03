@@ -287,7 +287,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=True,
-                                         all_elemnts_dict=self.get_all_elements_dict)
+                                         all_elements_dict=self.get_all_elements_dict)
 
         # do something
         if self.options.objf_tpe == InvestmentsEvaluationObjectives.PowerFlow:
@@ -324,7 +324,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         # revert to the initial state
         self.grid.set_investments_status(investments_list=inv_list,
                                          status=False,
-                                         all_elemnts_dict=self.get_all_elements_dict)
+                                         all_elements_dict=self.get_all_elements_dict)
 
         # record the evaluation
         self.results.add(capex=scores.capex_score,

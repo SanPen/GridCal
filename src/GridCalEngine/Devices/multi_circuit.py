@@ -312,9 +312,9 @@ class MultiCircuit(Assets):
                 'technologies',
                 'fuels',
                 'emission_gases',
-                'generators_technologies',
-                'generators_fuels',
-                'generators_emissions',
+                # 'generators_technologies',
+                # 'generators_fuels',
+                # 'generators_emissions',
                 'fluid_nodes',
                 'fluid_paths',
                 'pi_measurements',
@@ -611,7 +611,7 @@ class MultiCircuit(Assets):
         series_reactance.rate_prof = line.rate_prof
 
         # add device to the circuit
-        self.add_series_reactance(series_reactance)
+        self.add_switch(series_reactance)
 
         # delete the line from the circuit
         self.delete_line(line)
@@ -1574,10 +1574,11 @@ class MultiCircuit(Assets):
         gen_fuel_rates_matrix: lil_matrix = lil_matrix((nfuel, nelm), dtype=float)
 
         # create associations between generators and fuels
-        for entry in self._generators_fuels:
-            gen_idx = gen_index_dict[entry.generator.idtag]
-            fuel_idx = fuel_index_dict[entry.fuel.idtag]
-            gen_fuel_rates_matrix[fuel_idx, gen_idx] = entry.rate
+        for generator in self.generators:
+            for assoc in generator.fuels:
+                gen_idx = gen_index_dict[generator.idtag]
+                fuel_idx = fuel_index_dict[assoc.api_object.idtag]
+                gen_fuel_rates_matrix[fuel_idx, gen_idx] = assoc.value
 
         return gen_fuel_rates_matrix.tocsc()
 
@@ -1595,17 +1596,18 @@ class MultiCircuit(Assets):
         gen_emissions_rates_matrix: lil_matrix = lil_matrix((nemissions, nelm), dtype=float)
 
         # create associations between generators and emissions
-        for entry in self._generators_emissions:
-            gen_idx = gen_index_dict[entry.generator.idtag]
-            em_idx = em_index_dict[entry.emission.idtag]
-            gen_emissions_rates_matrix[em_idx, gen_idx] = entry.rate
+        for generator in self.generators:
+            for assoc in generator.emissions:
+                gen_idx = gen_index_dict[generator.idtag]
+                em_idx = em_index_dict[assoc.api_object.idtag]
+                gen_emissions_rates_matrix[em_idx, gen_idx] = assoc.value
 
         return gen_emissions_rates_matrix.tocsc()
 
     def get_technology_connectivity_matrix(self) -> csc_matrix:
         """
         Get the technology connectivity matrix with relation to the generators
-        should be used to get the generatio per technology by: Tech_mat x Pgen
+        should be used to get the generation per technology by: Tech_mat x Pgen
         :return: CSC sparse matrix (n_tech, n_gen)
         """
         ntech = len(self._technologies)
@@ -1616,28 +1618,31 @@ class MultiCircuit(Assets):
         gen_tech_proportions_matrix: lil_matrix = lil_matrix((ntech, nelm), dtype=int)
 
         # create associations between generators and technologies
-        for i, entry in enumerate(self._generators_technologies):
-            gen_idx = gen_index_dict[entry.generator.idtag]
-            tech_idx = tech_index_dict[entry.technology.idtag]
-            gen_tech_proportions_matrix[tech_idx, gen_idx] = entry.proportion
+        for generator in self.generators:
+            for assoc in generator.fuels:
+                gen_idx = gen_index_dict[generator.idtag]
+                tech_idx = tech_index_dict[assoc.api_object.idtag]
+                gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
 
-    def set_investments_status(self, investments_list: List[dev.Investment], status: bool,
-                               all_elemnts_dict: Union[None, dict[str, EditableDevice]] = None) -> None:
+    def set_investments_status(self,
+                               investments_list: List[dev.Investment],
+                               status: bool,
+                               all_elements_dict: Union[None, dict[str, EditableDevice]] = None) -> None:
         """
-        Set the active (and active profile) status of a list of investmensts' objects
+        Set the active (and active profile) status of a list of investments' objects
         :param investments_list: list of investments
-        :param status: status to set in the internal strctures
-        :param all_elemnts_dict: Dictionary of all elemets (idtag -> object), if None if is computed
+        :param status: status to set in the internal structures
+        :param all_elements_dict: Dictionary of all elements (idtag -> object), if None if is computed
         """
 
-        if all_elemnts_dict is None:
-            all_elemnts_dict = self.get_all_elements_dict()
+        if all_elements_dict is None:
+            all_elements_dict = self.get_all_elements_dict()
 
         for inv in investments_list:
             device_idtag = inv.device_idtag
-            device = all_elemnts_dict[device_idtag]
+            device = all_elements_dict[device_idtag]
 
             if hasattr(device, 'active'):
                 device.active = status
@@ -2106,28 +2111,20 @@ class MultiCircuit(Assets):
                             device=elm.idtag,
                             device_class=elm.device_type.value)
 
-    def clean_technologies(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+    def clean_technologies(self) -> None:
         """
-        Clean the investments and investment groups
-        :param all_dev:
-        :param logger: Logger
+        Clean the technology associations to deleted technologies
         """
-        elements_to_delete = list()
 
-        # pass 1: detect the "null" contingencies
-        for elm_lst in [self._generators_emissions,
-                        self._generators_fuels,
-                        self._generators_technologies]:
-            for elm in elm_lst:
-                if elm.generator not in all_dev.keys():
-                    elements_to_delete.append(elm)
+        for elm_list in self.get_injection_devices_lists():
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.technologies:
+                    if assoc.api_object not in self.technologies:
+                        to_del.append(assoc)
 
-        # pass 2: delete the "null" elements
-        for elm in elements_to_delete:
-            self.delete_element(obj=elm)
-            logger.add_info("Deleted isolated investment",
-                            device=elm.idtag,
-                            device_class=elm.device_type.value)
+                for assoc in to_del:
+                    elm.technologies.remove(assoc)
 
     def clean(self) -> Logger:
         """
@@ -2143,7 +2140,7 @@ class MultiCircuit(Assets):
         self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
         self.clean_contingencies(all_dev=all_dev, logger=logger)
         self.clean_investments(all_dev=all_dev, logger=logger)
-        self.clean_technologies(all_dev=all_dev, logger=logger)
+        self.clean_technologies()
 
         return logger
 
