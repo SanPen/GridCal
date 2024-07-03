@@ -738,11 +738,6 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_9.addWidget(self.associationsComboBox)
 
-        self.association_label = QLabel(self.frame_17)
-        self.association_label.setObjectName(u"association_label")
-
-        self.horizontalLayout_9.addWidget(self.association_label)
-
         self.horizontalSpacer_8 = QSpacerItem(794, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_9.addItem(self.horizontalSpacer_8)
@@ -4764,7 +4759,6 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.delete_selected_objects_pushButton.setText("")
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Objects", None))
-        self.association_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_2), QCoreApplication.translate("mainWindow", u"Associations", None))
 #if QT_CONFIG(tooltip)
         self.device_type_magnitude_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Magnitude with profile", None))

@@ -22,6 +22,7 @@ from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 def test_ieee_grids():
@@ -170,19 +171,21 @@ def test_zip() -> None:
     """
     Test the power flow with ZIP loads compared to PSSe
     """
-    options = PowerFlowOptions()
 
     fname = os.path.join('data', 'grids', 'ZIP_load_example.raw')
     main_circuit = FileOpen(fname).open()
+
+    options = PowerFlowOptions(tolerance=1e-6)
     power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
 
-    # Data from Matpower 8
     Vm_psse = np.array([1.00000, 0.98933, 0.98560, 0.98579])
     Va_psse = np.deg2rad(np.array([0.00000, -5.1287, -9.1535, -11.4464]))
 
     Vm = np.abs(power_flow.results.voltage)
     Va = np.angle(power_flow.results.voltage, deg=False)
+
+    nc = compile_numerical_circuit_at(circuit=main_circuit)
 
     assert np.allclose(Vm_psse, Vm, atol=1e-3)
     assert np.allclose(Va_psse, Va, atol=1e-3)

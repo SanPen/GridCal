@@ -68,6 +68,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                               lat=lat,
                               lon=lon)
 
+        self.line_container = None
         self.editor: GridMapWidget = editor  # re assign for the types to be clear
         self.api_object: Substation = api_object
 
@@ -242,7 +243,41 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        icon_path="",
                        function_ptr=self.remove_function)
 
+        add_menu_entry(menu=menu,
+                       text="ADD node",
+                       icon_path="",
+                       function_ptr=self.add_function)
+
         menu.exec_(event.screenPos())
+
+    def add_function(self):
+        """
+
+        :return:
+        """
+
+        for dev_tpe in [DeviceType.LineDevice,
+                        DeviceType.DCLineDevice,
+                        DeviceType.HVDCLineDevice,
+                        DeviceType.FluidPathDevice]:
+
+            dev_dict = self.editor.graphics_manager.get_device_type_dict(device_type=dev_tpe)
+            lines_info = []
+
+            for idtag, graphic_object in dev_dict.items():
+                substation_from_graphics = self.editor.graphics_manager.query(elm=graphic_object.api_object.get_substation_from())
+                substation_to_graphics = self.editor.graphics_manager.query(elm=graphic_object.api_object.get_substation_to())
+                lines_info.append((idtag, graphic_object, substation_from_graphics, substation_to_graphics))
+
+            # Now, iterate over the collected information
+            for idtag, graphic_object, substation_from_graphics, substation_to_graphics in lines_info:
+                if substation_from_graphics == self:
+                    graphic_object.insert_new_node_at_position(0)
+
+                if substation_to_graphics == self:
+                    graphic_object.insert_new_node_at_position(len(graphic_object.nodes_list))
+
+        pass
 
     def remove_function(self):
         """

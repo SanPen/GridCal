@@ -145,7 +145,7 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
     g = psse_load.YP
     b = psse_load.YQ
     ir = psse_load.IP
-    ii = psse_load.IQ
+    ii = -psse_load.IQ
     p = psse_load.PL
     q = psse_load.QL
 
