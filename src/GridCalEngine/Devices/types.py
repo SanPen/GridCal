@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
 from GridCalEngine.Devices.Aggregation import *
+from GridCalEngine.Devices.Associations import *
 from GridCalEngine.Devices.Branches import *
 from GridCalEngine.Devices.Injections import *
 from GridCalEngine.Devices.Substation import *

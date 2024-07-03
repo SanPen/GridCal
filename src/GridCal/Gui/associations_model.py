@@ -21,9 +21,21 @@ from typing import Dict, List, Union
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from GridCal.Gui.GuiFunctions import (FloatDelegate)
-from GridCalEngine.Devices.Associations.association import Association
+from GridCalEngine.Devices.Associations.association import Association, Associations
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.types import ASSOCIATION_TYPES, ALL_DEV_TYPES
+
+
+def try_convert_to_float(value: str) -> Union[float, str]:
+    """
+
+    :param value:
+    :return:
+    """
+    try:
+        return float(value)
+    except ValueError:
+        return value
 
 
 class AssociationsModel(QtCore.QAbstractTableModel):
@@ -72,7 +84,7 @@ class AssociationsModel(QtCore.QAbstractTableModel):
 
         self._decimals = decimals
 
-        self.set_delegates()
+        # self.set_delegates()
 
     def get_association(self, i: int, j: int) -> Union[None, Association]:
         """
@@ -81,7 +93,10 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param j: column index
         :return: Association or None
         """
-        return self._sp_data[i].get(j, None)
+        # return self._sp_data[i].get(j, None)
+        associations: Associations = getattr(self._objects[i], self._gc_prop.name)
+        associated_obj = self._associated_objects[j]
+        return associations.at_key(associated_obj.idtag)
 
     def create_association(self, i: int, j: int, value: float) -> Association:
         """
@@ -92,9 +107,20 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :return: Association
         """
         assoc = Association(api_object=self._associated_objects[j], value=value)
-        associations_list: List[Association] = getattr(self._objects[i], self._gc_prop.name)
-        associations_list.append(assoc)
+        associations: Associations = getattr(self._objects[i], self._gc_prop.name)
+        associations.add(assoc)
         return assoc
+
+    def remove_association(self, i: int, j: int) -> None:
+        """
+        Remove the association at some coordinates
+        :param i: row index
+        :param j: column index
+        :return: Association or None
+        """
+        associations: Associations = getattr(self._objects[i], self._gc_prop.name)
+        associated_obj = self._associated_objects[j]
+        associations.remove_by_key(associated_obj.idtag)
 
     def set_delegates(self) -> None:
         """
@@ -148,7 +174,7 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
 
-                association = self.get_association(i=index.column(), j=index.row())
+                association = self.get_association(i=index.row(), j=index.column())
                 if association is None:
                     return "-"
                 else:
@@ -167,13 +193,24 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         if len(self._objects) == 0 or len(self._associated_objects) == 0:
             return True
 
-        association = self.get_association(i=index.column(), j=index.row())
-        if association is None:
-            # create an association
-            self.create_association(i=index.column(), j=index.row(), value=value)
-        else:
-            # there was a previous association, change the value
-            association.value = value
+        value2 = try_convert_to_float(value)
+
+        if isinstance(value2, (float, int)):
+            association = self.get_association(i=index.row(), j=index.column())
+            if association is None:
+                # create an association
+                self.create_association(i=index.row(), j=index.column(), value=float(value2))
+                print(f"Created association {self._objects[index.row()]} "
+                      f"with {self._associated_objects[index.column()]}")
+            else:
+                # there was a previous association, change the value
+                association.value = value2
+
+        elif isinstance(value2, str):
+            if str(value2).strip() == "-":
+                self.remove_association(i=index.row(), j=index.column())
+                print(f"Removed association {self._objects[index.row()]} "
+                      f"with {self._associated_objects[index.column()]}")
 
         return True
 

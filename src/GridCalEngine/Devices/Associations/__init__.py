@@ -16,6 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from GridCalEngine.Devices.Associations.association import Association
-# from GridCalEngine.Devices.Associations.generator_fuel import GeneratorFuel
-# from GridCalEngine.Devices.Associations.generator_emission import GeneratorEmission
-# from GridCalEngine.Devices.Associations.generator_technology import GeneratorTechnology
+from GridCalEngine.Devices.Associations.fuel import Fuel
+from GridCalEngine.Devices.Associations.emission_gas import EmissionGas
+from GridCalEngine.Devices.Associations.technology import Technology
