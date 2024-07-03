@@ -96,8 +96,7 @@ class GCProp:
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = None,
-                 associated_type: Union[None, DeviceType] = None, ):
+                 old_names: List[str] = None):
         """
         GridCal property
         :param prop_name:
@@ -124,8 +123,6 @@ class GCProp:
         self.editable = editable
 
         self.old_names = old_names if old_names is not None else list()
-
-        self.associated_type = associated_type
 
     def has_profile(self) -> bool:
         """
@@ -332,8 +329,7 @@ class EditableDevice:
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
-                 old_names: List[str] = None,
-                 associated_type: Union[None, DeviceType] = None):
+                 old_names: List[str] = None):
         """
         Register property
         The property must exist, and if provided, the profile_name property must exist too
@@ -345,7 +341,6 @@ class EditableDevice:
         :param display: display this property?
         :param editable: is this editable?
         :param old_names: List of old names
-        :param associated_type: Type of association
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
@@ -356,8 +351,7 @@ class EditableDevice:
                       profile_name=profile_name,
                       display=display,
                       editable=editable,
-                      old_names=old_names,
-                      associated_type=associated_type)
+                      old_names=old_names)
 
         if key in self.registered_properties.keys():
             raise Exception(f"Property {key} already registered!")
@@ -455,22 +449,19 @@ class EditableDevice:
 
         return props, indices
 
-    def get_association_properties(self) -> Tuple[List[GCProp], List[int], List[DeviceType]]:
+    def get_association_properties(self) -> Tuple[List[GCProp], List[int]]:
         """
         Return the list of properties that contain associate another type
-        :param obj:
-        :return: list of GCProp, list of indices, list of associated types
+        :return: list of GCProp, list of indices
         """
         props = list()
         indices = list()
-        associated_types = list()
         for i, prop in enumerate(self.property_list):
-            if prop.associated_type is not None:
+            if prop.tpe == SubObjectType.Associations:
                 props.append(prop)
                 indices.append(i)
-                associated_types.append(prop.associated_type)
 
-        return props, indices, associated_types
+        return props, indices
 
     def get_snapshot_value(self, prop: GCProp) -> Any:
         """

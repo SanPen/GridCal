@@ -292,7 +292,7 @@ class Assets:
                     key = str(elm.device_type.value)
                     profile_attr = list(elm.properties_with_profile.keys())
                     profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
-                    associated_props, indices, associated_types = elm.get_association_properties()
+                    associated_props, indices = elm.get_association_properties()
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
                     self.device_associations[key] = [prop.name for prop in associated_props]
@@ -4222,13 +4222,13 @@ class Assets:
         """
         devices = self.get_branches_wo_hvdc()
         m = len(devices)
-        from_idx = np.zeros(m, dtype=int)
-        to_idx = np.zeros(m, dtype=int)
+        F = np.zeros(m, dtype=int)
+        T = np.zeros(m, dtype=int)
         bus_dict = self.get_bus_index_dict()
         for i, elm in enumerate(devices):
-            from_idx[i] = bus_dict[elm.bus_from]
-            to_idx[i] = bus_dict[elm.bus_to]
-        return from_idx, to_idx
+            F[i] = bus_dict[elm.bus_from]
+            T[i] = bus_dict[elm.bus_to]
+        return F, T
 
     def get_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
         """
@@ -4236,13 +4236,13 @@ class Assets:
         :return: IntVec, IntVec
         """
         m = len(self._hvdc_lines)
-        from_idx = np.zeros(m, dtype=int)
-        to_idx = np.zeros(m, dtype=int)
+        F = np.zeros(m, dtype=int)
+        T = np.zeros(m, dtype=int)
         bus_dict = self.get_bus_index_dict()
         for i, elm in enumerate(self._hvdc_lines):
-            from_idx[i] = bus_dict[elm.bus_from]
-            to_idx[i] = bus_dict[elm.bus_to]
-        return from_idx, to_idx
+            F[i] = bus_dict[elm.bus_from]
+            T[i] = bus_dict[elm.bus_to]
+        return F, T
 
     # ------------------------------------------------------------------------------------------------------------------
     # Injections

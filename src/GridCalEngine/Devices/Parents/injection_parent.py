@@ -114,8 +114,7 @@ class InjectionParent(EditableDevice):
                       profile_name='Cost_prof')
 
         self.register(key='technologies', units='', tpe=SubObjectType.Associations,
-                      definition='List of technologies',
-                      associated_type=DeviceType.Technology, display=False)
+                      definition='List of technologies', display=False)
 
     @property
     def bus(self) -> Bus:

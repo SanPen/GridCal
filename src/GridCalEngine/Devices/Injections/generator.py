@@ -249,12 +249,10 @@ class Generator(GeneratorParent):
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
 
         self.register(key='emissions', units='', tpe=SubObjectType.Associations,
-                      definition='List of emissions',
-                      associated_type=DeviceType.EmissionGasDevice, display=False)
+                      definition='List of emissions', display=False)
 
         self.register(key='fuels', units='', tpe=SubObjectType.Associations,
-                      definition='List of fuels',
-                      associated_type=DeviceType.FuelDevice, display=False)
+                      definition='List of fuels', display=False)
 
     @property
     def Pf_prof(self) -> Profile:

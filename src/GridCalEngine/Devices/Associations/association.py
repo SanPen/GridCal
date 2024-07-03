@@ -58,6 +58,21 @@ class Association:
         self.value = float(data['value'])
         return idtag
 
+    def __eq__(self, other: "Association") -> bool:
+        """
+        Equal?
+        :param other:
+        :return:
+        """
+        if self.api_object.idtag != self.api_object.idtag:
+            # Different refference objects
+            return False
+        if self.value != self.value:
+            # different values
+            return False
+
+        return True
+
 
 class Associations:
     """
@@ -72,6 +87,14 @@ class Associations:
         self._data: Dict[str, Association] = dict()
 
         self._device_type = device_type
+
+    @property
+    def device_type(self) -> DeviceType:
+        """
+        Device Type
+        :return:
+        """
+        return self._device_type
 
     def add(self, val: Association):
         """
@@ -168,6 +191,26 @@ class Associations:
         :return:
         """
         self._data.clear()
+
+    def __eq__(self, other: "Associations") -> bool:
+
+        if len(self) != len(other):
+            # different length
+            return False
+
+        for key, val in self._data.items():
+
+            val2 = other._data.get(key, None)
+
+            if val2 is None:
+                # a key was not found, these are not equal
+                return False
+            else:
+                if val != val2:
+                    # the associations are different
+                    return False
+
+        return True
 
 
 
