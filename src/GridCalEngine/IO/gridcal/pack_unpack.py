@@ -574,7 +574,6 @@ class CreatedOnTheFly:
         self.contingencies: List[dev.Contingency] = list()
 
         self.technologies: Dict[str, dev.Technology] = dict()
-        self.gen2technologies: List[dev.GeneratorTechnology] = list()
 
     def get_create_area(self, property_value):
         """
@@ -638,14 +637,7 @@ class CreatedOnTheFly:
             tech = dev.Technology(name=tech_name)
             self.technologies[tech_name] = tech
 
-        gen2tech = dev.GeneratorTechnology(name=f"{elm.name}_{tech_name}",
-                                           code='',
-                                           idtag=None,
-                                           generator=elm,
-                                           technology=tech,
-                                           proportion=1.0)
-
-        self.gen2technologies.append(gen2tech)
+        elm.technologies.add(dev.Association(api_object=tech, value=1.0))
 
 
 def parse_object_type_from_dataframe(main_df: pd.DataFrame,
@@ -1232,10 +1224,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     circuit.add_contingency(obj=cont)
                 for tech_name, technology in on_the_fly.technologies.items():
                     circuit.add_technology(obj=technology)
-                for gen2tech in on_the_fly.gen2technologies:
-                    circuit.add_generator_technology(obj=gen2tech)
 
-                # set the dictionary per type for later
+                    # set the dictionary per type for later
                 elements_dict_by_type[template_elm.device_type] = devices_dict
 
                 # add the devices to the circuit

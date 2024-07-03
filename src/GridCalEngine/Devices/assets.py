@@ -260,7 +260,7 @@ class Assets:
                 dev.BranchGroup(),
                 dev.ModellingAuthority()
             ],
-            "Tags & Associations": [
+            "Associations": [
                 dev.Technology(),
                 dev.Fuel(),
                 dev.EmissionGas(),
