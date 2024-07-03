@@ -52,7 +52,7 @@ package_data = {'GridCalEngine': ['LICENSE.txt', 'setup.py'], }
 
 dependencies = ['setuptools>=41.0.1',
                 'wheel>=0.37.2',
-                "numpy>=1.19.0",
+                "numpy>=1.19.0,<2.0.0",
                 "scipy>=1.0.0",
                 "networkx>=2.1",
                 "pandas>=1.0",
@@ -63,7 +63,7 @@ dependencies = ['setuptools>=41.0.1',
                 "qtconsole>=4.5.4",
                 "openpyxl>=2.4.9",
                 "chardet>=3.0.4",  # for the psse files character detection
-                "scikit-learn>=0.18",
+                "scikit-learn>=1.5.0",
                 "geopy>=1.16",
                 "pytest>=7.2",
                 "h5py>=2.9.0",

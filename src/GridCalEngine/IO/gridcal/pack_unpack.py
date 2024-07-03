@@ -44,14 +44,13 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
         'area': dev.Area(),
         'zone': dev.Zone(),
 
-        'substation': dev.Substation(),
-
-        'voltage_level': dev.VoltageLevel(),
-
         'country': dev.Country(),
         'community': dev.Community(),
         'region': dev.Region(),
         'municipality': dev.Municipality(),
+
+        'substation': dev.Substation(),
+        'voltage_level': dev.VoltageLevel(),
 
         'technology': dev.Technology(),
 
@@ -113,9 +112,10 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
         'investments_group': dev.InvestmentsGroup(),
         'investment': dev.Investment(),
 
-        'generator_technology': dev.GeneratorTechnology(),
-        'generator_fuel': dev.GeneratorFuel(),
-        'generator_emission': dev.GeneratorEmission(),
+        # TODO: Handle these legacy types
+        # 'generator_technology': dev.GeneratorTechnology(),
+        # 'generator_fuel': dev.GeneratorFuel(),
+        # 'generator_emission': dev.GeneratorEmission(),
 
         'fluid_node': dev.FluidNode(),
         'fluid_path': dev.FluidPath(),
@@ -172,7 +172,7 @@ def gather_model_as_data_frames(circuit: MultiCircuit, legacy: bool = False) -> 
 
             headers = object_sample.registered_properties.keys()
 
-            lists_of_objects = circuit.get_elements_by_type(object_sample.device_type)
+            lists_of_objects: List[ALL_DEV_TYPES] = circuit.get_elements_by_type(object_sample.device_type)
 
             obj = list()
             profiles = dict()
@@ -402,6 +402,12 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
         elif prop.tpe == SubObjectType.TapChanger:
             data[name] = obj.to_dict()
 
+        elif prop.tpe == SubObjectType.Associations:
+            data[name] = obj.to_dict()
+
+        elif prop.tpe == SubObjectType.Array:
+            data[name] = list(obj)
+
         else:
             # if the object is not of a primary type, get the idtag instead
             if hasattr(obj, 'idtag'):
@@ -455,7 +461,6 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
                     'snapshot_unix': circuit.get_snapshot_time_unix()}
 
     return data
-
 
 
 def search_property(template_elm: ALL_DEV_TYPES,
@@ -569,7 +574,6 @@ class CreatedOnTheFly:
         self.contingencies: List[dev.Contingency] = list()
 
         self.technologies: Dict[str, dev.Technology] = dict()
-        self.gen2technologies: List[dev.GeneratorTechnology] = list()
 
     def get_create_area(self, property_value):
         """
@@ -633,14 +637,7 @@ class CreatedOnTheFly:
             tech = dev.Technology(name=tech_name)
             self.technologies[tech_name] = tech
 
-        gen2tech = dev.GeneratorTechnology(name=f"{elm.name}_{tech_name}",
-                                           code='',
-                                           idtag=None,
-                                           generator=elm,
-                                           technology=tech,
-                                           proportion=1.0)
-
-        self.gen2technologies.append(gen2tech)
+        elm.technologies.add_object(api_object=tech, val=1.0)
 
 
 def parse_object_type_from_dataframe(main_df: pd.DataFrame,
@@ -1040,6 +1037,22 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     locations_obj: dev.TapChanger = elm.get_snapshot_value(prop=gc_prop)
                                     locations_obj.parse(property_value)
 
+                                elif gc_prop.tpe == SubObjectType.Array:
+
+                                    val = np.array(property_value)
+                                    elm.set_snapshot_value(gc_prop.name, val)
+
+                                elif gc_prop.tpe == SubObjectType.Associations:
+
+                                    # get the list of associations
+                                    associations = elm.get_snapshot_value(gc_prop)
+                                    associations.parse(
+                                        data=property_value,
+                                        elements_dict=elements_dict_by_type.get(associations.device_type, {}),
+                                        logger=logger,
+                                        elm_name=elm.name
+                                    )
+
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
 
@@ -1116,6 +1129,59 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         devices.append(elm)
 
     return devices, devices_dict
+
+
+def handle_legacy_jsons(model_data: Dict[str, List],
+                        elements_dict_by_type: Dict[DeviceType, Dict],
+                        logger: Logger) -> None:
+    """
+    Handle those legacy structures that were deprecated and removed from GridCal's structure
+    :param model_data:
+    :param elements_dict_by_type:
+    :param logger:
+    :return:
+    """
+    gt_data_list = model_data.get("generator_technology", None)
+    if gt_data_list is not None:
+        for entry in gt_data_list:
+            gen_idtag = entry.get('generator', None)
+            tech_idtag = entry.get('technology', None)
+            proportion = entry.get('proportion', 1.0)
+            generator = elements_dict_by_type[DeviceType.GeneratorDevice].get(gen_idtag, None)
+            tech = elements_dict_by_type[DeviceType.Technology].get(tech_idtag, None)
+            if generator is not None and tech is not None:
+                generator.technologies.add_object(api_object=tech, val=proportion)
+                logger.add_info("Converted legacy generator technology association",
+                                device_class="Generator_technology",
+                                value=f"{generator.name} -> {tech.name} at {proportion}")
+
+    gf_data_list = model_data.get("generator_fuel", None)
+    if gf_data_list is not None:
+        for entry in gf_data_list:
+            gen_idtag = entry.get('generator', None)
+            fuel_idtag = entry.get('fuel', None)
+            rate = entry.get('rate', 1.0)
+            generator = elements_dict_by_type[DeviceType.GeneratorDevice].get(gen_idtag, None)
+            fuel = elements_dict_by_type[DeviceType.FuelDevice].get(fuel_idtag, None)
+            if generator is not None and fuel is not None:
+                generator.fuels.add_object(api_object=fuel, val=rate)
+                logger.add_info("Converted legacy generator fuel association",
+                                device_class="Generator_technology",
+                                value=f"{generator.name} -> {fuel.name} at {rate}")
+
+    ge_data_list = model_data.get("generator_emission", None)
+    if ge_data_list is not None:
+        for entry in ge_data_list:
+            gen_idtag = entry.get('generator', None)
+            emision_idtag = entry.get('emission', None)
+            rate = entry.get('rate', 1.0)
+            generator = elements_dict_by_type[DeviceType.GeneratorDevice].get(gen_idtag, None)
+            emission = elements_dict_by_type[DeviceType.Technology].get(emision_idtag, None)
+            if generator is not None and emission is not None:
+                generator.emissions.add_object(api_object=emission, val=rate)
+                logger.add_info("Converted legacy generator fuel association",
+                                device_class="Generator_technology",
+                                value=f"{generator.name} -> {emission.name} at {rate}")
 
 
 def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]],
@@ -1211,16 +1277,14 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     circuit.add_contingency(obj=cont)
                 for tech_name, technology in on_the_fly.technologies.items():
                     circuit.add_technology(obj=technology)
-                for gen2tech in on_the_fly.gen2technologies:
-                    circuit.add_generator_technology(obj=gen2tech)
 
                 # set the dictionary per type for later
                 elements_dict_by_type[template_elm.device_type] = devices_dict
 
                 # add the devices to the circuit
-                circuit.set_elements_by_type(device_type=template_elm.device_type,
-                                             devices=devices,
-                                             logger=logger)
+                circuit.set_elements_list_by_type(device_type=template_elm.device_type,
+                                                  devices=devices,
+                                                  logger=logger)
 
             else:
                 # no objects of this type
@@ -1276,9 +1340,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     elements_dict_by_type[template_elm.device_type] = devices_dict
 
                     # add the devices to the circuit
-                    circuit.set_elements_by_type(device_type=template_elm.device_type,
-                                                 devices=devices,
-                                                 logger=logger)
+                    circuit.set_elements_list_by_type(device_type=template_elm.device_type,
+                                                      devices=devices,
+                                                      logger=logger)
                 else:
                     # branch is a legacy structure, so we can avoid reporting its absence
                     if object_type_key != 'branch':
@@ -1288,6 +1352,12 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     progress_func(float(item_count + 1) / float(n_data_types) * 100)
 
                 item_count += 1
+
+            # Handle the legacy objects that may be present in the data bus not declared in the program
+            # i.e. generator_technology
+            handle_legacy_jsons(model_data=model_data,
+                                elements_dict_by_type=elements_dict_by_type,
+                                logger=logger)
 
     # fill in wires into towers ----------------------------------------------------------------------------------------
     if text_func is not None:

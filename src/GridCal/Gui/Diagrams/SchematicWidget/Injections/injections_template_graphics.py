@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
-from GridCal.Gui.Diagrams.SchematicWidget.generic_graphics import GenericDBWidget
+from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
@@ -28,7 +28,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
-class InjectionTemplateGraphicItem(GenericDBWidget, QGraphicsItemGroup):
+class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
     """
     InjectionTemplateGraphicItem
     """
@@ -48,7 +48,7 @@ class InjectionTemplateGraphicItem(GenericDBWidget, QGraphicsItemGroup):
         :param w:
         :param h:
         """
-        GenericDBWidget.__init__(self, parent=parent, api_object=api_obj, editor=editor, draw_labels=True)
+        GenericDiagramWidget.__init__(self, parent=parent, api_object=api_obj, editor=editor, draw_labels=True)
         QGraphicsItemGroup.__init__(self, parent)
 
         self.w = w

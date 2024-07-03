@@ -75,6 +75,9 @@ def get_allowed_sheets() -> Dict[str, Any]:
                            'CtrlGen_Vset_profiles': float,
                            'CtrlGen_P_profiles': float,
                            'shunt_Y_profiles': complex,
+                           'generator_technology': float,
+                           'generator_fuel': float,
+                           'generator_emission': float,
                            'tower_wires': None}
 
     for object_type_name, object_sample in object_types.items():
@@ -1131,7 +1134,7 @@ def save_excel(circuit: MultiCircuit, file_path):
     """
     logger = Logger()
 
-    dfs = gather_model_as_data_frames(circuit=circuit)
+    dfs = gather_model_as_data_frames(circuit=circuit, legacy=True)
 
     # flush-save ###################################################################################################
     with pd.ExcelWriter(file_path) as writer:

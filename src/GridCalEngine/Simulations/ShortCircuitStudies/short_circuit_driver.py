@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Union
+from typing import Union, List
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import CxVec
@@ -25,61 +25,12 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (
                                                                                 short_circuit_unbalanced)
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Devices import Branch, Bus
+from GridCalEngine.Devices import Line, Bus
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.driver_template import DriverTemplate
-from GridCalEngine.enumerations import FaultType, BranchImpedanceMode, SimulationTypes
-
-
-class ShortCircuitOptions:
-    """
-    Short circuit options
-    """
-
-    def __init__(self, bus_index: Union[int, None] = 0,
-                 fault_type=FaultType.ph3,
-                 branch_index: Union[int, None] = None,
-                 branch_fault_locations=None,
-                 branch_fault_impedance=None,
-                 branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
-                 verbose=False):
-        """
-
-        :param bus_index:
-        :param fault_type: fault type among 3x, LG, LL and LLG possibilities
-        :param branch_index:
-        :param branch_fault_locations:
-        :param branch_fault_impedance:
-        :param branch_impedance_tolerance_mode:
-        :param verbose:
-        """
-
-        if branch_index is not None:
-            assert (len(branch_fault_locations) == len(branch_index))
-            assert (len(branch_fault_impedance) == len(branch_index))
-
-        if bus_index is None:
-            self.bus_index = list()
-        else:
-            self.bus_index = bus_index
-
-        self.fault_type = fault_type
-
-        self.branch_index = branch_index
-
-        if branch_fault_locations is None:
-            self.branch_fault_locations = list()
-        else:
-            self.branch_fault_locations = branch_fault_locations
-
-        if branch_fault_impedance is None:
-            self.branch_fault_impedance = list()
-        else:
-            self.branch_fault_impedance = branch_fault_impedance
-
-        self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
-
-        self.verbose = verbose
+from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_options import ShortCircuitOptions
+from GridCalEngine.enumerations import FaultType, SimulationTypes
+from GridCalEngine.Devices.types import BRANCH_TYPES
 
 
 class ShortCircuitDriver(DriverTemplate):
@@ -149,7 +100,7 @@ class ShortCircuitDriver(DriverTemplate):
         return Zf
 
     @staticmethod
-    def split_branch(branch: Branch, fault_position: float, r_fault: float, x_fault: float):
+    def split_branch(branch: BRANCH_TYPES, fault_position: float, r_fault: float, x_fault: float):
         """
         Split a branch by a given distance
         :param branch: Branch of a circuit
@@ -180,19 +131,17 @@ class ShortCircuitDriver(DriverTemplate):
         # set the bus fault impedance
         middle_bus.Zf = complex(r_fault, x_fault)
 
-        br1 = Branch(bus_from=branch.bus_from,
-                     bus_to=middle_bus,
-                     r=r * fault_position,
-                     x=x * fault_position,
-                     g=g * fault_position,
-                     b=b * fault_position)
+        br1 = Line(bus_from=branch.bus_from,
+                   bus_to=middle_bus,
+                   r=r * fault_position,
+                   x=x * fault_position,
+                   b=b * fault_position)
 
-        br2 = Branch(bus_from=middle_bus,
-                     bus_to=branch.bus_to,
-                     r=r * (1 - fault_position),
-                     x=x * (1 - fault_position),
-                     g=g * (1 - fault_position),
-                     b=b * (1 - fault_position))
+        br2 = Line(bus_from=middle_bus,
+                   bus_to=branch.bus_to,
+                   r=r * (1 - fault_position),
+                   x=x * (1 - fault_position),
+                   b=b * (1 - fault_position))
 
         return br1, br2, middle_bus
 
@@ -260,7 +209,7 @@ class ShortCircuitDriver(DriverTemplate):
         """
         self.tic()
         self._is_running = True
-        if self.options.branch_index:
+        if self.options.mid_line_fault:
 
             # if there are branch indices where to perform short circuits, modify the grid accordingly
 
@@ -269,14 +218,14 @@ class ShortCircuitDriver(DriverTemplate):
             sc_bus_index = list()
 
             # modify the grid by inserting a mid-line short circuit bus
-            branch = self.grid.get_branches()[self.options.branch_index]
+            branch = self.grid.get_branches_wo_hvdc()[self.options.branch_index]
             br1, br2, middle_bus = self.split_branch(branch=branch,
-                                                     fault_position=self.options.branch_fault_locations[0],
-                                                     r_fault=self.options.branch_fault_impedance[0].real,
-                                                     x_fault=self.options.branch_fault_impedance[0].imag)
+                                                     fault_position=self.options.branch_fault_locations,
+                                                     r_fault=self.options.branch_fault_r,
+                                                     x_fault=self.options.branch_fault_x)
 
-            grid.add_branch(br1)
-            grid.add_branch(br2)
+            grid.add_line(br1)
+            grid.add_line(br2)
             grid.add_bus(middle_bus)
             sc_bus_index.append(len(grid.buses) - 1)
 

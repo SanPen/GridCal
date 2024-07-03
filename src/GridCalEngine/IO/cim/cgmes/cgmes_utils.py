@@ -1,5 +1,6 @@
-from typing import List, Tuple
-
+from typing import List, Tuple, Dict
+import GridCalEngine.Devices as gcdev
+from GridCalEngine.IO.cim.cgmes.base import Base
 # from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
 # from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
 # from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
@@ -20,6 +21,36 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.enumerations import (TapAngleControl, TapModuleControl)
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapChangerTypes)
 import numpy as np
+
+
+def find_terms_connections(cgmes_terminal: Base,
+                           calc_node_dict: Dict[str, gcdev.Bus],
+                           cn_dict: Dict[str, gcdev.ConnectivityNode]) -> Tuple[gcdev.Bus, gcdev.ConnectivityNode]:
+    """
+
+    :param cgmes_terminal:
+    :param calc_node_dict:
+    :param cn_dict:
+    :return:
+    """
+
+    if cgmes_terminal is not None:
+        # get the rosetta calculation node if exists
+        if cgmes_terminal.TopologicalNode is not None:
+            calc_node = calc_node_dict.get(cgmes_terminal.TopologicalNode.uuid, None)
+        else:
+            calc_node = None
+
+        # get the gcdev connectivity node if exists
+        if cgmes_terminal.ConnectivityNode is not None:
+            cn = cn_dict.get(cgmes_terminal.ConnectivityNode.uuid, None)
+        else:
+            cn = None
+    else:
+        calc_node = None
+        cn = None
+
+    return calc_node, cn
 
 
 def find_object_by_idtag(object_list, target_idtag):
@@ -696,7 +727,10 @@ def get_nominal_voltage(topological_node, logger) -> float:
 
 def get_regulating_control(cgmes_elm,
                            cgmes_enums,
+                           calc_node_dict,
+                           cn_dict,
                            logger: DataLogger):
+    control_bus = None
     if cgmes_elm.RegulatingControl is not None:
 
         if cgmes_elm.RegulatingControl.enabled:
@@ -729,30 +763,37 @@ def get_regulating_control(cgmes_elm,
             # cgmes_elm.EquipmentContainer.BaseVoltage.nominalVoltage
             controlled_terminal = cgmes_elm.RegulatingControl.Terminal
             # control_node = # TODO get gc.cn from terminal
-            base_voltage = controlled_terminal.TopologicalNode.BaseVoltage.nominalVoltage
-            # TODO is tp is None, check cn and pick tp from there
-            v_set = v_control_value / base_voltage
 
-            # if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
-            #
-            #     # is_controlled = True
-            #
-            #     # find the control node
-            #     # control_terminal = cgmes_elm.RegulatingControl.Terminal
-            #     # control_node, cn = find_terms_connections(cgmes_terminal=control_terminal,
-            #     #                                           calc_node_dict=calc_node_dict,
-            #     #                                           cn_dict=cn_dict)
-            #
-            # else:
-            #     control_node = None
-            #     v_set = 1.0
-            #     is_controlled = False
-            #     logger.add_warning(msg='RegulatingCondEq has no voltage control',
-            #                        device=cgmes_elm.rdfid,
-            #                        device_class=cgmes_elm.tpe,
-            #                        device_property="EquipmentContainer",
-            #                        value='None',
-            #                        expected_value='BaseVoltage')
+            base_voltage = 0  # default
+            if controlled_terminal.TopologicalNode:
+                base_voltage = controlled_terminal.TopologicalNode.BaseVoltage.nominalVoltage
+            else:
+                if controlled_terminal.ConnectivityNode:
+                    tn = controlled_terminal.ConnectivityNode.TopologicalNode
+                    base_voltage = tn.BaseVoltage.nominalVoltage
+
+            if base_voltage != 0:
+                v_set = v_control_value / base_voltage
+            else:
+                v_set = 1.0
+
+            if cgmes_elm.EquipmentContainer.tpe == 'VoltageLevel':
+                # find the control node
+                control_terminal = cgmes_elm.RegulatingControl.Terminal
+                control_node, cn = find_terms_connections(cgmes_terminal=control_terminal,
+                                                          calc_node_dict=calc_node_dict,
+                                                          cn_dict=cn_dict)
+
+            else:
+                control_node = None
+                v_set = 1.0
+                is_controlled = False
+                logger.add_warning(msg='RegulatingCondEq has no voltage control',
+                                   device=cgmes_elm.rdfid,
+                                   device_class=cgmes_elm.tpe,
+                                   device_property="EquipmentContainer",
+                                   value='None',
+                                   expected_value='BaseVoltage')
 
         else:
             control_node = None
@@ -775,4 +816,4 @@ def get_regulating_control(cgmes_elm,
                            value='None',
                            expected_value='BaseVoltage')
 
-    return v_set, is_controlled  # control_node, control_mode
+    return v_set, is_controlled, control_bus, control_node

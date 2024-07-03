@@ -22,6 +22,7 @@ from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 def test_ieee_grids():
@@ -44,12 +45,8 @@ def test_ieee_grids():
         print(solver_type)
 
         options = PowerFlowOptions(solver_type,
-                                   verbose=False,
-                                   initialize_with_existing_solution=False,
-                                   multi_core=False,
-                                   dispatch_storage=True,
+                                   verbose=0,
                                    control_q=ReactivePowerControlMode.NoControl,
-                                   control_p=True,
                                    retry_with_other_methods=False)
 
         for f1, f2 in files:
@@ -95,11 +92,7 @@ def test_dc_pf_ieee14():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False,
-                               dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14.m')
@@ -140,11 +133,7 @@ def test_dc_pf_ieee14_ps():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               initialize_with_existing_solution=False,
-                               multi_core=False,
-                               dispatch_storage=True,
                                control_q=ReactivePowerControlMode.NoControl,
-                               control_p=True,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14_ps.m')
@@ -182,19 +171,38 @@ def test_zip() -> None:
     """
     Test the power flow with ZIP loads compared to PSSe
     """
-    options = PowerFlowOptions()
 
     fname = os.path.join('data', 'grids', 'ZIP_load_example.raw')
     main_circuit = FileOpen(fname).open()
+
+    options = PowerFlowOptions(tolerance=1e-6)
     power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
 
-    # Data from Matpower 8
     Vm_psse = np.array([1.00000, 0.98933, 0.98560, 0.98579])
     Va_psse = np.deg2rad(np.array([0.00000, -5.1287, -9.1535, -11.4464]))
 
     Vm = np.abs(power_flow.results.voltage)
     Va = np.angle(power_flow.results.voltage, deg=False)
 
+    nc = compile_numerical_circuit_at(circuit=main_circuit)
+
     assert np.allclose(Vm_psse, Vm, atol=1e-3)
     assert np.allclose(Va_psse, Va, atol=1e-3)
+
+
+def test_controllable_shunt() -> None:
+    """
+    This tests that the controllable shunt is indeed controlling voltage at 1.02 at the third bus
+    """
+    options = PowerFlowOptions()
+
+    fname = os.path.join('data', 'grids', 'Controllable_shunt_example.gridcal')
+    main_circuit = FileOpen(fname).open()
+    power_flow = PowerFlowDriver(main_circuit, options)
+    power_flow.run()
+
+    Vm = np.abs(power_flow.results.voltage)
+    Vm_test = np.array([[1., 1.0164564, 1.02]])
+
+    assert np.allclose(Vm_test, Vm, atol=1e-3)

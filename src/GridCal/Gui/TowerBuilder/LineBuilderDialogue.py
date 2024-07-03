@@ -22,7 +22,7 @@ from PySide6 import QtWidgets
 from GridCal.Gui.TowerBuilder.gui import Ui_Dialog
 import GridCalEngine.Devices as dev
 from GridCal.Gui.TowerBuilder.table_models import TowerModel, WireInTower, WiresTable
-from GridCal.Gui.GuiFunctions import PandasModel
+from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 from GridCalEngine.basic_structures import Logger
 
@@ -260,24 +260,23 @@ class TowerBuilderGUI(QtWidgets.QDialog):
 
         self.tower_driver.add(WireInTower(wire, xpos=0, ypos=8.8392, phase=1))
         self.tower_driver.add(WireInTower(wire, xpos=0.762, ypos=8.8392, phase=2))
-        self.tower_driver.add(WireInTower(wire,  xpos=2.1336, ypos=8.8392, phase=3))
-        self.tower_driver.add(WireInTower(wire,  xpos=1.2192, ypos=7.62, phase=0))
+        self.tower_driver.add(WireInTower(wire, xpos=2.1336, ypos=8.8392, phase=3))
+        self.tower_driver.add(WireInTower(wire, xpos=1.2192, ypos=7.62, phase=0))
 
-        self.tower_driver.add(WireInTower(wire,  xpos=incx + 0, ypos=8.8392, phase=1))
-        self.tower_driver.add(WireInTower(wire,  xpos=incx + 0.762, ypos=8.8392, phase=2))
-        self.tower_driver.add(WireInTower(wire,  xpos=incx + 2.1336, ypos=8.8392, phase=3))
+        self.tower_driver.add(WireInTower(wire, xpos=incx + 0, ypos=8.8392, phase=1))
+        self.tower_driver.add(WireInTower(wire, xpos=incx + 0.762, ypos=8.8392, phase=2))
+        self.tower_driver.add(WireInTower(wire, xpos=incx + 2.1336, ypos=8.8392, phase=3))
         # self.tower.add(Wire(name, xpos=incx+1.2192, ypos=7.62, gmr=gmr, r=r, x=x, phase=0))
 
-        self.tower_driver.add(WireInTower(wire,  xpos=incx / 2 + 0, ypos=incy + 8.8392, phase=1))
-        self.tower_driver.add(WireInTower(wire,  xpos=incx / 2 + 0.762, ypos=incy + 8.8392, phase=2))
-        self.tower_driver.add(WireInTower(wire,  xpos=incx / 2 + 2.1336, ypos=incy + 8.8392, phase=3))
+        self.tower_driver.add(WireInTower(wire, xpos=incx / 2 + 0, ypos=incy + 8.8392, phase=1))
+        self.tower_driver.add(WireInTower(wire, xpos=incx / 2 + 0.762, ypos=incy + 8.8392, phase=2))
+        self.tower_driver.add(WireInTower(wire, xpos=incx / 2 + 2.1336, ypos=incy + 8.8392, phase=3))
         # self.tower.add(Wire(name, xpos=incx/2 + 1.2192, ypos=incy+7.62, gmr=gmr, r=r, x=x, phase=0))
 
         self.wires_table.add(wire)
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     window = TowerBuilderGUI()
 
@@ -287,4 +286,3 @@ if __name__ == "__main__":
     window.resize(1.61 * 600.0, 600.0)  # golden ratio
     window.show()
     sys.exit(app.exec_())
-

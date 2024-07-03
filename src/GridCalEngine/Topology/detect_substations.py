@@ -18,6 +18,7 @@
 from typing import List, Union
 import numpy as np
 import GridCalEngine.Devices as dev
+from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
 from GridCalEngine.basic_structures import IntVec, Logger
@@ -49,7 +50,7 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
     buses = grid.get_buses()
 
     # create a connectivity matrix only with transformers and lines with small (r+x)
-    branches = grid.get_transformers2w() + grid.get_windings()
+    branches: List[BRANCH_TYPES] = grid.get_transformers2w() + grid.get_windings()
     for line in grid.get_lines():
         if (line.R + line.X) <= r_x_threshold:
             branches.append(line)

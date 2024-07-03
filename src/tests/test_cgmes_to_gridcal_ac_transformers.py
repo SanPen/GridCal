@@ -68,15 +68,15 @@ def device_to_terminal_dict_object_3_terminals() -> Dict[str, List[Terminal]]:
     return d
 
 
-def test_ac_transformers_one_power_transofmer_end_log_error():
+def test_ac_transformers_one_power_transformer_end_log_error():
     logger = DataLogger()
     multi_circuit = MultiCircuit()
 
     cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
-    cgmes.PowerTransformer_list = [PowerTransformer()]
+    cgmes.cgmes_assets.PowerTransformer_list = [PowerTransformer()]
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.endNumber = 1
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end]
+    cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end]
     get_gcdev_ac_transformers(cgmes, multi_circuit, None, None, None, logger,
                               0)
     assert len(logger.entries) == 1
@@ -92,11 +92,13 @@ def test_ac_transformers_zero_calc_node_log_error():
     calc_node_dict["tn1"] = bus_data
 
     cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
-    cgmes.PowerTransformer_list = [PowerTransformer()]
-    power_transformer_end = PowerTransformerEnd()
-    power_transformer_end.endNumber = 1
-    cgmes.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
-                                                          power_transformer_end]
+    cgmes.cgmes_assets.PowerTransformer_list = [PowerTransformer()]
+    power_transformer_end1 = PowerTransformerEnd()
+    power_transformer_end1.endNumber = 1
+    power_transformer_end2 = PowerTransformerEnd()
+    power_transformer_end2.endNumber = 2
+    cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end1,
+                                                                       power_transformer_end2]
 
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict, cn_dict_object(),
                               device_to_terminal_dict_object_2_terminals(),
@@ -112,7 +114,7 @@ def test_ac_transformers2w():
     multi_circuit = MultiCircuit()
 
     cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
-    cgmes.PowerTransformer_list = [PowerTransformer("a")]
+    cgmes.cgmes_assets.PowerTransformer_list = [PowerTransformer("a")]
     power_transformer_end = PowerTransformerEnd()
     power_transformer_end.ratedS = 1
     power_transformer_end.ratedU = 2
@@ -128,8 +130,23 @@ def test_ac_transformers2w():
     power_transformer_end.endNumber = 1
     power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
     power_transformer_end.BaseVoltage.nominalVoltage = 100
-    cgmes.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
-                                                          power_transformer_end]
+
+    power_transformer_end2 = PowerTransformerEnd()
+    power_transformer_end2.ratedS = 1
+    power_transformer_end2.ratedU = 2
+    power_transformer_end2.r = 1
+    power_transformer_end2.x = 1
+    power_transformer_end2.g = 1
+    power_transformer_end2.b = 1
+    power_transformer_end2.r0 = 1
+    power_transformer_end2.x0 = 1
+    power_transformer_end2.g0 = 1
+    power_transformer_end2.b0 = 1
+    power_transformer_end2.BaseVoltage = BaseVoltage("a", "b")
+    power_transformer_end2.BaseVoltage.nominalVoltage = 100
+    power_transformer_end2.endNumber = 2
+    cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
+                                                                       power_transformer_end2]
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                               device_to_terminal_dict_object_2_terminals(), logger,
                               10)
@@ -141,9 +158,9 @@ def test_ac_transformers2w():
     assert generated_transtormer2w.G == 80.0
     assert generated_transtormer2w.G0 == 80.0
     assert generated_transtormer2w.G2 == 1e-20
-    assert generated_transtormer2w.HV == 100
+    assert generated_transtormer2w.HV == 2
     assert generated_transtormer2w.I0 == 0
-    assert generated_transtormer2w.LV == 100
+    assert generated_transtormer2w.LV == 2
     assert generated_transtormer2w.Pcu == 0
     assert generated_transtormer2w.Pfe == 0
     assert generated_transtormer2w.Pset == 0
@@ -151,7 +168,7 @@ def test_ac_transformers2w():
     assert generated_transtormer2w.R0 == 5.0
     assert generated_transtormer2w.R2 == 1e-20
     assert generated_transtormer2w.R_corrected == 5.0
-    assert generated_transtormer2w.Sn == 0.001
+    assert generated_transtormer2w.Sn == 1
     assert generated_transtormer2w.Vf == 10
     assert generated_transtormer2w.Vsc == 0.0
     assert generated_transtormer2w.Vt == 10
@@ -175,8 +192,10 @@ def test_ac_transformers3w_only_two_terminals_log_error():
     multi_circuit = MultiCircuit()
 
     cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
-    cgmes.PowerTransformer_list = [PowerTransformer("a")]
+    cgmes.cgmes_assets.PowerTransformer_list = [PowerTransformer("a")]
     power_transformer_end = PowerTransformerEnd()
+    power_transformer_end2 = PowerTransformerEnd()
+    power_transformer_end3 = PowerTransformerEnd()
     power_transformer_end.ratedS = 1
     power_transformer_end.ratedU = 2
 
@@ -191,9 +210,40 @@ def test_ac_transformers3w_only_two_terminals_log_error():
     power_transformer_end.endNumber = 1
     power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
     power_transformer_end.BaseVoltage.nominalVoltage = 100
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
-                                                                              power_transformer_end,
-                                                                              power_transformer_end]
+
+    power_transformer_end2.ratedS = 1
+    power_transformer_end2.ratedU = 2
+
+    power_transformer_end2.r = 1
+    power_transformer_end2.x = 1
+    power_transformer_end2.g = 1
+    power_transformer_end2.b = 1
+    power_transformer_end2.r0 = 1
+    power_transformer_end2.x0 = 1
+    power_transformer_end2.g0 = 1
+    power_transformer_end2.b0 = 1
+    power_transformer_end2.endNumber = 2
+    power_transformer_end2.BaseVoltage = BaseVoltage("a", "b")
+    power_transformer_end2.BaseVoltage.nominalVoltage = 100
+
+    power_transformer_end3.ratedS = 1
+    power_transformer_end3.ratedU = 2
+
+    power_transformer_end3.r = 1
+    power_transformer_end3.x = 1
+    power_transformer_end3.g = 1
+    power_transformer_end3.b = 1
+    power_transformer_end3.r0 = 1
+    power_transformer_end3.x0 = 1
+    power_transformer_end3.g0 = 1
+    power_transformer_end3.b0 = 1
+    power_transformer_end3.endNumber = 3
+    power_transformer_end3.BaseVoltage = BaseVoltage("a", "b")
+    power_transformer_end3.BaseVoltage.nominalVoltage = 100
+
+    cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
+                                                                       power_transformer_end2,
+                                                                       power_transformer_end3]
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                               device_to_terminal_dict_object_2_terminals(), logger,
                               10)
@@ -208,8 +258,10 @@ def test_ac_transformers3w():
     cgmes = CgmesCircuit(cgmes_version=CGMESVersions.v2_4_15)
     power_transformer = PowerTransformer("a")
     power_transformer.name = "pt_name"
-    cgmes.PowerTransformer_list = [power_transformer]
+    cgmes.cgmes_assets.PowerTransformer_list = [power_transformer]
     power_transformer_end = PowerTransformerEnd()
+    power_transformer_end2 = PowerTransformerEnd()
+    power_transformer_end3 = PowerTransformerEnd()
     power_transformer_end.ratedS = 1
     power_transformer_end.ratedU = 2
 
@@ -224,17 +276,48 @@ def test_ac_transformers3w():
     power_transformer_end.BaseVoltage = BaseVoltage("a", "b")
     power_transformer_end.BaseVoltage.nominalVoltage = 100
     power_transformer_end.endNumber = 1
-    cgmes.PowerTransformer_list[0].references_to_me["PowerTransformerEnd"] = [power_transformer_end,
-                                                                              power_transformer_end,
-                                                                              power_transformer_end]
+
+    power_transformer_end2.ratedS = 1
+    power_transformer_end2.ratedU = 2
+
+    power_transformer_end2.r = 1
+    power_transformer_end2.x = 1
+    power_transformer_end2.g = 1
+    power_transformer_end2.b = 1
+    power_transformer_end2.r0 = 1
+    power_transformer_end2.x0 = 1
+    power_transformer_end2.g0 = 1
+    power_transformer_end2.b0 = 1
+    power_transformer_end2.endNumber = 2
+    power_transformer_end2.BaseVoltage = BaseVoltage("a", "b")
+    power_transformer_end2.BaseVoltage.nominalVoltage = 100
+
+    power_transformer_end3.ratedS = 1
+    power_transformer_end3.ratedU = 2
+
+    power_transformer_end3.r = 1
+    power_transformer_end3.x = 1
+    power_transformer_end3.g = 1
+    power_transformer_end3.b = 1
+    power_transformer_end3.r0 = 1
+    power_transformer_end3.x0 = 1
+    power_transformer_end3.g0 = 1
+    power_transformer_end3.b0 = 1
+    power_transformer_end3.endNumber = 3
+    power_transformer_end3.BaseVoltage = BaseVoltage("a", "b")
+    power_transformer_end3.BaseVoltage.nominalVoltage = 100
+
+    cgmes.cgmes_assets.PowerTransformer_list[0].PowerTransformerEnd = [power_transformer_end,
+                                                                       power_transformer_end2,
+                                                                       power_transformer_end3]
     get_gcdev_ac_transformers(cgmes, multi_circuit, calc_node_dict_object(), cn_dict_object(),
                               device_to_terminal_dict_object_3_terminals(), logger,
                               10)
     generated_transformers3w = multi_circuit.transformers3w[0]
     assert len(logger.entries) == 0
-    assert generated_transformers3w.V1 == 100
-    assert generated_transformers3w.V2 == 100
-    assert generated_transformers3w.V3 == 100
+    assert generated_transformers3w.V1 == 2
+    assert generated_transformers3w.V2 == 2
+    assert generated_transformers3w.V3 == 2
     assert generated_transformers3w.r12 == 5.0
     assert generated_transformers3w.r23 == 5.0
     assert generated_transformers3w.r31 == 5.0

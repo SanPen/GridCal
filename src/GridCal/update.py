@@ -15,7 +15,8 @@
 
 import subprocess
 import sys
-import pkg_resources
+# import pkg_resources
+import packaging.version as pkg
 from GridCal.__version__ import __GridCal_VERSION__
 
 
@@ -48,8 +49,10 @@ def check_version(name='GridCal'):
 
     latest_version = find_latest_version(name=name)
 
-    pipy_version = pkg_resources.parse_version(latest_version)
-    gc_version = pkg_resources.parse_version(__GridCal_VERSION__)
+    # pipy_version = pkg_resources.parse_version(latest_version)
+    # gc_version = pkg_resources.parse_version(__GridCal_VERSION__)
+    pipy_version = pkg.parse(latest_version)
+    gc_version = pkg.parse(__GridCal_VERSION__)
 
     if pipy_version is None:
         # could not connect

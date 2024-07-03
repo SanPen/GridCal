@@ -48,6 +48,8 @@ class TimeSeriesResultsAnalysis:
 
         self.buses_selected_for_storage_frequency = np.zeros(n)
 
+        self.branches_selected_for_reactance_compensation = np.zeros(m)
+
         self.__run__()
 
     def __run__(self):

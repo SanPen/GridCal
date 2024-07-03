@@ -3,14 +3,18 @@ import os.path
 from typing import List, Union
 import webbrowser
 import darkdetect
+import numpy as np
 import pandas as pd
 import GridCal.ThirdParty.qdarktheme as qdarktheme
 # Engine imports
 
 # GUI imports
-from GridCal.Gui.GuiFunctions import *
+from GridCal.Gui.GuiFunctions import get_list_model, get_logger_tree_model
+
+from PySide6 import QtCore, QtWidgets, QtGui
 from GridCal.Gui.messages import *
 from GridCal.Gui.RosetaExplorer.MainWindow import *
+from GridCal.Gui.RosetaExplorer.roseta_objects_model import RosetaObjectsModel, ObjectsModelOld
 from GridCal.Gui.TreeModelViewer.TreeModelViewer import TreeModelViewerGUI
 
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -44,7 +48,7 @@ def clear_qt_layout(layout):
 
 class RosetaExplorerGUI(QMainWindow):
     """
-
+    RosetaExplorerGUI
     """
 
     def __init__(self, parent=None, db_handler: Union[DbHandler, None] = None):
@@ -135,7 +139,7 @@ class RosetaExplorerGUI(QMainWindow):
         self.UNLOCK()
         self.update_combo_boxes()
 
-    def LOCK(self, val=True):
+    def LOCK(self, val: bool = True) -> None:
         """
         Lock the interface to prevent new simulation launches
         :param val:
@@ -145,14 +149,14 @@ class RosetaExplorerGUI(QMainWindow):
         self.ui.progress_frame.setVisible(self.lock_ui)
         QtGui.QGuiApplication.processEvents()
 
-    def UNLOCK(self):
+    def UNLOCK(self) -> None:
         """
         Unlock the interface
         """
         if not self.any_thread_running():
             self.LOCK(False)
 
-    def create_console(self):
+    def create_console(self) -> None:
         """
         Create console
         """
@@ -277,7 +281,7 @@ class RosetaExplorerGUI(QMainWindow):
         """
         Action of filtering the main table data
         """
-        self.properties_proxy_model.setFilterRegExp(self.ui.filterLineEdit.text())
+        self.properties_proxy_model.setFilterRegularExpression(self.ui.filterLineEdit.text())
 
     def set_grid_model(self, circuit: Union[CgmesCircuit, PsseCircuit]):
         """
@@ -348,7 +352,7 @@ class RosetaExplorerGUI(QMainWindow):
         On click on the classes list...
         """
         # get the class type
-        elm_type = self.ui.clasesListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+        elm_type = self.ui.clasesListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
         # get the objects list of said class depending on the circuit type
         if isinstance(self.circuit, PsseCircuit):
@@ -467,7 +471,7 @@ class RosetaExplorerGUI(QMainWindow):
         """
 
         if len(self.ui.dbTablesListView.selectedIndexes()) > 0:
-            elm_type = self.ui.dbTablesListView.selectedIndexes()[0].data(role=QtCore.Qt.DisplayRole)
+            elm_type = self.ui.dbTablesListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
             if type(self.circuit) == PsseCircuit:
                 db = self.db_handler.psse_lookup_db

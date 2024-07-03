@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:dm="http://iec.ch/TC57/61970-552/DifferenceModel/1#" xmlns:md="http://iec.ch/TC57/61970-552/ModelDescription/1#" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#">
+      <dm:DifferenceModel rdf:about="urn:uuid:706so55-644-79367-63932-521quj783">
+			<md:Model.scenarioTime>2030-01-02T09:00:00</md:Model.scenarioTime>
+			<md:Model.created>2014-10-22T09:01:25.830</md:Model.created>
+            <md:Model.description>CGMES Conformity Assessment: Mini Grid Type 1 Test Configuration. The model is owned by ENTSO-E and is provided by ENTSO-E "as it is". To the fullest extent permitted by law, ENTSO-E shall not be liable for any damages of any kind arising out of the use of the model (including any of its subsequent modifications). ENTSO-E neither warrants, nor represents that the use of the model will not infringe the rights of third parties. Any use of the model shall include a reference to ENTSO-E. ENTSO-E web site is the only official source of information related to the model.</md:Model.description>
+            <md:Model.modelingAuthoritySet>http://A1.de/Planning/ENTSOE/2</md:Model.modelingAuthoritySet>
+            <md:Model.profile>http://entsoe.eu/CIM/SteadyStateHypothesis/1/1</md:Model.profile>
+            <md:Model.version>4</md:Model.version>
+			<md:Model.DependentOn rdf:resource="urn:uuid:2399cbd2-9a39-11e0-aa80-0800200c9a66_EU" />
+			<md:Model.Supersedes rdf:resource="urn:uuid:2399cbd7-9a39-11e0-aa80-0800200c9a66_EU" />
+            <dm:preconditions parseType="Statements"> </dm:preconditions>
+            <dm:reverseDifferences parseType="Statements">
+                  <rdf:Description rdf:about="#_0593fd2d-7e55-4a8d-8ddf-4f8a576cf26c">
+                        <cim:ACDCTerminal.connected>true</cim:ACDCTerminal.connected>
+                  </rdf:Description>
+                  <rdf:Description rdf:about="#_89df2b1b-9107-45a8-95ae-16afa04d99b3">
+                        <cim:ACDCTerminal.connected>true</cim:ACDCTerminal.connected>
+                  </rdf:Description>
+            </dm:reverseDifferences>
+            <dm:forwardDifferences parseType="Statements">
+                  <rdf:Description rdf:about="#_0593fd2d-7e55-4a8d-8ddf-4f8a576cf26c">
+                        <cim:ACDCTerminal.connected>false</cim:ACDCTerminal.connected>
+                  </rdf:Description>
+                  <rdf:Description rdf:about="#_89df2b1b-9107-45a8-95ae-16afa04d99b3">
+                        <cim:ACDCTerminal.connected>false</cim:ACDCTerminal.connected>
+                  </rdf:Description>
+            </dm:forwardDifferences>
+      </dm:DifferenceModel>
+</rdf:RDF>

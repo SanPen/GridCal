@@ -20,10 +20,13 @@ from PySide6 import QtGui, QtCore, QtWidgets
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
+from GridCal.Gui.associations_model import AssociationsModel
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
 import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.object_model import ObjectsModel
+from GridCal.Gui.profiles_model import ProfilesModel
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
@@ -84,7 +87,10 @@ class ObjectsTableMain(DiagramsMain):
         # Set context menu policy to CustomContextMenu
         self.ui.dataStructureTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
 
-    def create_objects_model(self, elements, elm_type: DeviceType) -> gf.ObjectsModel:
+        # combobox change
+        self.ui.associationsComboBox.currentTextChanged.connect(self.display_associations)
+
+    def create_objects_model(self, elements, elm_type: DeviceType) -> ObjectsModel:
         """
         Generate the objects' table model
         :param elements: list of elements
@@ -216,7 +222,7 @@ class ObjectsTableMain(DiagramsMain):
 
         elif elm_type == DeviceType.ContingencyDevice:
             elm = dev.Contingency()
-            dictionary_of_lists = {DeviceType.ContingencyGroupDevice: self.circuit.contingency_groups, }
+            dictionary_of_lists = {DeviceType.ContingencyGroupDevice: self.circuit.get_contingency_groups(), }
 
         elif elm_type == DeviceType.ContingencyGroupDevice:
             elm = dev.ContingencyGroup()
@@ -255,20 +261,20 @@ class ObjectsTableMain(DiagramsMain):
         elif elm_type == DeviceType.TransformerTypeDevice:
             elm = dev.TransformerType()
 
-        elif elm_type == DeviceType.GeneratorTechnologyAssociation:
-            elm = dev.GeneratorTechnology()
-            dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.Technology: self.circuit.technologies, }
-
-        elif elm_type == DeviceType.GeneratorFuelAssociation:
-            elm = dev.GeneratorFuel()
-            dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.FuelDevice: self.circuit.get_fuels(), }
-
-        elif elm_type == DeviceType.GeneratorEmissionAssociation:
-            elm = dev.GeneratorEmission()
-            dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
-                                   DeviceType.EmissionGasDevice: self.circuit.emission_gases, }
+        # elif elm_type == DeviceType.GeneratorTechnologyAssociation:
+        #     elm = dev.GeneratorTechnology()
+        #     dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
+        #                            DeviceType.Technology: self.circuit.technologies, }
+        #
+        # elif elm_type == DeviceType.GeneratorFuelAssociation:
+        #     elm = dev.GeneratorFuel()
+        #     dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
+        #                            DeviceType.FuelDevice: self.circuit.get_fuels(), }
+        #
+        # elif elm_type == DeviceType.GeneratorEmissionAssociation:
+        #     elm = dev.GeneratorEmission()
+        #     dictionary_of_lists = {DeviceType.GeneratorDevice: self.circuit.get_generators(),
+        #                            DeviceType.EmissionGasDevice: self.circuit.emission_gases, }
 
         elif elm_type == DeviceType.FluidNodeDevice:
             elm = dev.FluidNode()
@@ -303,12 +309,12 @@ class ObjectsTableMain(DiagramsMain):
         else:
             raise Exception(f'elm_type not understood: {elm_type.value}')
 
-        mdl = gf.ObjectsModel(objects=elements,
-                              property_list=elm.property_list,
-                              time_index=self.get_db_slider_index(),
-                              parent=self.ui.dataStructureTableView,
-                              editable=True,
-                              dictionary_of_lists=dictionary_of_lists)
+        mdl = ObjectsModel(objects=elements,
+                           property_list=elm.property_list,
+                           time_index=self.get_db_slider_index(),
+                           parent=self.ui.dataStructureTableView,
+                           editable=True,
+                           dictionary_of_lists=dictionary_of_lists)
 
         return mdl
 
@@ -322,7 +328,7 @@ class ObjectsTableMain(DiagramsMain):
 
             if dev_type_text is not None:
 
-                magnitudes, mag_types = self.circuit.profile_magnitudes[dev_type_text]
+                magnitudes, mag_types = self.circuit.profile_magnitudes.get(dev_type_text, (list(), list()))
 
                 if len(magnitudes) > 0:
                     # get the enumeration univoque association with he device text
@@ -334,18 +340,51 @@ class ObjectsTableMain(DiagramsMain):
 
                     elements = self.get_current_objects_model_view().objects
 
-                    mdl = gf.ProfilesModel(time_array=self.circuit.get_time_array(),
-                                           elements=elements,
-                                           device_type=dev_type,
-                                           magnitude=magnitude,
-                                           data_format=mtype,
-                                           parent=self.ui.profiles_tableView)
+                    mdl = ProfilesModel(time_array=self.circuit.get_time_array(),
+                                        elements=elements,
+                                        device_type=dev_type,
+                                        magnitude=magnitude,
+                                        data_format=mtype,
+                                        parent=self.ui.profiles_tableView)
                 else:
                     mdl = None
 
                 self.ui.profiles_tableView.setModel(mdl)
             else:
                 self.ui.profiles_tableView.setModel(None)
+
+    def display_associations(self):
+        """
+        Display the association table
+        :return:
+        """
+        dev_type_text = self.get_db_object_selected_type()
+
+        if dev_type_text is not None:
+
+            elements = self.get_current_objects_model_view().objects
+
+            association_prperty_name = self.ui.associationsComboBox.currentText()
+
+            if len(elements) > 0 and association_prperty_name != "":
+
+                gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
+                associations: dev.Associations = elements[0].get_snapshot_value_by_name(name=association_prperty_name)
+                associated_objects = self.circuit.get_elements_by_type(device_type=associations.device_type)
+
+                if len(associated_objects) > 0:
+                    mdl = AssociationsModel(objects=elements,
+                                            associated_objects=associated_objects,
+                                            gc_prop=gc_prop,
+                                            table_view=self.ui.associationsTableView)
+
+                    self.ui.associationsTableView.setModel(mdl)
+                else:
+                    self.ui.associationsTableView.setModel(None)
+            else:
+                self.ui.associationsTableView.setModel(None)
+        else:
+            self.ui.associationsTableView.setModel(None)
 
     def display_objects_filter(self, elements: List[ALL_DEV_TYPES]):
         """
@@ -360,6 +399,9 @@ class ObjectsTableMain(DiagramsMain):
 
             # display time series
             self.display_profiles()
+
+            # display associations
+            self.display_associations()
 
         else:
             self.ui.dataStructureTableView.setModel(None)
@@ -411,10 +453,21 @@ class ObjectsTableMain(DiagramsMain):
                 ts_mdl = gf.get_list_model(self.circuit.profile_magnitudes[elm_type][0])
                 self.ui.device_type_magnitude_comboBox.setModel(ts_mdl)
                 self.ui.device_type_magnitude_comboBox_2.setModel(ts_mdl)
+
+                # update the associations view
+                assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])
+                self.ui.associationsComboBox.setModel(assoc_mdl)
+
             else:
                 self.ui.dataStructureTableView.setModel(None)
+                self.ui.device_type_magnitude_comboBox.clear()
+                self.ui.device_type_magnitude_comboBox_2.clear()
+                self.ui.associationsComboBox.clear()
         else:
             self.ui.dataStructureTableView.setModel(None)
+            self.ui.device_type_magnitude_comboBox.clear()
+            self.ui.device_type_magnitude_comboBox_2.clear()
+            self.ui.associationsComboBox.clear()
 
     def get_selected_objects(self) -> List[ALL_DEV_TYPES]:
         """
@@ -453,7 +506,7 @@ class ObjectsTableMain(DiagramsMain):
                 for obj in selected_objects:
 
                     # delete from the database
-                    self.circuit.delete_elements_by_type(obj=obj)
+                    self.circuit.delete_element(obj=obj)
 
                     # delete from all diagrams
                     for diagram in self.diagram_widgets_list:
@@ -545,7 +598,7 @@ class ObjectsTableMain(DiagramsMain):
                 self.circuit.add_bus(dev.Bus(name=f'Bus {self.circuit.get_bus_number() + 1}'))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
-                group = dev.ContingencyGroup(name=f"Contingency group {len(self.circuit.contingency_groups) + 1}")
+                group = dev.ContingencyGroup(name=f"Contingency group {len(self.circuit.get_contingency_groups()) + 1}")
                 self.circuit.add_contingency_group(group)
 
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:
@@ -606,20 +659,20 @@ class ObjectsTableMain(DiagramsMain):
                 obj = dev.EmissionGas(name=name)
                 self.circuit.add_emission_gas(obj)
 
-            elif elm_type == DeviceType.GeneratorTechnologyAssociation.value:
-
-                obj = dev.GeneratorTechnology()
-                self.circuit.add_generator_technology(obj)
-
-            elif elm_type == DeviceType.GeneratorFuelAssociation.value:
-
-                obj = dev.GeneratorFuel()
-                self.circuit.add_generator_fuel(obj)
-
-            elif elm_type == DeviceType.GeneratorEmissionAssociation.value:
-
-                obj = dev.GeneratorEmission()
-                self.circuit.add_generator_emission(obj)
+            # elif elm_type == DeviceType.GeneratorTechnologyAssociation.value:
+            #
+            #     obj = dev.GeneratorTechnology()
+            #     self.circuit.add_generator_technology(obj)
+            #
+            # elif elm_type == DeviceType.GeneratorFuelAssociation.value:
+            #
+            #     obj = dev.GeneratorFuel()
+            #     self.circuit.add_generator_fuel(obj)
+            #
+            # elif elm_type == DeviceType.GeneratorEmissionAssociation.value:
+            #
+            #     obj = dev.GeneratorEmission()
+            #     self.circuit.add_generator_emission(obj)
 
             elif elm_type == DeviceType.ModellingAuthority.value:
 
@@ -757,7 +810,7 @@ class ObjectsTableMain(DiagramsMain):
         else:
             return t_idx
 
-    def get_current_objects_model_view(self) -> gf.ObjectsModel:
+    def get_current_objects_model_view(self) -> ObjectsModel:
         """
         Get the current ObjectsModel from the GUI
         :return: ObjectsModel
@@ -1047,7 +1100,7 @@ class ObjectsTableMain(DiagramsMain):
                              "Detect substations")
 
         if ok:
-            val = 1.0 / (10.0**self.ui.rxThresholdSpinBox.value())
+            val = 1.0 / (10.0 ** self.ui.rxThresholdSpinBox.value())
             detect_substations(grid=self.circuit,
                                r_x_threshold=val)
 

@@ -25,7 +25,7 @@ class IdentifiedObject(Base):
 
 		self.description: str = None
 		self.energyIdentCodeEic: str = None
-		self.mRID: str = None
+		self.mRID: str = rdfid
 		self.name: str = None
 		self.shortName: str = None
 

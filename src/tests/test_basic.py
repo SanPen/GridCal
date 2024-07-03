@@ -141,8 +141,7 @@ def test_basic():
 
     options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
-                               initialize_with_existing_solution=True,
-                               multi_core=True,
+                               use_stored_guess=True,
                                control_q=ReactivePowerControlMode.Direct,
                                tolerance=1e-6,
                                max_iter=99)
@@ -292,8 +291,7 @@ def test_gridcal_basic_pi():
 
     options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
-                               initialize_with_existing_solution=True,
-                               multi_core=True,
+                               use_stored_guess=True,
                                control_q=ReactivePowerControlMode.Direct,
                                tolerance=1e-6,
                                max_iter=99)

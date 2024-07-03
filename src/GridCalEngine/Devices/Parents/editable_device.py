@@ -17,11 +17,15 @@
 import random
 import uuid
 import numpy as np
-from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
-                                        HvdcControlType)
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
+from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
+                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
+                                        HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
+                                        CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
+                                        InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
+                                        ZonalGrouping, MIPSolvers, AcOpfMode, ReactivePowerControlMode,
+                                        BranchImpedanceMode, FaultType)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -38,6 +42,22 @@ GCPROP_TYPES = Union[
     Type[ConverterControlType],
     Type[TapModuleControl],
     Type[TapAngleControl],
+    Type[ActionType],
+    Type[AvailableTransferMode],
+    Type[ContingencyMethod],
+    Type[CpfParametrization],
+    Type[CpfStopAt],
+    Type[InvestmentEvaluationMethod],
+    Type[InvestmentsEvaluationObjectives],
+    Type[NodalCapacityMethod],
+    Type[SolverType],
+    Type[TimeGrouping],
+    Type[ZonalGrouping],
+    Type[MIPSolvers],
+    Type[AcOpfMode],
+    Type[ReactivePowerControlMode],
+    Type[BranchImpedanceMode],
+    Type[FaultType]
 ]
 
 
@@ -149,6 +169,24 @@ class GCProp:
         return "prop:" + self.name
 
 
+def get_action_symbol(action: ActionType):
+    """
+
+    :param action:
+    :return:
+    """
+    if action == ActionType.NoAction:
+        return "."
+    elif action == ActionType.Add:
+        return "+"
+    elif action == ActionType.Delete:
+        return "-"
+    elif action == ActionType.Modify:
+        return "~"
+    else:
+        return ""
+
+
 class EditableDevice:
     """
     This is the main device class from which all inherit
@@ -172,11 +210,13 @@ class EditableDevice:
 
         self._name: str = name
 
-        self.code: str = code
+        self._code: str = code
 
         self.device_type: DeviceType = device_type
 
         self.comment: str = comment
+
+        self.action: ActionType = ActionType.NoAction
 
         # list of registered properties. This is supremelly useful when accessing via the Table and Tree models
         self.property_list: List[GCProp] = list()
@@ -187,12 +227,14 @@ class EditableDevice:
         # list of properties that cannot be edited
         self.non_editable_properties: List[str] = list()
 
-
         self.properties_with_profile: Dict[str, Optional[Any]] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
         self.register(key='code', units='', tpe=str, definition='Secondary ID')
+        self.register(key='action', units='', tpe=ActionType,
+                      definition='Object action to perform.\nOnly used for model merging.',
+                      display=False)
         self.register(key='comment', units='', tpe=str, definition='User comment')
 
     def __str__(self) -> str:
@@ -200,10 +242,10 @@ class EditableDevice:
         Name of the object
         :return: string
         """
-        return self.name
+        return str(self.name)
 
     def __repr__(self) -> str:
-        return self.idtag + '::' + self.name
+        return get_action_symbol(self.action) + "::" + self.idtag + '::' + self.name
 
     def __hash__(self) -> int:
         # alternatively, return hash(repr(self))
@@ -233,6 +275,22 @@ class EditableDevice:
         :param val: any string or None
         """
         self._idtag = parse_idtag(val)
+
+    @property
+    def code(self) -> str:
+        """
+        code getter
+        :return: string, hopefully an UUIDv4
+        """
+        return self._code
+
+    @code.setter
+    def code(self, val: Union[str, None]):
+        """
+        code setter
+        :param val: any string or None
+        """
+        self._code = val
 
     def flatten_idtag(self):
         """
@@ -265,9 +323,9 @@ class EditableDevice:
 
     def register(self,
                  key: str,
-                 units: str,
                  tpe: GCPROP_TYPES,
-                 definition: str,
+                 units: str = "",
+                 definition: str = "",
                  profile_name: str = '',
                  display: bool = True,
                  editable: bool = True,
@@ -391,6 +449,20 @@ class EditableDevice:
 
         return props, indices
 
+    def get_association_properties(self) -> Tuple[List[GCProp], List[int]]:
+        """
+        Return the list of properties that contain associate another type
+        :return: list of GCProp, list of indices
+        """
+        props = list()
+        indices = list()
+        for i, prop in enumerate(self.property_list):
+            if prop.tpe == SubObjectType.Associations:
+                props.append(prop)
+                indices.append(i)
+
+        return props, indices
+
     def get_snapshot_value(self, prop: GCProp) -> Any:
         """
         Return the stored object value from the property index
@@ -433,6 +505,14 @@ class EditableDevice:
         :return: GCProp
         """
         return self.property_list[property_idx]
+
+    def get_property_by_name(self, prop_name: str) -> GCProp:
+        """
+
+        :param prop_name:
+        :return:
+        """
+        return self.registered_properties[prop_name]
 
     def get_property_value_by_idx(self, property_idx: int, t_idx: Union[None, int]) -> Any:
         """

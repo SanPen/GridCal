@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import timeit
+
 import numpy as np
 from scipy import sparse as sp
 from scipy.sparse import csc_matrix as csc
@@ -623,7 +625,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                            pv: Vec, tanmax: Vec, alltapm: Vec, alltapt: Vec, fdc: Vec, tdc: Vec,
                            k_m: Vec, k_tau: Vec, mu, lmbda, R: Vec, X: Vec, F: Vec, T: Vec,
                            ctQ: ReactivePowerControlMode, acopf_mode: AcOpfMode, compute_jac: bool,
-                           compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc]:
+                           compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc, Vec]:
 
     """
     Calculates the jacobians and hessians of the objective function and the equality and inequality constraints
@@ -701,7 +703,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
     if compute_jac:
 
         # OBJECTIVE FUNCTION GRAD --------------------------------------------------------------------------------------
-
+        ts_fx = timeit.default_timer()
         fx = np.zeros(NV)
         if nslcap == 0:
             fx[2 * N: 2 * N + Ng] = (2 * c2 * Pg * (Sbase * Sbase) + c1 * Sbase) * 1e-4
@@ -714,6 +716,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         else:
             fx[npfvar + nsl: npfvar + nsl + nslcap] = nodal_capacity_sign
 
+        te_fx = timeit.default_timer()
         # EQUALITY CONSTRAINTS GRAD ------------------------------------------------------------------------------------
         """
         The following comments illustrate the shapes of the equality constraints gradients:
@@ -753,6 +756,8 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         +-----+------+-----+-----+-----+-----+-----+-----+
      
         """
+
+        ts_gx = timeit.default_timer()
 
         Vva = 1j * Vmat
 
@@ -798,6 +803,8 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         GS = sp.hstack([GSva, GSvm, GSpg, GSqg, Gslack, Gslcap, Gtapm, Gtapt, GSpfdc])
 
         Gx = sp.vstack([GS.real, GS.imag, GTH, Gvm]).tocsc()
+
+        te_gx = timeit.default_timer()
 
         # INEQUALITY CONSTRAINTS GRAD ----------------------------------------------------------------------------------
 
@@ -846,6 +853,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         | Hdcl    | ndc
         +---------+
         """
+        ts_hx = timeit.default_timer()
 
         Vfmat = diags(Cf[il, :] @ V)
         Vtmat = diags(Ct[il, :] @ V)
@@ -974,12 +982,19 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                         Hslvmin, Htapmu, Htapml, Htaptu, Htaptl, Hqmax, Hdcu, Hdcl])
 
         Hx = Hx.tocsc()
-
+        te_hx = timeit.default_timer()
     else:
         # Returns empty structures
         fx = np.zeros(NV)
         Gx = csc((NV, N))
         Hx = csc((NV, 2 * M + 2 * N + 4 * Ng + nsl + nqct + 2 * (ntapm + ntapt) + 2 * ndc))
+
+        te_fx = 0
+        ts_fx = 0
+        te_gx = 0
+        ts_gx = 0
+        te_hx = 0
+        ts_hx = 0
 
         allSf = lil_matrix((M, 1))
         allSt = lil_matrix((M, 1))
@@ -1001,6 +1016,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         assert compute_jac  # we must have the jacobian values to get into here
 
         # OBJECTIVE FUNCTION HESS --------------------------------------------------------------------------------------
+        ts_fxx = timeit.default_timer()
         if nslcap == 0:
             fxx = diags((np.r_[
                 np.zeros(2 * N),
@@ -1009,6 +1025,8 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                 ]) * 1e-4).tocsc()
         else:
             fxx = csc((NV, NV))
+
+        te_fxx = timeit.default_timer()
         # EQUALITY CONSTRAINTS HESS ------------------------------------------------------------------------------------
         '''
         The following matrix represents the structure of the hessian matrix for the equality constraints
@@ -1034,6 +1052,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
             
         
         '''
+        ts_gxx = timeit.default_timer()
         # P
         lam_p = lmbda[0:N]
         lam_diag_p = diags(lam_p)
@@ -1095,6 +1114,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
             G2 = sp.hstack([Gva, Gvv, lil_matrix((N, 2 * Ng + nsl + nslcap + ndc))])
             Gxx = sp.vstack([G1, G2, lil_matrix((2 * Ng + nsl + nslcap + ndc, npfvar + nsl + nslcap + ndc))]).tocsc()
 
+        te_gxx = timeit.default_timer()
         # INEQUALITY CONSTRAINTS HESS ----------------------------------------------------------------------------------
         '''
         The following matrix represents the structure of the hessian matrix for the inequality constraints
@@ -1119,6 +1139,8 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                +---------+---------+---------+---------+---------+-----------+-----------+----------+
 
            '''
+
+        ts_hxx = timeit.default_timer()
 
         muf = mu[0: M]
         mut = mu[M: 2 * M]
@@ -1220,10 +1242,25 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
 
             Hxx = sp.vstack([H1, H2, H3, H4, lil_matrix((nsl + nslcap + ndc, NV))]).tocsc()
 
+        te_hxx = timeit.default_timer()
     else:
         # Return empty structures
         fxx = csc((NV, NV))
         Gxx = csc((NV, NV))
         Hxx = csc((NV, NV))
+        ts_fxx = 0
+        te_fxx = 0
+        ts_gxx = 0
+        te_gxx = 0
+        ts_hxx = 0
+        te_hxx = 0
 
-    return fx, Gx, Hx, fxx, Gxx, Hxx
+
+    der_times= np.array([te_fx - ts_fx,
+                         te_gx - ts_gx,
+                         te_hx - ts_hx,
+                         te_fxx - ts_fxx,
+                         te_gxx - ts_gxx,
+                         te_hxx - ts_hxx])
+
+    return fx, Gx, Hx, fxx, Gxx, Hxx, der_times

@@ -15,15 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import List, Union
-import numpy as np
-from scipy.sparse import lil_matrix
-import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
-from GridCalEngine.basic_structures import IntVec, Logger
-from GridCalEngine.enumerations import DeviceType, SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Simulations.driver_template import DriverTemplate
 
 

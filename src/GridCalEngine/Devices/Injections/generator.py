@@ -21,7 +21,7 @@ from typing import Union
 from matplotlib import pyplot as plt
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
-from GridCalEngine.Devices.Aggregation.technology import Technology
+from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Parents.generator_parent import GeneratorParent
 from GridCalEngine.Devices.Injections.generator_q_curve import GeneratorQCurve
 from GridCalEngine.Devices.profile import Profile
@@ -50,7 +50,6 @@ class Generator(GeneratorParent):
                  enabled_dispatch=True,
                  mttf: float = 0.0,
                  mttr: float = 0.0,
-                 technology: Technology = None,
                  q_points=None,
                  use_reactive_power_curve=False,
                  r1: float = 1e-20,
@@ -83,7 +82,6 @@ class Generator(GeneratorParent):
         :param enabled_dispatch: Is the generator enabled for OPF?
         :param mttf: Mean time to failure in hours
         :param mttr: Mean time to recovery in hours
-        :param technology:  Instance of technology to use
         :param q_points: list of reactive capability curve points [(P1, Qmin1, Qmax1), (P2, Qmin2, Qmax2), ...]
         :param use_reactive_power_curve: Use the reactive power curve? otherwise use the plain old limits
         :param r1:
@@ -116,8 +114,6 @@ class Generator(GeneratorParent):
                                  srap_enabled=srap_enabled,
                                  build_status=build_status,
                                  device_type=DeviceType.GeneratorDevice)
-
-        self.technology = technology
 
         # is the device active for active power dispatch?
         self.enabled_dispatch = enabled_dispatch
@@ -189,6 +185,9 @@ class Generator(GeneratorParent):
         self._Cost2_prof = Profile(default_value=Cost2, data_type=float)
         self._Cost0_prof = Profile(default_value=Cost0, data_type=float)
 
+        self.emissions: Associations = Associations(device_type=DeviceType.EmissionGasDevice)
+        self.fuels: Associations = Associations(device_type=DeviceType.FuelDevice)
+
         # Dynamic vars
         # self.Ra = Ra
         # self.Xa = Xa
@@ -248,6 +247,12 @@ class Generator(GeneratorParent):
                       definition='Maximum amount of generation decrease per hour.')
 
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
+
+        self.register(key='emissions', units='', tpe=SubObjectType.Associations,
+                      definition='List of emissions', display=False)
+
+        self.register(key='fuels', units='', tpe=SubObjectType.Associations,
+                      definition='List of fuels', display=False)
 
     @property
     def Pf_prof(self) -> Profile:

@@ -1,0 +1,1093 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#" xmlns:md="http://iec.ch/TC57/61970-552/ModelDescription/1#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <md:FullModel rdf:about="urn:uuid:6fdafd60-de0d-11e2-8f45-b8f6b1180b6d">
+    <md:Model.scenarioTime>2030-01-02T09:00:00</md:Model.scenarioTime>
+    <md:Model.created>2014-10-22T09:01:25.830</md:Model.created>
+    <md:Model.description>CGMES Conformity Assessment: Mini Grid Base Case Test Configuration. The model is owned by ENTSO-E and is provided by ENTSO-E "as it is". To the fullest extent permitted by law, ENTSO-E shall not be liable for any damages of any kind arising out of the use of the model (including any of its subsequent modifications). ENTSO-E neither warrants, nor represents that the use of the model will not infringe the rights of third parties. Any use of the model shall include a reference to ENTSO-E. ENTSO-E web site is the only official source of information related to the model.</md:Model.description>
+    <md:Model.version>4</md:Model.version>
+    <md:Model.profile>http://entsoe.eu/CIM/DiagramLayout/3/1</md:Model.profile>
+    <md:Model.modelingAuthoritySet>http://A1.de/Planning/ENTSOE/2</md:Model.modelingAuthoritySet>
+    <md:Model.DependentOn rdf:resource="urn:uuid:2399cbd4-9a39-11e0-aa80-0800200c9a66_EU" />
+    <md:Model.DependentOn rdf:resource="urn:uuid:2399cbd2-9a39-11e0-aa80-0800200c9a66_EU" />
+    <md:Model.DependentOn rdf:resource="urn:uuid:2399cbd1-9a39-11e0-aa80-0800200c9a66" />
+  </md:FullModel>
+  <cim:DiagramObjectStyle rdf:ID="_4eaf50bb-c04b-89f2-05f5-e56e744eec7a">
+    <cim:IdentifiedObject.name>bus-branch</cim:IdentifiedObject.name>
+  </cim:DiagramObjectStyle>
+  <cim:DiagramObject rdf:ID="_15638084-e047-7b07-f847-ef105282ae25">
+    <cim:IdentifiedObject.name>L3_b</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_05597934-b248-491e-803a-68ce6290f502" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_c12e265b-0c51-a8d4-7f3a-bde1f6403f8a">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.20282</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>113.906876</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_15638084-e047-7b07-f847-ef105282ae25" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_1311bfed-d7e8-8c1b-8db1-017987f4ef97">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>114.129913</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_15638084-e047-7b07-f847-ef105282ae25" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_9276a3de-5f56-175d-d2fa-14df2b3c8cd6">
+    <cim:IdentifiedObject.name>L3_a</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_35df6abe-3087-4c27-a90a-12b5065333f3" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_8316ff26-3162-1f17-123a-611ce3566a37">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.20282</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>75.1920242</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_9276a3de-5f56-175d-d2fa-14df2b3c8cd6" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_25711094-7c33-379b-ca54-caf7023d7b27">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>75.4423752</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_9276a3de-5f56-175d-d2fa-14df2b3c8cd6" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_7e6aa2d5-3f6e-e2b1-a34b-017fa403cb76">
+    <cim:IdentifiedObject.name>L2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_efdd7f46-67e6-46e3-9dcd-a3b6f8c613a4" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_343979ac-d608-4f5f-3856-b55f7d933a2e">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>292.266327</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>75.03438</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7e6aa2d5-3f6e-e2b1-a34b-017fa403cb76" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_b4989135-fed8-22e2-111c-e1a41ddca00d">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>349.673737</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>74.86825</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7e6aa2d5-3f6e-e2b1-a34b-017fa403cb76" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_9ec4c0af-d450-ceac-7adb-81c3bcfc9732">
+    <cim:IdentifiedObject.name>L1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_d5d1cc4a-6297-4386-b6ce-16dc26f15feb" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_8e7ee9b5-0b48-be2b-0223-1b9bd3509b7c">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.20282</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.0455456</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_9ec4c0af-d450-ceac-7adb-81c3bcfc9732" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_7e5979f0-17da-6896-838d-082f3a5f4592">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>292.266327</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.0255718</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_9ec4c0af-d450-ceac-7adb-81c3bcfc9732" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_4aa0f8a9-fd5a-5c0f-77d1-aabb6c58b0a2">
+    <cim:IdentifiedObject.name>L4</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_e95a6228-ceac-4f0a-8b52-d35367b364dc" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_f0549529-af3e-0e57-f00f-30cf1e1fc994">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>75.4423752</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_4aa0f8a9-fd5a-5c0f-77d1-aabb6c58b0a2" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_deaff7ad-e7b1-bb7b-5ad4-d39822b21e72">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>292.266327</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>75.03438</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_4aa0f8a9-fd5a-5c0f-77d1-aabb6c58b0a2" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c2888318-47af-25b8-573c-8ed009a85c15">
+    <cim:IdentifiedObject.name>L6</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_56757c2b-550e-4843-886a-ed193f6eb21e" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_f527d653-acfb-8a3e-5615-d9200d9e5390">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>296.304352</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.728363</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c2888318-47af-25b8-573c-8ed009a85c15" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_10dbd704-4d9d-8061-a37d-7ef545ac50ff">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>356.552032</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>138.108719</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c2888318-47af-25b8-573c-8ed009a85c15" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_25d6c78a-a672-ad56-03fb-0b7da416f90a">
+    <cim:IdentifiedObject.name>L5</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_1e7f52a9-21d0-4ebe-9a8a-b29281d5bfc9" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_47397d3c-4db6-f903-852e-87660cb96e3d">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>98.33908</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_25d6c78a-a672-ad56-03fb-0b7da416f90a" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_bb8cf228-00f0-d97a-b7ec-98f1213b4b4e">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>349.673737</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>97.54211</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_25d6c78a-a672-ad56-03fb-0b7da416f90a" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_5a7342a4-b601-bc3e-59bd-4db2325cb534">
+    <cim:IdentifiedObject.name>XQ1-N1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_5150a037-e241-421f-98b2-fe60e5c90303" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_17a3ab02-0e59-97e5-8312-d3866a0ae6c6">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>71.63139</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.0277843</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_5a7342a4-b601-bc3e-59bd-4db2325cb534" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_b4ca7dff-e0a7-8cf0-ec9b-60fd83b7066c">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>20.8377438</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.6898479</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_5a7342a4-b601-bc3e-59bd-4db2325cb534" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_480ae250-a906-4f75-140e-f747b7f4562c">
+    <cim:IdentifiedObject.name>XQ2-N5</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_f32baf36-7ea3-4b6a-9452-71e7f18779f8" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_9d30611c-c828-1b96-b2ac-784b4e1082cb">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.712845</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_480ae250-a906-4f75-140e-f747b7f4562c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_441e3147-02b6-498b-154b-85c9d9181ddd">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.20282</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.934769</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_480ae250-a906-4f75-140e-f747b7f4562c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_a81a62ec-5910-ae7b-c85f-7a66678e5d58">
+    <cim:IdentifiedObject.name>Q1_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_2fa56ee8-8afb-4db2-8fcf-89b9fa135bca" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_5778d71f-19bf-a0a7-8d48-600998a42f95">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>71.63139</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>106.778229</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_a81a62ec-5910-ae7b-c85f-7a66678e5d58" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_31cefd24-bb56-86b4-77c4-5baf79fb6630">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>49.51243</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>107.027351</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_a81a62ec-5910-ae7b-c85f-7a66678e5d58" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_a8ceb58a-edb9-1cbb-8912-9c7b169cf346">
+    <cim:IdentifiedObject.name>Q2_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_07865469-d39d-4234-8cee-fa998fa49bed" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_7cd81bf8-74fa-37b7-05a6-bde35e4a2b8e">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.0266</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_a8ceb58a-edb9-1cbb-8912-9c7b169cf346" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_e656b9b1-0d26-2435-3e36-7cf0f9f91182">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>216.715332</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.125214</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_a8ceb58a-edb9-1cbb-8912-9c7b169cf346" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_fcd8ad7e-ef42-0182-357b-9593cda34b4f">
+    <cim:IdentifiedObject.name>T3_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_1dfffea9-1fac-48f1-b466-1312643f3a47" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_a36bcce1-ccf9-bfac-a891-711f9d8082cd">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>71.63139</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.0277843</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_fcd8ad7e-ef42-0182-357b-9593cda34b4f" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_c3622825-e02d-5684-751a-5505af42c988">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>98.12914</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.2370853</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_fcd8ad7e-ef42-0182-357b-9593cda34b4f" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_7e466129-fc04-ff6c-3b27-39305277763f">
+    <cim:IdentifiedObject.name>T3_1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_d5b02a21-e6f5-441c-81f2-4accb1a56ddd" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_debe8f3f-195d-6a3f-4ad8-b6b77f3fc36f">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.20282</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.0455456</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7e466129-fc04-ff6c-3b27-39305277763f" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_5a240d26-9d5a-19ee-849b-18cb41af6086">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>115.389259</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.2370853</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7e466129-fc04-ff6c-3b27-39305277763f" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_39d18d85-bcd4-8399-c9f9-7eec2f8447e3">
+    <cim:IdentifiedObject.name>T3_2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_01a240e9-5607-4844-9d53-5c8b08b5c9a8" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_c25105a1-1825-6bfb-56b0-b2cfaab8b4a1">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>107.259094</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>49.02998</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_39d18d85-bcd4-8399-c9f9-7eec2f8447e3" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_408b5984-4062-dcae-030d-703d23493648">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>107.2134</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.4194946</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_39d18d85-bcd4-8399-c9f9-7eec2f8447e3" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_27492d1a-05a0-a014-2404-aa581676d065">
+    <cim:IdentifiedObject.name>T4_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_eb8ed3e6-c0de-47e2-9dd5-52b321d51b70" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_4c1cd193-2c64-b4ba-2459-475164e8297a">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>107.287956</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>83.15697</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_27492d1a-05a0-a014-2404-aa581676d065" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_5d8b50ed-f2eb-9c2d-e07a-dc31b7bb5fb1">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>107.344933</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>97.61767</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_27492d1a-05a0-a014-2404-aa581676d065" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_fb224e0a-ff51-43a3-c8f4-d43578506ac6">
+    <cim:IdentifiedObject.name>T4_1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_e59d3a8c-8382-413a-95ae-6354dfe85565" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_fa9b4550-ec54-814e-34dc-1d019c7767ea">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.20282</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>113.906876</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_fb224e0a-ff51-43a3-c8f4-d43578506ac6" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_c5ebeb6a-a2e0-1996-bc34-420e9a718a33">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>107.344933</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>114.877808</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_fb224e0a-ff51-43a3-c8f4-d43578506ac6" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_e23bde43-e2b8-fd6d-9a70-637862a81ab3">
+    <cim:IdentifiedObject.name>T4_2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_5af3b857-165c-4f96-b415-0d6e2e9ca27f" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_1234bc1b-22f6-fbfd-84d5-1f25a62cee5f">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>71.63139</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>106.778229</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_e23bde43-e2b8-fd6d-9a70-637862a81ab3" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_abd76c87-1aec-94aa-8360-aac02d9e7497">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>97.1625</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>106.701958</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_e23bde43-e2b8-fd6d-9a70-637862a81ab3" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_0b83c95e-3a2c-b22e-1b74-3909c2a320de">
+    <cim:IdentifiedObject.name>T5_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_51ac3672-026d-4257-9c68-7c7f57a9b55e" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_37107704-bef0-5a89-7717-1fa7cb595164">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.0266</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_0b83c95e-3a2c-b22e-1b74-3909c2a320de" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_0cee07f8-35ca-5f40-a773-92348057f6bc">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>259.7483</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>136.973755</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_0b83c95e-3a2c-b22e-1b74-3909c2a320de" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_ca3e9995-df38-aab1-2e67-250929485d70">
+    <cim:IdentifiedObject.name>T5_1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_0fa430b4-d98c-43bd-9652-f61fb00e7340" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_e4f8d4cf-c2f4-acc0-dd30-116fe6ef1ff4">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>296.304352</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.728363</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_ca3e9995-df38-aab1-2e67-250929485d70" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_a27b15e0-c80d-0faa-ad01-94aad0e47856">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>271.924835</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.978714</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_ca3e9995-df38-aab1-2e67-250929485d70" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_89b7cb0b-f8e5-5cda-a36f-91db30b6ffa1">
+    <cim:IdentifiedObject.name>T6_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_7145f995-b4a7-472e-9c58-2f8540ad3925" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_28bfd5aa-e746-da48-70e0-09f5dd1bfe23">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.123459</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.712845</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_89b7cb0b-f8e5-5cda-a36f-91db30b6ffa1" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_eb4e3bfd-fbb3-e2cd-a693-0f08974a9b7c">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>258.565033</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.527771</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_89b7cb0b-f8e5-5cda-a36f-91db30b6ffa1" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_2de0cd7a-ebae-8bca-73d5-c5b0610026f8">
+    <cim:IdentifiedObject.name>T6_1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_912cc25e-78d9-43a6-a77e-b2b7bb76688b" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_c6008c67-a9d0-ad74-ebd6-4b9e6df480d8">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>296.304352</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.608917</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_2de0cd7a-ebae-8bca-73d5-c5b0610026f8" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_de878a4d-4f30-d437-5616-8661386008db">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>270.741669</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>161.006058</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_2de0cd7a-ebae-8bca-73d5-c5b0610026f8" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_7f6cfcdc-dd93-a37e-6d30-75d3323ffe1c">
+    <cim:IdentifiedObject.name>T2_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_a1158b5f-3b71-4c44-8b15-4150d983f73e" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_0c638c41-3eb0-5939-9cda-deef9ada4990">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>292.266327</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.2697334</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7f6cfcdc-dd93-a37e-6d30-75d3323ffe1c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_33e721b8-89e4-0128-6c87-7e51beb9af0d">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>316.375458</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.1569672</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7f6cfcdc-dd93-a37e-6d30-75d3323ffe1c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_01a63969-d9ef-63e3-65a0-95c2c43ce902">
+    <cim:IdentifiedObject.name>T2_1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_b2112f10-1057-4a28-a18d-a1952c791c4c" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_047ee88c-35e5-6d8e-b442-5ffc2b7a8326">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>353.755371</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.1569672</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_01a63969-d9ef-63e3-65a0-95c2c43ce902" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_64d833d3-c566-2267-e98b-26abc15faaf4">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>328.552032</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.1569672</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_01a63969-d9ef-63e3-65a0-95c2c43ce902" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_13ecc943-6abe-8c51-f4bb-2724f1632484">
+    <cim:IdentifiedObject.name>T1_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_7fe566b9-6bac-4cd3-8b52-8f46e9ba237d" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_5ee459fd-beec-2778-d883-7d6481ef6af9">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>406.023</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.59611</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_13ecc943-6abe-8c51-f4bb-2724f1632484" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_46b8bcc2-8050-5e8f-cf70-9d4f2ebde27d">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>383.501038</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.59611</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_13ecc943-6abe-8c51-f4bb-2724f1632484" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_48997abf-f463-7f43-a13b-3e409b611345">
+    <cim:IdentifiedObject.name>T1_1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_82611054-72b9-4cb0-8621-e418b8962cb1" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_a21e5ff3-307f-1e57-fdf3-aba6c49a8072">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>349.673737</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.59611</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_48997abf-f463-7f43-a13b-3e409b611345" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_cd8fb843-e88f-213c-1ca0-60bed177124e">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>371.324463</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.59611</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_48997abf-f463-7f43-a13b-3e409b611345" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_18b0b407-66d6-9871-276f-fd9ce92631dd">
+    <cim:IdentifiedObject.name>G2_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_4dec53ca-3ea6-4bd0-a225-b559c8293e91" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_78c6e1ed-db1b-54ca-940a-8c7233ec25e3">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>353.755371</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.1569672</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_18b0b407-66d6-9871-276f-fd9ce92631dd" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_f829912d-b2ca-9911-0e03-d2dc647e8fee">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>370.2593</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.1280632</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_18b0b407-66d6-9871-276f-fd9ce92631dd" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_bbd45e6e-4616-44aa-491c-edb2b55133fe">
+    <cim:IdentifiedObject.name>G1_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_3434b50d-677d-4ad5-96d7-6c7d1be611e6" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_fc214ea7-9d8e-7c24-21f1-f9cbec106e97">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>406.023</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.59611</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_bbd45e6e-4616-44aa-491c-edb2b55133fe" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_2d729222-60f4-6e05-84de-03e480f45d6f">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>420.965576</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.544075</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_bbd45e6e-4616-44aa-491c-edb2b55133fe" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_f67d250c-45d7-7c09-fb50-4bda34d5744f">
+    <cim:IdentifiedObject.name>G3_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_9165ded7-ec43-469a-b006-554d388a63ec" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_306c8b34-acf5-76bd-7171-fad9c68efe53">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>296.304352</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.608917</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_f67d250c-45d7-7c09-fb50-4bda34d5744f" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_fe36fca3-fc0c-06d6-cc14-8fb99ed662eb">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>312.2202</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.592712</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_f67d250c-45d7-7c09-fb50-4bda34d5744f" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_9f31503a-fe0a-20f1-f655-5e41839fbc69">
+    <cim:IdentifiedObject.name>M1_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_e3420c0c-d6fc-49ee-9447-74c8e1eba64e" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_21690c73-75a5-67f4-12a7-9c7164286112">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>356.552032</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>143.590454</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_9f31503a-fe0a-20f1-f655-5e41839fbc69" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_45a0df94-7093-eb9c-aaa9-273bc113f53e">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>374.092865</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>143.549423</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_9f31503a-fe0a-20f1-f655-5e41839fbc69" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_7cabc0ad-8f23-38e3-784e-e4e84cd51726">
+    <cim:IdentifiedObject.name>M2_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_2e6ef544-c98e-44ec-a8de-8c44d2cccc33" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_a9bae9fc-9206-7855-e728-b7dc0d54ee00">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>356.552032</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>154.553909</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7cabc0ad-8f23-38e3-784e-e4e84cd51726" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_7c20b219-2991-7942-1998-48cbf3e562ea">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>374.092865</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>154.745468</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7cabc0ad-8f23-38e3-784e-e4e84cd51726" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c4b31d90-dd97-2f73-1b50-20c77c7ac74a">
+    <cim:IdentifiedObject.name>ASM-1229750300_0</cim:IdentifiedObject.name>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_6cd98e8c-ede7-46b1-aa01-7f9f7db26416" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_fd93b98d-6333-4342-5640-c6259f45c8d6">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>356.552032</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>165.5174</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c4b31d90-dd97-2f73-1b50-20c77c7ac74a" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_a8bd52c4-551c-4732-ffad-36a0dc2b5753">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>373.902222</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>165.7339</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c4b31d90-dd97-2f73-1b50-20c77c7ac74a" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c4ca4238-a0b9-2382-0dcc-509a6f75849b">
+    <cim:IdentifiedObject.name>1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>59.0379028</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_adee76cd-b2b9-48ac-8fd4-0d205a435f59" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_6512bd43-d9ca-a6e0-2c99-0b0a82652dca">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>72.02822</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>5.865099</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c4ca4238-a0b9-2382-0dcc-509a6f75849b" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_c20ad4d7-6fe9-7759-aa27-a0c99bff6710">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>72.02822</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>123.9409</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c4ca4238-a0b9-2382-0dcc-509a6f75849b" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_e4da3b7f-bbce-2345-d777-2b0674a318d5">
+    <cim:IdentifiedObject.name>5</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>51.02041</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_37edd845-456f-4c3e-98d5-19af0c1cef1e" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_2838023a-778d-faec-dc21-2708f721b788">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.520279</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>67.0572</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_e4da3b7f-bbce-2345-d777-2b0674a318d5" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_9a115815-4dfa-42ca-ddbd-0694a4e9bdc8">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>235.520279</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>169.098</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_e4da3b7f-bbce-2345-d777-2b0674a318d5" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c81e728d-9d4c-2f63-6f06-7f89cc14862c">
+    <cim:IdentifiedObject.name>2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>59.0379028</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_b3d3b4ad-02af-4490-8748-70f6c9a23734" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_3c59dc04-8e88-5024-3be8-079a5c74d079">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.59964</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>9.833353</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c81e728d-9d4c-2f63-6f06-7f89cc14862c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_b6d767d2-f8ed-5d21-a44b-0e5886680cb9">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.59964</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>127.909157</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c81e728d-9d4c-2f63-6f06-7f89cc14862c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_eccbc87e-4b5c-e2fe-2830-8fd9f2a7baf3">
+    <cim:IdentifiedObject.name>3</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>37.1720123</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_c8726716-e182-4373-b83e-8f60070078cb" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_c16a5320-fa47-5530-d958-3c34fd356ef5">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>292.663147</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>11.8579683</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_eccbc87e-4b5c-e2fe-2830-8fd9f2a7baf3" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_6364d3f0-f495-b6ab-9dcf-8d3b5c6e0b01">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>292.663147</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.2019958</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_eccbc87e-4b5c-e2fe-2830-8fd9f2a7baf3" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_a87ff679-a2f3-e71d-9181-a67b7542122c">
+    <cim:IdentifiedObject.name>4</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>17.7356663</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_c0adab49-d445-4609-a1a3-ebe4ef297cc8" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_3416a75f-4cea-9109-507c-acd8e2f2aefc">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>350.070557</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>68.86046</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_a87ff679-a2f3-e71d-9181-a67b7542122c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_a1d0c6e8-3f02-7327-d846-1063f4ac58a6">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>350.070557</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>104.331787</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_a87ff679-a2f3-e71d-9181-a67b7542122c" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_1679091c-5a88-0faf-6fb5-e6087eb1b2dc">
+    <cim:IdentifiedObject.name>6</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>16.76385</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_764e0b8a-f2af-4092-b6aa-b4a19e55db98" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_7f39f831-7fbd-b198-8ef4-c628eba02591">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>296.304352</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>132.404785</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_1679091c-5a88-0faf-6fb5-e6087eb1b2dc" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_44f683a8-4163-b352-3afe-57c2e008bc8c">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>296.304352</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>165.93248</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_1679091c-5a88-0faf-6fb5-e6087eb1b2dc" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_8f14e45f-ceea-167a-5a36-dedd4bea2543">
+    <cim:IdentifiedObject.name>7</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>19.84127</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_cd84fa40-ef63-422d-8ee0-d0a0f806719e" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_e2c420d9-28d4-bf8c-e0ff-2ec19b371514">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>356.948883</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>132.363327</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_8f14e45f-ceea-167a-5a36-dedd4bea2543" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_32bb90e8-976a-ab52-98d5-da10fe66f21d">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>356.948883</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>172.045868</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_8f14e45f-ceea-167a-5a36-dedd4bea2543" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_180c9f6f-355b-0c2b-0e5f-51a710be2629">
+    <cim:IdentifiedObject.name>XQ1_EQIN</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>11.9047623</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_8372a156-7579-4ea5-1111-24caf0d24603" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_125ff7d3-2f33-7597-c738-e27fd7de1f7f">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>21.23457</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>6.777525</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_180c9f6f-355b-0c2b-0e5f-51a710be2629" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_c44c1ff8-47f8-d1d1-4475-b4eedf8465f5">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>21.23457</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>40.6021652</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_180c9f6f-355b-0c2b-0e5f-51a710be2629" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_1714cbac-bf14-4ca7-91e0-e04be6f3801b">
+    <cim:IdentifiedObject.name>XQ2_EQIN</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>10.7709751</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_8372a156-7579-4ea5-2222-24caf0d24603" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_a965ec53-555b-3ab1-50b0-6ec581312c56">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.59964</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>150.163757</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_1714cbac-bf14-4ca7-91e0-e04be6f3801b" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_9b24b6c9-34cf-19e8-81a9-cf8c47fb4956">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>150.59964</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>171.705719</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_1714cbac-bf14-4ca7-91e0-e04be6f3801b" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c9f0f895-fb98-ab91-59f5-1fd0297e236d">
+    <cim:IdentifiedObject.name>8</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>7.207645</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>90</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_87c0d153-e308-4b2b-92a4-4fad53ab1ff9" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_43ec517d-68b6-edd3-015b-3edc9a11367b">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>98.15391</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>49.02998</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c9f0f895-fb98-ab91-59f5-1fd0297e236d" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_9778d5d2-19c5-080b-9a6a-17bef029331c">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>112.5692</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>49.02998</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c9f0f895-fb98-ab91-59f5-1fd0297e236d" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c1d9f50f-8682-5a1a-2302-ec2449c17196">
+    <cim:IdentifiedObject.name>H</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>7.207645</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>90</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_03163ede-7eec-457f-8641-365982227d7c" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_106530dc-42ba-a21c-67f8-a3af4d7fd9e1">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>98.9475555</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>83.15697</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c1d9f50f-8682-5a1a-2302-ec2449c17196" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_ca2bf3f6-b7e1-8a50-8253-e9521510a4b5">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>113.362846</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>83.15697</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c1d9f50f-8682-5a1a-2302-ec2449c17196" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_65d2cab7-0438-d5e1-9241-29323956d6ec">
+    <cim:IdentifiedObject.name>HG2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>9.637188</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_c7eda3d2-e92d-4935-8166-5e045d3de045" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_c850047a-1661-4ff2-8b9e-2673bbb55480">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>353.755371</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>23.5197773</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_65d2cab7-0438-d5e1-9241-29323956d6ec" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_2d3da1af-565e-ff76-8cb6-4054a5925f34">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>353.755371</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>42.7941551</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_65d2cab7-0438-d5e1-9241-29323956d6ec" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_f28b3e0f-81dc-180c-5466-a5eed891f28a">
+    <cim:IdentifiedObject.name>HG1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>0.7936508</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>11.0949135</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_7f5515b2-ca6b-45af-93ee-f196686f0c66" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_63c569d6-ae13-c192-76ed-69d4051ffe37">
+    <cim:DiagramObjectPoint.sequenceNumber>1</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>406.41983</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>75.5012</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_f28b3e0f-81dc-180c-5466-a5eed891f28a" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObjectPoint rdf:ID="_f8e8e95f-0f98-547a-7486-c62b6b602798">
+    <cim:DiagramObjectPoint.sequenceNumber>2</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>406.41983</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>97.69103</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_f28b3e0f-81dc-180c-5466-a5eed891f28a" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_d24bade1-36bc-8cd7-7e37-395ea94226eb">
+    <cim:IdentifiedObject.name>G2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.96825385</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>3.96825385</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_2970a2b7-b840-4e9c-b405-0cb854cd2318" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_ce5bda31-011f-4cde-13e6-b43fa19f61d7">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>373.5967</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>32.7160454</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_d24bade1-36bc-8cd7-7e37-395ea94226eb" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c0497521-d35d-6686-6e3a-f408094864c3">
+    <cim:IdentifiedObject.name>G1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.96825385</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>3.96825385</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_ca67be42-750e-4ebf-bfaa-24d446e59a22" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_62a40e1d-9880-4e00-e4ce-08d235dad846">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>424.673737</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>85.80246</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c0497521-d35d-6686-6e3a-f408094864c3" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_bc75ca3e-24ef-af83-5d94-7dbe27a95c8a">
+    <cim:IdentifiedObject.name>G3</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.96825385</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>3.96825385</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_392ea173-4f8e-48fa-b2a3-5c3721e93196" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_31b90f34-a729-e9ce-3721-8c16fe921e33">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>315.928375</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.114426</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_bc75ca3e-24ef-af83-5d94-7dbe27a95c8a" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_f1c6eb6f-4e48-eb34-ab40-b2987d4976a8">
+    <cim:IdentifiedObject.name>M3</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.57142854</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>3.57142854</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_062ece1f-ade5-4d20-9c3a-fd8f12d12ec1" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_c1ab9b93-1d19-6023-fab4-f842044c84b1">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>376.6012</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>142.076111</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_f1c6eb6f-4e48-eb34-ab40-b2987d4976a8" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_7d2ade9f-1823-8e26-07a6-5bf3d2042b15">
+    <cim:IdentifiedObject.name>M2a</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.57142854</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>3.57142854</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_ba62884d-8800-41a8-9c26-698297d7ebaa" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_f9f00362-7d25-dda6-45d7-e949152c374b">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>376.6012</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>153.98085</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7d2ade9f-1823-8e26-07a6-5bf3d2042b15" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_c4c92e23-e583-0ddf-b9cd-b2c989ebd186">
+    <cim:IdentifiedObject.name>M2b</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.57142854</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>3.57142854</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_f184d87b-5565-45ee-89b4-29e8a42d3ad1" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_39f52304-4527-b46a-412f-f4117d58c475">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>376.6893</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>163.945572</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_c4c92e23-e583-0ddf-b9cd-b2c989ebd186" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_8860370a-f76c-01de-5337-d4626c2678f4">
+    <cim:IdentifiedObject.name>Q1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>4.3650794</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>4.3650794</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>90</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_089c1945-4101-487f-a557-66c013b748f6" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_b30aad17-e078-07db-0012-4b08edf8dcbe">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>47.7777863</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>106.3492</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_8860370a-f76c-01de-5337-d4626c2678f4" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_3bb28415-4c27-cd76-e8db-ac26517addbd">
+    <cim:IdentifiedObject.name>Q2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>4.3650794</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>4.3650794</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>90</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_3de9e1ad-4562-44df-b268-70ed0517e9e7" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_cf76aa25-0e02-6822-e22e-595be8cf0b36">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>214.091675</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.125214</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_3bb28415-4c27-cd76-e8db-ac26517addbd" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_00a36d13-46d0-dc79-6850-b0b1d919dbb6">
+    <cim:IdentifiedObject.name>T5</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.96825385</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>7.9365077</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_ceb5d06a-a7ff-4102-a620-7f3ea5fb4a51" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_7354f248-601c-45c3-9000-db2817f43c32">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>265.478424</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>137.715363</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_00a36d13-46d0-dc79-6850-b0b1d919dbb6" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_7137cd43-a7a6-b0dd-9272-43aaf6d6cb10">
+    <cim:IdentifiedObject.name>T6</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.96825385</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>7.9365077</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_6c89588b-3df5-4120-88e5-26164afb43e9" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_98fcd426-eb4a-4758-d9d7-057300e62588">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>264.295258</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>160.527771</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_7137cd43-a7a6-b0dd-9272-43aaf6d6cb10" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_71d2c46a-f01f-eeea-54a0-f541243e297b">
+    <cim:IdentifiedObject.name>T2</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.96825385</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>7.9365077</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_f1e72854-ec35-46e9-b614-27db354e8dbb" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_2a5c69fa-826d-f9ca-7c69-cdf3f708ca1f">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>322.8219</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>33.1569672</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_71d2c46a-f01f-eeea-54a0-f541243e297b" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_ce499dea-30cf-ce11-8f4f-e85da0227e83">
+    <cim:IdentifiedObject.name>T1</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>3.96825385</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>7.9365077</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>90</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_813365c3-5be7-4ef0-a0a7-abd1ae6dc174" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_77b1e038-4c6b-729e-e22f-8bed4c151fdd">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>377.0547</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>86.59611</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_ce499dea-30cf-ce11-8f4f-e85da0227e83" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_54b02ae9-1c8c-6b0a-ac06-9c84b9f78178">
+    <cim:IdentifiedObject.name>T3</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>7.53968239</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>8.61678</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>270</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_5d38b7ed-73fd-405a-9cdb-78425e003773" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_25ddda05-72de-b826-ac17-13ec6519dad8">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>107.2134</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>26.01411</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_54b02ae9-1c8c-6b0a-ac06-9c84b9f78178" />
+  </cim:DiagramObjectPoint>
+  <cim:DiagramObject rdf:ID="_f47fb721-aa55-3aad-2d0f-389c93c2d533">
+    <cim:IdentifiedObject.name>T4</cim:IdentifiedObject.name>
+    <cim:DiagramObject.offsetX>7.53968239</cim:DiagramObject.offsetX>
+    <cim:DiagramObject.offsetY>8.61678</cim:DiagramObject.offsetY>
+    <cim:DiagramObject.rotation>0</cim:DiagramObject.rotation>
+    <cim:DiagramObject.IdentifiedObject rdf:resource="#_411b5401-0a43-404a-acb4-05c3d7d0c95c" />
+    <cim:DiagramObject.Diagram rdf:resource="#_e410e806-f410-3450-b721-4a38b5d75314" />
+    <cim:DiagramObject.DiagramObjectStyle rdf:resource="#_4eaf50bb-c04b-89f2-05f5-e56e744eec7a" />
+  </cim:DiagramObject>
+  <cim:DiagramObjectPoint rdf:ID="_b81007ce-f25d-be59-987e-9f3490fce96d">
+    <cim:DiagramObjectPoint.sequenceNumber>0</cim:DiagramObjectPoint.sequenceNumber>
+    <cim:DiagramObjectPoint.xPosition>104.5679</cim:DiagramObjectPoint.xPosition>
+    <cim:DiagramObjectPoint.yPosition>106.701958</cim:DiagramObjectPoint.yPosition>
+    <cim:DiagramObjectPoint.DiagramObject rdf:resource="#_f47fb721-aa55-3aad-2d0f-389c93c2d533" />
+  </cim:DiagramObjectPoint>
+  <cim:Diagram rdf:ID="_e410e806-f410-3450-b721-4a38b5d75314">
+    <cim:IdentifiedObject.name>Diagram</cim:IdentifiedObject.name>
+    <cim:Diagram.orientation rdf:resource="http://iec.ch/TC57/2013/CIM-schema-cim16#OrientationKind.negative" />
+  </cim:Diagram>
+</rdf:RDF>

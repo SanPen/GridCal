@@ -14,56 +14,39 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.enumerations import InvestmentsEvaluationObjectives, InvestmentEvaluationMethod
+from GridCalEngine.enumerations import InvestmentsEvaluationObjectives, InvestmentEvaluationMethod, DeviceType
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
-class InvestmentsEvaluationOptions:
+class InvestmentsEvaluationOptions(OptionsTemplate):
     """
-    InvestmentsEvaluationOptions
+    Investments Evaluation Options
     """
 
     def __init__(self, max_eval: int,
                  pf_options: PowerFlowOptions,
                  solver: InvestmentEvaluationMethod = InvestmentEvaluationMethod.NSGA3,
-                 # w_overload: float = 1.0,
-                 # w_voltage_module: float = 1.0,
-                 # w_voltage_angle: float = 1.0,
-                 # w_losses: float = 1.0,
-                 # w_capex: float = 1.0,
-                 # w_opex: float = 1.0,
-                 w_electrical: float = 1.0,
-                 w_financial: float = 1.0,
                  objf_tpe: InvestmentsEvaluationObjectives = InvestmentsEvaluationObjectives.PowerFlow):
         """
 
-        :param max_eval:
-        :param pf_options:
-        :param solver:
-        :param w_electrical:
-        :param w_financial:
-        :param objf_tpe:
+        :param max_eval: Maximum number of evaluations
+        :param pf_options: Power Flow options
+        :param solver: Black-box solver to use
+        :param objf_tpe: Objective function to use
         """
+        OptionsTemplate.__init__(self, name='InvestmentsEvaluationOptions')
+
         self.max_eval = max_eval
 
         self.pf_options = pf_options
 
         self.solver = solver
 
-        # self.w_overload = w_overload
-        #
-        # self.w_voltage_module = w_voltage_module
-        #
-        # self.w_voltage_angle = w_voltage_angle
-        #
-        # self.w_losses = w_losses
-        #
-        # self.w_capex = w_capex
-        #
-        # self.w_opex = w_opex
-
-        self.w_electrical = w_electrical
-
-        self.w_financial = w_financial
-
         self.objf_tpe = objf_tpe
+
+        self.register(key="max_eval", tpe=int)
+        self.register(key="pf_options", tpe=DeviceType.SimulationOptionsDevice)
+        self.register(key="solver", tpe=InvestmentEvaluationMethod)
+        self.register(key="objf_tpe", tpe=InvestmentsEvaluationObjectives)
+
