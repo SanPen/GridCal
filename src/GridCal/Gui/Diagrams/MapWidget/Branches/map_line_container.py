@@ -228,7 +228,6 @@ class MapLineContainer(GenericDiagramWidget):
             if substation_from_graphics.valid_coordinates():
                 connection_elements.append(substation_from_graphics)
                 substation_from_graphics.line_container = self
-                substation_from_graphics.is_from_sub = True
 
         # add all the intermediate positions
         connection_elements += self.nodes_list
@@ -239,7 +238,6 @@ class MapLineContainer(GenericDiagramWidget):
             if substation_to_graphics.valid_coordinates():
                 connection_elements.append(substation_to_graphics)
                 substation_to_graphics.line_container = self
-                substation_from_graphics.is_to_sub = True
 
         # second pass: create the segments
         for i in range(1, len(connection_elements)):
@@ -358,13 +356,68 @@ class MapLineContainer(GenericDiagramWidget):
             # Return the newly created node
             return graphic_obj
 
-        elif 0 <= index <= len(self.api_object.locations.data):
+        elif index == 0 and len(self.api_object.locations.data) == 0:
 
             substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
             substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
 
             nd1 = substation_from_graphics
             nd2 = substation_to_graphics
+
+            new_lat = ((nd2.lat + nd1.lat) / 2)
+            new_long = ((nd2.lon + nd1.lon) / 2)
+
+            new_api_object = LineLocation(lat=new_lat,
+                                          lon=new_long,
+                                          z=0,
+                                          seq=0,
+                                          name="New node",
+                                          idtag="",
+                                          code="")
+
+            self.api_object.locations.data.insert(index, new_api_object)
+
+            # Create a new graphical node item
+
+            graphic_obj = self.editor.create_node(line_container=self,
+                                                  api_object=new_api_object,
+                                                  lat=new_api_object.lat,
+                                                  lon=new_api_object.long,
+                                                  index=index)
+
+            idx = 0
+
+            for nod in self.nodes_list:
+
+                if idx >= index:
+                    nod.index = nod.index + 1
+
+                idx = idx + 1
+
+            # Add the node to the nodes list
+            self.nodes_list.insert(index, graphic_obj)
+
+            graphic_obj.updatePosition()
+
+            # Update connectors if necessary
+            self.redraw_segments()
+
+            # Return the newly created node
+            return graphic_obj
+
+        elif 0 == index or index == len(self.api_object.locations.data):
+
+            substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
+            substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+
+            nd1 = substation_from_graphics
+            nd2 = substation_to_graphics
+
+            if index == 0:
+                nd2 = self.nodes_list[0]
+
+            if index >= len(self.nodes_list):
+                nd2 = self.nodes_list[len(self.nodes_list) - 1]
 
             new_lat = ((nd2.lat + nd1.lat) / 2)
             new_long = ((nd2.lon + nd1.lon) / 2)

@@ -321,6 +321,12 @@ class MapLineSegment(QGraphicsLineItem):
 
         :return:
         """
+
+        if len(self.container.nodes_list) == 0:
+            self.container.insert_new_node_at_position(0)
+        else:
+            self.container.insert_new_node_at_position(self.second.index)
+
         # TODO implement
         # self.editor.split_line(line_graphics=self)
         pass
