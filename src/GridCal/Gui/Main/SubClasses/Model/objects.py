@@ -359,14 +359,14 @@ class ObjectsTableMain(DiagramsMain):
         :return:
         """
         dev_type_text = self.get_db_object_selected_type()
+        model = self.get_current_objects_model_view()
+        association_prperty_name = self.ui.associationsComboBox.currentText()
 
-        if dev_type_text is not None:
+        if dev_type_text is not None and model is not None and association_prperty_name != "":
 
-            elements = self.get_current_objects_model_view().objects
+            elements = model.objects
 
-            association_prperty_name = self.ui.associationsComboBox.currentText()
-
-            if len(elements) > 0 and association_prperty_name != "":
+            if len(elements) > 0:
 
                 gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
                 associations: dev.Associations = elements[0].get_snapshot_value_by_name(name=association_prperty_name)
@@ -457,17 +457,20 @@ class ObjectsTableMain(DiagramsMain):
                 # update the associations view
                 assoc_mdl = gf.get_list_model(self.circuit.device_associations[elm_type])
                 self.ui.associationsComboBox.setModel(assoc_mdl)
+                self.display_associations()
 
             else:
                 self.ui.dataStructureTableView.setModel(None)
                 self.ui.device_type_magnitude_comboBox.clear()
                 self.ui.device_type_magnitude_comboBox_2.clear()
                 self.ui.associationsComboBox.clear()
+                self.ui.dataStructureTableView.setModel(None)
         else:
             self.ui.dataStructureTableView.setModel(None)
             self.ui.device_type_magnitude_comboBox.clear()
             self.ui.device_type_magnitude_comboBox_2.clear()
             self.ui.associationsComboBox.clear()
+            self.ui.dataStructureTableView.setModel(None)
 
     def get_selected_objects(self) -> List[ALL_DEV_TYPES]:
         """
