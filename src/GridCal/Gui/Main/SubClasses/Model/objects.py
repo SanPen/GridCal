@@ -369,8 +369,8 @@ class ObjectsTableMain(DiagramsMain):
             if len(elements) > 0 and association_prperty_name != "":
 
                 gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
-
-                associated_objects = self.circuit.get_elements_by_type(device_type=gc_prop.associated_type)
+                associations: dev.Associations = elements[0].get_snapshot_value_by_name(name=association_prperty_name)
+                associated_objects = self.circuit.get_elements_by_type(device_type=associations.device_type)
 
                 if len(associated_objects) > 0:
                     mdl = AssociationsModel(objects=elements,

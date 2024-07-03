@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 class Association:
     """
-    GridCal relationship object
+    GridCal relationship object, this handles the unit of association
     """
 
     def __init__(self, api_object: Union[None, ASSOCIATION_TYPES] = None, value: float = 1.0):
@@ -76,13 +76,13 @@ class Association:
 
 class Associations:
     """
-    GridCal associations object
+    GridCal associations object, this handless a set of associations
     """
 
     def __init__(self, device_type: DeviceType):
         """
-
-        :param device_type:
+        Constructor
+        :param device_type: DeviceType
         """
         self._data: Dict[str, Association] = dict()
 
@@ -104,6 +104,17 @@ class Associations:
         """
         if val.api_object is not None:
             self._data[val.api_object.idtag] = val
+
+    def add_object(self, api_object: ASSOCIATION_TYPES, val: float) -> Association:
+        """
+        Add association
+        :param api_object:
+        :param val:
+        :return:
+        """
+        assoc = Association(api_object=api_object, value=val)
+        self.add(assoc)
+        return assoc
 
     def remove(self, val: Association):
         """
@@ -144,12 +155,11 @@ class Associations:
               logger: Logger,
               elm_name: str) -> None:
         """
-
-        :param data:
-        :param elements_dict:
-        :param logger:
-        :param elm_name:
-        :return:
+        Parse the data generated with to_dict()
+        :param data: Json data
+        :param elements_dict: dictionary of elements of the type self.device_type
+        :param logger: Logger
+        :param elm_name: base element name for reporting
         """
 
         for entry in data:
@@ -170,7 +180,7 @@ class Associations:
 
     def append(self, item: Association) -> None:
         """
-
+        Add item
         :param item:
         """
         self.add(item)
@@ -187,12 +197,18 @@ class Associations:
 
     def clear(self) -> None:
         """
-
-        :return:
+        Clear data
         """
         self._data.clear()
 
     def __eq__(self, other: "Associations") -> bool:
+        """
+        Equal?
+        :param other: Associations
+        :return: is equal?
+        """
+        if not isinstance(other, Associations):
+            return False
 
         if len(self) != len(other):
             # different length

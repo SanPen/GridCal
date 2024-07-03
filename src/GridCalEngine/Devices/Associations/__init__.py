@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.Devices.Associations.association import Association
+from GridCalEngine.Devices.Associations.association import Association, Associations
 from GridCalEngine.Devices.Associations.fuel import Fuel
 from GridCalEngine.Devices.Associations.emission_gas import EmissionGas
 from GridCalEngine.Devices.Associations.technology import Technology

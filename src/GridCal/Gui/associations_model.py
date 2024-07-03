@@ -106,9 +106,8 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param value: value to associate
         :return: Association
         """
-        assoc = Association(api_object=self._associated_objects[j], value=value)
         associations: Associations = getattr(self._objects[i], self._gc_prop.name)
-        associations.add(assoc)
+        assoc = associations.add_object(api_object=self._associated_objects[j], val=value)
         return assoc
 
     def remove_association(self, i: int, j: int) -> None:
