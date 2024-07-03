@@ -100,7 +100,7 @@ def get_psse_load(load: dev.Load, bus_dict: Dict[dev.Bus, int], id_number: int) 
     psse_load.YP = load.G
     psse_load.YQ = load.B
     psse_load.IP = load.Ir
-    psse_load.IQ = load.Ii
+    psse_load.IQ = -load.Ii
     psse_load.PL = load.P
     psse_load.QL = load.Q
     psse_load.STATUS = 1 if load.active else 0
