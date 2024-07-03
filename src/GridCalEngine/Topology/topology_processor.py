@@ -204,6 +204,47 @@ class TopologyProcessorInfo:
         """
         return bus in self.candidate_to_int_dict
 
+    def add_cn(self, cn: ConnectivityNode):
+        """
+
+        :param cn:
+        :return:
+        """
+        if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
+
+            # create a new candidate bus
+            candidate_bus = Bus(name=f"Candidate from {cn.name}",
+                                code=cn.code,  # for soft checking
+                                Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
+                                )
+
+            cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
+            self.add_new_candidate(candidate_bus)
+        else:
+            # pick the default candidate
+            candidate_bus = cn.default_bus
+            # candidate_bus.code = cn.code  # for soft checking
+
+        # register
+        if not self.was_added(candidate_bus):
+            self.add_candidate(candidate_bus)
+
+        self.cn_to_candidate[cn] = candidate_bus
+
+    def add_bus_or_cn(self, cn: ConnectivityNode, bus: Bus):
+        """
+
+        :param cn:
+        :param bus:
+        :return:
+        """
+        # NOTE: we preffer the CN to the Buses where available
+        if cn is not None:
+            self.add_cn(cn=cn)
+        else:
+            if bus is not None:
+                self.add_candidate(bus)
+
     def candidate_number(self) -> int:
         """
         Number of candidates
@@ -320,48 +361,21 @@ def process_grid_topology_at(grid: MultiCircuit,
 
     # get a list of all branches
     all_branches = grid.get_switches() + grid.get_branches()
+    nbr = len(all_branches)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Compose the candidate nodes (buses)
     # ------------------------------------------------------------------------------------------------------------------
 
-    # find out the relevant connectivity nodes
-    cn_set = set()
+    # find out the relevant connectivity nodes and buses from the branches
     for br in all_branches:
-        if br.cn_from is not None:
-            cn_set.add(br.cn_from)
+        process_info.add_bus_or_cn(cn=br.cn_from, bus=br.bus_from)
+        process_info.add_bus_or_cn(cn=br.cn_to, bus=br.bus_to)
 
-        if br.cn_to is not None:
-            cn_set.add(br.cn_to)
-
-        if br.bus_from is not None:
-            process_info.add_candidate(br.bus_from)
-
-        if br.bus_to is not None:
-            process_info.add_candidate(br.bus_to)
-
-    # traverse connectivity nodes, adding the candidate buses from them
-    for cn in cn_set:
-
-        if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
-            # create a new candidate
-            candidate_bus = Bus(name=f"Candidate from {cn.name}",
-                                code=cn.code,  # for soft checking
-                                Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
-                                )
-
-            cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
-            process_info.add_new_candidate(candidate_bus)
-        else:
-            # pick the default candidate
-            candidate_bus = cn.default_bus
-            # candidate_bus.code = cn.code  # for soft checking
-
-        # register
-        if not process_info.was_added(candidate_bus):
-            process_info.add_candidate(candidate_bus)
-
-        process_info.cn_to_candidate[cn] = candidate_bus
+    # find out the relevant connectivity nodes and buses from the injection devices
+    for lst in grid.get_injection_devices_lists():
+        for elm in lst:
+            process_info.add_bus_or_cn(cn=elm.cn, bus=elm.bus)
 
     nbus_candidate = process_info.candidate_number()
     bus_active = process_info.get_candidate_active(t_idx=t_idx)
@@ -369,7 +383,6 @@ def process_grid_topology_at(grid: MultiCircuit,
     # ------------------------------------------------------------------------------------------------------------------
     # Create the connectivity matrices
     # ------------------------------------------------------------------------------------------------------------------
-    nbr = len(all_branches)
 
     # declare the matrices
     Cf = lil_matrix((nbr, nbus_candidate))
