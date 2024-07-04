@@ -1356,6 +1356,20 @@ class MultiCircuit(Assets):
 
         return groups
 
+    def get_substation_buses(self, substation: dev.Substation) -> List[dev.Bus]:
+        """
+        Get the list of buses of this substation
+        :param substation:
+        :return:
+        """
+        lst: List[dev.Bus] = list()
+
+        for bus in self.buses:
+            if bus.substation == substation:
+                lst.append(bus)
+
+        return lst
+
     def fuse_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Fuse all the different devices in a node to a single device per node

@@ -50,7 +50,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                  api_object: Substation,
                  lat: float,
                  lon: float,
-                 r: float = 0.4,
+                 r: float = 0.8,
                  draw_labels: bool = True):
         """
 
@@ -147,12 +147,21 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         lat, long = self.editor.to_lat_lon(self.rect().x(), self.rect().y())
 
-        print(f'Updating SE position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
+        # print(f'Updating SE position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
                                            longitude=long,
                                            graphic_object=self)
+
+    def get_center_pos(self) -> QPointF:
+        """
+
+        :return:
+        """
+        x = self.rect().x() + self.rect().width() / 2
+        y = self.rect().y() + self.rect().height() / 2
+        return QPointF(x, y)
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
@@ -171,22 +180,17 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                 vl_graphics.center_on_substation()
 
             self.editor.update_connectors()
-
-    def get_center_pos(self) -> QPointF:
-        """
-
-        :return:
-        """
-        x = self.rect().x() + self.rect().width() / 2
-        y = self.rect().y() + self.rect().height() / 2
-        return QPointF(x, y)
+            self.updateDiagram()  # always update
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.
         """
+        super().mousePressEvent(event)
+        event.setAccepted(True)
         self.editor.map.view.disableMove = True
 
+        print("SE mouse press")
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists={
@@ -202,8 +206,10 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for mouse release events.
         """
+        # super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.updateDiagram()  # always update
+        print("SE mouse release")
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
@@ -248,6 +254,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        icon_path="",
                        function_ptr=self.add_function)
 
+        add_menu_entry(menu=menu,
+                       text="Show diagram",
+                       icon_path="",
+                       function_ptr=self.new_substation_diagram)
+
         menu.exec_(event.screenPos())
 
     def add_function(self):
@@ -265,8 +276,10 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             lines_info = []
 
             for idtag, graphic_object in dev_dict.items():
-                substation_from_graphics = self.editor.graphics_manager.query(elm=graphic_object.api_object.get_substation_from())
-                substation_to_graphics = self.editor.graphics_manager.query(elm=graphic_object.api_object.get_substation_to())
+                substation_from_graphics = self.editor.graphics_manager.query(
+                    elm=graphic_object.api_object.get_substation_from())
+                substation_to_graphics = self.editor.graphics_manager.query(
+                    elm=graphic_object.api_object.get_substation_to())
                 lines_info.append((idtag, graphic_object, substation_from_graphics, substation_to_graphics))
 
             # Now, iterate over the collected information
@@ -300,6 +313,13 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         if ok:
             self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)
             self.editor.update_connectors()
+
+    def new_substation_diagram(self):
+        """
+        Function to create a new substation
+        :return:
+        """
+        self.editor.new_substation_diagram(substation=self.api_object)
 
     def add_voltage_level(self) -> None:
         """

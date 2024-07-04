@@ -74,7 +74,7 @@ class MapScene(QGraphicsScene):
         :param event:
         :return:
         """
-        print(f"Scene pressed at {event.scenePos()}")
+        # print(f"Scene pressed at {event.scenePos()}")
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -586,7 +586,7 @@ class MapWidget(QWidget):
         :param event:
         :return:
         """
-
+        super().mousePressEvent(event)
         click_x = event.x()
         click_y = event.y()
 
