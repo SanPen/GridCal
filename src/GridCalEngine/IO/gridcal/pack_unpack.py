@@ -1176,7 +1176,7 @@ def handle_legacy_jsons(model_data: Dict[str, List],
             emision_idtag = entry.get('emission', None)
             rate = entry.get('rate', 1.0)
             generator = elements_dict_by_type[DeviceType.GeneratorDevice].get(gen_idtag, None)
-            emission = elements_dict_by_type[DeviceType.Technology].get(emision_idtag, None)
+            emission = elements_dict_by_type[DeviceType.EmissionGasDevice].get(emision_idtag, None)
             if generator is not None and emission is not None:
                 generator.emissions.add_object(api_object=emission, val=rate)
                 logger.add_info("Converted legacy generator emission association",
