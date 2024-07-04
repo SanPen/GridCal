@@ -554,8 +554,9 @@ class FileSave:
         Save the circuit information in json format
         :return:logger with information
         """
-        raw_circuit = gridcal_to_raw(self.circuit)
-        logger = write_raw(self.file_name, raw_circuit)
+        logger = Logger()
+        raw_circuit = gridcal_to_raw(self.circuit, logger=logger)
+        logger += write_raw(self.file_name, raw_circuit)
         return logger
 
     def save_rawx(self) -> Logger:
@@ -563,8 +564,9 @@ class FileSave:
         Save the circuit information in json format
         :return:logger with information
         """
-        raw_circuit = gridcal_to_raw(self.circuit)
-        logger = write_rawx(self.file_name, raw_circuit)
+        logger = Logger()
+        raw_circuit = gridcal_to_raw(self.circuit, logger=logger)
+        logger += write_rawx(self.file_name, raw_circuit)
         return logger
 
     def save_newton(self) -> Logger:
