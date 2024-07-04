@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import textwrap
+
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
@@ -448,7 +450,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             scaled_financial_score = self._financial * 10 ** -2
 
             # Plot 1: Technical vs investment
-            sc1 = ax3[0, 0].scatter(scaled_financial_score, scaled_technical_score, c=scaled_financial_score+scaled_technical_score)
+            sc1 = ax3[0, 0].scatter(scaled_financial_score, scaled_technical_score,
+                                    c=scaled_financial_score + scaled_technical_score)
             ax3[0, 0].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[0, 0].set_ylabel('Technical cost (M€)', fontsize=10)
             ax3[0, 0].set_title('Technical vs investment', fontsize=12)
@@ -458,7 +461,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             cbar1.ax.tick_params(labelsize=8)
 
             # Plot 2: Losses vs investment
-            sc2 = ax3[0, 1].scatter(scaled_financial_score, self._losses, c=np.divide(self._financial, self.losses_scale)+self._losses)
+            sc2 = ax3[0, 1].scatter(scaled_financial_score, self._losses,
+                                    c=np.divide(self._financial, self.losses_scale) + self._losses)
             ax3[0, 1].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[0, 1].set_ylabel('Losses cost (M€)', fontsize=10)
             ax3[0, 1].set_title('Power losses vs investment', fontsize=12)
@@ -468,7 +472,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             cbar2.ax.tick_params(labelsize=8)
 
             # Plot 3: Overload vs investment
-            sc3 = ax3[1, 0].scatter(scaled_financial_score, self._overload_score, c=np.divide(self._financial, self.overload_scale)+self._overload_score)
+            sc3 = ax3[1, 0].scatter(scaled_financial_score, self._overload_score,
+                                    c=np.divide(self._financial, self.overload_scale) + self._overload_score)
             ax3[1, 0].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[1, 0].set_ylabel('Overload cost (M€)', fontsize=10)
             ax3[1, 0].set_title('Branch overload vs investment', fontsize=12)
@@ -478,7 +483,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             cbar3.ax.tick_params(labelsize=8)
 
             # Plot 4: Undervoltage vs investment
-            sc4 = ax3[1, 1].scatter(scaled_financial_score, self._voltage_score, c=np.divide(self._financial, self.voltage_scale)+self._voltage_score)
+            sc4 = ax3[1, 1].scatter(scaled_financial_score, self._voltage_score,
+                                    c=np.divide(self._financial, self.voltage_scale) + self._voltage_score)
             ax3[1, 1].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[1, 1].set_ylabel('Voltage cost (M€)', fontsize=10)
             ax3[1, 1].set_title('Undervoltage vs investment', fontsize=12)
@@ -497,23 +503,63 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                         name = self.investment_groups_names[j]
                         used_investments[i] += f"{name},"
 
-            def click_solution(event):
-                # Tolerance threshold for clicking near a point
-                tolerance = 0.1 * (ax3[0, 0].get_xlim()[1] - ax3[0, 0].get_xlim()[0])
+            annots = {}
+            for i in range(2):
+                for j in range(2):
+                    annot = ax3[i, j].annotate("", xy=(0, 0), xytext=(20, 20),
+                                               textcoords="offset points",
+                                               bbox=dict(boxstyle="round", fc="w", pad=0.3),
+                                               arrowprops=dict(arrowstyle="->"),
+                                               fontsize=8,
+                                               zorder=10)  # Set z-order to a higher value to ensure it's in front
+                    annot.set_visible(False)
+                    annots[(i, j)] = annot
 
-                # Check if the click is within the axes
+            def update_annotation(ind, scatter_plot, ax):
+                pos = scatter_plot.get_offsets()[ind["ind"][0]]
+                annot = annots[ax]
+                annot.xy = pos
+                investment_names = used_investments[ind["ind"][0]].replace("Investment", "").replace(" ", "").split(',')
+                text = "Investments:\n{}".format(", ".join(investment_names))
+                wrapped_text = textwrap.fill(text, width=30)
+                # investment_names = used_investments[ind["ind"][0]].split(',')
+                # text = "Investments:\n{}".format("\n".join(investment_names))
+                # investment_indices = [ind["ind"][0]]
+                # text = "Indices:\n{}".format("\n".join(map(str, investment_indices)))
+                annot.set_text(wrapped_text)
+                annot.get_bbox_patch().set_alpha(0.8)
+
+            def hover(event):
+                if event.inaxes in ax3.flatten():
+                    for idx, scatter_plot in enumerate([sc1, sc2, sc3, sc4]):
+                        i, j = divmod(idx, 2)
+                        cont, ind = scatter_plot.contains(event)
+                        if cont:
+                            update_annotation(ind, scatter_plot, (i, j))
+                            annots[(i, j)].set_visible(True)
+                            fig.canvas.draw_idle()
+                            return
+                    for annot in annots.values():
+                        if annot.get_visible():
+                            annot.set_visible(False)
+                            fig.canvas.draw_idle()
+
+            def click_solution(event):
                 if event.inaxes is not None:
                     click_x, click_y = event.xdata, event.ydata
 
-                    if event.inaxes == ax3[0, 0]:
-                        scatter_plot = sc1
-                    elif event.inaxes == ax3[0, 1]:
-                        scatter_plot = sc2
-                    elif event.inaxes == ax3[1, 0]:
-                        scatter_plot = sc3
-                    elif event.inaxes == ax3[1, 1]:
-                        scatter_plot = sc4
-                    else:
+                    # Iterate over all axes and find the scatter plot and tolerance
+                    scatter_plot = None
+                    for i in range(2):
+                        for j in range(2):
+                            if event.inaxes == ax3[i, j]:
+                                scatter_plot = [sc1, sc2, sc3, sc4][i * 2 + j]
+                                tolerance = 0.1 * (ax3[i, j].get_xlim()[1] - ax3[i, j].get_xlim()[0])
+                                break
+                        if scatter_plot is not None:
+                            break
+
+                    if scatter_plot is None:
                         return
 
                     offsets = scatter_plot.get_offsets()
@@ -530,6 +576,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                             print(name)
 
             # Connect the click event to the function
+            fig.canvas.mpl_connect("motion_notify_event", hover)
             fig.canvas.mpl_connect('button_press_event', click_solution)
             plt.show()
 
