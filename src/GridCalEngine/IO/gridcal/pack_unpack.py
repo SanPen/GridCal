@@ -1166,7 +1166,7 @@ def handle_legacy_jsons(model_data: Dict[str, List],
             if generator is not None and fuel is not None:
                 generator.fuels.add_object(api_object=fuel, val=rate)
                 logger.add_info("Converted legacy generator fuel association",
-                                device_class="Generator_technology",
+                                device_class="generator_fuel",
                                 value=f"{generator.name} -> {fuel.name} at {rate}")
 
     ge_data_list = model_data.get("generator_emission", None)
@@ -1179,8 +1179,8 @@ def handle_legacy_jsons(model_data: Dict[str, List],
             emission = elements_dict_by_type[DeviceType.Technology].get(emision_idtag, None)
             if generator is not None and emission is not None:
                 generator.emissions.add_object(api_object=emission, val=rate)
-                logger.add_info("Converted legacy generator fuel association",
-                                device_class="Generator_technology",
+                logger.add_info("Converted legacy generator emission association",
+                                device_class="generator_emission",
                                 value=f"{generator.name} -> {emission.name} at {rate}")
 
 

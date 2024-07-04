@@ -390,7 +390,7 @@
                    <enum>QTabWidget::East</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>0</number>
                   </property>
                   <property name="documentMode">
                    <bool>true</bool>
@@ -670,6 +670,13 @@
                            <width>250</width>
                            <height>0</height>
                           </size>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="association_units_label">
+                         <property name="text">
+                          <string>...</string>
                          </property>
                         </widget>
                        </item>

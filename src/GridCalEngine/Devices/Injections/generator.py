@@ -248,10 +248,10 @@ class Generator(GeneratorParent):
 
         self.register(key='enabled_dispatch', units='', tpe=bool, definition='Enabled for dispatch? Used in OPF.')
 
-        self.register(key='emissions', units='', tpe=SubObjectType.Associations,
+        self.register(key='emissions', units='t/MWh', tpe=SubObjectType.Associations,
                       definition='List of emissions', display=False)
 
-        self.register(key='fuels', units='', tpe=SubObjectType.Associations,
+        self.register(key='fuels', units='t/MWh', tpe=SubObjectType.Associations,
                       definition='List of fuels', display=False)
 
     @property
