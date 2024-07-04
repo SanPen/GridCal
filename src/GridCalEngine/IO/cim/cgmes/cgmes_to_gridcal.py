@@ -50,6 +50,11 @@ class CnLookup:
         self.fill(cgmes_model=cgmes_model)
 
     def fill(self, cgmes_model: CgmesCircuit):
+        """
+
+        :param cgmes_model:
+        :return:
+        """
         bb_tpe = cgmes_model.cgmes_assets.class_dict.get("BusbarSection", None)
 
         if bb_tpe is not None:
@@ -161,9 +166,6 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
                              value=e.ConductingEquipment,
                              expected_value='object')
     return device_to_terminal_dict
-
-
-
 
 
 def find_connections(cgmes_elm: Base,
@@ -454,7 +456,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: Logger object
     """
     # add generation technologies
@@ -1056,7 +1057,8 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                 else:
                     op_rate = 9999  # Corrected
 
-                if (cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0
+                if (cgmes_elm.ratedCurrent is not None
+                        and cgmes_elm.ratedCurrent != 0.0
                         and cgmes_elm.BaseVoltage is not None):  # TODO
                     rated_current = np.round(
                         (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
@@ -1123,7 +1125,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
                 name=cgmes_elm.name,
                 idtag=cgmes_elm.uuid,
                 code=cgmes_elm.description,
-                latitude=latitude,     # later from GL profile/Location class
+                latitude=latitude,  # later from GL profile/Location class
                 longitude=longitude
             )
 
@@ -1218,8 +1220,8 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 cn = cn_look_up.get_busbar_cn(bb_id=cgmes_elm.uuid)
                 bus = cn_look_up.get_busbar_bus(bb_id=cgmes_elm.uuid)
 
-                # if bus and cn:
-                #     cn.default_bus = bus
+                if bus and cn:
+                    cn.default_bus = bus
 
                 gcdev_elm = gcdev.BusBar(
                     name=cgmes_elm.name,
