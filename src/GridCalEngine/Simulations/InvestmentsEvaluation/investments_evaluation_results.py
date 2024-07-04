@@ -178,18 +178,12 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         return 1.0
 
     def calculate_tech_score_magnitudes(self):
-        """ Calculate the magnitudes that appear each technical score, new tech scores may be added """
-        def get_majority_magnitude(magnitudes):
-            if magnitudes:
-                magnitude_counts = Counter(magnitudes)
-                max_count = max(magnitude_counts.values())
-                majority_magnitudes = [magnitude for magnitude, count in magnitude_counts.items() if count == max_count]
-                return max(majority_magnitudes)
-            return None
+        def get_max_magnitude(magnitudes):
+            return max(magnitudes) if magnitudes else None
 
-        self.overload_majority_magnitude = get_majority_magnitude(self.overload_mag)
-        self.losses_majority_magnitude = get_majority_magnitude(self.losses_mag)
-        self.voltage_majority_magnitude = get_majority_magnitude(self.voltage_mag)
+        self.overload_majority_magnitude = get_max_magnitude(self.overload_mag)
+        self.losses_majority_magnitude = get_max_magnitude(self.losses_mag)
+        self.voltage_majority_magnitude = get_max_magnitude(self.voltage_mag)
 
         return self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
 
@@ -445,14 +439,16 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             # Match magnitude of technical score with investment score
             technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
-            max_x_order_of_magnitude = 2   # set to 2 so that costs are in the hundreds of millions
-            max_y_order_of_magnitude = self.calculate_magnitude(
-                max(self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score))
+            max_x_order_of_magnitude = 2  # set to 2 so that costs are in the hundreds of millions
+            print(self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude,
+                  self.overload_scale, self.losses_scale, self.voltage_scale)
+            max_y_order_of_magnitude = self.calculate_magnitude(max(technical_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
             scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
+            scaled_financial_score = self._financial * 10 ** -2
 
             # Plot 1: Technical vs investment
-            sc1 = ax3[0, 0].scatter(self._financial * 10 ** -2, scaled_technical_score, c=self._f_obj, norm=color_norm)
+            sc1 = ax3[0, 0].scatter(scaled_financial_score, scaled_technical_score, c=scaled_financial_score+scaled_technical_score)
             ax3[0, 0].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[0, 0].set_ylabel('Technical cost (M€)', fontsize=10)
             ax3[0, 0].set_title('Technical vs investment', fontsize=12)
@@ -462,7 +458,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             cbar1.ax.tick_params(labelsize=8)
 
             # Plot 2: Losses vs investment
-            sc2 = ax3[0, 1].scatter(self._financial, self._losses, c=self._f_obj, norm=color_norm)
+            sc2 = ax3[0, 1].scatter(scaled_financial_score, self._losses, c=np.divide(self._financial, self.losses_scale)+self._losses)
             ax3[0, 1].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[0, 1].set_ylabel('Losses cost (M€)', fontsize=10)
             ax3[0, 1].set_title('Power losses vs investment', fontsize=12)
@@ -472,7 +468,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             cbar2.ax.tick_params(labelsize=8)
 
             # Plot 3: Overload vs investment
-            sc3 = ax3[1, 0].scatter(self._financial, self._overload_score, c=self._f_obj, norm=color_norm)
+            sc3 = ax3[1, 0].scatter(scaled_financial_score, self._overload_score, c=np.divide(self._financial, self.overload_scale)+self._overload_score)
             ax3[1, 0].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[1, 0].set_ylabel('Overload cost (M€)', fontsize=10)
             ax3[1, 0].set_title('Branch overload vs investment', fontsize=12)
@@ -482,7 +478,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             cbar3.ax.tick_params(labelsize=8)
 
             # Plot 4: Undervoltage vs investment
-            sc4 = ax3[1, 1].scatter(self._financial, self._voltage_score, c=self._f_obj, norm=color_norm)
+            sc4 = ax3[1, 1].scatter(scaled_financial_score, self._voltage_score, c=np.divide(self._financial, self.voltage_scale)+self._voltage_score)
             ax3[1, 1].set_xlabel('Investment cost (M€)', fontsize=10)
             ax3[1, 1].set_ylabel('Voltage cost (M€)', fontsize=10)
             ax3[1, 1].set_title('Undervoltage vs investment', fontsize=12)
