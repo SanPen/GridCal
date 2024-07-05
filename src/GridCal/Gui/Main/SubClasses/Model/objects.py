@@ -371,6 +371,7 @@ class ObjectsTableMain(DiagramsMain):
                 gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
                 associations: dev.Associations = elements[0].get_snapshot_value_by_name(name=association_prperty_name)
                 associated_objects = self.circuit.get_elements_by_type(device_type=associations.device_type)
+                self.ui.association_units_label.setText(gc_prop.units)
 
                 if len(associated_objects) > 0:
                     mdl = AssociationsModel(objects=elements,
@@ -383,8 +384,10 @@ class ObjectsTableMain(DiagramsMain):
                     self.ui.associationsTableView.setModel(None)
             else:
                 self.ui.associationsTableView.setModel(None)
+                self.ui.association_units_label.setText("")
         else:
             self.ui.associationsTableView.setModel(None)
+            self.ui.association_units_label.setText("")
 
     def display_objects_filter(self, elements: List[ALL_DEV_TYPES]):
         """

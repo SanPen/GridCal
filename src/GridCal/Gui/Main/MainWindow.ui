@@ -390,7 +390,7 @@
                    <enum>QTabWidget::East</enum>
                   </property>
                   <property name="currentIndex">
-                   <number>1</number>
+                   <number>0</number>
                   </property>
                   <property name="documentMode">
                    <bool>true</bool>
@@ -670,6 +670,13 @@
                            <width>250</width>
                            <height>0</height>
                           </size>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <widget class="QLabel" name="association_units_label">
+                         <property name="text">
+                          <string>...</string>
                          </property>
                         </widget>
                        </item>
@@ -7171,16 +7178,10 @@
                      <property name="topMargin">
                       <number>0</number>
                      </property>
-                     <item row="12" column="1">
-                      <widget class="QSpinBox" name="max_branch_size_spinBox">
-                       <property name="minimum">
-                        <number>5</number>
-                       </property>
-                       <property name="maximum">
-                        <number>10000</number>
-                       </property>
-                       <property name="value">
-                        <number>20</number>
+                     <item row="11" column="0">
+                      <widget class="QLabel" name="label_14">
+                       <property name="text">
+                        <string>Min. size</string>
                        </property>
                       </widget>
                      </item>
@@ -7236,16 +7237,10 @@
                        </property>
                       </widget>
                      </item>
-                     <item row="7" column="1">
-                      <widget class="QSpinBox" name="max_node_size_spinBox">
-                       <property name="minimum">
-                        <number>20</number>
-                       </property>
-                       <property name="maximum">
-                        <number>10000</number>
-                       </property>
-                       <property name="value">
-                        <number>40</number>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="label_43">
+                       <property name="text">
+                        <string>Palette</string>
                        </property>
                       </widget>
                      </item>
@@ -7256,22 +7251,22 @@
                        </property>
                       </widget>
                      </item>
-                     <item row="2" column="0">
-                      <widget class="QLabel" name="label_43">
+                     <item row="13" column="0">
+                      <widget class="QLabel" name="label_15">
                        <property name="text">
-                        <string>Palette</string>
+                        <string>Max. size</string>
                        </property>
                       </widget>
                      </item>
-                     <item row="13" column="0" colspan="2">
-                      <widget class="QCheckBox" name="branch_width_based_on_flow_checkBox">
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="label_113">
                        <property name="text">
-                        <string>Width based on flow</string>
-                       </property>
-                       <property name="checked">
-                        <bool>false</bool>
+                        <string/>
                        </property>
                       </widget>
+                     </item>
+                     <item row="3" column="0" colspan="2">
+                      <widget class="QComboBox" name="palette_comboBox"/>
                      </item>
                      <item row="7" column="0">
                       <widget class="QLabel" name="label_9">
@@ -7393,23 +7388,6 @@
                        </layout>
                       </widget>
                      </item>
-                     <item row="12" column="0">
-                      <widget class="QLabel" name="label_15">
-                       <property name="text">
-                        <string>Max. size</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item row="11" column="1">
-                      <widget class="QSpinBox" name="min_branch_size_spinBox">
-                       <property name="minimum">
-                        <number>5</number>
-                       </property>
-                       <property name="maximum">
-                        <number>10000</number>
-                       </property>
-                      </widget>
-                     </item>
                      <item row="9" column="0">
                       <widget class="QLabel" name="label_54">
                        <property name="palette">
@@ -7462,13 +7440,13 @@
                        </property>
                       </widget>
                      </item>
-                     <item row="6" column="1">
-                      <widget class="QSpinBox" name="min_node_size_spinBox">
-                       <property name="minimum">
-                        <number>20</number>
+                     <item row="14" column="0" colspan="2">
+                      <widget class="QCheckBox" name="branch_width_based_on_flow_checkBox">
+                       <property name="text">
+                        <string>Width based on flow</string>
                        </property>
-                       <property name="maximum">
-                        <number>10000</number>
+                       <property name="checked">
+                        <bool>false</bool>
                        </property>
                       </widget>
                      </item>
@@ -7479,10 +7457,7 @@
                        </property>
                       </widget>
                      </item>
-                     <item row="3" column="0" colspan="2">
-                      <widget class="QComboBox" name="palette_comboBox"/>
-                     </item>
-                     <item row="14" column="0">
+                     <item row="15" column="0">
                       <spacer name="verticalSpacer_4">
                        <property name="orientation">
                         <enum>Qt::Vertical</enum>
@@ -7495,17 +7470,61 @@
                        </property>
                       </spacer>
                      </item>
-                     <item row="4" column="0">
-                      <widget class="QLabel" name="label_113">
-                       <property name="text">
-                        <string/>
+                     <item row="11" column="1">
+                      <widget class="QDoubleSpinBox" name="min_branch_size_spinBox">
+                       <property name="decimals">
+                        <number>1</number>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.100000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>0.500000000000000</double>
                        </property>
                       </widget>
                      </item>
-                     <item row="11" column="0">
-                      <widget class="QLabel" name="label_14">
-                       <property name="text">
-                        <string>Min. size</string>
+                     <item row="13" column="1">
+                      <widget class="QDoubleSpinBox" name="max_branch_size_spinBox">
+                       <property name="decimals">
+                        <number>1</number>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.100000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>20.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="1">
+                      <widget class="QDoubleSpinBox" name="min_node_size_spinBox">
+                       <property name="decimals">
+                        <number>1</number>
+                       </property>
+                       <property name="minimum">
+                        <double>0.100000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.100000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>20.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="1">
+                      <widget class="QDoubleSpinBox" name="max_node_size_spinBox">
+                       <property name="decimals">
+                        <number>1</number>
+                       </property>
+                       <property name="minimum">
+                        <double>0.100000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.100000000000000</double>
+                       </property>
+                       <property name="value">
+                        <double>40.000000000000000</double>
                        </property>
                       </widget>
                      </item>

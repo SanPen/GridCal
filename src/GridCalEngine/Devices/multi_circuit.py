@@ -34,6 +34,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
+from GridCalEngine.Topology.topology_processor import TopologyProcessorInfo, process_grid_topology_at
 from GridCalEngine.enumerations import DeviceType, ActionType
 
 
@@ -1355,6 +1356,20 @@ class MultiCircuit(Assets):
 
         return groups
 
+    def get_substation_buses(self, substation: dev.Substation) -> List[dev.Bus]:
+        """
+        Get the list of buses of this substation
+        :param substation:
+        :return:
+        """
+        lst: List[dev.Bus] = list()
+
+        for bus in self.buses:
+            if bus.substation == substation:
+                lst.append(bus)
+
+        return lst
+
     def fuse_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Fuse all the different devices in a node to a single device per node
@@ -2222,7 +2237,7 @@ class MultiCircuit(Assets):
     def process_topology_at(self,
                             t_idx: Union[int, None] = None,
                             logger: Union[Logger, None] = None,
-                            debug: int = 0) -> tp.TopologyProcessorInfo:
+                            debug: int = 0) -> TopologyProcessorInfo:
         """
         Topology processor finding the Buses that calculate a certain node-breaker topology
         This function fill the bus pointers into the grid object, and adds any new bus required for simulation
@@ -2232,131 +2247,10 @@ class MultiCircuit(Assets):
         :return: TopologyProcessorInfo
         """
 
-        if logger is None:
-            logger = Logger()
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Compose the candidate nodes (buses)
-        # --------------------------------------------------------------------------------------------------------------
-        process_info = tp.TopologyProcessorInfo()
-
-        # traverse connectivity nodes
-        for cn in self.get_connectivity_nodes():
-
-            if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
-                # create a new candidate
-                candidate_bus = dev.Bus(name=f"Candidate from {cn.name}",
-                                        code=cn.code,  # for soft checking
-                                        Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
-                                        )
-
-                cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
-                process_info.add_new_candidate(candidate_bus)
-            else:
-                # pick the default candidate
-                candidate_bus = cn.default_bus
-                # candidate_bus.code = cn.code  # for soft checking
-
-            # register
-            process_info.add_candidate(candidate_bus)
-            process_info.cn_to_candidate[cn] = candidate_bus
-
-        nbus_candidate = process_info.candidate_number()
-        bus_active = process_info.get_candidate_active(t_idx=t_idx)
-
-        # get a list of all branches
-        all_branches = self.get_switches() + self.get_branches()
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Create the connectivity matrices
-        # --------------------------------------------------------------------------------------------------------------
-        nbr = len(all_branches)
-
-        # declare the matrices
-        Cf = lil_matrix((nbr, nbus_candidate))
-        Ct = lil_matrix((nbr, nbus_candidate))
-        br_active = np.empty(nbr, dtype=int)
-
-        # fill matrices approprietly
-        for i, elm in enumerate(all_branches):
-
-            if elm.device_type == DeviceType.SwitchDevice:
-                br_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
-            else:
-                # non switches form islands, because we want islands to be
-                # the set of candidates to fuse into one
-                br_active[i] = 0
-
-            # if elm.cn_from is not None and elm.cn_to is not None:
-            #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
-            #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
-            if br_active[i]:  # avoid adding zeros
-                f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
-                Cf[i, f] = br_active[i]
-                Ct[i, t] = br_active[i]
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Compose the adjacency matrix from the connectivity information
-        # --------------------------------------------------------------------------------------------------------------
-        A = tp.get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
-                                    C_branch_bus_t=Ct.tocsc(),
-                                    branch_active=br_active,
-                                    bus_active=bus_active)
-
-        if debug >= 2:
-            candidate_names = process_info.get_candidate_names()
-            br_names = [br.name for br in all_branches]
-            C = Cf + Ct
-            df = pd.DataFrame(data=C.toarray(), columns=candidate_names, index=br_names)
-            print(df.replace(to_replace=0.0, value="-"))
-
-            print("A:")
-
-            df = pd.DataFrame(data=A.toarray(), columns=candidate_names, index=candidate_names)
-            print(df.replace(to_replace=0.0, value="-"))
-            print()
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Perform the topology search, this will find candidate buses that reduce to be the same bus
-        # --------------------------------------------------------------------------------------------------------------
-        islands = tp.find_islands(adj=A, active=bus_active)  # each island is finally a single calculation element
-
-        if debug >= 1:
-            for i, island in enumerate(islands):
-                print(f"island {i}:", island)
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Generate auxiliary structures that derive from the topology results
-        # --------------------------------------------------------------------------------------------------------------
-        final_buses = process_info.apply_results(islands=islands)
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Apply the results to the grid object
-        # --------------------------------------------------------------------------------------------------------------
-
-        # Add any extra bus that may arise from the calculation
-        grid_buses_set = {b for b in self.get_buses()}
-        for bus_device in final_buses:
-            if bus_device not in grid_buses_set:
-                self.add_bus(bus_device)
-                if logger:
-                    logger.add_info("Bus added to grid", device=bus_device.name)
-
-        # map the buses to the branches from their connectivity nodes
-        for i, elm in enumerate(all_branches):
-            if elm.cn_from is not None:
-                elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
-
-            if elm.cn_to is not None:
-                elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
-
-        for dev_lst in self.get_injection_devices_lists():
-            for elm in dev_lst:
-                if elm.cn is not None:
-                    elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
-
-        # return the TopologyProcessorInfo
-        return process_info
+        return process_grid_topology_at(grid=self,
+                                        t_idx=t_idx,
+                                        logger=logger,
+                                        debug=debug)
 
     def split_line(self,
                    original_line: Union[dev.Line],

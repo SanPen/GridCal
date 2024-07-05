@@ -114,7 +114,7 @@ class InjectionParent(EditableDevice):
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
                       profile_name='Cost_prof')
 
-        self.register(key='technologies', units='', tpe=SubObjectType.Associations,
+        self.register(key='technologies', units='p.u.', tpe=SubObjectType.Associations,
                       definition='List of technologies', display=False)
 
     @property

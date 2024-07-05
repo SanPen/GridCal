@@ -207,7 +207,13 @@ class GridMapWidget(BaseDiagramWidget):
                  name: str,
                  circuit: MultiCircuit,
                  diagram: Union[None, MapDiagram] = None,
-                 call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None):
+                 use_flow_based_width: bool = False,
+                 min_branch_width: int = 5,
+                 max_branch_width=5,
+                 min_bus_width=20,
+                 max_bus_width=20,
+                 call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None,
+                 call_new_substation_diagram_func: Callable[[Substation], None] = None, ):
         """
 
         :param tile_src:
@@ -228,6 +234,11 @@ class GridMapWidget(BaseDiagramWidget):
                                                       latitude=latitude) if diagram is None else diagram,
                                    library_model=MapLibraryModel(),
                                    time_index=None,
+                                   use_flow_based_width=use_flow_based_width,
+                                   min_branch_width=min_branch_width,
+                                   max_branch_width=max_branch_width,
+                                   min_bus_width=min_bus_width,
+                                   max_bus_width=max_bus_width,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
         # declare the map
@@ -246,6 +257,9 @@ class GridMapWidget(BaseDiagramWidget):
         self.map.startLev = start_level
         self.map.startLat = latitude
         self.map.startLon = longitude
+
+        # function pointer to call for a new substation diagram
+        self.call_new_substation_diagram_func = call_new_substation_diagram_func
 
         self.startHe = self.map.view.height()
         self.startWi = self.map.view.width()
@@ -806,21 +820,21 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
 
-        pass
+        # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
 
-        # max_zoom = self.map.max_level
-        # min_zoom = self.map.min_level
-        # zoom = self.map.zoom_factor
-        # scale = 0.1 + (zoom - min_zoom) / (max_zoom - min_zoom)
-        #
-        # # rescale lines
-        # for dev_tpe in [DeviceType.LineDevice,
-        #                 DeviceType.DCLineDevice,
-        #                 DeviceType.HVDCLineDevice,
-        #                 DeviceType.FluidPathDevice]:
-        #     graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
-        #     for key, lne in graphics_dict.items():
-        #         lne.setWidthScale(scale)
+        max_zoom = self.map.max_level
+        min_zoom = self.map.min_level
+        zoom = self.map.zoom_factor
+        scale = self.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
+
+        # rescale lines
+        for dev_tpe in [DeviceType.LineDevice,
+                        DeviceType.DCLineDevice,
+                        DeviceType.HVDCLineDevice,
+                        DeviceType.FluidPathDevice]:
+            graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
+            for key, lne in graphics_dict.items():
+                lne.setWidthScale(scale)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -1095,6 +1109,17 @@ class GridMapWidget(BaseDiagramWidget):
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
+
+    def new_substation_diagram(self, substation: Substation):
+        """
+
+        :param substation:
+        :return:
+        """
+        if self.call_new_substation_diagram_func is not None:
+            self.call_new_substation_diagram_func(substation)
+        else:
+            print("call_new_substation_diagram_func is None :( ")
 
 
 def generate_map_diagram(substations: List[Substation],

@@ -468,6 +468,11 @@ class SchematicWidget(BaseDiagramWidget):
                  default_bus_voltage: float = 10.0,
                  time_index: Union[None, int] = None,
                  prefer_node_breaker: bool = False,
+                 use_flow_based_width: bool = False,
+                 min_branch_width: int = 5,
+                 max_branch_width=5,
+                 min_bus_width=20,
+                 max_bus_width=20,
                  call_delete_db_element_func: Callable[["SchematicWidget", ALL_DEV_TYPES], None] = None):
         """
         Creates the Diagram Editor (DiagramEditorWidget)
@@ -483,6 +488,11 @@ class SchematicWidget(BaseDiagramWidget):
                                    diagram=diagram,
                                    library_model=SchematicLibraryModel(),
                                    time_index=time_index,
+                                   use_flow_based_width=use_flow_based_width,
+                                   min_branch_width=min_branch_width,
+                                   max_branch_width=max_branch_width,
+                                   min_bus_width=min_bus_width,
+                                   max_bus_width=max_bus_width,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
         # create all the schematic objects and replace the existing ones
