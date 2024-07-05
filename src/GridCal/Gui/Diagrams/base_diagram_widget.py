@@ -45,7 +45,7 @@ from GridCalEngine.enumerations import DeviceType, SimulationTypes
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GuiFunctions import ObjectsModel
+from GridCal.Gui.object_model import ObjectsModel
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget
@@ -63,7 +63,13 @@ class BaseDiagramWidget(QSplitter):
                  diagram: Union[SchematicDiagram, MapDiagram],
                  library_model: Union[MapLibraryModel, SchematicLibraryModel],
                  time_index: Union[None, int] = None,
-                 call_delete_db_element_func: Callable[[Union[GridMapWidget, SchematicWidget], ALL_DEV_TYPES], None] = None):
+                 use_flow_based_width: bool = False,
+                 min_branch_width: int = 5,
+                 max_branch_width=5,
+                 min_bus_width=20,
+                 max_bus_width=20,
+                 call_delete_db_element_func: Callable[
+                     [Union[GridMapWidget, SchematicWidget], ALL_DEV_TYPES], None] = None):
         """
         Constructor
         :param circuit:
@@ -119,6 +125,13 @@ class BaseDiagramWidget(QSplitter):
 
         # diagram to store the objects locations
         self.diagram: SchematicDiagram = diagram
+
+        # sizes
+        self.use_flow_based_width: bool = use_flow_based_width
+        self.min_branch_width: float = min_branch_width
+        self.max_branch_width: float = max_branch_width
+        self.min_bus_width: float = min_bus_width
+        self.max_bus_width: float = max_bus_width
 
         # class to handle the relationships between widgets and API objects
         self.graphics_manager = GraphicsManager()
@@ -572,3 +585,29 @@ class BaseDiagramWidget(QSplitter):
 
         if location is not None:
             location.draw_labels = draw_labels
+
+    def set_size_constraints(self,
+                             use_flow_based_width: bool = False,
+                             min_branch_width: int = 5,
+                             max_branch_width=5,
+                             min_bus_width=20,
+                             max_bus_width=20):
+        """
+        Set the size constraints
+        :param use_flow_based_width:
+        :param min_branch_width:
+        :param max_branch_width:
+        :param min_bus_width:
+        :param max_bus_width:
+        """
+        self.use_flow_based_width: bool = use_flow_based_width
+        self.min_branch_width: float = min_branch_width
+        self.max_branch_width: float = max_branch_width
+        self.min_bus_width: float = min_bus_width
+        self.max_bus_width: float = max_bus_width
+
+        # print(f"{self.use_flow_based_width}, "
+        #       f"{self.min_branch_width}, "
+        #       f"{self.max_branch_width}, "
+        #       f"{self.min_bus_width}, "
+        #       f"{self.max_bus_width}")

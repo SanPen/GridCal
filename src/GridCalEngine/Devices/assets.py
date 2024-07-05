@@ -23,6 +23,7 @@ import datetime as dateslib
 from GridCalEngine.basic_structures import IntVec, StrVec
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, BRANCH_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.Parents.editable_device import GCPROP_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.data_logger import DataLogger
@@ -181,11 +182,11 @@ class Assets:
         # emission gasses
         self._emission_gases: List[dev.EmissionGas] = list()
 
-        self._generators_technologies: List[dev.GeneratorTechnology] = list()
-
-        self._generators_fuels: List[dev.GeneratorFuel] = list()
-
-        self._generators_emissions: List[dev.GeneratorEmission] = list()
+        # self._generators_technologies: List[dev.GeneratorTechnology] = list()
+        #
+        # self._generators_fuels: List[dev.GeneratorFuel] = list()
+        #
+        # self._generators_emissions: List[dev.GeneratorEmission] = list()
 
         # fluids
         self._fluid_nodes: List[dev.FluidNode] = list()
@@ -259,13 +260,10 @@ class Assets:
                 dev.BranchGroup(),
                 dev.ModellingAuthority()
             ],
-            "Tags & Associations": [
+            "Associations": [
                 dev.Technology(),
                 dev.Fuel(),
                 dev.EmissionGas(),
-                dev.GeneratorTechnology(),
-                dev.GeneratorFuel(),
-                dev.GeneratorEmission(),
             ],
             "Catalogue": [
                 dev.Wire(),
@@ -277,9 +275,11 @@ class Assets:
         }
 
         # dictionary of profile magnitudes per object
-        self.profile_magnitudes = dict()
+        self.profile_magnitudes: Dict[str, Tuple[List[str], List[GCPROP_TYPES]]] = dict()
 
         self.device_type_name_dict: Dict[str, DeviceType] = dict()
+
+        self.device_associations: Dict[str, List[str]] = dict()
 
         '''
         self.type_name = 'Shunt'
@@ -292,8 +292,10 @@ class Assets:
                     key = str(elm.device_type.value)
                     profile_attr = list(elm.properties_with_profile.keys())
                     profile_types = [elm.registered_properties[attr].tpe for attr in profile_attr]
+                    associated_props, indices = elm.get_association_properties()
                     self.profile_magnitudes[key] = (profile_attr, profile_types)
                     self.device_type_name_dict[key] = elm.device_type
+                    self.device_associations[key] = [prop.name for prop in associated_props]
 
     # ------------------------------------------------------------------------------------------------------------------
     # Device iterators
@@ -1522,12 +1524,14 @@ class Assets:
         :return:
         """
         self._generators.remove(obj)
-        for dev_lst in [self._generators_technologies,
-                        self._generators_fuels,
-                        self._generators_emissions]:
-            for elm in dev_lst:
-                if elm.generator == obj:
-                    elm.generator = None
+
+        elms_to_del = list()
+        for elm in self._contingencies:
+            if elm.device_idtag == obj.idtag:
+                elms_to_del.append(elm)
+
+        for elm in elms_to_del:
+            self.delete_element(elm)
 
     def get_generator_indexing_dict(self) -> Dict[str, int]:
         """
@@ -3356,13 +3360,16 @@ class Assets:
         Delete zone
         :param obj: index
         """
-        to_del = list()
-        for elm in self._generators_technologies:
-            if elm.technology == obj:
-                to_del.append(elm)
 
-        for elm in to_del:
-            self.delete_generator_technology(elm)
+        for elm_list in self.get_injection_devices_lists():
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.technologies:
+                    if assoc.api_object == obj:
+                        to_del.append(assoc)
+
+                for assoc in to_del:
+                    elm.technologies.remove(assoc)
 
         self._technologies.remove(obj)
 
@@ -3489,13 +3496,15 @@ class Assets:
         :param obj: index
         """
 
-        to_del = list()
-        for elm in self._generators_fuels:
-            if elm.fuel == obj:
-                to_del.append(elm)
+        for elm_list in [self._generators]:
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.fuels:
+                    if assoc.api_object == obj:
+                        to_del.append(assoc)
 
-        for elm in to_del:
-            self.delete_generator_fuel(elm)
+                for assoc in to_del:
+                    elm.fuels.remove(assoc)
 
         self._fuels.remove(obj)
 
@@ -3559,14 +3568,15 @@ class Assets:
         :param obj: index
         """
         # store the associations
-        rels = list()
-        for elm in self._generators_emissions:
-            if elm.emission == obj:
-                rels.append(elm)
+        for elm_list in [self._generators]:
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.emissions:
+                    if assoc.api_object == obj:
+                        to_del.append(assoc)
 
-        # delete the assciations
-        for elm in rels:
-            self.delete_generator_emission(elm)
+                for assoc in to_del:
+                    elm.emissions.remove(assoc)
 
         # delete the gas
         self._emission_gases.remove(obj)
@@ -3585,113 +3595,113 @@ class Assets:
     # Generator - Technology
     # ------------------------------------------------------------------------------------------------------------------
 
-    @property
-    def generators_technologies(self) -> List[dev.GeneratorTechnology]:
-        """
-        Get list of GeneratorTechnology association objects
-        :return:
-        """
-        return self._generators_technologies
-
-    @generators_technologies.setter
-    def generators_technologies(self, value: List[dev.GeneratorTechnology]):
-        self._generators_technologies = value
-
-    def add_generator_technology(self, obj: dev.GeneratorTechnology):
-        """
-        Add GeneratorTechnology
-        :param obj: GeneratorTechnology object
-        """
-        self._generators_technologies.append(obj)
-
-    def delete_generator_technology(self, obj: dev.GeneratorTechnology):
-        """
-        Delete GeneratorTechnology
-        :param obj: GeneratorTechnology
-        """
-        # store the associations
-        rels = list()
-        for elm in self._generators_technologies:
-            if elm.technology == obj:
-                rels.append(elm)
-
-        # delete the associations
-        for elm in rels:
-            self.delete_generator_technology(elm)
-
-        # delete the technology
-        self._generators_technologies.remove(obj)
+    # @property
+    # def generators_technologies(self) -> List[dev.GeneratorTechnology]:
+    #     """
+    #     Get list of GeneratorTechnology association objects
+    #     :return:
+    #     """
+    #     return self._generators_technologies
+    #
+    # @generators_technologies.setter
+    # def generators_technologies(self, value: List[dev.GeneratorTechnology]):
+    #     self._generators_technologies = value
+    #
+    # def add_generator_technology(self, obj: dev.GeneratorTechnology):
+    #     """
+    #     Add GeneratorTechnology
+    #     :param obj: GeneratorTechnology object
+    #     """
+    #     self._generators_technologies.append(obj)
+    #
+    # def delete_generator_technology(self, obj: dev.GeneratorTechnology):
+    #     """
+    #     Delete GeneratorTechnology
+    #     :param obj: GeneratorTechnology
+    #     """
+    #     # store the associations
+    #     rels = list()
+    #     for elm in self._generators_technologies:
+    #         if elm.technology == obj:
+    #             rels.append(elm)
+    #
+    #     # delete the associations
+    #     for elm in rels:
+    #         self.delete_generator_technology(elm)
+    #
+    #     # delete the technology
+    #     self._generators_technologies.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Generotor - Fuels
     # ------------------------------------------------------------------------------------------------------------------
 
-    @property
-    def generators_fuels(self) -> List[dev.GeneratorFuel]:
-        """
-        Get list of Generator fuels associations
-        :return:
-        """
-        return self._generators_fuels
-
-    @generators_fuels.setter
-    def generators_fuels(self, value: List[dev.GeneratorFuel]):
-        self._generators_fuels = value
-
-    def add_generator_fuel(self, obj: dev.GeneratorFuel):
-        """
-        Add GeneratorFuel
-        :param obj: GeneratorFuel object
-        """
-        self._generators_fuels.append(obj)
-
-    def delete_generator_fuel(self, obj: dev.GeneratorFuel):
-        """
-        Delete GeneratorFuel
-        :param obj: GeneratorFuel
-        """
-        # store the associations
-        rels = list()
-        for elm in self._generators_fuels:
-            if elm.fuel == obj:
-                rels.append(elm)
-
-        # delete the assciations
-        for elm in rels:
-            self.delete_generator_fuel(elm)
-
-        # delete the fuel
-        self._generators_fuels.remove(obj)
+    # @property
+    # def generators_fuels(self) -> List[dev.GeneratorFuel]:
+    #     """
+    #     Get list of Generator fuels associations
+    #     :return:
+    #     """
+    #     return self._generators_fuels
+    #
+    # @generators_fuels.setter
+    # def generators_fuels(self, value: List[dev.GeneratorFuel]):
+    #     self._generators_fuels = value
+    #
+    # def add_generator_fuel(self, obj: dev.GeneratorFuel):
+    #     """
+    #     Add GeneratorFuel
+    #     :param obj: GeneratorFuel object
+    #     """
+    #     self._generators_fuels.append(obj)
+    #
+    # def delete_generator_fuel(self, obj: dev.GeneratorFuel):
+    #     """
+    #     Delete GeneratorFuel
+    #     :param obj: GeneratorFuel
+    #     """
+    #     # store the associations
+    #     rels = list()
+    #     for elm in self._generators_fuels:
+    #         if elm.fuel == obj:
+    #             rels.append(elm)
+    #
+    #     # delete the assciations
+    #     for elm in rels:
+    #         self.delete_generator_fuel(elm)
+    #
+    #     # delete the fuel
+    #     self._generators_fuels.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Generator - Emissions
     # ------------------------------------------------------------------------------------------------------------------
 
-    @property
-    def generators_emissions(self) -> List[dev.GeneratorEmission]:
-        """
-        Get list of generator associations
-        :return:
-        """
-        return self._generators_emissions
-
-    @generators_emissions.setter
-    def generators_emissions(self, value: List[dev.GeneratorEmission]):
-        self._generators_emissions = value
-
-    def add_generator_emission(self, obj: dev.GeneratorEmission):
-        """
-        Add GeneratorFuel
-        :param obj: GeneratorFuel object
-        """
-        self._generators_emissions.append(obj)
-
-    def delete_generator_emission(self, obj: dev.GeneratorEmission):
-        """
-        Delete GeneratorFuel
-        :param obj: GeneratorFuel
-        """
-        self._generators_emissions.remove(obj)
+    # @property
+    # def generators_emissions(self) -> List[dev.GeneratorEmission]:
+    #     """
+    #     Get list of generator associations
+    #     :return:
+    #     """
+    #     return self._generators_emissions
+    #
+    # @generators_emissions.setter
+    # def generators_emissions(self, value: List[dev.GeneratorEmission]):
+    #     self._generators_emissions = value
+    #
+    # def add_generator_emission(self, obj: dev.GeneratorEmission):
+    #     """
+    #     Add GeneratorFuel
+    #     :param obj: GeneratorFuel object
+    #     """
+    #     self._generators_emissions.append(obj)
+    #
+    # def delete_generator_emission(self, obj: dev.GeneratorEmission):
+    #     """
+    #     Delete GeneratorFuel
+    #     :param obj: GeneratorFuel
+    #     """
+    #     self._generators_emissions.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Fluid nodes
@@ -4585,14 +4595,14 @@ class Assets:
         elif device_type == DeviceType.EmissionGasDevice:
             return self._emission_gases
 
-        elif device_type == DeviceType.GeneratorTechnologyAssociation:
-            return self._generators_technologies
-
-        elif device_type == DeviceType.GeneratorFuelAssociation:
-            return self._generators_fuels
-
-        elif device_type == DeviceType.GeneratorEmissionAssociation:
-            return self._generators_emissions
+        # elif device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     return self._generators_technologies
+        #
+        # elif device_type == DeviceType.GeneratorFuelAssociation:
+        #     return self._generators_fuels
+        #
+        # elif device_type == DeviceType.GeneratorEmissionAssociation:
+        #     return self._generators_emissions
 
         elif device_type == DeviceType.ConnectivityNodeDevice:
             return self._connectivity_nodes
@@ -4787,14 +4797,14 @@ class Assets:
         elif device_type == DeviceType.EmissionGasDevice:
             self._emission_gases = devices
 
-        elif device_type == DeviceType.GeneratorTechnologyAssociation:
-            self._generators_technologies = devices
-
-        elif device_type == DeviceType.GeneratorFuelAssociation:
-            self._generators_fuels = devices
-
-        elif device_type == DeviceType.GeneratorEmissionAssociation:
-            self._generators_emissions = devices
+        # elif device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     self._generators_technologies = devices
+        #
+        # elif device_type == DeviceType.GeneratorFuelAssociation:
+        #     self._generators_fuels = devices
+        #
+        # elif device_type == DeviceType.GeneratorEmissionAssociation:
+        #     self._generators_emissions = devices
 
         elif device_type == DeviceType.ConnectivityNodeDevice:
             self._connectivity_nodes = devices
@@ -4972,14 +4982,14 @@ class Assets:
         elif obj.device_type == DeviceType.EmissionGasDevice:
             self.add_emission_gas(obj=obj)
 
-        elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
-            self.add_generator_technology(obj=obj)
-
-        elif obj.device_type == DeviceType.GeneratorFuelAssociation:
-            self.add_generator_fuel(obj=obj)
-
-        elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
-            self.add_generator_emission(obj=obj)
+        # elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     self.add_generator_technology(obj=obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorFuelAssociation:
+        #     self.add_generator_fuel(obj=obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
+        #     self.add_generator_emission(obj=obj)
 
         elif obj.device_type == DeviceType.FluidNodeDevice:
             self.add_fluid_node(obj=obj)
@@ -5150,14 +5160,14 @@ class Assets:
         elif obj.device_type == DeviceType.EmissionGasDevice:
             self.delete_emission_gas(obj)
 
-        elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
-            self.delete_generator_technology(obj)
-
-        elif obj.device_type == DeviceType.GeneratorFuelAssociation:
-            self.delete_generator_fuel(obj)
-
-        elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
-            self.delete_generator_emission(obj)
+        # elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
+        #     self.delete_generator_technology(obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorFuelAssociation:
+        #     self.delete_generator_fuel(obj)
+        #
+        # elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
+        #     self.delete_generator_emission(obj)
 
         elif obj.device_type == DeviceType.FluidNodeDevice:
             self.delete_fluid_node(obj)

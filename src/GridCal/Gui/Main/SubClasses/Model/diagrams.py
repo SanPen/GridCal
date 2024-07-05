@@ -26,6 +26,7 @@ from pandas.plotting import register_matplotlib_converters
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
 import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.object_model import ObjectsModel
 import GridCal.Gui.Visualization.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
@@ -164,6 +165,14 @@ class DiagramsMain(CompiledArraysMain):
         # spinbox change
         self.ui.explosion_factor_doubleSpinBox.valueChanged.connect(self.explosion_factor_change)
         self.ui.defaultBusVoltageSpinBox.valueChanged.connect(self.default_voltage_change)
+
+        self.ui.min_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
+        self.ui.max_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
+        self.ui.min_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
+        self.ui.max_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
+
+        # check boxes
+        self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_contraints)
 
         # context menu
         self.ui.diagramsListView.customContextMenuRequested.connect(self.show_diagrams_context_menu)
@@ -883,6 +892,11 @@ class DiagramsMain(CompiledArraysMain):
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                          time_index=self.get_diagram_slider_index(),
                                          prefer_node_breaker=prefer_node_breaker,
+                                         use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                         min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                         max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                         min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                         max_bus_width=self.ui.max_node_size_spinBox.value(),
                                          call_delete_db_element_func=self.call_delete_db_element)
 
         diagram_widget.setStretchFactor(1, 10)
@@ -920,6 +934,11 @@ class DiagramsMain(CompiledArraysMain):
                                                  diagram=diagram,
                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                                  time_index=self.get_diagram_slider_index(),
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value(),
                                                  call_delete_db_element_func=self.call_delete_db_element)
 
                 self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
@@ -993,11 +1012,47 @@ class DiagramsMain(CompiledArraysMain):
                                                              diagram=diagram,
                                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                                              time_index=self.get_diagram_slider_index(),
+                                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                             max_bus_width=self.ui.max_node_size_spinBox.value(),
                                                              call_delete_db_element_func=self.call_delete_db_element)
 
                             self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget,
                                                                 diagram=diagram)
                             self.set_diagrams_list_view()
+
+    def new_bus_branch_diagram_from_substation(self, substation: dev.Substation):
+        """
+        Add a bus-branch diagram of a particular selection of objects
+        """
+
+        buses = self.circuit.get_substation_buses(substation=substation)
+
+        if len(buses):
+            diagram = make_vecinity_diagram(circuit=self.circuit,
+                                            root_bus=buses[0],
+                                            max_level=2,
+                                            prog_func=None,
+                                            text_func=None)
+
+            diagram_widget = SchematicWidget(self.circuit,
+                                             diagram=diagram,
+                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                             time_index=self.get_diagram_slider_index(),
+                                             use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                             min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                             max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                             min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                             max_bus_width=self.ui.max_node_size_spinBox.value(),
+                                             call_delete_db_element_func=self.call_delete_db_element)
+
+            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
+            self.set_diagrams_list_view()
+        else:
+            info_msg(text=f"No buses were found associated with the substation {substation.name}",
+                     title="New schematic from substation")
 
     def create_circuit_stored_diagrams(self):
         """
@@ -1014,6 +1069,11 @@ class DiagramsMain(CompiledArraysMain):
                                                  diagram=diagram,
                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                                  time_index=self.get_diagram_slider_index(),
+                                                 use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                                 min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                                 max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                                 min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                                 max_bus_width=self.ui.max_node_size_spinBox.value(),
                                                  call_delete_db_element_func=self.call_delete_db_element)
 
                 diagram_widget.setStretchFactor(1, 10)
@@ -1026,13 +1086,22 @@ class DiagramsMain(CompiledArraysMain):
                 tile_source = self.tile_sources.get(diagram.tile_source, defualt_tile_source)
 
                 # create the map widget
-                map_widget = GridMapWidget(tile_src=tile_source,
-                                           start_level=diagram.start_level,
-                                           longitude=diagram.longitude,
-                                           latitude=diagram.latitude,
-                                           name=diagram.name,
-                                           circuit=self.circuit,
-                                           diagram=diagram)
+                map_widget = GridMapWidget(
+                    tile_src=tile_source,
+                    start_level=diagram.start_level,
+                    longitude=diagram.longitude,
+                    latitude=diagram.latitude,
+                    name=diagram.name,
+                    circuit=self.circuit,
+                    diagram=diagram,
+                    use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                    min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                    max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                    min_bus_width=self.ui.min_node_size_spinBox.value(),
+                    max_bus_width=self.ui.max_node_size_spinBox.value(),
+                    call_delete_db_element_func=self.call_delete_db_element,
+                    call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation
+                )
 
                 # map_widget.GotoLevelAndPosition(5, -15.41, 40.11)
                 self.diagram_widgets_list.append(map_widget)
@@ -1075,7 +1144,13 @@ class DiagramsMain(CompiledArraysMain):
                                    name=diagram.name,
                                    circuit=self.circuit,
                                    diagram=diagram,
-                                   call_delete_db_element_func=self.call_delete_db_element)
+                                   use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                                   min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                                   max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                                   min_bus_width=self.ui.min_node_size_spinBox.value(),
+                                   max_bus_width=self.ui.max_node_size_spinBox.value(),
+                                   call_delete_db_element_func=self.call_delete_db_element,
+                                   call_new_substation_diagram_func=self.new_bus_branch_diagram_from_substation)
 
         self.add_diagram_widget_and_diagram(diagram_widget=map_widget, diagram=diagram)
         self.set_diagrams_list_view()
@@ -1210,7 +1285,7 @@ class DiagramsMain(CompiledArraysMain):
 
         # modify the time index in the current DB objects model
         mdl = self.ui.dataStructureTableView.model()
-        if isinstance(mdl, gf.ObjectsModel):
+        if isinstance(mdl, ObjectsModel):
             mdl.set_time_index(time_index=idx2)
 
     def objects_diagram_time_slider_texts(self):
@@ -1698,3 +1773,16 @@ class DiagramsMain(CompiledArraysMain):
             self.circuit.delete_element(obj=api_obj)
         except ValueError as e:
             print(e)
+
+    def set_diagrams_size_contraints(self):
+        """
+        Set the size constraints
+        """
+        for diagram_widget in self.diagram_widgets_list:
+            diagram_widget.set_size_constraints(
+                use_flow_based_width=self.ui.branch_width_based_on_flow_checkBox.isChecked(),
+                min_branch_width=self.ui.min_branch_size_spinBox.value(),
+                max_branch_width=self.ui.max_branch_size_spinBox.value(),
+                min_bus_width=self.ui.min_node_size_spinBox.value(),
+                max_bus_width=self.ui.max_node_size_spinBox.value()
+            )

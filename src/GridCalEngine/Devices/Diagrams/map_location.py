@@ -37,11 +37,62 @@ class MapLocation:
         :param draw_labels:
         """
 
-        self.latitude = latitude
-        self.longitude = longitude
-        self.altitude = altitude
+        self._latitude = latitude if latitude is not None else 0.0
+        self._longitude = longitude if longitude is not None else 0.0
+        self._altitude = altitude if altitude is not None else 0.0
         self.draw_labels = draw_labels
         self.api_object = api_object
+
+    @property
+    def latitude(self):
+        """
+
+        :return:
+        """
+        return self._latitude
+
+    @latitude.setter
+    def latitude(self, val: float):
+        """
+
+        :param val:
+        :return:
+        """
+        self._latitude = val if val is not None else 0.0
+
+    @property
+    def longitude(self):
+        """
+
+        :return:
+        """
+        return self._longitude
+
+    @longitude.setter
+    def longitude(self, val: float):
+        """
+
+        :param val:
+        :return:
+        """
+        self._longitude = val if val is not None else 0.0
+
+    @property
+    def altitude(self):
+        """
+
+        :return:
+        """
+        return self._altitude
+
+    @altitude.setter
+    def altitude(self, val: float):
+        """
+
+        :param val:
+        :return:
+        """
+        self._altitude = val if val is not None else 0.0
 
     def get_properties_dict(self) -> Dict[str, float]:
         """

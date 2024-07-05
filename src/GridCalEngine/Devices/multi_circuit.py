@@ -34,6 +34,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
+from GridCalEngine.Topology.topology_processor import TopologyProcessorInfo, process_grid_topology_at
 from GridCalEngine.enumerations import DeviceType, ActionType
 
 
@@ -312,9 +313,9 @@ class MultiCircuit(Assets):
                 'technologies',
                 'fuels',
                 'emission_gases',
-                'generators_technologies',
-                'generators_fuels',
-                'generators_emissions',
+                # 'generators_technologies',
+                # 'generators_fuels',
+                # 'generators_emissions',
                 'fluid_nodes',
                 'fluid_paths',
                 'pi_measurements',
@@ -611,7 +612,7 @@ class MultiCircuit(Assets):
         series_reactance.rate_prof = line.rate_prof
 
         # add device to the circuit
-        self.add_series_reactance(series_reactance)
+        self.add_switch(series_reactance)
 
         # delete the line from the circuit
         self.delete_line(line)
@@ -1355,6 +1356,20 @@ class MultiCircuit(Assets):
 
         return groups
 
+    def get_substation_buses(self, substation: dev.Substation) -> List[dev.Bus]:
+        """
+        Get the list of buses of this substation
+        :param substation:
+        :return:
+        """
+        lst: List[dev.Bus] = list()
+
+        for bus in self.buses:
+            if bus.substation == substation:
+                lst.append(bus)
+
+        return lst
+
     def fuse_devices(self) -> List[INJECTION_DEVICE_TYPES]:
         """
         Fuse all the different devices in a node to a single device per node
@@ -1574,10 +1589,11 @@ class MultiCircuit(Assets):
         gen_fuel_rates_matrix: lil_matrix = lil_matrix((nfuel, nelm), dtype=float)
 
         # create associations between generators and fuels
-        for entry in self._generators_fuels:
-            gen_idx = gen_index_dict[entry.generator.idtag]
-            fuel_idx = fuel_index_dict[entry.fuel.idtag]
-            gen_fuel_rates_matrix[fuel_idx, gen_idx] = entry.rate
+        for generator in self.generators:
+            for assoc in generator.fuels:
+                gen_idx = gen_index_dict[generator.idtag]
+                fuel_idx = fuel_index_dict[assoc.api_object.idtag]
+                gen_fuel_rates_matrix[fuel_idx, gen_idx] = assoc.value
 
         return gen_fuel_rates_matrix.tocsc()
 
@@ -1595,17 +1611,18 @@ class MultiCircuit(Assets):
         gen_emissions_rates_matrix: lil_matrix = lil_matrix((nemissions, nelm), dtype=float)
 
         # create associations between generators and emissions
-        for entry in self._generators_emissions:
-            gen_idx = gen_index_dict[entry.generator.idtag]
-            em_idx = em_index_dict[entry.emission.idtag]
-            gen_emissions_rates_matrix[em_idx, gen_idx] = entry.rate
+        for generator in self.generators:
+            for assoc in generator.emissions:
+                gen_idx = gen_index_dict[generator.idtag]
+                em_idx = em_index_dict[assoc.api_object.idtag]
+                gen_emissions_rates_matrix[em_idx, gen_idx] = assoc.value
 
         return gen_emissions_rates_matrix.tocsc()
 
     def get_technology_connectivity_matrix(self) -> csc_matrix:
         """
         Get the technology connectivity matrix with relation to the generators
-        should be used to get the generatio per technology by: Tech_mat x Pgen
+        should be used to get the generation per technology by: Tech_mat x Pgen
         :return: CSC sparse matrix (n_tech, n_gen)
         """
         ntech = len(self._technologies)
@@ -1616,28 +1633,31 @@ class MultiCircuit(Assets):
         gen_tech_proportions_matrix: lil_matrix = lil_matrix((ntech, nelm), dtype=int)
 
         # create associations between generators and technologies
-        for i, entry in enumerate(self._generators_technologies):
-            gen_idx = gen_index_dict[entry.generator.idtag]
-            tech_idx = tech_index_dict[entry.technology.idtag]
-            gen_tech_proportions_matrix[tech_idx, gen_idx] = entry.proportion
+        for generator in self.generators:
+            for assoc in generator.fuels:
+                gen_idx = gen_index_dict[generator.idtag]
+                tech_idx = tech_index_dict[assoc.api_object.idtag]
+                gen_tech_proportions_matrix[tech_idx, gen_idx] = assoc.value
 
         return gen_tech_proportions_matrix.tocsc()
 
-    def set_investments_status(self, investments_list: List[dev.Investment], status: bool,
-                               all_elemnts_dict: Union[None, dict[str, EditableDevice]] = None) -> None:
+    def set_investments_status(self,
+                               investments_list: List[dev.Investment],
+                               status: bool,
+                               all_elements_dict: Union[None, dict[str, EditableDevice]] = None) -> None:
         """
-        Set the active (and active profile) status of a list of investmensts' objects
+        Set the active (and active profile) status of a list of investments' objects
         :param investments_list: list of investments
-        :param status: status to set in the internal strctures
-        :param all_elemnts_dict: Dictionary of all elemets (idtag -> object), if None if is computed
+        :param status: status to set in the internal structures
+        :param all_elements_dict: Dictionary of all elements (idtag -> object), if None if is computed
         """
 
-        if all_elemnts_dict is None:
-            all_elemnts_dict = self.get_all_elements_dict()
+        if all_elements_dict is None:
+            all_elements_dict = self.get_all_elements_dict()
 
         for inv in investments_list:
             device_idtag = inv.device_idtag
-            device = all_elemnts_dict[device_idtag]
+            device = all_elements_dict[device_idtag]
 
             if hasattr(device, 'active'):
                 device.active = status
@@ -2106,28 +2126,20 @@ class MultiCircuit(Assets):
                             device=elm.idtag,
                             device_class=elm.device_type.value)
 
-    def clean_technologies(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+    def clean_technologies(self) -> None:
         """
-        Clean the investments and investment groups
-        :param all_dev:
-        :param logger: Logger
+        Clean the technology associations to deleted technologies
         """
-        elements_to_delete = list()
 
-        # pass 1: detect the "null" contingencies
-        for elm_lst in [self._generators_emissions,
-                        self._generators_fuels,
-                        self._generators_technologies]:
-            for elm in elm_lst:
-                if elm.generator not in all_dev.keys():
-                    elements_to_delete.append(elm)
+        for elm_list in self.get_injection_devices_lists():
+            for elm in elm_list:
+                to_del = list()
+                for assoc in elm.technologies:
+                    if assoc.api_object not in self.technologies:
+                        to_del.append(assoc)
 
-        # pass 2: delete the "null" elements
-        for elm in elements_to_delete:
-            self.delete_element(obj=elm)
-            logger.add_info("Deleted isolated investment",
-                            device=elm.idtag,
-                            device_class=elm.device_type.value)
+                for assoc in to_del:
+                    elm.technologies.remove(assoc)
 
     def clean(self) -> Logger:
         """
@@ -2143,7 +2155,7 @@ class MultiCircuit(Assets):
         self.clean_injections(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)
         self.clean_contingencies(all_dev=all_dev, logger=logger)
         self.clean_investments(all_dev=all_dev, logger=logger)
-        self.clean_technologies(all_dev=all_dev, logger=logger)
+        self.clean_technologies()
 
         return logger
 
@@ -2225,7 +2237,7 @@ class MultiCircuit(Assets):
     def process_topology_at(self,
                             t_idx: Union[int, None] = None,
                             logger: Union[Logger, None] = None,
-                            debug: int = 0) -> tp.TopologyProcessorInfo:
+                            debug: int = 0) -> TopologyProcessorInfo:
         """
         Topology processor finding the Buses that calculate a certain node-breaker topology
         This function fill the bus pointers into the grid object, and adds any new bus required for simulation
@@ -2235,131 +2247,10 @@ class MultiCircuit(Assets):
         :return: TopologyProcessorInfo
         """
 
-        if logger is None:
-            logger = Logger()
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Compose the candidate nodes (buses)
-        # --------------------------------------------------------------------------------------------------------------
-        process_info = tp.TopologyProcessorInfo()
-
-        # traverse connectivity nodes
-        for cn in self.get_connectivity_nodes():
-
-            if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
-                # create a new candidate
-                candidate_bus = dev.Bus(name=f"Candidate from {cn.name}",
-                                        code=cn.code,  # for soft checking
-                                        Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
-                                        )
-
-                cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
-                process_info.add_new_candidate(candidate_bus)
-            else:
-                # pick the default candidate
-                candidate_bus = cn.default_bus
-                # candidate_bus.code = cn.code  # for soft checking
-
-            # register
-            process_info.add_candidate(candidate_bus)
-            process_info.cn_to_candidate[cn] = candidate_bus
-
-        nbus_candidate = process_info.candidate_number()
-        bus_active = process_info.get_candidate_active(t_idx=t_idx)
-
-        # get a list of all branches
-        all_branches = self.get_switches() + self.get_branches()
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Create the connectivity matrices
-        # --------------------------------------------------------------------------------------------------------------
-        nbr = len(all_branches)
-
-        # declare the matrices
-        Cf = lil_matrix((nbr, nbus_candidate))
-        Ct = lil_matrix((nbr, nbus_candidate))
-        br_active = np.empty(nbr, dtype=int)
-
-        # fill matrices approprietly
-        for i, elm in enumerate(all_branches):
-
-            if elm.device_type == DeviceType.SwitchDevice:
-                br_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
-            else:
-                # non switches form islands, because we want islands to be
-                # the set of candidates to fuse into one
-                br_active[i] = 0
-
-            # if elm.cn_from is not None and elm.cn_to is not None:
-            #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
-            #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
-            if br_active[i]:  # avoid adding zeros
-                f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
-                Cf[i, f] = br_active[i]
-                Ct[i, t] = br_active[i]
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Compose the adjacency matrix from the connectivity information
-        # --------------------------------------------------------------------------------------------------------------
-        A = tp.get_adjacency_matrix(C_branch_bus_f=Cf.tocsc(),
-                                    C_branch_bus_t=Ct.tocsc(),
-                                    branch_active=br_active,
-                                    bus_active=bus_active)
-
-        if debug >= 2:
-            candidate_names = process_info.get_candidate_names()
-            br_names = [br.name for br in all_branches]
-            C = Cf + Ct
-            df = pd.DataFrame(data=C.toarray(), columns=candidate_names, index=br_names)
-            print(df.replace(to_replace=0.0, value="-"))
-
-            print("A:")
-
-            df = pd.DataFrame(data=A.toarray(), columns=candidate_names, index=candidate_names)
-            print(df.replace(to_replace=0.0, value="-"))
-            print()
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Perform the topology search, this will find candidate buses that reduce to be the same bus
-        # --------------------------------------------------------------------------------------------------------------
-        islands = tp.find_islands(adj=A, active=bus_active)  # each island is finally a single calculation element
-
-        if debug >= 1:
-            for i, island in enumerate(islands):
-                print(f"island {i}:", island)
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Generate auxiliary structures that derive from the topology results
-        # --------------------------------------------------------------------------------------------------------------
-        final_buses = process_info.apply_results(islands=islands)
-
-        # --------------------------------------------------------------------------------------------------------------
-        # Apply the results to the grid object
-        # --------------------------------------------------------------------------------------------------------------
-
-        # Add any extra bus that may arise from the calculation
-        grid_buses_set = {b for b in self.get_buses()}
-        for bus_device in final_buses:
-            if bus_device not in grid_buses_set:
-                self.add_bus(bus_device)
-                if logger:
-                    logger.add_info("Bus added to grid", device=bus_device.name)
-
-        # map the buses to the branches from their connectivity nodes
-        for i, elm in enumerate(all_branches):
-            if elm.cn_from is not None:
-                elm.set_bus_from_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_from))
-
-            if elm.cn_to is not None:
-                elm.set_bus_to_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn_to))
-
-        for dev_lst in self.get_injection_devices_lists():
-            for elm in dev_lst:
-                if elm.cn is not None:
-                    elm.set_bus_at(t_idx=t_idx, val=process_info.get_final_bus(elm.cn))
-
-        # return the TopologyProcessorInfo
-        return process_info
+        return process_grid_topology_at(grid=self,
+                                        t_idx=t_idx,
+                                        logger=logger,
+                                        debug=debug)
 
     def split_line(self,
                    original_line: Union[dev.Line],

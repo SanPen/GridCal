@@ -26,7 +26,7 @@ from PySide6 import QtCore, QtWidgets
 from GridCal.Gui.messages import error_msg
 from GridCalEngine.basic_structures import DateVec
 from GridCal.Gui.SolarPowerWizard.gui import Ui_MainWindow
-from GridCal.Gui.GuiFunctions import PandasModel
+from GridCal.Gui.pandas_model import PandasModel
 
 
 def get_pv_lib_weather_df(time_array: DateVec, latitude, longitude, peak_power) -> Tuple[bool, pd.DataFrame]:

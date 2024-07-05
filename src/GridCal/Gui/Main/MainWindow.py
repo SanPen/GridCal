@@ -719,6 +719,55 @@ class Ui_mainWindow(object):
         self.verticalLayout_20.addWidget(self.frame_9)
 
         self.tabWidget_5.addTab(self.tab_15, icon48, "")
+        self.tab_2 = QWidget()
+        self.tab_2.setObjectName(u"tab_2")
+        self.verticalLayout_11 = QVBoxLayout(self.tab_2)
+        self.verticalLayout_11.setObjectName(u"verticalLayout_11")
+        self.verticalLayout_11.setContentsMargins(0, 6, 8, 6)
+        self.frame_17 = QFrame(self.tab_2)
+        self.frame_17.setObjectName(u"frame_17")
+        self.frame_17.setMaximumSize(QSize(16777215, 16777215))
+        self.frame_17.setFrameShape(QFrame.NoFrame)
+        self.frame_17.setFrameShadow(QFrame.Plain)
+        self.horizontalLayout_9 = QHBoxLayout(self.frame_17)
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
+        self.associationsComboBox = QComboBox(self.frame_17)
+        self.associationsComboBox.setObjectName(u"associationsComboBox")
+        self.associationsComboBox.setMinimumSize(QSize(250, 0))
+
+        self.horizontalLayout_9.addWidget(self.associationsComboBox)
+
+        self.association_units_label = QLabel(self.frame_17)
+        self.association_units_label.setObjectName(u"association_units_label")
+
+        self.horizontalLayout_9.addWidget(self.association_units_label)
+
+        self.horizontalSpacer_8 = QSpacerItem(794, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_9.addItem(self.horizontalSpacer_8)
+
+
+        self.verticalLayout_11.addWidget(self.frame_17)
+
+        self.frame_20 = QFrame(self.tab_2)
+        self.frame_20.setObjectName(u"frame_20")
+        self.frame_20.setFrameShape(QFrame.NoFrame)
+        self.frame_20.setFrameShadow(QFrame.Raised)
+        self.verticalLayout_14 = QVBoxLayout(self.frame_20)
+        self.verticalLayout_14.setObjectName(u"verticalLayout_14")
+        self.verticalLayout_14.setContentsMargins(0, 0, 0, 0)
+        self.associationsTableView = QTableView(self.frame_20)
+        self.associationsTableView.setObjectName(u"associationsTableView")
+
+        self.verticalLayout_14.addWidget(self.associationsTableView)
+
+
+        self.verticalLayout_11.addWidget(self.frame_20)
+
+        icon77 = QIcon()
+        icon77.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_5.addTab(self.tab_2, icon77, "")
         self.tab_16 = QWidget()
         self.tab_16.setObjectName(u"tab_16")
         self.verticalLayout_42 = QVBoxLayout(self.tab_16)
@@ -733,7 +782,7 @@ class Ui_mainWindow(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.device_type_magnitude_comboBox = QComboBox(self.frame)
         self.device_type_magnitude_comboBox.setObjectName(u"device_type_magnitude_comboBox")
-        self.device_type_magnitude_comboBox.setMinimumSize(QSize(160, 0))
+        self.device_type_magnitude_comboBox.setMinimumSize(QSize(250, 0))
 
         self.horizontalLayout.addWidget(self.device_type_magnitude_comboBox)
 
@@ -745,26 +794,26 @@ class Ui_mainWindow(object):
 
         self.delete_profiles_structure_pushButton = QPushButton(self.frame)
         self.delete_profiles_structure_pushButton.setObjectName(u"delete_profiles_structure_pushButton")
-        icon77 = QIcon()
-        icon77.addFile(u":/Icons/icons/new (delete).svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.delete_profiles_structure_pushButton.setIcon(icon77)
+        icon78 = QIcon()
+        icon78.addFile(u":/Icons/icons/new (delete).svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.delete_profiles_structure_pushButton.setIcon(icon78)
 
         self.horizontalLayout.addWidget(self.delete_profiles_structure_pushButton)
 
         self.edit_profiles_pushButton = QPushButton(self.frame)
         self.edit_profiles_pushButton.setObjectName(u"edit_profiles_pushButton")
-        icon78 = QIcon()
-        icon78.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.edit_profiles_pushButton.setIcon(icon78)
+        icon79 = QIcon()
+        icon79.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.edit_profiles_pushButton.setIcon(icon79)
         self.edit_profiles_pushButton.setFlat(False)
 
         self.horizontalLayout.addWidget(self.edit_profiles_pushButton)
 
         self.edit_profiles_from_models_pushButton = QPushButton(self.frame)
         self.edit_profiles_from_models_pushButton.setObjectName(u"edit_profiles_from_models_pushButton")
-        icon79 = QIcon()
-        icon79.addFile(u":/Icons/icons/import_models.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.edit_profiles_from_models_pushButton.setIcon(icon79)
+        icon80 = QIcon()
+        icon80.addFile(u":/Icons/icons/import_models.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.edit_profiles_from_models_pushButton.setIcon(icon80)
         self.edit_profiles_from_models_pushButton.setFlat(False)
 
         self.horizontalLayout.addWidget(self.edit_profiles_from_models_pushButton)
@@ -775,9 +824,9 @@ class Ui_mainWindow(object):
 
         self.plot_time_series_pushButton = QPushButton(self.frame)
         self.plot_time_series_pushButton.setObjectName(u"plot_time_series_pushButton")
-        icon80 = QIcon()
-        icon80.addFile(u":/Icons/icons/plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.plot_time_series_pushButton.setIcon(icon80)
+        icon81 = QIcon()
+        icon81.addFile(u":/Icons/icons/plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.plot_time_series_pushButton.setIcon(icon81)
 
         self.horizontalLayout.addWidget(self.plot_time_series_pushButton)
 
@@ -801,25 +850,25 @@ class Ui_mainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.copy_profile_pushButton = QPushButton(self.frame_12)
         self.copy_profile_pushButton.setObjectName(u"copy_profile_pushButton")
-        icon81 = QIcon()
-        icon81.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.copy_profile_pushButton.setIcon(icon81)
+        icon82 = QIcon()
+        icon82.addFile(u":/Icons/icons/copy.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.copy_profile_pushButton.setIcon(icon82)
 
         self.horizontalLayout_4.addWidget(self.copy_profile_pushButton)
 
         self.paste_profiles_pushButton = QPushButton(self.frame_12)
         self.paste_profiles_pushButton.setObjectName(u"paste_profiles_pushButton")
-        icon82 = QIcon()
-        icon82.addFile(u":/Icons/icons/paste.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.paste_profiles_pushButton.setIcon(icon82)
+        icon83 = QIcon()
+        icon83.addFile(u":/Icons/icons/paste.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.paste_profiles_pushButton.setIcon(icon83)
 
         self.horizontalLayout_4.addWidget(self.paste_profiles_pushButton)
 
         self.set_linear_combination_profile_pushButton = QPushButton(self.frame_12)
         self.set_linear_combination_profile_pushButton.setObjectName(u"set_linear_combination_profile_pushButton")
-        icon83 = QIcon()
-        icon83.addFile(u":/Icons/icons/copy2right.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.set_linear_combination_profile_pushButton.setIcon(icon83)
+        icon84 = QIcon()
+        icon84.addFile(u":/Icons/icons/copy2right.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.set_linear_combination_profile_pushButton.setIcon(icon84)
 
         self.horizontalLayout_4.addWidget(self.set_linear_combination_profile_pushButton)
 
@@ -847,25 +896,25 @@ class Ui_mainWindow(object):
 
         self.profile_multiply_pushButton = QPushButton(self.frame_12)
         self.profile_multiply_pushButton.setObjectName(u"profile_multiply_pushButton")
-        icon84 = QIcon()
-        icon84.addFile(u":/Icons/icons/multiply.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.profile_multiply_pushButton.setIcon(icon84)
+        icon85 = QIcon()
+        icon85.addFile(u":/Icons/icons/multiply.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.profile_multiply_pushButton.setIcon(icon85)
 
         self.horizontalLayout_4.addWidget(self.profile_multiply_pushButton)
 
         self.profile_divide_pushButton = QPushButton(self.frame_12)
         self.profile_divide_pushButton.setObjectName(u"profile_divide_pushButton")
-        icon85 = QIcon()
-        icon85.addFile(u":/Icons/icons/divide.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.profile_divide_pushButton.setIcon(icon85)
+        icon86 = QIcon()
+        icon86.addFile(u":/Icons/icons/divide.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.profile_divide_pushButton.setIcon(icon86)
 
         self.horizontalLayout_4.addWidget(self.profile_divide_pushButton)
 
         self.set_profile_value_pushButton = QPushButton(self.frame_12)
         self.set_profile_value_pushButton.setObjectName(u"set_profile_value_pushButton")
-        icon86 = QIcon()
-        icon86.addFile(u":/Icons/icons/copy2up.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.set_profile_value_pushButton.setIcon(icon86)
+        icon87 = QIcon()
+        icon87.addFile(u":/Icons/icons/copy2up.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.set_profile_value_pushButton.setIcon(icon87)
 
         self.horizontalLayout_4.addWidget(self.set_profile_value_pushButton)
 
@@ -880,9 +929,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_42.addWidget(self.frame_12)
 
-        icon87 = QIcon()
-        icon87.addFile(u":/Icons/icons/time_series.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_5.addTab(self.tab_16, icon87, "")
+        icon88 = QIcon()
+        icon88.addFile(u":/Icons/icons/time_series.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_5.addTab(self.tab_16, icon88, "")
 
         self.verticalLayout_26.addWidget(self.tabWidget_5)
 
@@ -914,9 +963,9 @@ class Ui_mainWindow(object):
         self.compute_simulation_data_pushButton = QPushButton(self.frame_28)
         self.compute_simulation_data_pushButton.setObjectName(u"compute_simulation_data_pushButton")
         self.compute_simulation_data_pushButton.setMaximumSize(QSize(32, 16777215))
-        icon88 = QIcon()
-        icon88.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.compute_simulation_data_pushButton.setIcon(icon88)
+        icon89 = QIcon()
+        icon89.addFile(u":/Icons/icons/calculator.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.compute_simulation_data_pushButton.setIcon(icon89)
 
         self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 0, 0, 1, 1)
 
@@ -956,23 +1005,23 @@ class Ui_mainWindow(object):
 
         self.copyArraysToNumpyButton = QPushButton(self.frame_29)
         self.copyArraysToNumpyButton.setObjectName(u"copyArraysToNumpyButton")
-        icon89 = QIcon()
-        icon89.addFile(u":/Icons/icons/array.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.copyArraysToNumpyButton.setIcon(icon89)
+        icon90 = QIcon()
+        icon90.addFile(u":/Icons/icons/array.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.copyArraysToNumpyButton.setIcon(icon90)
 
         self.gridLayout_23.addWidget(self.copyArraysToNumpyButton, 0, 1, 1, 1)
 
         self.plotArraysButton = QPushButton(self.frame_29)
         self.plotArraysButton.setObjectName(u"plotArraysButton")
         self.plotArraysButton.setMinimumSize(QSize(32, 0))
-        self.plotArraysButton.setIcon(icon80)
+        self.plotArraysButton.setIcon(icon81)
 
         self.gridLayout_23.addWidget(self.plotArraysButton, 0, 6, 1, 1)
 
         self.copyArraysButton = QPushButton(self.frame_29)
         self.copyArraysButton.setObjectName(u"copyArraysButton")
         self.copyArraysButton.setMinimumSize(QSize(32, 0))
-        self.copyArraysButton.setIcon(icon81)
+        self.copyArraysButton.setIcon(icon82)
 
         self.gridLayout_23.addWidget(self.copyArraysButton, 0, 2, 1, 1)
 
@@ -980,9 +1029,9 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_7.addWidget(self.simulationDataSplitter)
 
-        icon90 = QIcon()
-        icon90.addFile(u":/Icons/icons/spmat.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_3.addTab(self.compiledArraysTab, icon90, "")
+        icon91 = QIcon()
+        icon91.addFile(u":/Icons/icons/spmat.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_3.addTab(self.compiledArraysTab, icon91, "")
         self.commentsTab = QWidget()
         self.commentsTab.setObjectName(u"commentsTab")
         self.verticalLayout_18 = QVBoxLayout(self.commentsTab)
@@ -992,9 +1041,9 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_18.addWidget(self.comments_textEdit)
 
-        icon91 = QIcon()
-        icon91.addFile(u":/Icons/icons/edit.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_3.addTab(self.commentsTab, icon91, "")
+        icon92 = QIcon()
+        icon92.addFile(u":/Icons/icons/edit.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_3.addTab(self.commentsTab, icon92, "")
 
         self.verticalLayout_9.addWidget(self.tabWidget_3)
 
@@ -1237,37 +1286,37 @@ class Ui_mainWindow(object):
 
         self.results_traspose_checkBox = QCheckBox(self.frame_8)
         self.results_traspose_checkBox.setObjectName(u"results_traspose_checkBox")
-        icon92 = QIcon()
-        icon92.addFile(u":/Icons/icons/transpose.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.results_traspose_checkBox.setIcon(icon92)
+        icon93 = QIcon()
+        icon93.addFile(u":/Icons/icons/transpose.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.results_traspose_checkBox.setIcon(icon93)
 
         self.horizontalLayout_2.addWidget(self.results_traspose_checkBox)
 
         self.results_as_cdf_checkBox = QCheckBox(self.frame_8)
         self.results_as_cdf_checkBox.setObjectName(u"results_as_cdf_checkBox")
-        icon93 = QIcon()
-        icon93.addFile(u":/Icons/icons/cdf.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.results_as_cdf_checkBox.setIcon(icon93)
+        icon94 = QIcon()
+        icon94.addFile(u":/Icons/icons/cdf.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.results_as_cdf_checkBox.setIcon(icon94)
 
         self.horizontalLayout_2.addWidget(self.results_as_cdf_checkBox)
 
         self.results_as_abs_checkBox = QCheckBox(self.frame_8)
         self.results_as_abs_checkBox.setObjectName(u"results_as_abs_checkBox")
-        icon94 = QIcon()
-        icon94.addFile(u":/Icons/icons/abs.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.results_as_abs_checkBox.setIcon(icon94)
+        icon95 = QIcon()
+        icon95.addFile(u":/Icons/icons/abs.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.results_as_abs_checkBox.setIcon(icon95)
 
         self.horizontalLayout_2.addWidget(self.results_as_abs_checkBox)
 
         self.copy_results_pushButton = QPushButton(self.frame_8)
         self.copy_results_pushButton.setObjectName(u"copy_results_pushButton")
-        self.copy_results_pushButton.setIcon(icon81)
+        self.copy_results_pushButton.setIcon(icon82)
 
         self.horizontalLayout_2.addWidget(self.copy_results_pushButton)
 
         self.copy_numpy_button = QPushButton(self.frame_8)
         self.copy_numpy_button.setObjectName(u"copy_numpy_button")
-        self.copy_numpy_button.setIcon(icon89)
+        self.copy_numpy_button.setIcon(icon90)
 
         self.horizontalLayout_2.addWidget(self.copy_numpy_button)
 
@@ -1279,7 +1328,7 @@ class Ui_mainWindow(object):
 
         self.plot_data_pushButton = QPushButton(self.frame_8)
         self.plot_data_pushButton.setObjectName(u"plot_data_pushButton")
-        self.plot_data_pushButton.setIcon(icon80)
+        self.plot_data_pushButton.setIcon(icon81)
 
         self.horizontalLayout_2.addWidget(self.plot_data_pushButton)
 
@@ -1289,7 +1338,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_40.addWidget(self.frame_5)
 
-        self.tabWidget_4.addTab(self.tab_7, icon89, "")
+        self.tabWidget_4.addTab(self.tab_7, icon90, "")
         self.tab_14 = QWidget()
         self.tab_14.setObjectName(u"tab_14")
         self.verticalLayout_41 = QVBoxLayout(self.tab_14)
@@ -1329,7 +1378,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_13.addWidget(self.frame_33)
 
-        self.tabWidget.addTab(self.ResultsTab, icon80, "")
+        self.tabWidget.addTab(self.ResultsTab, icon81, "")
         self.main_console_tab = QWidget()
         self.main_console_tab.setObjectName(u"main_console_tab")
         self.verticalLayout_22 = QVBoxLayout(self.main_console_tab)
@@ -1388,9 +1437,9 @@ class Ui_mainWindow(object):
 
         self.runSourceCodeButton = QPushButton(self.frame_55)
         self.runSourceCodeButton.setObjectName(u"runSourceCodeButton")
-        icon95 = QIcon()
-        icon95.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.runSourceCodeButton.setIcon(icon95)
+        icon96 = QIcon()
+        icon96.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.runSourceCodeButton.setIcon(icon96)
 
         self.horizontalLayout_3.addWidget(self.runSourceCodeButton)
 
@@ -1425,9 +1474,9 @@ class Ui_mainWindow(object):
         self.verticalLayout_33 = QVBoxLayout(self.pythonConsoleTab)
         self.verticalLayout_33.setObjectName(u"verticalLayout_33")
         self.verticalLayout_33.setContentsMargins(0, 0, 0, 0)
-        icon96 = QIcon()
-        icon96.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_2.addTab(self.pythonConsoleTab, icon96, "")
+        icon97 = QIcon()
+        icon97.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_2.addTab(self.pythonConsoleTab, icon97, "")
         self.sourceCodeTab = QWidget()
         self.sourceCodeTab.setObjectName(u"sourceCodeTab")
         self.verticalLayout_39 = QVBoxLayout(self.sourceCodeTab)
@@ -1451,7 +1500,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_22.addWidget(self.frame_10)
 
-        self.tabWidget.addTab(self.main_console_tab, icon96, "")
+        self.tabWidget.addTab(self.main_console_tab, icon97, "")
         self.SettingsTab = QWidget()
         self.SettingsTab.setObjectName(u"SettingsTab")
         self.gridLayout_8 = QGridLayout(self.SettingsTab)
@@ -2589,9 +2638,7 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.frame_40)
 
-        icon97 = QIcon()
-        icon97.addFile(u":/Icons/icons/area_transfer.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.settings_tabWidget.addTab(self.transfer_tab, icon97, "")
+        self.settings_tabWidget.addTab(self.transfer_tab, icon77, "")
         self.contingencies_tab = QWidget()
         self.contingencies_tab.setObjectName(u"contingencies_tab")
         self.horizontalLayout_42 = QHBoxLayout(self.contingencies_tab)
@@ -3481,13 +3528,10 @@ class Ui_mainWindow(object):
         self.gridLayout = QGridLayout(self.frame_58)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(-1, 0, -1, -1)
-        self.max_branch_size_spinBox = QSpinBox(self.frame_58)
-        self.max_branch_size_spinBox.setObjectName(u"max_branch_size_spinBox")
-        self.max_branch_size_spinBox.setMinimum(5)
-        self.max_branch_size_spinBox.setMaximum(10000)
-        self.max_branch_size_spinBox.setValue(20)
+        self.label_14 = QLabel(self.frame_58)
+        self.label_14.setObjectName(u"label_14")
 
-        self.gridLayout.addWidget(self.max_branch_size_spinBox, 12, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_14, 11, 0, 1, 1)
 
         self.label_56 = QLabel(self.frame_58)
         self.label_56.setObjectName(u"label_56")
@@ -3503,29 +3547,30 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.label_56, 5, 0, 1, 1)
 
-        self.max_node_size_spinBox = QSpinBox(self.frame_58)
-        self.max_node_size_spinBox.setObjectName(u"max_node_size_spinBox")
-        self.max_node_size_spinBox.setMinimum(20)
-        self.max_node_size_spinBox.setMaximum(10000)
-        self.max_node_size_spinBox.setValue(40)
+        self.label_43 = QLabel(self.frame_58)
+        self.label_43.setObjectName(u"label_43")
 
-        self.gridLayout.addWidget(self.max_node_size_spinBox, 7, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_43, 2, 0, 1, 1)
 
         self.label_112 = QLabel(self.frame_58)
         self.label_112.setObjectName(u"label_112")
 
         self.gridLayout.addWidget(self.label_112, 8, 0, 1, 1)
 
-        self.label_43 = QLabel(self.frame_58)
-        self.label_43.setObjectName(u"label_43")
+        self.label_15 = QLabel(self.frame_58)
+        self.label_15.setObjectName(u"label_15")
 
-        self.gridLayout.addWidget(self.label_43, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.label_15, 13, 0, 1, 1)
 
-        self.branch_width_based_on_flow_checkBox = QCheckBox(self.frame_58)
-        self.branch_width_based_on_flow_checkBox.setObjectName(u"branch_width_based_on_flow_checkBox")
-        self.branch_width_based_on_flow_checkBox.setChecked(False)
+        self.label_113 = QLabel(self.frame_58)
+        self.label_113.setObjectName(u"label_113")
 
-        self.gridLayout.addWidget(self.branch_width_based_on_flow_checkBox, 13, 0, 1, 2)
+        self.gridLayout.addWidget(self.label_113, 4, 0, 1, 1)
+
+        self.palette_comboBox = QComboBox(self.frame_58)
+        self.palette_comboBox.setObjectName(u"palette_comboBox")
+
+        self.gridLayout.addWidget(self.palette_comboBox, 3, 0, 1, 2)
 
         self.label_9 = QLabel(self.frame_58)
         self.label_9.setObjectName(u"label_9")
@@ -3565,18 +3610,6 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.frame_74, 0, 0, 1, 1)
 
-        self.label_15 = QLabel(self.frame_58)
-        self.label_15.setObjectName(u"label_15")
-
-        self.gridLayout.addWidget(self.label_15, 12, 0, 1, 1)
-
-        self.min_branch_size_spinBox = QSpinBox(self.frame_58)
-        self.min_branch_size_spinBox.setObjectName(u"min_branch_size_spinBox")
-        self.min_branch_size_spinBox.setMinimum(5)
-        self.min_branch_size_spinBox.setMaximum(10000)
-
-        self.gridLayout.addWidget(self.min_branch_size_spinBox, 11, 1, 1, 1)
-
         self.label_54 = QLabel(self.frame_58)
         self.label_54.setObjectName(u"label_54")
         palette39 = QPalette()
@@ -3589,36 +3622,54 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.label_54, 9, 0, 1, 1)
 
-        self.min_node_size_spinBox = QSpinBox(self.frame_58)
-        self.min_node_size_spinBox.setObjectName(u"min_node_size_spinBox")
-        self.min_node_size_spinBox.setMinimum(20)
-        self.min_node_size_spinBox.setMaximum(10000)
+        self.branch_width_based_on_flow_checkBox = QCheckBox(self.frame_58)
+        self.branch_width_based_on_flow_checkBox.setObjectName(u"branch_width_based_on_flow_checkBox")
+        self.branch_width_based_on_flow_checkBox.setChecked(False)
 
-        self.gridLayout.addWidget(self.min_node_size_spinBox, 6, 1, 1, 1)
+        self.gridLayout.addWidget(self.branch_width_based_on_flow_checkBox, 14, 0, 1, 2)
 
         self.label = QLabel(self.frame_58)
         self.label.setObjectName(u"label")
 
         self.gridLayout.addWidget(self.label, 6, 0, 1, 1)
 
-        self.palette_comboBox = QComboBox(self.frame_58)
-        self.palette_comboBox.setObjectName(u"palette_comboBox")
-
-        self.gridLayout.addWidget(self.palette_comboBox, 3, 0, 1, 2)
-
         self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout.addItem(self.verticalSpacer_4, 14, 0, 1, 1)
+        self.gridLayout.addItem(self.verticalSpacer_4, 15, 0, 1, 1)
 
-        self.label_113 = QLabel(self.frame_58)
-        self.label_113.setObjectName(u"label_113")
+        self.min_branch_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.min_branch_size_spinBox.setObjectName(u"min_branch_size_spinBox")
+        self.min_branch_size_spinBox.setDecimals(1)
+        self.min_branch_size_spinBox.setSingleStep(0.100000000000000)
+        self.min_branch_size_spinBox.setValue(0.500000000000000)
 
-        self.gridLayout.addWidget(self.label_113, 4, 0, 1, 1)
+        self.gridLayout.addWidget(self.min_branch_size_spinBox, 11, 1, 1, 1)
 
-        self.label_14 = QLabel(self.frame_58)
-        self.label_14.setObjectName(u"label_14")
+        self.max_branch_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.max_branch_size_spinBox.setObjectName(u"max_branch_size_spinBox")
+        self.max_branch_size_spinBox.setDecimals(1)
+        self.max_branch_size_spinBox.setSingleStep(0.100000000000000)
+        self.max_branch_size_spinBox.setValue(20.000000000000000)
 
-        self.gridLayout.addWidget(self.label_14, 11, 0, 1, 1)
+        self.gridLayout.addWidget(self.max_branch_size_spinBox, 13, 1, 1, 1)
+
+        self.min_node_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.min_node_size_spinBox.setObjectName(u"min_node_size_spinBox")
+        self.min_node_size_spinBox.setDecimals(1)
+        self.min_node_size_spinBox.setMinimum(0.100000000000000)
+        self.min_node_size_spinBox.setSingleStep(0.100000000000000)
+        self.min_node_size_spinBox.setValue(20.000000000000000)
+
+        self.gridLayout.addWidget(self.min_node_size_spinBox, 6, 1, 1, 1)
+
+        self.max_node_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.max_node_size_spinBox.setObjectName(u"max_node_size_spinBox")
+        self.max_node_size_spinBox.setDecimals(1)
+        self.max_node_size_spinBox.setMinimum(0.100000000000000)
+        self.max_node_size_spinBox.setSingleStep(0.100000000000000)
+        self.max_node_size_spinBox.setValue(40.000000000000000)
+
+        self.gridLayout.addWidget(self.max_node_size_spinBox, 7, 1, 1, 1)
 
 
         self.horizontalLayout_39.addWidget(self.frame_58)
@@ -4717,6 +4768,8 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.delete_selected_objects_pushButton.setText("")
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_15), QCoreApplication.translate("mainWindow", u"Objects", None))
+        self.association_units_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_2), QCoreApplication.translate("mainWindow", u"Associations", None))
 #if QT_CONFIG(tooltip)
         self.device_type_magnitude_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Magnitude with profile", None))
 #endif // QT_CONFIG(tooltip)
@@ -5323,18 +5376,18 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_76.setText("")
         self.label_49.setText(QCoreApplication.translate("mainWindow", u"Draw", None))
+        self.label_14.setText(QCoreApplication.translate("mainWindow", u"Min. size", None))
         self.label_56.setText(QCoreApplication.translate("mainWindow", u"Nodes", None))
-        self.label_112.setText("")
         self.label_43.setText(QCoreApplication.translate("mainWindow", u"Palette", None))
-        self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
+        self.label_112.setText("")
+        self.label_15.setText(QCoreApplication.translate("mainWindow", u"Max. size", None))
+        self.label_113.setText("")
         self.label_9.setText(QCoreApplication.translate("mainWindow", u"Max. size", None))
         self.label_110.setText("")
         self.label_111.setText(QCoreApplication.translate("mainWindow", u"Schematic", None))
-        self.label_15.setText(QCoreApplication.translate("mainWindow", u"Max. size", None))
         self.label_54.setText(QCoreApplication.translate("mainWindow", u"Branches", None))
+        self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
         self.label.setText(QCoreApplication.translate("mainWindow", u"Min. size", None))
-        self.label_113.setText("")
-        self.label_14.setText(QCoreApplication.translate("mainWindow", u"Min. size", None))
         self.label_114.setText("")
         self.label_99.setText("")
         self.label_100.setText(QCoreApplication.translate("mainWindow", u"Map", None))

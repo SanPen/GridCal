@@ -17,7 +17,6 @@
 import numpy as np
 from typing import Dict, List, Tuple, Union
 import GridCalEngine.IO.cim.cgmes.cgmes_enums as cgmes_enums
-from GridCalEngine.Devices import LineLocations
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
@@ -51,6 +50,11 @@ class CnLookup:
         self.fill(cgmes_model=cgmes_model)
 
     def fill(self, cgmes_model: CgmesCircuit):
+        """
+
+        :param cgmes_model:
+        :return:
+        """
         bb_tpe = cgmes_model.cgmes_assets.class_dict.get("BusbarSection", None)
 
         if bb_tpe is not None:
@@ -162,9 +166,6 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
                              value=e.ConductingEquipment,
                              expected_value='object')
     return device_to_terminal_dict
-
-
-
 
 
 def find_connections(cgmes_elm: Base,
@@ -378,7 +379,6 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -456,7 +456,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: Logger object
     """
     # add generation technologies
@@ -532,7 +531,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 code=cgmes_elm.description,
                                                 name=cgmes_elm.name,
                                                 active=True,
-                                                technology=technology,
                                                 Snom=cgmes_elm.ratedS,
                                                 P=-cgmes_elm.p,
                                                 Pmin=cgmes_elm.GeneratingUnit.minOperatingP,
@@ -549,10 +547,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                     gcdev_model.add_generator(bus=calc_node, api_obj=gcdev_elm, cn=cn)
 
                     if technology:
-                        gen_tech = gcdev.GeneratorTechnology(name=gcdev_elm.name + "_" + technology.name,
-                                                             generator=gcdev_elm,
-                                                             technology=technology)
-                        gcdev_model.add_generator_technology(gen_tech)
+                        gcdev_elm.technologies.append(gcdev.Association(api_object=technology, value=1.0))
                         # gcdev_model.add_generator_fuel()
                 else:
                     logger.add_error(msg='SynchronousMachine has no generating unit',
@@ -582,7 +577,6 @@ def get_gcdev_external_grids(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger:
     """
     # convert loads
@@ -1014,7 +1008,6 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
     :param calc_node_dict: Dict[str, gcdev.Bus]
     :param cn_dict: Dict[str, gcdev.ConnectivityNode]
     :param device_to_terminal_dict: Dict[str, Terminal]
-    :param cn_look_up: CnLookup
     :param logger: DataLogger
     :param Sbase: system base power in MVA
     :return: None
@@ -1064,7 +1057,8 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                 else:
                     op_rate = 9999  # Corrected
 
-                if (cgmes_elm.ratedCurrent is not None and cgmes_elm.ratedCurrent != 0.0
+                if (cgmes_elm.ratedCurrent is not None
+                        and cgmes_elm.ratedCurrent != 0.0
                         and cgmes_elm.BaseVoltage is not None):  # TODO
                     rated_current = np.round(
                         (cgmes_elm.ratedCurrent / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
@@ -1131,7 +1125,7 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
                 name=cgmes_elm.name,
                 idtag=cgmes_elm.uuid,
                 code=cgmes_elm.description,
-                latitude=latitude,     # later from GL profile/Location class
+                latitude=latitude,  # later from GL profile/Location class
                 longitude=longitude
             )
 
@@ -1226,8 +1220,8 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                 cn = cn_look_up.get_busbar_cn(bb_id=cgmes_elm.uuid)
                 bus = cn_look_up.get_busbar_bus(bb_id=cgmes_elm.uuid)
 
-                # if bus and cn:
-                #     cn.default_bus = bus
+                if bus and cn:
+                    cn.default_bus = bus
 
                 gcdev_elm = gcdev.BusBar(
                     name=cgmes_elm.name,

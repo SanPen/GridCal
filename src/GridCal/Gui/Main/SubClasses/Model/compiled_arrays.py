@@ -19,7 +19,7 @@ from PySide6 import QtCore
 from matplotlib import pyplot as plt
 
 from GridCalEngine.enumerations import EngineType
-import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.Main.SubClasses.Server.server import ServerMain
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
@@ -65,7 +65,7 @@ class CompiledArraysMain(ServerMain):
 
             df = self.calculation_inputs_to_display[i].get_structure(elm_type)
 
-            mdl = gf.PandasModel(df)
+            mdl = PandasModel(df)
 
             self.ui.simulationDataStructureTableView.setModel(mdl)
 

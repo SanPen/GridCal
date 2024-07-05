@@ -25,16 +25,23 @@ import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
 from typing import List, Dict
-from GridCal.Gui.GuiFunctions import PandasModel, get_list_model
+from GridCal.Gui.pandas_model import PandasModel
+from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.ProfilesInput.profiles_from_data_gui import Ui_Dialog
 from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 
 
 class MultiplierType(Enum):
+    """
+    MultiplierType
+    """
     Mult = 1
 
 
-class Association:
+class ProfileAssociation:
+    """
+    ProfileAssociation
+    """
 
     def __init__(self, name, code, scale=1, multiplier=1, profile_name=''):
         """
@@ -67,48 +74,110 @@ class Association:
             return ''
 
 
-class Associations(QtCore.QAbstractTableModel):
+class ProfileAssociations(QtCore.QAbstractTableModel):
+    """
+    ProfileAssociations
+    """
 
     def __init__(self):
         QtCore.QAbstractTableModel.__init__(self)
 
-        self.__values: List[Association] = list()
+        self.__values: List[ProfileAssociation] = list()
 
         self.__headers = ['Name', 'Code', 'Profile', 'Scale', 'Multiplier']
 
-    def append(self, val: Association):
+    def append(self, val: ProfileAssociation):
+        """
+
+        :param val:
+        :return:
+        """
         self.__values.append(val)
 
     def set_profile_at(self, idx, value):
+        """
+
+        :param idx:
+        :param value:
+        :return:
+        """
         self.__values[idx].profile_name = value
 
     def set_scale_at(self, idx, value):
+        """
+
+        :param idx:
+        :param value:
+        :return:
+        """
         self.__values[idx].scale = value
 
     def set_multiplier_at(self, idx, value):
+        """
+
+        :param idx:
+        :param value:
+        :return:
+        """
         self.__values[idx].multiplier = value
 
     def get_profile_at(self, idx):
+        """
+
+        :param idx:
+        :return:
+        """
         return self.__values[idx].profile_name
 
     def get_scale_at(self, idx):
+        """
+
+        :param idx:
+        :return:
+        """
         return self.__values[idx].scale
 
     def get_multiplier_at(self, idx):
+        """
+
+        :param idx:
+        :return:
+        """
         return self.__values[idx].multiplier
 
     def clear_at(self, idx):
+        """
+
+        :param idx:
+        :return:
+        """
         self.__values[idx].profile_name = ''
         self.__values[idx].scale = 1
         self.__values[idx].multiplier = 1
 
     def rowCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self.__values)
 
     def columnCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self.__headers)
 
     def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 # return self.formatter(self._data[index.row(), index.column()])
@@ -119,6 +188,13 @@ class Associations(QtCore.QAbstractTableModel):
                    section: int,
                    orientation: QtCore.Qt.Orientation,
                    role=QtCore.Qt.ItemDataRole.DisplayRole):
+        """
+
+        :param section:
+        :param orientation:
+        :param role:
+        :return:
+        """
 
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
@@ -129,6 +205,9 @@ class Associations(QtCore.QAbstractTableModel):
 
 
 class StringSubstitutions(Enum):
+    """
+    StringSubstitutions
+    """
     PSSeBranchName = 'N1_NME1_V1_N2_NME2_V2_CKT -> N1_N2_CKT'
     PSSeBusGenerator = 'N1_NME1_V1 -> N1_1'
     PSSeBusLoad = 'N -> N_1'
@@ -239,9 +318,9 @@ class ProfileInputGUI(QtWidgets.QDialog):
         # initialize associations
         self.also_reactive_power = False
 
-        self.associations = Associations()
+        self.associations = ProfileAssociations()
         for elm in list_of_objects:
-            self.associations.append(Association(elm.name, elm.code))
+            self.associations.append(ProfileAssociation(elm.name, elm.code))
         self.display_associations()
 
         self.ui.splitter.setStretchFactor(0, 3)
@@ -368,7 +447,8 @@ class ProfileInputGUI(QtWidgets.QDialog):
                         try:
                             a = float(self.original_data_frame.values[i, j])
                         except Exception as e2:
-                            print(str(e2) + ': not a float value (', i, j, '):{}'.format(self.original_data_frame.values[i, j]))
+                            print(str(e2) + ': not a float value (', i, j,
+                                  '):{}'.format(self.original_data_frame.values[i, j]))
 
                 self.msg('The format of the data is not recognized. Only int or float values are allowed')
                 return
