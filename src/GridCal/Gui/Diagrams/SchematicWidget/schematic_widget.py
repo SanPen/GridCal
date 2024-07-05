@@ -488,12 +488,15 @@ class SchematicWidget(BaseDiagramWidget):
                                    diagram=diagram,
                                    library_model=SchematicLibraryModel(),
                                    time_index=time_index,
-                                   use_flow_based_width=use_flow_based_width,
-                                   min_branch_width=min_branch_width,
-                                   max_branch_width=max_branch_width,
-                                   min_bus_width=min_bus_width,
-                                   max_bus_width=max_bus_width,
                                    call_delete_db_element_func=call_delete_db_element_func)
+
+        self.set_size_constraints(
+            use_flow_based_width=use_flow_based_width,
+            min_branch_width=min_branch_width,
+            max_branch_width=max_branch_width,
+            min_bus_width=min_bus_width,
+            max_bus_width=max_bus_width,
+        )
 
         # create all the schematic objects and replace the existing ones
         self.diagram_scene = SchematicScene(parent=self)  # scene to add to the QGraphicsView

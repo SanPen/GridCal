@@ -234,12 +234,15 @@ class GridMapWidget(BaseDiagramWidget):
                                                       latitude=latitude) if diagram is None else diagram,
                                    library_model=MapLibraryModel(),
                                    time_index=None,
-                                   use_flow_based_width=use_flow_based_width,
-                                   min_branch_width=min_branch_width,
-                                   max_branch_width=max_branch_width,
-                                   min_bus_width=min_bus_width,
-                                   max_bus_width=max_bus_width,
                                    call_delete_db_element_func=call_delete_db_element_func)
+
+        self.set_size_constraints(
+            use_flow_based_width=use_flow_based_width,
+            min_branch_width=min_branch_width,
+            max_branch_width=max_branch_width,
+            min_bus_width=min_bus_width,
+            max_bus_width=max_bus_width,
+        )
 
         # declare the map
         self.map = MapWidget(parent=self,
