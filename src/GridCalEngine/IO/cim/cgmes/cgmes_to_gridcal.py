@@ -514,11 +514,11 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                         pf = np.cos(np.arctan(cgmes_elm.q / cgmes_elm.p))
                     else:
                         pf = 0.8
-                        logger.add_error(msg='GeneratingUnit p is 0.',
-                                         device=cgmes_elm.rdfid,
-                                         device_class=cgmes_elm.tpe,
-                                         device_property="p",
-                                         value='0')
+                        logger.add_warning(msg='GeneratingUnit p is 0.',
+                                           device=cgmes_elm.rdfid,
+                                           device_class=cgmes_elm.tpe,
+                                           device_property="p",
+                                           value='0')
 
                     technology = tech_dict.get(cgmes_elm.GeneratingUnit.tpe, None)
                     if cgmes_elm.GeneratingUnit.tpe == "WindGeneratingUnit":

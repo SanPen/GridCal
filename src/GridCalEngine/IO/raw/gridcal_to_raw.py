@@ -25,6 +25,7 @@ from GridCalEngine.IO.raw.devices import (RawArea, RawZone, RawBus, RawLoad, Raw
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.basic_structures import Logger
 
 
 def get_area(area: dev.Area, i: int) -> RawArea:
@@ -55,21 +56,21 @@ def get_zone(zone: dev.Zone, i: int) -> RawZone:
 
 def get_psse_bus(bus: dev.Bus,
                  area_dict: Dict[dev.Area, int],
-                 zones_dict: Dict[dev.Zone, int]) -> RawBus:
+                 zones_dict: Dict[dev.Zone, int],
+                 suggested_psse_number: int) -> RawBus:
     """
 
     :param bus:
     :param area_dict:
     :param zones_dict:
+    :param suggested_psse_number:
     :return:
     """
     psse_bus = RawBus()
     psse_bus.NAME = str(bus.name)
     psse_bus.BASKV = bus.Vnom
 
-    # TODO: Can it be modified on the UI?
-    #  Does the "I" need to be generated as an automatically incrementing number?
-    psse_bus.I = int(bus.code)
+    psse_bus.I = suggested_psse_number
 
     psse_bus.EVLO = bus.Vmin
     psse_bus.EVHI = bus.Vmax
@@ -378,9 +379,71 @@ class RawCounter:
         :param grid: MultiCircuit
         """
         n = grid.get_bus_number()
-        self.bus_int_dict = {bus: i + 1 for i, bus in enumerate(grid.get_buses())}
-        self.bus_dev_count_dict = {bus: 0 for bus in grid.get_buses()}
-        self.ckt_counter = lil_matrix((n + 1, n + 1), dtype=int)
+        self._bus_int_dict = {bus: i + 1 for i, bus in enumerate(grid.get_buses())}
+        self._bus_2_psseI_dict = dict()
+        self._bus_dev_count_dict = {bus: 0 for bus in grid.get_buses()}
+        self._ckt_counter = lil_matrix((n + 1, n + 1), dtype=int)
+
+        self._max_bus_number = 1
+
+    @property
+    def psse_numbers_dict(self) -> Dict[dev.Bus, int]:
+        """
+
+        :return:
+        """
+        return self._bus_2_psseI_dict
+
+    def register_psse_number(self, bus: dev.Bus, psse_I: int):
+        """
+
+        :param bus:
+        :param psse_I:
+        :return:
+        """
+        self._max_bus_number = max(self._max_bus_number, psse_I)
+
+        if psse_I in self._bus_2_psseI_dict.keys():
+            print("Repeated PSSe bus!!!")
+
+        self._bus_2_psseI_dict[bus] = psse_I
+
+    def get_next_psse_number(self):
+        """
+
+        :return:
+        """
+        return self._max_bus_number + 1
+
+    def get_suggested_psse_number(self, bus: dev.Bus, logger: Logger) -> int:
+        """
+
+        :param bus:
+        :param logger:
+        :return:
+        """
+        try:
+            psse_I = int(bus.code)
+
+            if psse_I in self._bus_2_psseI_dict.keys():
+                psse_I_pre = psse_I
+                # repeated number, get a new one
+                psse_I = self.get_next_psse_number()
+                logger.add_error("Repeated PSSe number",
+                                 device=bus.name,
+                                 value=psse_I_pre,
+                                 expected_value=psse_I)
+
+        except ValueError:
+            psse_I = self.get_next_psse_number()
+            logger.add_error("Invalid PSSe number stored in bus.code",
+                             device=bus.name,
+                             value=str(bus.code),
+                             expected_value=psse_I)
+
+        self.register_psse_number(bus, psse_I)
+
+        return psse_I
 
     def get_id(self, bus: dev.Bus) -> int:
         """
@@ -388,8 +451,8 @@ class RawCounter:
         :param bus: Bus
         :return: integer
         """
-        id_number = self.bus_dev_count_dict[bus] + 1
-        self.bus_dev_count_dict[bus] = id_number
+        id_number = self._bus_dev_count_dict[bus] + 1
+        self._bus_dev_count_dict[bus] = id_number
         return id_number
 
     def get_ckt(self, branch: BRANCH_TYPES) -> int:
@@ -398,19 +461,20 @@ class RawCounter:
         :param branch: some branch
         :return: CKT
         """
-        i = self.bus_int_dict[branch.bus_from]
-        j = self.bus_int_dict[branch.bus_to]
-        ckt = self.ckt_counter[i, j]
+        i = self._bus_int_dict[branch.bus_from]
+        j = self._bus_int_dict[branch.bus_to]
+        ckt = self._ckt_counter[i, j]
         ckt2 = ckt + 1
-        self.ckt_counter[i, j] = ckt2
-        self.ckt_counter[j, i] = ckt2
+        self._ckt_counter[i, j] = ckt2
+        self._ckt_counter[j, i] = ckt2
         return ckt2
 
 
-def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
+def gridcal_to_raw(grid: MultiCircuit, logger: Logger) -> PsseCircuit:
     """
     Convert MultiCircuit to PSSeCircuit
     :param grid: MultiCircuit
+    :param logger: Logger
     :return: PsseCircuit
     """
     psse_circuit = PsseCircuit()
@@ -429,58 +493,62 @@ def gridcal_to_raw(grid: MultiCircuit) -> PsseCircuit:
         psse_circuit.zones.append(get_zone(zone=zone, i=i + 1))
         zones_dict[zone] = i + 1
 
-    for bus in grid.buses:
-        psse_circuit.buses.append(get_psse_bus(bus, area_dict, zones_dict))
+    for i, bus in enumerate(grid.buses):
+        psse_bus = get_psse_bus(bus=bus,
+                                area_dict=area_dict,
+                                zones_dict=zones_dict,
+                                suggested_psse_number=counter.get_suggested_psse_number(bus=bus, logger=logger))
+        psse_circuit.buses.append(psse_bus)
 
     for load in grid.loads:
         psse_circuit.loads.append(get_psse_load(load=load,
-                                                bus_dict=counter.bus_int_dict,
+                                                bus_dict=counter.psse_numbers_dict,
                                                 id_number=counter.get_id(load.bus)))
 
     for load in grid.external_grids:
         psse_circuit.loads.append(get_psse_load_from_external_grid(load=load,
-                                                                   bus_dict=counter.bus_int_dict,
+                                                                   bus_dict=counter.psse_numbers_dict,
                                                                    id_number=counter.get_id(load.bus)))
 
     for generator in grid.generators:
         psse_circuit.generators.append(get_psse_generator(generator=generator,
-                                                          bus_dict=counter.bus_int_dict,
+                                                          bus_dict=counter.psse_numbers_dict,
                                                           id_number=counter.get_id(generator.bus)))
 
     for shunt in grid.shunts:
         psse_circuit.fixed_shunts.append(get_psse_fixed_shunt(shunt=shunt,
-                                                              bus_dict=counter.bus_int_dict,
+                                                              bus_dict=counter.psse_numbers_dict,
                                                               id_number=counter.get_id(shunt.bus)))
 
     for controllable_shunt in grid.controllable_shunts:
         psse_circuit.switched_shunts.append(get_psse_switched_shunt(shunt=controllable_shunt,
-                                                                    bus_dict=counter.bus_int_dict))
+                                                                    bus_dict=counter.psse_numbers_dict))
 
     for line in grid.lines:
         psse_circuit.branches.append(get_psse_branch(branch=line,
-                                                     bus_dict=counter.bus_int_dict,
+                                                     bus_dict=counter.psse_numbers_dict,
                                                      ckt=counter.get_ckt(branch=line)))
 
     for transformer in grid.transformers2w:
         psse_circuit.transformers.append(get_psse_transformer2w(transformer=transformer,
-                                                                bus_dict=counter.bus_int_dict,
+                                                                bus_dict=counter.psse_numbers_dict,
                                                                 ckt=counter.get_ckt(branch=transformer)))
 
     for transformer in grid.transformers3w:
         psse_circuit.transformers.append(get_psse_transformer3w(transformer=transformer,
-                                                                bus_dict=counter.bus_int_dict))
+                                                                bus_dict=counter.psse_numbers_dict))
 
     # TODO: Decide whether to convert hvdc_lines into vsc_dc_lines or two_terminal_dc_lines.
     for hvdc_line in grid.hvdc_lines:
         psse_circuit.vsc_dc_lines.append(get_vsc_dc_line(hvdc_line,
-                                                         bus_dict=counter.bus_int_dict))
+                                                         bus_dict=counter.psse_numbers_dict))
 
     for hvdc_line in grid.hvdc_lines:
         psse_circuit.two_terminal_dc_lines.append(get_psse_two_terminal_dc_line(hvdc_line,
-                                                                                bus_dict=counter.bus_int_dict))
+                                                                                bus_dict=counter.psse_numbers_dict))
 
     for upfc_device in grid.upfc_devices:
         psse_circuit.facts.append(get_psse_facts(upfc_device,
-                                                 bus_dict=counter.bus_int_dict))
+                                                 bus_dict=counter.psse_numbers_dict))
 
     return psse_circuit

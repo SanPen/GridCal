@@ -125,10 +125,25 @@ class BaseDiagram:
     Diagram
     """
 
-    def __init__(self, idtag: Union[str, None], name: str, diagram_type: DiagramType = DiagramType):
+    def __init__(self,
+                 idtag: Union[str, None],
+                 name: str,
+                 diagram_type: DiagramType = DiagramType,
+                 use_flow_based_width: bool = False,
+                 min_branch_width: int = 5,
+                 max_branch_width=5,
+                 min_bus_width=20,
+                 max_bus_width=20):
         """
 
-        :param name: Diagram name
+        :param idtag:
+        :param name:
+        :param diagram_type:
+        :param use_flow_based_width:
+        :param min_branch_width:
+        :param max_branch_width:
+        :param min_bus_width:
+        :param max_bus_width:
         """
         if idtag is None:
             self.idtag = uuid.uuid4().hex
@@ -141,6 +156,13 @@ class BaseDiagram:
         self.data: Dict[str, PointsGroup] = dict()
 
         self.diagram_type = diagram_type
+
+        # sizes
+        self.use_flow_based_width: bool = use_flow_based_width
+        self.min_branch_width: float = min_branch_width
+        self.max_branch_width: float = max_branch_width
+        self.min_bus_width: float = min_bus_width
+        self.max_bus_width: float = max_bus_width
 
     def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
@@ -219,6 +241,11 @@ class BaseDiagram:
         return {'type': self.diagram_type.value,
                 'idtag': self.idtag,
                 'name': self.name,
+                "use_flow_based_width": self.use_flow_based_width,
+                "min_branch_width": self.min_branch_width,
+                "max_branch_width": self.max_branch_width,
+                "min_bus_width": self.min_bus_width,
+                "max_bus_width": self.max_bus_width,
                 'data': data}
 
     def parse_data(self,
@@ -235,13 +262,18 @@ class BaseDiagram:
 
         self.name = data['name']
 
+        self.use_flow_based_width: bool = data.get("use_flow_based_width", False)
+        self.min_branch_width: float = data.get("min_branch_width", 5)
+        self.max_branch_width: float = data.get("max_branch_width", 5)
+        self.min_bus_width: float = data.get("min_bus_width", 20)
+        self.max_bus_width: float = data.get("max_bus_width", 20)
+
         if data['type'] == 'bus-branch':
             self.diagram_type = DiagramType.Schematic
         else:
             self.diagram_type = DiagramType(data['type'])
 
         for category, loc_dict in data['data'].items():
-
             points_group = PointsGroup(name=category)
             points_group.parse_data(data=loc_dict,
                                     obj_dict=obj_dict.get(category, dict()),
@@ -356,3 +388,29 @@ class BaseDiagram:
                 min_y = min(min_y, y)
 
         return min_x, max_x, min_y, max_y
+
+    def set_size_constraints(self,
+                             use_flow_based_width: bool = False,
+                             min_branch_width: int = 5,
+                             max_branch_width=5,
+                             min_bus_width=20,
+                             max_bus_width=20):
+        """
+        Set the size constraints
+        :param use_flow_based_width:
+        :param min_branch_width:
+        :param max_branch_width:
+        :param min_bus_width:
+        :param max_bus_width:
+        """
+        self.use_flow_based_width: bool = use_flow_based_width
+        self.min_branch_width: float = min_branch_width
+        self.max_branch_width: float = max_branch_width
+        self.min_bus_width: float = min_bus_width
+        self.max_bus_width: float = max_bus_width
+
+        # print(f"{self.use_flow_based_width}, "
+        #       f"{self.min_branch_width}, "
+        #       f"{self.max_branch_width}, "
+        #       f"{self.min_bus_width}, "
+        #       f"{self.max_bus_width}")

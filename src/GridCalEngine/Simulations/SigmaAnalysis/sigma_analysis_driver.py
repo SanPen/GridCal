@@ -129,6 +129,11 @@ class SigmaAnalysisResults:  # TODO: inherit from ResultsTemplate
         ax.set_ylabel(r'$\sigma_{im}$')
 
         def update_annotation(ind):
+            """
+
+            :param ind:
+            :return:
+            """
             pos = sc.get_offsets()[ind["ind"][0]]
             annot.xy = pos
             text = "{}".format("\n".join([names[n] for n in ind["ind"]]))
