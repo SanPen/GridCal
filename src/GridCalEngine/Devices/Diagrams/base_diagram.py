@@ -25,6 +25,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import DiagramType, DeviceType
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.enumerations import Colormaps
 
 
 class PointsGroup:
@@ -103,7 +104,7 @@ class PointsGroup:
                 # locations with no API object are not created
                 logger.add_error("Diagram location could not find API object",
                                  device_class=category,
-                                 device=idtag,)
+                                 device=idtag, )
             else:
                 if 'x' in location:
                     self.locations[idtag] = GraphicLocation(x=location['x'],
@@ -133,7 +134,9 @@ class BaseDiagram:
                  min_branch_width: int = 5,
                  max_branch_width=5,
                  min_bus_width=20,
-                 max_bus_width=20):
+                 max_bus_width=20,
+                 palette: Colormaps = Colormaps.GridCal,
+                 default_bus_voltage: float = 10):
         """
 
         :param idtag:
@@ -144,6 +147,8 @@ class BaseDiagram:
         :param max_branch_width:
         :param min_bus_width:
         :param max_bus_width:
+        :param palette:
+        :param default_bus_voltage:
         """
         if idtag is None:
             self.idtag = uuid.uuid4().hex
@@ -155,7 +160,8 @@ class BaseDiagram:
         # device_type: {device uuid: {x, y, h, w, r}}
         self.data: Dict[str, PointsGroup] = dict()
 
-        self.diagram_type = diagram_type
+        # diagram type: Map or Schematic, ...
+        self.diagram_type: DiagramType = diagram_type
 
         # sizes
         self.use_flow_based_width: bool = use_flow_based_width
@@ -163,6 +169,9 @@ class BaseDiagram:
         self.max_branch_width: float = max_branch_width
         self.min_bus_width: float = min_bus_width
         self.max_bus_width: float = max_bus_width
+
+        self.palette = palette
+        self.default_bus_voltage: float = default_bus_voltage
 
     def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
@@ -231,7 +240,7 @@ class BaseDiagram:
 
         return group
 
-    def get_properties_dict(self) -> Dict[str, Union[str, int, float, Dict[str,  Union[GraphicLocation, MapLocation]]]]:
+    def get_properties_dict(self) -> Dict[str, Union[str, int, float, Dict[str, Union[GraphicLocation, MapLocation]]]]:
         """
         get the properties dictionary to save
         :return: dictionary to serialize
@@ -246,6 +255,8 @@ class BaseDiagram:
                 "max_branch_width": self.max_branch_width,
                 "min_bus_width": self.min_bus_width,
                 "max_bus_width": self.max_bus_width,
+                "palette": self.palette.value,
+                "default_bus_voltage": self.default_bus_voltage,
                 'data': data}
 
     def parse_data(self,
@@ -267,6 +278,8 @@ class BaseDiagram:
         self.max_branch_width: float = data.get("max_branch_width", 5)
         self.min_bus_width: float = data.get("min_bus_width", 20)
         self.max_bus_width: float = data.get("max_bus_width", 20)
+        self.palette = data.get("palette", Colormaps.GridCal)
+        self.default_bus_voltage = data.get("default_bus_voltage", 10)
 
         if data['type'] == 'bus-branch':
             self.diagram_type = DiagramType.Schematic
@@ -357,7 +370,6 @@ class BaseDiagram:
                     t = graph_node_dictionary.get(branch.target.idtag, None)
 
                     if f is not None and t is not None:
-
                         w = 0.01
 
                         tuples.append((f, t, w))

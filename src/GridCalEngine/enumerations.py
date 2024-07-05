@@ -1795,3 +1795,34 @@ class ContingencyFilteringMethods(Enum):
             return ContingencyFilteringMethods[s]
         except KeyError:
             return s
+
+
+class Colormaps(Enum):
+    GridCal = 'GridCal'
+    TSO = 'TSO'  # -1, 1
+    TSO2 = 'TSO 2'  # -1, 1
+    SCADA = 'SCADA'  # -1, 1
+    Heatmap = 'Heatmap'  # 0, 1
+    Blues = 'Blue'  # 0, 1
+    Greens = 'Green'  # 0, 1
+    Blue2Gray = 'Blue to gray'  # 0, 1
+    Green2Red = 'Green to red'  # -1, 1
+    Red2Blue = 'Red to blue'  # -1, 1
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return Colormaps[s]
+        except KeyError:
+            return s

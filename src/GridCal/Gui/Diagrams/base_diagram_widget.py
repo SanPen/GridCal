@@ -43,7 +43,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType, SimulationTypes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
-import GridCal.Gui.Visualization.palettes as palettes
+import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.object_model import ObjectsModel
 
@@ -120,8 +120,6 @@ class BaseDiagramWidget(QSplitter):
 
         # diagram to store the objects locations
         self.diagram: Union[SchematicDiagram, MapDiagram] = diagram
-
-
 
         # class to handle the relationships between widgets and API objects
         self.graphics_manager = GraphicsManager()

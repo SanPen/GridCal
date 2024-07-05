@@ -14,20 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from enum import Enum
+from GridCalEngine.enumerations import Colormaps
 
 
-class Colormaps(Enum):
-    GridCal = 'GridCal'
-    TSO = 'TSO'  # -1, 1
-    TSO2 = 'TSO 2'  # -1, 1
-    SCADA = 'SCADA'  # -1, 1
-    Heatmap = 'Heatmap'  # 0, 1
-    Blues = 'Blue'  # 0, 1
-    Greens = 'Green'  # 0, 1
-    Blue2Gray = 'Blue to gray'  # 0, 1
-    Green2Red = 'Green to red'  # -1, 1
-    Red2Blue = 'Red to blue'  # -1, 1
+
 
 
 def tso2_line_palette_bgr(x, warning_lvl=0.9, overload_lvl=1.15):

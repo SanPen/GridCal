@@ -51,7 +51,7 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import Su
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
 import GridCal.Gui.Visualization.visualization as viz
-import GridCal.Gui.Visualization.palettes as palettes
+import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
@@ -815,7 +815,7 @@ class GridMapWidget(BaseDiagramWidget):
         max_zoom = self.map.max_level
         min_zoom = self.map.min_level
         zoom = self.map.zoom_factor
-        scale = self.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
+        scale = self.diagram.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
 
         # rescale lines
         for dev_tpe in [DeviceType.LineDevice,

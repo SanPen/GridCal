@@ -4678,7 +4678,7 @@ class Ui_mainWindow(object):
         self.label_100.setText(QCoreApplication.translate("mainWindow", u"Map", None))
         self.label_118.setText(QCoreApplication.translate("mainWindow", u"Map tile provider", None))
         self.label_156.setText("")
-        self.label_155.setText(QCoreApplication.translate("mainWindow", u"General", None))
+        self.label_155.setText(QCoreApplication.translate("mainWindow", u"Display", None))
         self.label.setText(QCoreApplication.translate("mainWindow", u"Node min. size", None))
         self.min_node_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
         self.label_9.setText(QCoreApplication.translate("mainWindow", u"Node max. size", None))

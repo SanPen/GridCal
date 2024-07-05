@@ -425,8 +425,8 @@ class MapWidget(QWidget):
         # Internal vars
         # -------------------------------------------------------------------------
         # remember the tile source object
-        self.tile_src: Tiles = tile_src
-        self.tile_src.setCallback(self.on_tile_available)
+        self._tile_src: Tiles = tile_src
+        self._tile_src.setCallback(self.on_tile_available)
 
         # the tile coordinates
         self.level: int = start_level
@@ -484,6 +484,27 @@ class MapWidget(QWidget):
         self.GotoLevelAndPosition(level=start_level,
                                   longitude=startLon,
                                   latitude=startLat)
+
+    @property
+    def tile_src(self) -> Tiles:
+        """
+        Get the current tile source
+        :return: Tiles
+        """
+        return self._tile_src
+
+    @tile_src.setter
+    def tile_src(self, tile_src: Tiles):
+        """
+        Set the current tile source
+        :param tile_src: Tiles
+        """
+        self._tile_src: Tiles = tile_src
+        self._tile_src.setCallback(self.on_tile_available)
+
+        self.GotoLevelAndPosition(level=tile_src.min_level,
+                                  longitude=0.0,
+                                  latitude=0.0)
 
     @property
     def max_level(self):

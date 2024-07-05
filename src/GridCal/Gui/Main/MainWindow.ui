@@ -757,7 +757,7 @@
                                 </font>
                                </property>
                                <property name="text">
-                                <string>General</string>
+                                <string>Display</string>
                                </property>
                                <property name="alignment">
                                 <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
