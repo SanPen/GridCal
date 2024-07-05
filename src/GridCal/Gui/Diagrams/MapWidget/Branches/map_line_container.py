@@ -257,46 +257,6 @@ class MapLineContainer(GenericDiagramWidget):
             # draw the segment in the scene
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
-        # diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
-        #
-        # for idx, elm in enumerate(self.api_object.locations.data):
-        #
-        #     if diagram_locations is None:
-        #         # no locations found, use the data from the api object
-        #         # lat = elm.lat
-        #         # lon = elm.long
-        #         pass
-        #     else:
-        #
-        #         # try to get location from the diagram
-        #         diagram_location = diagram_locations.locations.get(elm.idtag, None)
-        #
-        #         if diagram_location is None:
-        #             # no particular location found, use the data from the api object
-        #             # lat = elm.lat
-        #             # lon = elm.long
-        #             pass
-        #         else:
-        #             # Draw only what's on the diagram
-        #             # diagram data found, use it
-        #
-        #             if idx > 0:
-        #                 i1 = idx
-        #                 i2 = idx - 1
-        #                 # Assuming Connector takes (scene, node1, node2) as arguments
-        #                 segment_graphic_object = Segment(first=self.nodes_list[i1],
-        #                                                  second=self.nodes_list[i2])
-        #
-        #                 self.nodes_list[i1].needsUpdateFirst = True
-        #                 self.nodes_list[i2].needsUpdateSecond = True
-        #                 segment_graphic_object.needsUpdate = True
-        #
-        #                 # register the segment in the line
-        #                 self.add_segment(segment=segment_graphic_object)
-        #
-        #                 # draw the segment in the scene
-        #                 self.editor.add_to_scene(graphic_object=segment_graphic_object)
-
         self.update_connectors()
 
     def substation_to(self):

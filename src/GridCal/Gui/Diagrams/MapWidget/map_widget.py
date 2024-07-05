@@ -151,6 +151,8 @@ class MapView(QGraphicsView):
 
         self.selectedItems = list()
 
+
+
     def mousePressEvent(self, event: QMouseEvent):
         """
 
@@ -481,9 +483,11 @@ class MapWidget(QWidget):
         # do a "resize" after this function
         QTimer.singleShot(10, self.resizeEvent)
 
-        self.GotoLevelAndPosition(level=start_level,
-                                  longitude=startLon,
-                                  latitude=startLat)
+        self.GotoLevelAndPosition(level=6,
+                                  longitude=0,
+                                  latitude=40)
+
+
 
     @property
     def max_level(self):
