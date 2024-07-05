@@ -67,8 +67,8 @@ class DiagramsMain(CompiledArraysMain):
         # list of diagrams
         self.diagram_widgets_list: List[ALL_EDITORS] = list()
 
-        # flags
-        self.enable_setting_auto_upgrade = True
+        # flag to avoid circular updating of the display settings when changing diagrams
+        self._enable_setting_auto_upgrade = True
 
         # Declare the map
         palettes_list = [palettes.Colormaps.GridCal,
@@ -1204,13 +1204,13 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.diagramsListView.setCurrentIndex(index)
 
         # set the properties
-        self.enable_setting_auto_upgrade = False
+        self._enable_setting_auto_upgrade = False
         self.ui.branch_width_based_on_flow_checkBox.setChecked(widget.diagram.use_flow_based_width)
         self.ui.min_branch_size_spinBox.setValue(widget.diagram.min_branch_width)
         self.ui.max_branch_size_spinBox.setValue(widget.diagram.max_branch_width)
         self.ui.min_node_size_spinBox.setValue(widget.diagram.min_bus_width)
         self.ui.max_node_size_spinBox.setValue(widget.diagram.max_bus_width)
-        self.enable_setting_auto_upgrade = True
+        self._enable_setting_auto_upgrade = True
 
     def plot_style_change(self):
         """
@@ -1755,7 +1755,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Set the size constraints
         """
-        if self.enable_setting_auto_upgrade:
+        if self._enable_setting_auto_upgrade:
             diagram_widget = self.get_selected_diagram_widget()
 
             if diagram_widget is not None:
