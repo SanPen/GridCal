@@ -409,8 +409,8 @@ class BaseDiagram:
         self.min_bus_width: float = min_bus_width
         self.max_bus_width: float = max_bus_width
 
-        # print(f"{self.use_flow_based_width}, "
-        #       f"{self.min_branch_width}, "
-        #       f"{self.max_branch_width}, "
-        #       f"{self.min_bus_width}, "
-        #       f"{self.max_bus_width}")
+        print(f"{self.use_flow_based_width}, "
+              f"{self.min_branch_width}, "
+              f"{self.max_branch_width}, "
+              f"{self.min_bus_width}, "
+              f"{self.max_bus_width}")

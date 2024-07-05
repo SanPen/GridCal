@@ -207,11 +207,6 @@ class GridMapWidget(BaseDiagramWidget):
                  name: str,
                  circuit: MultiCircuit,
                  diagram: Union[None, MapDiagram] = None,
-                 use_flow_based_width: bool = False,
-                 min_branch_width: int = 5,
-                 max_branch_width=5,
-                 min_bus_width=20,
-                 max_bus_width=20,
                  call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None,
                  call_new_substation_diagram_func: Callable[[Substation], None] = None, ):
         """
@@ -235,14 +230,6 @@ class GridMapWidget(BaseDiagramWidget):
                                    library_model=MapLibraryModel(),
                                    time_index=None,
                                    call_delete_db_element_func=call_delete_db_element_func)
-
-        self.set_size_constraints(
-            use_flow_based_width=use_flow_based_width,
-            min_branch_width=min_branch_width,
-            max_branch_width=max_branch_width,
-            min_bus_width=min_bus_width,
-            max_bus_width=max_bus_width,
-        )
 
         # declare the map
         self.map = MapWidget(parent=self,
