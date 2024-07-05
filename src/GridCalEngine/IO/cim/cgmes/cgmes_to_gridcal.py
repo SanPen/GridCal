@@ -1315,7 +1315,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     get_gcdev_countries(cgmes_model, gc_model)
 
-    # TODO: Assign the community in the buses
     get_gcdev_community(cgmes_model, gc_model)
 
     get_gcdev_substations(cgmes_model, gc_model)
