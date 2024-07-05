@@ -73,7 +73,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
 
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         # self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
-        self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)  # Allow selecting the node
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
@@ -90,7 +90,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.needsUpdate = False
         self.setZValue(0)
 
-    def center_on_substation(self):
+    def center_on_substation(self) -> None:
         """
         Centers the graphic item on the substation
         """
@@ -98,6 +98,16 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         xc = parent_center.x() - self.rect().width() / 2
         yc = parent_center.y() - self.rect().height() / 2
         self.setRect(xc, yc, self.rect().width(), self.rect().height())
+
+    def move_to_xy(self, x: float, y: float):
+        """
+
+        :param x:
+        :param y:
+        :return:
+        """
+        self.setRect(x, y, self.rect().width(), self.rect().height())
+        return x, y
 
     def updateDiagram(self) -> None:
         """
@@ -120,10 +130,9 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         Event handler for mouse move events.
         """
-        super().mouseMoveEvent(event)
+        # super().mouseMoveEvent(event)
         if self.hovered:
-            # self.updatePosition()
-            self.editor.update_connectors()
+            self.parent.mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """

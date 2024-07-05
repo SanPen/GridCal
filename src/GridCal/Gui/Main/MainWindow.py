@@ -1008,6 +1008,7 @@ class Ui_mainWindow(object):
 
         self.dataStructureTableView = QTableView(self.tab_15)
         self.dataStructureTableView.setObjectName(u"dataStructureTableView")
+        self.dataStructureTableView.setFont(font)
 
         self.verticalLayout_20.addWidget(self.dataStructureTableView)
 
@@ -1104,6 +1105,7 @@ class Ui_mainWindow(object):
         self.verticalLayout_14.setContentsMargins(0, 0, 0, 0)
         self.associationsTableView = QTableView(self.frame_20)
         self.associationsTableView.setObjectName(u"associationsTableView")
+        self.associationsTableView.setFont(font)
 
         self.verticalLayout_14.addWidget(self.associationsTableView)
 
@@ -1180,6 +1182,7 @@ class Ui_mainWindow(object):
 
         self.profiles_tableView = QTableView(self.tab_16)
         self.profiles_tableView.setObjectName(u"profiles_tableView")
+        self.profiles_tableView.setFont(font)
         self.profiles_tableView.setLayoutDirection(Qt.LeftToRight)
         self.profiles_tableView.setAlternatingRowColors(True)
         self.profiles_tableView.setSelectionMode(QAbstractItemView.ContiguousSelection)
@@ -1594,6 +1597,7 @@ class Ui_mainWindow(object):
         self.verticalLayout_24.setContentsMargins(0, 0, 8, 8)
         self.resultsTableView = QTableView(self.frame_5)
         self.resultsTableView.setObjectName(u"resultsTableView")
+        self.resultsTableView.setFont(font)
         self.resultsTableView.setAlternatingRowColors(True)
         self.resultsTableView.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.resultsTableView.setSelectionBehavior(QAbstractItemView.SelectItems)
@@ -1689,6 +1693,7 @@ class Ui_mainWindow(object):
         self.verticalLayout_41.setContentsMargins(-1, 6, -1, -1)
         self.resultsLogsTreeView = QTreeView(self.tab_14)
         self.resultsLogsTreeView.setObjectName(u"resultsLogsTreeView")
+        self.resultsLogsTreeView.setFont(font)
         self.resultsLogsTreeView.setFrameShape(QFrame.StyledPanel)
 
         self.verticalLayout_41.addWidget(self.resultsLogsTreeView)

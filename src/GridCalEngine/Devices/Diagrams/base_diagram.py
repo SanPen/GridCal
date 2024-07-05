@@ -164,14 +164,77 @@ class BaseDiagram:
         self.diagram_type: DiagramType = diagram_type
 
         # sizes
-        self.use_flow_based_width: bool = use_flow_based_width
-        self.min_branch_width: float = min_branch_width
-        self.max_branch_width: float = max_branch_width
-        self.min_bus_width: float = min_bus_width
-        self.max_bus_width: float = max_bus_width
+        self._use_flow_based_width: bool = use_flow_based_width
+        self._min_branch_width: float = min_branch_width
+        self._max_branch_width: float = max_branch_width
+        self._min_bus_width: float = min_bus_width
+        self._max_bus_width: float = max_bus_width
 
-        self.palette = palette
-        self.default_bus_voltage: float = default_bus_voltage
+        self._palette = palette
+        self._default_bus_voltage: float = default_bus_voltage
+
+    @property
+    def use_flow_based_width(self) -> bool:
+        return self._use_flow_based_width
+
+    @use_flow_based_width.setter
+    def use_flow_based_width(self, value: bool):
+        self._use_flow_based_width = value
+
+    # min_branch_width property
+    @property
+    def min_branch_width(self) -> float:
+        return self._min_branch_width
+
+    @min_branch_width.setter
+    def min_branch_width(self, value: float):
+        self._min_branch_width = value
+
+    # max_branch_width property
+    @property
+    def max_branch_width(self) -> float:
+        return self._max_branch_width
+
+    @max_branch_width.setter
+    def max_branch_width(self, value: float):
+        self._max_branch_width = value
+
+    # min_bus_width property
+    @property
+    def min_bus_width(self) -> float:
+        return self._min_bus_width
+
+    @min_bus_width.setter
+    def min_bus_width(self, value: float):
+        self._min_bus_width = value
+
+    # max_bus_width property
+    @property
+    def max_bus_width(self) -> float:
+        return self._max_bus_width
+
+    @max_bus_width.setter
+    def max_bus_width(self, value: float):
+        self._max_bus_width = value
+
+    # palette property
+    @property
+    def palette(self) -> Colormaps:
+        return self._palette
+
+    @palette.setter
+    def palette(self, value: Colormaps):
+        assert isinstance(value, Colormaps)
+        self._palette = value
+
+    # default_bus_voltage property
+    @property
+    def default_bus_voltage(self) -> float:
+        return self._default_bus_voltage
+
+    @default_bus_voltage.setter
+    def default_bus_voltage(self, value: float):
+        self._default_bus_voltage = value
 
     def set_point(self, device: ALL_DEV_TYPES, location: Union[GraphicLocation, MapLocation]):
         """
@@ -278,7 +341,7 @@ class BaseDiagram:
         self.max_branch_width: float = data.get("max_branch_width", 5)
         self.min_bus_width: float = data.get("min_bus_width", 20)
         self.max_bus_width: float = data.get("max_bus_width", 20)
-        self.palette = data.get("palette", Colormaps.GridCal)
+        self.palette = Colormaps(data.get("palette", 'GridCal'))
         self.default_bus_voltage = data.get("default_bus_voltage", 10)
 
         if data['type'] == 'bus-branch':

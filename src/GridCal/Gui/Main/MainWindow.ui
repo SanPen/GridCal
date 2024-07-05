@@ -1416,7 +1416,13 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QTableView" name="dataStructureTableView"/>
+                     <widget class="QTableView" name="dataStructureTableView">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
+                     </widget>
                     </item>
                     <item>
                      <widget class="QFrame" name="frame_9">
@@ -1633,7 +1639,13 @@
                         <number>0</number>
                        </property>
                        <item>
-                        <widget class="QTableView" name="associationsTableView"/>
+                        <widget class="QTableView" name="associationsTableView">
+                         <property name="font">
+                          <font>
+                           <pointsize>9</pointsize>
+                          </font>
+                         </property>
+                        </widget>
                        </item>
                       </layout>
                      </widget>
@@ -1789,6 +1801,11 @@
                     </item>
                     <item>
                      <widget class="QTableView" name="profiles_tableView">
+                      <property name="font">
+                       <font>
+                        <pointsize>9</pointsize>
+                       </font>
+                      </property>
                       <property name="layoutDirection">
                        <enum>Qt::LeftToRight</enum>
                       </property>
@@ -2679,6 +2696,11 @@
                    </property>
                    <item>
                     <widget class="QTableView" name="resultsTableView">
+                     <property name="font">
+                      <font>
+                       <pointsize>9</pointsize>
+                      </font>
+                     </property>
                      <property name="alternatingRowColors">
                       <bool>true</bool>
                      </property>
@@ -2878,6 +2900,11 @@
                 </property>
                 <item>
                  <widget class="QTreeView" name="resultsLogsTreeView">
+                  <property name="font">
+                   <font>
+                    <pointsize>9</pointsize>
+                   </font>
+                  </property>
                   <property name="frameShape">
                    <enum>QFrame::StyledPanel</enum>
                   </property>

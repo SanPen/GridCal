@@ -594,18 +594,19 @@ class GridMapWidget(BaseDiagramWidget):
 
         :return:
         """
-        for dev_tpe in [DeviceType.LineDevice,
-                        DeviceType.DCLineDevice,
-                        DeviceType.HVDCLineDevice,
-                        DeviceType.FluidPathDevice]:
-
-            dev_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
-
-            for idtag, graphic_object in dev_dict.items():
-                graphic_object.update_connectors()
-
-            for idtag, graphic_object in dev_dict.items():
-                graphic_object.end_update()
+        # for dev_tpe in [DeviceType.LineDevice,
+        #                 DeviceType.DCLineDevice,
+        #                 DeviceType.HVDCLineDevice,
+        #                 DeviceType.FluidPathDevice]:
+        #
+        #     dev_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
+        #
+        #     for idtag, graphic_object in dev_dict.items():
+        #         graphic_object.update_connectors()
+        #
+        #     for idtag, graphic_object in dev_dict.items():
+        #         graphic_object.end_update()
+        pass
 
     def add_api_substation(self,
                            api_object: Substation,

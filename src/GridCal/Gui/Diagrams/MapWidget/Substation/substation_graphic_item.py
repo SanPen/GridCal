@@ -101,15 +101,20 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         # self.setZValue(1)
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
-    def move_to(self, lat: float, lon: float):
+    def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
         """
 
         :param lat:
         :param lon:
-        :return:
+        :return: x, y
         """
         x, y = self.editor.to_x_y(lat=lat, lon=lon)
         self.setRect(x, y, self.rect().width(), self.rect().height())
+
+        for vl in self.voltage_level_graphics:
+            vl.center_on_substation()
+
+        return x, y
 
     def register_voltage_level(self, vl: VoltageLevelGraphicItem):
         """
@@ -179,7 +184,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
 
-            self.editor.update_connectors()
             self.updateDiagram()  # always update
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
@@ -311,8 +315,8 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                              "Move substation graphics")
 
         if ok:
-            self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)
-            self.editor.update_connectors()
+            x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
+            self.set_callabacks(x, y)
 
     def new_substation_diagram(self):
         """
