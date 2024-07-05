@@ -242,11 +242,11 @@ class GridMapWidget(BaseDiagramWidget):
                              position_callback=self.position_callback)
 
         # Any representation on the map must be done after this Goto Function
-        self.map.GotoLevelAndPosition(level=start_level, longitude=longitude, latitude=latitude)
+        self.map.GotoLevelAndPosition(level=6, longitude=0, latitude=40)
 
-        self.map.startLev = start_level
-        self.map.startLat = latitude
-        self.map.startLon = longitude
+        self.map.startLev = 6
+        self.map.startLat = 0
+        self.map.startLon = 40
 
         # function pointer to call for a new substation diagram
         self.call_new_substation_diagram_func = call_new_substation_diagram_func
