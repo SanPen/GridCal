@@ -193,8 +193,13 @@ class TopologyProcessorInfo:
         :param new_candidate:
         :return:
         """
-        self.candidate_to_int_dict[new_candidate] = len(self.candidates)
-        self.candidates.append(new_candidate)
+        candidate = self.candidate_to_int_dict.get(new_candidate, None)
+        if candidate is None:
+            self.candidate_to_int_dict[new_candidate] = len(self.candidates)
+            self.candidates.append(new_candidate)
+        else:
+            # the candidate was added already
+            pass
 
     def was_added(self, bus: Bus) -> bool:
         """

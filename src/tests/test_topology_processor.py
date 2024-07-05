@@ -1,4 +1,6 @@
 import os
+
+import GridCalEngine.Devices
 from GridCalEngine.api import *
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -279,3 +281,339 @@ def test_topology_NL_microgrid() -> None:
     logger.print()
 
     print()
+
+
+def test_topology_4_nodes_A():
+    """
+    Topology test 4 Node A
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between B0 and B2
+    L2 must be between B0 and a new bus that is not B0, B1 or B2
+    SW1 must be in a self-loop where both buses are B0
+    SW2 must be connected between B2 and the bus to of L2
+    """
+
+    assert l1.bus_from == b0 and l1.bus_to == b2
+    assert l2.bus_from == b0 and l2.bus_to not in [b0, b1, b2]
+    assert sw1.bus_from == b0 and sw1.bus_to == b0
+    assert sw2.bus_from == b2 and sw2.bus_to == l2.bus_to
+
+
+def test_topology_4_nodes_B():
+    """
+    Topology test 4 Node B
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between B0 and B2
+    L2 must be between B0 and B2
+    SW1 must be in a self-loop where both buses are B0
+    SW2 must be in a self-loop where both buses are B2
+    """
+
+    assert l1.bus_from == b0 and l1.bus_to == b2
+    assert l2.bus_from == b0 and l2.bus_to == b2
+    assert sw1.bus_from == b0 and sw1.bus_to == b0
+    assert sw2.bus_from == b2 and sw2.bus_to == b2
+
+
+def test_topology_4_nodes_C():
+    """
+    Topology test 4 Node C
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between B0 and B2
+    L2 must be between B1 and B2
+    SW1 must be between B0 and B1
+    SW2 must be in a self-loop where both buses are B2
+    """
+
+    assert l1.bus_from == b0 and l1.bus_to == b2
+    assert l2.bus_from == b1 and l2.bus_to == b2
+    assert sw1.bus_from == b0 and sw1.bus_to == b1
+    assert sw2.bus_from == b2 and sw2.bus_to == b2
+
+
+def test_topology_4_nodes_D():
+    """
+    Topology test 4 Node D
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=b0))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=b1))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between B0 and B2
+    L2 must be between B1 and a new bus that is not b0, b1, b2 
+    SW1 must be between B0 and B1
+    SW2 must be between B2 and L2 bus_to
+    """
+
+    assert l1.bus_from == b0 and l1.bus_to == b2
+    assert l2.bus_from == b1 and l2.bus_to not in [b0, b1, b2]
+    assert sw1.bus_from == b0 and sw1.bus_to == b1
+    assert sw2.bus_from == b2 and sw2.bus_to == l2.bus_to
+
+
+def test_topology_4_nodes_E():
+    """
+    Topology test 4 Node E
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    # there are buses but some are not used (not referenced by the cn's)
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between a new bus from cn0 and b2
+    L2 must be between a new bus from cn0 and b2
+    SW1 must be in a self loop where both buses are L1.bus_from
+    SW2 must be in a self loop where both buses are L1.bus_to / b2
+    """
+
+    assert l1.bus_from not in [b0, b1] and l1.bus_to == b2
+    assert l2.bus_from == l1.bus_from and l2.bus_to == b2
+    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l1.bus_from
+    assert sw2.bus_from == b2 and sw2.bus_to == b2
+
+
+def test_topology_4_nodes_F():
+    """
+    Topology test 4 Node F
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    # there are buses but some are not used (not referenced by the cn's)
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=True))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between a new bus from cn0 and b2
+    L2 must be between a new bus from cn1 and b2
+    SW1 must be between L1.bus_from and L2.bus_from
+    SW2 must be in a self loop where both buses are b2
+    """
+
+    assert l1.bus_from not in [b0, b1, b2] and l1.bus_to == b2
+    assert l2.bus_from not in [b0, b1, b2] and l2.bus_to == b2
+    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l2.bus_from
+    assert sw2.bus_from == b2 and sw2.bus_to == b2
+
+
+def test_topology_4_nodes_G():
+    """
+    Topology test 4 Node G
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    # there are buses but some are not used (not referenced by the cn's)
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=False))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between a new bus from cn0 and b2
+    L2 must be between a new bus from cn1 and a new bus from cn3 (bb3)
+    SW1 must be between L1.bus_from and L2.bus_from
+    SW2 must be between L1.bus_to and L2.bus_to
+    """
+
+    assert l1.bus_from not in [b0, b1, b2] and l1.bus_to == b2
+    assert l2.bus_from not in [b0, b1, b2] and l2.bus_to not in [b0, b1, b2]
+    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l2.bus_from
+    assert sw2.bus_from == l1.bus_to and sw2.bus_to == l2.bus_to
+
+
+def test_topology_4_nodes_H():
+    """
+    Topology test 4 Node H
+    """
+    grid = MultiCircuit()
+
+    b0 = grid.add_bus(dev.Bus(name="B0"))
+    b1 = grid.add_bus(dev.Bus(name="B1"))
+    b2 = grid.add_bus(dev.Bus(name="B2"))
+
+    # there are buses but some are not used (not referenced by the cn's)
+
+    cn0 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN0", default_bus=None))
+    cn1 = grid.add_connectivity_node(dev.ConnectivityNode(name="CN1", default_bus=None))
+
+    bb3 = grid.add_bus_bar(dev.BusBar(name="BB3"), add_cn=True)
+
+    sw1 = grid.add_switch(dev.Switch(name="SW1", cn_from=cn0, cn_to=cn1, active=True))
+    sw2 = grid.add_switch(dev.Switch(name="SW2", bus_from=b2, cn_to=bb3.cn, active=False))
+
+    l1 = grid.add_line(dev.Line(name="L1", cn_from=cn0, bus_to=b2, x=0.05))
+    l2 = grid.add_line(dev.Line(name="L2", cn_from=cn1, cn_to=bb3.cn, x=0.01))
+
+    grid.add_load(api_obj=dev.Load(P=10), bus=b2)
+    grid.add_generator(api_obj=dev.Generator(P=10), cn=bb3.cn)
+
+    logger = Logger()
+    tp_info = grid.process_topology_at(logger=logger)
+
+    """
+    After processing,
+    L1 must be between a new bus from cn0 and b2
+    L2 must be between a new bus from cn0 and a new bus from cn3 (bb3)
+    SW1 must be between in a self loop at L1.bus_from
+    SW2 must be between L1.bus_to and L2.bus_to
+    """
+
+    assert l1.bus_from not in [b0, b1, b2] and l1.bus_to == b2
+    assert l2.bus_from == l1.bus_from and l2.bus_to not in [b0, b1, b2]
+    assert sw1.bus_from == l1.bus_from and sw1.bus_to == l1.bus_from
+    assert sw2.bus_from == l1.bus_to and sw2.bus_to == l2.bus_to

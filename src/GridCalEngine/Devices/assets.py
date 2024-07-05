@@ -604,6 +604,8 @@ class Assets:
                 obj.create_profiles(self.time_profile)
             self._lines.append(obj)
 
+        return obj
+
     def delete_line(self, obj: dev.Line):
         """
         Delete line
@@ -885,6 +887,8 @@ class Assets:
         if self.time_profile is not None:
             obj.create_profiles(self.time_profile)
         self._switch_devices.append(obj)
+
+        return obj
 
     def delete_switch(self, obj: dev.Switch):
         """
@@ -1261,7 +1265,12 @@ class Assets:
         Add Substation
         :param obj: BusBar object
         """
+        if obj is None:
+            obj = dev.ConnectivityNode(name=f"CN{len(self._connectivity_nodes)}")
+
         self._connectivity_nodes.append(obj)
+
+        return obj
 
     def delete_connectivity_node(self, obj: dev.ConnectivityNode):
         """
@@ -1308,11 +1317,16 @@ class Assets:
         :param obj: BusBar object
         :param add_cn: Add the internal CN of the BusBar?
         """
+        if obj is None:
+            obj = dev.BusBar(name=f"BB{len(self._bus_bars)}")
+
         self._bus_bars.append(obj)
 
         # add the internal connectivity node
         if add_cn:
             self.add_connectivity_node(obj.cn)
+
+        return obj
 
     def delete_bus_bar(self, obj: dev.BusBar):
         """
