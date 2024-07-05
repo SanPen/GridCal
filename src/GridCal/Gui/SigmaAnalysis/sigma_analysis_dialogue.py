@@ -29,8 +29,7 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
     SigmaAnalysisGUI
     """
 
-    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None,
-                 good_coefficients=True):
+    def __init__(self, parent=None, results: SigmaAnalysisResults = None, bus_names=None):
         """
 
         :param parent:
@@ -41,7 +40,7 @@ class SigmaAnalysisGUI(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle('HELM-Sigma analysis dialogue')
 
-        self.results = results
+        self.results: SigmaAnalysisResults = results
 
         if results is not None:
             ax = self.ui.plotwidget.get_axis()
