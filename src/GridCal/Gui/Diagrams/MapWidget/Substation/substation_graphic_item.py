@@ -245,7 +245,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         add_menu_entry(menu=menu,
                        text="ADD node",
-                       icon_path="",
+                       icon_path=":/Icons/icons/divide.svg",
                        function_ptr=self.add_function)
 
         menu.exec_(event.screenPos())

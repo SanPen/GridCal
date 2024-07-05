@@ -324,8 +324,18 @@ class MapLineSegment(QGraphicsLineItem):
 
         if len(self.container.nodes_list) == 0:
             self.container.insert_new_node_at_position(0)
+        elif len(self.container.nodes_list) == 1:
+            if self.second == self.container.substation_to() or self.first == self.container.substation_to():
+                self.container.insert_new_node_at_position(1)
+            else:
+                self.container.insert_new_node_at_position(0)
         else:
-            self.container.insert_new_node_at_position(self.second.index)
+            if self.second == self.container.substation_to() or self.first == self.container.substation_to():
+                self.container.insert_new_node_at_position(len(self.container.nodes_list))
+            elif self.second == self.container.substation_from() or self.first == self.container.substation_from():
+                self.container.insert_new_node_at_position(0)
+            else:
+                self.container.insert_new_node_at_position(self.first.index)
 
         # TODO implement
         # self.editor.split_line(line_graphics=self)

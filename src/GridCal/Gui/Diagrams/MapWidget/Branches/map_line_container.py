@@ -299,6 +299,12 @@ class MapLineContainer(GenericDiagramWidget):
 
         self.update_connectors()
 
+    def substation_to(self):
+        return self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+
+    def substation_from(self):
+        return self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
+
     def insert_new_node_at_position(self, index: int):
         """
         Creates a new node in the list at the given position
@@ -307,7 +313,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
 
         # Check if the index is valid
-        if 1 <= index < len(self.api_object.locations.data):
+        if 1 <= index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 1:
 
             nd1 = self.nodes_list[index]
             nd2 = self.nodes_list[index - 1]
@@ -356,7 +362,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Return the newly created node
             return graphic_obj
 
-        elif index == 0 and len(self.api_object.locations.data) == 0:
+        elif len(self.api_object.locations.data) == 0:
 
             substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
             substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
@@ -375,7 +381,7 @@ class MapLineContainer(GenericDiagramWidget):
                                           idtag="",
                                           code="")
 
-            self.api_object.locations.data.insert(index, new_api_object)
+            self.api_object.locations.data.insert(0, new_api_object)
 
             # Create a new graphical node item
 
@@ -383,19 +389,10 @@ class MapLineContainer(GenericDiagramWidget):
                                                   api_object=new_api_object,
                                                   lat=new_api_object.lat,
                                                   lon=new_api_object.long,
-                                                  index=index)
-
-            idx = 0
-
-            for nod in self.nodes_list:
-
-                if idx >= index:
-                    nod.index = nod.index + 1
-
-                idx = idx + 1
+                                                  index=0)
 
             # Add the node to the nodes list
-            self.nodes_list.insert(index, graphic_obj)
+            self.nodes_list.insert(0, graphic_obj)
 
             graphic_obj.updatePosition()
 
@@ -405,7 +402,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Return the newly created node
             return graphic_obj
 
-        elif 0 == index or index == len(self.api_object.locations.data):
+        elif (0 == index or index >= len(self.api_object.locations.data) - 1):
 
             substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
             substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
@@ -417,7 +414,7 @@ class MapLineContainer(GenericDiagramWidget):
                 nd2 = self.nodes_list[0]
 
             if index >= len(self.nodes_list):
-                nd2 = self.nodes_list[len(self.nodes_list) - 1]
+                nd1 = self.nodes_list[len(self.nodes_list) - 1]
 
             new_lat = ((nd2.lat + nd1.lat) / 2)
             new_long = ((nd2.lon + nd1.lon) / 2)
