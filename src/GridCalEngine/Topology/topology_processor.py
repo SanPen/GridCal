@@ -38,19 +38,38 @@ class TopologyProcessorInfo:
     def __init__(self) -> None:
 
         # list of buses that appear because of connectivity nodes
-        self.new_candidates: List[Bus] = list()
+        self._new_candidates: List[Bus] = list()
 
         # list of final candidate buses for reduction
-        self.candidates: List[Bus] = list()
+        self._candidates: List[Bus] = list()
 
         # map of ConnectivityNodes to candidate Buses
-        self.cn_to_candidate: dict[ConnectivityNode, Bus] = dict()
+        self._cn_to_candidate: dict[ConnectivityNode, Bus] = dict()
 
         # integer position of the candidate bus matching a connectivity node
-        self.candidate_to_int_dict = dict()
+        self._candidate_to_int_dict: Dict[Bus, int] = dict()
+
+        self._br_2_indices_dict: Dict[int, Tuple[int | None, int | None]] = dict()
 
         # map of ConnectivityNodes to final Buses
-        self.cn_to_final_bus: dict[ConnectivityNode, Bus] = dict()
+        self._cn_to_final_bus: dict[ConnectivityNode, Bus] = dict()
+
+    def register_branch_indices(self, k: int, f: int | None, t: int | None) -> None:
+        """
+        Register the branch to its candidate indices
+        :param k: branch index
+        :param f: from candidate index
+        :param t: to candidate index
+        """
+        self._br_2_indices_dict[k] = (f, t)
+
+    def get_branch_registered_indices(self, k: int) -> Tuple[int | None, int | None]:
+        """
+
+        :param k:
+        :return:
+        """
+        return self._br_2_indices_dict[k]
 
     def get_connection_indices(self, elm: BRANCH_TYPES, logger: Logger) -> Tuple[int, int, bool]:
         """
@@ -179,27 +198,28 @@ class TopologyProcessorInfo:
             logger.add_error(msg="No to connection provided!", device=elm.name)
             return -1, -1, False
 
-    def add_new_candidate(self, new_candidate: Bus):
+    def _add_new_candidate(self, new_candidate: Bus):
+        """
+        Add a candidate to the list of buses that has been created during the topology processing
+        :param new_candidate: Bus
+        """
+        self._new_candidates.append(new_candidate)
+
+    def _add_candidate(self, new_candidate: Bus) -> int | None:
         """
 
         :param new_candidate:
         :return:
         """
-        self.new_candidates.append(new_candidate)
-
-    def add_candidate(self, new_candidate: Bus):
-        """
-
-        :param new_candidate:
-        :return:
-        """
-        candidate = self.candidate_to_int_dict.get(new_candidate, None)
-        if candidate is None:
-            self.candidate_to_int_dict[new_candidate] = len(self.candidates)
-            self.candidates.append(new_candidate)
+        idx = self._candidate_to_int_dict.get(new_candidate, None)
+        if idx is None:
+            n = len(self._candidates)
+            self._candidate_to_int_dict[new_candidate] = n
+            self._candidates.append(new_candidate)
+            return n
         else:
             # the candidate was added already
-            pass
+            return idx
 
     def was_added(self, bus: Bus) -> bool:
         """
@@ -207,9 +227,9 @@ class TopologyProcessorInfo:
         :param bus: Bus
         :return: bool
         """
-        return bus in self.candidate_to_int_dict
+        return bus in self._candidate_to_int_dict
 
-    def add_cn(self, cn: ConnectivityNode):
+    def _add_cn(self, cn: ConnectivityNode) -> int | None:
         """
 
         :param cn:
@@ -218,44 +238,80 @@ class TopologyProcessorInfo:
         if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
 
             # create a new candidate bus
-            candidate_bus = Bus(name=f"Candidate from {cn.name}",
-                                code=cn.code,  # for soft checking
-                                Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
-                                )
+            candidate_bus = Bus(
+                name=f"Candidate from {cn.name}",
+                code=cn.code,  # for soft checking
+                Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
+            )
 
             cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
-            self.add_new_candidate(candidate_bus)
+            self._add_new_candidate(candidate_bus)
         else:
             # pick the default candidate
             candidate_bus = cn.default_bus
             # candidate_bus.code = cn.code  # for soft checking
 
         # register
-        if not self.was_added(candidate_bus):
-            self.add_candidate(candidate_bus)
+        idx = self._add_candidate(candidate_bus)
 
-        self.cn_to_candidate[cn] = candidate_bus
+        self._cn_to_candidate[cn] = candidate_bus
 
-    def add_bus_or_cn(self, cn: ConnectivityNode, bus: Bus):
+        return idx
+
+    def add_bus_or_cn(self,
+                      cn: ConnectivityNode | None,
+                      bus: Bus | None,
+                      logger: Logger,
+                      main_dev_name: str) -> None:
         """
-
-        :param cn:
-        :param bus:
-        :return:
+        This function decides if an existing bus is used or a new bus is created from a CN
+        :param cn: ConnectivityNode | None
+        :param bus: Bus | None
+        :param logger: Logger for reporting
+        :param main_dev_name: main device name for reporting
+        :return: None
         """
-        # NOTE: we preffer the CN to the Buses where available
+        # NOTE: we prefer the Buses where available
         if cn is not None:
-            self.add_cn(cn=cn)
+
+            if bus is not None:
+                if cn.default_bus is None:
+                    # there is a hidden association, so we use it
+                    cn.default_bus = bus
+                    idx = self._add_candidate(bus)
+                    self._cn_to_candidate[cn] = bus
+                    logger.add_info(msg=f"Associated bus to cn because there wasn't any association",
+                                    device=cn.name, value=bus.name)
+                elif bus != cn.default_bus:
+                    # ignore the existing cn->bus association, and use the provided bus since it is "more correct"
+                    idx = self._add_candidate(bus)
+                    self._cn_to_candidate[cn] = bus
+                    logger.add_info(msg=f"Wrong CN association",
+                                    device=cn.name, value=cn.default_bus.name, expected_value=bus.name)
+                else:
+                    # the cn.default bus == bus, so we're good
+                    idx = self._add_candidate(bus)
+                    self._cn_to_candidate[cn] = bus
+            else:
+                # there is no bus to be used, create a new candidate
+                idx = self._add_cn(cn=cn)
+
         else:
             if bus is not None:
-                self.add_candidate(bus)
+                idx = self._add_candidate(bus)
+            else:
+                logger.add_info(msg=f"No bus or CN provided",
+                                device=main_dev_name, value="", expected_value="Something")
+                idx = None
+
+        return idx
 
     def candidate_number(self) -> int:
         """
         Number of candidates
         :return: integer
         """
-        return len(self.candidates)
+        return len(self._candidates)
 
     def get_candidate_pos_from_cn(self, cn: ConnectivityNode) -> int:
         """
@@ -263,8 +319,8 @@ class TopologyProcessorInfo:
         :param cn: ConnectivityNode
         :return: integer
         """
-        candidate = self.cn_to_candidate[cn]
-        return self.candidate_to_int_dict[candidate]
+        candidate = self._cn_to_candidate[cn]
+        return self._candidate_to_int_dict[candidate]
 
     def get_candidate_pos_from_bus(self, bus: Bus) -> int:
         """
@@ -272,7 +328,7 @@ class TopologyProcessorInfo:
         :param bus: Bus
         :return: integer
         """
-        return self.candidate_to_int_dict[bus]
+        return self._candidate_to_int_dict[bus]
 
     def get_candidate_active(self, t_idx: Union[None, int]) -> IntVec:
         """
@@ -282,7 +338,7 @@ class TopologyProcessorInfo:
         """
         bus_active = np.ones(self.candidate_number(), dtype=int)
 
-        for i, elm in enumerate(self.candidates):
+        for i, elm in enumerate(self._candidates):
             bus_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
 
         return bus_active
@@ -290,7 +346,7 @@ class TopologyProcessorInfo:
     def apply_results(self, islands: List[List[int]]) -> List[Bus]:
         """
         Apply the topology results
-        :param islands: rsults from the topology search
+        :param islands: results from the topology search
         :return: list of final buses
         """
         final_buses = list()
@@ -298,15 +354,15 @@ class TopologyProcessorInfo:
         for island in islands:
             # print(",".join([grid.candidates[i].name for i in island]))
 
-            island_bus = self.candidates[island[0]]
+            island_bus = self._candidates[island[0]]
 
             # pick the first bus from each island
             final_buses.append(island_bus)
 
-            for cn, candidate_bus in self.cn_to_candidate.items():
+            for cn, candidate_bus in self._cn_to_candidate.items():
                 for i in island:
-                    if candidate_bus == self.candidates[i]:
-                        self.cn_to_final_bus[cn] = island_bus
+                    if candidate_bus == self._candidates[i]:
+                        self._cn_to_final_bus[cn] = island_bus
 
         return final_buses
 
@@ -316,7 +372,7 @@ class TopologyProcessorInfo:
         :param cn: ConnectivityNode
         :return: Final calculation Bus
         """
-        return self.cn_to_final_bus[cn]
+        return self._cn_to_final_bus[cn]
 
     def get_cn_lists_per_bus(self) -> Dict[Bus, List[ConnectivityNode]]:
         """
@@ -325,7 +381,7 @@ class TopologyProcessorInfo:
         """
         data = dict()
 
-        for cn, bus in self.cn_to_final_bus.items():
+        for cn, bus in self._cn_to_final_bus.items():
 
             lst = data.get(bus, None)
 
@@ -341,7 +397,7 @@ class TopologyProcessorInfo:
 
         :return:
         """
-        return [c.name for c in self.candidates]
+        return [c.name for c in self._candidates]
 
 
 def process_grid_topology_at(grid: MultiCircuit,
@@ -373,44 +429,42 @@ def process_grid_topology_at(grid: MultiCircuit,
     # ------------------------------------------------------------------------------------------------------------------
 
     # find out the relevant connectivity nodes and buses from the branches
-    for br in all_branches:
-        process_info.add_bus_or_cn(cn=br.cn_from, bus=br.bus_from)
-        process_info.add_bus_or_cn(cn=br.cn_to, bus=br.bus_to)
+    for k, br in enumerate(all_branches):
+        i = process_info.add_bus_or_cn(cn=br.cn_from, bus=br.bus_from, logger=logger, main_dev_name=br.name)
+        j = process_info.add_bus_or_cn(cn=br.cn_to, bus=br.bus_to, logger=logger, main_dev_name=br.name)
+        process_info.register_branch_indices(k=k, f=i, t=j)
 
     # find out the relevant connectivity nodes and buses from the injection devices
     for lst in grid.get_injection_devices_lists():
         for elm in lst:
-            process_info.add_bus_or_cn(cn=elm.cn, bus=elm.bus)
-
-    nbus_candidate = process_info.candidate_number()
-    bus_active = process_info.get_candidate_active(t_idx=t_idx)
+            process_info.add_bus_or_cn(cn=elm.cn, bus=elm.bus, logger=logger, main_dev_name=elm.name)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Create the connectivity matrices
     # ------------------------------------------------------------------------------------------------------------------
+    n_candidate_buses = process_info.candidate_number()
+    bus_active = process_info.get_candidate_active(t_idx=t_idx)
 
     # declare the matrices
-    Cf = lil_matrix((nbr, nbus_candidate))
-    Ct = lil_matrix((nbr, nbus_candidate))
+    Cf = lil_matrix((nbr, n_candidate_buses))
+    Ct = lil_matrix((nbr, n_candidate_buses))
     br_active = np.empty(nbr, dtype=int)
 
-    # fill matrices approprietly
-    for i, elm in enumerate(all_branches):
+    # fill matrices appropriately
+    for k, elm in enumerate(all_branches):
 
         if elm.device_type == DeviceType.SwitchDevice:
-            br_active[i] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
+            br_active[k] = int(elm.active) if t_idx is None else int(elm.active_prof[t_idx])
         else:
             # non switches form islands, because we want islands to be
             # the set of candidates to fuse into one
-            br_active[i] = 0
+            br_active[k] = 0
 
-        # if elm.cn_from is not None and elm.cn_to is not None:
-        #     f = process_info.get_candidate_pos_from_cn(elm.cn_from)
-        #     t = process_info.get_candidate_pos_from_cn(elm.cn_to)
-        if br_active[i]:  # avoid adding zeros
-            f, t, is_ok = process_info.get_connection_indices(elm=elm, logger=logger)
-            Cf[i, f] = br_active[i]
-            Ct[i, t] = br_active[i]
+        f, t = process_info.get_branch_registered_indices(k)
+
+        if br_active[k] and f is not None and t is not None:  # avoid adding zeros
+            Cf[k, f] = br_active[k]
+            Ct[k, t] = br_active[k]
 
     # ------------------------------------------------------------------------------------------------------------------
     # Compose the adjacency matrix from the connectivity information
