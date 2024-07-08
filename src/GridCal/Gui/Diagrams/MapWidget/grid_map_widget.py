@@ -477,6 +477,24 @@ class GridMapWidget(BaseDiagramWidget):
         better_first.line_container.disable_line()
         better_second.line_container.disable_line()
 
+    def createNewLine(self):
+
+        if len(self.map.view.selectedItems) < 2:
+            return 0
+
+        it1 = self.map.view.selectedItems[0]
+        it2 = self.map.view.selectedItems[1]
+
+        if it1 == it2:
+            return 0
+
+        bus1 = Bus(name="Bus 1", substation=it1.api_object)
+        bus2 = Bus(name="Bus 2", substation=it2.api_object)
+
+        newline = Line(bus_from=bus1, bus_to=bus2)
+
+        l1 = self.add_api_line(newline, original=True)
+
     def removeNode(self, node: NodeGraphicItem):
         """
         Removes node from diagram and scene

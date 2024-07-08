@@ -95,6 +95,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.colorBorder = QColor(255, 100, 100, 100)
 
         # Assign color to the node
+        self.itemSelected = False
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
@@ -194,6 +195,9 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         event.setAccepted(True)
         self.editor.map.view.disableMove = True
 
+        if event.button() == Qt.LeftButton:
+            self.selectItem()
+
         print("SE mouse press")
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object,
@@ -205,6 +209,25 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                                              DeviceType.AreaDevice: self.editor.circuit.get_areas(),
                                              DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
                                          })
+
+    def selectItem(self):
+        """
+
+        :return:
+        """
+        if not self.itemSelected:
+            self.editor.map.view.selectedItems.append(self)
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        self.itemSelected = True
+
+    def deSelectItem(self):
+        """
+
+        :return:
+        """
+        self.itemSelected = False
+        self.setDefaultColor()
+
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -219,6 +242,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse enters the item.
         """
+        self.editor.map.view.inItem = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -227,6 +251,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
+        self.editor.map.view.inItem = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
@@ -263,7 +288,16 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        icon_path="",
                        function_ptr=self.new_substation_diagram)
 
+        add_menu_entry(menu=menu,
+                       text="Create line",
+                       icon_path="",
+                       function_ptr=self.createNewLine)
+
         menu.exec_(event.screenPos())
+
+    def createNewLine(self):
+
+        self.editor.createNewLine()
 
     def add_function(self):
         """
@@ -372,7 +406,10 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        self.setNodeColor(self.colorInner, self.colorBorder)
+        if self.itemSelected:
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        else:
+            self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self) -> QPointF:
         """
