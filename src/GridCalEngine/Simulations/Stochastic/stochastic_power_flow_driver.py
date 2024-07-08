@@ -119,7 +119,8 @@ class StochasticPowerFlowDriver(DriverTemplate):
                                                          t_idx=None,
                                                          apply_temperature=False,
                                                          branch_tolerance_mode=BranchImpedanceMode.Specified,
-                                                         opf_results=self.opf_time_series_results)
+                                                         opf_results=self.opf_time_series_results,
+                                                         logger=self.logger)
 
         mc_results = StochasticPowerFlowResults(n=numerical_circuit.nbus,
                                                 m=numerical_circuit.nbr,

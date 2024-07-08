@@ -260,7 +260,7 @@ class CascadingDriver(DriverTemplate):
 
         # compile
         # print('Compiling...', end='')
-        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
         calculation_inputs = nc.split_into_islands(ignore_single_node_islands=self.options.ignore_single_node_islands)
 
         self.results = CascadingResults(self.cascade_type)

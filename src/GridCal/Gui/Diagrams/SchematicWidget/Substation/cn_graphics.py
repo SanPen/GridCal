@@ -18,7 +18,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
@@ -108,6 +108,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self._terminal = RoundTerminalItem('s', parent=self, editor=self.editor, h=20, w=20)  # , h=self.h))
         self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
         self._terminal.setPos(QPoint(15, 15))
+        self._terminal_mid_point = QPoint(20, 20)  # (15, 15) + (20, 20) / 2
 
         self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
         self.setBrush(Qt.transparent)
@@ -117,6 +118,14 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_position(x, y)
         self.setRect(0.0, 0.0, self.w, self.h)
+
+    def get_nexus_point(self) -> QPointF:
+        """
+        Get the connection point for the chldren nexus line
+        :return: QPointF
+        """
+        return QPointF(self.x() + self._terminal_mid_point.x(),
+                       self.y() + self._terminal_mid_point.y())
 
     def recolour_mode(self) -> None:
         """

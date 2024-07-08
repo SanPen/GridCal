@@ -1995,7 +1995,8 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  opf_results: Union[OptimalPowerFlowResults, None] = None,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
-                                 areas_dict: Union[Dict[Area, int], None] = None) -> NumericalCircuit:
+                                 areas_dict: Union[Dict[Area, int], None] = None,
+                                 logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
     :param circuit: MultiCircuit instance
@@ -2006,10 +2007,9 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param use_stored_guess: use the storage voltage guess?
     :param bus_dict (optional) Dict[Bus, int] dictionary
     :param areas_dict (optional) Dict[Area, int] dictionary
+    :param logger: Logger instance
     :return: NumericalCircuit instance
     """
-
-    logger = Logger()
 
     if circuit.get_connectivity_nodes_number() + circuit.get_switches_number():
         # process topology, this
