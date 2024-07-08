@@ -237,7 +237,8 @@ class ShortCircuitDriver(DriverTemplate):
                                                          t_idx=None,
                                                          apply_temperature=self.pf_options.apply_temperature_correction,
                                                          branch_tolerance_mode=self.pf_options.branch_impedance_tolerance_mode,
-                                                         opf_results=self.opf_results)
+                                                         opf_results=self.opf_results,
+                                                         logger=self.logger)
 
         calculation_inputs = numerical_circuit.split_into_islands(
             ignore_single_node_islands=self.pf_options.ignore_single_node_islands)

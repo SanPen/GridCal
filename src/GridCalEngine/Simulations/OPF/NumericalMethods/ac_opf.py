@@ -1006,7 +1006,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
     """
 
     # compile the system
-    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
+    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx, logger=logger)
 
     if pf_init:
         if Sbus_pf0 is None:

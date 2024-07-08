@@ -75,7 +75,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             print('Compiling cicuit...')
 
         tm0 = time.time()
-        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
         self.logger.add_info(f'Time circuit compiled in {time.time() - tm0:.2f} scs')
         print(f'Time circuit compiled in {time.time() - tm0:.2f} scs')
 

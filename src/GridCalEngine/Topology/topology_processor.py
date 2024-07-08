@@ -221,21 +221,6 @@ class TopologyProcessorInfo:
             # the candidate was added already
             return idx
 
-    def try_get_cn_candidate(self, cn: ConnectivityNode) -> Union[Bus, int]:
-        """
-
-        :param cn:
-        :return:
-        """
-        candidate = self._cn_to_candidate.get(cn, None)
-
-        if candidate is not None:
-            idx = self._candidate_to_int_dict[candidate]
-
-            return candidate, idx
-        else:
-            return None, None
-
     def was_added(self, bus: Bus) -> bool:
         """
         Check if a bus was added already
@@ -253,7 +238,7 @@ class TopologyProcessorInfo:
         if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
 
             # try to search if this CN has already been assigned a Bus
-            candidate_bus, idx = self.try_get_cn_candidate(cn=cn)
+            candidate_bus = self._cn_to_candidate.get(cn, None)
 
             if candidate_bus is None:
                 # create a new candidate bus
@@ -266,6 +251,9 @@ class TopologyProcessorInfo:
                 # register
                 idx = self._add_candidate(candidate_bus)
                 self._cn_to_candidate[cn] = candidate_bus
+            else:
+                # there was a candidate already assigned to the CN, get its integer position
+                idx = self._candidate_to_int_dict[candidate_bus]
 
             # cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
             self._add_new_candidate(candidate_bus)
