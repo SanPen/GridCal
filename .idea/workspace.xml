@@ -28,11 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the topology processor based on the new tests">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/CGMES_2_4_15/TestConfigurations_packageCASv2.0/MicroGrid/BaseCase_BC/BE_psse33_cimconverter.raw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/entsoe/tuc17.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed issue loading 3W transformers from psse">
+      <change afterPath="$PROJECT_DIR$/src/trunk/entsoe/cgmes_to_raw_conversion_comparison.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/entsoe/tuc17.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/entsoe/tuc17.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -162,7 +161,7 @@
     "Python tests.pytest for test_topology_processor.test_topology_4_nodes_H.executor": "Run",
     "Python tests.pytest in test_topology_processor.py.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
     "Python.pymoo_example.executor": "Debug",
@@ -173,7 +172,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "199__finalize__cgmes__import",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCal/Gui/Diagrams/MapWidget2",
+    "last_opened_file_path": "C:/Git/Github/GridCal/src/trunk/entsoe",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -191,11 +190,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Git\Github\GridCal\src\trunk\entsoe" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget2" />
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Schema" />
       <recent name="$PROJECT_DIR$/src/GridCal/Gui/BusBranchEditorWidget/Injections" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods" />
-      <recent name="$PROJECT_DIR$/src/tests/data/grids" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\SIROCO\GridCal\src\GridCal\Gui\Diagrams\MapWidget\Substation" />
@@ -205,7 +204,7 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.ExecuteGridCal">
+  <component name="RunManager" selected="Python.tuc17">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -426,7 +425,7 @@
       <option name="ADDITIONAL_ARGS" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="ExecuteGridCal" type="PythonConfigurationType" factoryName="Python" singleton="false" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -676,8 +675,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.tuc17" />
+        <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python tests.pytest in test_topology_processor.py" />
         <item itemvalue="Python tests.pytest for test_topology_processor.test_topology_4_nodes_D2" />
         <item itemvalue="Python tests.pytest for test_topology_processor.test_topology_4_nodes_C2" />
@@ -1417,7 +1416,7 @@
       <workItem from="1719812628723" duration="24196000" />
       <workItem from="1719899296567" duration="4045000" />
       <workItem from="1720257646059" duration="5688000" />
-      <workItem from="1720438986107" duration="5247000" />
+      <workItem from="1720438986107" duration="8819000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1762,7 +1761,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="512" />
+    <option name="localTasksCounter" value="513" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1808,7 +1807,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="MapDiagram to Schema -&gt; Added lines and substations" />
     <MESSAGE value="MapDiagram added substations (voltage-levels) and lines" />
     <MESSAGE value="Global improvement in map diagram  control and displacement of nodes and substations" />
     <MESSAGE value="First update method for diagrams and map" />
@@ -1833,7 +1831,8 @@
     <MESSAGE value="Fixed zoom displacement" />
     <MESSAGE value="Added more topology processing tests" />
     <MESSAGE value="Improved the topology processor based on the new tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved the topology processor based on the new tests" />
+    <MESSAGE value="Fixed issue loading 3W transformers from psse" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed issue loading 3W transformers from psse" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2297,11 +2296,6 @@
           <line>453</line>
           <option name="timeStamp" value="1836" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py</url>
-          <line>838</line>
-          <option name="timeStamp" value="1837" />
-        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint enabled="true" log-message="true" type="python-exception">
@@ -2416,7 +2410,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_opf.coverage" NAME="Nosetests for tests.test_opf Coverage Results" MODIFIED="1702311536440" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_numerical_circuit_test_numerical_cicuit_spv.coverage" NAME="Nosetests for test_numerical_circuit.test_numerical_cicuit_spv Coverage Results" MODIFIED="1706775363122" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_continuation_power_flow_py.coverage" NAME="Nosetests in test_continuation_power_flow.py Coverage Results" MODIFIED="1648733904426" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1720448771836" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1720454190491" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_short_circuit_py.coverage" NAME="Nosetests in test_short_circuit.py Coverage Results" MODIFIED="1687726472522" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$modelchain_example.coverage" NAME="modelchain_example Coverage Results" MODIFIED="1689614943658" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_topology_processor.coverage" NAME="Nosetests for tests.test_topology_processor Coverage Results" MODIFIED="1708970118614" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2464,7 +2458,7 @@
     <SUITE FILE_PATH="coverage/GridCal$admittance_variations.coverage" NAME="admittance_variations Coverage Results" MODIFIED="1603050030453" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/admittance" />
     <SUITE FILE_PATH="coverage/GridCal$run_contingencies.coverage" NAME="run_contingencies Coverage Results" MODIFIED="1707303266446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/contingencies" />
     <SUITE FILE_PATH="coverage/GridCal$sergio_dorado_example_node_breaker.coverage" NAME="sergio_dorado_example_node_breaker Coverage Results" MODIFIED="1715018820178" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/substation_reduction" />
-    <SUITE FILE_PATH="coverage/GridCal$tuc17.coverage" NAME="tuc17 Coverage Results" MODIFIED="1720443526651" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/entsoe" />
+    <SUITE FILE_PATH="coverage/GridCal$tuc17.coverage" NAME="tuc17 Coverage Results" MODIFIED="1720455482506" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/entsoe" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_profiles_test_py.coverage" NAME="Nosetests in profiles_test.py Coverage Results" MODIFIED="1701346671216" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_opf_time_series_py.coverage" NAME="Nosetests in test_opf_time_series.py Coverage Results" MODIFIED="1617046142412" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$ConsoleLogController.coverage" NAME="ConsoleLogController Coverage Results" MODIFIED="1663862178388" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/Main" />
