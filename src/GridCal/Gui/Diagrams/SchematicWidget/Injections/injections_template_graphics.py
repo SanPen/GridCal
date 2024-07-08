@@ -87,14 +87,12 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         Update the nexus line that joins the parent and this object
         :param pos: position of this object
         """
-        parent = self.parentItem()
-        rect = parent.rect()
-        term = parent.get_terminal()
+        parent_pt = self.parentItem().get_nexus_point()
         self.nexus.setLine(
             pos.x() + self.w / 2,
             pos.y(),
-            parent.x() + rect.width() / 2,
-            parent.y() + rect.height() + term.h / 2,
+            parent_pt.x(),
+            parent_pt.y(),
         )
         self.setZValue(-1)
         self.nexus.setZValue(-1)

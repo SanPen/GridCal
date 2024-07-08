@@ -783,7 +783,8 @@ def multi_island_pf(multi_circuit: MultiCircuit,
             opf_results=opf_results,
             use_stored_guess=options.use_stored_guess,
             bus_dict=bus_dict,
-            areas_dict=areas_dict
+            areas_dict=areas_dict,
+            logger=logger,
         )
         # print("Normal PowerFlow")
 

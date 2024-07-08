@@ -502,7 +502,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         idx2b = self.options.bus_idx_to
 
         # declare the numerical circuit
-        nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None)
+        nc = compile_numerical_circuit_at(circuit=self.grid, t_idx=None, logger=self.logger)
 
         # declare the linear analysis
         linear = LinearAnalysis(

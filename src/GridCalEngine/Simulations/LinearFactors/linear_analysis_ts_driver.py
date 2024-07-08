@@ -92,7 +92,8 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             nc = compile_numerical_circuit_at(circuit=self.grid,
                                               t_idx=t,
-                                              opf_results=self.opf_time_series_results)
+                                              opf_results=self.opf_time_series_results,
+                                              logger=self.logger)
 
             driver_ = LinearAnalysis(
                 numerical_circuit=nc,

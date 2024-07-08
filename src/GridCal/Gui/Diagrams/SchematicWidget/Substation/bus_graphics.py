@@ -18,7 +18,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect
+from PySide6.QtCore import Qt, QPoint, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
@@ -144,6 +144,14 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.change_size(w=self.w)
 
         self.set_position(x, y)
+
+    def get_nexus_point(self) -> QPointF:
+        """
+        Get the connection point for the chldren nexus line
+        :return: QPointF
+        """
+        return QPointF(self.x() + self.rect().width() / 2.0,
+                       self.y() + self.rect().height() + self._terminal.h / 2.0)
 
     def recolour_mode(self) -> None:
         """

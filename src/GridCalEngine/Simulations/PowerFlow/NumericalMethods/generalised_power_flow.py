@@ -856,13 +856,12 @@ def run_nonlinear_opf(grid: MultiCircuit,
     :param Sbus_pf0: Sbus initial solution
     :param voltage_pf0: Voltage initial solution
     :param plot_error: Plot the error evolution
-    :param use_bound_slacks: add voltage module and branch loading slack variables? (default true)
     :param logger: Logger object
     :return: NonlinearOPFResults
     """
 
     # compile the system
-    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx)
+    nc = compile_numerical_circuit_at(circuit=grid, t_idx=t_idx, logger=logger)
 
     if pf_init:
         if Sbus_pf0 is None:

@@ -237,24 +237,34 @@ class TopologyProcessorInfo:
         """
         if cn.default_bus is None:  # connectivity nodes can be linked to a previously existing Bus
 
-            # create a new candidate bus
-            candidate_bus = Bus(
-                name=f"Candidate from {cn.name}",
-                code=cn.code,  # for soft checking
-                Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
-            )
+            # try to search if this CN has already been assigned a Bus
+            candidate_bus = self._cn_to_candidate.get(cn, None)
 
-            cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
+            if candidate_bus is None:
+                # create a new candidate bus
+                candidate_bus = Bus(
+                    name=f"Candidate from {cn.name}",
+                    code=cn.code,  # for soft checking
+                    Vnom=cn.Vnom  # we must keep the voltage level for the virtual taps
+                )
+
+                # register
+                idx = self._add_candidate(candidate_bus)
+                self._cn_to_candidate[cn] = candidate_bus
+            else:
+                # there was a candidate already assigned to the CN, get its integer position
+                idx = self._candidate_to_int_dict[candidate_bus]
+
+            # cn.default_bus = candidate_bus  # to avoid adding extra buses upon consecutive runs
             self._add_new_candidate(candidate_bus)
         else:
             # pick the default candidate
             candidate_bus = cn.default_bus
             # candidate_bus.code = cn.code  # for soft checking
 
-        # register
-        idx = self._add_candidate(candidate_bus)
-
-        self._cn_to_candidate[cn] = candidate_bus
+            # register
+            idx = self._add_candidate(candidate_bus)
+            self._cn_to_candidate[cn] = candidate_bus
 
         return idx
 
@@ -262,7 +272,7 @@ class TopologyProcessorInfo:
                       cn: ConnectivityNode | None,
                       bus: Bus | None,
                       logger: Logger,
-                      main_dev_name: str) -> None:
+                      main_dev_name: str) -> int | None:
         """
         This function decides if an existing bus is used or a new bus is created from a CN
         :param cn: ConnectivityNode | None
@@ -277,7 +287,7 @@ class TopologyProcessorInfo:
             if bus is not None:
                 if cn.default_bus is None:
                     # there is a hidden association, so we use it
-                    cn.default_bus = bus
+                    # cn.default_bus = bus
                     idx = self._add_candidate(bus)
                     self._cn_to_candidate[cn] = bus
                     logger.add_info(msg=f"Associated bus to cn because there wasn't any association",
