@@ -61,14 +61,14 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
                                       api_object=api_object,
                                       editor=editor,
                                       draw_labels=draw_labels)
-        QGraphicsEllipseItem.__init__(self, parent_center.x(), parent_center.y(), r, r, parent)
+        QGraphicsEllipseItem.__init__(self, parent_center.x(), parent_center.y(), r * api_object.Vnom, r * api_object.Vnom, parent)
 
         parent.register_voltage_level(vl=self)
 
         self.editor: GridMapWidget = editor  # to reinforce the type
         self.api_object: VoltageLevel = api_object  # to reinforce the type
 
-        self.radius = r
+        self.radius = r * api_object.Vnom
         print(f"VL created at x:{parent_center.x()}, y:{parent_center.y()}")
 
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
