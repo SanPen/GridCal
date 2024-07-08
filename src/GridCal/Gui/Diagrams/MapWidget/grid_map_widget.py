@@ -305,6 +305,13 @@ class GridMapWidget(BaseDiagramWidget):
 
         self.map.diagram_scene.addItem(graphic_object)
 
+    def remove_only_graphic_element(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
+        """
+        Removes only the graphic elements, not the api_object
+        :param graphic_object: Graphic object associated
+        """
+        self.map.diagram_scene.removeItem(graphic_object)
+
     def remove_from_scene(self, graphic_object: ALL_MAP_GRAPHICS = None) -> None:
         """
         Add item to the diagram and the diagram scene
@@ -812,6 +819,10 @@ class GridMapWidget(BaseDiagramWidget):
         """
 
         # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
+
+        self.Update_widths()
+
+    def Update_widths(self):
 
         max_zoom = self.map.max_level
         min_zoom = self.map.min_level

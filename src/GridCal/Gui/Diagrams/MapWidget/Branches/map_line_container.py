@@ -78,7 +78,7 @@ class MapLineContainer(GenericDiagramWidget):
         Remove all segments from the scene
         """
         for segment in self.segments_list:
-            self.editor.remove_from_scene(segment)
+            self.editor.remove_only_graphic_element(segment)
 
         self.segments_list = list()
 
@@ -258,6 +258,8 @@ class MapLineContainer(GenericDiagramWidget):
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
         self.update_connectors()
+
+        self.editor.Update_widths()
 
     def substation_to(self):
         return self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
