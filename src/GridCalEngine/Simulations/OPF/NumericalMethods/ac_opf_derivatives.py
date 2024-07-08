@@ -881,10 +881,11 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Hql = sp.hstack([lil_matrix((Ng, 2 * N + Ng)), diags(- np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - 2 * Ng))])
 
         if acopf_mode == AcOpfMode.ACOPFslacks:
-            Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M)),
+
+            Hvu = sp.hstack([lil_matrix((npq, N)), diags(np.ones(N))[pq, :], lil_matrix((npq, 2 * Ng + 2 * M)),
                              diags(- np.ones(npq)), lil_matrix((npq, npq + nslcap + ntapm + ntapt + ndc))])
 
-            Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(npq)), lil_matrix((npq, 2 * Ng + 2 * M + npq)),
+            Hvl = sp.hstack([lil_matrix((npq, N)), diags(- np.ones(N))[pq, :], lil_matrix((npq, 2 * Ng + 2 * M + npq)),
                              diags(- np.ones(npq)), lil_matrix((npq, nslcap + ntapm + ntapt + ndc))])
 
             Hslsf = sp.hstack([lil_matrix((M, npfvar)), diags(- np.ones(M)),
