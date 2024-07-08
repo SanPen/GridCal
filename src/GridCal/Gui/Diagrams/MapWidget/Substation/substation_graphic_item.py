@@ -25,6 +25,8 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
+
+from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
@@ -69,7 +71,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                               lon=lon)
 
         self.line_container = None
-        self.editor: GridMapWidget = editor  # re assign for the types to be clear
+        self.editor: GridMapWidget = editor  # reassign for the types to be clear
         self.api_object: Substation = api_object
 
         self.lat = lat
@@ -269,6 +271,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        function_ptr=self.add_voltage_level)
 
         add_menu_entry(menu=menu,
+                       text="Create line",
+                       icon_path="",
+                       function_ptr=self.create_new_line)
+
+        add_menu_entry(menu=menu,
                        text="Move to API coordinates",
                        icon_path="",
                        function_ptr=self.move_to_api_coordinates)
@@ -288,16 +295,15 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        icon_path="",
                        function_ptr=self.new_substation_diagram)
 
-        add_menu_entry(menu=menu,
-                       text="Create line",
-                       icon_path="",
-                       function_ptr=self.createNewLine)
+
 
         menu.exec_(event.screenPos())
 
-    def createNewLine(self):
-
-        self.editor.createNewLine()
+    def create_new_line(self):
+        """
+        Create a new line in the map wizard
+        """
+        self.editor.createNewLineWizard()
 
     def add_function(self):
         """
@@ -315,9 +321,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
             for idtag, graphic_object in dev_dict.items():
                 substation_from_graphics = self.editor.graphics_manager.query(
-                    elm=graphic_object.api_object.get_substation_from())
+                    elm=graphic_object.api_object.get_substation_from()
+                )
                 substation_to_graphics = self.editor.graphics_manager.query(
-                    elm=graphic_object.api_object.get_substation_to())
+                    elm=graphic_object.api_object.get_substation_to()
+                )
                 lines_info.append((idtag, graphic_object, substation_from_graphics, substation_to_graphics))
 
             # Now, iterate over the collected information
@@ -367,7 +375,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         inpt = InputNumberDialogue(
             min_value=1.0,
             max_value=100000.0,
-            default_value=1.0,
+            default_value=self.editor.diagram.default_bus_voltage,
             title="Add voltage level",
             text="Voltage (kV)",
         )
@@ -380,7 +388,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                               Vnom=kv,
                               substation=self.api_object)
 
+            bus = Bus(name=f"Bus {self.api_object.name}",
+                      Vnom=kv,
+                      substation=self.api_object,
+                      voltage_level=vl)
+
             self.editor.circuit.add_voltage_level(vl)
+            self.editor.circuit.add_bus(obj=bus)
+
             self.editor.add_api_voltage_level(substation_graphics=self,
                                               api_object=vl)
 

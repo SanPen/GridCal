@@ -18,7 +18,10 @@ from typing import List, Union
 from collections.abc import Callable
 from GridCal.Gui.Diagrams.MapWidget.Tiles.base_tiles import BaseTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tile_worker import TileWorker
-from GridCal.Gui.Diagrams.MapWidget.logger import log
+
+
+def log(val: str):
+    print(val)
 
 # # set how old disk-cache tiles can be before we re-request them from the
 # # server.  this is the number of days old a tile is before we re-request.

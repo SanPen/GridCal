@@ -18,7 +18,7 @@ import os
 from typing import Union, List, Tuple, Dict
 import numpy as np
 import math
-from PySide6.QtWidgets import QGraphicsItem
+from PySide6.QtWidgets import QGraphicsItem, QDialog
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
 from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
@@ -50,6 +50,7 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGrap
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+from GridCal.Gui.Diagrams.MapWidget.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
@@ -477,23 +478,27 @@ class GridMapWidget(BaseDiagramWidget):
         better_first.line_container.disable_line()
         better_second.line_container.disable_line()
 
-    def createNewLine(self):
+    def createNewLineWizard(self):
+        """
+        Create a new line in the map with dialogues
+        """
 
         if len(self.map.view.selectedItems) < 2:
-            return 0
+            return None
 
-        it1 = self.map.view.selectedItems[0]
-        it2 = self.map.view.selectedItems[1]
-
+        it1: SubstationGraphicItem = self.map.view.selectedItems[0]
+        it2: SubstationGraphicItem = self.map.view.selectedItems[1]
         if it1 == it2:
-            return 0
+            return None
 
-        bus1 = Bus(name="Bus 1", substation=it1.api_object)
-        bus2 = Bus(name="Bus 2", substation=it2.api_object)
-
-        newline = Line(bus_from=bus1, bus_to=bus2)
-
-        l1 = self.add_api_line(newline, original=True)
+        dialog = NewMapLineDialogue(grid=self.circuit, se_from=it1.api_object, se_to=it2.api_object)
+        dialog.exec()
+        if dialog.is_valid():
+            bus1 = dialog.bus_from()
+            bus2 = dialog.bus_to()
+            if bus1 is not None and bus2 is not None:
+                newline = Line(bus_from=bus1, bus_to=bus2)
+                self.add_api_line(newline, original=True)
 
     def removeNode(self, node: NodeGraphicItem):
         """
