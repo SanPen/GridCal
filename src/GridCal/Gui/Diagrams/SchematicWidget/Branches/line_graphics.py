@@ -210,6 +210,11 @@ class LineGraphicItem(LineGraphicTemplateItem):
                            function_ptr=self.to_series_reactance,
                            icon_path=":/Icons/icons/to_series_reactance.svg")
 
+            add_menu_entry(menu=menu,
+                           text="Switch",
+                           function_ptr=self.to_switch,
+                           icon_path=":/Icons/icons/switch.svg")
+
             menu.exec(event.screenPos())
         else:
             pass
@@ -343,6 +348,16 @@ class LineGraphicItem(LineGraphicTemplateItem):
                              'Convert line')
         if ok:
             self.editor.convert_line_to_series_reactance(line=self.api_object, line_graphic=self)
+
+    def to_switch(self):
+        """
+        Convert this object to switch
+        :return:
+        """
+        ok = yes_no_question('Are you sure that you want to convert this line into a switch device?',
+                             'Convert line')
+        if ok:
+            self.editor.convert_line_to_switch(line=self.api_object, line_graphic=self)
 
     def __str__(self):
 
