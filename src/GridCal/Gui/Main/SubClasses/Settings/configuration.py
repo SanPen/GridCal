@@ -114,9 +114,7 @@ class ConfigurationMain(ResultsMain):
                                    additional_qss="QToolTip {color: white; background-color: black; border: 0px; }")
 
             # note: The 0px border on the tooltips allow it to render properly
-
-            diagram = self.get_selected_diagram_widget()
-            if diagram is not None:
+            for diagram in self.diagram_widgets_list:
                 if isinstance(diagram, SchematicWidget):
                     diagram.set_dark_mode()
 
@@ -131,9 +129,7 @@ class ConfigurationMain(ResultsMain):
                                    additional_qss="QToolTip {color: black; background-color: white; border: 0px;}")
 
             # note: The 0px border on the tooltips allow it to render properly
-
-            diagram = self.get_selected_diagram_widget()
-            if diagram is not None:
+            for diagram in self.diagram_widgets_list:
                 if isinstance(diagram, SchematicWidget):
                     diagram.set_light_mode()
 
