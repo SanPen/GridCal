@@ -362,20 +362,9 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         bus_3 = psse_bus_dict[abs(psse_elm.K)]
         code = str(psse_elm.I) + '_' + str(psse_elm.J) + '_' + str(psse_elm.K) + '_' + str(psse_elm.CKT)
 
-        if psse_elm.NOMV1 == 0:
-            V1 = bus_1.Vnom
-        else:
-            V1 = psse_elm.NOMV1
-
-        if psse_elm.NOMV2 == 0:
-            V2 = bus_2.Vnom
-        else:
-            V2 = psse_elm.NOMV2
-
-        if psse_elm.NOMV3 == 0:
-            V3 = bus_3.Vnom
-        else:
-            V3 = psse_elm.NOMV3
+        V1 = bus_1.Vnom if psse_elm.NOMV1 == 0 else psse_elm.NOMV1
+        V2 = bus_2.Vnom if psse_elm.NOMV2 == 0 else psse_elm.NOMV2
+        V3 = bus_3.Vnom if psse_elm.NOMV3 == 0 else psse_elm.NOMV3
 
         """
         PSS/e's randomness:
@@ -443,8 +432,9 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                  active=bool(psse_elm.STAT),
                                  r12=r12, r23=r23, r31=r31,
                                  x12=x12, x23=x23, x31=x31,
-                                 rate12=psse_elm.RATE1_1, rate23=psse_elm.RATE2_1, rate31=psse_elm.RATE3_1,
-                                 x=0.0, y=0.0)
+                                 rate12=psse_elm.RATE1_1,
+                                 rate23=psse_elm.RATE2_1,
+                                 rate31=psse_elm.RATE3_1)
 
         tr3w.winding1.tap_phase = psse_elm.ANG1
         tr3w.winding2.tap_phase = psse_elm.ANG2
