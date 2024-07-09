@@ -80,7 +80,7 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     return R * c
 
 
-def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem) -> Tuple[NodeGraphicItem, NodeGraphicItem]:
+def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem):
     """
 
     :param it1:
@@ -106,9 +106,9 @@ def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem) -> Tuple[NodeGra
                                          first_first_lat, first_first_long)
 
     if distance_1_to_2 <= distance_2_to_1:
-        return it1, it2
+        return it1, it2, it1.line_container.api_object.bus_from, it2.line_container.api_object.bus_to
     else:
-        return it2, it1
+        return it2, it1, it2.line_container.api_object.bus_from, it1.line_container.api_object.bus_to
 
 
 class MapLibraryModel(QStandardItemModel):
@@ -455,12 +455,15 @@ class GridMapWidget(BaseDiagramWidget):
         newline.copyData(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
 
-        better_first, better_second = compare_options(it1, it2)
+        better_first, better_second, busfrom, busto = compare_options(it1, it2)
 
         first_list = better_first.line_container.api_object.locations.data
         second_list = better_second.line_container.api_object.locations.data
 
         newline.locations.data = first_list + second_list
+
+        newline.bus_from = busfrom
+        newline.bus_to = busto
 
         idx = 0
         for nod in better_first.line_container.nodes_list:

@@ -158,39 +158,16 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.clean()
 
-        diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
-
         # draw line locations
         for elm in self.api_object.locations.data:
 
-            if diagram_locations is None:
-                # no locations found, use the data from the api object
-                # lat = elm.lat
-                # lon = elm.long
-                pass
-            else:
+            graphic_obj = self.editor.create_node(line_container=self,
+                                                    api_object=elm,
+                                                    lat=elm.lat,  # 42.0 ...
+                                                    lon=elm.long,
+                                                    index=self.number_of_nodes())  # 2.7 ...
 
-                # try to get location from the diagram
-                # We will not take the location of the element in the database because we want to keep...
-                # ... the diagram separated from database
-                # diagram_location = diagram_locations.locations.get(elm.idtag, None)
-
-                # if diagram_location is None:
-                #     # no particular location found, use the data from the api object
-                #     # lat = elm.lat
-                #     # lon = elm.long
-                #     pass
-                # else:
-                #     # Draw only what's on the diagram
-                #     # diagram data found, use it
-
-                graphic_obj = self.editor.create_node(line_container=self,
-                                                      api_object=elm,
-                                                      lat=elm.lat,  # 42.0 ...
-                                                      lon=elm.long,
-                                                      index=self.number_of_nodes())  # 2.7 ...
-
-                self.register_new_node(node=graphic_obj)
+            self.register_new_node(node=graphic_obj)
 
         # second pass: create the segments
         self.redraw_segments()
@@ -456,6 +433,9 @@ class MapLineContainer(GenericDiagramWidget):
                 api_obj.lat = self.nodes_list[idx].lat
                 api_obj.long = self.nodes_list[idx].lon
                 idx = idx + 1
+
+            ln1.bus_from = self.api_object.bus_from
+            ln2.bus_to = self.api_object.bus_to
 
             l1 = self.editor.add_api_line(ln1, original=False)
             l2 = self.editor.add_api_line(ln2, original=False)
