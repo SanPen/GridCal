@@ -18,7 +18,7 @@ import os
 from typing import Union, List, Tuple, Dict
 import numpy as np
 import math
-from PySide6.QtWidgets import QGraphicsItem, QDialog
+from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
 from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
@@ -824,15 +824,16 @@ class GridMapWidget(BaseDiagramWidget):
             y0 = point0.y()
             lat, lon = self.to_lat_lon(x=x0, y=y0)
 
-            print(f"Droped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
+            # print(f"Dropped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
 
             if obj_type == self.library_model.get_substation_mime_data():
-                print("Create substation...")
+
                 api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}",
                                         latitude=lat,
                                         longitude=lon)
                 self.circuit.add_substation(obj=api_object)
-                self.add_api_substation(api_object=api_object, lat=lat, lon=lon)
+                substation_graphics = self.add_api_substation(api_object=api_object, lat=lat, lon=lon)
+                substation_graphics.add_voltage_level()
 
     def wheelEvent(self, event: QWheelEvent):
         """

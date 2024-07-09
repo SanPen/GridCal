@@ -16,13 +16,19 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from PySide6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDialogButtonBox)
-from PySide6.QtCore import Qt
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.substation import Substation
 
 
 class NewMapLineDialogue(QDialog):
     def __init__(self, grid: MultiCircuit, se_from: Substation, se_to: Substation, parent=None):
+        """
+        Constructor
+        :param grid: MultiCircuit
+        :param se_from: Substation
+        :param se_to: Substation
+        :param parent: ?
+        """
         QDialog.__init__(self, parent)
         self.setWindowTitle("New line")
 
@@ -67,7 +73,7 @@ class NewMapLineDialogue(QDialog):
         main_layout.addLayout(combo_layout)
 
         # Create and add buttons
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
 
@@ -110,22 +116,10 @@ class NewMapLineDialogue(QDialog):
     def accept(self):
         selected_option1 = self.combo_box_from.currentText()
         selected_option2 = self.combo_box_to.currentText()
-        print(f"Accepted: {selected_option1}, {selected_option2}")
+        # print(f"Accepted: {selected_option1}, {selected_option2}")
         super().accept()
 
     def reject(self):
         self._is_valid = False
-        print("Canceled")
+        # print("Canceled")
         super().reject()
-
-
-if __name__ == "__main__":
-    app = QApplication([])
-
-    dialog = NewMapLineDialogue()
-    if dialog.exec() == QDialog.Accepted:
-        print("Dialog accepted")
-    else:
-        print("Dialog canceled")
-
-    app.exec()
