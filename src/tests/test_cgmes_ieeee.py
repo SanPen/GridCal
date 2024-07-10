@@ -123,10 +123,8 @@ def test_iee14_cgmes() -> None:
 
 def test_ieee_grids() -> None:
     """
-    Checks the .RAW files of IEEE grids against the PSS/e results
-    This test checks 2 things:
-    - PSS/e import fidelity
-    - PSS/e vs GridCal results
+    Checks the CGMES files made with cim converter are loaded
+    This test checks that GridCal loads these CGMEs models correctly, via power flow
     :return: Nothing if ok, fails if not
     """
 
