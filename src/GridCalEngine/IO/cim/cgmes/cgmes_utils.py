@@ -235,9 +235,13 @@ def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100)
 
 # region ACLineSegment
 def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger):
-    if ac_line_segment.BaseVoltage is not None:
-        return ac_line_segment.BaseVoltage.nominalVoltage
-    else:
+    """
+
+    :param ac_line_segment:
+    :param logger:
+    :return:
+    """
+    if ac_line_segment.BaseVoltage is None:  # or isinstance(ac_line_segment.BaseVoltage, str):
         if 'Terminal' in ac_line_segment.references_to_me.keys():
             tps = list(ac_line_segment.references_to_me['Terminal'])
 
@@ -249,6 +253,9 @@ def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger):
                 return None
         else:
             return None
+    else:
+        return ac_line_segment.BaseVoltage.nominalVoltage
+
 
 
 def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: float = 100.0):

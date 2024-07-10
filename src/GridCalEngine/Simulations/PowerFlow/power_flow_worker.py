@@ -619,8 +619,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     Shvdc_prev = Shvdc.copy()
 
     # compute islands
-    islands = None
-    if options.generalised_pf == True:
+    if options.generalised_pf:
         islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
                                         generalised_pf=options.generalised_pf)
     else:

@@ -119,3 +119,67 @@ def test_iee14_cgmes() -> None:
     assert grid1_ok
     assert grid2_ok
     assert grid3_ok
+
+
+def test_ieee_grids() -> None:
+    """
+    Checks the .RAW files of IEEE grids against the PSS/e results
+    This test checks 2 things:
+    - PSS/e import fidelity
+    - PSS/e vs GridCal results
+    :return: Nothing if ok, fails if not
+    """
+
+    results_folder = os.path.join('data', 'results')
+    cgmes_folder = os.path.join('data', 'grids', 'CGMES_2_4_15')
+
+    bd_set = os.path.join(cgmes_folder, 'BD_IEEE_Grids.zip')
+
+    files = [
+        ('IEEE 14 bus.zip', 'IEEE 14 bus.sav.xlsx'),
+        ('IEEE 118 Bus v2.zip', 'IEEE 118 Bus.sav.xlsx'),
+        ('IEEE 30 bus_33.zip', 'IEEE 30 bus.sav.xlsx'),
+    ]
+
+    options = gce.PowerFlowOptions(gce.SolverType.NR,
+                                   verbose=0,
+                                   control_q=gce.ReactivePowerControlMode.NoControl,
+                                   retry_with_other_methods=False)
+
+    for grid_file, results_file in files:
+        print(grid_file, end=' ')
+
+        # load the grid
+        main_circuit = gce.open_file(filename=[bd_set, os.path.join(cgmes_folder, grid_file)])
+        power_flow = gce.PowerFlowDriver(main_circuit, options)
+        power_flow.run()
+
+        # load the associated results file
+        df_v = pd.read_excel(os.path.join(results_folder, results_file), sheet_name='Vabs', index_col=0)
+        df_p = pd.read_excel(os.path.join(results_folder, results_file), sheet_name='Pbranch', index_col=0)
+
+        v_gc = np.abs(power_flow.results.voltage)
+        v_psse = df_v.values[:, 0]
+        p_gc = power_flow.results.Sf.real
+        p_psse = df_p.values[:, 0]
+
+        # br_codes = [e.code for e in main_circuit.get_branches_wo_hvdc()]
+        # p_gc_df = pd.DataFrame(data=p_gc, columns=[0], index=br_codes)
+        # pf_diff_df = p_gc_df - df_p
+
+        v_ok = np.allclose(v_gc, v_psse, atol=1e-2)
+        flow_ok = np.allclose(p_gc, p_psse, atol=1e-0)
+        # flow_ok = (np.abs(pf_diff_df.values) < 1e-3).all()
+
+        if not v_ok:
+            print(f'power flow voltages test for {grid_file} failed')
+        else:
+            print(f'power flow voltages test for {grid_file} ok')
+
+        if not flow_ok:
+            print(f'power flow flows test for {grid_file} failed')
+        else:
+            print(f'power flow flows test for {grid_file} ok')
+
+        assert v_ok
+        assert flow_ok
