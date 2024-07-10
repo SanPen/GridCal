@@ -1,26 +1,7 @@
 from typing import List, Tuple, Dict
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import Base
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.ac_line_segment import ACLineSegment
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.base_voltage import BaseVoltage
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.busbar_section import BusbarSection
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.energy_consumer import EnergyConsumer
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.identified_object import IdentifiedObject
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.load_response_characteristic import LoadResponseCharacteristic
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer import PowerTransformer
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.power_transformer_end import PowerTransformerEnd
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_cond_eq import RegulatingCondEq
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.regulating_control import RegulatingControl
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.switch import Switch
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.terminal import Terminal
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.topological_node import TopologicalNode
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.linear_shunt_compensator import LinearShuntCompensator
-# from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.synchronous_machine import SynchronousMachine
 from GridCalEngine.data_logger import DataLogger
-from GridCalEngine.enumerations import (TapAngleControl, TapModuleControl)
-from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapChangerTypes)
-import numpy as np
 
 
 def find_terms_connections(cgmes_terminal: Base,
