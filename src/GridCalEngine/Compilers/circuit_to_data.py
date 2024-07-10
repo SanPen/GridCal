@@ -30,6 +30,8 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
 
 
 def set_bus_control_voltage(i: int,
+                            j: int,
+                            remote_control: bool,
                             bus_name: str,
                             bus_voltage_used: BoolVec,
                             bus_data: ds.BusData,
@@ -39,6 +41,8 @@ def set_bus_control_voltage(i: int,
     """
     Set the bus control voltage
     :param i: Bus index
+    :param j: Remote Bus index
+    :param remote_control: Using remote control?
     :param bus_name: Bus name
     :param bus_voltage_used: Array of flags indicating if a bus voltage has been modified before
     :param bus_data: BusData
@@ -47,7 +51,13 @@ def set_bus_control_voltage(i: int,
     :param logger: Logger
     """
     if bus_data.bus_types[i] != BusMode.Slack.value:  # if it is not Slack
-        bus_data.bus_types[i] = BusMode.PV.value  # set as PV
+        if remote_control and j > -1:
+            # remove voltage control
+            bus_data.bus_types[j] = BusMode.PQV.value  # remote bus to PQV type
+            bus_data.bus_types[i] = BusMode.P.value  # local bus to P type
+        else:
+            # local voltage control
+            bus_data.bus_types[i] = BusMode.PV.value  # set as PV
 
     if not use_stored_guess:
         if not bus_voltage_used[i]:
@@ -208,6 +218,8 @@ def get_load_data(circuit: MultiCircuit,
         elif elm.mode == ExternalGridMode.PV:
 
             set_bus_control_voltage(i=i,
+                                    j=-1,
+                                    remote_control=False,
                                     bus_name=elm.bus.name,
                                     bus_data=bus_data,
                                     bus_voltage_used=bus_voltage_used,
@@ -318,7 +330,17 @@ def get_shunt_data(circuit: MultiCircuit,
             data.cost[ii] = elm.Cost_prof[t_idx]
 
             if elm.is_controlled and elm.active_prof[t_idx]:
+
+                if elm.control_bus_prof[t_idx] is not None:
+                    remote_control = True
+                    j = bus_dict[elm.control_bus_prof[t_idx]]
+                else:
+                    remote_control = False
+                    j = -1
+
                 set_bus_control_voltage(i=i,
+                                        j=j,
+                                        remote_control=remote_control,
                                         bus_name=elm.bus.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -332,7 +354,16 @@ def get_shunt_data(circuit: MultiCircuit,
             data.cost[ii] = elm.Cost
 
             if elm.is_controlled and elm.active:
+                if elm.control_bus is not None:
+                    remote_control = True
+                    j = bus_dict[elm.control_bus]
+                else:
+                    remote_control = False
+                    j = -1
+
                 set_bus_control_voltage(i=i,
+                                        j=j,
+                                        remote_control=remote_control,
                                         bus_name=elm.bus.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -428,7 +459,16 @@ def get_generator_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
+                    if elm.control_bus_prof[t_idx] is not None:
+                        remote_control = True
+                        j = bus_dict[elm.control_bus_prof[t_idx]]
+                    else:
+                        remote_control = False
+                        j = -1
+
                     set_bus_control_voltage(i=i,
+                                            j=j,
+                                            remote_control=remote_control,
                                             bus_name=elm.bus.name,
                                             bus_data=bus_data,
                                             bus_voltage_used=bus_voltage_used,
@@ -455,7 +495,16 @@ def get_generator_data(circuit: MultiCircuit,
                 if elm.srap_enabled and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
+                if elm.control_bus is not None:
+                    remote_control = True
+                    j = bus_dict[elm.control_bus]
+                else:
+                    remote_control = False
+                    j = -1
+
                 set_bus_control_voltage(i=i,
+                                        j=j,
+                                        remote_control=remote_control,
                                         bus_name=elm.bus.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -563,7 +612,17 @@ def get_battery_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
+
+                    if elm.control_bus_prof[t_idx] is not None:
+                        remote_control = True
+                        j = bus_dict[elm.control_bus_prof[t_idx]]
+                    else:
+                        remote_control = False
+                        j = -1
+
                     set_bus_control_voltage(i=i,
+                                            j=j,
+                                            remote_control=remote_control,
                                             bus_name=elm.bus.name,
                                             bus_data=bus_data,
                                             bus_voltage_used=bus_voltage_used,
@@ -591,7 +650,17 @@ def get_battery_data(circuit: MultiCircuit,
                     bus_data.srap_availbale_power[i] += data.p[k]
 
                 if elm.is_controlled:
+
+                    if elm.control_bus is not None:
+                        remote_control = True
+                        j = bus_dict[elm.control_bus]
+                    else:
+                        remote_control = False
+                        j = -1
+
                     set_bus_control_voltage(i=i,
+                                            j=j,
+                                            remote_control=remote_control,
                                             bus_name=elm.bus.name,
                                             bus_data=bus_data,
                                             bus_voltage_used=bus_voltage_used,
@@ -1209,6 +1278,8 @@ def get_hvdc_data(circuit: MultiCircuit,
             # hack the bus types to believe they are PV
             if elm.active_prof[t_idx]:
                 set_bus_control_voltage(i=f,
+                                        j=-1,
+                                        remote_control=False,
                                         bus_name=elm.bus_from.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -1217,6 +1288,8 @@ def get_hvdc_data(circuit: MultiCircuit,
                                         logger=logger)
 
                 set_bus_control_voltage(i=t,
+                                        j=-1,
+                                        remote_control=False,
                                         bus_name=elm.bus_to.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -1246,6 +1319,8 @@ def get_hvdc_data(circuit: MultiCircuit,
             # hack the bus types to believe they are PV
             if elm.active:
                 set_bus_control_voltage(i=f,
+                                        j=-1,
+                                        remote_control=False,
                                         bus_name=elm.bus_from.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -1254,6 +1329,8 @@ def get_hvdc_data(circuit: MultiCircuit,
                                         logger=logger)
 
                 set_bus_control_voltage(i=t,
+                                        j=-1,
+                                        remote_control=False,
                                         bus_name=elm.bus_to.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,

@@ -20,13 +20,13 @@ from enum import Enum
 
 class BusMode(Enum):
     """
-    Emumetarion of bus modes
+    Bus modes
     """
     PQ = 1  # control P, Q
     PV = 2  # Control P, Vm
-    Slack = 3  # Contol Vm, Va (slack)
-    PQV = 4  # control P, Q and Vm
-    D = 5  # only control the voltage angle (Va)
+    Slack = 3  # Control Vm, Va (slack)
+    PQV = 4  # voltage-controlled bus (P, Q, V set, theta computed)
+    P = 5  # voltage-controlling bus (P set, Q, V, theta computed)
 
     def __str__(self):
         return self.value

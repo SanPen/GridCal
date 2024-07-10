@@ -24,7 +24,7 @@ from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
 
 @nb.njit(cache=True)
-def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec]:
+def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec, IntVec, IntVec]:
     """
     Compile the types.
     :param Pbus: array of real power Injections per node used to choose the slack as
@@ -38,6 +38,8 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
 
     pq = np.where(types == BusMode.PQ.value)[0]
     pv = np.where(types == BusMode.PV.value)[0]
+    pqv = np.where(types == BusMode.PQV.value)[0]
+    p = np.where(types == BusMode.P.value)[0]
     ref = np.where(types == BusMode.Slack.value)[0]
 
     if len(ref) == 0:  # there is no slack!
@@ -64,10 +66,10 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     else:
         pass  # no problem :)
 
-    no_slack = np.concatenate((pq, pv))
+    no_slack = np.concatenate((pq, pv, pqv, p))
     no_slack.sort()
 
-    return ref, pq, pv, no_slack
+    return ref, pq, pv, pqv, p, no_slack
 
 
 @nb.njit(cache=True)
@@ -202,7 +204,7 @@ class SimulationIndices:
         self.pq: IntVec = np.zeros(0, dtype=int)
         self.pqv: IntVec = np.zeros(0, dtype=int)
         self.pv: IntVec = np.zeros(0, dtype=int)  # PV-local
-        self.pvr: IntVec = np.zeros(0, dtype=int)  # PV-remote
+        self.p: IntVec = np.zeros(0, dtype=int)  # PV-remote
         self.vd: IntVec = np.zeros(0, dtype=int)
         self.no_slack: IntVec = np.zeros(0, dtype=int)
 
@@ -261,7 +263,7 @@ class SimulationIndices:
         self.i_vt_m: IntVec = np.zeros(0, dtype=int)
 
         # determine the bus indices
-        self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
+        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
         # determine the branch indices
         self.compile_control_indices(control_mode=control_mode, F=F, T=T)
@@ -278,7 +280,7 @@ class SimulationIndices:
         self.bus_types = bus_types
 
         # determine the bus indices
-        self.vd, self.pq, self.pv, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
+        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
     def compile_control_indices(self,
                                 control_mode: List[Union[TransformerControlType, ConverterControlType]],
