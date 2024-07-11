@@ -187,6 +187,8 @@ def get_psse_generator(generator: dev.Generator, bus_dict: Dict[dev.Bus, int], i
     psse_generator.I = bus_dict[generator.bus]
     psse_generator.ID = id_number
 
+    psse_generator.IREG = bus_dict.get(generator.bus, 0) if generator.bus is not None else 0
+
     psse_generator.PG = generator.P
     psse_generator.VS = generator.Vset
     psse_generator.QB = generator.Qmin

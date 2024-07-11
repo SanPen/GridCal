@@ -233,13 +233,14 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
     return elm
 
 
-def get_gridcal_generator(psse_elm: RawGenerator, logger: Logger) -> dev.Generator:
+def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.Bus], logger: Logger) -> dev.Generator:
     """
     Return Newton Load object
     Returns:
         Newton Load object
     """
     name = str(psse_elm.I) + '_' + str(psse_elm.ID).replace("'", "")
+
     elm = dev.Generator(name=name,
                         idtag=None,
                         code=name,
@@ -253,11 +254,15 @@ def get_gridcal_generator(psse_elm: RawGenerator, logger: Logger) -> dev.Generat
                         active=bool(psse_elm.STAT),
                         power_factor=psse_elm.WPF)
 
+    if psse_elm.IREG > 0:
+        elm.control_bus = psse_bus_dict[psse_elm.IREG]
+
     return elm
 
 
 def get_gridcal_transformer(psse_elm: RawTransformer,
-                            psse_bus_dict, Sbase,
+                            psse_bus_dict: Dict[int, dev.Bus],
+                            Sbase: float,
                             logger: Logger) -> Tuple[Union[dev.Transformer2W, dev.Transformer3W], int]:
     """
 
@@ -447,7 +452,10 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         raise Exception(str(psse_elm.windings) + ' number of windings!')
 
 
-def get_gridcal_line(psse_elm: RawBranch, psse_bus_dict, Sbase, logger: Logger) -> dev.Line:
+def get_gridcal_line(psse_elm: RawBranch,
+                     psse_bus_dict: Dict[int, dev.Bus],
+                     Sbase: float,
+                     logger: Logger) -> dev.Line:
     """
 
     :param psse_elm:
@@ -492,7 +500,10 @@ def get_gridcal_line(psse_elm: RawBranch, psse_bus_dict, Sbase, logger: Logger) 
     return branch
 
 
-def get_hvdc_from_vscdc(psse_elm: RawVscDCLine, psse_bus_dict, Sbase, logger: Logger) -> Union[dev.HvdcLine, None]:
+def get_hvdc_from_vscdc(psse_elm: RawVscDCLine,
+                        psse_bus_dict: Dict[int, dev.Bus],
+                        Sbase: float,
+                        logger: Logger) -> Union[dev.HvdcLine, None]:
     """
     Get equivalent object
     :param psse_elm:
@@ -540,7 +551,9 @@ def get_hvdc_from_vscdc(psse_elm: RawVscDCLine, psse_bus_dict, Sbase, logger: Lo
         return None
 
 
-def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase: float,
+def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine,
+                            psse_bus_dict: Dict[int, dev.Bus],
+                            Sbase: float,
                             logger: Logger) -> Union[dev.HvdcLine, None]:
     """
 
@@ -600,7 +613,11 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase
         return None
 
 
-def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger, circuit: MultiCircuit):
+def get_upfc_from_facts(psse_elm: RawFACTS,
+                        psse_bus_dict: Dict[int, dev.Bus],
+                        Sbase: float,
+                        logger: Logger,
+                        circuit: MultiCircuit):
     """
     Get equivalent object
     :param psse_elm:
@@ -628,7 +645,7 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
     if '*' in str(psse_elm.SET1):
         psse_elm.SET1 = 0.0
 
-    if abs(psse_elm.J) == 0:     # STATCOM device
+    if abs(psse_elm.J) == 0:  # STATCOM device
         if mode == 0:
             active = False
         else:
@@ -636,7 +653,7 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
 
         # TODO add STATCOM obj
 
-    elif abs(psse_elm.J) > 0:    # FACTS series device
+    elif abs(psse_elm.J) > 0:  # FACTS series device
 
         if mode == 0:
             active = False
@@ -808,7 +825,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     # Go through generators
     for psse_gen in psse_circuit.generators:
         bus = psse_bus_dict[psse_gen.I]
-        api_obj = get_gridcal_generator(psse_gen, logger)
+        api_obj = get_gridcal_generator(psse_gen, psse_bus_dict, logger)
 
         circuit.add_generator(bus, api_obj)
         api_obj.is_controlled = psse_gen.WMOD == 0 or psse_gen.WMOD == 1
