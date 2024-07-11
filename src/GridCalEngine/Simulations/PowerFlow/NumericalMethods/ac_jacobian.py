@@ -35,7 +35,7 @@ from scipy.sparse import csr_matrix, csc_matrix
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import (dSbus_dV_numba_sparse_csc,
                                                                               dSbus_dV_numba_sparse_csr)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.Utils.Sparse.csc2 import create_lookup, CSC, spsolve_csc
+from GridCalEngine.Utils.Sparse.csc2 import create_lookup, CSC
 
 
 @jit(nopython=True, cache=True)
@@ -410,10 +410,9 @@ def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, block1_idx: IntVec, block2_idx: In
     Create the AC Jacobian function with no embedded controls
     :param Ybus: Ybus matrix in CSC format
     :param V: Voltages vector
-    :param pv: array of pv bus indices
-    :param pq: array of pq indices
-    :param pqv: array of pv bus indices
-    :param p: array of pv bus indices
+    :param block1_idx: pv, pq, p, pqv
+    :param block2_idx: pq, p
+    :param block3_idx: pq, pqv
     :return: Jacobian Matrix in CSC format
     """
     if Ybus.format != 'csc':

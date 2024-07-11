@@ -108,6 +108,21 @@ class CSC:
         res.indptr = self.indptr.copy()
         return res
 
+    def dot(self, x: Vec):
+        """
+        Mat-vector multiplication
+        :param x: vector
+        :return:
+        """
+        assert self.n_cols == x.shape[0]
+        assert x.ndim == 1
+
+        y = np.zeros(self.n_rows, dtype=float64)
+        for j in range(self.n_cols):
+            for p in range(self.indptr[j], self.indptr[j + 1]):
+                y[self.indices[p]] += self.data[p] * x[j]
+        return y
+
 
 def mat_to_scipy(csc: CSC) -> csc_matrix:
     """

@@ -199,6 +199,8 @@ def solve(circuit: NumericalCircuit,
                                                        Y0=Y0,
                                                        pv_=pv,
                                                        pq_=pq,
+                                                       pqv_=pqv,
+                                                       p_=p,
                                                        Qmin=Qmin,
                                                        Qmax=Qmax,
                                                        tol=options.tolerance,
@@ -216,28 +218,16 @@ def solve(circuit: NumericalCircuit,
                                  Ybus=circuit.Ybus,
                                  B1=circuit.B1,
                                  B2=circuit.B2,
-                                 pq=pq,
-                                 pv=pv,
-                                 pqpv=pqpv,
+                                 pv_=pv,
+                                 pq_=pq,
+                                 pqv_=pqv,
+                                 p_=p,
                                  tol=options.tolerance,
                                  max_it=options.max_iter)
 
         # Newton-Raphson (full)
         elif solver_type == SolverType.NR:
-            if options.generalised_pf:
-                solution = pflw.NR_LS_GENERAL(nc=circuit,
-                                              V0=V0,
-                                              S0=S0,
-                                              I0=I0,
-                                              Y0=Y0,
-                                              tolerance=options.tolerance,
-                                              max_iter=options.max_iter,
-                                              acceleration_parameter=options.backtracking_parameter,
-                                              mu_0=options.trust_radius,
-                                              control_q=options.control_Q,
-                                              pf_options=options)
-
-            elif circuit.any_control:
+            if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
                 solution = pflw.NR_LS_ACDC(nc=circuit,
                                            V0=V0,
@@ -293,12 +283,15 @@ def solve(circuit: NumericalCircuit,
                                       Y0=Y0,
                                       pv_=pv,
                                       pq_=pq,
+                                      pqv_=pqv,
+                                      p_=p,
                                       Qmin=Qmin,
                                       Qmax=Qmax,
                                       tol=options.tolerance,
                                       max_it=options.max_iter,
                                       control_q=options.control_Q,
-                                      robust=True)
+                                      robust=True,
+                                      logger=logger)
 
         # Newton-Raphson in current equations
         elif solver_type == SolverType.NRI:

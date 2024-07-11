@@ -61,8 +61,15 @@ def set_bus_control_voltage(i: int,
 
     if not use_stored_guess:
         if not bus_voltage_used[i]:
-            bus_data.Vbus[i] = complex(candidate_Vm, 0)
-            bus_voltage_used[i] = True
+            if remote_control and j > -1:
+                # initialize the remote bus voltage to the control value
+                bus_data.Vbus[j] = complex(candidate_Vm, 0)
+                bus_voltage_used[j] = True
+            else:
+                # initialize the local bus voltage to the control value
+                bus_data.Vbus[i] = complex(candidate_Vm, 0)
+                bus_voltage_used[i] = True
+
         elif candidate_Vm != bus_data.Vbus[i]:
             logger.add_error(msg='Different control voltage set points',
                              device=bus_name,

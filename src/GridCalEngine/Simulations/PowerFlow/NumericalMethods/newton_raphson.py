@@ -45,6 +45,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
     :param Y0: Array of nodal admittance Injections (ZIP)
     :param pv_: Array with the indices of the PV buses
     :param pq_: Array with the indices of the PQ buses
+    :param pqv_: Array with the indices of the PQV buses
+    :param p_: Array with the indices of the P buses
     :param Qmin: array of lower reactive power limits per bus
     :param Qmax: array of upper reactive power limits per bus
     :param tol: Tolerance
@@ -74,9 +76,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
     blck1_idx = np.r_[pv, pq, p, pqv]
     blck2_idx = np.r_[pq, p]
     blck3_idx = np.r_[pq, pqv]
-
     n_block1 = len(blck1_idx)
-    n_block2 = len(blck2_idx)
 
     if n_block1 > 0:
 
