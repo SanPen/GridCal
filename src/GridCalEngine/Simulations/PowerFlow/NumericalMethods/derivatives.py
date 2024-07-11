@@ -49,7 +49,7 @@ def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, Vm: C
     :param Yp: indptr of Ybus in CSC format
     :param Yi: indices of Ybus in CSC format
     :param V: Voltages vector
-    :param E: Unitary voltages vector
+    :param Vm: voltage modules vector
     :return: dS_dVm, dS_dVa data ordered in the CSC format to match the indices of Ybus
     """
 

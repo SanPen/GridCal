@@ -190,7 +190,7 @@ def AC_jacobian_csr(Ybus: csr_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> csc
     return csr_matrix((Jx, Jj, Jp), shape=(nj, nj)).tocsc()
 
 
-@jit(nopython=True)
+@jit(nopython=True, cache=True)
 def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) -> CSC:
     """
     Calculates Jacobian in CSC format.
