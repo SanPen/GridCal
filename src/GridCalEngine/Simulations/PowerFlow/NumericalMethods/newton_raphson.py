@@ -25,7 +25,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.Utils.Sparse.csc2 import spsolve
+from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
 scipy.ALLOW_THREADS = True
@@ -98,7 +98,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             # compute update step
             try:
                 # dx = linear_solver(J, f)
-                dx = spsolve(J, f)
+                dx = spsolve_csc(J, f)
 
                 if np.isnan(dx).any():
                     end = time.time()

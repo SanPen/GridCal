@@ -24,6 +24,7 @@ import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as 
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
+import GridCalEngine.Utils.Sparse.csc2 as csc
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -49,7 +50,7 @@ def mu(Ybus, J, incS, dV, dx, pvpq, pq):
     # theoretically this is the second derivative matrix
     # since the Jacobian (J2) has been calculated with dV instead of V
 
-    J2 = AC_jacobian(Ybus, dV, pvpq, pq)
+    J2 = csc.mat_to_scipy(AC_jacobian(Ybus, dV, pvpq, pq))
 
     a = incS
     b = J * dx
@@ -124,7 +125,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
 
             # compute update step
             try:
-                dx = linear_solver(J, f)
+                dx = csc.spsolve_csc(J, f)
             except:
                 print(J)
                 converged = False

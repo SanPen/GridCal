@@ -35,7 +35,7 @@ from scipy.sparse import csr_matrix, csc_matrix
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import (dSbus_dV_numba_sparse_csc,
                                                                               dSbus_dV_numba_sparse_csr)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.Utils.Sparse.csc2 import create_lookup, CSC, spsolve
+from GridCalEngine.Utils.Sparse.csc2 import create_lookup, CSC, spsolve_csc
 
 
 @jit(nopython=True, cache=True)
@@ -212,16 +212,16 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
     """
 
     # create Jacobian from fast calc of dS_dV
-    dS_dVm_x, dS_dVa_x = dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, V / np.abs(V))
+    dS_dVm_x, dS_dVa_x = dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, np.abs(V))
 
     nj = len(pvpq) + len(pq)
-    nnz_estimate = 4 * len(dS_dVm_x)
+    nnz_estimate = 5 * len(dS_dVm_x)
     J = CSC(nj, nj, nnz_estimate, False)
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
 
-    pvpq_lookup = create_lookup(nbus, pvpq)
-    pq_lookup = create_lookup(nbus, pq)
+    lookup_pvpq = create_lookup(nbus, pvpq)
+    lookup_pq = create_lookup(nbus, pq)
 
     # get length of vectors
     npvpq = len(pvpq)
@@ -236,7 +236,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J1
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = pvpq_lookup[i]
+            ii = lookup_pvpq[i]
 
             if pvpq[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].real
@@ -246,7 +246,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J3
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = pq_lookup[i]
+            ii = lookup_pq[i]
 
             if pq[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].imag
@@ -262,7 +262,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J2
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = pvpq_lookup[i]
+            ii = lookup_pvpq[i]
 
             if pvpq[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].real
@@ -272,7 +272,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J4
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = pq_lookup[i]
+            ii = lookup_pq[i]
 
             if pq[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].imag

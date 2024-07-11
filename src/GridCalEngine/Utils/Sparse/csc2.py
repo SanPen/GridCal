@@ -155,7 +155,7 @@ def spfactor(A: CSC) -> SuperLU:
     return ret
 
 
-def spsolve(A: CSC, x: Vec) -> Vec:
+def spsolve_csc(A: CSC, x: Vec) -> Vec:
     """
     Sparse solution
     :param A: CSC matrix

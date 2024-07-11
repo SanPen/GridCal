@@ -23,7 +23,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls impo
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (polar_to_rect, compute_power)
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
-from GridCalEngine.Utils.Sparse.csc2 import spsolve, extend
+from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc, extend
 
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
@@ -312,7 +312,7 @@ def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, 
     s[npv + 2 * npq] = 1
 
     # tangent vector
-    z[np.r_[pvpq, nb + pq, 2 * nb]] = spsolve(J2, s)
+    z[np.r_[pvpq, nb + pq, 2 * nb]] = spsolve_csc(J2, s)
 
     # normalize_string tangent predictor  (dividing by the euclidean norm)
     z /= np.linalg.norm(z)
@@ -439,7 +439,7 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
         J = extend(J, dF_dlam, dP_dV, dP_dlam)
 
         # compute update step
-        dx = spsolve(J, F)
+        dx = spsolve_csc(J, F)
         dVa[pvpq] = dx[j1:j2]
         dVm[pq] = dx[j2:j3]
         dlam = dx[j3]

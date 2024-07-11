@@ -18,11 +18,12 @@ from time import time
 import numpy as np
 import numba as nb
 from scipy.sparse import csc_matrix, random, hstack, vstack
-from GridCalEngine.Utils.Sparse.csc2 import sp_slice, sp_slice_rows, csc_stack_2d_ff, scipy_to_mat, mat_to_scipy
+from scipy.sparse import rand
+from scipy.sparse.linalg import spsolve as spsolve_scipy
+from GridCalEngine.Utils.Sparse.csc2 import (sp_slice, sp_slice_rows, csc_stack_2d_ff, scipy_to_mat, spsolve_csc, extend)
 
 
 def test_sp_slice():
-
     m = 6
     n = 3
     data = np.array([4, 3, 3, 9, 7, 8, 4, 8, 8, 9]).astype(np.float64)
@@ -87,3 +88,50 @@ def test_stack_4():
 
     return True
 
+
+def test_spsolve() -> None:
+    """
+    Test the CSC oriented spsolve_csc function
+    """
+    for i in range(100):
+        m = np.random.randint(1, 1000)
+        matrix = rand(m, m, density=0.25, format="csc", random_state=42)
+        rhs = np.random.rand(m)
+
+        try:
+            a = spsolve_scipy(matrix, rhs)
+            ok_a = not np.isnan(a).any()
+
+            try:
+                b = spsolve_csc(scipy_to_mat(matrix), rhs)
+                ok_b = True
+
+                assert ok_a == ok_b
+                if ok_a and ok_b:
+                    assert np.allclose(a, b)
+
+            except RuntimeError:
+                ok_b = False
+
+        except RuntimeError:
+            ok_a = False
+
+
+def test_extend():
+    """
+    Test the extend function
+    """
+    for i in range(100):
+        m = np.random.randint(1, 1000)
+        n = np.random.randint(1, 1000)
+        matrix = rand(m, n, density=0.25, format="csc", random_state=42)
+        last_col = np.random.rand(m)
+        last_row = np.random.rand(n)
+        val = 1.0
+
+        last_row2 = np.r_[last_row, np.full(1, val)]
+        A = vstack([hstack([matrix, last_col.reshape(m, 1)]), last_row2.reshape(1, n + 1)], format="csc")
+
+        B = extend(scipy_to_mat(matrix), last_col, last_row, val)
+
+        assert np.allclose(A.todense(), B.todense())
