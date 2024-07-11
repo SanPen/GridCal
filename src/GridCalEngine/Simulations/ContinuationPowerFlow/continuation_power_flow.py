@@ -16,20 +16,15 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-import scipy
-import scipy.sparse as sp
 
 from GridCalEngine.enumerations import ReactivePowerControlMode, CpfParametrization, CpfStopAt
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (polar_to_rect, compute_power)
-from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+from GridCalEngine.Utils.Sparse.csc2 import spsolve, extend
 
-linear_solver = get_linear_solver()
-sparse = get_sparse_type()
-scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
@@ -298,14 +293,14 @@ def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, 
            dP_dV dP_dlam ]
     '''
 
-    last_col = np.empty((nj, 1))
-    last_col[:, 0] = dF_dlam
+    # last_col = np.empty((nj, 1))
+    # last_col[:, 0] = dF_dlam
+    #
+    # last_row = np.empty((1, nj + 1))
+    # last_row[0, :nj] = dP_dV
+    # last_row[0, nj] = dP_dlam
 
-    last_row = np.empty((1, nj + 1))
-    last_row[0, :nj] = dP_dV
-    last_row[0, nj] = dP_dlam
-
-    J2 = sp.vstack([sp.hstack([J, last_col], format="csc"), last_row], format="csc")
+    J2 = extend(J, dF_dlam, dP_dV, dP_dlam)
 
     Va_prev = np.angle(V)
     Vm_prev = np.abs(V)
@@ -317,7 +312,7 @@ def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, 
     s[npv + 2 * npq] = 1
 
     # tangent vector
-    z[np.r_[pvpq, nb + pq, 2 * nb]] = linear_solver(J2, s)
+    z[np.r_[pvpq, nb + pq, 2 * nb]] = spsolve(J2, s)
 
     # normalize_string tangent predictor  (dividing by the euclidean norm)
     z /= np.linalg.norm(z)
@@ -434,17 +429,17 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
         # J = sp.vstack([sp.hstack([J, dF_dlam.reshape(nj, 1)]),
         #                sp.hstack([dP_dV, dP_dlam])], format="csc")
 
-        last_col = np.empty((nj, 1))
-        last_col[:, 0] = dF_dlam
+        # last_col = np.empty((nj, 1))
+        # last_col[:, 0] = dF_dlam
+        #
+        # last_row = np.empty((1, nj + 1))
+        # last_row[0, :nj] = dP_dV
+        # last_row[0, nj] = dP_dlam
 
-        last_row = np.empty((1, nj + 1))
-        last_row[0, :nj] = dP_dV
-        last_row[0, nj] = dP_dlam
-
-        J = sp.vstack([sp.hstack([J, last_col], format="csc"), last_row], format="csc")
+        J = extend(J, dF_dlam, dP_dV, dP_dlam)
 
         # compute update step
-        dx = linear_solver(J, F)
+        dx = spsolve(J, F)
         dVa[pvpq] = dx[j1:j2]
         dVm[pq] = dx[j2:j3]
         dlam = dx[j3]

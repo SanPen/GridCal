@@ -16,9 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import List
 from numba import njit, int32, float64
+from numba import types
 from numba.experimental import jitclass
 import numpy as np
 from scipy.sparse import csc_matrix
+from scipy.sparse.linalg._dsolve._superlu import gstrf, SuperLU
 from GridCalEngine.basic_structures import IntVec, IntMat, Vec
 
 
@@ -28,19 +30,35 @@ from GridCalEngine.basic_structures import IntVec, IntMat, Vec
     ('nnz', int32),
     ('data', float64[:]),
     ('indices', int32[:]),
-    ('indptr', int32[:])
+    ('indptr', int32[:],),
+    ('format', types.unicode_type)
 ])
 class CSC:
     """
     numba CSC matrix struct
     """
 
-    def __init__(self, n_rows: int, n_cols: int, nnz: int):
+    def __init__(self, n_rows: int, n_cols: int, nnz: int, force_zeros: bool):
+        """
+        Constructor
+        :param n_rows:
+        :param n_cols:
+        :param nnz:
+        :param force_zeros:
+        """
+        self.format = "csc"
         self.n_rows = n_rows  # n rows
         self.n_cols = n_cols  # n cols
         self.nnz = nnz
-        self.data = np.zeros(nnz, dtype=np.float64)
-        self.indices = np.zeros(nnz, dtype=np.int32)
+
+        if force_zeros:
+            self.data = np.zeros(nnz, dtype=np.float64)
+            self.indices = np.zeros(nnz, dtype=np.int32)
+        else:
+            self.data = np.empty(nnz, dtype=np.float64)
+            self.indices = np.empty(nnz, dtype=np.int32)
+
+        # must always be zeros
         self.indptr = np.zeros(n_cols + 1, dtype=np.int32)
 
     @property
@@ -79,6 +97,17 @@ class CSC:
         """
         return self.todense()
 
+    def copy(self):
+        """
+        Create a copy of this matrix
+        :return:
+        """
+        res = CSC(self.n_rows, self.n_cols, self.nnz, False)
+        res.data = self.data.copy()
+        res.indices = self.indices.copy()
+        res.indptr = self.indptr.copy()
+        return res
+
 
 def mat_to_scipy(csc: CSC) -> csc_matrix:
     """
@@ -95,11 +124,45 @@ def scipy_to_mat(mat: csc_matrix) -> CSC:
     :param mat:
     :return:
     """
-    x = CSC(mat.shape[0], mat.shape[1], mat.nnz)
+    x = CSC(mat.shape[0], mat.shape[1], mat.nnz, False)
     x.data = mat.data.astype(float)
     x.indices = mat.indices.astype(np.int32)
     x.indptr = mat.indptr.astype(np.int32)
     return x
+
+
+def spfactor(A: CSC) -> SuperLU:
+    """
+    Sparse factorization with SuperLU
+    :param A: CSC matrix
+    :return: SuperLU factorization object
+    """
+    permc_spec = None
+    diag_pivot_thresh = None
+    relax = None
+    panel_size = None
+    _options = dict(DiagPivotThresh=diag_pivot_thresh,
+                    ColPerm=permc_spec,
+                    PanelSize=panel_size,
+                    Relax=relax)
+
+    if _options["ColPerm"] == "NATURAL":
+        _options["SymmetricMode"] = True
+
+    ret = gstrf(A.n_cols, A.nnz, A.data, A.indices, A.indptr,
+                ilu=False, options=_options, csc_construct_func=None)
+
+    return ret
+
+
+def spsolve(A: CSC, x: Vec) -> Vec:
+    """
+    Sparse solution
+    :param A: CSC matrix
+    :param x: vector
+    :return: solution
+    """
+    return spfactor(A).solve(x)
 
 
 @njit(cache=True)
@@ -124,7 +187,7 @@ def pack_4_by_4(A: CSC, B: CSC, C: CSC, D: CSC) -> CSC:
 
     res = CSC(A.n_rows + C.n_rows,
               A.n_cols + B.n_cols,
-              A.nnz + B.nnz + C.nnz + D.nnz)
+              A.nnz + B.nnz + C.nnz + D.nnz, False)
 
     cnt = 0
     res.indptr[0] = 0
@@ -176,7 +239,7 @@ def pack_3_by_4(A: CSC, B: CSC, C: CSC) -> CSC:
 
     res = CSC(A.n_rows + C.n_rows,
               A.n_cols + B.n_cols,
-              A.nnz + B.nnz + C.nnz)
+              A.nnz + B.nnz + C.nnz, False)
 
     cnt = 0
     res.indptr[0] = 0
@@ -233,7 +296,7 @@ def sp_transpose(A: CSC) -> CSC:
     :param A: CSC matrix
     :return: CSC transposed matrix
     """
-    C = CSC(A.n_cols, A.n_rows, A.nnz)
+    C = CSC(A.n_cols, A.n_rows, A.nnz, False)
 
     w = np.zeros(A.n_rows, dtype=int32)
 
@@ -269,7 +332,7 @@ def sp_slice_cols(A: CSC, cols: IntMat) -> CSC:
     # pass2: size the vector and perform the slicing
     ncols = len(cols)
 
-    res = CSC(A.n_rows, ncols, nnz)
+    res = CSC(A.n_rows, ncols, nnz, False)
     n = 0
     p = 0
     res.indptr[p] = 0
@@ -321,7 +384,7 @@ def sp_slice(A: CSC, rows: IntVec, cols: IntVec):
 
     nnz = 0
     p = 0
-    B = CSC(n_rows, n_cols, A.nnz)
+    B = CSC(n_rows, n_cols, A.nnz, False)
     B.indptr[p] = 0
 
     # generate lookup for the non immediate axis (for CSC it is the rows) -> index lookup
@@ -383,7 +446,7 @@ def csc_stack_2d_ff(mats: List[CSC], m_rows: int = 1, m_cols: int = 1) -> CSC:
                 ncols += col
 
     # pass 2: fill in the data
-    res = CSC(nrows, ncols, nnz)
+    res = CSC(nrows, ncols, nnz, False)
     cnt = 0
     res.indptr[0] = 0
     offset_col = 0
@@ -425,7 +488,7 @@ def diags(array: Vec) -> CSC:
     :return:
     """
     m = len(array)
-    res = CSC(m, m, m)
+    res = CSC(m, m, m, False)
 
     for i in range(m):
         res.indptr[i] = i
@@ -438,14 +501,14 @@ def diags(array: Vec) -> CSC:
 
 
 @njit(cache=True)
-def diagc(m: int, value: float) -> CSC:
+def diagc(m: int, value: float = 1.0) -> CSC:
     """
     Get diagonal sparse matrix from value
     :param m: size of the matrix
     :param value: value to set
     :return: CSC matrix
     """
-    res = CSC(m, m, m)
+    res = CSC(m, m, m, False)
 
     for i in range(m):
         res.indptr[i] = i
@@ -455,3 +518,83 @@ def diagc(m: int, value: float) -> CSC:
     res.indptr[m] = m
 
     return res
+
+
+@njit(cache=True)
+def create_lookup(size: int, indices: IntVec) -> IntVec:
+    """
+    Create a lookup array
+    :param size: Size of the thing (i.e. number of buses)
+    :param indices: indices to map (i.e. pq indices)
+    :return: lookup array
+    """
+    lookup = np.zeros(size, dtype=int32)
+    lookup[indices] = np.arange(len(indices), dtype=int32)
+    return lookup
+
+
+@njit(cache=False)
+def extend(A: CSC, last_col: Vec, last_row: Vec, corner_val: float) -> CSC:
+    """
+    B = |   A       last_col |
+        | last_row  val      |
+
+    :param A: Original matrix
+    :param last_col: last column to be added to A
+    :param last_row: last row to be added to A | last_col
+    :param corner_val: The botton-right corner value
+    :return: Extended matrix
+    """
+    assert A.n_rows == len(last_col)
+    assert A.n_cols == len(last_row)
+
+    B = CSC(A.n_rows + 1,
+            A.n_cols + 1,
+            A.nnz + len(last_col) + len(last_row) + 1,
+            False)
+
+    nnz = 0
+    p = 0
+    B.indptr[p] = 0
+
+    # Copy A
+    for j in range(A.n_cols):  # columns
+
+        for k in range(A.indptr[j], A.indptr[j + 1]):  # rows of A[:, j]
+
+            # row index translation to the "rows" space
+            i = A.indices[k]
+
+            B.data[nnz] = A.data[k]
+            B.indices[nnz] = i
+            nnz += 1
+
+        # add the last row value for this column
+        if last_row[j] != 0:
+            B.data[nnz] = last_row[j]
+            B.indices[nnz] = A.n_rows
+            nnz += 1
+
+        p += 1
+        B.indptr[p] = nnz
+
+    # add the last column
+    for i in range(A.n_rows):  # rows of A[:, j]
+        if last_col[i] != 0.0:
+            B.data[nnz] = last_col[i]
+            B.indices[nnz] = i
+            nnz += 1
+
+    # add the corner value
+    if corner_val != 0.0:
+        B.data[nnz] = corner_val
+        B.indices[nnz] = A.n_rows
+        nnz += 1
+
+    p += 1
+    B.indptr[p] = nnz
+
+    B.indptr[p] = nnz
+    B.resize(nnz)
+
+    return B

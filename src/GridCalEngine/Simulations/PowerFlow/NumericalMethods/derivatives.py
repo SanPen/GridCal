@@ -67,7 +67,7 @@ def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, E: Cx
 
     # init buffer vector
     n = len(Yp) - 1
-    Ibus = np.zeros(n, dtype=np.complex128)
+    Ibus = np.zeros(n, dtype=nb.complex128)
     dS_dVm = Yx.copy()
     dS_dVa = Yx.copy()
 

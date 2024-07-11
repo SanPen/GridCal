@@ -1,6 +1,7 @@
 # Copyright 1996-2015 PSERC. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
+from typing import Any
 
 # Copyright (c) 2016-2020 by University of Kassel and Fraunhofer Institute for for Energy Economics
 # and Energy System Technology (IEE) Kassel and individual contributors (see AUTHORS file for details).
@@ -27,42 +28,25 @@
 # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 # WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-import numba as nb
-from numba import jit, njit
-from numpy import conj, abs
+from numba import jit
 from numpy import float64, int32
-from numpy.core.multiarray import zeros, empty
 import numpy as np
-import scipy.sparse as sp
 from scipy.sparse import csr_matrix, csc_matrix
-import GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives as deriv
-
-
-def dSbus_dV(Ybus, V):
-    """
-    Computes partial derivatives of power injection w.r.t. voltage.
-    """
-
-    Ibus = Ybus * V
-    ib = range(len(V))
-    diagV = csr_matrix((V, (ib, ib)))
-    diagIbus = csr_matrix((Ibus, (ib, ib)))
-    diagVnorm = csr_matrix((V / abs(V), (ib, ib)))
-    dS_dVm = diagV * conj(Ybus * diagVnorm) + conj(diagIbus) * diagVnorm
-    dS_dVa = 1j * diagV * conj(diagIbus - Ybus * diagV)
-    return dS_dVm, dS_dVa
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import (dSbus_dV_numba_sparse_csc,
+                                                                              dSbus_dV_numba_sparse_csr)
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.Utils.Sparse.csc2 import create_lookup, CSC, spsolve
 
 
 @jit(nopython=True, cache=True)
-def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma: no cover
+def create_J_csr(nbus, dS_dVm_x, dS_dVa_x, Yp, Yj, pvpq, pq, Jx, Jj, Jp):  # pragma: no cover
     """
     Calculates Jacobian in CSR format.
-    :param dVm_x:
-    :param dVa_x:
+    :param nbus:
+    :param dS_dVm_x:
+    :param dS_dVa_x:
     :param Yp:
     :param Yj:
-    :param pvpq_lookup:
     :param pvpq:
     :param pq:
     :param Jx:
@@ -107,9 +91,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
 
     Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
     """
-    # Jacobi Matrix in sparse form
-    # Jp, Jx, Jj equal J like:
-    # J = zeros(shape=(ndim, ndim), dtype=float64)
+    pvpq_lookup = create_lookup(nbus, pvpq)
 
     # get length of vectors
     npvpq = len(pvpq)
@@ -136,13 +118,13 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
             if pvpq[cc] == Yj[c]:
                 # entry found
                 # equals entry of J11: J[r,cc] = dS_dVa[c].real
-                Jx[nnz] = dVa_x[c].real
+                Jx[nnz] = dS_dVa_x[c].real
                 Jj[nnz] = cc
                 nnz += 1
 
                 # if entry is found in the "pq part" of pvpq = add entry of J12
                 if cc >= npv:
-                    Jx[nnz] = dVm_x[c].real
+                    Jx[nnz] = dS_dVm_x[c].real
                     Jj[nnz] = cc + npq
                     nnz += 1
 
@@ -158,13 +140,13 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
             if pvpq[cc] == Yj[c]:
                 # entry found
                 # equals entry of J21: J[r + lpvpq, cc] = dS_dVa[c].imag
-                Jx[nnz] = dVa_x[c].imag
+                Jx[nnz] = dS_dVa_x[c].imag
                 Jj[nnz] = cc
                 nnz += 1
 
                 if cc >= npv:
                     # if entry is found in the "pq part" of pvpq = Add entry of J22
-                    Jx[nnz] = dVm_x[c].imag
+                    Jx[nnz] = dS_dVm_x[c].imag
                     Jj[nnz] = cc + npq
                     nnz += 1
 
@@ -172,82 +154,7 @@ def create_J(dVm_x, dVa_x, Yp, Yj, pvpq_lookup, pvpq, pq, Jx, Jj, Jp):  # pragma
         Jp[r + npvpq + 1] = nnz - nnzStart + Jp[r + npvpq]
 
 
-# @jit(i8(c16[:], c16[:], i4[:], i4[:], i8[:], i8[:], f8[:], i8[:], i8[:]), nopython=True, cache=True)
-@jit(nopython=True, cache=True)
-def create_J_no_pv(dS_dVm, dS_dVa, Yp, Yj, pvpq_lookup, pvpq, Jx, Jj, Jp):  # pragma: no cover
-    """
-        Calculates Jacobian faster with numba and sparse matrices. This version is similar to create_J except that
-        if pvpq = pq (when no pv bus is available) some if statements are obsolete and J11 = J12 and J21 = J22
-
-        Input: dS_dVa and dS_dVm in CSR sparse form (Yx = data, Yp = indptr, Yj = indices), pvpq, pq from pypower
-
-        OUTPUT: data from CSR form of Jacobian (Jx, Jj, Jp) and number of non zeros (nnz)
-
-        @author: Florian Schaefer
-        @date: 30.08.2016
-
-        see comments in create_J
-    """
-    # Jacobi Matrix in sparse form
-    # Jp, Jx, Jj equal J like:
-    # J = zeros(shape=(ndim, ndim), dtype=float64)
-
-    # get info of vector
-    lpvpq = len(pvpq)
-
-    # nonzeros in J
-    nnz = 0
-
-    # iterate rows of J
-    # first iterate pvpq (J11 and J12)
-    for r in range(lpvpq):
-        # nnzStart is necessary to calculate nonzeros per row
-        nnzStart = nnz
-        # iterate columns of J11 = dS_dVa.real at positions in pvpq
-        # iterate columns of J12 = dS_dVm.real at positions in pq (=pvpq)
-        for c in range(Yp[pvpq[r]], Yp[pvpq[r] + 1]):
-            cc = pvpq_lookup[Yj[c]]
-
-            '''
-            pvpq_lookup = zeros(Ybus.n_nonzero + 1)        
-            for i in range(npvpq): 
-                pvpq_lookup[pvpq[i]] = i;
-            '''
-
-            if pvpq[cc] == Yj[c]:
-                # entry found J11
-                # J[r,cc] = dS_dVa[c].real
-                Jx[nnz] = dS_dVa[c].real
-                Jj[nnz] = cc
-                nnz += 1
-                # also entry in J12
-                Jx[nnz] = dS_dVm[c].real
-                Jj[nnz] = cc + lpvpq
-                nnz += 1
-        # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
-        Jp[r + 1] = nnz - nnzStart + Jp[r]
-    # second: iterate pq (J21 and J22)
-    for r in range(lpvpq):
-        nnzStart = nnz
-        # iterate columns of J21 = dS_dVa.imag at positions in pvpq
-        # iterate columns of J22 = dS_dVm.imag at positions in pq (=pvpq)
-        for c in range(Yp[pvpq[r]], Yp[pvpq[r] + 1]):
-            cc = pvpq_lookup[Yj[c]]
-            if pvpq[cc] == Yj[c]:
-                # entry found J21
-                # J[r + lpvpq, cc] = dS_dVa[c].imag
-                Jx[nnz] = dS_dVa[c].imag
-                Jj[nnz] = cc
-                nnz += 1
-                # also entry in J22
-                Jx[nnz] = dS_dVm[c].imag
-                Jj[nnz] = cc + lpvpq
-                nnz += 1
-        # Jp: number of nonzeros per row = nnz - nnzStart (nnz at begging of loop - nnz at end of loop)
-        Jp[r + lpvpq + 1] = nnz - nnzStart + Jp[r + lpvpq]
-
-
-def AC_jacobian(Ybus, V, pvpq, pq):
+def AC_jacobian_csr(Ybus: csr_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> csc_matrix:
     """
     Create the AC Jacobian function with no embedded controls
     :param Ybus: Ybus matrix in CSC format
@@ -257,28 +164,22 @@ def AC_jacobian(Ybus, V, pvpq, pq):
     :return: Jacobian Matrix in CSR format
     """
 
-    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
-    pvpq_lookup[pvpq] = np.arange(len(pvpq))
+    nbus = Ybus.shape[0]
 
     # create Jacobian from fast calc of dS_dV
-    dS_dVm, dS_dVa = deriv.dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / np.abs(V))
+    dS_dVm, dS_dVa = dSbus_dV_numba_sparse_csr(Ybus.data, Ybus.indptr, Ybus.indices, V, V / np.abs(V))
 
     # data in J, space pre-allocated is bigger than actual Jx -> will be reduced later on
-    Jx = empty(len(dS_dVm) * 4, dtype=float64)
+    Jx = np.empty(len(dS_dVm) * 4, dtype=float64)
 
     # row pointer, dimension = pvpq.shape[0] + pq.shape[0] + 1
-    Jp = zeros(pvpq.shape[0] + pq.shape[0] + 1, dtype=int32)
+    Jp = np.zeros(pvpq.shape[0] + pq.shape[0] + 1, dtype=int32)
 
     # indices, same with the pre-allocated space (see Jx)
-    Jj = empty(len(dS_dVm) * 4, dtype=int32)
+    Jj = np.empty(len(dS_dVm) * 4, dtype=int32)
 
     # fill Jx, Jj and Jp in CSR order
-    # if len(pvpq) == len(pq):
-    #     create_J_no_pv(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, Jx, Jj, Jp)
-    # else:
-    #     create_J(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
-
-    create_J(dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq_lookup, pvpq, pq, Jx, Jj, Jp)
+    create_J_csr(nbus, dS_dVm, dS_dVa, Ybus.indptr, Ybus.indices, pvpq, pq, Jx, Jj, Jp)
 
     # resize before generating the scipy sparse matrix
     Jx.resize(Jp[-1], refcheck=False)
@@ -289,239 +190,120 @@ def AC_jacobian(Ybus, V, pvpq, pq):
     return csr_matrix((Jx, Jj, Jp), shape=(nj, nj)).tocsc()
 
 
-@njit(cache=True)
-def jacobian_numba(nbus, Gi, Gp, Gx, Bx, P, Q, E, F, Vm, pq, pvpq):
+@jit(nopython=True)
+def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) -> CSC:
     """
-    Compute the Tinney version of the AC jacobian without any sin, cos or abs
-    (Lynn book page 89)
+    Calculates Jacobian in CSC format.
+
+    J has the shape
+
+            pvpq      pq
+    pvpq | dP_dVa | dP_dVm |
+      pq | dQ_dVa | dQ_dVm |
+
     :param nbus:
-    :param Gi:
-    :param Gp:
-    :param Gx:
-    :param Bx:
-    :param P: Real computed power
-    :param Q: Imaginary computed power
-    :param E: Real voltage
-    :param F: Imaginary voltage
-    :param Vm: Voltage module
-    :param pq: array pf pq indices
-    :param pvpq: array of pv indices
-    :return: CSC Jacobian matrix
+    :param Yx:
+    :param Yp:
+    :param Yi:
+    :param V:
+    :param pvpq:
+    :param pq:
+    :return:
     """
-    npqpv = len(pvpq)
-    n_rows = len(pvpq) + len(pq)
-    n_cols = len(pvpq) + len(pq)
+
+    # create Jacobian from fast calc of dS_dV
+    dS_dVm_x, dS_dVa_x = dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, V / np.abs(V))
+
+    nj = len(pvpq) + len(pq)
+    nnz_estimate = 4 * len(dS_dVm_x)
+    J = CSC(nj, nj, nnz_estimate, False)
+
+    # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
+
+    pvpq_lookup = create_lookup(nbus, pvpq)
+    pq_lookup = create_lookup(nbus, pq)
+
+    # get length of vectors
+    npvpq = len(pvpq)
+
+    # nonzeros in J
     nnz = 0
     p = 0
-    Jx = np.empty(len(Gx) * 4, dtype=nb.float64)  # data
-    Ji = np.empty(len(Gx) * 4, dtype=nb.int32)  # indices
-    Jp = np.empty(n_cols + 1, dtype=nb.int32)  # pointers
-    Jp[p] = 0
 
-    # generate lookup for the non-immediate axis (for CSC it is the rows) -> index lookup
-    lookup_pvpq = np.zeros(nbus, dtype=nb.int32)
-    lookup_pvpq[pvpq] = np.arange(len(pvpq), dtype=nb.int32)
+    # J1 and J3 -----------------------------------------------------------------------------------------
+    for j in pvpq:  # columns
 
-    lookup_pq = np.zeros(nbus, dtype=nb.int32)
-    lookup_pq[pq] = np.arange(len(pq), dtype=nb.int32)
+        # J1
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = pvpq_lookup[i]
 
-    for j in pvpq:  # sliced columns
-
-        # fill in J1
-        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
-
-            # row index translation to the "rows" space
-            i = Gi[k]
-            ii = lookup_pvpq[i]
-
-            if pvpq[ii] == i:  # rows
-                # entry found
-                if i != j:
-                    Jx[nnz] = F[i] * (Gx[k] * E[j] - Bx[k] * F[j]) - \
-                              E[i] * (Bx[k] * E[j] + Gx[k] * F[j])
-                else:
-                    Jx[nnz] = - Q[i] - Bx[k] * (E[i] * E[i] + F[i] * F[i])
-
-                Ji[nnz] = ii
+            if pvpq[ii] == i:
+                J.data[nnz] = dS_dVa_x[k].real
+                J.indices[nnz] = ii
                 nnz += 1
 
-        # fill in J3
-        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
+        # J3
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = pq_lookup[i]
 
-            # row index translation to the "rows" space
-            i = Gi[k]
-            ii = lookup_pq[i]
-
-            if pq[ii] == i:  # rows
-                # entry found
-                if i != j:
-                    Jx[nnz] = - E[i] * (Gx[k] * E[j] - Bx[k] * F[j]) \
-                              - F[i] * (Bx[k] * E[j] + Gx[k] * F[j])
-                else:
-                    Jx[nnz] = P[i] - Gx[k] * (E[i] * E[i] + F[i] * F[i])
-
-                Ji[nnz] = ii + npqpv
+            if pq[ii] == i:
+                J.data[nnz] = dS_dVa_x[k].imag
+                J.indices[nnz] = ii + npvpq
                 nnz += 1
 
         p += 1
-        Jp[p] = nnz
+        J.indptr[p] = nnz
 
-    # J2 and J4
-    for j in pq:  # sliced columns
+    # J2 and J4 -----------------------------------------------------------------------------------------
+    for j in pq:  # columns
 
-        # fill in J2
-        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
+        # J2
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = pvpq_lookup[i]
 
-            # row index translation to the "rows" space
-            i = Gi[k]
-            ii = lookup_pvpq[i]
-
-            if pvpq[ii] == i:  # rows
-                # entry found
-                if i != j:
-                    Jx[nnz] = (E[i] * (Gx[k] * E[j] - Bx[k] * F[j]) + F[i] * (Bx[k] * E[j] + Gx[k] * F[j]))  # / Vm[j]
-                else:
-                    Jx[nnz] = (P[i] + Gx[k] * (E[i] * E[i] + F[i] * F[i]))  # / Vm[i]
-
-                Ji[nnz] = ii
+            if pvpq[ii] == i:
+                J.data[nnz] = dS_dVm_x[k].real
+                J.indices[nnz] = ii
                 nnz += 1
 
-        # fill in J4
-        for k in range(Gp[j], Gp[j + 1]):  # rows of A[:, j]
+        # J4
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = pq_lookup[i]
 
-            # row index translation to the "rows" space
-            i = Gi[k]
-            ii = lookup_pq[i]
-
-            if pq[ii] == i:  # rows
-                # entry found
-                if i != j:
-                    Jx[nnz] = (F[i] * (Gx[k] * E[j] - Bx[k] * F[j]) - E[i] * (Bx[k] * E[j] + Gx[k] * F[j]))  # / Vm[j]
-                else:
-                    Jx[nnz] = (Q[i] - Bx[k] * (E[i] * E[i] + F[i] * F[i]))  # / Vm[i]
-
-                Ji[nnz] = ii + npqpv
+            if pq[ii] == i:
+                J.data[nnz] = dS_dVm_x[k].imag
+                J.indices[nnz] = ii + npvpq
                 nnz += 1
 
         p += 1
-        Jp[p] = nnz
+        J.indptr[p] = nnz
 
-    # last pointer entry
-    Jp[p] = nnz
-
-    # reseize
-    # Jx = np.resize(Jx, nnz)
-    # Ji = np.resize(Ji, nnz)
-
-    return Jx, Ji, Jp, n_rows, n_cols, nnz
+    J.indptr[p] = nnz
+    J.resize(nnz)
+    return J
 
 
-def AC_jacobian2(Y, S, V, Vm, pq, pv):
-
-    Jx, Ji, Jp, n_rows, n_cols, nnz = jacobian_numba(nbus=len(S),
-                                                     Gi=Y.indices, Gp=Y.indptr, Gx=Y.data.real,
-                                                     Bx=Y.data.imag, P=S.real, Q=S.imag,
-                                                     E=V.real, F=V.imag, Vm=Vm,
-                                                     pq=pq, pvpq=np.r_[pv, pq])
-
-    Jx = np.resize(Jx, nnz)
-    Ji = np.resize(Ji, nnz)
-
-    return csc_matrix((Jx, Ji, Jp), shape=(n_rows, n_cols))
-
-
-
-
-
-
-def Jacobian(Ybus, V, Ibus, pq, pvpq):
+def AC_jacobian(Ybus: csc_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> CSC:
     """
-    Computes the system Jacobian matrix in polar coordinates
-    Args:
-        Ybus: Admittance matrix
-        V: Array of nodal voltages
-        Ibus: Array of nodal current Injections
-        pq: Array with the indices of the PQ buses
-        pvpq: Array with the indices of the PV and PQ buses
-
-    Returns:
-        The system Jacobian matrix
+    Create the AC Jacobian function with no embedded controls
+    :param Ybus: Ybus matrix in CSC format
+    :param V: Voltages vector
+    :param pvpq: array of pv|pq bus indices
+    :param pq: array of pq indices
+    :return: Jacobian Matrix in CSC format
     """
-    I = Ybus * V - Ibus
+    if Ybus.format != 'csc':
+        Ybus = Ybus.tocsc()
 
-    diagV = sp.diags(V)
-    diagI = sp.diags(I)
-    diagVnorm = sp.diags(V / np.abs(V))
+    nbus = Ybus.shape[0]
 
-    dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
-    dS_dVa = 1.0j * diagV * np.conj(diagI - Ybus * diagV)
+    # Create J in CSC order
+    # nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq
+    J = create_J_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, pvpq, pq)
 
-    J = sp.vstack([sp.hstack([dS_dVa[np.ix_(pvpq, pvpq)].real, dS_dVm[np.ix_(pvpq, pq)].real]),
-                   sp.hstack([dS_dVa[np.ix_(pq, pvpq)].imag, dS_dVm[np.ix_(pq, pq)].imag])], format="csc")
+    return J
 
-    return csc_matrix(J)
-
-
-def Jacobian_cartesian(Ybus, V, Ibus, pq, pvpq):
-    """
-    Computes the system Jacobian matrix in cartesian coordinates
-    Args:
-        Ybus: Admittance matrix
-        V: Array of nodal voltages
-        Ibus: Array of nodal current Injections
-        pq: Array with the indices of the PQ buses
-        pvpq: Array with the indices of the PV and PQ buses
-
-    Returns:
-        The system Jacobian matrix in cartesian coordinates
-    """
-    I = Ybus * V - Ibus
-
-    diagV = sp.diags(V)
-    diagI = sp.diags(I)
-    VY = diagV * np.conj(Ybus)
-
-    dS_dVr = np.conj(diagI) + VY  # dSbus / dVr
-    dS_dVi = 1j * (np.conj(diagI) - VY)  # dSbus / dVi
-
-    '''
-    j11 = real(dSbus_dVr([pq; pv], pq));    j12 = real(dSbus_dVi([pq; pv], [pv; pq]));
-
-    j21 = imag(dSbus_dVr(pq, pq));          j22 = imag(dSbus_dVi(pq, [pv; pq]));
-
-
-    J = [   j11 j12;
-            j21 j22;    ];
-    '''
-
-    J = sp.vstack([sp.hstack([dS_dVr[np.ix_(pvpq, pq)].real, dS_dVi[np.ix_(pvpq, pvpq)].real]),
-                   sp.hstack([dS_dVr[np.ix_(pq, pq)].imag, dS_dVi[np.ix_(pq, pvpq)].imag])], format="csc")
-
-    return csc_matrix(J)
-
-
-def Jacobian_decoupled(Ybus, V, Ibus, pq, pvpq):
-    """
-    Computes the decoupled Jacobian matrices
-    Args:
-        Ybus: Admittance matrix
-        V: Array of nodal voltages
-        Ibus: Array of nodal current Injections
-        pq: Array with the indices of the PQ buses
-        pvpq: Array with the indices of the PV and PQ buses
-
-    Returns: J11, J22
-    """
-    I = Ybus * V - Ibus
-
-    diagV = sp.diags(V)
-    diagI = sp.diags(I)
-    diagVnorm = sp.diags(V / np.abs(V))
-
-    dS_dVm = diagV * np.conj(Ybus * diagVnorm) + np.conj(diagI) * diagVnorm
-    dS_dVa = 1.0j * diagV * np.conj(diagI - Ybus * diagV)
-
-    J11 = dS_dVa[np.ix_(pvpq, pvpq)].real
-    J22 = dS_dVm[np.ix_(pq, pq)].imag
-
-    return J11, J22
