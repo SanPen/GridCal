@@ -3435,7 +3435,7 @@ class SchematicWidget(BaseDiagramWidget):
         PVB = 6
         '''
 
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage', 'P', 'PQV']
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
         max_flow = 1
 
         if len(buses) == len(vnorm):

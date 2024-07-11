@@ -49,6 +49,8 @@ def solve(circuit: NumericalCircuit,
           Beq: Vec,
           pq: IntVec,
           pv: IntVec,
+          pqv: IntVec,
+          p: IntVec,
           ref: IntVec,
           pqpv: IntVec,
           Qmin: Vec,
@@ -68,6 +70,8 @@ def solve(circuit: NumericalCircuit,
     :param Beq: Array of branch equivalent susceptances
     :param pq: Array of pq nodes
     :param pv: Array of pv nodes
+    :param pqv: Array of pqv nodes
+    :param p: Array of p values
     :param ref: Array of slack nodes
     :param pqpv: Array of (sorted) pq and pv nodes
     :param Qmin: Array of minimum reactive power capability per bus
@@ -254,6 +258,8 @@ def solve(circuit: NumericalCircuit,
                                       Y0=Y0,
                                       pv_=pv,
                                       pq_=pq,
+                                      pqv_=pqv,
+                                      p_=p,
                                       Qmin=Qmin,
                                       Qmax=Qmax,
                                       tol=options.tolerance,
@@ -354,6 +360,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                      branch_rates: Vec,
                      pq: IntVec,
                      pv: IntVec,
+                     pqv: IntVec,
+                     p: IntVec,
                      vd: IntVec,
                      pqpv: IntVec,
                      Qmin: Vec,
@@ -374,6 +382,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
     :param branch_rates: Array of branch rates
     :param pq: Array of pq nodes
     :param pv: Array of pv nodes
+    :param pqv: Array of pqv nodes
+    :param p: Array of p nodes
     :param vd: Array of slack nodes
     :param pqpv: Array of (sorted) pq and pv nodes
     :param Qmin: Array of minimum reactive power capability per bus
@@ -419,6 +429,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                          Beq=Beq,
                          pq=pq,
                          pv=pv,
+                         pqv=pqv,
+                         p=p,
                          ref=vd,
                          pqpv=pqpv,
                          Qmin=Qmin,
@@ -446,6 +458,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                                  Beq=Beq,
                                  pq=pq,
                                  pv=pv,
+                                 pqv=pqv,
+                                 p=p,
                                  ref=vd,
                                  pqpv=pqpv,
                                  Qmin=Qmin,
@@ -619,11 +633,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     Shvdc_prev = Shvdc.copy()
 
     # compute islands
-    if options.generalised_pf:
-        islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
-                                        generalised_pf=options.generalised_pf)
-    else:
-        islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
     results.island_number = len(islands)
 
     # initialize the all controls var
@@ -658,6 +668,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                     branch_rates=island.Rates,
                     pq=island.pq,
                     pv=island.pv,
+                    pqv=island.pqv,
+                    p=island.p,
                     vd=island.vd,
                     pqpv=island.pqpv,
                     Qmin=island.Qmin_bus,

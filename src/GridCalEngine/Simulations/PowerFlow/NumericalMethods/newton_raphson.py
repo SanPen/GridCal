@@ -19,7 +19,7 @@ import time
 import scipy
 import numpy as np
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian, AC_jacobianVc
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.enumerations import ReactivePowerControlMode
@@ -32,7 +32,7 @@ scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
-def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
+def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
           acceleration_parameter=0.05, control_q=ReactivePowerControlMode.NoControl,
           verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
@@ -69,17 +69,21 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     # set up indexing for updating V
     pq = pq_.copy()
     pv = pv_.copy()
-    pvpq = np.r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
-    npvpq = npv + npq
+    pqv = pqv_.copy()
+    p = p_.copy()
+    blck1_idx = np.r_[pv, pq, p, pqv]
+    blck2_idx = np.r_[pq, p]
+    blck3_idx = np.r_[pq, pqv]
 
-    if npvpq > 0:
+    n_block1 = len(blck1_idx)
+    n_block2 = len(blck2_idx)
+
+    if n_block1 > 0:
 
         # evaluate F(x0)
         Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
         Scalc = cf.compute_power(Ybus, V)
-        f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+        f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
         norm_f = cf.compute_fx_error(f)
         converged = norm_f < tol
 
@@ -93,7 +97,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             iteration += 1
 
             # evaluate Jacobian
-            J = AC_jacobian(Ybus, V, pvpq, pq)
+            J = AC_jacobianVc(Ybus, V, blck1_idx, blck2_idx, blck3_idx)
 
             # compute update step
             try:
@@ -131,8 +135,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                     logger.add_debug('Va:\n', Va)
 
             # reassign the solution vector
-            dVa[pvpq] = dx[:npvpq]
-            dVm[pq] = dx[npvpq:]
+            dVa[blck1_idx] = dx[:n_block1]
+            dVm[blck2_idx] = dx[n_block1:]
 
             # set the values and correct with an adaptive mu if needed
             mu = mu_0  # ideally 1.0
@@ -149,7 +153,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
                 # compute the mismatch function f(x_new)
                 Sbus = cf.compute_zip_power(S0, I0, Y0, Vm2)
                 Scalc = cf.compute_power(Ybus, V2)
-                f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+                f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
                 norm_f_new = cf.compute_fx_error(f)
 
                 # change mu for the next iteration
@@ -191,23 +195,23 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and npv > 0:
+            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, S0, pv, pq, pvpq, messages = control_q_inside_method(Scalc, S0, pv, pq,
-                                                                                       pvpq, Qmin, Qmax)
+                n_changes, Scalc, S0, pv, pq, blck1_idx, messages = control_q_inside_method(Scalc, S0, pv, pq,
+                                                                                           blck1_idx, Qmin, Qmax)
 
                 if n_changes > 0:
                     # adjust internal variables to the new pq|pv values
                     npv = len(pv)
                     npq = len(pq)
-                    npvpq = npv + npq
+                    n_block1 = npv + npq
 
                     # recompute the error based on the new Scalc and S0
                     Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
-                    f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+                    f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
                     norm_f = np.linalg.norm(f, np.inf)
 
                     if verbose > 0:

@@ -302,8 +302,126 @@ def AC_jacobian(Ybus: csc_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> CSC:
     nbus = Ybus.shape[0]
 
     # Create J in CSC order
-    # nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq
     J = create_J_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, pvpq, pq)
 
     return J
 
+
+@jit(nopython=True)
+def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
+                    block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec) -> CSC:
+    """
+    Calculates Jacobian in CSC format.
+
+    J has the shape
+
+            bl1      bl2
+    bl1 | dP_dVa | dP_dVm |
+    bl3 | dQ_dVa | dQ_dVm |
+
+    :param nbus:
+    :param Yx:
+    :param Yp:
+    :param Yi:
+    :param V:
+    :param block1_idx: pv, pq, p, pqv
+    :param block2_idx: pq, p
+    :param block3_idx: pq, pqv
+    :return: Jacobina matrix
+    """
+
+    # create Jacobian from fast calc of dS_dV
+    dS_dVm_x, dS_dVa_x = dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, np.abs(V))
+
+    nj = len(block1_idx) + len(block2_idx)
+    nnz_estimate = 5 * len(dS_dVm_x)
+    J = CSC(nj, nj, nnz_estimate, False)
+
+    # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
+    lookup_block1 = create_lookup(nbus, block1_idx)
+    lookup_block3 = create_lookup(nbus, block3_idx)
+
+    # get length of vectors
+    n_no_slack = len(block1_idx)
+
+    # nonzeros in J
+    nnz = 0
+    p = 0
+
+    # J1 and J3 -----------------------------------------------------------------------------------------
+    for j in block1_idx:  # columns
+
+        # J1
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = lookup_block1[i]
+
+            if block1_idx[ii] == i:
+                J.data[nnz] = dS_dVa_x[k].real
+                J.indices[nnz] = ii
+                nnz += 1
+
+        # J3
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = lookup_block3[i]
+
+            if block3_idx[ii] == i:
+                J.data[nnz] = dS_dVa_x[k].imag
+                J.indices[nnz] = ii + n_no_slack
+                nnz += 1
+
+        p += 1
+        J.indptr[p] = nnz
+
+    # J2 and J4 -----------------------------------------------------------------------------------------
+    for j in block2_idx:  # columns
+
+        # J2
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = lookup_block1[i]
+
+            if block1_idx[ii] == i:
+                J.data[nnz] = dS_dVm_x[k].real
+                J.indices[nnz] = ii
+                nnz += 1
+
+        # J4
+        for k in range(Yp[j], Yp[j + 1]):  # rows
+            i = Yi[k]
+            ii = lookup_block3[i]
+
+            if block3_idx[ii] == i:
+                J.data[nnz] = dS_dVm_x[k].imag
+                J.indices[nnz] = ii + n_no_slack
+                nnz += 1
+
+        p += 1
+        J.indptr[p] = nnz
+
+    J.indptr[p] = nnz
+    J.resize(nnz)
+    return J
+
+
+def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec) -> CSC:
+    """
+    Create the AC Jacobian function with no embedded controls
+    :param Ybus: Ybus matrix in CSC format
+    :param V: Voltages vector
+    :param pv: array of pv bus indices
+    :param pq: array of pq indices
+    :param pqv: array of pv bus indices
+    :param p: array of pv bus indices
+    :return: Jacobian Matrix in CSC format
+    """
+    if Ybus.format != 'csc':
+        Ybus = Ybus.tocsc()
+
+    nbus = Ybus.shape[0]
+
+    # Create J in CSC order
+    J = create_J_vc_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, block1_idx, block2_idx, block3_idx)
+
+    return J

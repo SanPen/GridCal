@@ -66,7 +66,7 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     else:
         pass  # no problem :)
 
-    no_slack = np.concatenate((pq, pv, pqv, p))
+    no_slack = np.concatenate((pv, pq, p, pqv))
     no_slack.sort()
 
     return ref, pq, pv, pqv, p, no_slack
