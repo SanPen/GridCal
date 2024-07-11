@@ -195,16 +195,16 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax,
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, Sbus, pv, pq, pvpq, messages = control_q_inside_method(Scalc, Sbus, pv, pq,
-                                                                                         pvpq, Qmin, Qmax)
+                changed, messages, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax)
 
-                if n_changes > 0:
+                if len(changed) > 0:
                     # adjust internal variables to the new pq|pv values
-                    npv = len(pv)
-                    npq = len(pq)
-                    npvpq = npv + npq
+                    blck1_idx = np.r_[pv, pq, p, pqv]
+                    blck2_idx = np.r_[pq, p]
+                    blck3_idx = np.r_[pq, pqv]
+                    n_block1 = len(blck1_idx)
 
-                    nn = 2 * npq + npv
+                    nn = blck1_idx + blck2_idx
                     ii = np.linspace(0, nn - 1, nn)
                     Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
 

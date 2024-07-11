@@ -183,9 +183,6 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
 
                 end = time.time()
                 elapsed = end - start
-                # return NumericPowerFlowResults(V, converged, norm_f_new, Scalc,
-                #                                None, None, None, None, None, None,
-                #                                iteration, elapsed)
                 return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
                                                Scalc=Scalc, ma=None, theta=None, Beq=None,
                                                Ybus=None, Yf=None, Yt=None,
@@ -200,14 +197,14 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, S0, pv, pq, blck1_idx, messages = control_q_inside_method(Scalc, S0, pv, pq,
-                                                                                           blck1_idx, Qmin, Qmax)
+                changed, messages, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax)
 
-                if n_changes > 0:
+                if len(changed) > 0:
                     # adjust internal variables to the new pq|pv values
-                    npv = len(pv)
-                    npq = len(pq)
-                    n_block1 = npv + npq
+                    blck1_idx = np.r_[pv, pq, p, pqv]
+                    blck2_idx = np.r_[pq, p]
+                    blck3_idx = np.r_[pq, pqv]
+                    n_block1 = len(blck1_idx)
 
                     # recompute the error based on the new Scalc and S0
                     Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)

@@ -324,16 +324,15 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                         # check and adjust the reactive power
                         # this function passes pv buses to pq when the limits are violated,
                         # but not pq to pv because that is unstable
-                        n_changes, Scalc, S0, pv, pq, pvpq, messages = control_q_inside_method(Scalc, S0, pv, pq,
-                                                                                               pvpq, Qmin, Qmax)
+                        changed, messages, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin,
+                                                                                    Qmax)
 
-                        # compute the ZIP power injection
-                        Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
-
-                        if n_changes > 0:
+                        if len(changed) > 0:
                             # adjust internal variables to the new pq|pv values
-                            npv = len(pv)
-                            npq = len(pq)
+                            blck1_idx = np.r_[pv, pq, p, pqv]
+                            blck2_idx = np.r_[pq, p]
+                            blck3_idx = np.r_[pq, pqv]
+                            n_block1 = len(blck1_idx)
 
                             # re declare the slicer because the indices of pq and pv changed
                             sol_slicer = AcDcSolSlicer(pvpq=pvpq,

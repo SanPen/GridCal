@@ -70,7 +70,8 @@ def mu(Ybus, J: CSC, incS: Vec, dV: CxVec, dx: Vec, block1_idx: IntVec, block2_i
 
 
 def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15,
-              control_q=ReactivePowerControlMode.NoControl, robust=False, logger: Logger = None) -> NumericPowerFlowResults:
+              control_q=ReactivePowerControlMode.NoControl, robust=False,
+              logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     :param Ybus: Admittance matrix
@@ -109,7 +110,6 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
     blck1_idx = np.r_[pv, pq, p, pqv]
     blck2_idx = np.r_[pq, p]
     blck3_idx = np.r_[pq, pqv]
-
     n_block1 = len(blck1_idx)
 
     if n_block1 > 0:
@@ -194,23 +194,18 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, Sbus, pv, pq, pvpq, messages = control_q_inside_method(Scalc, Sbus, pv, pq,
-                                                                                         pvpq, Qmin, Qmax)
+                changed, messages, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax)
 
-                if n_changes > 0:
+                if len(changed) > 0:
                     # adjust internal variables to the new pq|pv values
-                    npv = len(pv)
-                    npq = len(pq)
-                    npvpq = npv + npq
+                    blck1_idx = np.r_[pv, pq, p, pqv]
+                    blck2_idx = np.r_[pq, p]
+                    blck3_idx = np.r_[pq, pqv]
+                    n_block1 = len(blck1_idx)
 
                     # recompute the error based on the new Sbus
                     f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
                     norm_f = cf.compute_fx_error(f)
-
-                    # if verbose > 0:
-                    #     for sense, idx, var in messages:
-                    #         msg = "Bus " + str(idx) + " changed to PQ, limited to " + str(var * 100) + " MVAr"
-                    #         logger.add_debug(msg)
 
             # check convergence
             converged = norm_f < tol

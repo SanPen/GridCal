@@ -337,28 +337,29 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
 
 @nb.njit(cache=True)
-def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
+def control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax):
     """
     Control of reactive power within the numerical method
     :param Scalc: Calculated power array (changed inside)
-    :param Sbus: Specified power array (changed inside)
+    :param S0: Specified power array (changed inside)
     :param pv: array of pv bus indices (changed inside)
     :param pq: array of pq bus indices (changed inside)
-    :param pvpq: array of pv|pq bus indices (changed inside)
+    :param pqv: array of pqv bus indices (changed inside)
+    :param p: array of p bus indices (changed inside)
     :param Qmin: Array of lower reactive power limits per bus in p.u.
     :param Qmax: Array of upper reactive power limits per bus in p.u.
-    :return: any change?, Scalc, Sbus, pv, pq, pvpq
+    :return: any change?, Scalc, Sbus, pv, pq, pqv, p
     """
     messages = list()
     changed = list()
     for k, i in enumerate(pv):
         Q = Scalc[i].imag
         if Q > Qmax[i]:
-            Sbus[i] = np.complex128(complex(Sbus[i].real, Qmax[i]))
+            S0[i] = np.complex128(complex(S0[i].real, Qmax[i]))
             changed.append(k)
             messages.append((1, i, Qmax[i]))
         elif Q < Qmin[i]:
-            Sbus[i] = np.complex128(complex(Sbus[i].real, Qmin[i]))
+            S0[i] = np.complex128(complex(S0[i].real, Qmin[i]))
             changed.append(k)
             messages.append((1, i, Qmin[i]))
 
@@ -368,9 +369,8 @@ def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
         pq = np.concatenate((pq, pv_new))
         pv = np.delete(pv, changed)
         pq.sort()
-        pvpq = np.concatenate((pv, pq))
 
-    return len(changed), Scalc, Sbus, pv, pq, pvpq, messages
+    return np.array(changed), messages, pv, pq, pqv, p
 
 
 def tap_up(tap, max_tap):
