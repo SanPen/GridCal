@@ -93,10 +93,10 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
 
     for i in range(n):
 
-        if types[i] == BusMode.Slack.value:
+        if types[i] == BusMode.Slack_tpe.value:
             pass
 
-        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PQ_tpe.value and original_types[i] == BusMode.PV_tpe.value:
 
             gain = get_q_increment(Vm[i], abs(Vset[i]), k)
 
@@ -201,9 +201,9 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
                                                                      )
                           )
 
-        elif types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PV_tpe.value:
             # If it's still in PV mode (first run), change it to PQ mode
-            types_new[i] = BusMode.PQ.value
+            types_new[i] = BusMode.PQ_tpe.value
             Qnew[i] = 0
             if verbose:
                 print("Bus {} switching to PQ control, with a Q of 0".format(i))
@@ -298,10 +298,10 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
     for i in range(n):
 
-        if types[i] == BusMode.Slack.value:
+        if types[i] == BusMode.Slack_tpe.value:
             pass
 
-        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PQ_tpe.value and original_types[i] == BusMode.PV_tpe.value:
 
             if Vm[i] != Vset[i]:
 
@@ -313,7 +313,7 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
                 else:  # switch back to PV, set Vnew = Vset.
 
-                    types_new[i] = BusMode.PV.value
+                    types_new[i] = BusMode.PV_tpe.value
                     Vnew[i] = complex(Vset[i], 0)
 
                     if verbose:
@@ -324,11 +324,11 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
             else:
                 pass  # The voltages are equal
 
-        elif types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PV_tpe.value:
 
             if Q[i] >= Qmax[i]:  # it is switched to PQ and set Q = Qmax .
 
-                types_new[i] = BusMode.PQ.value
+                types_new[i] = BusMode.PQ_tpe.value
                 Qnew[i] = Qmax[i]
                 any_control_issue = True
 
@@ -337,7 +337,7 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
             elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Q = Qmin .
 
-                types_new[i] = BusMode.PQ.value
+                types_new[i] = BusMode.PQ_tpe.value
                 Qnew[i] = Qmin[i]
                 any_control_issue = True
 

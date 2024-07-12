@@ -22,11 +22,11 @@ class BusMode(Enum):
     """
     Bus modes
     """
-    PQ = 1  # control P, Q
-    PV = 2  # Control P, Vm
-    Slack = 3  # Control Vm, Va (slack)
-    PQV = 4  # voltage-controlled bus (P, Q, V set, theta computed)
-    P = 5  # voltage-controlling bus (P set, Q, V, theta computed)
+    PQ_tpe = 1  # control P, Q
+    PV_tpe = 2  # Control P, Vm
+    Slack_tpe = 3  # Control Vm, Va (slack)
+    PQV_tpe = 4  # voltage-controlled bus (P, Q, V set, theta computed)
+    P_tpe = 5  # voltage-controlling bus (P set, Q, V, theta computed)
 
     def __str__(self):
         return self.value

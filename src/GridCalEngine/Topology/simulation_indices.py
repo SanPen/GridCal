@@ -36,11 +36,11 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     # check that Sbus is a 1D array
     assert (len(Pbus.shape) == 1)
 
-    pq = np.where(types == BusMode.PQ.value)[0]
-    pv = np.where(types == BusMode.PV.value)[0]
-    pqv = np.where(types == BusMode.PQV.value)[0]
-    p = np.where(types == BusMode.P.value)[0]
-    ref = np.where(types == BusMode.Slack.value)[0]
+    pq = np.where(types == BusMode.PQ_tpe.value)[0]
+    pv = np.where(types == BusMode.PV_tpe.value)[0]
+    pqv = np.where(types == BusMode.PQV_tpe.value)[0]
+    p = np.where(types == BusMode.P_tpe.value)[0]
+    ref = np.where(types == BusMode.Slack_tpe.value)[0]
 
     if len(ref) == 0:  # there is no slack!
 
@@ -62,7 +62,7 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
             ref = np.array([i])
 
         for r in ref:
-            types[r] = BusMode.Slack.value
+            types[r] = BusMode.Slack_tpe.value
     else:
         pass  # no problem :)
 

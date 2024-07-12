@@ -50,7 +50,7 @@ def get_gridcal_bus(psse_bus: RawBus,
     :return:
     """
 
-    bustype = {1: dev.BusMode.PQ, 2: dev.BusMode.PV, 3: dev.BusMode.Slack, 4: dev.BusMode.PQ}
+    bustype = {1: dev.BusMode.PQ_tpe, 2: dev.BusMode.PV_tpe, 3: dev.BusMode.Slack_tpe, 4: dev.BusMode.PQ_tpe}
     sh = None
 
     if psse_bus.version >= 33:
@@ -107,12 +107,12 @@ def get_gridcal_bus(psse_bus: RawBus,
     if psse_bus.IDE in bustype.keys():
         bus.type = bustype[psse_bus.IDE]
     else:
-        bus.type = dev.BusMode.PQ
+        bus.type = dev.BusMode.PQ_tpe
 
     if int(psse_bus.IDE) == 4:
         bus.active = False
 
-    if bus.type == dev.BusMode.Slack:
+    if bus.type == dev.BusMode.Slack_tpe:
         bus.is_slack = True
 
     # Ensures unique name
@@ -255,7 +255,8 @@ def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.B
                         power_factor=psse_elm.WPF)
 
     if psse_elm.IREG > 0:
-        elm.control_bus = psse_bus_dict[psse_elm.IREG]
+        if psse_elm.IREG != psse_elm.I:
+            elm.control_bus = psse_bus_dict[psse_elm.IREG]
 
     return elm
 
