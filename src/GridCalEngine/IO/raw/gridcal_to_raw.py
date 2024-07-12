@@ -160,16 +160,21 @@ def get_psse_switched_shunt(shunt: dev.ControllableShunt, bus_dict: Dict[dev.Bus
     psse_switched_shunt = RawSwitchedShunt()
 
     psse_switched_shunt.I = bus_dict[shunt.bus]
+
     psse_switched_shunt.STATUS = 1 if shunt.active else 0
+
+    if shunt.control_bus is not None and shunt.control_bus != shunt.bus:
+        psse_switched_shunt.SWREG = bus_dict.get(shunt.control_bus, 0)
 
     if len(shunt.g_steps) > 0:
         diff_list = np.insert(np.diff(shunt.g_steps), 0, shunt.g_steps[0])
         aggregated_steps = [(sum(1 for _ in group), key) for key, group in groupby(diff_list)]
 
         for index, aggregated_step in enumerate(aggregated_steps):
-            setattr(psse_switched_shunt, f'S{index + 1}', 1)
-            setattr(psse_switched_shunt, f'N{index + 1}', aggregated_step[0])
-            setattr(psse_switched_shunt, f'B{index + 1}', aggregated_step[1])
+            if index < 8:
+                setattr(psse_switched_shunt, f'S{index + 1}', 1)
+                setattr(psse_switched_shunt, f'N{index + 1}', aggregated_step[0])
+                setattr(psse_switched_shunt, f'B{index + 1}', aggregated_step[1])
 
     return psse_switched_shunt
 
@@ -187,7 +192,8 @@ def get_psse_generator(generator: dev.Generator, bus_dict: Dict[dev.Bus, int], i
     psse_generator.I = bus_dict[generator.bus]
     psse_generator.ID = id_number
 
-    psse_generator.IREG = bus_dict.get(generator.bus, 0) if generator.bus is not None else 0
+    if generator.control_bus is not None and generator.control_bus != generator.bus:
+        psse_generator.IREG = bus_dict.get(generator.control_bus, 0)
 
     psse_generator.PG = generator.P
     psse_generator.VS = generator.Vset

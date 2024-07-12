@@ -186,11 +186,17 @@ def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logge
     return elm
 
 
-def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger: Logger) -> dev.ControllableShunt:
+def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
+                               bus: dev.Bus,
+                               psse_bus_dict: Dict[int, dev.Bus],
+                               logger: Logger) -> dev.ControllableShunt:
     """
-    Return Newton Load object
-    Returns:
-        Newton Load object
+
+    :param psse_elm:
+    :param bus:
+    :param psse_bus_dict:
+    :param logger:
+    :return:
     """
     name = str(psse_elm.I).replace("'", "")
     name = name.strip()
@@ -209,13 +215,15 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
 
     vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
 
-    # TODO: Add the remote control bus
-
     elm = dev.ControllableShunt(name='Switched shunt ' + name,
                                 active=bool(psse_elm.STAT),
                                 B=b,
                                 vset=vset,
                                 code=name)
+
+    if psse_elm.SWREG > 0:
+        if psse_elm.SWREG != psse_elm.I:
+            elm.control_bus = psse_bus_dict[psse_elm.SWREG]
 
     n_list = []
     b_list = []
@@ -235,9 +243,11 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
 
 def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.Bus], logger: Logger) -> dev.Generator:
     """
-    Return Newton Load object
-    Returns:
-        Newton Load object
+
+    :param psse_elm:
+    :param psse_bus_dict:
+    :param logger:
+    :return:
     """
     name = str(psse_elm.I) + '_' + str(psse_elm.ID).replace("'", "")
 
@@ -818,7 +828,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     for psse_shunt in psse_circuit.switched_shunts:
         if psse_shunt.I in psse_bus_dict:
             bus = psse_bus_dict[psse_shunt.I]
-            api_obj = get_gridcal_shunt_switched(psse_shunt, bus, logger)
+            api_obj = get_gridcal_shunt_switched(psse_shunt, bus, psse_bus_dict, logger)
             circuit.add_controllable_shunt(bus, api_obj)
         else:
             logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
