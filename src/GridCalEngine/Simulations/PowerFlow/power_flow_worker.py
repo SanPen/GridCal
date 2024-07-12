@@ -222,8 +222,11 @@ def solve(circuit: NumericalCircuit,
                                  pq_=pq,
                                  pqv_=pqv,
                                  p_=p,
+                                 Qmin=Qmin,
+                                 Qmax=Qmax,
                                  tol=options.tolerance,
-                                 max_it=options.max_iter)
+                                 max_it=options.max_iter,
+                                 control_q=options.control_Q)
 
         # Newton-Raphson (full)
         elif solver_type == SolverType.NR:

@@ -195,7 +195,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax,
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                changed, messages, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax)
+                changed, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax)
 
                 if len(changed) > 0:
                     # adjust internal variables to the new pq|pv values
@@ -204,18 +204,13 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax,
                     blck3_idx = np.r_[pq, pqv]
                     n_block1 = len(blck1_idx)
 
-                    nn = blck1_idx + blck2_idx
+                    nn = len(blck1_idx) + len(blck2_idx)
                     ii = np.linspace(0, nn - 1, nn)
                     Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
 
                     # recompute the error based on the new Sbus
                     e = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
                     normF = cf.compute_fx_error(e)
-
-                    if verbose > 0:
-                        for sense, idx, var in messages:
-                            msg = "Bus " + str(idx) + " changed to PQ, limited to " + str(var * 100) + " MVAr"
-                            logger.add_debug(msg)
 
             converged = normF < tol
             f_prev = f

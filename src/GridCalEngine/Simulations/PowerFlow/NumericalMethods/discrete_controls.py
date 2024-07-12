@@ -1,6 +1,23 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import numba as nb
 from GridCalEngine.enumerations import BusMode
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
 def get_q_increment(V1, V2, k):
@@ -350,27 +367,27 @@ def control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax):
     :param Qmax: Array of upper reactive power limits per bus in p.u.
     :return: any change?, Scalc, Sbus, pv, pq, pqv, p
     """
-    messages = list()
+    pv_indices = list()
     changed = list()
     for k, i in enumerate(pv):
         Q = Scalc[i].imag
         if Q > Qmax[i]:
             S0[i] = np.complex128(complex(S0[i].real, Qmax[i]))
-            changed.append(k)
-            messages.append((1, i, Qmax[i]))
+            changed.append(i)
+            pv_indices.append(k)
         elif Q < Qmin[i]:
             S0[i] = np.complex128(complex(S0[i].real, Qmin[i]))
-            changed.append(k)
-            messages.append((1, i, Qmin[i]))
+            changed.append(i)
+            pv_indices.append(k)
 
     if len(changed) > 0:
         # convert PV nodes to PQ
-        pv_new = pv[np.array(changed)]
-        pq = np.concatenate((pq, pv_new))
-        pv = np.delete(pv, changed)
+        pq_new = np.array(changed)
+        pq = np.concatenate((pq, pq_new))
+        pv = np.delete(pv, pv_indices)
         pq.sort()
 
-    return np.array(changed), messages, pv, pq, pqv, p
+    return changed, pv, pq, pqv, p
 
 
 def tap_up(tap, max_tap):

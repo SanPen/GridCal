@@ -22,12 +22,13 @@ def test_q_control_true():
 
         assert power_flow.results.converged
 
-        Q = power_flow.results.Sbus.imag[nc.pv]
-        Qmin = nc.Qmin_bus[nc.pv] * nc.Sbase
-        Qmax = nc.Qmax_bus[nc.pv] * nc.Sbase
-        ok = Qmin <= Q <= Qmax
+        for i in nc.pv:
+            Q = power_flow.results.Sbus.imag[i]
+            Qmin = nc.Qmin_bus[i] * nc.Sbase
+            Qmax = nc.Qmax_bus[i] * nc.Sbase
+            ok = Qmin <= Q <= Qmax
 
-        assert ok.all()
+            assert ok
 
 
 def test_q_control_false():
@@ -52,6 +53,8 @@ def test_q_control_false():
         Q = power_flow.results.Sbus.imag
         Qmin = nc.Qmin_bus * nc.Sbase
         Qmax = nc.Qmax_bus * nc.Sbase
-        ok = Qmin <= Q <= Qmax
+        l_ok = Qmin <= Q
+        r_ok = Q <= Qmax
+        ok = l_ok.all() and r_ok.all()
 
-        assert not ok.all()
+        assert not ok
