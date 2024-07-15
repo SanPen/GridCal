@@ -1,6 +1,7 @@
 from typing import List, Tuple, Dict
 import GridCalEngine.Devices as gcdev
-from GridCalEngine.IO.cim.cgmes.base import Base
+from GridCalEngine.IO.cim.cgmes.base import Base, rfid2uuid
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
 
 
