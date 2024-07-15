@@ -1,4 +1,5 @@
 from typing import List, Tuple, Dict
+import numpy as np
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.IO.cim.cgmes.base import Base
 from GridCalEngine.data_logger import DataLogger
@@ -77,27 +78,48 @@ def build_rates_dict(cgmes_model, device_type, logger):
     :return:
     """
     rates_dict = dict()
-    for e in cgmes_model.cgmes_assets.CurrentLimit_list:
-        if e.OperationalLimitSet is None:
+    for cl in cgmes_model.cgmes_assets.CurrentLimit_list:
+
+        if cl.OperationalLimitSet is None:
             logger.add_error(msg='OperationalLimitSet missing.',
-                             device=e.rdfid,
-                             device_class=e.tpe,
+                             device=cl.rdfid,
+                             device_class=cl.tpe,
                              device_property="OperationalLimitSet",
                              value="None")
             continue
-        if not isinstance(e.OperationalLimitSet, str):
-            if isinstance(e.OperationalLimitSet, list):
-                for ols in e.OperationalLimitSet:
+        if not isinstance(cl.OperationalLimitSet, str):
+            if isinstance(cl.OperationalLimitSet, list):
+                for ols in cl.OperationalLimitSet:
+                    volt = get_voltage_terminal(ols.Terminal, logger)
+                    rate_mva = np.round(cl.value * volt / 1000, 4)
+                    # TODO rate in MVA = kA * kV * sqrt(3), is sqrt(3) needed?
+                    # TODO type check: put min PATL to the dict
                     if isinstance(ols.Terminal.ConductingEquipment,
                                   device_type):
                         branch_id = ols.Terminal.ConductingEquipment.uuid
-                        rates_dict[branch_id] = e.value
+                        act_lim = rates_dict.get(branch_id, None)
+                        if act_lim is None:
+                            rates_dict[branch_id] = rate_mva
+                        elif cl.value < act_lim:
+                            rates_dict[branch_id] = rate_mva
             else:
-                if isinstance(
-                        e.OperationalLimitSet.Terminal.ConductingEquipment,
-                        device_type):
-                    branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
-                    rates_dict[branch_id] = e.value
+                if isinstance(cl.OperationalLimitSet.Terminal.ConductingEquipment,
+                              device_type):
+                    volt = get_voltage_terminal(cl.OperationalLimitSet.Terminal,
+                                                logger)
+                    rate_mva = np.round(cl.value * volt / 1000, 4)
+
+                    branch_id = cl.OperationalLimitSet.Terminal.ConductingEquipment.uuid
+                    act_lim = rates_dict.get(branch_id, None)
+                    if act_lim is None:
+                        rates_dict[branch_id] = rate_mva
+                    elif cl.value < act_lim:
+                        rates_dict[branch_id] = rate_mva
+
+
+    # TODO ActivePowerLimit_list, ApparentPowerLimit_list
+    # for al in [cgmes_model.cgmes_assets.ActivePowerLimit_list,
+    #            cgmes_model.cgmes_assets.ApparentPowerLimit_list]:
 
     return rates_dict
 

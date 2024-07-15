@@ -706,6 +706,29 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                  expected_value=2)
 
 
+def get_tap_changer_values(windings):
+    """
+    Get Tap Changer values for given windings.
+
+    :param windings: List of transformer windings.
+    :return:
+    """
+    total_positions, neutral_position, dV = 0, 0, 0
+
+    for winding in windings:
+        rtc = winding.RatioTapChanger
+        if rtc is not None:
+            total_positions = rtc.highStep - rtc.lowStep + 1
+            neutral_position = rtc.neutralStep
+            dV = rtc.stepVoltageIncrement / 100
+            # self._tap_position = neutral_position  # index with respect to the neutral position = Step from SSH
+            # self.tc_type = tc_type  # tap changer mode # TODO which enum to use for control
+        else:
+            continue
+
+    return total_positions, neutral_position, dV
+
+
 def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                               gcdev_model: MultiCircuit,
                               calc_node_dict: Dict[str, gcdev.Bus],
@@ -744,13 +767,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
 
-            current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
-            # if current_rate:
-            #     # rate in MVA = kA * kV * sqrt(3)
-            #     rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
-            #                     4)
-            # else:
-            #     rate = 1e-20
+            rate_mva = rates_dict.get(cgmes_elm.uuid, None)  # min PATL rate in MW/MVA
 
             if len(windings) == 2:
                 calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
@@ -771,10 +788,11 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     LV = windings[1].ratedU
                     # HV = max(v1, v2)
                     # LV = min(v1, v2)
-                    # get per unit vlaues
-
+                    # get per unit values
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
                     rated_s = windings[0].ratedS
+                    # get Tap data
+                    total_positions, neutral_position, dV = get_tap_changer_values(windings)
 
                     gcdev_elm = gcdev.Transformer2W(idtag=cgmes_elm.uuid,
                                                     code=cgmes_elm.description,
@@ -795,13 +813,15 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     x0=x0,
                                                     g0=g0,
                                                     b0=b0,
-                                                    tap_module=1.0,
-                                                    tap_phase=0.0,
-                                                    # control_mode,  # legacy
-                                                    # tap_module_control_mode=,
+                                                    # tap_module=1.0,     # TODO (how) should it be calculated?
+                                                    # tap_phase=0.0,
+                                                    # tap_module_control_mode=,  # leave fixed
                                                     # tap_angle_control_mode=,
-                                                    # rate=get_rate(cgmes_elm))
-                                                    rate=999.9)
+                                                    tc_total_positions=total_positions,
+                                                    tc_neutral_position=neutral_position,
+                                                    tc_dV=dV,
+                                                    # tc_asymmetry_angle = 90,
+                                                    rate=rate_mva)
 
                     gcdev_model.add_transformer2w(gcdev_elm)
                 else:

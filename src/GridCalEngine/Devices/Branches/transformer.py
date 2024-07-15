@@ -66,7 +66,7 @@ class Transformer2W(ControllableBranchParent):
                  temp_base: float = 20.0,
                  temp_oper: float = 20.0,
                  alpha: float = 0.00330,
-                 control_mode: TransformerControlType = TransformerControlType.fixed,
+                 control_mode: TransformerControlType = TransformerControlType.fixed,    # legacy?
                  tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
                  tap_angle_control_mode: TapAngleControl = TapAngleControl.fixed,
                  template: TransformerType = None,
