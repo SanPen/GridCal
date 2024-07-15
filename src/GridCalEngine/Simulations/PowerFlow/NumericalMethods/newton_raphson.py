@@ -73,17 +73,17 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
     pv = pv_.copy()
     pqv = pqv_.copy()
     p = p_.copy()
-    blck1_idx = np.r_[pv, pq, p, pqv]
-    blck2_idx = np.r_[pq, p]
-    blck3_idx = np.r_[pq, pqv]
-    n_block1 = len(blck1_idx)
+    idx_dtheta = np.r_[pv, pq, p, pqv]
+    idx_dVm = np.r_[pq, p]
+    idx_dQ = np.r_[pq, pqv]
+    n_idx_dtheta = len(idx_dtheta)
 
-    if n_block1 > 0:
+    if n_idx_dtheta > 0:
 
         # evaluate F(x0)
         Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
         Scalc = cf.compute_power(Ybus, V)
-        f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
+        f = cf.compute_fx(Scalc, Sbus, idx_dtheta, idx_dQ)
         norm_f = cf.compute_fx_error(f)
         converged = norm_f < tol
 
@@ -97,7 +97,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
             iteration += 1
 
             # evaluate Jacobian
-            J = AC_jacobianVc(Ybus, V, blck1_idx, blck2_idx, blck3_idx)
+            J = AC_jacobianVc(Ybus, V, idx_dtheta, idx_dVm, idx_dQ)
 
             # compute update step
             try:
@@ -135,8 +135,8 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
                     logger.add_debug('Va:\n', Va)
 
             # reassign the solution vector
-            dVa[blck1_idx] = dx[:n_block1]
-            dVm[blck2_idx] = dx[n_block1:]
+            dVa[idx_dtheta] = dx[:n_idx_dtheta]
+            dVm[idx_dVm] = dx[n_idx_dtheta:]
 
             # set the values and correct with an adaptive mu if needed
             mu = mu_0  # ideally 1.0
@@ -153,7 +153,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
                 # compute the mismatch function f(x_new)
                 Sbus = cf.compute_zip_power(S0, I0, Y0, Vm2)
                 Scalc = cf.compute_power(Ybus, V2)
-                f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
+                f = cf.compute_fx(Scalc, Sbus, idx_dtheta, idx_dQ)
                 norm_f_new = cf.compute_fx_error(f)
 
                 # change mu for the next iteration
@@ -201,14 +201,14 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
 
                 if len(changed) > 0:
                     # adjust internal variables to the new pq|pv values
-                    blck1_idx = np.r_[pv, pq, p, pqv]
-                    blck2_idx = np.r_[pq, p]
-                    blck3_idx = np.r_[pq, pqv]
-                    n_block1 = len(blck1_idx)
+                    idx_dtheta = np.r_[pv, pq, p, pqv]
+                    idx_dVm = np.r_[pq, p]
+                    idx_dQ = np.r_[pq, pqv]
+                    n_idx_dtheta = len(idx_dtheta)
 
                     # recompute the error based on the new Scalc and S0
                     Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
-                    f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
+                    f = cf.compute_fx(Scalc, Sbus, idx_dtheta, idx_dQ)
                     norm_f = np.linalg.norm(f, np.inf)
 
             # determine the convergence condition

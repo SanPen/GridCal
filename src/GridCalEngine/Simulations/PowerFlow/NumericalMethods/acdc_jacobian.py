@@ -891,7 +891,40 @@ def fubm_jacobian(nbus: int,
                   yft: CxVec,
                   ytf: CxVec,
                   ytt: CxVec) -> CSC:
+    """
 
+    :param nbus:
+    :param idx_dtheta:
+    :param idx_dvm:
+    :param idx_dm:
+    :param idx_dtau:
+    :param idx_dbeq:
+    :param idx_dP:
+    :param idx_dQ:
+    :param idx_dQf:
+    :param idx_dQt:
+    :param idx_dPf:
+    :param idx_dPdp:
+    :param F:
+    :param T:
+    :param Ys:
+    :param kconv:
+    :param complex_tap:
+    :param tap_modules:
+    :param Bc:
+    :param Beq:
+    :param Kdp:
+    :param V:
+    :param Vm:
+    :param Ybus_x:
+    :param Ybus_p:
+    :param Ybus_i:
+    :param yff:
+    :param yft:
+    :param ytf:
+    :param ytt:
+    :return:
+    """
     # bus-bus derivatives (always needed)
     dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
 
@@ -915,12 +948,12 @@ def fubm_jacobian(nbus: int,
     dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dtheta, yff, yft, V, F, T).real
     dPdp_dVm = deriv.dPfdp_dVm_csc(nbus, idx_dPdp, idx_dtheta, yff, yft, Kdp, V, F, T)
 
-    dP_dbeq__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
-    dQ_dbeq__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
-    dQf_dbeq_ = deriv.dSf_dm_csc(idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
+    dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
+    dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
+    dQf_dbeq_ = deriv.dSf_dbeq_csc(idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
     dQt_dbeq_ = CSC(len(idx_dQt), len(idx_dbeq), 0, False)
-    dPf_dbeq_ = deriv.dSf_dm_csc(idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
-    dPdp_dbeq = deriv.dSf_dm_csc(idx_dPdp, idx_dbeq, F, kconv, tap_modules, V).real
+    dPf_dbeq_ = deriv.dSf_dbeq_csc(idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
+    dPdp_dbeq = deriv.dSf_dbeq_csc(idx_dPdp, idx_dbeq, F, kconv, tap_modules, V).real
 
     dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
     dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag

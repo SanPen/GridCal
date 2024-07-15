@@ -29,7 +29,8 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    compute_power, compute_zip_power)
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.enumerations import ReactivePowerControlMode
-import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
+# import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
+from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
 
 
 def NR_LS_ACDC(nc: NumericalCircuit,
@@ -89,13 +90,11 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     T = nc.T
     Ys = 1.0 / (nc.branch_data.R + 1j * nc.branch_data.X)
     Bc = nc.branch_data.B
-    pq = nc.pq.copy().astype(int)
-    pvpq_orig = np.r_[nc.pv, pq].astype(int)
-    pvpq_orig.sort()
 
     # the elements of PQ that exist in the control indices Ivf and Ivt must be passed from the PQ to the PV list
     # otherwise those variables would be in two sets of equations
     i_ctrl_v = np.unique(np.r_[nc.i_vf_beq, nc.i_vt_m])
+    pq = nc.pq.copy()
     for val in pq:
         if val in i_ctrl_v:
             pq = pq[pq != val]
@@ -103,14 +102,26 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     # compose the new pvpq indices à la NR
     pv = np.unique(np.r_[i_ctrl_v, nc.pv]).astype(int)
     pv.sort()
-    pvpq = np.r_[pv, pq].astype(int)
-    npv = len(pv)
-    npq = len(pq)
+
+    pqv = nc.pqv.copy()
+    p = nc.p.copy()
+
+    idx_dtheta = np.r_[pv, pq, p, pqv]
+    idx_dvm = np.r_[pq, p]
+    idx_dm = np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_vt_m]
+    idx_dtau = np.r_[nc.k_pf_tau, nc.k_pf_dp]
+    idx_dbeq = np.r_[nc.k_zero_beq, nc.k_vf_beq]
+    idx_dP = np.r_[pv, pq, p, pqv]
+    idx_dQ = np.r_[pq, pqv]
+    idx_dQf = np.r_[nc.k_qf_m, nc.k_zero_beq]
+    idx_dQt = nc.k_qt_m
+    idx_dPf = nc.k_pf_tau
+    idx_dPdp = nc.k_pf_dp
 
     # --------------------------------------------------------------------------
     # variables dimensions in Jacobian
-    sol_slicer = AcDcSolSlicer(block1=pvpq,
-                               block2=pq,
+    sol_slicer = AcDcSolSlicer(block1=idx_dtheta,
+                               block2=idx_dvm,
                                k_zero_beq=nc.k_zero_beq,
                                k_vf_beq=nc.k_vf_beq,
                                k_qf_m=nc.k_qf_m,
@@ -121,16 +132,16 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
     # -------------------------------------------------------------------------
     # compute initial admittances
-    Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                       C_bus_shunt=nc.shunt_data.C_bus_elm.tocsc(),
-                                       shunt_admittance=nc.shunt_data.Y,
-                                       shunt_active=nc.shunt_data.active,
-                                       ys=Ys,
-                                       B=Bc,
-                                       Sbase=nc.Sbase,
-                                       tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
-                                       virtual_tap_from=nc.branch_data.virtual_tap_f,
-                                       virtual_tap_to=nc.branch_data.virtual_tap_t)
+    Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=Cf, Ct=Ct,
+                                                           C_bus_shunt=nc.shunt_data.C_bus_elm.tocsc(),
+                                                           shunt_admittance=nc.shunt_data.Y,
+                                                           shunt_active=nc.shunt_data.active,
+                                                           ys=Ys,
+                                                           B=Bc,
+                                                           Sbase=nc.Sbase,
+                                                           tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
+                                                           virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                                           virtual_tap_to=nc.branch_data.virtual_tap_t)
 
     #  compute branch power Sf
     If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service Branches
@@ -158,8 +169,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                          Vmfset=Vmfset,
                          Kdp=Kdp,
                          F=F,
-                         pvpq=pvpq,
-                         pq=pq,
+                         pvpq=idx_dP,
+                         pq=idx_dQ,
                          k_pf_tau=nc.k_pf_tau,
                          k_qf_m=nc.k_qf_m,
                          k_zero_beq=nc.k_zero_beq,
@@ -176,12 +187,39 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     while not converged and iterations < max_iter:
 
         # compute the Jacobian
-        J = fubm_jacobian(nb, nl, nc.k_pf_tau, nc.k_pf_dp, nc.k_qf_m, nc.k_qt_m, nc.k_vt_m, nc.k_zero_beq, nc.k_vf_beq,
-                          nc.i_vf_beq, nc.i_vt_m,
-                          F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
+        J = fubm_jacobian(nbus=nc.nbus,
+                          idx_dtheta=np.r_[nc.pv, nc.pq, nc.p, nc.pqv],
+                          idx_dvm=np.r_[nc.pq, nc.p],
+                          idx_dm=np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_vt_m],
+                          idx_dtau=np.r_[nc.k_pf_tau, nc.k_pf_dp],
+                          idx_dbeq=np.r_[nc.k_zero_beq, nc.k_vf_beq],
+                          idx_dP=np.r_[nc.pv, nc.pq, nc.p, nc.pqv],
+                          idx_dQ=np.r_[nc.pq, nc.pqv],
+                          idx_dQf=np.r_[nc.k_qf_m, nc.k_zero_beq],
+                          idx_dQt=nc.k_qt_m,
+                          idx_dPf=nc.k_pf_tau,
+                          idx_dPdp=nc.k_pf_dp,
+                          F=nc.F,
+                          T=nc.T,
+                          Ys=Ys,
+                          kconv=nc.branch_data.k,
+                          complex_tap=tap,
+                          tap_modules=nc.branch_data.tap_module,
+                          Bc=nc.branch_data.B,
+                          Beq=nc.branch_data.Beq,
+                          Kdp=nc.branch_data.Kdp,
+                          V=V,
+                          Vm=Vm,
+                          Ybus_x=Ybus.data,
+                          Ybus_p=Ybus.indptr,
+                          Ybus_i=Ybus.indices,
+                          yff=yff,
+                          yft=yft,
+                          ytf=ytf,
+                          ytt=ytt)
 
         # solve the linear system
-        dx = gcsp.super_lu_linsolver(J, -fx)
+        dx = spsolve_csc(J, -fx)
 
         if not np.isnan(dx).any():  # check if the solution worked
 
@@ -223,16 +261,16 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                 Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
                 # compute admittances
-                Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                                   C_bus_shunt=nc.shunt_data.C_bus_elm.tocsc(),
-                                                   shunt_admittance=nc.shunt_data.Y,
-                                                   shunt_active=nc.shunt_data.active,
-                                                   ys=Ys,
-                                                   B=Bc,
-                                                   Sbase=nc.Sbase,
-                                                   tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
-                                                   virtual_tap_from=nc.branch_data.virtual_tap_f,
-                                                   virtual_tap_to=nc.branch_data.virtual_tap_t)
+                Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=Cf, Ct=Ct,
+                                                                       C_bus_shunt=nc.shunt_data.C_bus_elm.tocsc(),
+                                                                       shunt_admittance=nc.shunt_data.Y,
+                                                                       shunt_active=nc.shunt_data.active,
+                                                                       ys=Ys,
+                                                                       B=Bc,
+                                                                       Sbase=nc.Sbase,
+                                                                       tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
+                                                                       virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                                                       virtual_tap_to=nc.branch_data.virtual_tap_t)
 
                 #  compute branch power Sf
                 If = Yf * V  # complex current injected at "from" bus
@@ -260,8 +298,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                      Vmfset=Vmfset,
                                      Kdp=Kdp,
                                      F=F,
-                                     pvpq=pvpq,
-                                     pq=pq,
+                                     pvpq=idx_dP,
+                                     pq=idx_dQ,
                                      k_pf_tau=nc.k_pf_tau,
                                      k_qf_m=nc.k_qf_m,
                                      k_zero_beq=nc.k_zero_beq,
@@ -319,7 +357,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                     # it is only worth checking Q limits with a low error
                     # since with higher errors, the Q values may be far from realistic
                     # finally, the Q control only makes sense if there are pv nodes
-                    if control_q != ReactivePowerControlMode.NoControl and npv > 0:
+                    if control_q != ReactivePowerControlMode.NoControl and (len(pv) + len(pqv)) > 0:
 
                         # check and adjust the reactive power
                         # this function passes pv buses to pq when the limits are violated,
@@ -328,14 +366,14 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
                         if len(changed) > 0:
                             # adjust internal variables to the new pq|pv values
-                            blck1_idx = np.r_[pv, pq, p, pqv]
-                            blck2_idx = np.r_[pq, p]
-                            blck3_idx = np.r_[pq, pqv]
-                            n_block1 = len(blck1_idx)
+                            idx_dtheta = np.r_[pv, pq, p, pqv]
+                            idx_dvm = np.r_[pq, p]
+                            idx_dP = np.r_[pv, pq, p, pqv]
+                            idx_dQ = np.r_[pq, pqv]
 
                             # re declare the slicer because the indices of pq and pv changed
-                            sol_slicer = AcDcSolSlicer(block1=pvpq,
-                                                       block2=pq,
+                            sol_slicer = AcDcSolSlicer(block1=idx_dtheta,
+                                                       block2=idx_dvm,
                                                        k_zero_beq=nc.k_zero_beq,
                                                        k_vf_beq=nc.k_vf_beq,
                                                        k_qf_m=nc.k_qf_m,
@@ -357,8 +395,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                                  Vmfset=Vmfset,
                                                  Kdp=Kdp,
                                                  F=F,
-                                                 pvpq=pvpq,
-                                                 pq=pq,
+                                                 pvpq=idx_dP,
+                                                 pq=idx_dQ,
                                                  k_pf_tau=nc.k_pf_tau,
                                                  k_qf_m=nc.k_qf_m,
                                                  k_zero_beq=nc.k_zero_beq,
