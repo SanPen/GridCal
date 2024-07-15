@@ -25,6 +25,8 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.GuiFunctions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
+
+from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.enumerations import DeviceType
@@ -69,7 +71,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                               lon=lon)
 
         self.line_container = None
-        self.editor: GridMapWidget = editor  # re assign for the types to be clear
+        self.editor: GridMapWidget = editor  # reassign for the types to be clear
         self.api_object: Substation = api_object
 
         self.lat = lat
@@ -95,21 +97,27 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.colorBorder = QColor(255, 100, 100, 100)
 
         # Assign color to the node
+        self.itemSelected = False
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
         # self.setZValue(1)
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
-    def move_to(self, lat: float, lon: float):
+    def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
         """
 
         :param lat:
         :param lon:
-        :return:
+        :return: x, y
         """
         x, y = self.editor.to_x_y(lat=lat, lon=lon)
         self.setRect(x, y, self.rect().width(), self.rect().height())
+
+        for vl in self.voltage_level_graphics:
+            vl.center_on_substation()
+
+        return x, y
 
     def register_voltage_level(self, vl: VoltageLevelGraphicItem):
         """
@@ -179,7 +187,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
 
-            self.editor.update_connectors()
             self.updateDiagram()  # always update
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
@@ -189,6 +196,9 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         super().mousePressEvent(event)
         event.setAccepted(True)
         self.editor.map.view.disableMove = True
+
+        if event.button() == Qt.LeftButton:
+            self.selectItem()
 
         print("SE mouse press")
         if self.api_object is not None:
@@ -201,6 +211,25 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                                              DeviceType.AreaDevice: self.editor.circuit.get_areas(),
                                              DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
                                          })
+
+    def selectItem(self):
+        """
+
+        :return:
+        """
+        if not self.itemSelected:
+            self.editor.map.view.selectedItems.append(self)
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        self.itemSelected = True
+
+    def deSelectItem(self):
+        """
+
+        :return:
+        """
+        self.itemSelected = False
+        self.setDefaultColor()
+
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -215,6 +244,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse enters the item.
         """
+        self.editor.map.view.inItem = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -223,6 +253,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
+        self.editor.map.view.inItem = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
@@ -240,6 +271,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        function_ptr=self.add_voltage_level)
 
         add_menu_entry(menu=menu,
+                       text="Create line",
+                       icon_path="",
+                       function_ptr=self.create_new_line)
+
+        add_menu_entry(menu=menu,
                        text="Move to API coordinates",
                        icon_path="",
                        function_ptr=self.move_to_api_coordinates)
@@ -251,7 +287,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         add_menu_entry(menu=menu,
                        text="ADD node",
-                       icon_path="",
+                       icon_path=":/Icons/icons/divide.svg",
                        function_ptr=self.add_function)
 
         add_menu_entry(menu=menu,
@@ -259,7 +295,15 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        icon_path="",
                        function_ptr=self.new_substation_diagram)
 
+
+
         menu.exec_(event.screenPos())
+
+    def create_new_line(self):
+        """
+        Create a new line in the map wizard
+        """
+        self.editor.createNewLineWizard()
 
     def add_function(self):
         """
@@ -277,9 +321,11 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
             for idtag, graphic_object in dev_dict.items():
                 substation_from_graphics = self.editor.graphics_manager.query(
-                    elm=graphic_object.api_object.get_substation_from())
+                    elm=graphic_object.api_object.get_substation_from()
+                )
                 substation_to_graphics = self.editor.graphics_manager.query(
-                    elm=graphic_object.api_object.get_substation_to())
+                    elm=graphic_object.api_object.get_substation_to()
+                )
                 lines_info.append((idtag, graphic_object, substation_from_graphics, substation_to_graphics))
 
             # Now, iterate over the collected information
@@ -311,8 +357,8 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                              "Move substation graphics")
 
         if ok:
-            self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)
-            self.editor.update_connectors()
+            x, y = self.move_to(lat=self.api_object.latitude, lon=self.api_object.longitude)  # this moves the vl too
+            self.set_callabacks(x, y)
 
     def new_substation_diagram(self):
         """
@@ -329,7 +375,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         inpt = InputNumberDialogue(
             min_value=1.0,
             max_value=100000.0,
-            default_value=1.0,
+            default_value=self.editor.diagram.default_bus_voltage,
             title="Add voltage level",
             text="Voltage (kV)",
         )
@@ -342,7 +388,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                               Vnom=kv,
                               substation=self.api_object)
 
+            bus = Bus(name=f"Bus {self.api_object.name}",
+                      Vnom=kv,
+                      substation=self.api_object,
+                      voltage_level=vl)
+
             self.editor.circuit.add_voltage_level(vl)
+            self.editor.circuit.add_bus(obj=bus)
+
             self.editor.add_api_voltage_level(substation_graphics=self,
                                               api_object=vl)
 
@@ -368,7 +421,10 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        self.setNodeColor(self.colorInner, self.colorBorder)
+        if self.itemSelected:
+            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
+        else:
+            self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self) -> QPointF:
         """

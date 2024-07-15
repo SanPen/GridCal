@@ -101,7 +101,8 @@ class LinearAnalysisDriver(DriverTemplate):
             nc = compile_numerical_circuit_at(
                 circuit=self.grid,
                 t_idx=None,
-                opf_results=self.opf_results
+                opf_results=self.opf_results,
+                logger=self.logger
             )
 
             analysis = LinearAnalysis(

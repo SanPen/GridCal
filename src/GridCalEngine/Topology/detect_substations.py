@@ -66,7 +66,7 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
     br_active = np.ones(nbr, dtype=int)  # we will consider all branches as active for this
     bus_active = np.ones(nbus, dtype=int)
 
-    # fill matrices approprietly
+    # fill matrices appropriately
     for i, elm in enumerate(branches):
         if elm.bus_from is not None:
             f = bus_dict[elm.bus_from]

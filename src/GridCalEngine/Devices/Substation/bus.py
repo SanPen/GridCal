@@ -141,7 +141,7 @@ class Bus(EditableDevice):
         self._voltage_level: VoltageLevel = voltage_level
 
         # Bus type
-        self.type = BusMode.PQ
+        self.type = BusMode.PQ_tpe
 
         # Flag to determine if the bus is a slack bus or not
         self.is_slack = is_slack
@@ -258,14 +258,14 @@ class Bus(EditableDevice):
         @return: BusMode
         """
         if not self.active:
-            return BusMode.PQ
+            return BusMode.PQ_tpe
 
         if self.is_slack:
             # if it is set as slack, set the bus as slack and exit
-            self.type = BusMode.Slack
-            return BusMode.Slack
+            self.type = BusMode.Slack_tpe
+            return BusMode.Slack_tpe
 
-        return BusMode.PQ
+        return BusMode.PQ_tpe
 
     def get_voltage_guess(self, logger=None, use_stored_guess=False):
         """

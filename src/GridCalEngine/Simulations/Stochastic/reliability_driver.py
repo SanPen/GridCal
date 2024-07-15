@@ -200,7 +200,7 @@ class ReliabilityStudy(DriverTemplate):
         self.tic()
 
         # compile the numerical circuit
-        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None)
+        numerical_circuit = compile_numerical_circuit_at(self.grid, t_idx=None, logger=self.logger)
 
         evt = get_reliability_scenario(numerical_circuit,
                                        horizon=1)

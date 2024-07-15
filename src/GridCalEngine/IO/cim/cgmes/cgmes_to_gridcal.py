@@ -514,11 +514,11 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                         pf = np.cos(np.arctan(cgmes_elm.q / cgmes_elm.p))
                     else:
                         pf = 0.8
-                        logger.add_error(msg='GeneratingUnit p is 0.',
-                                         device=cgmes_elm.rdfid,
-                                         device_class=cgmes_elm.tpe,
-                                         device_property="p",
-                                         value='0')
+                        logger.add_warning(msg='GeneratingUnit p is 0.',
+                                           device=cgmes_elm.rdfid,
+                                           device_class=cgmes_elm.tpe,
+                                           device_property="p",
+                                           value='0')
 
                     technology = tech_dict.get(cgmes_elm.GeneratingUnit.tpe, None)
                     if cgmes_elm.GeneratingUnit.tpe == "WindGeneratingUnit":
@@ -1152,6 +1152,8 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
 
     for cgmes_elm in cgmes_model.cgmes_assets.VoltageLevel_list:
 
+        # if not isinstance(cgmes_elm.BaseVoltage, str):  # if it is a string it wass not substituted...
+
         gcdev_elm = gcdev.VoltageLevel(
             idtag=cgmes_elm.uuid,
             name=cgmes_elm.name,
@@ -1167,6 +1169,8 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
 
         gcdev_model.add_voltage_level(gcdev_elm)
         volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
+    else:
+        logger.add_error(msg='Base voltage not found', device=str(cgmes_elm.BaseVoltage))
 
     return volt_lev_dict
 

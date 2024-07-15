@@ -100,29 +100,19 @@ class MapView(QGraphicsView):
     MapView
     """
 
-    def __init__(self, _scene: QGraphicsScene,
-                 map_widget: "MapWidget",
-                 start_level: int,
-                 startLat: float,
-                 startLon: float):
+    def __init__(self,
+                 scene: QGraphicsScene,
+                 map_widget: "MapWidget"):
         """
 
-        :param _scene:
+        :param scene:
         :param map_widget:
-        :param start_level:
-        :param startLat:
-        :param startLon:
         """
-        QGraphicsView.__init__(self, _scene)
+        QGraphicsView.__init__(self, scene)
 
-        self._scene = _scene
+        self._scene = scene
 
         self.map_widget = map_widget
-
-        self.startLat = startLat
-        self.startLon = startLon
-        self.startLev = start_level
-        self.map_widget.level = start_level
 
         self.mouse_x = None
         self.mouse_y = None
@@ -134,20 +124,15 @@ class MapView(QGraphicsView):
         self.pressed = False
         self.disableMove = False
 
-        self.startHe = None
-        self.startWi = None
-
         # updated later
         self.view_width = self.width()
         self.view_height = self.height()
 
         # Set initial zoom level (change the values as needed)
-        initial_zoom_factor = 1
-        self.schema_zoom = 1
+        initial_zoom_factor = 1.0
+        self.schema_zoom = 1.0
 
         self.scale(initial_zoom_factor, initial_zoom_factor)
-
-        self.selTempDistance = 20
 
         self.selectedItems = list()
 
@@ -396,11 +381,7 @@ class MapWidget(QWidget):
 
         self.editor: GridMapWidget = editor
 
-        self.view = MapView(self.diagram_scene,
-                            map_widget=self,
-                            start_level=start_level,
-                            startLat=startLat,
-                            startLon=startLon)
+        self.view = MapView(scene=self.diagram_scene, map_widget=self)
 
         self.view.setBackgroundBrush(Qt.transparent)
 
@@ -425,8 +406,8 @@ class MapWidget(QWidget):
         # Internal vars
         # -------------------------------------------------------------------------
         # remember the tile source object
-        self.tile_src: Tiles = tile_src
-        self.tile_src.setCallback(self.on_tile_available)
+        self._tile_src: Tiles = tile_src
+        self._tile_src.setCallback(self.on_tile_available)
 
         # the tile coordinates
         self.level: int = start_level
@@ -481,9 +462,31 @@ class MapWidget(QWidget):
         # do a "resize" after this function
         QTimer.singleShot(10, self.resizeEvent)
 
-        self.GotoLevelAndPosition(level=start_level,
-                                  longitude=startLon,
-                                  latitude=startLat)
+        self.GotoLevelAndPosition(level=6,
+                                  longitude=0,
+                                  latitude=40)
+
+    @property
+    def tile_src(self) -> Tiles:
+        """
+        Get the current tile source
+        :return: Tiles
+        """
+        return self._tile_src
+
+    @tile_src.setter
+    def tile_src(self, tile_src: Tiles):
+        """
+        Set the current tile source
+        :param tile_src: Tiles
+        """
+        if tile_src.TilesetName != self._tile_src.TilesetName:  # avoid changing tilesets to themselves
+            self._tile_src: Tiles = tile_src
+            self._tile_src.setCallback(self.on_tile_available)
+
+            self.GotoLevelAndPosition(level=tile_src.min_level,
+                                      longitude=0.0,
+                                      latitude=0.0)
 
     @property
     def max_level(self):

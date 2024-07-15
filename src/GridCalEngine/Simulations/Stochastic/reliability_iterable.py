@@ -20,7 +20,7 @@ from typing import Tuple, Union
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions, multi_island_pf_nc, PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.basic_structures import Vec, IntVec
+from GridCalEngine.basic_structures import Vec, IntVec,Logger
 
 
 def get_transition_probabilities(lbda: Vec, mu: Vec) -> Tuple[Vec, Vec]:
@@ -46,7 +46,8 @@ class ReliabilityIterable:
 
     def __init__(self, grid: MultiCircuit,
                  forced_mttf: Union[None, float] = None,
-                 forced_mttr: Union[None, float] = None):
+                 forced_mttr: Union[None, float] = None,
+                 logger: Logger = Logger()):
         """
 
         :param grid: MultiCircuit
@@ -61,11 +62,13 @@ class ReliabilityIterable:
         # time index
         self.t_idx = 0
 
+        self.logger = logger
+
         # declare the power flow options
         self.pf_options = PowerFlowOptions()
 
         # compile the time step
-        nc = compile_numerical_circuit_at(self.grid, t_idx=None)
+        nc = compile_numerical_circuit_at(self.grid, t_idx=None, logger=logger)
 
         # compute the transition probabilities
         if forced_mttf is None:
@@ -90,7 +93,7 @@ class ReliabilityIterable:
             raise StopIteration
 
         # compile the time step
-        nc = compile_numerical_circuit_at(self.grid, t_idx=self.t_idx)
+        nc = compile_numerical_circuit_at(self.grid, t_idx=self.t_idx, logger=self.logger)
 
         # determine the Markov states
         p = np.random.random(nc.nbr)

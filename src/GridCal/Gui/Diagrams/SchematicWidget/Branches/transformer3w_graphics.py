@@ -297,16 +297,18 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         raise Exception("Unknown winding")
 
-    def set_connection(self, i: int, bus, conn: WindingGraphicItem):
+    def set_connection(self, i: int, bus, conn: WindingGraphicItem, set_voltage: bool = True):
         """
         Create the connection with a bus
         :param i: winding index 0-2
         :param bus: Bus object to connect to
         :param conn: Connection graphical object [LineGraphicItem]
+        :param set_voltage: Set voltage in the object (Transformer3W and Windings)
         """
         if i == 0:
             self.api_object.bus1 = bus
-            self.api_object.V1 = bus.Vnom
+            if set_voltage:
+                self.api_object.V1 = bus.Vnom
             self.connection_lines[0] = conn
             self.terminals[0].setZValue(-1)
             conn.api_object = self.api_object.winding1
@@ -314,7 +316,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         elif i == 1:
             self.api_object.bus2 = bus
-            self.api_object.V2 = bus.Vnom
+            if set_voltage:
+                self.api_object.V2 = bus.Vnom
             self.connection_lines[1] = conn
             self.terminals[1].setZValue(-1)
             conn.api_object = self.api_object.winding2
@@ -322,7 +325,8 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
         elif i == 2:
             self.api_object.bus3 = bus
-            self.api_object.V3 = bus.Vnom
+            if set_voltage:
+                self.api_object.V3 = bus.Vnom
             self.connection_lines[2] = conn
             self.terminals[2].setZValue(-1)
             conn.api_object = self.api_object.winding3

@@ -78,7 +78,7 @@ class MapLineContainer(GenericDiagramWidget):
         Remove all segments from the scene
         """
         for segment in self.segments_list:
-            self.editor.remove_from_scene(segment)
+            self.editor.remove_only_graphic_element(segment)
 
         self.segments_list = list()
 
@@ -158,39 +158,16 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.clean()
 
-        diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
-
         # draw line locations
         for elm in self.api_object.locations.data:
 
-            if diagram_locations is None:
-                # no locations found, use the data from the api object
-                # lat = elm.lat
-                # lon = elm.long
-                pass
-            else:
+            graphic_obj = self.editor.create_node(line_container=self,
+                                                    api_object=elm,
+                                                    lat=elm.lat,  # 42.0 ...
+                                                    lon=elm.long,
+                                                    index=self.number_of_nodes())  # 2.7 ...
 
-                # try to get location from the diagram
-                # We will not take the location of the element in the database because we want to keep...
-                # ... the diagram separated from database
-                # diagram_location = diagram_locations.locations.get(elm.idtag, None)
-
-                # if diagram_location is None:
-                #     # no particular location found, use the data from the api object
-                #     # lat = elm.lat
-                #     # lon = elm.long
-                #     pass
-                # else:
-                #     # Draw only what's on the diagram
-                #     # diagram data found, use it
-
-                graphic_obj = self.editor.create_node(line_container=self,
-                                                      api_object=elm,
-                                                      lat=elm.lat,  # 42.0 ...
-                                                      lon=elm.long,
-                                                      index=self.number_of_nodes())  # 2.7 ...
-
-                self.register_new_node(node=graphic_obj)
+            self.register_new_node(node=graphic_obj)
 
         # second pass: create the segments
         self.redraw_segments()
@@ -257,47 +234,15 @@ class MapLineContainer(GenericDiagramWidget):
             # draw the segment in the scene
             self.editor.add_to_scene(graphic_object=segment_graphic_object)
 
-        # diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
-        #
-        # for idx, elm in enumerate(self.api_object.locations.data):
-        #
-        #     if diagram_locations is None:
-        #         # no locations found, use the data from the api object
-        #         # lat = elm.lat
-        #         # lon = elm.long
-        #         pass
-        #     else:
-        #
-        #         # try to get location from the diagram
-        #         diagram_location = diagram_locations.locations.get(elm.idtag, None)
-        #
-        #         if diagram_location is None:
-        #             # no particular location found, use the data from the api object
-        #             # lat = elm.lat
-        #             # lon = elm.long
-        #             pass
-        #         else:
-        #             # Draw only what's on the diagram
-        #             # diagram data found, use it
-        #
-        #             if idx > 0:
-        #                 i1 = idx
-        #                 i2 = idx - 1
-        #                 # Assuming Connector takes (scene, node1, node2) as arguments
-        #                 segment_graphic_object = Segment(first=self.nodes_list[i1],
-        #                                                  second=self.nodes_list[i2])
-        #
-        #                 self.nodes_list[i1].needsUpdateFirst = True
-        #                 self.nodes_list[i2].needsUpdateSecond = True
-        #                 segment_graphic_object.needsUpdate = True
-        #
-        #                 # register the segment in the line
-        #                 self.add_segment(segment=segment_graphic_object)
-        #
-        #                 # draw the segment in the scene
-        #                 self.editor.add_to_scene(graphic_object=segment_graphic_object)
-
         self.update_connectors()
+
+        self.editor.Update_widths()
+
+    def substation_to(self):
+        return self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
+
+    def substation_from(self):
+        return self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
 
     def insert_new_node_at_position(self, index: int):
         """
@@ -307,7 +252,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
 
         # Check if the index is valid
-        if 1 <= index < len(self.api_object.locations.data):
+        if 1 <= index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 1:
 
             nd1 = self.nodes_list[index]
             nd2 = self.nodes_list[index - 1]
@@ -356,7 +301,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Return the newly created node
             return graphic_obj
 
-        elif index == 0 and len(self.api_object.locations.data) == 0:
+        elif len(self.api_object.locations.data) == 0:
 
             substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
             substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
@@ -375,7 +320,7 @@ class MapLineContainer(GenericDiagramWidget):
                                           idtag="",
                                           code="")
 
-            self.api_object.locations.data.insert(index, new_api_object)
+            self.api_object.locations.data.insert(0, new_api_object)
 
             # Create a new graphical node item
 
@@ -383,19 +328,10 @@ class MapLineContainer(GenericDiagramWidget):
                                                   api_object=new_api_object,
                                                   lat=new_api_object.lat,
                                                   lon=new_api_object.long,
-                                                  index=index)
-
-            idx = 0
-
-            for nod in self.nodes_list:
-
-                if idx >= index:
-                    nod.index = nod.index + 1
-
-                idx = idx + 1
+                                                  index=0)
 
             # Add the node to the nodes list
-            self.nodes_list.insert(index, graphic_obj)
+            self.nodes_list.insert(0, graphic_obj)
 
             graphic_obj.updatePosition()
 
@@ -405,7 +341,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Return the newly created node
             return graphic_obj
 
-        elif 0 == index or index == len(self.api_object.locations.data):
+        elif (0 == index or index >= len(self.api_object.locations.data) - 1):
 
             substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
             substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
@@ -417,7 +353,7 @@ class MapLineContainer(GenericDiagramWidget):
                 nd2 = self.nodes_list[0]
 
             if index >= len(self.nodes_list):
-                nd2 = self.nodes_list[len(self.nodes_list) - 1]
+                nd1 = self.nodes_list[len(self.nodes_list) - 1]
 
             new_lat = ((nd2.lat + nd1.lat) / 2)
             new_long = ((nd2.lon + nd1.lon) / 2)
@@ -497,6 +433,9 @@ class MapLineContainer(GenericDiagramWidget):
                 api_obj.lat = self.nodes_list[idx].lat
                 api_obj.long = self.nodes_list[idx].lon
                 idx = idx + 1
+
+            ln1.bus_from = self.api_object.bus_from
+            ln2.bus_to = self.api_object.bus_to
 
             l1 = self.editor.add_api_line(ln1, original=False)
             l2 = self.editor.add_api_line(ln2, original=False)

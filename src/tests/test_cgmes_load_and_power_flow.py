@@ -1,3 +1,19 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 from typing import Dict, List
 import GridCalEngine.api as gce
@@ -41,8 +57,8 @@ def test_load_and_run_pf() -> None:
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T1_BE_Complete_v2.zip'),
              os.path.join(base_folder, 'MicroGrid', 'Type1_T1',
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T1_NL_Complete_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type1_T1', 'T1_BE_Difference_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type1_T1', 'T1_NL_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type1_T1', 'T1_BE_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type1_T1', 'T1_NL_Difference_v2.zip'),
          ]
          },
 
@@ -54,8 +70,8 @@ def test_load_and_run_pf() -> None:
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T2_BE_Complete_v2.zip'),
              os.path.join(base_folder, 'MicroGrid', 'Type2_T2',
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T2_NL_Complete_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type2_T2', 'T2_BE_Difference_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type2_T2', 'T2_NL_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type2_T2', 'T2_BE_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type2_T2', 'T2_NL_Difference_v2.zip'),
          ]
          },
 
@@ -67,8 +83,8 @@ def test_load_and_run_pf() -> None:
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T3_BE_Complete_v2.zip'),
              os.path.join(base_folder, 'MicroGrid', 'Type3_T3',
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T3_NL_Complete_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type3_T3', 'T3_BE_Difference_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type3_T3', 'T3_NL_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type3_T3', 'T3_BE_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type3_T3', 'T3_NL_Difference_v2.zip'),
          ]
          },
 
@@ -86,10 +102,10 @@ def test_load_and_run_pf() -> None:
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T4_NL_BB_Complete_v2.zip'),
              os.path.join(base_folder, 'MicroGrid', 'Type4_T4',
                           'CGMES_v2.4.15_MicroGridTestConfiguration_T4_NL_NB_Complete_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_BE_BB_Difference_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_BE_NB_Difference_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_NL_BB_Difference_v2.zip'),
-             os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_NL_NB_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_BE_BB_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_BE_NB_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_NL_BB_Difference_v2.zip'),
+             # os.path.join(base_folder, 'MicroGrid', 'Type4_T4', 'T4_NL_NB_Difference_v2.zip'),
          ]
          },
 

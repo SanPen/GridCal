@@ -194,7 +194,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse enters the item.
         """
-        self.editor.inItem = True
+        self.editor.map.view.inItem = True
         self.hovered = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -203,7 +203,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
-        self.editor.inItem = False
+        self.editor.map.view.inItem = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()

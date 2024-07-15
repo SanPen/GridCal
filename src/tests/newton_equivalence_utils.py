@@ -160,7 +160,7 @@ def compare_inputs(grid_newton, grid_gc, tol=1e-6):
 
     J_gc2 = AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
 
-    CheckArr(J_gc2.tocsc().data, J_gc.tocsc().data, tol, 'Jacobian', 'using GridCal function with newton data')
+    CheckArr(J_gc2.toarray(), J_gc.toarray(), tol, 'Jacobian', 'using GridCal function with newton data')
     CheckArr((J_newton - J_gc).data, np.zeros_like((J_newton - J_gc).data), tol, 'Jacobian', '')
 
     print("done!")
@@ -271,7 +271,8 @@ def compare_inputs_at(grid_newton, grid_gc, tol=1e-6, t = 0):
 
     J_gc2 = AC_jacobian(newton_adm.Ybus, nc_newton.Vbus, np.r_[newton_types.pv, newton_types.pq], newton_types.pq)
 
-    err_count += CheckArr(J_gc2.tocsc().data, J_gc.tocsc().data, tol, 'Jacobian', 'using GridCal function with newton data')
+    err_count += CheckArr(J_gc2.toarray(), J_gc.toarray(), tol,
+                          'Jacobian', 'using GridCal function with newton data')
 
     if J_newton.shape == J_gc.shape:
         err_count += CheckArr((J_newton - J_gc).data, np.zeros_like((J_newton - J_gc).data), tol, 'Jacobian', '')

@@ -77,7 +77,7 @@ from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.GeneralDialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
-import GridCal.Gui.Visualization.palettes as palettes
+import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
 
 BRANCH_GRAPHICS = Union[
@@ -468,11 +468,6 @@ class SchematicWidget(BaseDiagramWidget):
                  default_bus_voltage: float = 10.0,
                  time_index: Union[None, int] = None,
                  prefer_node_breaker: bool = False,
-                 use_flow_based_width: bool = False,
-                 min_branch_width: int = 5,
-                 max_branch_width=5,
-                 min_bus_width=20,
-                 max_bus_width=20,
                  call_delete_db_element_func: Callable[["SchematicWidget", ALL_DEV_TYPES], None] = None):
         """
         Creates the Diagram Editor (DiagramEditorWidget)
@@ -488,11 +483,6 @@ class SchematicWidget(BaseDiagramWidget):
                                    diagram=diagram,
                                    library_model=SchematicLibraryModel(),
                                    time_index=time_index,
-                                   use_flow_based_width=use_flow_based_width,
-                                   min_branch_width=min_branch_width,
-                                   max_branch_width=max_branch_width,
-                                   min_bus_width=min_bus_width,
-                                   max_bus_width=max_bus_width,
                                    call_delete_db_element_func=call_delete_db_element_func)
 
         # create all the schematic objects and replace the existing ones
@@ -815,17 +805,17 @@ class SchematicWidget(BaseDiagramWidget):
                                                    to_port=bus_1_graphic.get_terminal(),
                                                    editor=self)
 
-                        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
+                        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=False)
 
                         conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
                                                    to_port=bus_2_graphic.get_terminal(),
                                                    editor=self)
-                        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
+                        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=False)
 
                         conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
                                                    to_port=bus_3_graphic.get_terminal(),
                                                    editor=self)
-                        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
+                        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=False)
 
                         graphic_object.set_position(x=location.x, y=location.y)
                         graphic_object.change_size(h=location.h, w=location.w)
@@ -1611,7 +1601,10 @@ class SchematicWidget(BaseDiagramWidget):
                                     api_object=winding
                                 )
 
-                                tr3_graphic_object.set_connection(i, bus, winding_graphics)
+                                tr3_graphic_object.set_connection(i=i,
+                                                                  bus=bus,
+                                                                  conn=winding_graphics,
+                                                                  set_voltage=True)
                                 tr3_graphic_object.update_conn()  # create winding
 
                         elif self.started_branch.connected_between_bus_and_tr3():
@@ -1636,7 +1629,10 @@ class SchematicWidget(BaseDiagramWidget):
                                     to_port=self.started_branch.get_terminal_to(),
                                     api_object=winding)
 
-                                tr3_graphic_object.set_connection(i, bus, winding_graphics)
+                                tr3_graphic_object.set_connection(i=i,
+                                                                  bus=bus,
+                                                                  conn=winding_graphics,
+                                                                  set_voltage=True)
                                 tr3_graphic_object.update_conn()
 
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
@@ -2587,10 +2583,11 @@ class SchematicWidget(BaseDiagramWidget):
                                    draw_labels=draw_labels,
                                    logger=logger)
 
-    def add_api_transformer_3w(self, elm: Transformer3W):
+    def add_api_transformer_3w(self, elm: Transformer3W, set_voltage: bool = False):
         """
         add API branch to the Scene
         :param elm: Branch instance
+        :param set_voltage:
         """
 
         tr3_graphic_object = self.create_transformer_3w_graphics(elm=elm, x=elm.x, y=elm.y)
@@ -2602,17 +2599,17 @@ class SchematicWidget(BaseDiagramWidget):
         conn1 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[0],
                                    to_port=port1,
                                    editor=self)
-        tr3_graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
+        tr3_graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=set_voltage)
 
         conn2 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[1],
                                    to_port=port2,
                                    editor=self)
-        tr3_graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
+        tr3_graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=set_voltage)
 
         conn3 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[2],
                                    to_port=port3,
                                    editor=self)
-        tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
+        tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=set_voltage)
 
         tr3_graphic_object.update_conn()
 
@@ -2968,7 +2965,7 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_obj = self.add_api_transformer(elm)
 
             elif isinstance(elm, Transformer3W):
-                graphic_obj = self.add_api_transformer_3w(elm)
+                graphic_obj = self.add_api_transformer_3w(elm, set_voltage=False)
 
             elif isinstance(elm, HvdcLine):
                 graphic_obj = self.add_api_hvdc(elm)
@@ -3141,7 +3138,7 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_transformer_3w(elm)
+            self.add_api_transformer_3w(elm, set_voltage=False)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3438,7 +3435,7 @@ class SchematicWidget(BaseDiagramWidget):
         PVB = 6
         '''
 
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage', 'P', 'PQV']
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
         max_flow = 1
 
         if len(buses) == len(vnorm):
@@ -4553,15 +4550,3 @@ def make_vecinity_diagram(circuit: MultiCircuit,
                                          name=root_bus.name + 'vecinity')
 
     return diagram
-
-# if __name__ == "__main__":
-#     from PySide6.QtWidgets import QApplication
-#     app = QApplication(sys.argv)
-#
-#     window = DiagramEditorWidget(circuit=MultiCircuit(),
-#                                    diagram=SchematicDiagram(),
-#                                    default_bus_voltage=10.0)
-#
-#     window.resize(1.61 * 700.0, 600.0)  # golden ratio
-#     window.show()
-#     sys.exit(app.exec())

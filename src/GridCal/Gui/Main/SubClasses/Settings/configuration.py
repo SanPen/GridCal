@@ -114,9 +114,7 @@ class ConfigurationMain(ResultsMain):
                                    additional_qss="QToolTip {color: white; background-color: black; border: 0px; }")
 
             # note: The 0px border on the tooltips allow it to render properly
-
-            diagram = self.get_selected_diagram_widget()
-            if diagram is not None:
+            for diagram in self.diagram_widgets_list:
                 if isinstance(diagram, SchematicWidget):
                     diagram.set_dark_mode()
 
@@ -131,9 +129,7 @@ class ConfigurationMain(ResultsMain):
                                    additional_qss="QToolTip {color: black; background-color: white; border: 0px;}")
 
             # note: The 0px border on the tooltips allow it to render properly
-
-            diagram = self.get_selected_diagram_widget()
-            if diagram is not None:
+            for diagram in self.diagram_widgets_list:
                 if isinstance(diagram, SchematicWidget):
                     diagram.set_light_mode()
 
@@ -181,11 +177,11 @@ class ConfigurationMain(ResultsMain):
             "graphics": {
                 "dark_mode": self.ui.dark_mode_checkBox,
                 "palette": self.ui.palette_comboBox,
-                "min_node_size": self.ui.min_node_size_spinBox,
-                "max_node_size": self.ui.max_node_size_spinBox,
-                "min_branch_size": self.ui.min_branch_size_spinBox,
-                "max_branch_size": self.ui.max_branch_size_spinBox,
-                "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
+                # "min_node_size": self.ui.min_node_size_spinBox,
+                # "max_node_size": self.ui.max_node_size_spinBox,
+                # "min_branch_size": self.ui.min_branch_size_spinBox,
+                # "max_branch_size": self.ui.max_branch_size_spinBox,
+                # "width_based_flow": self.ui.branch_width_based_on_flow_checkBox,
                 "map_tile_provider": self.ui.tile_provider_comboBox,
                 "plotting_style": self.ui.plt_style_comboBox,
                 "video_fps": self.ui.fps_spinBox

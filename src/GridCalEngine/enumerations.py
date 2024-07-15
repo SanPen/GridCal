@@ -20,13 +20,13 @@ from enum import Enum
 
 class BusMode(Enum):
     """
-    Emumetarion of bus modes
+    Bus modes
     """
-    PQ = 1  # control P, Q
-    PV = 2  # Control P, Vm
-    Slack = 3  # Contol Vm, Va (slack)
-    PQV = 4  # control P, Q and Vm
-    D = 5  # only control the voltage angle (Va)
+    PQ_tpe = 1  # control P, Q
+    PV_tpe = 2  # Control P, Vm
+    Slack_tpe = 3  # Control Vm, Va (slack)
+    PQV_tpe = 4  # voltage-controlled bus (P, Q, V set, theta computed)
+    P_tpe = 5  # voltage-controlling bus (P set, Q, V, theta computed)
 
     def __str__(self):
         return self.value
@@ -1793,5 +1793,36 @@ class ContingencyFilteringMethods(Enum):
         """
         try:
             return ContingencyFilteringMethods[s]
+        except KeyError:
+            return s
+
+
+class Colormaps(Enum):
+    GridCal = 'GridCal'
+    TSO = 'TSO'  # -1, 1
+    TSO2 = 'TSO 2'  # -1, 1
+    SCADA = 'SCADA'  # -1, 1
+    Heatmap = 'Heatmap'  # 0, 1
+    Blues = 'Blue'  # 0, 1
+    Greens = 'Green'  # 0, 1
+    Blue2Gray = 'Blue to gray'  # 0, 1
+    Green2Red = 'Green to red'  # -1, 1
+    Red2Blue = 'Red to blue'  # -1, 1
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return Colormaps[s]
         except KeyError:
             return s

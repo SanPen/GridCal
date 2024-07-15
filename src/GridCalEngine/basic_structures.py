@@ -530,10 +530,12 @@ class Logger:
         """
         self.to_df().to_excel(fname)
 
-    def print(self) -> None:
+    def print(self, title: str = "") -> None:
         """
         Print the logs
         """
+        if title != "":
+            print(title)
         print(self.to_df())
 
     def __str__(self):

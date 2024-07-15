@@ -181,7 +181,7 @@ class StateEstimation(DriverTemplate):
         n = len(self.grid.buses)
         m = self.grid.get_branch_number()
 
-        numerical_circuit = compile_numerical_circuit_at(self.grid)
+        numerical_circuit = compile_numerical_circuit_at(self.grid, logger=self.logger)
         self.results = StateEstimationResults(n=n,
                                               m=m,
                                               bus_names=numerical_circuit.bus_names,

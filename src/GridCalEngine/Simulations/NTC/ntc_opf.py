@@ -1068,7 +1068,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
                                                             t_idx=t,  # yes, this is not a bug
                                                             bus_dict=bus_dict,
-                                                            areas_dict=areas_dict)
+                                                            areas_dict=areas_dict,
+                                                            logger=logger)
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
