@@ -19,7 +19,7 @@ import pandas as pd
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection, TransformerControlType
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec
 from typing import List, Tuple, Dict
 
 
@@ -389,6 +389,10 @@ class BranchData:
             'Tap angle': self.tap_angle
         }
         return pd.DataFrame(data=data)
+
+    @property
+    def tap(self) -> CxVec:
+        return self.tap_module * np.exp(1.0j * self.tap_angle)
 
     def __len__(self) -> int:
         return self.nelm

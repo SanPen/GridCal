@@ -1648,7 +1648,7 @@ class NumericalCircuit:
             )
 
             J = fubm_jacobian(
-                nb=self.nbus,
+                nbus=self.nbus,
                 nl=self.nbr,
                 k_pf_tau=self.k_pf_tau,
                 k_pf_dp=self.k_pf_dp,
@@ -1662,7 +1662,7 @@ class NumericalCircuit:
                 F=self.F,
                 T=self.T,
                 Ys=Ys,
-                k2=self.branch_data.k,
+                kconv=self.branch_data.k,
                 complex_tap=tap,
                 tap_modules=self.branch_data.tap_module,
                 Bc=self.branch_data.B,

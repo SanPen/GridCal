@@ -109,8 +109,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
     # --------------------------------------------------------------------------
     # variables dimensions in Jacobian
-    sol_slicer = AcDcSolSlicer(pvpq=pvpq,
-                               pq=pq,
+    sol_slicer = AcDcSolSlicer(block1=pvpq,
+                               block2=pq,
                                k_zero_beq=nc.k_zero_beq,
                                k_vf_beq=nc.k_vf_beq,
                                k_qf_m=nc.k_qf_m,
@@ -334,8 +334,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                             n_block1 = len(blck1_idx)
 
                             # re declare the slicer because the indices of pq and pv changed
-                            sol_slicer = AcDcSolSlicer(pvpq=pvpq,
-                                                       pq=pq,
+                            sol_slicer = AcDcSolSlicer(block1=pvpq,
+                                                       block2=pq,
                                                        k_zero_beq=nc.k_zero_beq,
                                                        k_vf_beq=nc.k_vf_beq,
                                                        k_qf_m=nc.k_qf_m,

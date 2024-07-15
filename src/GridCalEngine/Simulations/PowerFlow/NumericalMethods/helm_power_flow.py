@@ -262,6 +262,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
     THis function just returns the coefficients for further usage in other routines
+    :param Ybus: Admittance matrix
     :param Yseries: Admittance matrix of the series elements
     :param V0: vector of specified voltages
     :param S0: vector of specified power
@@ -394,9 +395,11 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
         valor[pq_] = (vec_P[pq_] - vec_Q[pq_] * 1j) * X[c - 1, pq_] - U[c - 1, pq_] * Ysh[pq_]
         valor[pv_] = -1j * conv2(X, Q, c, pv_) - U[c - 1, pv_] * Ysh[pv_] + X[c - 1, pv_] * vec_P[pv_]
 
-        RHS = np.r_[valor.real,
-        valor.imag,
-        -conv3(U, U, c, pv_).real]
+        RHS = np.r_[
+            valor.real,
+            valor.imag,
+            -conv3(U, U, c, pv_).real
+        ]
 
         # LHS = spsolve(MAT, RHS)
         LHS = mat_factorized(RHS)
@@ -428,10 +431,30 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
 
 class HelmPreparation:
-
+    """
+    HelmPreparation
+    """
     def __init__(self, sys_mat_factorization, Uini, Xini, Yslack, Vslack,
                  vec_P, vec_Q, Ysh, vec_W, pq, pv, pqpv, sl,
                  npqpv, nbus):
+        """
+
+        :param sys_mat_factorization:
+        :param Uini:
+        :param Xini:
+        :param Yslack:
+        :param Vslack:
+        :param vec_P:
+        :param vec_Q:
+        :param Ysh:
+        :param vec_W:
+        :param pq:
+        :param pv:
+        :param pqpv:
+        :param sl:
+        :param npqpv:
+        :param nbus:
+        """
         self.sys_mat_factorization = sys_mat_factorization
         self.Uini = Uini
         self.Xini = Xini
