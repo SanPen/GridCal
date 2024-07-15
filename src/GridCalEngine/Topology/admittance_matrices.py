@@ -411,7 +411,7 @@ def compile_y_acdc(Cf: sp.csc_matrix,
                    Beq: Vec,
                    Gsw: Vec,
                    virtual_tap_from: Vec,
-                   virtual_tap_to: Vec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix, CxVec]:
+                   virtual_tap_to: Vec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix, CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Compile the admittance matrices using the variable elements
     :param Cf: Connectivity branch-bus "from" with the branch states computed
@@ -443,17 +443,17 @@ def compile_y_acdc(Cf: sp.csc_matrix,
     tap = tap_module * np.exp(1.0j * tap_angle)
 
     # compose the primitives
-    Yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (tap_module * tap_module * virtual_tap_from * virtual_tap_from)
-    Yft = -ys / (np.conj(tap) * virtual_tap_from * virtual_tap_to)
-    Ytf = -ys / (tap * virtual_tap_from * virtual_tap_to)
-    Ytt = ys + bc2 + yshunt_t / (virtual_tap_to * virtual_tap_to)
+    yff = Gsw + (ys + bc2 + 1.0j * Beq + yshunt_f) / (tap_module * tap_module * virtual_tap_from * virtual_tap_from)
+    yft = -ys / (np.conj(tap) * virtual_tap_from * virtual_tap_to)
+    ytf = -ys / (tap * virtual_tap_from * virtual_tap_to)
+    ytt = ys + bc2 + yshunt_t / (virtual_tap_to * virtual_tap_to)
 
     # compose the matrices
-    Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
-    Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
+    Yf = sp.diags(yff) * Cf + sp.diags(yft) * Ct
+    Yt = sp.diags(ytf) * Cf + sp.diags(ytt) * Ct
     Ybus = sp.csc_matrix(Cf.T * Yf + Ct.T * Yt)
 
-    return Ybus, Yf.tocsc(), Yt.tocsc(), tap
+    return Ybus, Yf.tocsc(), Yt.tocsc(), tap, yff, yft, ytf, ytt
 
 
 class SeriesAdmittanceMatrices:

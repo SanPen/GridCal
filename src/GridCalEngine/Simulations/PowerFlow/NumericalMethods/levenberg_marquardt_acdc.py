@@ -106,16 +106,16 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                                    k_pf_dp=nc.k_pf_dp)
         # -------------------------------------------------------------------------
         # compute initial admittances
-        Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf, Ct=Ct,
-                                           C_bus_shunt=nc.shunt_data.C_bus_elm,
-                                           shunt_admittance=nc.shunt_data.Y,
-                                           shunt_active=nc.shunt_data.active,
-                                           ys=Ys,
-                                           B=Bc,
-                                           Sbase=nc.Sbase,
-                                           tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
-                                           virtual_tap_from=nc.branch_data.virtual_tap_f,
-                                           virtual_tap_to=nc.branch_data.virtual_tap_t)
+        Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=Cf, Ct=Ct,
+                                                               C_bus_shunt=nc.shunt_data.C_bus_elm,
+                                                               shunt_admittance=nc.shunt_data.Y,
+                                                               shunt_active=nc.shunt_data.active,
+                                                               ys=Ys,
+                                                               B=Bc,
+                                                               Sbase=nc.Sbase,
+                                                               tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
+                                                               virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                                               virtual_tap_to=nc.branch_data.virtual_tap_t)
 
         #  compute branch power Sf
         If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service Branches
@@ -170,7 +170,8 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
 
             # evaluate Jacobian
             if update_jacobian:
-                H = fubm_jacobian(nb, nl, nc.k_pf_tau, nc.k_pf_dp, nc.k_qf_m, nc.k_qt_m, nc.k_vt_m, nc.k_zero_beq, nc.k_vf_beq,
+                H = fubm_jacobian(nb, nl, nc.k_pf_tau, nc.k_pf_dp, nc.k_qf_m, nc.k_qt_m, nc.k_vt_m, nc.k_zero_beq,
+                                  nc.k_vf_beq,
                                   nc.i_vf_beq, nc.i_vt_m,
                                   F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
@@ -236,17 +237,17 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                 nu *= 2.0
 
             # compute initial admittances
-            Ybus, Yf, Yt, tap = compile_y_acdc(Cf=Cf,
-                                               Ct=Ct,
-                                               C_bus_shunt=nc.shunt_data.C_bus_elm,
-                                               shunt_admittance=nc.shunt_data.Y,
-                                               shunt_active=nc.shunt_data.active,
-                                               ys=Ys,
-                                               B=Bc,
-                                               Sbase=nc.Sbase,
-                                               tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
-                                               virtual_tap_from=nc.branch_data.virtual_tap_f,
-                                               virtual_tap_to=nc.branch_data.virtual_tap_t)
+            Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=Cf,
+                                                                   Ct=Ct,
+                                                                   C_bus_shunt=nc.shunt_data.C_bus_elm,
+                                                                   shunt_admittance=nc.shunt_data.Y,
+                                                                   shunt_active=nc.shunt_data.active,
+                                                                   ys=Ys,
+                                                                   B=Bc,
+                                                                   Sbase=nc.Sbase,
+                                                                   tap_module=m, tap_angle=tau, Beq=Beq, Gsw=Gsw,
+                                                                   virtual_tap_from=nc.branch_data.virtual_tap_f,
+                                                                   virtual_tap_to=nc.branch_data.virtual_tap_t)
 
             #  compute branch power Sf
             If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service Branches

@@ -86,7 +86,7 @@ class CSC:
         :param nnz: number of non-zeros
         """
         self.nnz = nnz
-        self.data = np.empty(self.nnz, dtype=np.complex128)
+        self.data = np.empty(self.nnz, dtype=np.float64)
         self.indices = np.empty(self.nnz, dtype=np.int32)
         # self.indptr = np.empty(n_cols + 1, dtype=np.int32)
 
@@ -604,7 +604,7 @@ def sp_slice_rows(mat: CSC, rows: np.ndarray) -> CSC:
     return sp_transpose(A)
 
 
-@njit(cache=True)
+@njit()
 def sp_slice(A: CSC, rows: IntVec, cols: IntVec):
     """
     /*
@@ -655,8 +655,8 @@ def sp_slice(A: CSC, rows: IntVec, cols: IntVec):
     return B
 
 
-@njit(cache=True)
-def csc_stack_2d_ff(mats: List[CSC], m_rows: int = 1, m_cols: int = 1) -> CSC:
+@njit()
+def csc_stack_2d_ff(mats: List[CSC], n_rows: int = 1, n_cols: int = 1) -> CSC:
     """
     Assemble matrix from a list of matrices representing a "super matrix"
 
@@ -670,8 +670,8 @@ def csc_stack_2d_ff(mats: List[CSC], m_rows: int = 1, m_cols: int = 1) -> CSC:
     m_cols = 3
 
     :param mats: list of CSC matrices arranged in row-major order (i.e. [mat11, mat12, mat13, mat21, mat22, mat23]
-    :param m_rows: number of rows of the mats structure
-    :param m_cols: number of cols of the mats structure
+    :param n_rows: number of rows of the mats structure
+    :param n_cols: number of cols of the mats structure
     :return: Final assembled matrix in CSC format
     """
 
@@ -679,11 +679,11 @@ def csc_stack_2d_ff(mats: List[CSC], m_rows: int = 1, m_cols: int = 1) -> CSC:
     nnz = 0
     nrows = 0
     ncols = 0
-    for r in range(m_rows):
-        nrows += mats[r * m_cols].n_rows  # equivalent to mats[r, 0]
-        for c in range(m_cols):
-            col = mats[c + r * m_cols].n_cols  # equivalent to mats[r, c]
-            nnz += mats[c + r * m_cols].nnz
+    for r in range(n_rows):
+        nrows += mats[r * n_cols].n_rows  # equivalent to mats[r, 0]
+        for c in range(n_cols):
+            col = mats[c + r * n_cols].n_cols  # equivalent to mats[r, c]
+            nnz += mats[c + r * n_cols].nnz
             if r == 0:
                 ncols += col
 
@@ -692,7 +692,7 @@ def csc_stack_2d_ff(mats: List[CSC], m_rows: int = 1, m_cols: int = 1) -> CSC:
     cnt = 0
     res.indptr[0] = 0
     offset_col = 0
-    for c in range(m_cols):  # for each column of the array of matrices
+    for c in range(n_cols):  # for each column of the array of matrices
 
         # number of columns
         n = mats[c].n_cols  # equivalent to mats[0, c]
@@ -702,10 +702,10 @@ def csc_stack_2d_ff(mats: List[CSC], m_rows: int = 1, m_cols: int = 1) -> CSC:
 
                 offset_row = 0
 
-                for r in range(m_rows):  # for each row of the array of rows
+                for r in range(n_rows):  # for each row of the array of rows
 
                     # get the current sub-matrix
-                    A: CSC = mats[r * m_cols + c]  # equivalent to mats[r, c]
+                    A: CSC = mats[r * n_cols + c]  # equivalent to mats[r, c]
 
                     if A.n_rows > 0:
 

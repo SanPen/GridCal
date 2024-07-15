@@ -954,7 +954,7 @@ class NumericalCircuit:
         if self.admittances_ is None:
             self.admittances_ = self.get_admittance_matrices()
 
-        return self.admittances_.Ybus
+        return self.admittances_.Ybus.tocsc()
 
     @property
     def Yf(self):
@@ -1630,7 +1630,7 @@ class NumericalCircuit:
 
             # compute admittances
             Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
-            Ybus, Yf, Yt, tap = ycalc.compile_y_acdc(
+            Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = ycalc.compile_y_acdc(
                 Cf=self.Cf,
                 Ct=self.Ct,
                 C_bus_shunt=self.shunt_data.C_bus_elm.tocsc(),
@@ -1649,16 +1649,17 @@ class NumericalCircuit:
 
             J = fubm_jacobian(
                 nbus=self.nbus,
-                nl=self.nbr,
-                k_pf_tau=self.k_pf_tau,
-                k_pf_dp=self.k_pf_dp,
-                k_qf_m=self.k_qf_m,
-                k_qt_m=self.k_qt_m,
-                k_vt_m=self.k_vt_m,
-                k_zero_beq=self.k_zero_beq,
-                k_vf_beq=self.k_vf_beq,
-                i_vf_beq=self.i_vf_beq,
-                i_vt_m=self.i_vt_m,
+                idx_dtheta=np.r_[self.pv, self.pq, self.p, self.pqv],
+                idx_dvm=np.r_[self.pq, self.p],
+                idx_dm=np.r_[self.k_qf_m, self.k_qt_m, self.k_vt_m],
+                idx_dtau=np.r_[self.k_pf_tau, self.k_pf_dp],
+                idx_dbeq=np.r_[self.k_zero_beq, self.k_vf_beq],
+                idx_dP=np.r_[self.pv, self.pq, self.p, self.pqv],
+                idx_dQ=np.r_[self.pq, self.pqv],
+                idx_dQf=np.r_[self.k_qf_m, self.k_zero_beq],
+                idx_dQt=self.k_qt_m,
+                idx_dPf=self.k_pf_tau,
+                idx_dPdp=self.k_pf_dp,
                 F=self.F,
                 T=self.T,
                 Ys=Ys,
@@ -1669,13 +1670,14 @@ class NumericalCircuit:
                 Beq=self.branch_data.Beq,
                 Kdp=self.branch_data.Kdp,
                 V=self.Vbus,
-                Ybus=Ybus.tocsc(),
-                Yf=Yf.tocsc(),
-                Yt=Yt.tocsc(),
-                Cf=self.Cf.tocsc(),
-                Ct=self.Ct.tocsc(),
-                pvpq=pvpq,
-                pq=self.pq,
+                Vm=np.abs(self.Vbus),
+                Ybus_x=self.Ybus.data,
+                Ybus_p=self.Ybus.indptr,
+                Ybus_i=self.Ybus.indices,
+                yff=self.admittances_.yff,
+                yft=self.admittances_.yft,
+                ytf=self.admittances_.ytf,
+                ytt=self.admittances_.ytt
             )
 
             df = pd.DataFrame(
