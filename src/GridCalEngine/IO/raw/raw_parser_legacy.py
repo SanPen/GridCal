@@ -287,7 +287,7 @@ class PSSeBus(PSSeObject):
         :param logger:
         """
 
-        bustype = {1: dev.BusMode.PQ, 2: dev.BusMode.PV, 3: dev.BusMode.Slack, 4: dev.BusMode.PQ}
+        bustype = {1: dev.BusMode.PQ_tpe, 2: dev.BusMode.PV_tpe, 3: dev.BusMode.Slack_tpe, 4: dev.BusMode.PQ_tpe}
 
         if version >= 33:
             n = len(data[0])
@@ -336,12 +336,12 @@ class PSSeBus(PSSeObject):
         if self.IDE in bustype.keys():
             self.bus.type = bustype[self.IDE]
         else:
-            self.bus.type = dev.BusMode.PQ
+            self.bus.type = dev.BusMode.PQ_tpe
 
         if int(self.IDE) == 4:
             self.bus.active = False
 
-        if self.bus.type == dev.BusMode.Slack:
+        if self.bus.type == dev.BusMode.Slack_tpe:
             self.bus.is_slack = True
 
         # Ensures unique name

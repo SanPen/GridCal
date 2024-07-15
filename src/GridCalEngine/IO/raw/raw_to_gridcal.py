@@ -50,7 +50,7 @@ def get_gridcal_bus(psse_bus: RawBus,
     :return:
     """
 
-    bustype = {1: dev.BusMode.PQ, 2: dev.BusMode.PV, 3: dev.BusMode.Slack, 4: dev.BusMode.PQ}
+    bustype = {1: dev.BusMode.PQ_tpe, 2: dev.BusMode.PV_tpe, 3: dev.BusMode.Slack_tpe, 4: dev.BusMode.PQ_tpe}
     sh = None
 
     if psse_bus.version >= 33:
@@ -107,12 +107,12 @@ def get_gridcal_bus(psse_bus: RawBus,
     if psse_bus.IDE in bustype.keys():
         bus.type = bustype[psse_bus.IDE]
     else:
-        bus.type = dev.BusMode.PQ
+        bus.type = dev.BusMode.PQ_tpe
 
     if int(psse_bus.IDE) == 4:
         bus.active = False
 
-    if bus.type == dev.BusMode.Slack:
+    if bus.type == dev.BusMode.Slack_tpe:
         bus.is_slack = True
 
     # Ensures unique name
@@ -186,11 +186,17 @@ def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logge
     return elm
 
 
-def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger: Logger) -> dev.ControllableShunt:
+def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt,
+                               bus: dev.Bus,
+                               psse_bus_dict: Dict[int, dev.Bus],
+                               logger: Logger) -> dev.ControllableShunt:
     """
-    Return Newton Load object
-    Returns:
-        Newton Load object
+
+    :param psse_elm:
+    :param bus:
+    :param psse_bus_dict:
+    :param logger:
+    :return:
     """
     name = str(psse_elm.I).replace("'", "")
     name = name.strip()
@@ -209,13 +215,15 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
 
     vset = (psse_elm.VSWHI + psse_elm.VSWLO) / 2.0
 
-    # TODO: Add the remote control bus
-
     elm = dev.ControllableShunt(name='Switched shunt ' + name,
                                 active=bool(psse_elm.STAT),
                                 B=b,
                                 vset=vset,
                                 code=name)
+
+    if psse_elm.SWREG > 0:
+        if psse_elm.SWREG != psse_elm.I:
+            elm.control_bus = psse_bus_dict[psse_elm.SWREG]
 
     n_list = []
     b_list = []
@@ -233,13 +241,16 @@ def get_gridcal_shunt_switched(psse_elm: RawSwitchedShunt, bus: dev.Bus, logger:
     return elm
 
 
-def get_gridcal_generator(psse_elm: RawGenerator, logger: Logger) -> dev.Generator:
+def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.Bus], logger: Logger) -> dev.Generator:
     """
-    Return Newton Load object
-    Returns:
-        Newton Load object
+
+    :param psse_elm:
+    :param psse_bus_dict:
+    :param logger:
+    :return:
     """
     name = str(psse_elm.I) + '_' + str(psse_elm.ID).replace("'", "")
+
     elm = dev.Generator(name=name,
                         idtag=None,
                         code=name,
@@ -253,11 +264,16 @@ def get_gridcal_generator(psse_elm: RawGenerator, logger: Logger) -> dev.Generat
                         active=bool(psse_elm.STAT),
                         power_factor=psse_elm.WPF)
 
+    if psse_elm.IREG > 0:
+        if psse_elm.IREG != psse_elm.I:
+            elm.control_bus = psse_bus_dict[psse_elm.IREG]
+
     return elm
 
 
 def get_gridcal_transformer(psse_elm: RawTransformer,
-                            psse_bus_dict, Sbase,
+                            psse_bus_dict: Dict[int, dev.Bus],
+                            Sbase: float,
                             logger: Logger) -> Tuple[Union[dev.Transformer2W, dev.Transformer3W], int]:
     """
 
@@ -447,7 +463,10 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
         raise Exception(str(psse_elm.windings) + ' number of windings!')
 
 
-def get_gridcal_line(psse_elm: RawBranch, psse_bus_dict, Sbase, logger: Logger) -> dev.Line:
+def get_gridcal_line(psse_elm: RawBranch,
+                     psse_bus_dict: Dict[int, dev.Bus],
+                     Sbase: float,
+                     logger: Logger) -> dev.Line:
     """
 
     :param psse_elm:
@@ -492,7 +511,10 @@ def get_gridcal_line(psse_elm: RawBranch, psse_bus_dict, Sbase, logger: Logger) 
     return branch
 
 
-def get_hvdc_from_vscdc(psse_elm: RawVscDCLine, psse_bus_dict, Sbase, logger: Logger) -> Union[dev.HvdcLine, None]:
+def get_hvdc_from_vscdc(psse_elm: RawVscDCLine,
+                        psse_bus_dict: Dict[int, dev.Bus],
+                        Sbase: float,
+                        logger: Logger) -> Union[dev.HvdcLine, None]:
     """
     Get equivalent object
     :param psse_elm:
@@ -540,7 +562,9 @@ def get_hvdc_from_vscdc(psse_elm: RawVscDCLine, psse_bus_dict, Sbase, logger: Lo
         return None
 
 
-def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase: float,
+def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine,
+                            psse_bus_dict: Dict[int, dev.Bus],
+                            Sbase: float,
                             logger: Logger) -> Union[dev.HvdcLine, None]:
     """
 
@@ -600,7 +624,11 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine, psse_bus_dict, Sbase
         return None
 
 
-def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger, circuit: MultiCircuit):
+def get_upfc_from_facts(psse_elm: RawFACTS,
+                        psse_bus_dict: Dict[int, dev.Bus],
+                        Sbase: float,
+                        logger: Logger,
+                        circuit: MultiCircuit):
     """
     Get equivalent object
     :param psse_elm:
@@ -628,7 +656,7 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
     if '*' in str(psse_elm.SET1):
         psse_elm.SET1 = 0.0
 
-    if abs(psse_elm.J) == 0:     # STATCOM device
+    if abs(psse_elm.J) == 0:  # STATCOM device
         if mode == 0:
             active = False
         else:
@@ -636,7 +664,7 @@ def get_upfc_from_facts(psse_elm: RawFACTS, psse_bus_dict, Sbase, logger: Logger
 
         # TODO add STATCOM obj
 
-    elif abs(psse_elm.J) > 0:    # FACTS series device
+    elif abs(psse_elm.J) > 0:  # FACTS series device
 
         if mode == 0:
             active = False
@@ -800,7 +828,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     for psse_shunt in psse_circuit.switched_shunts:
         if psse_shunt.I in psse_bus_dict:
             bus = psse_bus_dict[psse_shunt.I]
-            api_obj = get_gridcal_shunt_switched(psse_shunt, bus, logger)
+            api_obj = get_gridcal_shunt_switched(psse_shunt, bus, psse_bus_dict, logger)
             circuit.add_controllable_shunt(bus, api_obj)
         else:
             logger.add_error("Switched shunt bus missing", psse_shunt.I, psse_shunt.I)
@@ -808,7 +836,7 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     # Go through generators
     for psse_gen in psse_circuit.generators:
         bus = psse_bus_dict[psse_gen.I]
-        api_obj = get_gridcal_generator(psse_gen, logger)
+        api_obj = get_gridcal_generator(psse_gen, psse_bus_dict, logger)
 
         circuit.add_generator(bus, api_obj)
         api_obj.is_controlled = psse_gen.WMOD == 0 or psse_gen.WMOD == 1

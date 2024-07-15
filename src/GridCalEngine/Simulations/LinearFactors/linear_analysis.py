@@ -19,7 +19,7 @@ import numpy as np
 import numba as nb
 import scipy.sparse as sp
 from typing import Union, List, Tuple
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import spsolve as scipy_spsolve
 
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, CxVec, Mat, ObjVec, CxMat
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -29,6 +29,7 @@ from GridCalEngine.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc
+import GridCalEngine.Utils.Sparse.csc2 as csc
 from GridCalEngine.Utils.MIP.selected_interface import lpDot
 
 
@@ -127,7 +128,7 @@ def make_acptdf(Ybus: sp.csc_matrix,
     dS = np.r_[dP[pvpq, :], dQ]
 
     # solve the voltage increments
-    dx = spsolve(J, dS)
+    dx = csc.spsolve_csc(J, dS)
 
     # compute branch derivatives
     dSf_dVm, dSf_dVa = dSf_dV_csc(Yf.tocsc(), V, F, T)
@@ -169,7 +170,7 @@ def make_ptdf(Bpqpv: sp.csc_matrix,
     # solve for change in voltage angles
     dTheta = np.zeros((nb, nbi))
     # Bref = Bbus[noslack, :][:, noref].tocsc()
-    dtheta_ref = spsolve(Bpqpv, dP[noslack, :])
+    dtheta_ref = scipy_spsolve(Bpqpv, dP[noslack, :])
 
     if sp.issparse(dtheta_ref):
         dTheta[noref, :] = dtheta_ref.toarray()

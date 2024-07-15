@@ -335,7 +335,10 @@ class MapLineSegment(QGraphicsLineItem):
             elif self.second == self.container.substation_from() or self.first == self.container.substation_from():
                 self.container.insert_new_node_at_position(0)
             else:
-                self.container.insert_new_node_at_position(self.first.index)
+                if self.first.index > self.second.index:
+                    self.container.insert_new_node_at_position(self.second.index)
+                elif self.first.index < self.second.index:
+                    self.container.insert_new_node_at_position(self.second.index)
 
         # TODO implement
         # self.editor.split_line(line_graphics=self)

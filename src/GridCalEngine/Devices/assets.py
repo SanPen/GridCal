@@ -4669,6 +4669,9 @@ class Assets:
         elif device_type == DeviceType.ModellingAuthority:
             return self.get_modelling_authorities()
 
+        elif device_type == DeviceType.LambdaDevice:
+            return list()
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 

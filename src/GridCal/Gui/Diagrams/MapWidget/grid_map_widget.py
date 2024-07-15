@@ -938,7 +938,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
 
         vmin = 0
         vmax = 1.2

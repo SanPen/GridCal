@@ -476,6 +476,42 @@ class Ui_mainWindow(object):
         self.gridLayout_3 = QGridLayout(self.centralwidget)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.progress_frame = QFrame(self.centralwidget)
+        self.progress_frame.setObjectName(u"progress_frame")
+        self.progress_frame.setFrameShape(QFrame.NoFrame)
+        self.progress_frame.setFrameShadow(QFrame.Raised)
+        self.gridLayout_7 = QGridLayout(self.progress_frame)
+        self.gridLayout_7.setObjectName(u"gridLayout_7")
+        self.progress_label = QLabel(self.progress_frame)
+        self.progress_label.setObjectName(u"progress_label")
+
+        self.gridLayout_7.addWidget(self.progress_label, 0, 2, 1, 1)
+
+        self.progressBar = QProgressBar(self.progress_frame)
+        self.progressBar.setObjectName(u"progressBar")
+        self.progressBar.setStyleSheet(u"QProgressBar {\n"
+"	border: 1px solid rgb(186, 189, 182);\n"
+"    border-radius: 5px;\n"
+"	text-align: center;\n"
+"}\n"
+"QProgressBar::chunk{\n"
+"	background-color: rgb(0, 180, 136)\n"
+"}")
+        self.progressBar.setValue(20)
+        self.progressBar.setInvertedAppearance(False)
+
+        self.gridLayout_7.addWidget(self.progressBar, 2, 2, 1, 1)
+
+        self.cancelButton = QPushButton(self.progress_frame)
+        self.cancelButton.setObjectName(u"cancelButton")
+        self.cancelButton.setMinimumSize(QSize(0, 24))
+        self.cancelButton.setIcon(icon46)
+
+        self.gridLayout_7.addWidget(self.cancelButton, 2, 0, 1, 1)
+
+
+        self.gridLayout_3.addWidget(self.progress_frame, 3, 0, 1, 1)
+
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         self.GridTab = QWidget()
@@ -1396,69 +1432,6 @@ class Ui_mainWindow(object):
         self.verticalLayout_9.addWidget(self.tabWidget_3)
 
         self.tabWidget.addTab(self.GridTab, icon58, "")
-        self.tab = QWidget()
-        self.tab.setObjectName(u"tab")
-        self.verticalLayout = QVBoxLayout(self.tab)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(6, 6, 6, -1)
-        self.server_tableView = QTableView(self.tab)
-        self.server_tableView.setObjectName(u"server_tableView")
-
-        self.verticalLayout.addWidget(self.server_tableView)
-
-        self.frame_2 = QFrame(self.tab)
-        self.frame_2.setObjectName(u"frame_2")
-        self.frame_2.setFrameShape(QFrame.NoFrame)
-        self.frame_2.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_8 = QHBoxLayout(self.frame_2)
-        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
-        self.label_146 = QLabel(self.frame_2)
-        self.label_146.setObjectName(u"label_146")
-
-        self.horizontalLayout_8.addWidget(self.label_146)
-
-        self.server_url_lineEdit = QLineEdit(self.frame_2)
-        self.server_url_lineEdit.setObjectName(u"server_url_lineEdit")
-
-        self.horizontalLayout_8.addWidget(self.server_url_lineEdit)
-
-        self.label_147 = QLabel(self.frame_2)
-        self.label_147.setObjectName(u"label_147")
-
-        self.horizontalLayout_8.addWidget(self.label_147)
-
-        self.server_port_spinBox = QSpinBox(self.frame_2)
-        self.server_port_spinBox.setObjectName(u"server_port_spinBox")
-        self.server_port_spinBox.setMaximum(9999999)
-        self.server_port_spinBox.setValue(8000)
-
-        self.horizontalLayout_8.addWidget(self.server_port_spinBox)
-
-        self.label_148 = QLabel(self.frame_2)
-        self.label_148.setObjectName(u"label_148")
-
-        self.horizontalLayout_8.addWidget(self.label_148)
-
-        self.server_pwd_lineEdit = QLineEdit(self.frame_2)
-        self.server_pwd_lineEdit.setObjectName(u"server_pwd_lineEdit")
-        self.server_pwd_lineEdit.setEchoMode(QLineEdit.Password)
-
-        self.horizontalLayout_8.addWidget(self.server_pwd_lineEdit)
-
-        self.horizontalSpacer_7 = QSpacerItem(304, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_8.addItem(self.horizontalSpacer_7)
-
-        self.server_status_label = QLabel(self.frame_2)
-        self.server_status_label.setObjectName(u"server_status_label")
-
-        self.horizontalLayout_8.addWidget(self.server_status_label)
-
-
-        self.verticalLayout.addWidget(self.frame_2)
-
-        self.tabWidget.addTab(self.tab, icon69, "")
         self.ResultsTab = QWidget()
         self.ResultsTab.setObjectName(u"ResultsTab")
         self.verticalLayout_13 = QVBoxLayout(self.ResultsTab)
@@ -4102,48 +4075,74 @@ class Ui_mainWindow(object):
         self.horizontalLayout_40.addItem(self.horizontalSpacer_27)
 
         self.settings_tabWidget.addTab(self.file_tab, icon4, "")
+        self.tab_5 = QWidget()
+        self.tab_5.setObjectName(u"tab_5")
+        self.verticalLayout_7 = QVBoxLayout(self.tab_5)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.server_tableView = QTableView(self.tab_5)
+        self.server_tableView.setObjectName(u"server_tableView")
+
+        self.verticalLayout_7.addWidget(self.server_tableView)
+
+        self.frame_2 = QFrame(self.tab_5)
+        self.frame_2.setObjectName(u"frame_2")
+        self.frame_2.setFrameShape(QFrame.NoFrame)
+        self.frame_2.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_8 = QHBoxLayout(self.frame_2)
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
+        self.label_146 = QLabel(self.frame_2)
+        self.label_146.setObjectName(u"label_146")
+
+        self.horizontalLayout_8.addWidget(self.label_146)
+
+        self.server_url_lineEdit = QLineEdit(self.frame_2)
+        self.server_url_lineEdit.setObjectName(u"server_url_lineEdit")
+
+        self.horizontalLayout_8.addWidget(self.server_url_lineEdit)
+
+        self.label_147 = QLabel(self.frame_2)
+        self.label_147.setObjectName(u"label_147")
+
+        self.horizontalLayout_8.addWidget(self.label_147)
+
+        self.server_port_spinBox = QSpinBox(self.frame_2)
+        self.server_port_spinBox.setObjectName(u"server_port_spinBox")
+        self.server_port_spinBox.setMaximum(9999999)
+        self.server_port_spinBox.setValue(8000)
+
+        self.horizontalLayout_8.addWidget(self.server_port_spinBox)
+
+        self.label_148 = QLabel(self.frame_2)
+        self.label_148.setObjectName(u"label_148")
+
+        self.horizontalLayout_8.addWidget(self.label_148)
+
+        self.server_pwd_lineEdit = QLineEdit(self.frame_2)
+        self.server_pwd_lineEdit.setObjectName(u"server_pwd_lineEdit")
+        self.server_pwd_lineEdit.setEchoMode(QLineEdit.Password)
+
+        self.horizontalLayout_8.addWidget(self.server_pwd_lineEdit)
+
+        self.horizontalSpacer_7 = QSpacerItem(304, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_8.addItem(self.horizontalSpacer_7)
+
+        self.server_status_label = QLabel(self.frame_2)
+        self.server_status_label.setObjectName(u"server_status_label")
+
+        self.horizontalLayout_8.addWidget(self.server_status_label)
+
+
+        self.verticalLayout_7.addWidget(self.frame_2)
+
+        self.settings_tabWidget.addTab(self.tab_5, icon69, "")
 
         self.gridLayout_8.addWidget(self.settings_tabWidget, 0, 2, 1, 1)
 
         self.tabWidget.addTab(self.SettingsTab, icon49, "")
 
         self.gridLayout_3.addWidget(self.tabWidget, 0, 0, 1, 1)
-
-        self.progress_frame = QFrame(self.centralwidget)
-        self.progress_frame.setObjectName(u"progress_frame")
-        self.progress_frame.setFrameShape(QFrame.NoFrame)
-        self.progress_frame.setFrameShadow(QFrame.Raised)
-        self.gridLayout_7 = QGridLayout(self.progress_frame)
-        self.gridLayout_7.setObjectName(u"gridLayout_7")
-        self.progress_label = QLabel(self.progress_frame)
-        self.progress_label.setObjectName(u"progress_label")
-
-        self.gridLayout_7.addWidget(self.progress_label, 0, 2, 1, 1)
-
-        self.progressBar = QProgressBar(self.progress_frame)
-        self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setStyleSheet(u"QProgressBar {\n"
-"	border: 1px solid rgb(186, 189, 182);\n"
-"    border-radius: 5px;\n"
-"	text-align: center;\n"
-"}\n"
-"QProgressBar::chunk{\n"
-"	background-color: rgb(0, 180, 136)\n"
-"}")
-        self.progressBar.setValue(20)
-        self.progressBar.setInvertedAppearance(False)
-
-        self.gridLayout_7.addWidget(self.progressBar, 2, 2, 1, 1)
-
-        self.cancelButton = QPushButton(self.progress_frame)
-        self.cancelButton.setObjectName(u"cancelButton")
-        self.cancelButton.setMinimumSize(QSize(0, 24))
-        self.cancelButton.setIcon(icon46)
-
-        self.gridLayout_7.addWidget(self.cancelButton, 2, 0, 1, 1)
-
-
-        self.gridLayout_3.addWidget(self.progress_frame, 3, 0, 1, 1)
 
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
@@ -4653,6 +4652,11 @@ class Ui_mainWindow(object):
         self.actionRecord_video.setToolTip(QCoreApplication.translate("mainWindow", u"Record video of the schematic", None))
 #endif // QT_CONFIG(tooltip)
         self.actionExport_circuit_differential.setText(QCoreApplication.translate("mainWindow", u"Circuit differential", None))
+        self.progress_label.setText("")
+#if QT_CONFIG(tooltip)
+        self.cancelButton.setToolTip(QCoreApplication.translate("mainWindow", u"Cancel process", None))
+#endif // QT_CONFIG(tooltip)
+        self.cancelButton.setText("")
 #if QT_CONFIG(tooltip)
         self.grid_name_line_edit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the grid model", None))
 #endif // QT_CONFIG(tooltip)
@@ -4829,23 +4833,6 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.commentsTab), QCoreApplication.translate("mainWindow", u"Comments", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.GridTab), QCoreApplication.translate("mainWindow", u"Model", None))
-#if QT_CONFIG(tooltip)
-        self.server_tableView.setToolTip(QCoreApplication.translate("mainWindow", u"Server jobs currently on cue", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_146.setText(QCoreApplication.translate("mainWindow", u"Url", None))
-#if QT_CONFIG(tooltip)
-        self.server_url_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Type here the GridCal server URL (ask your IT team)", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_147.setText(QCoreApplication.translate("mainWindow", u"Port", None))
-#if QT_CONFIG(tooltip)
-        self.server_port_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Type here the GridCal server Port (ask your IT team)", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_148.setText(QCoreApplication.translate("mainWindow", u"Password", None))
-#if QT_CONFIG(tooltip)
-        self.server_pwd_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Type here the GridCal server password (ask your IT team)", None))
-#endif // QT_CONFIG(tooltip)
-        self.server_status_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("mainWindow", u"Server", None))
         self.label_16.setText(QCoreApplication.translate("mainWindow", u"Session results", None))
 #if QT_CONFIG(tooltip)
         self.deleteDriverButton.setToolTip(QCoreApplication.translate("mainWindow", u"Delete selected driver", None))
@@ -5392,12 +5379,24 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.file_tab), QCoreApplication.translate("mainWindow", u"File related settings", None))
 #endif // QT_CONFIG(tooltip)
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.SettingsTab), QCoreApplication.translate("mainWindow", u"Settings", None))
-        self.progress_label.setText("")
 #if QT_CONFIG(tooltip)
-        self.cancelButton.setToolTip(QCoreApplication.translate("mainWindow", u"Cancel process", None))
+        self.server_tableView.setToolTip(QCoreApplication.translate("mainWindow", u"Server jobs currently on cue", None))
 #endif // QT_CONFIG(tooltip)
-        self.cancelButton.setText("")
+        self.label_146.setText(QCoreApplication.translate("mainWindow", u"Url", None))
+#if QT_CONFIG(tooltip)
+        self.server_url_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Type here the GridCal server URL (ask your IT team)", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_147.setText(QCoreApplication.translate("mainWindow", u"Port", None))
+#if QT_CONFIG(tooltip)
+        self.server_port_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Type here the GridCal server Port (ask your IT team)", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_148.setText(QCoreApplication.translate("mainWindow", u"Password", None))
+#if QT_CONFIG(tooltip)
+        self.server_pwd_lineEdit.setToolTip(QCoreApplication.translate("mainWindow", u"Type here the GridCal server password (ask your IT team)", None))
+#endif // QT_CONFIG(tooltip)
+        self.server_status_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.tab_5), QCoreApplication.translate("mainWindow", u"Server", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.SettingsTab), QCoreApplication.translate("mainWindow", u"Settings", None))
         self.menuProject.setTitle(QCoreApplication.translate("mainWindow", u"File", None))
         self.menuExport.setTitle(QCoreApplication.translate("mainWindow", u"Export", None))
         self.menuImport.setTitle(QCoreApplication.translate("mainWindow", u"Import", None))
