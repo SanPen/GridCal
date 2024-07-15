@@ -436,7 +436,8 @@ def create_operational_limit_set(terminal,
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("OperationalLimitSet")
     op_lim_set = object_template(rdfid=new_rdf_id)
-    op_lim_set.name = f'OpertinalLimit at Port1'
+    term_num = terminal.sequenceNumber if terminal.sequenceNumber is not None else 1
+    op_lim_set.name = f'OpertinalLimit at Term-{term_num}'
     op_lim_set.description = f'OpertinalLimit at Port1'
 
     terminal_type = cgmes_model.get_class_type('Terminal')
@@ -832,16 +833,6 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         cgmes_model.add(line)
 
 
-def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
-                                 cgmes_model: CgmesCircuit,
-                                 logger: DataLogger):
-    # OperationalLimitSet and OperationalLimitType
-    # rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
-    #                                     4)
-    # TODO Move it to util, we need a device and its terminals and create a limit for the terminals, create the LimitTypes
-    pass
-
-
 def get_cgmes_generators(multicircuit_model: MultiCircuit,
                          cgmes_model: CgmesCircuit,
                          logger: DataLogger):
@@ -1004,6 +995,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
             target_vnom=mc_elm.bus_from.Vnom
         )
+
+        current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+        current_rate = np.round(current_rate, 4)
+        create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate, cgmes_model, logger)
+        create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate, cgmes_model, logger)
 
         (r_ohm,
          x_ohm,
