@@ -67,6 +67,41 @@ def get_slack_id(machines):
     return None
 
 
+def build_rates_dict(cgmes_model, device_type, logger):
+    """
+    Builds Rating dictionary for given device type from OperationalLimitSets
+
+    :param cgmes_model:
+    :param device_type:
+    :param logger:
+    :return:
+    """
+    rates_dict = dict()
+    for e in cgmes_model.cgmes_assets.CurrentLimit_list:
+        if e.OperationalLimitSet is None:
+            logger.add_error(msg='OperationalLimitSet missing.',
+                             device=e.rdfid,
+                             device_class=e.tpe,
+                             device_property="OperationalLimitSet",
+                             value="None")
+            continue
+        if not isinstance(e.OperationalLimitSet, str):
+            if isinstance(e.OperationalLimitSet, list):
+                for ols in e.OperationalLimitSet:
+                    if isinstance(ols.Terminal.ConductingEquipment,
+                                  device_type):
+                        branch_id = ols.Terminal.ConductingEquipment.uuid
+                        rates_dict[branch_id] = e.value
+            else:
+                if isinstance(
+                        e.OperationalLimitSet.Terminal.ConductingEquipment,
+                        device_type):
+                    branch_id = e.OperationalLimitSet.Terminal.ConductingEquipment.uuid
+                    rates_dict[branch_id] = e.value
+
+    return rates_dict
+
+
 # region PowerTransformer
 # def get_windings_number(power_transformer):
 #     """
@@ -255,7 +290,6 @@ def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger):
             return None
     else:
         return ac_line_segment.BaseVoltage.nominalVoltage
-
 
 
 def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: float = 100.0):

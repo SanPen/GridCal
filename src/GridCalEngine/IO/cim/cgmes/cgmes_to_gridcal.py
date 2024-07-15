@@ -29,7 +29,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_power_transformer_end,
                                                     get_slack_id,
                                                     find_object_by_idtag,
-                                                    find_terms_connections)
+                                                    find_terms_connections,
+                                                    build_rates_dict)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.base import Base
 
@@ -724,6 +725,10 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :return: None
     """
 
+    # build the ratings dictionary
+    trafo_type = cgmes_model.get_class_type("PowerTransformer")
+    rates_dict = build_rates_dict(cgmes_model, trafo_type, logger)
+
     # convert ac lines
     for device_list in [cgmes_model.cgmes_assets.PowerTransformer_list]:
 
@@ -738,6 +743,14 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             windings = [x for x in windings if x is not None]
             # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
+
+            current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
+            # if current_rate:
+            #     # rate in MVA = kA * kV * sqrt(3)
+            #     rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
+            #                     4)
+            # else:
+            #     rate = 1e-20
 
             if len(windings) == 2:
                 calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
@@ -788,7 +801,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     # tap_module_control_mode=,
                                                     # tap_angle_control_mode=,
                                                     # rate=get_rate(cgmes_elm))
-                                                    rate=rated_s)
+                                                    rate=999.9)
 
                     gcdev_model.add_transformer2w(gcdev_elm)
                 else:
