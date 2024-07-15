@@ -707,7 +707,7 @@ def csc_stack_2d_ff(mats: List[CSC], n_rows: int = 1, n_cols: int = 1) -> CSC:
                     # get the current sub-matrix
                     A: CSC = mats[r * n_cols + c]  # equivalent to mats[r, c]
 
-                    if A.n_rows > 0:
+                    if A.n_rows > 0 and A.nnz > 0:
 
                         for k in range(A.indptr[j], A.indptr[j + 1]):  # for every entry in the column from A
                             res.indices[cnt] = A.indices[k] + offset_row  # row index
