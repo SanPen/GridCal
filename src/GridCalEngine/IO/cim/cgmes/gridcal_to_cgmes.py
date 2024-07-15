@@ -1,5 +1,6 @@
 import numpy as np
 
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
@@ -7,7 +8,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile, WindGenUnitKind,
                                                     RegulatingControlModeKind, UnitMultiplier)
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, find_object_by_vnom, \
-    get_ohm_values_power_transformer
+    get_ohm_values_power_transformer, find_tn_by_name, find_object_by_attribute
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 # import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
@@ -19,8 +20,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingM
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
-
-
 
 
 # region create new classes for CC
@@ -1207,8 +1206,36 @@ def get_cgmes_sv_power_flow(cgmes_model: CgmesCircuit,
         cgmes_model.add(sv_pf)
 
 
-def get_cgmes_topological_island():
-    pass
+def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
+                                 cgmes_model: CgmesCircuit,
+                                 logger: DataLogger):
+    nc = compile_numerical_circuit_at(multicircuit_model)
+    nc_islands = nc.split_into_islands()
+    tpi_template = cgmes_model.get_class_type("TopologicalIsland")
+    i = 0
+    for nc_i in nc_islands:
+        i = i + 1
+        new_island = tpi_template(get_new_rdfid())
+        new_island.name = "TopologicalIsland" + str(i)
+        new_island.TopologicalNodes = []
+        bus_names = nc_i.bus_names
+        mc_buses = []
+        for tn_name in bus_names:
+            tn = find_tn_by_name(cgmes_model, tn_name)
+            if tn:
+                new_island.TopologicalNodes.append(tn)
+                mc_bus = find_object_by_attribute(multicircuit_model.buses, "name", tn_name)
+                mc_buses.append(mc_bus)
+        slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
+        if slack_bus:
+            slack_tn = find_object_by_uuid(cgmes_model, cgmes_model.cgmes_assets.TopologicalNode_list, slack_bus.idtag)
+            new_island.AngleRefTopologicalNode = slack_tn
+            for tn in new_island.TopologicalNodes:
+                tn.AngleRefTopologicalIsland = slack_tn
+        else:
+            logger.add_warning(msg="AngleRefTopologicalNode missing from TopologicalIsland!", device=new_island.name,
+                               device_property="AngleRefTopologicalNode")
+        cgmes_model.add(new_island)
 
 
 def make_coordinate_system(cgmes_model: CgmesCircuit,
@@ -1271,6 +1298,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # if converged == True...
         get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
         # get_cgmes_sv_power_flow()
+        get_cgmes_topological_island(gc_model, cgmes_model, logger)
 
     else:
         # abort export on gui ?

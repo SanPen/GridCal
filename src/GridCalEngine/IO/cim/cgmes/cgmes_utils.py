@@ -614,7 +614,7 @@ def get_regulating_control(cgmes_elm,
 #             tpe_dict[cgmes_obj.rdfid] = cgmes_obj
 
 
-def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):  # TODO move to CGMES utils
+def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):
     """
     Finds an object with the specified uuid
      in the given object_list from a CGMES Circuit.
@@ -634,6 +634,25 @@ def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):  #
                 return obj
     for obj in object_list:
         if obj.uuid == target_uuid:
+            return obj
+    return None
+
+def find_tn_by_name(cgmes_model: CgmesCircuit, target_name):
+    """
+    Finds the topological node with the specified name
+     from a CGMES Circuit.
+
+    @param cgmes_model:
+    @param target_name:
+    @return:
+    """
+    boundary_obj_dict = cgmes_model.elements_by_type_boundary.get("TopologicalNode")
+    if boundary_obj_dict is not None:
+        for obj in boundary_obj_dict:
+            if obj.name == target_name:
+                return obj
+    for obj in cgmes_model.cgmes_assets.TopologicalNode_list:
+        if obj.name == target_name:
             return obj
     return None
 
