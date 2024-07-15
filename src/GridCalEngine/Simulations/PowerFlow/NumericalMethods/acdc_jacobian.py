@@ -861,6 +861,7 @@ def fubm_jacobian_old(nb, nl,
     return J
 
 
+# @nb.njit()
 def fubm_jacobian(nbus: int,
                   idx_dtheta: IntVec,
                   idx_dvm: IntVec,

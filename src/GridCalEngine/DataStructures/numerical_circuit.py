@@ -1606,28 +1606,6 @@ class NumericalCircuit:
 
             from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
 
-            pvpq = np.r_[self.pv, self.pq]
-
-            cols = ['1) dVa {0}'.format(i) for i in pvpq]
-            cols += ['2) dVm {0}'.format(i) for i in self.pq]
-            cols += ['3) dPfsh {0}'.format(i) for i in self.k_pf_tau]
-            cols += ['4) dQfma {0}'.format(i) for i in self.k_qf_m]
-            cols += ['5) dBeqz {0}'.format(i) for i in self.k_zero_beq]
-            cols += ['6) dBeqv {0}'.format(i) for i in self.k_vf_beq]
-            cols += ['7) dVtma {0}'.format(i) for i in self.k_vt_m]
-            cols += ['8) dQtma {0}'.format(i) for i in self.k_qt_m]
-            cols += ['9) dPfdp {0}'.format(i) for i in self.k_pf_dp]
-
-            rows = ['1) dP {0}'.format(i) for i in pvpq]
-            rows += ['2) dQ {0}'.format(i) for i in self.pq]
-            rows += ['3) dQ {0}'.format(i) for i in self.k_vf_beq]
-            rows += ['4) dQ {0}'.format(i) for i in self.k_vt_m]
-            rows += ['5) dPf {0}'.format(i) for i in self.k_pf_tau]
-            rows += ['6) dQf {0}'.format(i) for i in self.k_qf_m]
-            rows += ['7) dQf {0}'.format(i) for i in self.k_zero_beq]
-            rows += ['8) dQt {0}'.format(i) for i in self.k_qt_m]
-            rows += ['9) dPfdp {0}'.format(i) for i in self.k_pf_dp]
-
             # compute admittances
             Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
             Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = ycalc.compile_y_acdc(
@@ -1647,19 +1625,31 @@ class NumericalCircuit:
                 virtual_tap_to=self.branch_data.virtual_tap_t,
             )
 
+            idx_dtheta = np.r_[self.pv, self.pq, self.p, self.pqv]
+            idx_dvm = np.r_[self.pq, self.p]
+            idx_dm = np.r_[self.k_qf_m, self.k_qt_m, self.k_vt_m]
+            idx_dtau = np.r_[self.k_pf_tau, self.k_pf_dp]
+            idx_dbeq = np.r_[self.k_zero_beq, self.k_vf_beq]
+            idx_dP = np.r_[self.pv, self.pq, self.p, self.pqv]
+            idx_dQ = np.r_[self.pq, self.pqv]
+            idx_dQf = np.r_[self.k_qf_m, self.k_zero_beq]
+            idx_dQt = self.k_qt_m
+            idx_dPf = self.k_pf_tau
+            idx_dPdp = self.k_pf_dp
+
             J = fubm_jacobian(
                 nbus=self.nbus,
-                idx_dtheta=np.r_[self.pv, self.pq, self.p, self.pqv],
-                idx_dvm=np.r_[self.pq, self.p],
-                idx_dm=np.r_[self.k_qf_m, self.k_qt_m, self.k_vt_m],
-                idx_dtau=np.r_[self.k_pf_tau, self.k_pf_dp],
-                idx_dbeq=np.r_[self.k_zero_beq, self.k_vf_beq],
-                idx_dP=np.r_[self.pv, self.pq, self.p, self.pqv],
-                idx_dQ=np.r_[self.pq, self.pqv],
-                idx_dQf=np.r_[self.k_qf_m, self.k_zero_beq],
-                idx_dQt=self.k_qt_m,
-                idx_dPf=self.k_pf_tau,
-                idx_dPdp=self.k_pf_dp,
+                idx_dtheta=idx_dtheta,
+                idx_dvm=idx_dvm,
+                idx_dm=idx_dm,
+                idx_dtau=idx_dtau,
+                idx_dbeq=idx_dbeq,
+                idx_dP=idx_dP,
+                idx_dQ=idx_dQ,
+                idx_dQf=idx_dQf,
+                idx_dQt=idx_dQt,
+                idx_dPf=idx_dPf,
+                idx_dPdp=idx_dPdp,
                 F=self.F,
                 T=self.T,
                 Ys=Ys,
@@ -1679,6 +1669,19 @@ class NumericalCircuit:
                 ytf=self.admittances_.ytf,
                 ytt=self.admittances_.ytt
             )
+
+            cols = ['1) dVa {0}'.format(i) for i in idx_dtheta]
+            cols += ['2) dVm {0}'.format(i) for i in idx_dvm]
+            cols += ['3) dm {0}'.format(i) for i in idx_dm]
+            cols += ['4) dtau {0}'.format(i) for i in idx_dtau]
+            cols += ['5) dBeq {0}'.format(i) for i in idx_dbeq]
+
+            rows = ['1) dP {0}'.format(i) for i in idx_dP]
+            rows += ['2) dQ {0}'.format(i) for i in idx_dQ]
+            rows += ['3) dQf {0}'.format(i) for i in idx_dQf]
+            rows += ['4) dQt {0}'.format(i) for i in idx_dQt]
+            rows += ['5) dPf {0}'.format(i) for i in idx_dPf]
+            rows += ['9) dPfdp {0}'.format(i) for i in idx_dPdp]
 
             df = pd.DataFrame(
                 data=J.toarray(),
