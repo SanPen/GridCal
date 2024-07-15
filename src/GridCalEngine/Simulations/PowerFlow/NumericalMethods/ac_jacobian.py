@@ -1,7 +1,6 @@
 # Copyright 1996-2015 PSERC. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
-from typing import Any
 
 # Copyright (c) 2016-2020 by University of Kassel and Fraunhofer Institute for for Energy Economics
 # and Energy System Technology (IEE) Kassel and individual contributors (see AUTHORS file for details).
@@ -32,10 +31,10 @@ from numba import jit
 from numpy import float64, int32
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import (dSbus_dV_numba_sparse_csc,
-                                                                              dSbus_dV_numba_sparse_csr)
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.Utils.Sparse.csc2 import create_lookup, CSC
+from GridCalEngine.Simulations.derivatives.csr_derivatives import dSbus_dV_numba_sparse_csr
+from GridCalEngine.Simulations.derivatives.csc_derivatives import dSbus_dV_numba_sparse_csc
+from GridCalEngine.basic_structures import IntVec, CxVec
+from GridCalEngine.Utils.Sparse.csc2 import make_lookup, CSC
 
 
 @jit(nopython=True, cache=True)
@@ -91,7 +90,7 @@ def create_J_csr(nbus, dS_dVm_x, dS_dVa_x, Yp, Yj, pvpq, pq, Jx, Jj, Jp):  # pra
 
     Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
     """
-    pvpq_lookup = create_lookup(nbus, pvpq)
+    pvpq_lookup = make_lookup(nbus, pvpq)
 
     # get length of vectors
     npvpq = len(pvpq)
@@ -220,8 +219,8 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
 
-    lookup_pvpq = create_lookup(nbus, pvpq)
-    lookup_pq = create_lookup(nbus, pq)
+    lookup_pvpq = make_lookup(nbus, pvpq)
+    lookup_pq = make_lookup(nbus, pq)
 
     # get length of vectors
     npvpq = len(pvpq)
@@ -338,8 +337,8 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     J = CSC(nj, nj, nnz_estimate, False)
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
-    lookup_block1 = create_lookup(nbus, block1_idx)
-    lookup_block3 = create_lookup(nbus, block3_idx)
+    lookup_block1 = make_lookup(nbus, block1_idx)
+    lookup_block3 = make_lookup(nbus, block3_idx)
 
     # get length of vectors
     n_no_slack = len(block1_idx)
