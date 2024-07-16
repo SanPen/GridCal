@@ -1,6 +1,8 @@
 from typing import List, Tuple, Dict
+import numpy as np
 import GridCalEngine.Devices as gcdev
-from GridCalEngine.IO.cim.cgmes.base import Base
+from GridCalEngine.IO.cim.cgmes.base import Base, rfid2uuid
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
 
 
@@ -67,41 +69,63 @@ def get_slack_id(machines):
     return None
 
 
+def build_rates_dict(cgmes_model, device_type, logger):
+    """
+    Builds Rating dictionary for given device type from OperationalLimitSets
+
+    :param cgmes_model:
+    :param device_type:
+    :param logger:
+    :return:
+    """
+    rates_dict = dict()
+    for cl in cgmes_model.cgmes_assets.CurrentLimit_list:
+
+        if cl.OperationalLimitSet is None:
+            logger.add_error(msg='OperationalLimitSet missing.',
+                             device=cl.rdfid,
+                             device_class=cl.tpe,
+                             device_property="OperationalLimitSet",
+                             value="None")
+            continue
+        if not isinstance(cl.OperationalLimitSet, str):
+            if isinstance(cl.OperationalLimitSet, list):
+                for ols in cl.OperationalLimitSet:
+                    volt = get_voltage_terminal(ols.Terminal, logger)
+                    rate_mva = np.round(cl.value * volt / 1000, 4)
+                    # TODO rate in MVA = kA * kV * sqrt(3), is sqrt(3) needed?
+                    # TODO type check: put min PATL to the dict
+                    if isinstance(ols.Terminal.ConductingEquipment,
+                                  device_type):
+                        branch_id = ols.Terminal.ConductingEquipment.uuid
+                        act_lim = rates_dict.get(branch_id, None)
+                        if act_lim is None:
+                            rates_dict[branch_id] = rate_mva
+                        elif cl.value < act_lim:
+                            rates_dict[branch_id] = rate_mva
+            else:
+                if isinstance(cl.OperationalLimitSet.Terminal.ConductingEquipment,
+                              device_type):
+                    volt = get_voltage_terminal(cl.OperationalLimitSet.Terminal,
+                                                logger)
+                    rate_mva = np.round(cl.value * volt / 1000, 4)
+
+                    branch_id = cl.OperationalLimitSet.Terminal.ConductingEquipment.uuid
+                    act_lim = rates_dict.get(branch_id, None)
+                    if act_lim is None:
+                        rates_dict[branch_id] = rate_mva
+                    elif cl.value < act_lim:
+                        rates_dict[branch_id] = rate_mva
+
+
+    # TODO ActivePowerLimit_list, ApparentPowerLimit_list
+    # for al in [cgmes_model.cgmes_assets.ActivePowerLimit_list,
+    #            cgmes_model.cgmes_assets.ApparentPowerLimit_list]:
+
+    return rates_dict
+
+
 # region PowerTransformer
-# def get_windings_number(power_transformer):
-#     """
-#     Get the number of windings
-#     :return: # number of associated windings
-#     """
-#     try:
-#         return len(power_transformer.references_to_me['PowerTransformerEnd'])
-#     except KeyError:
-#         return 0
-
-
-# def get_windings(power_transformer) -> List["PowerTransformerEnd"]:
-#     """
-#     Get list of windings in order of .endNumber
-#     :return: list of winding objects
-#     """
-#     try:
-#         windings_init: List[PowerTransformerEnd] = list(power_transformer.references_to_me['PowerTransformerEnd'])
-#
-#         # windings: List[PowerTransformerEnd] = list()
-#         # for winding in windings_init:
-#         #     if winding.endNumber == 1:
-#         #         windings.append(winding)
-#         # for winding in windings_init:
-#         #     if winding.endNumber == 2:
-#         #         windings.append(winding)
-#         # if len(windings_init) == 3:
-#         #     for winding in windings_init:
-#         #         if winding.endNumber == 3:
-#         #             windings.append(winding)
-#
-#         return sorted(windings_init, key=lambda x: x.endNumber)
-#     except KeyError:
-#         return list()
 
 
 def get_pu_values_power_transformer(power_transformer, System_Sbase):
@@ -110,7 +134,6 @@ def get_pu_values_power_transformer(power_transformer, System_Sbase):
     :return:
     """
     try:
-        # windings = get_windings(power_transformer)
         windings = list(power_transformer.PowerTransformerEnd)
 
         R, X, G, B = 0, 0, 0, 0
@@ -161,15 +184,6 @@ def get_pu_values_power_transformer3w(power_transformer, System_Sbase):
         r12, r23, r31, x12, x23, x31 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
     return r12, r23, r31, x12, x23, x31
-
-
-# def get_voltages(power_transformer):
-#     """
-#
-#     :return:
-#     """
-#     return [get_voltage_power_transformer_end(x) for x in
-#             list(power_transformer.PowerTransformerEnd)]
 
 
 # endregion
@@ -255,7 +269,6 @@ def get_voltage_ac_line_segment(ac_line_segment, logger: DataLogger):
             return None
     else:
         return ac_line_segment.BaseVoltage.nominalVoltage
-
 
 
 def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: float = 100.0):
@@ -409,139 +422,6 @@ def get_voltage_terminal(terminal, logger: DataLogger):
 
 # endregion
 
-# region BusbarSection(IdentifiedObject)
-# def get_topological_nodes_bus_bar(busbar_section):
-#     """
-#     Get the associated TopologicalNode instances
-#     :return: list of TopologicalNode instances
-#     """
-#     try:
-#         terms = busbar_section.references_to_me['Terminal']
-#         return [TopologicalNode for term in terms]
-#     except KeyError:
-#         return list()
-
-
-# def get_topological_node_bus_bar(busbar_section: BusbarSection):
-#     """
-#     Get the first TopologicalNode found
-#     :return: first TopologicalNode found
-#     """
-#     try:
-#         terms = busbar_section.references_to_me['Terminal']
-#         for term in terms:
-#             return TopologicalNode
-#     except KeyError:
-#         return list()
-
-
-# endregion
-
-# region Dipole (IdentifiedObject)
-# def get_topological_nodes_dipole(identified_object) -> Tuple:
-#     """
-#     Get the TopologyNodes of this branch
-#     :return: (TopologyNodes, TopologyNodes) or (None, None)
-#     """
-#     try:
-#         terminals = list(identified_object.references_to_me['Terminal'])
-#
-#         if len(terminals) == 2:
-#             n1 = terminals[0].TopologicalNode
-#             n2 = terminals[1].TopologicalNode
-#             return n1, n2
-#         else:
-#             return None, None
-#
-#     except KeyError:
-#         return None, None
-
-
-# def get_buses_dipole(identified_object) -> Tuple:
-#     """
-#     Get the associated bus
-#     :return: (BusbarSection, BusbarSection) or (None, None)
-#     """
-#     t1, t2 = get_topological_nodes_dipole(identified_object)
-#     b1 = get_bus_topological_node(t1) if t1 is not None else None
-#     b2 = get_bus_topological_node(t1) if t2 is not None else None
-#     return b1, b2
-
-
-# def get_nodes_dipole(identified_object) -> Tuple:
-#     """
-#     Get the TopologyNodes of this branch
-#     :return: two TopologyNodes or nothing
-#     """
-#     try:
-#         terminals = list(identified_object.references_to_me['Terminal'])
-#
-#         if len(terminals) == 2:
-#             n1 = terminals[0].TopologicalNode
-#             n2 = terminals[1].TopologicalNode
-#             return n1, n2
-#         else:
-#             return None, None
-#
-#     except KeyError:
-#         return None, None
-
-
-# endregion
-
-# region MonoPole(ConductingEquipment)
-# def get_topological_node_monopole(conducting_equipment):
-#     """
-#     Get the TopologyNodes of this branch
-#     :return: two TopologyNodes or nothing
-#     """
-#     try:
-#         terminals = list(conducting_equipment.references_to_me['Terminal'])
-#
-#         if len(terminals) == 1:
-#             n1 = terminals[0].TopologicalNode
-#             return n1
-#         else:
-#             return None
-#
-#     except KeyError:
-#         return None
-
-
-# def get_bus_monopole(conducting_equipment):
-#     """
-#     Get the associated bus
-#     :return:
-#     """
-#     tp = get_topological_node_monopole(conducting_equipment)
-#     if tp is None:
-#         return None
-#     else:
-#         return get_bus_topological_node(tp)
-
-
-# def get_dict(conducting_equipment):
-#     """
-#     Get dictionary with the data
-#     :return: Dictionary
-#     """
-#     tp = get_topological_node_monopole(conducting_equipment)
-#     bus = get_bus_topological_node(tp) if tp is not None else None
-#
-#     d = conducting_equipment.get_dict()
-#     d['TopologicalNode'] = '' if tp is None else tp.uuid
-#     d['BusbarSection'] = '' if bus is None else bus.uuid
-#     return d
-
-
-# endregion
-
-# region ConformLoad, NonConformLoad(EnergyConsumer)
-# def get_pq(energy_consumer):
-#     return energy_consumer.p, energy_consumer.q
-
-
-# endregion
 
 # region TopologicalNode(IdentifiedObject):
 def get_nominal_voltage(topological_node, logger) -> float:
@@ -569,52 +449,7 @@ def get_nominal_voltage(topological_node, logger) -> float:
         return 0.0
 
 
-# def get_bus_topological_node(topological_node):
-#     """
-#     Get an associated BusBar, if any
-#     :return: BusbarSection or None is not fond
-#     """
-#     try:
-#         terms = topological_node.references_to_me['Terminal']
-#         for term in terms:
-#             if isinstance(ConductingEquipment, BusbarSection):
-#                 return ConductingEquipment
-#
-#     except KeyError:
-#         return None
-
-
 # endregion
-
-# region Switch(DiPole, ConductingEquipment):
-# def get_nodes(switch):
-#     """
-#     Get the TopologyNodes of this branch
-#     :return: two TopologyNodes or nothing
-#     """
-#     try:
-#         terminals = list(switch.references_to_me['Terminal'])
-#
-#         if len(terminals) == 2:
-#             n1 = TopologicalNode
-#             n2 = TopologicalNode
-#             return n1, n2
-#         else:
-#             return None, None
-#
-#     except KeyError:
-#         return None, None
-
-
-# endregion
-
-# def check(logger: DataLogger):
-#     """
-#     Check specific OCL rules
-#     :param logger: Logger instance
-#     :return: true is ok false otherwise
-#     """
-#     return True
 
 
 # region LoadResponseCharacteristic(IdentifiedObject)
@@ -706,9 +541,9 @@ def get_nominal_voltage(topological_node, logger) -> float:
 
 # endregion
 
-# # region BaseVoltage(IdentifiedObject)
-# def base_voltage_to_str(base_voltage):
-#     return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
+# region BaseVoltage(IdentifiedObject)
+def base_voltage_to_str(base_voltage):
+    return base_voltage.tpe + ':' + base_voltage.rdfid + ':' + str(base_voltage.nominalVoltage) + ' kV'
 
 
 # endregion
@@ -805,3 +640,113 @@ def get_regulating_control(cgmes_elm,
                            expected_value='BaseVoltage')
 
     return v_set, is_controlled, control_bus, control_node
+
+
+# region export UTILS
+
+# class ReferenceManager:
+#     # use it after an element object added
+#     def __init__(self):
+#         self.data = dict()
+#
+#     def add(self, cgmes_obj: Base):
+#
+#         tpe_dict = self.data.get(cgmes_obj.tpe, None)
+#         if tpe_dict is None:
+#             self.data[cgmes_obj.tpe] = {cgmes_obj.rdfid: cgmes_obj}
+#         else:
+#             tpe_dict[cgmes_obj.rdfid] = cgmes_obj
+
+
+def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):
+    """
+    Finds an object with the specified uuid
+     in the given object_list from a CGMES Circuit.
+
+    Args:
+        cgmes_model:
+        object_list (list[MyObject]): List of MyObject instances.
+        target_uuid (str): The uuid to search for.
+
+    Returns:
+        MyObject or None: The found object or None if not found.
+    """
+    boundary_obj_dict = cgmes_model.all_objects_dict_boundary
+    if boundary_obj_dict is not None:
+        for k, obj in boundary_obj_dict.items():
+            if rfid2uuid(k) == target_uuid:
+                return obj
+    for obj in object_list:
+        if obj.uuid == target_uuid:
+            return obj
+    return None
+
+def find_tn_by_name(cgmes_model: CgmesCircuit, target_name):
+    """
+    Finds the topological node with the specified name
+     from a CGMES Circuit.
+
+    @param cgmes_model:
+    @param target_name:
+    @return:
+    """
+    boundary_obj_dict = cgmes_model.elements_by_type_boundary.get("TopologicalNode")
+    if boundary_obj_dict is not None:
+        for obj in boundary_obj_dict:
+            if obj.name == target_name:
+                return obj
+    for obj in cgmes_model.cgmes_assets.TopologicalNode_list:
+        if obj.name == target_name:
+            return obj
+    return None
+
+
+def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[Base], target_vnom):
+    boundary_obj_list = cgmes_model.elements_by_type_boundary.get("BaseVoltage")
+    if boundary_obj_list is not None:
+        for obj in boundary_obj_list:
+            if obj.nominalVoltage == target_vnom:
+                return obj
+    for obj in object_list:
+        if obj.nominalVoltage == target_vnom:
+            return obj
+    return None
+
+
+def find_object_by_attribute(object_list: List, target_attr_name, target_value):
+    if hasattr(object_list[0], target_attr_name):
+        for obj in object_list:
+            obj_attr = getattr(obj, target_attr_name)
+            if obj_attr == target_value:
+                return obj
+    return None
+
+
+def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, rated_voltage):
+    """
+    Get the transformer ohm values
+    :return:
+    """
+    try:
+        Sbase_system = 100
+        Zbase = (rated_voltage * rated_voltage) / nominal_power
+        Ybase = 1.0 / Zbase
+        R, X, G, B = 0, 0, 0, 0
+        R0, X0, G0, B0 = 0, 0, 0, 0
+        machine_to_sys = Sbase_system / nominal_power
+        R = r * Zbase / machine_to_sys
+        X = x * Zbase / machine_to_sys
+        G = g * Ybase / machine_to_sys
+        B = b * Ybase / machine_to_sys
+        R0 = r0 * Zbase / machine_to_sys if r0 is not None else 0
+        X0 = x0 * Zbase / machine_to_sys if x0 is not None else 0
+        G0 = g0 * Ybase / machine_to_sys if g0 is not None else 0
+        B0 = b0 * Ybase / machine_to_sys if b0 is not None else 0
+
+    except KeyError:
+        R, X, G, B = 0, 0, 0, 0
+        R0, X0, G0, B0 = 0, 0, 0, 0
+
+    return R, X, G, B, R0, X0, G0, B0
+
+# endregion

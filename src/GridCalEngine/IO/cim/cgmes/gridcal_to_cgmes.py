@@ -1,11 +1,14 @@
 import numpy as np
 
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile, WindGenUnitKind,
                                                     RegulatingControlModeKind, UnitMultiplier)
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, find_object_by_vnom, \
+    get_ohm_values_power_transformer, find_tn_by_name, find_object_by_attribute
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
@@ -17,81 +20,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingM
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
 
-
-def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):  # TODO move to CGMES utils
-    """
-    Finds an object with the specified uuid
-     in the given object_list from a CGMES Circuit.
-
-    Args:
-        cgmes_model:
-        object_list (list[MyObject]): List of MyObject instances.
-        target_uuid (str): The uuid to search for.
-
-    Returns:
-        MyObject or None: The found object or None if not found.
-    """
-    boundary_obj_dict = cgmes_model.all_objects_dict_boundary
-    if boundary_obj_dict is not None:
-        for k, obj in boundary_obj_dict.items():
-            if rfid2uuid(k) == target_uuid:
-                return obj
-    for obj in object_list:
-        if obj.uuid == target_uuid:
-            return obj
-    return None
-
-
-def find_object_by_vnom(cgmes_model: CgmesCircuit, object_list: List[Base], target_vnom):
-    boundary_obj_list = cgmes_model.elements_by_type_boundary.get("BaseVoltage")
-    if boundary_obj_list is not None:
-        for obj in boundary_obj_list:
-            if obj.nominalVoltage == target_vnom:
-                return obj
-    for obj in object_list:
-        if obj.nominalVoltage == target_vnom:
-            return obj
-    return None
-
-
-def find_object_by_attribute(object_list: List, target_attr_name, target_value):
-    if hasattr(object_list[0], target_attr_name):
-        for obj in object_list:
-            obj_attr = getattr(obj, target_attr_name)
-            if obj_attr == target_value:
-                return obj
-    return None
-
-
-def get_ohm_values_power_transformer(r, x, g, b, r0, x0, g0, b0, nominal_power, rated_voltage):
-    """
-    Get the transformer ohm values
-    :return:
-    """
-    try:
-        Sbase_system = 100
-        Zbase = (rated_voltage * rated_voltage) / nominal_power
-        Ybase = 1.0 / Zbase
-        R, X, G, B = 0, 0, 0, 0
-        R0, X0, G0, B0 = 0, 0, 0, 0
-        machine_to_sys = Sbase_system / nominal_power
-        R = r * Zbase / machine_to_sys
-        X = x * Zbase / machine_to_sys
-        G = g * Ybase / machine_to_sys
-        B = b * Ybase / machine_to_sys
-        R0 = r0 * Zbase / machine_to_sys if r0 is not None else 0
-        X0 = x0 * Zbase / machine_to_sys if x0 is not None else 0
-        G0 = g0 * Ybase / machine_to_sys if g0 is not None else 0
-        B0 = b0 * Ybase / machine_to_sys if b0 is not None else 0
-
-    except KeyError:
-        R, X, G, B = 0, 0, 0, 0
-        R0, X0, G0, B0 = 0, 0, 0, 0
-
-    return R, X, G, B, R0, X0, G0, B0
-
-
-# endregion
 
 # region create new classes for CC
 
@@ -436,7 +364,8 @@ def create_operational_limit_set(terminal,
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("OperationalLimitSet")
     op_lim_set = object_template(rdfid=new_rdf_id)
-    op_lim_set.name = f'OpertinalLimit at Port1'
+    term_num = terminal.sequenceNumber if terminal.sequenceNumber is not None else 1
+    op_lim_set.name = f'OpertinalLimit at Term-{term_num}'
     op_lim_set.description = f'OpertinalLimit at Port1'
 
     terminal_type = cgmes_model.get_class_type('Terminal')
@@ -456,6 +385,31 @@ def create_operational_limit_type(mc_elm: gcdev.Line,
 
     cgmes_model.add(op_lim_type)
     return op_lim_type
+
+
+def add_location(cgmes_model: CgmesCircuit,
+                 device: Base,
+                 longitude: float,
+                 latitude: float,
+                 logger: DataLogger):
+    object_template = cgmes_model.get_class_type("Location")
+    location = object_template(rdfid=get_new_rdfid(), tpe="Location")
+
+    location.CoordinateSystem = cgmes_model.cgmes_assets.CoordinateSystem_list[0]
+    location.PowerSystemResource = device
+
+    position_point_t = cgmes_model.get_class_type("PositionPoint")
+    pos_point = position_point_t(rdfid=get_new_rdfid(), tpe="PositionPoint")
+    pos_point.Location = location
+    pos_point.sequenceNumber = 1
+    pos_point.xPosition = str(longitude)
+    pos_point.yPosition = str(latitude)
+    location.PositionPoint = pos_point
+    cgmes_model.cgmes_assets.CoordinateSystem_list[0].Locations.append(location)
+    cgmes_model.add(location)
+    cgmes_model.add(pos_point)
+
+    device.Location = location
 
 
 # endregion
@@ -832,16 +786,6 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         cgmes_model.add(line)
 
 
-def get_cgmes_operational_limits(multicircuit_model: MultiCircuit,
-                                 cgmes_model: CgmesCircuit,
-                                 logger: DataLogger):
-    # OperationalLimitSet and OperationalLimitType
-    # rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
-    #                                     4)
-    # TODO Move it to util, we need a device and its terminals and create a limit for the terminals, create the LimitTypes
-    pass
-
-
 def get_cgmes_generators(multicircuit_model: MultiCircuit,
                          cgmes_model: CgmesCircuit,
                          logger: DataLogger):
@@ -1004,6 +948,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
             target_vnom=mc_elm.bus_from.Vnom
         )
+
+        current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+        current_rate = np.round(current_rate, 4)
+        create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate, cgmes_model, logger)
+        create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate, cgmes_model, logger)
 
         (r_ohm,
          x_ohm,
@@ -1308,8 +1257,36 @@ def get_cgmes_sv_power_flow(cgmes_model: CgmesCircuit,
         cgmes_model.add(sv_pf)
 
 
-def get_cgmes_topological_island():
-    pass
+def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
+                                 cgmes_model: CgmesCircuit,
+                                 logger: DataLogger):
+    nc = compile_numerical_circuit_at(multicircuit_model)
+    nc_islands = nc.split_into_islands()
+    tpi_template = cgmes_model.get_class_type("TopologicalIsland")
+    i = 0
+    for nc_i in nc_islands:
+        i = i + 1
+        new_island = tpi_template(get_new_rdfid())
+        new_island.name = "TopologicalIsland" + str(i)
+        new_island.TopologicalNodes = []
+        bus_names = nc_i.bus_names
+        mc_buses = []
+        for tn_name in bus_names:
+            tn = find_tn_by_name(cgmes_model, tn_name)
+            if tn:
+                new_island.TopologicalNodes.append(tn)
+                mc_bus = find_object_by_attribute(multicircuit_model.buses, "name", tn_name)
+                mc_buses.append(mc_bus)
+        slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
+        if slack_bus:
+            slack_tn = find_object_by_uuid(cgmes_model, cgmes_model.cgmes_assets.TopologicalNode_list, slack_bus.idtag)
+            new_island.AngleRefTopologicalNode = slack_tn
+            for tn in new_island.TopologicalNodes:
+                tn.AngleRefTopologicalIsland = slack_tn
+        else:
+            logger.add_warning(msg="AngleRefTopologicalNode missing from TopologicalIsland!", device=new_island.name,
+                               device_property="AngleRefTopologicalNode")
+        cgmes_model.add(new_island)
 
 
 def make_coordinate_system(cgmes_model: CgmesCircuit,
@@ -1322,31 +1299,6 @@ def make_coordinate_system(cgmes_model: CgmesCircuit,
     coo_sys.Locations = []
 
     cgmes_model.add(coo_sys)
-
-
-def add_location(cgmes_model: CgmesCircuit,
-                 device: Base,
-                 longitude: float,
-                 latitude: float,
-                 logger: DataLogger):
-    object_template = cgmes_model.get_class_type("Location")
-    location = object_template(rdfid=get_new_rdfid(), tpe="Location")
-
-    location.CoordinateSystem = cgmes_model.cgmes_assets.CoordinateSystem_list[0]
-    location.PowerSystemResource = device
-
-    position_point_t = cgmes_model.get_class_type("PositionPoint")
-    pos_point = position_point_t(rdfid=get_new_rdfid(), tpe="PositionPoint")
-    pos_point.Location = location
-    pos_point.sequenceNumber = 1
-    pos_point.xPosition = str(longitude)
-    pos_point.yPosition = str(latitude)
-    location.PositionPoint = pos_point
-    cgmes_model.cgmes_assets.CoordinateSystem_list[0].Locations.append(location)
-    cgmes_model.add(location)
-    cgmes_model.add(pos_point)
-
-    device.Location = location
 
 
 # endregion
@@ -1397,6 +1349,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         # if converged == True...
         get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
         # get_cgmes_sv_power_flow()
+        get_cgmes_topological_island(gc_model, cgmes_model, logger)
 
     else:
         # abort export on gui ?
