@@ -373,7 +373,7 @@ def scipy_to_mat(mat: csc_matrix) -> CSC:
     return x
 
 
-def spfactor(A: CSC) -> SuperLU:
+def spfactor(A: CSC) -> None | SuperLU:
     """
     Sparse factorization with SuperLU
     :param A: CSC matrix
@@ -391,10 +391,12 @@ def spfactor(A: CSC) -> SuperLU:
     if _options["ColPerm"] == "NATURAL":
         _options["SymmetricMode"] = True
 
-    ret = gstrf(A.n_cols, A.nnz, A.data, A.indices, A.indptr,
-                ilu=False, options=_options, csc_construct_func=None)
-
-    return ret
+    try:
+        ret = gstrf(A.n_cols, A.nnz, A.data, A.indices, A.indptr,
+                    ilu=False, options=_options, csc_construct_func=None)
+        return ret
+    except RuntimeError:
+        return None
 
 
 def spsolve_csc(A: CSC, x: Vec) -> Vec:
@@ -404,7 +406,11 @@ def spsolve_csc(A: CSC, x: Vec) -> Vec:
     :param x: vector
     :return: solution
     """
-    return spfactor(A).solve(x)
+    factor = spfactor(A)
+    if factor is None:
+        return np.full(len(x), np.nan), False
+    else:
+        return factor.solve(x), True
 
 
 @njit(cache=True)

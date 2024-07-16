@@ -18,7 +18,7 @@
 import numpy as np
 
 from GridCalEngine.enumerations import ReactivePowerControlMode, CpfParametrization, CpfStopAt
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobianVc
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (polar_to_rect, compute_power)
@@ -73,8 +73,15 @@ class CpfNumericResults:
         return len(self.V)
 
 
-def cpf_p(parametrization: CpfParametrization, step: float, z: Vec, V: CxVec, lam: Vec,
-          V_prev: CxVec, lamprv: Vec, pv: IntVec, pq: IntVec, pvpq: IntVec):
+def cpf_p(parametrization: CpfParametrization,
+          step: float,
+          z: Vec,
+          V: CxVec,
+          lam: Vec,
+          V_prev: CxVec,
+          lamprv: Vec,
+          idx_dtheta: IntVec,
+          idx_dVm: IntVec):
     """
     Computes the value of the Current Parametrization Function
     :param parametrization: Value of  option (1: Natural, 2:Arc-length, 3: pseudo arc-length)
@@ -84,9 +91,8 @@ def cpf_p(parametrization: CpfParametrization, step: float, z: Vec, V: CxVec, la
     :param lam: scalar lambda value at current solution
     :param V_prev: complex bus voltage vector at previous solution
     :param lamprv: scalar lambda value at previous solution
-    :param pv: vector of indices of PV buses
-    :param pq: vector of indices of PQ buses
-    :param pvpq: vector of indices of PQ and PV buses
+    :param idx_dtheta: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dVm: vector of indices of PQ|P buses
     :return: value of the parametrization function at the current point
     """
 
@@ -138,8 +144,8 @@ def cpf_p(parametrization: CpfParametrization, step: float, z: Vec, V: CxVec, la
         Vm = np.abs(V)
         Va_prev = np.angle(V_prev)
         Vm_prev = np.abs(V_prev)
-        a = np.r_[Va[pvpq], Vm[pq], lam]
-        b = np.r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
+        a = np.r_[Va[idx_dtheta], Vm[idx_dVm], lam]
+        b = np.r_[Va_prev[idx_dtheta], Vm_prev[idx_dVm], lamprv]
         P = np.sum(np.power(a - b, 2)) - np.power(step, 2)
 
     elif parametrization == CpfParametrization.PseudoArcLength:  # pseudo arc length
@@ -148,9 +154,9 @@ def cpf_p(parametrization: CpfParametrization, step: float, z: Vec, V: CxVec, la
         Vm = np.abs(V)
         Va_prev = np.angle(V_prev)
         Vm_prev = np.abs(V_prev)
-        a = z[np.r_[pv, pq, nb + pq, 2 * nb]]
-        b = np.r_[Va[pvpq], Vm[pq], lam]
-        c = np.r_[Va_prev[pvpq], Vm_prev[pq], lamprv]
+        a = z[np.r_[idx_dtheta, nb + idx_dVm, 2 * nb]]
+        b = np.r_[Va[idx_dtheta], Vm[idx_dVm], lam]
+        c = np.r_[Va_prev[idx_dtheta], Vm_prev[idx_dVm], lamprv]
         P = np.dot(a, b - c) - step
     else:
         # natural
@@ -163,7 +169,7 @@ def cpf_p(parametrization: CpfParametrization, step: float, z: Vec, V: CxVec, la
 
 
 def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv,
-              pv: IntVec, pq: IntVec, pvpq: IntVec):
+              idx_dtheta: IntVec, idx_dVm: IntVec):
     """
     Computes partial derivatives of Current Parametrization Function (CPF).
     :param parametrization:
@@ -172,9 +178,8 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv,
     :param lam: scalar lambda value at current solution
     :param Vprv: complex bus voltage vector at previous solution
     :param lamprv: scalar lambda value at previous solution
-    :param pv: vector of indices of PV buses
-    :param pq: vector of indices of PQ buses
-    :param pvpq: vector of indices of PQ and PV buses
+    :param idx_dtheta: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dVm: vector of indices of PQ|P buses
     :return:  partial of parametrization function w.r.t. voltages
               partial of parametrization function w.r.t. lambda
     """
@@ -218,9 +223,7 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv,
     """
 
     if parametrization == CpfParametrization.Natural:  # natural
-        npv = len(pv)
-        npq = len(pq)
-        dP_dV = np.zeros(npv + 2 * npq)
+        dP_dV = np.zeros(len(idx_dtheta) + len(idx_dVm))
         if lam >= lamprv:
             dP_dlam = 1.0
         else:
@@ -231,7 +234,7 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv,
         Vm = np.abs(V)
         Vaprv = np.angle(Vprv)
         Vmprv = np.abs(Vprv)
-        dP_dV = 2.0 * (np.r_[Va[pvpq], Vm[pq]] - np.r_[Vaprv[pvpq], Vmprv[pq]])
+        dP_dV = 2.0 * (np.r_[Va[idx_dtheta], Vm[idx_dVm]] - np.r_[Vaprv[idx_dtheta], Vmprv[idx_dVm]])
 
         if lam == lamprv:  # first step
             dP_dlam = 1.0  # avoid singular Jacobian that would result from [dP_dV, dP_dlam] = 0
@@ -240,19 +243,21 @@ def cpf_p_jac(parametrization: CpfParametrization, z, V, lam, Vprv, lamprv,
 
     elif parametrization == CpfParametrization.PseudoArcLength:  # pseudo arc length
         nb = len(V)
-        dP_dV = z[np.r_[pv, pq, nb + pq]]
+        dP_dV = z[np.r_[idx_dtheta, nb + idx_dVm]]
         dP_dlam = z[2 * nb]
 
     else:
         # pseudo arc length for any other case
         nb = len(V)
-        dP_dV = z[np.r_[pv, pq, nb + pq]]
+        dP_dV = z[np.r_[idx_dtheta, nb + idx_dVm]]
         dP_dlam = z[2 * nb]
 
     return dP_dV, dP_dlam
 
 
-def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, lamprv,
+def predictor(V, lam, Ybus, Sxfr,
+              idx_dtheta: IntVec, idx_dVm: IntVec, idx_dP: IntVec, idx_dQ: IntVec,
+              step: float, z, Vprv, lamprv,
               parametrization: CpfParametrization):
     """
     Computes a prediction (approximation) to the next solution of the
@@ -261,8 +266,10 @@ def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, 
     :param lam: scalar lambda value at current solution
     :param Ybus: complex bus admittance matrix
     :param Sxfr: complex vector of scheduled transfers (difference between bus Injections in base and target cases)
-    :param pv: vector of indices of PV buses
-    :param pq: vector of indices of PQ buses
+    :param idx_dtheta: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dVm: vector of indices of PQ|P buses
+    :param idx_dP: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dQ: vector of indices of PQ|PQV buses
     :param step: continuation step length
     :param z: normalized tangent prediction vector from previous step
     :param Vprv: complex bus voltage vector at previous solution
@@ -275,17 +282,20 @@ def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, 
 
     # sizes
     nb = len(V)
-    npv = len(pv)
-    npq = len(pq)
-    pvpq = np.r_[pv, pq]
-    nj = npv + npq * 2
+    # npv = len(pv)
+    # npq = len(pq)
+    # pvpq = np.r_[pv, pq]
+    # nj = npv + npq * 2
 
     # compute Jacobian for the power flow equations
-    J = AC_jacobian(Ybus, V, pvpq, pq)
+    J = AC_jacobianVc(Ybus, V, idx_dtheta, idx_dVm, idx_dQ)
 
-    dF_dlam = -np.r_[Sxfr[pvpq].real, Sxfr[pq].imag]
+    dF_dlam = -np.r_[
+        Sxfr[idx_dP].real,
+        Sxfr[idx_dQ].imag
+    ]
 
-    dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+    dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, idx_dtheta, idx_dVm)
 
     # linear operator for computing the tangent predictor
     '''
@@ -306,31 +316,36 @@ def predictor(V, lam, Ybus, Sxfr, pv: IntVec, pq: IntVec, step: float, z, Vprv, 
     Vm_prev = np.abs(V)
 
     # compute normalized tangent predictor
-    s = np.zeros(npv + 2 * npq + 1)
+    s = np.zeros(len(idx_dP) + len(idx_dQ) + 1)
 
     # increase in the direction of lambda
-    s[npv + 2 * npq] = 1
+    s[len(idx_dP) + len(idx_dQ)] = 1
 
     # tangent vector
-    z[np.r_[pvpq, nb + pq, 2 * nb]] = spsolve_csc(J2, s)
+    z[np.r_[idx_dP, nb + idx_dQ, 2 * nb]], ok = spsolve_csc(J2, s)
 
-    # normalize_string tangent predictor  (dividing by the euclidean norm)
-    z /= np.linalg.norm(z)
+    if ok:
+        # normalize_string tangent predictor  (dividing by the euclidean norm)
+        z /= np.linalg.norm(z)
 
-    Va0 = Va_prev
-    Vm0 = Vm_prev
-    # lam0 = lam
+        Va0 = Va_prev
+        Vm0 = Vm_prev
+        # lam0 = lam
 
-    # prediction for next step
-    Va0[pvpq] = Va_prev[pvpq] + step * z[pvpq]
-    Vm0[pq] = Vm_prev[pq] + step * z[pq + nb]
-    lam0 = lam + step * z[2 * nb]
-    V0 = Vm0 * np.exp(1j * Va0)
+        # prediction for next step
+        Va0[idx_dtheta] = Va_prev[idx_dtheta] + step * z[idx_dtheta]
+        Vm0[idx_dVm] = Vm_prev[idx_dVm] + step * z[idx_dVm + nb]
+        lam0 = lam + step * z[2 * nb]
+        V0 = Vm0 * np.exp(1j * Va0)
 
-    return V0, lam0, z
+        return V0, lam0, z
+    else:
+        return V, lam, z
 
 
-def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
+def corrector(Ybus, Sbus: CxVec, V0: CxVec,
+              idx_dtheta: IntVec, idx_dVm: IntVec, idx_dP: IntVec, idx_dQ: IntVec,
+              lam0, Sxfr, Vprv, lamprv, z, step, parametrization, tol, max_it,
               verbose, mu_0=1.0, acceleration_parameter=0.5):
     """
     Solves the corrector step of a continuation power flow using a full Newton method
@@ -352,8 +367,10 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
     :param Ybus: Admittance matrix (CSC sparse)
     :param Sbus: Bus power Injections
     :param V0:  Bus initial voltages
-    :param pv: list of pv nodes
-    :param pq: list of pq nodes
+    :param idx_dtheta: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dVm: vector of indices of PQ|P buses
+    :param idx_dP: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dQ: vector of indices of PQ|PQV buses
     :param lam0: initial value of lambda (loading parameter)
     :param Sxfr: [delP+j*delQ] transfer/loading vector for all buses
     :param Vprv: final complex V corrector solution from previous continuation step
@@ -380,16 +397,16 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
     # dlam = 0
 
     # set up indexing for updating V
-    npv = len(pv)
-    npq = len(pq)
-    pvpq = np.r_[pv, pq]
-    nj = npv + npq * 2
+    # npv = len(pv)
+    # npq = len(pq)
+    # pvpq = np.r_[pv, pq]
+    # nj = npv + npq * 2
 
     # j1:j2 - V angle of pv and pq buses
     j1 = 0
-    j2 = npv + npq
+    j2 = len(idx_dtheta)
     # j2:j3 - V mag of pq buses
-    j3 = j2 + npq
+    j3 = j2 + len(idx_dVm)
 
     # evaluate F(x0, lam0), including Sxfr transfer/loading
     Scalc = V * np.conj(Ybus * V)
@@ -397,10 +414,14 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
     # F = np.r_[mismatch[pvpq].real, mismatch[pq].imag]
 
     # evaluate P(x0, lambda0)
-    P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+    P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, idx_dtheta, idx_dVm)
 
     # augment F(x,lambda) with P(x,lambda)
-    F = np.r_[mismatch[pvpq].real, mismatch[pq].imag, P]
+    F = np.r_[
+        mismatch[idx_dP].real,
+        mismatch[idx_dQ].imag,
+        P
+    ]
 
     # check tolerance
     normF = np.linalg.norm(F, np.Inf)
@@ -408,7 +429,10 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
     if verbose:
         print('\nConverged!\n')
 
-    dF_dlam = -np.r_[Sxfr[pvpq].real, Sxfr[pq].imag]
+    dF_dlam = -np.r_[
+        Sxfr[idx_dP].real,
+        Sxfr[idx_dQ].imag
+    ]
 
     # do Newton iterations
     while not converged and i < max_it:
@@ -417,9 +441,9 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
         i += 1
 
         # evaluate Jacobian
-        J = AC_jacobian(Ybus, V, pvpq, pq)
+        J = AC_jacobianVc(Ybus, V, idx_dtheta, idx_dVm, idx_dQ)
 
-        dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+        dP_dV, dP_dlam = cpf_p_jac(parametrization, z, V, lam, Vprv, lamprv, idx_dtheta, idx_dVm)
 
         # augment J with real/imag - Sxfr and z^T
         '''
@@ -439,9 +463,9 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
         J = extend(J, dF_dlam, dP_dV, dP_dlam)
 
         # compute update step
-        dx = spsolve_csc(J, F)
-        dVa[pvpq] = dx[j1:j2]
-        dVm[pq] = dx[j2:j3]
+        dx, ok = spsolve_csc(J, F)
+        dVa[idx_dtheta] = dx[j1:j2]
+        dVm[idx_dVm] = dx[j2:j3]
         dlam = dx[j3]
 
         # set the restoration values
@@ -475,10 +499,10 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
             mismatch = Scalc - Sbus - lam * Sxfr
 
             # evaluate the parametrization function P(x, lambda)
-            P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, pv, pq, pvpq)
+            P = cpf_p(parametrization, step, z, V, lam, Vprv, lamprv, idx_dtheta, idx_dVm)
 
             # compose the mismatch vector
-            F = np.r_[mismatch[pvpq].real, mismatch[pq].imag, P]
+            F = np.r_[mismatch[idx_dP].real, mismatch[idx_dQ].imag, P]
 
             # check for convergence
             normF_new = np.linalg.norm(F, np.Inf)
@@ -513,7 +537,8 @@ def corrector(Ybus, Sbus, V0, pv: IntVec, pq: IntVec, lam0, Sxfr, Vprv, lamprv, 
 
 def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_target,
                     V, distributed_slack, bus_installed_power,
-                    vd, pv: IntVec, pq: IntVec, step, approximation_order: CpfParametrization,
+                    vd: IntVec, pv: IntVec, pq: IntVec, pqv: IntVec, p: IntVec,
+                    step: float, approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
                     stop_at=CpfStopAt.Nose, control_q=ReactivePowerControlMode.NoControl,
                     qmax_bus=None, qmin_bus=None, original_bus_types=None, base_overload_number=0,
@@ -536,6 +561,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
     :param vd: Array of slack bus indices
     :param pv: Array of pv bus indices
     :param pq: Array of pq bus indices
+    :param pqv: Array of p bus indices
+    :param p: Array of p bus indices
     :param step: Adaptation step
     :param approximation_order: order of the approximation {Natural, Arc, Pseudo arc}
     :param adapt_step: use adaptive step size?
@@ -578,7 +605,13 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
     V_prev = V  # V at previous step
     continuation = True
     cont_steps = 0
-    pvpq = np.r_[pv, pq]
+    # pvpq = np.r_[pv, pq]
+
+    idx_dtheta = np.r_[pv, pq, pqv, p]
+    idx_dVm = np.r_[pq, p]
+    idx_dP = idx_dtheta
+    idx_dQ = np.r_[pq, pqv]
+
     bus_types = original_bus_types.copy()
 
     z = np.zeros(2 * nb + 1)
@@ -599,8 +632,10 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                                 lam=lam,
                                 Ybus=Ybus,
                                 Sxfr=Sxfr,
-                                pv=pv,
-                                pq=pq,
+                                idx_dtheta=idx_dtheta,
+                                idx_dVm=idx_dVm,
+                                idx_dP=idx_dP,
+                                idx_dQ=idx_dQ,
                                 step=step,
                                 z=z,
                                 Vprv=V_prev,
@@ -615,8 +650,10 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
         V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
                                                      Sbus=Sbus_base,
                                                      V0=V0,
-                                                     pv=pv,
-                                                     pq=pq,
+                                                     idx_dtheta=idx_dtheta,
+                                                     idx_dVm=idx_dVm,
+                                                     idx_dP=idx_dP,
+                                                     idx_dQ=idx_dQ,
                                                      lam0=lam0,
                                                      Sxfr=Sxfr,
                                                      Vprv=V_prev,
@@ -640,8 +677,10 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 V, success, i, lam, normF, Scalc = corrector(Ybus=Ybus,
                                                              Sbus=Sbus_base + delta,
                                                              V0=V,
-                                                             pv=pv,
-                                                             pq=pq,
+                                                             idx_dtheta=idx_dtheta,
+                                                             idx_dVm=idx_dVm,
+                                                             idx_dP=idx_dP,
+                                                             idx_dQ=idx_dQ,
                                                              lam0=lam0,
                                                              Sxfr=Sxfr,
                                                              Vprv=V_prev,
@@ -752,7 +791,8 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
             if adapt_step and continuation:
 
                 # Adapt step size
-                fx = np.r_[np.angle(V[pq]), np.abs(V[pvpq]), lam] - np.r_[np.angle(V0[pq]), np.abs(V0[pvpq]), lam0]
+                fx = (np.r_[np.angle(V[idx_dtheta]), np.abs(V[idx_dVm]), lam]
+                      - np.r_[np.angle(V0[idx_dtheta]), np.abs(V0[idx_dVm]), lam0])
                 cpf_error = np.linalg.norm(fx, np.Inf)
 
                 if cpf_error == 0:

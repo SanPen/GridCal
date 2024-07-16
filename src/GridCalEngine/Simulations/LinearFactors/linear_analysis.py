@@ -128,7 +128,7 @@ def make_acptdf(Ybus: sp.csc_matrix,
     dS = np.r_[dP[pvpq, :], dQ]
 
     # solve the voltage increments
-    dx = csc.spsolve_csc(J, dS)
+    dx, ok = csc.spsolve_csc(J, dS)
 
     # compute branch derivatives
     dSf_dVm, dSf_dVa = dSf_dV_csc(Yf.tocsc(), V, F, T)

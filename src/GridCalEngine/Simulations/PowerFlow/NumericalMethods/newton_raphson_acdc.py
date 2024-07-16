@@ -219,9 +219,9 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                           ytt=ytt)
 
         # solve the linear system
-        dx = spsolve_csc(J, -fx)
+        dx, ok = spsolve_csc(J, -fx)
 
-        if not np.isnan(dx).any():  # check if the solution worked
+        if ok:  # check if the solution worked
 
             # split the solution
             dVa, dVm, dBeq, dm, dTau = sol_slicer.split(dx)
