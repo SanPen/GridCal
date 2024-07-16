@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import GridCalEngine.Simulations.derivatives.csc_derivatives as cscdiff
+import GridCalEngine.Simulations.derivatives.ac_jacobian as cscjac
 import GridCalEngine.Simulations.derivatives.matpower_derivatives as mdiff
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Utils.Sparse.csc2 import mat_to_scipy
@@ -410,8 +411,36 @@ def test_beq_derivatives() -> None:
         # dSt_dbeq is zero
 
 
+def test_jacobian():
+    fname = os.path.join("data", "grids", "RAW", "IEEE 14 bus.raw")
+    grid = gce.open_file(filename=fname)
+    nc = gce.compile_numerical_circuit_at(grid)
+
+    idx_dtheta = np.r_[nc.pv, nc.pq, nc.pqv, nc.p]
+    idx_dVm = np.r_[nc.pq, nc.p]
+    idx_dP = idx_dtheta
+    idx_dQ = np.r_[nc.pq, nc.pqv]
+
+    J1 = mdiff.Jacobian(nc.Ybus, nc.Vbus, idx_dP, idx_dQ, idx_dtheta, idx_dVm)
+
+    J3 = cscjac.AC_jacobian(nc.Ybus, nc.Vbus, idx_dtheta, idx_dVm)
+
+    J2 = cscjac.AC_jacobianVc(nc.Ybus, nc.Vbus, idx_dtheta, idx_dVm, idx_dQ)
+
+    ok1 = np.allclose(J1.toarray(), J2.toarray())
+    ok2 = np.allclose(J1.toarray(), J3.toarray())
+    ok = ok1 and ok2
+
+    if not ok:
+        print(f"J1:\n{J1.toarray()}\n")
+        print(f"J2:\n{J2.toarray()}\n")
+        print(f"ok {ok}")
+    assert ok
+
+
 if __name__ == '__main__':
     # test_branch_derivatives()
     # test_tau_derivatives()
     # test_m_derivatives()
-    test_beq_derivatives()
+    # test_beq_derivatives()
+    test_jacobian()

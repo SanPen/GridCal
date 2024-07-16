@@ -16,7 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Tuple
 import matplotlib.pyplot as plt
-import numpy as np
 import sys
 sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
 import GridCalEngine.api as gce
@@ -24,21 +23,14 @@ import scipy.sparse as sp
 import numba as nb
 from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCalEngine.Utils.NumericalMethods.common import ConvexFunctionResult, ConvexMethodResult
+from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobian
 from GridCalEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
-from GridCalEngine.Utils.NumericalMethods.powell import powell_dog_leg
-from GridCalEngine.Utils.NumericalMethods.levenberg_marquadt import levenberg_marquardt
 from GridCalEngine.enumerations import SolverType
-from sympy import symbols, diff, exp, re, im
-import time
 import numpy as np
-from typing import Callable, Any
 from GridCalEngine.basic_structures import Vec
 from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult,
                                                          check_function_and_args)
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Branches import VSC, Transformer2W
 from scipy.sparse import csc_matrix
 from typing import Tuple, Union
@@ -3041,7 +3033,6 @@ def run_pf_ver2(grid: gce.MultiCircuit, pf_options: gce.PowerFlowOptions, debug 
 
 
 if __name__ == '__main__':
-    import os
     # grid_ = HelperFunctions.linn5bus_example()    #converges true, and same as traditional powerflow
     # grid_ = HelperFunctions.linn5bus_example2()   #converges true
     grid_ = HelperFunctions.ieee14_example()      #converges true, and same as traditional powerflow
