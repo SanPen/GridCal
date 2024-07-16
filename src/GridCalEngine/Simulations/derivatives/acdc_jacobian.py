@@ -926,6 +926,12 @@ def fubm_jacobian(nbus: int,
     :param ytt:
     :return:
     """
+    n_rows = len(idx_dP) + len(idx_dQ) + len(idx_dQf) + len(idx_dQt) + len(idx_dPf) + len(idx_dPdp)
+    n_cols = len(idx_dtheta) + len(idx_dvm) + len(idx_dm) + len(idx_dtau) + len(idx_dbeq)
+
+    if n_cols != n_rows:
+        raise ValueError("Incorrect J indices!")
+
     # bus-bus derivatives (always needed)
     dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
 

@@ -62,6 +62,8 @@ class CSC:
             self.indices = np.empty(nnz, dtype=np.int32)
             self.indptr = np.empty(n_cols + 1, dtype=np.int32)
 
+        self.indptr[0] = 0  # always
+
     def set(self, indices: IntVec, indptr: IntVec, data: Vec):
         """
         Set the internal arrays
@@ -74,6 +76,7 @@ class CSC:
         self.indptr = indptr
         self.data = data
         self.nnz = len(self.data)
+        self.indptr[0] = 0  # always
 
     def fill_from_coo(self, Ti: IntVec, Tj: IntVec, Tx: CxVec, nnz: int):
         """
@@ -88,7 +91,8 @@ class CSC:
         self.nnz = nnz
         self.data = np.empty(self.nnz, dtype=np.float64)
         self.indices = np.empty(self.nnz, dtype=np.int32)
-        # self.indptr = np.empty(n_cols + 1, dtype=np.int32)
+        self.indptr = np.empty(self.n_cols + 1, dtype=np.int32)
+        self.indptr[0] = 0  # always
 
         w = np.zeros(self.n_cols, dtype=int32)  # get workspace
 

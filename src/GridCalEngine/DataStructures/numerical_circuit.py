@@ -1629,9 +1629,11 @@ class NumericalCircuit:
             idx_dvm = np.r_[self.pq, self.p]
             idx_dm = np.r_[self.k_qf_m, self.k_qt_m, self.k_vt_m]
             idx_dtau = np.r_[self.k_pf_tau, self.k_pf_dp]
-            idx_dbeq = np.r_[self.k_zero_beq, self.k_vf_beq]
+            # idx_dbeq = np.r_[self.k_zero_beq, self.k_vf_beq]
+            idx_dbeq = np.r_[self.k_zero_beq]
+
             idx_dP = np.r_[self.pv, self.pq, self.p, self.pqv]
-            idx_dQ = np.r_[self.pq, self.pqv]
+            idx_dQ = np.r_[self.pq, self.pqv, self.i_vt_m]
             idx_dQf = np.r_[self.k_qf_m, self.k_zero_beq]
             idx_dQt = self.k_qt_m
             idx_dPf = self.k_pf_tau
