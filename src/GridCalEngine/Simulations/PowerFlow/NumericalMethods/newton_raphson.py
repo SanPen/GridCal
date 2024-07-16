@@ -102,9 +102,9 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
             # compute update step
             try:
                 # dx = linear_solver(J, f)
-                dx = spsolve_csc(J, f)
+                dx, ok = spsolve_csc(J, f)
 
-                if np.isnan(dx).any():
+                if not ok:
                     end = time.time()
                     elapsed = end - start
                     logger.add_error('NR Singular matrix @iter:'.format(iteration))

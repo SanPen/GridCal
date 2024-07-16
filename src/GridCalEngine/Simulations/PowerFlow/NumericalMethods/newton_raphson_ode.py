@@ -86,7 +86,8 @@ def compute_fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
     gx = AC_jacobian(Ybus, V, pvpq, pq)
 
     # return the increment of x
-    return spsolve_csc(gx, g)
+    dx, ok = spsolve_csc(gx, g)
+    return dx
 
 
 def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFlowResults:

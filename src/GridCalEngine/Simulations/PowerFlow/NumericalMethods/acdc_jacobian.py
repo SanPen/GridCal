@@ -980,4 +980,7 @@ def fubm_jacobian(nbus: int,
                          dPdp_dVa, dPdp_dVm, dPdp_dbeq, dPdp_dm, dPdp_dtau],
                         n_rows=6, n_cols=5)
 
+    if J.n_cols != J.n_rows:
+        raise ValueError("J is not square!")
+
     return J

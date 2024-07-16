@@ -189,7 +189,7 @@ def AC_jacobian_csr(Ybus: csr_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> csc
     return csr_matrix((Jx, Jj, Jp), shape=(nj, nj)).tocsc()
 
 
-@jit(nopython=True, cache=True)
+@jit(nopython=True)
 def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) -> CSC:
     """
     Calculates Jacobian in CSC format.
@@ -308,54 +308,54 @@ def AC_jacobian(Ybus: csc_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> CSC:
 
 @jit(nopython=True)
 def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
-                    block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec) -> CSC:
+                    idx_dtheta: IntVec, idx_dVm: IntVec, idx_dQ: IntVec) -> CSC:
     """
     Calculates Jacobian in CSC format.
 
     J has the shape
 
-            bl1      bl2
-    bl1 | dP_dVa | dP_dVm |
-    bl3 | dQ_dVa | dQ_dVm |
+                  idx_dtheta      idx_dVm
+    idx_dtheta  | dP_dVa        | dP_dVm |
+    idx_dQ      | dQ_dVa        | dQ_dVm |
 
     :param nbus:
     :param Yx:
     :param Yp:
     :param Yi:
     :param V:
-    :param block1_idx: pv, pq, p, pqv
-    :param block2_idx: pq, p
-    :param block3_idx: pq, pqv
+    :param idx_dtheta: pv, pq, p, pqv
+    :param idx_dVm: pq, p
+    :param idx_dQ: pq, pqv
     :return: Jacobina matrix
     """
 
     # create Jacobian from fast calc of dS_dV
     dS_dVm_x, dS_dVa_x = dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, np.abs(V))
 
-    nj = len(block1_idx) + len(block2_idx)
+    nj = len(idx_dtheta) + len(idx_dVm)
     nnz_estimate = 5 * len(dS_dVm_x)
     J = CSC(nj, nj, nnz_estimate, False)
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
-    lookup_block1 = make_lookup(nbus, block1_idx)
-    lookup_block3 = make_lookup(nbus, block3_idx)
+    lookup_block1 = make_lookup(nbus, idx_dtheta)
+    lookup_block3 = make_lookup(nbus, idx_dQ)
 
     # get length of vectors
-    n_no_slack = len(block1_idx)
+    n_no_slack = len(idx_dtheta)
 
     # nonzeros in J
     nnz = 0
     p = 0
 
     # J1 and J3 -----------------------------------------------------------------------------------------
-    for j in block1_idx:  # columns
+    for j in idx_dtheta:  # columns
 
         # J1
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
             ii = lookup_block1[i]
 
-            if block1_idx[ii] == i:
+            if idx_dtheta[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].real
                 J.indices[nnz] = ii
                 nnz += 1
@@ -365,7 +365,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
             i = Yi[k]
             ii = lookup_block3[i]
 
-            if block3_idx[ii] == i:
+            if idx_dQ[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].imag
                 J.indices[nnz] = ii + n_no_slack
                 nnz += 1
@@ -374,14 +374,14 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
         J.indptr[p] = nnz
 
     # J2 and J4 -----------------------------------------------------------------------------------------
-    for j in block2_idx:  # columns
+    for j in idx_dVm:  # columns
 
         # J2
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
             ii = lookup_block1[i]
 
-            if block1_idx[ii] == i:
+            if idx_dtheta[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].real
                 J.indices[nnz] = ii
                 nnz += 1
@@ -391,7 +391,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
             i = Yi[k]
             ii = lookup_block3[i]
 
-            if block3_idx[ii] == i:
+            if idx_dQ[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].imag
                 J.indices[nnz] = ii + n_no_slack
                 nnz += 1
@@ -404,14 +404,14 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     return J
 
 
-def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec) -> CSC:
+def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, idx_dtheta: IntVec, idx_dVm: IntVec, idx_dQ: IntVec) -> CSC:
     """
     Create the AC Jacobian function with no embedded controls
     :param Ybus: Ybus matrix in CSC format
     :param V: Voltages vector
-    :param block1_idx: pv, pq, p, pqv
-    :param block2_idx: pq, p
-    :param block3_idx: pq, pqv
+    :param idx_dtheta: pv, pq, p, pqv
+    :param idx_dVm: pq, p
+    :param idx_dQ: pq, pqv
     :return: Jacobian Matrix in CSC format
     """
     if Ybus.format != 'csc':
@@ -420,6 +420,6 @@ def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, block1_idx: IntVec, block2_idx: In
     nbus = Ybus.shape[0]
 
     # Create J in CSC order
-    J = create_J_vc_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, block1_idx, block2_idx, block3_idx)
+    J = create_J_vc_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, idx_dtheta, idx_dVm, idx_dQ)
 
     return J

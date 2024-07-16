@@ -103,8 +103,7 @@ def test_spsolve() -> None:
             ok_a = not np.isnan(a).any()
 
             try:
-                b = spsolve_csc(scipy_to_mat(matrix), rhs)
-                ok_b = True
+                b, ok_b = spsolve_csc(scipy_to_mat(matrix), rhs)
 
                 assert ok_a == ok_b
                 if ok_a and ok_b:
