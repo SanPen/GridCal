@@ -1604,7 +1604,7 @@ class NumericalCircuit:
 
         elif structure_type == 'Jacobian':
 
-            from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
+            from GridCalEngine.Simulations.derivatives.acdc_jacobian import fubm_jacobian
 
             # compute admittances
             Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)

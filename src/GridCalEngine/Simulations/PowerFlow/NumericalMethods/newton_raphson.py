@@ -19,7 +19,7 @@ import time
 import scipy
 import numpy as np
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian, AC_jacobianVc
+from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobianVc
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.enumerations import ReactivePowerControlMode

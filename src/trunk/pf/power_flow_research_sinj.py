@@ -23,7 +23,7 @@ import GridCalEngine.api as gce
 
 from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobian
 from GridCalEngine.Utils.NumericalMethods.common import ConvexFunctionResult, ConvexMethodResult
 from GridCalEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
 from GridCalEngine.Utils.NumericalMethods.powell import powell_dog_leg

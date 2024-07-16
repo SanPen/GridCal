@@ -219,8 +219,8 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
 
-    lookup_pvpq = make_lookup(nbus, pvpq)
-    lookup_pq = make_lookup(nbus, pq)
+    lookup_dP = make_lookup(nbus, pvpq)
+    lookup_dQ = make_lookup(nbus, pq)
 
     # get length of vectors
     npvpq = len(pvpq)
@@ -228,6 +228,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
     # nonzeros in J
     nnz = 0
     p = 0
+    J.indptr[p] = nnz
 
     # J1 and J3 -----------------------------------------------------------------------------------------
     for j in pvpq:  # columns
@@ -235,7 +236,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J1
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pvpq[i]
+            ii = lookup_dP[i]
 
             if pvpq[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].real
@@ -245,7 +246,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J3
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pq[i]
+            ii = lookup_dQ[i]
 
             if pq[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].imag
@@ -261,7 +262,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J2
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pvpq[i]
+            ii = lookup_dP[i]
 
             if pvpq[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].real
@@ -271,7 +272,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J4
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pq[i]
+            ii = lookup_dQ[i]
 
             if pq[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].imag
@@ -337,8 +338,8 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     J = CSC(nj, nj, nnz_estimate, False)
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
-    lookup_block1 = make_lookup(nbus, idx_dtheta)
-    lookup_block3 = make_lookup(nbus, idx_dQ)
+    lookup_dP = make_lookup(nbus, idx_dtheta)
+    lookup_dQ = make_lookup(nbus, idx_dQ)
 
     # get length of vectors
     n_no_slack = len(idx_dtheta)
@@ -346,6 +347,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     # nonzeros in J
     nnz = 0
     p = 0
+    J.indptr[p] = nnz
 
     # J1 and J3 -----------------------------------------------------------------------------------------
     for j in idx_dtheta:  # columns
@@ -353,7 +355,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
         # J1
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_block1[i]
+            ii = lookup_dP[i]
 
             if idx_dtheta[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].real
@@ -363,7 +365,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
         # J3
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_block3[i]
+            ii = lookup_dQ[i]
 
             if idx_dQ[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].imag
@@ -377,9 +379,9 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     for j in idx_dVm:  # columns
 
         # J2
-        for k in range(Yp[j], Yp[j + 1]):  # rows
-            i = Yi[k]
-            ii = lookup_block1[i]
+        for k in range(Yp[j], Yp[j + 1]):
+            i = Yi[k]  # row at Y
+            ii = lookup_dP[i]
 
             if idx_dtheta[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].real
@@ -389,7 +391,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
         # J4
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_block3[i]
+            ii = lookup_dQ[i]
 
             if idx_dQ[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].imag

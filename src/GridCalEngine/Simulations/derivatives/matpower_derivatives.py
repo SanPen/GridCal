@@ -17,7 +17,7 @@
 
 import numpy as np
 from typing import Tuple
-from scipy.sparse import diags, csc_matrix
+from scipy.sparse import diags, csc_matrix, vstack, hstack
 from GridCalEngine.basic_structures import CxVec, IntVec
 
 
@@ -145,3 +145,32 @@ def dSt_dV_matpower(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
     dSt_dVm = diagVt * np.conj(Yt * diagE) + diagItc * CVnt
 
     return dSt_dVa.tocsc(), dSt_dVm.tocsc()
+
+
+def Jacobian(Ybus, V: CxVec, idx_dP: IntVec, idx_dQ: IntVec, idx_dVa: IntVec, idx_dVm: IntVec) -> csc_matrix:
+    """
+    Computes the system Jacobian matrix in polar coordinates
+    Args:
+    :param Ybus: Admittance matrix
+    :param V: Array of nodal voltages
+    :param idx_dVa: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dVm: vector of indices of PQ|P buses
+    :param idx_dP: vector of indices of PV|PQ|PQV|P buses
+    :param idx_dQ: vector of indices of PQ|PQV buses
+
+    Returns:
+        The system Jacobian matrix
+    """
+    assert np.all(idx_dP == idx_dVa)
+
+    dS_dVa, dS_dVm = dSbus_dV_matpower(Ybus, V)
+
+    J11 = dS_dVa[np.ix_(idx_dP, idx_dVa)].real
+    J12 = dS_dVm[np.ix_(idx_dP, idx_dVm)].real
+    J21 = dS_dVa[np.ix_(idx_dQ, idx_dVa)].imag
+    J22 = dS_dVm[np.ix_(idx_dQ, idx_dVm)].imag
+
+    J = vstack([hstack([J11, J12]),
+                hstack([J21, J22])], format="csc")
+
+    return csc_matrix(J)
