@@ -17,7 +17,7 @@
 from typing import Tuple
 import numpy as np
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.Utils.Sparse.csc2 import CSC
+from GridCalEngine.Utils.Sparse.csc2 import CSC, spsolve_csc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
@@ -189,13 +189,30 @@ class PfFormulationTemplate:
         """
         pass
 
+    def solve_step_from_f(self, f: Vec) -> Tuple[Vec, bool]:
+        """
+
+        :param f: Function residual
+        :return:
+        """
+        # Compute the Jacobian
+        J = self.Jacobian()  # Assumes the internal vars were updated already with self.x2var()
+
+        # Solve the sparse system
+        dx, ok = spsolve_csc(J, f)
+
+        return dx, ok
+
     def solve_step(self) -> Tuple[Vec, bool]:
         """
 
-        :param x:
         :return:
         """
-        pass
+
+        # Solve the sparse system
+        dx, ok = self.solve_step_from_f(self._f)
+
+        return dx, ok
 
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """

@@ -45,9 +45,11 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
     start = time.time()
 
     # get the initial point
-    x = problem.var2x().copy()
+    x = problem.var2x()
 
     if len(x) == 0:
+        # if the lenght of x is zero, means that there's nothing to solve
+        # for instance there might be a single node that is a slack node
         return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
     # set the problem state
