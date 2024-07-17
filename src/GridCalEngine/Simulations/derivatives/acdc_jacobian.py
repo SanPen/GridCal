@@ -929,6 +929,9 @@ def fubm_jacobian(nbus: int,
     n_rows = len(idx_dP) + len(idx_dQ) + len(idx_dQf) + len(idx_dQt) + len(idx_dPf) + len(idx_dPdp)
     n_cols = len(idx_dtheta) + len(idx_dvm) + len(idx_dm) + len(idx_dtau) + len(idx_dbeq)
 
+    if not np.all(idx_dtau == idx_dPf):
+        raise ValueError("Pf indices must be equal to tau indices!")
+
     if n_cols != n_rows:
         raise ValueError("Incorrect J indices!")
 
@@ -944,47 +947,54 @@ def fubm_jacobian(nbus: int,
     dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dtheta)
     dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dtheta)
     dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dtheta, yff, yft, V, F, T).imag
-    dQt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dQt, idx_dtheta, ytf, V, F, T).imag
+    # dQt_dVa_ = deriv.dSt_dVa_csc(nbus, idx_dQt, idx_dtheta, ytf, V, F, T).imag
     dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dtheta, yff, yft, V, F, T).real
-    dPdp_dVa = deriv.dSf_dVa_csc(nbus, idx_dPdp, idx_dtheta, yff, yft, V, F, T).real
+    # dPdp_dVa = deriv.dSf_dVa_csc(nbus, idx_dPdp, idx_dtheta, yff, yft, V, F, T).real
 
     dP_dVm__ = sp_slice(dS_dVm.real, idx_dP, idx_dvm)
     dQ_dVm__ = sp_slice(dS_dVm.imag, idx_dQ, idx_dvm)
     dQf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dQf, idx_dtheta, yff, yft, V, F, T).imag
-    dQt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dQt, idx_dtheta, ytt, ytf, V, F, T).imag
+    # dQt_dVm_ = deriv.dSt_dVm_csc(nbus, idx_dQt, idx_dtheta, ytt, ytf, V, F, T).imag
     dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dtheta, yff, yft, V, F, T).real
-    dPdp_dVm = deriv.dPfdp_dVm_csc(nbus, idx_dPdp, idx_dtheta, yff, yft, Kdp, V, F, T)
+    # dPdp_dVm = deriv.dPfdp_dVm_csc(nbus, idx_dPdp, idx_dtheta, yff, yft, Kdp, V, F, T)
 
     dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
     dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
     dQf_dbeq_ = deriv.dSf_dbeq_csc(idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
-    dQt_dbeq_ = CSC(len(idx_dQt), len(idx_dbeq), 0, False)
+    # dQt_dbeq_ = CSC(len(idx_dQt), len(idx_dbeq), 0, False)
     dPf_dbeq_ = deriv.dSf_dbeq_csc(idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
-    dPdp_dbeq = deriv.dSf_dbeq_csc(idx_dPdp, idx_dbeq, F, kconv, tap_modules, V).real
+    # dPdp_dbeq = deriv.dSf_dbeq_csc(idx_dPdp, idx_dbeq, F, kconv, tap_modules, V).real
 
     dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
     dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
     dQf_dm_ = deriv.dSf_dm_csc(idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
-    dQt_dm_ = deriv.dSt_dm_csc(idx_dQt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).imag
+    # dQt_dm_ = deriv.dSt_dm_csc(idx_dQt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).imag
     dPf_dm_ = deriv.dSf_dm_csc(idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
-    dPdp_dm = deriv.dSf_dm_csc(idx_dPdp, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
+    # dPdp_dm = deriv.dSf_dm_csc(idx_dPdp, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
 
     dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
     dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
     dQf_dtau_ = deriv.dSf_dtau_csc(idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dQt_dtau_ = deriv.dSt_dtau_csc(idx_dQt, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+    # dQt_dtau_ = deriv.dSt_dtau_csc(idx_dQt, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
     dPf_dtau_ = deriv.dSf_dtau_csc(idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dPdp_dtau = deriv.dSf_dtau_csc(idx_dPdp, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
+    # dPdp_dtau = deriv.dSf_dtau_csc(idx_dPdp, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
 
     # compose the Jacobian
+    # J = csc_stack_2d_ff(mats=
+    #                     [dP_dVa__, dP_dVm__, dP_dbeq__, dP_dm__, dP_dtau__,
+    #                      dQ_dVa__, dQ_dVm__, dQ_dbeq__, dQ_dm__, dQ_dtau__,
+    #                      dQf_dVa_, dQf_dVm_, dQf_dbeq_, dQf_dm_, dQf_dtau_,
+    #                      dQt_dVa_, dQt_dVm_, dQt_dbeq_, dQt_dm_, dQt_dtau_,
+    #                      dPf_dVa_, dPf_dVm_, dPf_dbeq_, dPf_dm_, dPf_dtau_,
+    #                      dPdp_dVa, dPdp_dVm, dPdp_dbeq, dPdp_dm, dPdp_dtau],
+    #                     n_rows=6, n_cols=5)
+
     J = csc_stack_2d_ff(mats=
                         [dP_dVa__, dP_dVm__, dP_dbeq__, dP_dm__, dP_dtau__,
                          dQ_dVa__, dQ_dVm__, dQ_dbeq__, dQ_dm__, dQ_dtau__,
                          dQf_dVa_, dQf_dVm_, dQf_dbeq_, dQf_dm_, dQf_dtau_,
-                         dQt_dVa_, dQt_dVm_, dQt_dbeq_, dQt_dm_, dQt_dtau_,
-                         dPf_dVa_, dPf_dVm_, dPf_dbeq_, dPf_dm_, dPf_dtau_,
-                         dPdp_dVa, dPdp_dVm, dPdp_dbeq, dPdp_dm, dPdp_dtau],
-                        n_rows=6, n_cols=5)
+                         dPf_dVa_, dPf_dVm_, dPf_dbeq_, dPf_dm_, dPf_dtau_],
+                        n_rows=4, n_cols=5)
 
     if J.n_cols != J.n_rows:
         raise ValueError("J is not square!")

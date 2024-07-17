@@ -31,10 +31,10 @@ def test_contingency() -> None:
                                   use_stored_guess=False,
                                   control_q=ReactivePowerControlMode.NoControl)
 
-    options = ContingencyAnalysisOptions(pf_options=pf_options, 
+    options = ContingencyAnalysisOptions(pf_options=pf_options,
                                          contingency_method=ContingencyMethod.PowerFlow)
-    
-    cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit, 
+
+    cont_analysis_driver = ContingencyAnalysisDriver(grid=main_circuit,
                                                      options=options,
                                                      linear_multiple_contingencies=None)
     cont_analysis_driver.run()
@@ -72,6 +72,7 @@ def test_linear_contingency():
                                                      linear_multiple_contingencies=linear_multi_contingency)
     cont_analysis_driver.run()
     print("")
+
 
 # def test_lodf():
 #     fname = os.path.join('data', 'grids', 'IEEE14_contingency.gridcal')
@@ -123,3 +124,6 @@ def test_linear_contingency():
 #     #res = linear_analysis.results.PTDF - ptdf_result
 #     #print(res)
 #     assert(np.isclose(linear_analysis.results.PTDF, ptdf_result).all())
+
+if __name__ == '__main__':
+    test_contingency()

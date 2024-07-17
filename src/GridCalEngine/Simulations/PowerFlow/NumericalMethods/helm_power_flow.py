@@ -694,7 +694,7 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     if n < 2:
         # return NumericPowerFlowResults(V0, True, 0.0, S0, None, None, None, None, None, None, 0, 0.0)
         return NumericPowerFlowResults(V=V0, converged=True, norm_f=0.0,
-                                       Scalc=S0, ma=None, theta=None, Beq=None,
+                                       Scalc=S0, m=None, tau=None, Beq=None,
                                        Ybus=None, Yf=None, Yt=None,
                                        iterations=0, elapsed=0.0)
 
@@ -737,6 +737,6 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)

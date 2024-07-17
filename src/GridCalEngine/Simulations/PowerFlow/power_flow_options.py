@@ -104,8 +104,6 @@ class PowerFlowOptions(OptionsTemplate):
 
         self.generate_report = generate_report
 
-        self.generalised_pf = generalised_pf  # TODO: Remove this
-
         self.register(key="solver_type", tpe=SolverType)
         self.register(key="retry_with_other_methods", tpe=bool)
         self.register(key="tolerance", tpe=float)
@@ -124,4 +122,3 @@ class PowerFlowOptions(OptionsTemplate):
         self.register(key="use_stored_guess", tpe=bool)
         self.register(key="override_branch_controls", tpe=bool)
         self.register(key="generate_report", tpe=bool)
-        self.register(key="generalised_pf", tpe=bool)

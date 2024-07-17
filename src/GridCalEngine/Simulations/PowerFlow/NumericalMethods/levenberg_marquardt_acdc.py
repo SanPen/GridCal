@@ -314,6 +314,6 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc, m, theta, Beq, Ybus, Yf, Yt, iter_, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, ma=m, theta=tau, Beq=Beq,
+                                   Scalc=Scalc, m=m, tau=tau, Beq=Beq,
                                    Ybus=Ybus, Yf=Yf, Yt=Yt,
                                    iterations=iter_, elapsed=elapsed)

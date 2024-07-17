@@ -751,7 +751,7 @@ def dSf_dtau_csc(sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
     :param sf_indices: array of sf indices
-    :param tau_indices: array of branch indices with tau control
+    :param tau_indices: array of branch indices with tau control (must be equal to sf_indices)
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
@@ -769,20 +769,17 @@ def dSf_dtau_csc(sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv
     Tj = np.empty(max_nnz, dtype=np.int32)
     nnz = 0
     for k_idx, k in enumerate(tau_indices):
-        for k2_idx, k2 in enumerate(sf_indices):
+        f = F[k]
+        t = T[k]
 
-            if k2 == k:
-                f = F[k]
-                t = T[k]
+        # Partials of Ytt, Yff, Yft and Ytf w.r.t. Ɵ shift
+        yft_dsh = -Ys[k] / (-1j * kconv[k] * np.conj(tap[k]))
 
-                # Partials of Ytt, Yff, Yft and Ytf w.r.t. Ɵ shift
-                yft_dsh = -Ys[k] / (-1j * kconv[k] * np.conj(tap[k]))
-
-                # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
-                Tx[nnz] = V[f] * np.conj(yft_dsh * V[t])
-                Ti[nnz] = k_idx
-                Tj[nnz] = k2_idx
-                nnz += 1
+        # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
+        Tx[nnz] = V[f] * np.conj(yft_dsh * V[t])
+        Ti[nnz] = k_idx
+        Tj[nnz] = k_idx
+        nnz += 1
 
     # convert to csc
     mat.fill_from_coo(Ti, Tj, Tx, nnz)

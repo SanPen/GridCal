@@ -88,31 +88,31 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_fx(Scalc: CxVec, Sbus: CxVec, pvpq: IntVec, pq: IntVec) -> Vec:
+def compute_fx(Scalc: CxVec, Sbus: CxVec, idx_dP: IntVec, idx_dQ: IntVec) -> Vec:
     """
     Compute the NR-like error function
     f = [∆P(pqpv), ∆Q(pq)]
     :param Scalc: Calculated power injections
     :param Sbus: Specified power injections
-    :param pvpq: Array pf pq and pv node indices
-    :param pq: Array of pq node indices
+    :param idx_dP: Array of node indices updated with dP (pvpq)
+    :param idx_dQ: Array of node indices updated with dQ (pq)
     :return: error
     """
     # dS = Scalc - Sbus  # compute the mismatch
     # return np.r_[dS[pvpq].real, dS[pq].imag]
 
-    n = len(pvpq) + len(pq)
+    n = len(idx_dP) + len(idx_dQ)
 
     fx = np.empty(n, dtype=float)
 
     k = 0
-    for i in pvpq:
+    for i in idx_dP:
         # F1(x0) Power balance mismatch - Va
         # fx[k] = mis[i].real
         fx[k] = Scalc[i].real - Sbus[i].real
         k += 1
 
-    for i in pq:
+    for i in idx_dQ:
         # F2(x0) Power balance mismatch - Vm
         # fx[k] = mis[i].imag
         fx[k] = Scalc[i].imag - Sbus[i].imag

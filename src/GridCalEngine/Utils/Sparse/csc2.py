@@ -213,6 +213,8 @@ class CxCSC:
             self.indices = np.empty(nnz, dtype=np.int32)
             self.indptr = np.empty(n_cols + 1, dtype=np.int32)
 
+        self.indptr[0] = 0  # always
+
     def set(self, indices: IntVec, indptr: IntVec, data: CxVec):
         """
         Set the internal arrays
@@ -239,7 +241,8 @@ class CxCSC:
         self.nnz = nnz
         self.data = np.empty(self.nnz, dtype=np.complex128)
         self.indices = np.empty(self.nnz, dtype=np.int32)
-        # self.indptr = np.empty(n_cols + 1, dtype=np.int32)
+        self.indptr = np.empty(self.n_cols + 1, dtype=np.int32)
+        self.indptr[0] = 0  # always
 
         w = np.zeros(self.n_cols, dtype=np.int32)  # get workspace
 
