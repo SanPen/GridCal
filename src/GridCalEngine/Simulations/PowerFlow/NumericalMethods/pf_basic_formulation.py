@@ -166,31 +166,6 @@ class PfBasicFormulation(PfFormulationTemplate):
 
         return J
 
-    def solve_step_from_f(self, f: Vec) -> Tuple[Vec, bool]:
-        """
-
-        :param f: Function residual
-        :return:
-        """
-        # Compute the Jacobian
-        J = self.Jacobian()  # Assumes the internal vars were updated already with self.x2var()
-
-        # Solve the sparse system
-        dx, ok = spsolve_csc(J, f)
-
-        return dx, ok
-
-    def solve_step(self) -> Tuple[Vec, bool]:
-        """
-
-        :return:
-        """
-
-        # Solve the sparse system
-        dx, ok = self.solve_step_from_f(self._f)
-
-        return dx, ok
-
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """
         Get the problem solution
