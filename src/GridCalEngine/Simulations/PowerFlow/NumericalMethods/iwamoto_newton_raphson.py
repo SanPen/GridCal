@@ -141,7 +141,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
                     logger.add_error('NR Singular matrix @iter:'.format(iter_))
 
                     return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
-                                                   Scalc=S0, ma=None, theta=None, Beq=None,
+                                                   Scalc=S0, m=None, tau=None, Beq=None,
                                                    Ybus=None, Yf=None, Yt=None,
                                                    iterations=iter_, elapsed=elapsed)
 
@@ -152,7 +152,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
                 end = time.time()
                 elapsed = end - start
                 return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                               Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                               Scalc=Scalc, m=None, tau=None, Beq=None,
                                                Ybus=None, Yf=None, Yt=None,
                                                iterations=iter_, elapsed=elapsed)
 
@@ -225,6 +225,6 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)

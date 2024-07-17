@@ -227,7 +227,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax,
     elapsed = end - start
 
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)
 

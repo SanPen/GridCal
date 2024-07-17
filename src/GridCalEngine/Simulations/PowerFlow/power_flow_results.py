@@ -37,8 +37,8 @@ class NumericPowerFlowResults:
                  converged: bool,
                  norm_f: float,
                  Scalc: CxVec,
-                 ma: Union[Vec, None] = None,
-                 theta: Union[Vec, None] = None,
+                 m: Union[Vec, None] = None,
+                 tau: Union[Vec, None] = None,
                  Beq: Union[Vec, None] = None,
                  Ybus: Union[CscMat, None] = None,
                  Yf: Union[CscMat, None] = None,
@@ -51,8 +51,8 @@ class NumericPowerFlowResults:
         :param converged: converged?
         :param norm_f: error
         :param Scalc: Calculated power vector
-        :param ma: Tap modules vector for all the Branches
-        :param theta: Tap angles vector for all the Branches
+        :param m: Tap modules vector for all the Branches
+        :param tau: Tap angles vector for all the Branches
         :param Beq: Equivalent susceptance vector for all the Branches
         :param Ybus: Admittance matrix
         :param Yf: Admittance matrix of the "from" buses
@@ -64,8 +64,8 @@ class NumericPowerFlowResults:
         self.converged = converged
         self.norm_f = norm_f
         self.Scalc = Scalc
-        self.ma = ma
-        self.theta = theta
+        self.ma = m
+        self.tau = tau
         self.Beq = Beq
         self.Ybus = Ybus
         self.Yf = Yf
