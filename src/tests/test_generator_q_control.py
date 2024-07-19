@@ -12,7 +12,7 @@ def test_q_control_true() -> None:
     for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
 
         options = PowerFlowOptions(solver_type,
-                                   control_q=ReactivePowerControlMode.Direct,
+                                   control_q=True,
                                    retry_with_other_methods=False)
 
         power_flow = PowerFlowDriver(main_circuit, options)
@@ -41,7 +41,7 @@ def test_q_control_false():
     for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
-                                   control_q=ReactivePowerControlMode.NoControl,
+                                   control_q=False,
                                    retry_with_other_methods=False)
 
         power_flow = PowerFlowDriver(main_circuit, options)

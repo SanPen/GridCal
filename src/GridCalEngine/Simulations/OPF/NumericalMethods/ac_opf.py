@@ -26,7 +26,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import ReactivePowerControlMode, AcOpfMode
+from GridCalEngine.enumerations import AcOpfMode
 from typing import Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
@@ -671,7 +671,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
-    if pf_options.control_Q == ReactivePowerControlMode.NoControl:
+    if pf_options.control_Q == False:
         NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl  # No Reactive constraint (power curve)
     else:
         NI = 2 * n_br_mon + 2 * npq + 5 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl

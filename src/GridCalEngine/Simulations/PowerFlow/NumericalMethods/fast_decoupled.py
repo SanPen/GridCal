@@ -5,14 +5,13 @@ from scipy.sparse.linalg import splu
 import time
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 
 np.set_printoptions(linewidth=320)
 
 
 def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pv_, pq_, pqv_, p_, Qmin, Qmax, tol=1e-9, max_it=100,
-         control_q=ReactivePowerControlMode.NoControl, ) -> NumericPowerFlowResults:
+         control_q=False) -> NumericPowerFlowResults:
     """
     Fast decoupled power flow
     :param Vbus: array of initial voltages
@@ -118,7 +117,7 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pv_, pq_, pqv_, p_, Qmin, Qmax, tol=1e-
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and normQ < 1e-2 and (len(pv) + len(p)) > 0:
+            if control_q and normQ < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,

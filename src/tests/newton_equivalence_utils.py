@@ -291,7 +291,7 @@ def compare_power_flow(grid_newton, grid_gc, tol=1e-6):
                                       verbose=False,
                                       tolerance=1e-6,
                                       retry_with_other_methods=True,
-                                      control_q=gce.ReactivePowerControlMode.NoControl,
+                                      control_q=False,
                                       max_iter=15)
     gc_power_flow = gce.PowerFlowDriver(grid_gc, gc_options)
     gc_power_flow.run()

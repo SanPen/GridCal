@@ -24,7 +24,7 @@ from scipy.sparse import lil_matrix
 from GridCalEngine.Utils.Sparse.csc import diags
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, csr_matrix, csc_matrix
-from GridCalEngine.enumerations import ReactivePowerControlMode, AcOpfMode
+from GridCalEngine.enumerations import AcOpfMode
 
 
 def x2var(x: Vec,
@@ -520,7 +520,7 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
 def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, nslcap:int, pq: Vec, k_m: Vec, k_tau: Vec,
            Vm_max: Vec, Vm_min: Vec, Pg_max: Vec, Pg_min: Vec, Qg_max: Vec, Qg_min: Vec, tapm_max: Vec,
            tapm_min: Vec, tapt_max: Vec, tapt_min: Vec, Pdcmax: Vec, rates: Vec, il: Vec, ig: Vec,
-           tanmax: Vec, ctQ: ReactivePowerControlMode, acopf_mode: AcOpfMode) -> Tuple[Vec, CxVec, CxVec]:
+           tanmax: Vec, ctQ: bool, acopf_mode: AcOpfMode) -> Tuple[Vec, CxVec, CxVec]:
     """
     Calculates the inequality constraints at the current state (given by x)
     :param x: State vector
@@ -610,7 +610,7 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
             tapt_min - tapt  # Tap phase lower bound
         ]
 
-    if ctQ != ReactivePowerControlMode.NoControl:
+    if ctQ:  # if reactive power control...
         hval = np.r_[hval, np.power(Qg, 2.0) - np.power(tanmax, 2.0) * np.power(Pg, 2.0)]
 
     if ndc != 0:
@@ -624,7 +624,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                            slack: Vec, nslcap: int, nodal_capacity_sign: float, capacity_nodes_idx: IntVec, pq: Vec,
                            pv: Vec, tanmax: Vec, alltapm: Vec, alltapt: Vec, fdc: Vec, tdc: Vec,
                            k_m: Vec, k_tau: Vec, mu, lmbda, R: Vec, X: Vec, F: Vec, T: Vec,
-                           ctQ: ReactivePowerControlMode, acopf_mode: AcOpfMode, compute_jac: bool,
+                           ctQ: bool, acopf_mode: AcOpfMode, compute_jac: bool,
                            compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc, Vec]:
 
     """
@@ -674,7 +674,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
     ndc = len(fdc)
     npq = len(pq)
 
-    if ctQ != ReactivePowerControlMode.NoControl:
+    if ctQ:  # if reactive power control...
         nqct = Ng
     else:
         nqct = 0
@@ -966,7 +966,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                 HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
                 HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
-        if ctQ != ReactivePowerControlMode.NoControl:
+        if ctQ:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = - 2 * np.power(tanmax, 2) * Pg
             Hqmaxq = 2 * Qg
@@ -1160,7 +1160,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Sfvavm = Sfvmva.T
         Sfvmvm = vm_inv @ Ff @ vm_inv
 
-        if ctQ != ReactivePowerControlMode.NoControl:
+        if ctQ:  # using reactive power control
             Hqpgpg = diags(-2 * np.power(tanmax, 2) * mu[-Ng:])
             Hqqgqg = diags(np.array([2] * Ng) * mu[-Ng:])
         else:

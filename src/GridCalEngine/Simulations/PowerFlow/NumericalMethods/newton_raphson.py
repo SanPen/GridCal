@@ -22,7 +22,6 @@ from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, g
 from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobianVc
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
@@ -33,7 +32,7 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
 def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
-          acceleration_parameter=0.05, control_q=ReactivePowerControlMode.NoControl,
+          acceleration_parameter=0.05, control_q=False,
           verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with backtracking correction.
@@ -192,7 +191,7 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15, 
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and (len(pv) + len(p)) > 0:
+            if control_q and norm_f < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,

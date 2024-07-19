@@ -25,18 +25,13 @@ def test_monte_carlo():
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=0,
-                                  control_q=ReactivePowerControlMode.NoControl)
+    pf_options = PowerFlowOptions(SolverType.NR, verbose=0, control_q=False)
 
     ####################################################################################################################
     # Monte Carlo
     ####################################################################################################################
     print('Running MC...')
-    mc_sim = StochasticPowerFlowDriver(main_circuit,
-                                       pf_options,
-                                       mc_tol=1e-5,
-                                       sampling_points=1000)
+    mc_sim = StochasticPowerFlowDriver(main_circuit, pf_options, mc_tol=1e-5, sampling_points=1000)
     mc_sim.run()
 
 

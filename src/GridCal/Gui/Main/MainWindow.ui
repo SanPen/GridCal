@@ -3899,13 +3899,6 @@ QProgressBar::chunk{
                 </widget>
                </item>
                <item>
-                <widget class="QCheckBox" name="override_branch_controls_checkBox">
-                 <property name="text">
-                  <string>Override branch controls</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="QLabel" name="label_54">
                  <property name="text">
                   <string/>

@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
-                                        TapAngleControl, TapModuleControl, TapChangerTypes)
+                                        TapPhaseControl, TapModuleControl, TapChangerTypes)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -66,9 +66,9 @@ class Transformer2W(ControllableBranchParent):
                  temp_base: float = 20.0,
                  temp_oper: float = 20.0,
                  alpha: float = 0.00330,
-                 control_mode: TransformerControlType = TransformerControlType.fixed,    # legacy?
+                 control_mode: TransformerControlType = TransformerControlType.fixed,  # legacy?
                  tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
-                 tap_angle_control_mode: TapAngleControl = TapAngleControl.fixed,
+                 tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
                  template: TransformerType = None,
                  contingency_factor: float = 1.0,
                  protection_rating_factor: float = 1.4,
@@ -179,7 +179,7 @@ class Transformer2W(ControllableBranchParent):
                                           alpha=alpha,
                                           control_mode=control_mode,
                                           tap_module_control_mode=tap_module_control_mode,
-                                          tap_angle_control_mode=tap_angle_control_mode,
+                                          tap_phase_control_mode=tap_phase_control_mode,
                                           contingency_factor=contingency_factor,
                                           protection_rating_factor=protection_rating_factor,
                                           contingency_enabled=contingency_enabled,

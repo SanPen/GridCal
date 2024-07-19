@@ -17,7 +17,7 @@
 import os.path
 import numpy as np
 
-from GridCalEngine.enumerations import SolverType, ReactivePowerControlMode, HvdcControlType
+from GridCalEngine.enumerations import SolverType, HvdcControlType
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -618,7 +618,7 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
         data.k_qf_m = btg_data.control_indices.k_qf_m
         data.k_zero_beq = btg_data.control_indices.k_zero_beq
         data.k_vf_beq = btg_data.control_indices.k_vf_beq
-        data.k_vt_m = btg_data.control_indices.k_vt_m
+        data.k_vt_m = btg_data.control_indices.k_v_m
         data.k_qt_m = btg_data.control_indices.k_qt_m
         data.k_pf_dp = btg_data.control_indices.k_pf_dp
         data.i_vsc = btg_data.control_indices.i_vsc
@@ -645,8 +645,8 @@ def get_bentayga_pf_options(opt: PowerFlowOptions):
                    SolverType.FASTDECOUPLED: btg.PowerFlowSolvers.FastDecoupled
                    }
 
-    q_control_dict = {ReactivePowerControlMode.NoControl: btg.QControlMode.NoControl,
-                      ReactivePowerControlMode.Direct: btg.QControlMode.Direct}
+    q_control_dict = {False: btg.QControlMode.NoControl,
+                      True: btg.QControlMode.Direct}
 
     solver_type = solver_dict.get(opt.solver_type, btg.PowerFlowSolvers.NewtonRaphson)
 

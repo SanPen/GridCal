@@ -17,7 +17,7 @@
 
 import numpy as np
 
-from GridCalEngine.enumerations import ReactivePowerControlMode, CpfParametrization, CpfStopAt
+from GridCalEngine.enumerations import CpfParametrization, CpfStopAt
 from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobianVc
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_direct
 from GridCalEngine.Topology.simulation_indices import compile_types
@@ -540,7 +540,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                     vd: IntVec, pv: IntVec, pq: IntVec, pqv: IntVec, p: IntVec,
                     step: float, approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
-                    stop_at=CpfStopAt.Nose, control_q=ReactivePowerControlMode.NoControl,
+                    stop_at=CpfStopAt.Nose, control_q=False,
                     qmax_bus=None, qmin_bus=None, original_bus_types=None, base_overload_number=0,
                     verbose=False, call_back_fx=None) -> CpfNumericResults:
     """
@@ -718,7 +718,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                 print(V)
 
             # Check controls
-            if control_q == ReactivePowerControlMode.Direct:
+            if control_q == True:
 
                 Vm = np.abs(V)
                 (V,

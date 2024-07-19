@@ -101,7 +101,7 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                                    k_vf_beq=nc.k_vf_beq,
                                    k_qf_m=nc.k_qf_m,
                                    k_qt_m=nc.k_qt_m,
-                                   k_vt_m=nc.k_vt_m,
+                                   k_vt_m=nc.k_v_m,
                                    k_pf_tau=nc.k_pf_tau,
                                    k_pf_dp=nc.k_pf_dp)
         # -------------------------------------------------------------------------
@@ -170,7 +170,7 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
 
             # evaluate Jacobian
             if update_jacobian:
-                H = fubm_jacobian(nb, nl, nc.k_pf_tau, nc.k_pf_dp, nc.k_qf_m, nc.k_qt_m, nc.k_vt_m, nc.k_zero_beq,
+                H = fubm_jacobian(nb, nl, nc.k_pf_tau, nc.k_pf_dp, nc.k_qf_m, nc.k_qt_m, nc.k_v_m, nc.k_zero_beq,
                                   nc.k_vf_beq,
                                   nc.i_vf_beq, nc.i_vt_m,
                                   F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)

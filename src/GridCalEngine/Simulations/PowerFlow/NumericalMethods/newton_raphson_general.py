@@ -24,7 +24,6 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_power, compute_zip_power)
 from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult)
 from GridCalEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
-from GridCalEngine.enumerations import ReactivePowerControlMode
 from scipy.sparse import csr_matrix, csc_matrix
 from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec, Logger
 
@@ -39,7 +38,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
                   mu_0=1.0,
                   acceleration_parameter=0.05,
                   verbose=False,
-                  control_q=ReactivePowerControlMode.NoControl,
+                  control_q=False,
                   pf_options=None) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation

@@ -25,13 +25,9 @@ def test_lhs():
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     print('Reading...')
     main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=False,
-                                  control_q=ReactivePowerControlMode.NoControl)
+    pf_options = PowerFlowOptions(SolverType.NR, verbose=False, control_q=False)
     print('Running LHC...')
-    lhs_sim = StochasticPowerFlowDriver(main_circuit,
-                                        pf_options,
-                                        sampling_points=100)
+    lhs_sim = StochasticPowerFlowDriver(main_circuit, pf_options, sampling_points=100)
     lhs_sim.run()
 
 

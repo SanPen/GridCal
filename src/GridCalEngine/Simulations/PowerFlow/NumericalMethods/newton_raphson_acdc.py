@@ -28,8 +28,6 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
                                                                                    compute_converter_losses,
                                                                                    compute_power, compute_zip_power)
 from GridCalEngine.basic_structures import CxVec
-from GridCalEngine.enumerations import ReactivePowerControlMode
-# import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
 from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
 
 
@@ -43,7 +41,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                mu_0=1.0,
                acceleration_parameter=0.05,
                verbose=False,
-               control_q=ReactivePowerControlMode.NoControl) -> NumericPowerFlowResults:
+               control_q=False) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation
     :param nc: NumericalCircuit
@@ -108,7 +106,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
     idx_dtheta = np.r_[pv, pq, p, pqv]
     idx_dvm = np.r_[pq, p]
-    idx_dm = np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_vt_m]
+    idx_dm = np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_v_m]
     idx_dtau = np.r_[nc.k_pf_tau, nc.k_pf_dp]
     idx_dbeq = np.r_[nc.k_zero_beq, nc.k_vf_beq]
     idx_dP = np.r_[pv, pq, p, pqv]
@@ -126,7 +124,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                k_vf_beq=nc.k_vf_beq,
                                k_qf_m=nc.k_qf_m,
                                k_qt_m=nc.k_qt_m,
-                               k_vt_m=nc.k_vt_m,
+                               k_vt_m=nc.k_v_m,
                                k_pf_tau=nc.k_pf_tau,
                                k_pf_dp=nc.k_pf_dp)
 
@@ -357,7 +355,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                     # it is only worth checking Q limits with a low error
                     # since with higher errors, the Q values may be far from realistic
                     # finally, the Q control only makes sense if there are pv nodes
-                    if control_q != ReactivePowerControlMode.NoControl and (len(pv) + len(pqv)) > 0:
+                    if control_q and (len(pv) + len(pqv)) > 0:
 
                         # check and adjust the reactive power
                         # this function passes pv buses to pq when the limits are violated,
@@ -378,7 +376,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                                        k_vf_beq=nc.k_vf_beq,
                                                        k_qf_m=nc.k_qf_m,
                                                        k_qt_m=nc.k_qt_m,
-                                                       k_vt_m=nc.k_vt_m,
+                                                       k_vt_m=nc.k_v_m,
                                                        k_pf_tau=nc.k_pf_tau,
                                                        k_pf_dp=nc.k_pf_dp)
 

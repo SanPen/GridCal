@@ -41,8 +41,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
-                                        ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
+from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
                                         ContingencyFilteringMethods, InvestmentsEvaluationObjectives)
@@ -76,20 +75,6 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
         self.ui.solver_comboBox.setCurrentIndex(0)
-
-        # reactive power controls
-        self.q_control_modes_dict = OrderedDict()
-        self.q_control_modes_dict['No control'] = ReactivePowerControlMode.NoControl
-        self.q_control_modes_dict['Direct'] = ReactivePowerControlMode.Direct
-        lst = list(self.q_control_modes_dict.keys())
-        self.ui.reactive_power_control_mode_comboBox.setModel(gf.get_list_model(lst))
-
-        # taps controls (transformer voltage regulator)
-        self.taps_control_modes_dict = OrderedDict()
-        self.taps_control_modes_dict['No control'] = TapsControlMode.NoControl
-        self.taps_control_modes_dict['Direct'] = TapsControlMode.Direct
-        lst = list(self.taps_control_modes_dict.keys())
-        self.ui.taps_control_mode_comboBox.setModel(gf.get_list_model(lst))
 
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
@@ -635,9 +620,11 @@ class SimulationsMain(TimeEventsMain):
         """
         solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        q_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
+        control_q = self.ui.control_q_checkBox.isChecked()
 
-        taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
+        control_taps_modules = self.ui.control_tap_modules_checkBox()
+
+        control_taps_phase = self.ui.control_tap_phase_checkBox
 
         verbose = self.ui.verbositySpinBox.value()
 
@@ -668,8 +655,6 @@ class SimulationsMain(TimeEventsMain):
 
         use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
 
-        override_branch_controls = self.ui.override_branch_controls_checkBox.isChecked()
-
         generate_report = self.ui.addPowerFlowReportCheckBox.isChecked()
 
         ops = sim.PowerFlowOptions(solver_type=solver_type,
@@ -678,15 +663,15 @@ class SimulationsMain(TimeEventsMain):
                                    tolerance=tolerance,
                                    max_iter=max_iter,
                                    max_outer_loop_iter=max_outer_iter,
-                                   control_q=q_control_mode,
-                                   control_taps=taps_control_mode,
+                                   control_q=control_q,
+                                   control_taps_phase=control_taps_phase,
+                                   control_taps_modules=control_taps_modules,
                                    apply_temperature_correction=temp_correction,
                                    branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
                                    distributed_slack=distributed_slack,
                                    ignore_single_node_islands=ignore_single_node_islands,
                                    trust_radius=mu,
                                    use_stored_guess=use_stored_guess,
-                                   override_branch_controls=override_branch_controls,
                                    generate_report=generate_report)
 
         return ops
