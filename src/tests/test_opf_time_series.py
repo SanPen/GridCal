@@ -27,7 +27,7 @@ def test_opf_ts():
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
                                           verbose=0,
-                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_q=False,
                                           retry_with_other_methods=False)
 
     opf_options = OptimalPowerFlowOptions(verbose=0,

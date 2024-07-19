@@ -174,7 +174,7 @@ class NumericalCircuit:
         'k_qf_m',
         'k_zero_beq',
         'k_vf_beq',
-        'k_vt_m',
+        'k_v_m',
         'k_qt_m',
         'k_pf_dp',
         'i_vsc',
@@ -1190,15 +1190,15 @@ class NumericalCircuit:
         return self.simulation_indices_.k_vf_beq
 
     @property
-    def k_vt_m(self):
+    def k_v_m(self):
         """
-        Get k_vt_m
+        Get k_v_m
         :return:
         """
         if self.simulation_indices_ is None:
             self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.simulation_indices_.k_vt_m
+        return self.simulation_indices_.k_v_m
 
     @property
     def k_qt_m(self):
@@ -1627,7 +1627,7 @@ class NumericalCircuit:
 
             idx_dtheta = np.r_[self.pv, self.pq, self.p, self.pqv]
             idx_dvm = np.r_[self.pq, self.p]
-            idx_dm = np.r_[self.k_qf_m, self.k_qt_m, self.k_vt_m]
+            idx_dm = np.r_[self.k_qf_m, self.k_qt_m, self.k_v_m]
             idx_dtau = np.r_[self.k_pf_tau, self.k_pf_dp]
             # idx_dbeq = np.r_[self.k_zero_beq, self.k_vf_beq]
             idx_dbeq = np.r_[self.k_zero_beq]
@@ -1789,11 +1789,11 @@ class NumericalCircuit:
                 index=self.branch_data.names[self.k_vf_beq],
             )
 
-        elif structure_type == 'k_vt_m':
+        elif structure_type == 'k_v_m':
             df = pd.DataFrame(
-                data=self.k_vt_m,
-                columns=['k_vt_m'],
-                index=self.branch_data.names[self.k_vt_m],
+                data=self.k_v_m,
+                columns=['k_v_m'],
+                index=self.branch_data.names[self.k_v_m],
             )
 
         elif structure_type == 'k_qt_m':

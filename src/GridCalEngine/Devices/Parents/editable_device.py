@@ -20,11 +20,11 @@ import numpy as np
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
+                                        ConverterControlType, TapModuleControl, TapPhaseControl, SubObjectType,
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
                                         CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
-                                        ZonalGrouping, MIPSolvers, AcOpfMode, ReactivePowerControlMode,
+                                        ZonalGrouping, MIPSolvers, AcOpfMode,
                                         BranchImpedanceMode, FaultType)
 
 # types that can be assigned to a GridCal property
@@ -41,7 +41,7 @@ GCPROP_TYPES = Union[
     Type[TransformerControlType],
     Type[ConverterControlType],
     Type[TapModuleControl],
-    Type[TapAngleControl],
+    Type[TapPhaseControl],
     Type[ActionType],
     Type[AvailableTransferMode],
     Type[ContingencyMethod],
@@ -55,7 +55,6 @@ GCPROP_TYPES = Union[
     Type[ZonalGrouping],
     Type[MIPSolvers],
     Type[AcOpfMode],
-    Type[ReactivePowerControlMode],
     Type[BranchImpedanceMode],
     Type[FaultType]
 ]

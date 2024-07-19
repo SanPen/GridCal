@@ -224,7 +224,7 @@ class SimulationIndices:
         self.k_vf_beq: IntVec = np.zeros(0, dtype=int)
 
         # (old iVtma) indices of the Branches when controlling Vt with ma
-        self.k_vt_m: IntVec = np.zeros(0, dtype=int)
+        self.k_v_m: IntVec = np.zeros(0, dtype=int)
 
         # (old iQtma) indices of the Branches controlling the Qt flow with ma
         self.k_qt_m: IntVec = np.zeros(0, dtype=int)
@@ -262,11 +262,11 @@ class SimulationIndices:
         # (old Vtmabus) indices of the buses where Vt is controlled by ma
         self.i_vt_m: IntVec = np.zeros(0, dtype=int)
 
+        # determine the branch indices (may affect the bus types)
+        self.compile_control_indices(control_mode=control_mode, F=F, T=T)
+
         # determine the bus indices
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
-
-        # determine the branch indices
-        self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
     def recompile_types(self,
                         bus_types: IntVec,
@@ -376,6 +376,7 @@ class SimulationIndices:
 
             elif tpe == TransformerControlType.V:
                 k_vt_m_lst.append(k)
+                self.control_mode
                 k_m_modif_lst.append(k)
                 i_m_modif_lst.append(T[k])
                 self.any_control = True
@@ -477,7 +478,7 @@ class SimulationIndices:
         self.k_qf_m = np.array(k_qf_m_lst, dtype=int)
         self.k_zero_beq = np.array(k_zero_beq_lst, dtype=int)
         self.k_vf_beq = np.array(k_vf_beq_lst, dtype=int)
-        self.k_vt_m = np.array(k_vt_m_lst, dtype=int)
+        self.k_v_m = np.array(k_vt_m_lst, dtype=int)
         self.k_qt_m = np.array(k_qt_m_lst, dtype=int)
         self.k_pf_dp = np.array(k_pf_dp_lst, dtype=int)
         self.k_m = np.array(k_m_modif_lst, dtype=int)
@@ -488,5 +489,3 @@ class SimulationIndices:
         self.i_mtau = np.array(i_mtau_modif_lst, dtype=int)
         self.iPfdp_va = np.array(iPfdp_va_lst, dtype=int)
         self.i_vsc = np.array(i_vsc_lst, dtype=int)
-
-

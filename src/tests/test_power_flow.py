@@ -20,7 +20,7 @@ import numpy as np
 
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 import GridCalEngine.api as gce
@@ -47,7 +47,7 @@ def test_ieee_grids():
 
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
-                                   control_q=ReactivePowerControlMode.NoControl,
+                                   control_q=False,
                                    retry_with_other_methods=False)
 
         for f1, f2 in files:
@@ -93,7 +93,7 @@ def test_dc_pf_ieee14():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               control_q=ReactivePowerControlMode.NoControl,
+                               control_q=False,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14.m')
@@ -134,7 +134,7 @@ def test_dc_pf_ieee14_ps():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               control_q=ReactivePowerControlMode.NoControl,
+                               control_q=False,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14_ps.m')
@@ -224,7 +224,7 @@ def test_voltage_remote_control_with_generation() -> None:
     for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
-                                   control_q=ReactivePowerControlMode.NoControl,
+                                   control_q=False,
                                    retry_with_other_methods=False)
 
         results = gce.power_flow(grid, options)

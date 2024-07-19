@@ -105,10 +105,8 @@ class BranchData:
         self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
         self.alpha3: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
         self.control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.possible_tower_types: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.possible_underground_line_types: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.possible_sequence_line_types: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.possible_transformer_types: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
 
         self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
         self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
@@ -121,11 +119,6 @@ class BranchData:
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
-
-        self.possible_transformer_types = np.ones(self.nelm, dtype=list)
-        self.possible_tower_types = np.ones(self.nelm, dtype=list)
-        self.possible_underground_line_types = np.ones(self.nelm, dtype=list)
-        self.possible_sequence_line_types = np.ones(self.nelm, dtype=list)
 
     def size(self) -> int:
         """
@@ -179,6 +172,9 @@ class BranchData:
         data.conn = self.conn[elm_idx]  # winding connection
 
         data.control_mode = self.control_mode[elm_idx]
+        data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
+        data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
+
         data.contingency_enabled = self.contingency_enabled[elm_idx]
         data.monitor_loading = self.monitor_loading[elm_idx]
 
@@ -265,6 +261,9 @@ class BranchData:
         data.conn = self.conn.copy()  # winding connection
 
         data.control_mode = self.control_mode.copy()
+        data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
+        data.tap_module_control_mode = self.tap_module_control_mode.copy()
+
         data.contingency_enabled = self.contingency_enabled.copy()
         data.monitor_loading = self.monitor_loading.copy()
 

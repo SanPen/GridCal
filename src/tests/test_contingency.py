@@ -29,7 +29,7 @@ def test_contingency() -> None:
     pf_options = PowerFlowOptions(SolverType.NR,
                                   verbose=False,
                                   use_stored_guess=False,
-                                  control_q=ReactivePowerControlMode.NoControl)
+                                  control_q=False)
 
     options = ContingencyAnalysisOptions(pf_options=pf_options,
                                          contingency_method=ContingencyMethod.PowerFlow)
@@ -59,7 +59,7 @@ def test_linear_contingency():
     main_circuit = FileOpen(fname).open()
     pf_options = PowerFlowOptions(SolverType.NR,
                                   verbose=0,
-                                  control_q=ReactivePowerControlMode.NoControl)
+                                  control_q=False)
 
     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
     linear_analysis.run()
@@ -81,7 +81,7 @@ def test_linear_contingency():
 #                                   verbose=False,
 #                                   initialize_with_existing_solution=False,
 #                                   dispatch_storage=True,
-#                                   control_q=ReactivePowerControlMode.NoControl,
+#                                   control_q=False,
 #                                   control_p=False)
 #
 #     linear_analysis = LinearAnalysisDriver(grid=main_circuit)
@@ -102,7 +102,7 @@ def test_linear_contingency():
 #                                   verbose=False,
 #                                   initialize_with_existing_solution=False,
 #                                   dispatch_storage=True,
-#                                   control_q=ReactivePowerControlMode.NoControl,
+#                                   control_q=False,
 #                                   control_p=False)
 #
 #     branches = main_circuit.get_branches()

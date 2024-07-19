@@ -3,7 +3,7 @@ import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.Simulations.OPF.linear_opf_ts import run_linear_opf_ts
-from GridCalEngine.enumerations import TransformerControlType, ReactivePowerControlMode
+from GridCalEngine.enumerations import TransformerControlType
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import NodalCapacityTimeSeriesDriver
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_options import NodalCapacityOptions
 import numpy as np
@@ -303,7 +303,7 @@ def case14():
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=ReactivePowerControlMode.NoControl)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFslacks,
                                               ips_tolerance=1e-6, ips_iterations=50, verbose=1)
     res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)

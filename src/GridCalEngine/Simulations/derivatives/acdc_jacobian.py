@@ -806,7 +806,7 @@ def fubm_jacobian_old(nb, nl,
     :param k_pf_dp: indices of the Pf-droop controlled Branches
     :param k_qf_m: indices of the Qf controlled with ma Branches
     :param k_qt_m: Indices of the Qt controlled with ma Branches
-    :param k_vt_m: Indices of the Vt controlled with ma Branches
+    :param k_v_m: Indices of the Vt controlled with ma Branches
     :param k_zero_beq: Indices of the Qf made zero with the equivalent susceptance Branches
     :param k_vf_beq: Indices of the Vf Controlled with the equivalent susceptance Branches
     :param i_vf_beq: Indices of the buses where Vf is controlled with Beq

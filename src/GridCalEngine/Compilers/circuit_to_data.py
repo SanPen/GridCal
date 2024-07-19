@@ -23,7 +23,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, ConverterControlType,
-                                        TransformerControlType, HvdcControlType)
+                                        TapPhaseControl, TapModuleControl, HvdcControlType)
 from GridCalEngine.basic_structures import BoolVec
 import GridCalEngine.DataStructures as ds
 
@@ -77,6 +77,18 @@ def set_bus_control_voltage(i: int,
                              device=bus_name,
                              value=candidate_Vm,
                              expected_value=bus_data.Vbus[i])
+
+
+def set_branch_control_mode(k: int, i: int, f: int, t: int,
+                            mode: Union[TransformerControlType, ConverterControlType],
+                            bus_data: ds.BusData, bus_voltage_used: BoolVec,):
+
+    if mode == TransformerControlType.V:
+        bus_data.bus_types[i] = BusMode.PQV_tpe.value  # remote bus to PQV type
+    elif mode == TransformerControlType.PtV:
+        pass
+    if mode == ConverterControlType.type_I_1:  # VAC
+        pass
 
 
 def get_bus_data(circuit: MultiCircuit,
@@ -917,10 +929,7 @@ def get_branch_data(circuit: MultiCircuit,
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
         if not use_stored_guess:
-            if elm.control_mode == TransformerControlType.V:
-                bus_data.Vbus[t] = elm.vset
-
-            elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
+            if elm.tap_module_control_mode == TapModuleControl.Vm:
                 bus_data.Vbus[t] = elm.vset
 
         ii += 1
@@ -1002,10 +1011,7 @@ def get_branch_data(circuit: MultiCircuit,
             data.monitor_loading[ii] = int(elm.monitor_loading)
 
             if not use_stored_guess:
-                if elm.control_mode == TransformerControlType.V:
-                    bus_data.Vbus[t] = elm.vset
-
-                elif elm.control_mode == TransformerControlType.PtV:  # 2a:Vdc
+                if elm.tap_module_control_mode == TapModuleControl.Vm:
                     bus_data.Vbus[t] = elm.vset
 
             ii += 1

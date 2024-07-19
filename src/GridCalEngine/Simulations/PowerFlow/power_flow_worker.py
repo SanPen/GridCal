@@ -25,6 +25,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResu
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_basic_formulation import PfBasicFormulation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import PfAdvancedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -232,16 +233,37 @@ def solve(circuit: NumericalCircuit,
         elif solver_type == SolverType.NR:
             if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
-                solution = pflw.NR_LS_ACDC(nc=circuit,
-                                           V0=V0,
-                                           S0=S0,
-                                           I0=I0,
-                                           Y0=Y0,
-                                           tolerance=options.tolerance,
-                                           max_iter=options.max_iter,
-                                           acceleration_parameter=options.backtracking_parameter,
-                                           mu_0=options.trust_radius,
-                                           control_q=options.control_Q)
+
+                problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                S0=S0,
+                                                I0=I0,
+                                                Y0=Y0,
+                                                Qmin=Qmin,
+                                                Qmax=Qmax,
+                                                pv=pv,
+                                                pq=pq,
+                                                pqv=pqv,
+                                                p=p,
+                                                nc=circuit,
+                                                options=options)
+
+                solution = newton_raphson_fx(problem=problem,
+                                             tol=options.tolerance,
+                                             max_iter=options.max_iter,
+                                             trust=options.trust_radius,
+                                             verbose=options.verbose,
+                                             logger=logger)
+
+                # solution = pflw.NR_LS_ACDC(nc=circuit,
+                #                            V0=V0,
+                #                            S0=S0,
+                #                            I0=I0,
+                #                            Y0=Y0,
+                #                            tolerance=options.tolerance,
+                #                            max_iter=options.max_iter,
+                #                            acceleration_parameter=options.backtracking_parameter,
+                #                            mu_0=options.trust_radius,
+                #                            control_q=options.control_Q)
             else:
                 # Solve NR with the AC algorithm
                 problem = PfBasicFormulation(V0=final_solution.V,

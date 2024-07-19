@@ -19,7 +19,7 @@ import os
 
 import numpy as np
 import GridCalEngine.api as gce
-from GridCalEngine.enumerations import TransformerControlType
+from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import NonlinearOPFResults
 
@@ -37,7 +37,7 @@ def case9() -> NonlinearOPFResults:
 
     grid = gce.FileOpen(file_path).open()
     nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
+    pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8)
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
@@ -59,7 +59,7 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
         grid.lines[ll].monitor_loading = True
 
     nc = gce.compile_numerical_circuit_at(grid)
-    pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
+    pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8, ips_iterations=50,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd)
     base_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
@@ -67,9 +67,10 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
     slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
-    grid.transformers2w[0].control_mode = TransformerControlType.PtQt
-    grid.transformers2w[1].control_mode = TransformerControlType.Pf
-    grid.transformers2w[2].control_mode = TransformerControlType.V
+    grid.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pf
+    grid.transformers2w[1].tap_phase_control_mode = TapPhaseControl.Pf
+    grid.transformers2w[2].tap_module_control_mode = TapModuleControl.Vm
+    grid.transformers2w[2].regulation_bus = grid.transformers2w[2].bus_from
 
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
@@ -100,7 +101,7 @@ def case_pegase89() -> NonlinearOPFResults:
     nc = gce.compile_numerical_circuit_at(grid)
     # pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
     # return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
-    pf_options = gce.PowerFlowOptions(control_q=gce.ReactivePowerControlMode.NoControl)
+    pf_options = gce.PowerFlowOptions(control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-10,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd)
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)

@@ -19,7 +19,7 @@ import numpy as np
 from typing import Union
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import (TransformerControlType, BuildStatus, TapModuleControl, TapAngleControl,
+from GridCalEngine.enumerations import (TransformerControlType, BuildStatus, TapModuleControl, TapPhaseControl,
                                         SubObjectType, TapChangerTypes)
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
@@ -60,7 +60,7 @@ class ControllableBranchParent(BranchParent):
                  alpha: float,
                  control_mode: TransformerControlType,
                  tap_module_control_mode: TapModuleControl,
-                 tap_angle_control_mode: TapAngleControl,
+                 tap_phase_control_mode: TapPhaseControl,
                  contingency_factor: float,
                  protection_rating_factor: float,
                  contingency_enabled: bool,
@@ -213,7 +213,7 @@ class ControllableBranchParent(BranchParent):
         self.control_mode: TransformerControlType = control_mode  # Legacy
 
         self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
-        self.tap_angle_control_mode: TapAngleControl = tap_angle_control_mode
+        self.tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
 
         self.regulation_branch: BranchParent = regulation_branch
 
@@ -256,8 +256,8 @@ class ControllableBranchParent(BranchParent):
         self.register(key='tap_module_control_mode', units='', tpe=TapModuleControl,
                       definition='Control available with the tap module')
 
-        self.register(key='tap_angle_control_mode', units='', tpe=TapAngleControl,
-                      definition='Control available with the tap angle')
+        self.register(key='tap_phase_control_mode', units='', tpe=TapPhaseControl,
+                      definition='Control available with the tap angle', old_names=['tap_angle_control_mode'])
 
         self.register(key='vset', units='p.u.', tpe=float,
                       definition='Objective voltage at the "to" side of the bus when regulating the tap.')

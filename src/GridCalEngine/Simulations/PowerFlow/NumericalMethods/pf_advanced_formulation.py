@@ -21,14 +21,13 @@ from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.enumerations import ReactivePowerControlMode
 import GridCalEngine.Simulations.derivatives.csc_derivatives as deriv
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, spsolve_csc
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
-                                                                                   compute_fx, polar_to_rect)
+                                                                                   polar_to_rect)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
@@ -123,19 +122,38 @@ def adv_jacobian(nbus: int,
 
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
-                        [dP_dVa__, dP_dVm__, dP_dbeq__, dP_dm__, dP_dtau__,
-                         dQ_dVa__, dQ_dVm__, dQ_dbeq__, dQ_dm__, dQ_dtau__,
-                         dQf_dVa_, dQf_dVm_, dQf_dbeq_, dQf_dm_, dQf_dtau_,
-                         dPf_dVa_, dPf_dVm_, dPf_dbeq_, dPf_dm_, dPf_dtau_],
+                        [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__, dP_dbeq__,
+                         dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__, dQ_dbeq__,
+                         dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_, dPf_dbeq_,
+                         dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_, dQf_dbeq_],
                         n_rows=4, n_cols=5)
 
     return J
 
 
+@njit()
+def get_Sf(k: IntVec, Vm: Vec, V: CxVec, yff: CxVec, yft: CxVec, F: IntVec, T: IntVec):
+    """
+
+    :param k:
+    :param Vm:
+    :param V:
+    :param yff:
+    :param yft:
+    :param F:
+    :param T:
+    :return:
+    """
+    f = F[k]
+    t = T[k]
+    return np.power(Vm[f], 2.0) * np.conj(yff[k]) + V[f] * np.conj(V[t]) * np.conj(yft[k])
+
+
 class PfAdvancedFormulation(PfFormulationTemplate):
 
-    def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec, Qmin: Vec, Qmax: Vec,
-                 pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec, k_pf_tau: IntVec, k_v_m: IntVec, k_beq_zero: IntVec,
+    def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec, Qmin: Vec, Qmax: Vec, # Pset: Vec,
+                 pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec,
+                 # k_pf_tau: IntVec, k_v_m: IntVec, k_qf_beq: IntVec,
                  nc: NumericalCircuit, options: PowerFlowOptions):
         """
 
@@ -151,7 +169,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param p:
         :param k_pf_tau:
         :param k_v_m:
-        :param k_beq_zero:
+        :param k_qf_beq:
         :param nc:
         :param options:
         """
@@ -166,21 +184,23 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.Qmin = Qmin
         self.Qmax = Qmax
 
-        self.k_pf_tau: IntVec = k_pf_tau
-        self.k_v_m: IntVec = k_v_m
-        self.k_beq_zero: IntVec = k_beq_zero
+        self.Pset = nc.branch_data.Pfset[nc.k_pf_tau]
 
-        self.idx_dQf = self.k_beq_zero
-        self.idx_dbeq = self.k_beq_zero
+        self.k_pf_tau: IntVec = nc.k_pf_tau
+        self.k_v_m: IntVec = nc.k_v_m
+        self.k_qf_beq: IntVec = nc.k_zero_beq
+
+        self.idx_dQf = self.k_qf_beq
+        self.idx_dbeq = self.k_qf_beq
         self.idx_dPf = self.k_pf_tau
         self.idx_dtau = self.k_pf_tau
         self.idx_dm = self.k_v_m
 
-        self.m: Vec = np.zeros(len(pqv))
-        self.tau: Vec = np.zeros(len(k_pf_tau))
-        self.beq: Vec = np.zeros(len(k_beq_zero))
+        self.m: Vec = np.zeros(len(self.pqv))
+        self.tau: Vec = np.zeros(len(self.k_pf_tau))
+        self.beq: Vec = np.zeros(len(self.k_qf_beq))
 
-        if not len(self.k_v_m) == len(self.pqv):
+        if not len(self.pqv) >= len(self.k_v_m):
             raise ValueError("k_v_m indices must be the same size as pqv indices!")
 
         if not np.all(self.idx_dtau == self.idx_dPf):
@@ -203,7 +223,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         b = a + len(self.idx_dVm)
         c = b + len(self.k_pf_tau)
         d = c + len(self.k_v_m)
-        e = d + len(self.k_beq_zero)
+        e = d + len(self.k_qf_beq)
 
         # update the vectors
         self.Va[self.idx_dVa] = x[0:a]
@@ -252,9 +272,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # since with higher errors, the Q values may be far from realistic
         # finally, the Q control only makes sense if there are pv nodes
         if update_controls:
-            if (self.options.control_Q != ReactivePowerControlMode.NoControl and
-                    self._error < 1e-2
-                    and (len(self.pv) + len(self.p)) > 0):
+            if self.options.control_Q and self._error < 1e-2 and (len(self.pv) + len(self.p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
@@ -287,12 +305,26 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # Assumes the internal vars were updated already with self.x2var()
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
         self.Scalc = compute_power(self.adm.Ybus, self.V)
-        self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
+
+        dS = self.Scalc - Sbus  # compute the mismatch
+
+        Pf = get_Sf(k=self.k_pf_tau, Vm=self.Vm, V=self.V,
+                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
+
+        Qf = get_Sf(k=self.k_qf_beq, Vm=self.Vm, V=self.V,
+                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
+
+        self._f = np.r_[
+            dS[self.idx_dP].real,
+            dS[self.idx_dQ].imag,
+            Pf - self.Pset,
+            Qf  # Qf - 0
+        ]
         return self._f
 
     def Jacobian(self) -> CSC:
         """
-
+        Get the Jacobian
         :return:
         """
         # Assumes the internal vars were updated already with self.x2var()
@@ -306,6 +338,14 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             raise ValueError("Incorrect J indices!")
 
         # NOTE: beq, m, and tau are not of size nbranch
+        m = np.ones(self.nc.nbr, dtype=float)
+        tau = np.zeros(self.nc.nbr, dtype=float)
+        beq = np.zeros(self.nc.nbr, dtype=float)
+
+        m[self.k_v_m] = self.m
+        tau[self.k_pf_tau] = self.tau
+        beq[self.k_qf_beq] = self.beq
+        tap = polar_to_rect(m, tau)
 
         J = adv_jacobian(nbus=self.nc.nbus,
                          idx_dtheta=self.idx_dVa,
@@ -321,10 +361,10 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                          T=self.nc.T,
                          Ys=1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X),
                          kconv=self.nc.branch_data.k,
-                         complex_tap=polar_to_rect(self.m, self.tau),
-                         tap_modules=self.m,
+                         complex_tap=tap,
+                         tap_modules=m,
                          Bc=self.nc.branch_data.B,
-                         Beq=self.beq,
+                         Beq=beq,
                          V=self.V,
                          Vm=self.Vm,
                          Ybus_x=self.adm.Ybus.data,
@@ -342,13 +382,21 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param iterations: Iteration number
         :return: NumericPowerFlowResults
         """
+        m = np.ones(self.nc.nbr, dtype=float)
+        tau = np.zeros(self.nc.nbr, dtype=float)
+        beq = np.zeros(self.nc.nbr, dtype=float)
+
+        m[self.k_v_m] = self.m
+        tau[self.k_pf_tau] = self.tau
+        beq[self.k_qf_beq] = self.beq
+
         return NumericPowerFlowResults(V=self.V,
                                        converged=self.converged,
                                        norm_f=self.error,
                                        Scalc=self.Scalc,
-                                       m=None,
-                                       tau=None,
-                                       Beq=None,
+                                       m=m,
+                                       tau=tau,
+                                       Beq=beq,
                                        Ybus=self.adm.Ybus,
                                        Yf=self.adm.Yf,
                                        Yt=self.adm.Yt,

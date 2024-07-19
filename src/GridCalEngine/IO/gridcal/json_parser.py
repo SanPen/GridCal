@@ -27,7 +27,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.enumerations import (DeviceType, ConverterControlType, HvdcControlType, BuildStatus,
-                                        TransformerControlType)
+                                        TransformerControlType, TapModuleControl, TapPhaseControl)
 
 
 def add_to_dict(main_dict: Dict[str, List[Any]], data_to_append: Dict[Any, Any], key: str):
@@ -1765,12 +1765,15 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                    circuit.get_dc_lines()]
 
     # Transformer 2W
-    control_modes = {TransformerControlType.fixed: 0,
-                     TransformerControlType.V: 1,
-                     TransformerControlType.Pf: 2,
-                     TransformerControlType.PtV: 3,
-                     TransformerControlType.Qt: 4,
-                     TransformerControlType.PtQt: 5}
+    control_modes = {TapModuleControl.fixed: None,
+                     TapModuleControl.Vm: "Vm",
+                     TapModuleControl.Qf: "Qf",
+                     TapModuleControl.Qt: "Qt",
+                     TapPhaseControl.fixed: None,
+                     TapPhaseControl.Pf: "Pf",
+                     TapPhaseControl.Pt: "Pt",
+                     }
+
     elements["Transformer2w"] = [{'id': elm.idtag,
                                   'type': 'transformer',
                                   'phases': 'ps',
@@ -1804,7 +1807,8 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                   'max_tap_angle': elm.tap_phase_max,
                                   'id_tap_angle_table': "",
 
-                                  'control_mode': control_modes[elm.control_mode],
+                                  'tap_phase_control_mode': control_modes[elm.tap_phase_control_mode],
+                                  'tap_module_control_mode': control_modes[elm.tap_module_control_mode],
 
                                   # 'min_tap_position': self.tap_changer.min_tap,
                                   # 'max_tap_position': self.tap_changer.max_tap,
@@ -1867,7 +1871,8 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                              'max_tap_angle': elm.tap_phase_max,
                              'id_tap_angle_table': "",
 
-                             'control_mode': control_modes[elm.control_mode],
+                             'tap_phase_control_mode': control_modes[elm.tap_phase_control_mode],
+                             'tap_module_control_mode': control_modes[elm.tap_module_control_mode],
 
                              # 'min_tap_position': self.tap_changer.min_tap,
                              # 'max_tap_position': self.tap_changer.max_tap,
