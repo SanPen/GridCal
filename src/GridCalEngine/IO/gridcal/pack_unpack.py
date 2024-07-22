@@ -1186,12 +1186,14 @@ def handle_legacy_jsons(model_data: Dict[str, List],
 
 
 def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]],
+                       previous_circuit: Union[MultiCircuit, None] = None,
                        text_func: Union[Callable, None] = None,
                        progress_func: Union[Callable, None] = None,
                        logger: Logger = Logger()) -> MultiCircuit:
     """
     Interpret data dictionary
     :param data: dictionary of data frames and other information
+    :param previous_circuit: Optional previous gridcal circuit. This is relevant in case of loading grid increments
     :param text_func: text callback function
     :param progress_func: progress callback function
     :param logger: Logger to register events
@@ -1222,7 +1224,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
         circuit.user_name = data['UserName']
 
     # dictionary of objects to iterate
-    data_model_object_types = get_objects_dictionary()
+    template_object_types = get_objects_dictionary()
 
     # time profile -----------------------------------------------------------------------------------------------------
     if 'time' in data.keys():
@@ -1235,14 +1237,17 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
         circuit.time_profile = None
 
     # dictionary of dictionaries by element type
-    elements_dict_by_type = dict()
+    if previous_circuit is None:
+        elements_dict_by_type = dict()
+    else:
+        elements_dict_by_type = previous_circuit.get_all_elements_dict_by_type(add_locations=True, string_keys=False)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Legacy DataFrame processing
     # for each element type...
     item_count = 0
-    n_data_types = len(data_model_object_types)
-    for object_type_key, template_elm in data_model_object_types.items():
+    n_data_types = len(template_object_types)
+    for object_type_key, template_elm in template_object_types.items():
 
         if text_func is not None:
             text_func(f"Parsing {object_type_key} table data...")
@@ -1279,8 +1284,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                 for tech_name, technology in on_the_fly.technologies.items():
                     circuit.add_technology(obj=technology)
 
-                # set the dictionary per type for later
-                elements_dict_by_type[template_elm.device_type] = devices_dict
+                # set/augment the dictionary per type for later
+                prev_dict = elements_dict_by_type.get(template_elm.device_type, dict())
+                elements_dict_by_type[template_elm.device_type] = dict(prev_dict, **devices_dict)
 
                 # add the devices to the circuit
                 circuit.set_elements_list_by_type(device_type=template_elm.device_type,
@@ -1321,8 +1327,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
 
             # for each element type...
             item_count = 0
-            n_data_types = len(data_model_object_types)
-            for object_type_key, template_elm in data_model_object_types.items():
+            n_data_types = len(template_object_types)
+            for object_type_key, template_elm in template_object_types.items():
 
                 if text_func is not None:
                     text_func(f"Parsing {object_type_key} model data...")
@@ -1337,8 +1343,9 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                                                                         time_profile=circuit.time_profile,
                                                                         logger=logger)
 
-                    # set the dictionary per type for later
-                    elements_dict_by_type[template_elm.device_type] = devices_dict
+                    # set/augment the dictionary per type for later
+                    prev_dict = elements_dict_by_type.get(template_elm.device_type, dict())
+                    elements_dict_by_type[template_elm.device_type] = dict(prev_dict, **devices_dict)
 
                     # add the devices to the circuit
                     circuit.set_elements_list_by_type(device_type=template_elm.device_type,

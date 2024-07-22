@@ -275,14 +275,16 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
                 pass
         return inv_list
 
-    def objective_function(self, combination: IntVec) -> Vec:
+    def objective_function(self, combination: IntVec, record_results: bool = True) -> Vec:
         """
         Function to evaluate a combination of investments
         :param combination: vector of investments (yes/no). Length = number of investment groups
+        :param record_results: record the results or not
         :return: multi-objective function criteria values
         """
 
         inv_list: List[Investment] = self.get_investments_for_combination(combination)
+        # print(f"Combination: {combination}, Investments: {inv_list}")
 
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
@@ -327,20 +329,43 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
                                          all_elements_dict=self.get_all_elements_dict)
 
         # record the evaluation
-        self.results.add(capex=scores.capex_score,
-                         opex=scores.opex_score,
-                         losses=scores.losses_score,
-                         overload_score=scores.overload_score,
-                         voltage_score=scores.voltage_module_score,
-                         # electrical=scores.electrical_score,
-                         financial=scores.financial_score,
-                         objective_function_sum=scores.arr().sum(),
-                         combination=combination)
+        if record_results:
+            self.results.add(capex=scores.capex_score,
+                             opex=scores.opex_score,
+                             losses=scores.losses_score,
+                             overload_score=scores.overload_score,
+                             voltage_score=scores.voltage_module_score,
+                             # electrical=scores.electrical_score,
+                             financial=scores.financial_score,
+                             objective_function_sum=scores.arr().sum(),
+                             combination=combination)
 
         # Report the progress
         self.report_progress2(self.results.current_evaluation, self.max_iter)
 
         return scores.arr()
+
+    # def independent_evaluation(self):
+    #     """
+    #     Evaluate the combination of all 1s and print the technical score.
+    #     """
+    #     # Create a combination of all 1s
+    #     all_ones_combination = np.ones(self.dim, dtype=int)
+    #
+    #     # Evaluate the combination
+    #     scores = self.objective_function(combination=all_ones_combination, record_results=True)
+    #
+    #     # Extract the technical scores from the results
+    #     losses_score = scores[2]
+    #     overload_score = scores[3]
+    #     voltage_module_score = scores[4]
+    #
+    #     # Print the technical scores
+    #     print(f"Losses Score: {losses_score}")
+    #     print(f"Overload Score: {overload_score}")
+    #     print(f"Voltage Module Score: {voltage_module_score}")
+    #
+    #     self.report_done()
 
     def objective_function_so(self, combination: IntVec) -> float:
         """
@@ -379,6 +404,25 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         # self.results.pareto_sort()
 
         self.report_done()
+
+    def evaluate_individual_investments(self):
+        """
+        Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
+        """
+        results_with_combinations = []
+        dim = len(self.grid.investments_groups)
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        baseline = self.objective_function(combination=np.zeros(dim, dtype=int))
+        results_with_combinations.append((baseline, np.zeros(dim, dtype=int)))
+
+        for k in range(dim):
+            self.report_text(f"Evaluating investment group {k}...")
+            combination = np.zeros(dim, dtype=int)
+            combination[k] = 1
+            results = self.objective_function(combination=combination, record_results=False)
+            results_with_combinations.append((results, combination))
+
+        return results_with_combinations
 
     def optimized_evaluation_mvrsm(self) -> None:
         """
@@ -465,7 +509,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = int(round(self.dim))  # if needed, divide by 5 for ideal grid
+        pop_size = int(round(self.dim))  # for the ieee 118 bus grid make this * 3
         n_partitions = int(round(pop_size))
 
         # compile the snapshot
