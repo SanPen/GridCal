@@ -1091,8 +1091,10 @@ class SchematicWidget(BaseDiagramWidget):
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
-
-        self.diagram_scene.addItem(graphic_object)
+        if graphic_object is not None:
+            self.diagram_scene.addItem(graphic_object)
+        else:
+            warn("Null graphics skipped")
 
     def remove_from_scene(self, graphic_object: QGraphicsItem = None) -> None:
         """
@@ -3049,9 +3051,10 @@ class SchematicWidget(BaseDiagramWidget):
                 if prog_func is not None:
                     prog_func((i + 1) / nn * 100.0)
 
-                self.add_api_bus(bus=bus,
-                                 injections_by_tpe=injections_by_bus.get(bus, dict()),
-                                 explode_factor=explode_factor)
+                graphic_obj = self.add_api_bus(bus=bus,
+                                               injections_by_tpe=injections_by_bus.get(bus, dict()),
+                                               explode_factor=explode_factor)
+                self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3063,7 +3066,10 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_busbar(bus=bus, injections_by_tpe=injections_by_cn.get(bus.cn, dict()))
+            graphic_obj = self.add_api_busbar(bus=bus,
+                                              injections_by_tpe=injections_by_cn.get(bus.cn, dict()))
+
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -3077,7 +3083,9 @@ class SchematicWidget(BaseDiagramWidget):
                 prog_func((i + 1) / nn * 100.0)
 
             if not cn.internal:
-                self.add_api_cn(cn=cn, injections_by_tpe=injections_by_cn.get(cn, dict()))
+                graphic_obj = self.add_api_cn(cn=cn,
+                                              injections_by_tpe=injections_by_cn.get(cn, dict()))
+                self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -3090,7 +3098,10 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_fluid_node(node=elm, injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
+            graphic_obj = self.add_api_fluid_node(node=elm,
+                                                  injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
+
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3102,7 +3113,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_line(branch)
+            graphic_obj = self.add_api_line(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3114,7 +3126,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_dc_line(branch)
+            graphic_obj = self.add_api_dc_line(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3126,7 +3139,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_transformer(branch)
+            graphic_obj = self.add_api_transformer(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3138,7 +3152,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_transformer_3w(elm, set_voltage=False)
+            graphic_obj = self.add_api_transformer_3w(elm, set_voltage=False)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3150,7 +3165,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_hvdc(branch)
+            graphic_obj = self.add_api_hvdc(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3162,7 +3178,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_vsc(branch)
+            graphic_obj = self.add_api_vsc(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3174,7 +3191,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_upfc(branch)
+            graphic_obj = self.add_api_upfc(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3186,7 +3204,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_switch(branch)
+            graphic_obj = self.add_api_switch(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3198,7 +3217,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_fluid_path(elm)
+            graphic_obj = self.add_api_fluid_path(elm)
+            self.add_to_scene(graphic_obj)
 
     def align_schematic(self, buses: List[Bus] = ()):
         """

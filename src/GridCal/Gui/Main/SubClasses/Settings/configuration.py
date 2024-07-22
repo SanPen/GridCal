@@ -46,7 +46,7 @@ def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],
                 config_data_to_struct(corresponding_data, object_to_set)
 
             elif isinstance(object_to_set, QtWidgets.QComboBox):
-                index = object_to_set.findText(corresponding_data)
+                index = object_to_set.findText(str(corresponding_data))
                 if -1 < index < object_to_set.count():
                     object_to_set.setCurrentIndex(index)
 
@@ -402,8 +402,6 @@ class ConfigurationMain(ResultsMain):
                     print(e)
                     self.save_gui_config()
                     print("GUI config file was erroneous, wrote a new one")
-
-
 
     def select_cgmes_boundary_set(self):
         """
