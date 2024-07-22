@@ -19,7 +19,7 @@ import numpy as np
 from typing import Union
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import (TransformerControlType, BuildStatus, TapModuleControl, TapPhaseControl,
+from GridCalEngine.enumerations import (BuildStatus, TapModuleControl, TapPhaseControl,
                                         SubObjectType, TapChangerTypes)
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger
@@ -58,7 +58,7 @@ class ControllableBranchParent(BranchParent):
                  temp_base: float,
                  temp_oper: float,
                  alpha: float,
-                 control_mode: TransformerControlType,
+                 # control_mode: TransformerControlType,
                  tap_module_control_mode: TapModuleControl,
                  tap_phase_control_mode: TapPhaseControl,
                  contingency_factor: float,
@@ -116,7 +116,8 @@ class ControllableBranchParent(BranchParent):
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
-        :param control_mode: Control model
+        :param tap_module_control_mode: Tap module Control model
+        :param tap_phase_control_mode: Tap phase Control model
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
         :param monitor_loading: monitor the loading (used in OPF)
@@ -210,7 +211,7 @@ class ControllableBranchParent(BranchParent):
         self.vset = vset
         self.Pset = Pset
 
-        self.control_mode: TransformerControlType = control_mode  # Legacy
+        # self.control_mode: TransformerControlType = control_mode  # Legacy
 
         self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
         self.tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
@@ -250,8 +251,8 @@ class ControllableBranchParent(BranchParent):
         self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max angle.', old_names=['angle_max'])
         self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min angle.', old_names=['angle_min'])
 
-        self.register(key='control_mode', units='', tpe=TransformerControlType,
-                      definition='Control type of the transformer')
+        # self.register(key='control_mode', units='', tpe=TransformerControlType,
+        #               definition='Control type of the transformer')
 
         self.register(key='tap_module_control_mode', units='', tpe=TapModuleControl,
                       definition='Control available with the tap module')

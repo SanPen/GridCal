@@ -19,7 +19,7 @@
 import numpy as np
 import numba as nb
 from typing import Union, Tuple, List
-from GridCalEngine.enumerations import TransformerControlType, ConverterControlType, BusMode
+from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
 
@@ -177,7 +177,8 @@ class SimulationIndices:
     def __init__(self,
                  bus_types: IntVec,
                  Pbus: Vec,
-                 control_mode: List[Union[TransformerControlType, ConverterControlType]],
+                 tap_module_control_mode: List[TapModuleControl],
+                 tap_phase_control_mode: List[TapPhaseControl],
                  F: IntVec,
                  T: IntVec,
                  dc: IntVec):
@@ -185,7 +186,8 @@ class SimulationIndices:
 
         :param bus_types: Bus type initial guess array
         :param Pbus: Active power per bus array
-        :param control_mode: Branch control mode array
+        :param tap_module_control_mode: TapModuleControl control mode array
+        :param tap_phase_control_mode: TapPhaseControl control mode array
         :param F: Array of bus_from indices
         :param T: Array of bus_to indices
         :param dc: Arra of is DC ? per bus
@@ -194,7 +196,8 @@ class SimulationIndices:
         self.bus_types = bus_types
 
         # master array of branch control types (nbr)
-        self.control_mode = control_mode
+        self.tap_module_control_mode = tap_module_control_mode
+        self.tap_phase_control_mode = tap_phase_control_mode
 
         # AC and DC indices
         self.ac: IntVec = np.where(dc == 0)[0]
@@ -263,7 +266,7 @@ class SimulationIndices:
         self.i_vt_m: IntVec = np.zeros(0, dtype=int)
 
         # determine the branch indices (may affect the bus types)
-        self.compile_control_indices(control_mode=control_mode, F=F, T=T)
+        # self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
         # determine the bus indices
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
@@ -283,7 +286,7 @@ class SimulationIndices:
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
     def compile_control_indices(self,
-                                control_mode: List[Union[TransformerControlType, ConverterControlType]],
+                                # control_mode: List[Union[TransformerControlType, ConverterControlType]],
                                 F: IntVec,
                                 T: IntVec) -> None:
         """

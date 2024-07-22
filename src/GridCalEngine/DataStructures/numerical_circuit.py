@@ -838,7 +838,8 @@ class NumericalCircuit:
         """
         return si.SimulationIndices(bus_types=self.bus_data.bus_types,
                                     Pbus=self.Sbus.real,
-                                    control_mode=self.branch_data.control_mode,
+                                    tap_module_control_mode=self.branch_data.tap_module_control_mode,
+                                    tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
                                     dc=self.branch_data.dc)
