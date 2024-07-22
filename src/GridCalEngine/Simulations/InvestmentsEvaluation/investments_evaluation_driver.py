@@ -279,6 +279,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         """
         Function to evaluate a combination of investments
         :param combination: vector of investments (yes/no). Length = number of investment groups
+        :param record_results: record the results or not
         :return: multi-objective function criteria values
         """
 
@@ -344,6 +345,28 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
 
         return scores.arr()
 
+    # def independent_evaluation(self):
+    #     """
+    #     Evaluate the combination of all 1s and print the technical score.
+    #     """
+    #     # Create a combination of all 1s
+    #     all_ones_combination = np.ones(self.dim, dtype=int)
+    #
+    #     # Evaluate the combination
+    #     scores = self.objective_function(combination=all_ones_combination, record_results=True)
+    #
+    #     # Extract the technical scores from the results
+    #     losses_score = scores[2]
+    #     overload_score = scores[3]
+    #     voltage_module_score = scores[4]
+    #
+    #     # Print the technical scores
+    #     print(f"Losses Score: {losses_score}")
+    #     print(f"Overload Score: {overload_score}")
+    #     print(f"Voltage Module Score: {voltage_module_score}")
+    #
+    #     self.report_done()
+
     def objective_function_so(self, combination: IntVec) -> float:
         """
         Single objective version of the objective function
@@ -354,33 +377,33 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
 
         return res_vec.sum()
 
-    # def independent_evaluation(self) -> None:
-    #     """
-    #     Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
-    #     """
-    #     self.max_iter = len(self.grid.investments_groups) + 1
-    #
-    #     # declare the results
-    #     self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-    #                                                 max_eval=self.max_iter)
-    #
-    #     # add baseline
-    #     self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
-    #
-    #     dim = len(self.grid.investments_groups)
-    #
-    #     # add one at a time
-    #     for k in range(dim):
-    #         self.report_text("Evaluating investment group {}...".format(k))
-    #
-    #         combination = np.zeros(dim, dtype=int)
-    #         combination[k] = 1
-    #
-    #         self.objective_function(combination=combination)
-    #
-    #     # self.results.pareto_sort()
-    #
-    #     self.report_done()
+    def independent_evaluation(self) -> None:
+        """
+        Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
+        """
+        self.max_iter = len(self.grid.investments_groups) + 1
+
+        # declare the results
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+                                                    max_eval=self.max_iter)
+
+        # add baseline
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+
+        dim = len(self.grid.investments_groups)
+
+        # add one at a time
+        for k in range(dim):
+            self.report_text("Evaluating investment group {}...".format(k))
+
+            combination = np.zeros(dim, dtype=int)
+            combination[k] = 1
+
+            self.objective_function(combination=combination)
+
+        # self.results.pareto_sort()
+
+        self.report_done()
 
     def evaluate_individual_investments(self):
         """
@@ -400,39 +423,6 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
             results_with_combinations.append((results, combination))
 
         return results_with_combinations
-
-    def independent_evaluation(self) -> None:
-        """
-        Sort investments in order and then evaluate cumulative combinations of increasingly expensive investments
-        """
-        self.max_iter = (len(self.grid.investments_groups) + 1)*2
-
-        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
-                                                    max_eval=self.max_iter)
-
-        # Add baseline evaluation
-        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
-        results_with_combinations = self.evaluate_individual_investments()
-
-        # Sort the results in ascending financial score
-        sorted_results_with_combinations = sorted(results_with_combinations, key=lambda x: x[0][4])
-
-        dim = len(self.grid.investments_groups)
-        cumulative_combination = np.zeros(dim, dtype=int)
-        cumulative_combinations = []
-
-        # Cumulative combinations
-        for results, combination in sorted_results_with_combinations:
-            cumulative_combination += combination
-            # print(f"Combination: {combination}, Results: {results}, Cumulative Combination: {cumulative_combination}")
-            cumulative_combinations.append(cumulative_combination.copy())
-
-        # Evaluate each cumulative combination
-        for cumulative_combination in cumulative_combinations:
-            self.report_text(f"Evaluating cumulative combination: {cumulative_combination}")
-            self.objective_function(combination=cumulative_combination, record_results=True)
-
-        self.report_done()
 
     def optimized_evaluation_mvrsm(self) -> None:
         """
@@ -519,7 +509,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         """
         self.report_text("Evaluating investments with NSGA3...")
 
-        pop_size = int(round(self.dim))  # if needed, divide by 5 for ideal grid
+        pop_size = int(round(self.dim))  # for the ieee 118 bus grid make this * 3
         n_partitions = int(round(pop_size))
 
         # compile the snapshot
