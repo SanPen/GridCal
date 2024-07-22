@@ -275,7 +275,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
                 pass
         return inv_list
 
-    def objective_function(self, combination: IntVec) -> Vec:
+    def objective_function(self, combination: IntVec, record_results: bool = True) -> Vec:
         """
         Function to evaluate a combination of investments
         :param combination: vector of investments (yes/no). Length = number of investment groups
@@ -283,6 +283,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         """
 
         inv_list: List[Investment] = self.get_investments_for_combination(combination)
+        # print(f"Combination: {combination}, Investments: {inv_list}")
 
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
@@ -327,15 +328,16 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
                                          all_elements_dict=self.get_all_elements_dict)
 
         # record the evaluation
-        self.results.add(capex=scores.capex_score,
-                         opex=scores.opex_score,
-                         losses=scores.losses_score,
-                         overload_score=scores.overload_score,
-                         voltage_score=scores.voltage_module_score,
-                         # electrical=scores.electrical_score,
-                         financial=scores.financial_score,
-                         objective_function_sum=scores.arr().sum(),
-                         combination=combination)
+        if record_results:
+            self.results.add(capex=scores.capex_score,
+                             opex=scores.opex_score,
+                             losses=scores.losses_score,
+                             overload_score=scores.overload_score,
+                             voltage_score=scores.voltage_module_score,
+                             # electrical=scores.electrical_score,
+                             financial=scores.financial_score,
+                             objective_function_sum=scores.arr().sum(),
+                             combination=combination)
 
         # Report the progress
         self.report_progress2(self.results.current_evaluation, self.max_iter)
@@ -352,31 +354,83 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
 
         return res_vec.sum()
 
-    def independent_evaluation(self) -> None:
+    # def independent_evaluation(self) -> None:
+    #     """
+    #     Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
+    #     """
+    #     self.max_iter = len(self.grid.investments_groups) + 1
+    #
+    #     # declare the results
+    #     self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+    #                                                 max_eval=self.max_iter)
+    #
+    #     # add baseline
+    #     self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+    #
+    #     dim = len(self.grid.investments_groups)
+    #
+    #     # add one at a time
+    #     for k in range(dim):
+    #         self.report_text("Evaluating investment group {}...".format(k))
+    #
+    #         combination = np.zeros(dim, dtype=int)
+    #         combination[k] = 1
+    #
+    #         self.objective_function(combination=combination)
+    #
+    #     # self.results.pareto_sort()
+    #
+    #     self.report_done()
+
+    def evaluate_individual_investments(self):
         """
         Run a one-by-one investment evaluation without considering multiple evaluation groups at a time
         """
-        self.max_iter = len(self.grid.investments_groups) + 1
+        results_with_combinations = []
+        dim = len(self.grid.investments_groups)
+        self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        baseline = self.objective_function(combination=np.zeros(dim, dtype=int))
+        results_with_combinations.append((baseline, np.zeros(dim, dtype=int)))
 
-        # declare the results
+        for k in range(dim):
+            self.report_text(f"Evaluating investment group {k}...")
+            combination = np.zeros(dim, dtype=int)
+            combination[k] = 1
+            results = self.objective_function(combination=combination, record_results=False)
+            results_with_combinations.append((results, combination))
+
+        return results_with_combinations
+
+    def independent_evaluation(self) -> None:
+        """
+        Sort investments in order and then evaluate cumulative combinations of increasingly expensive investments
+        """
+        self.max_iter = (len(self.grid.investments_groups) + 1)*2
+
         self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
                                                     max_eval=self.max_iter)
 
-        # add baseline
+        # Add baseline evaluation
         self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+        results_with_combinations = self.evaluate_individual_investments()
+
+        # Sort the results in ascending financial score
+        sorted_results_with_combinations = sorted(results_with_combinations, key=lambda x: x[0][4])
 
         dim = len(self.grid.investments_groups)
+        cumulative_combination = np.zeros(dim, dtype=int)
+        cumulative_combinations = []
 
-        # add one at a time
-        for k in range(dim):
-            self.report_text("Evaluating investment group {}...".format(k))
+        # Cumulative combinations
+        for results, combination in sorted_results_with_combinations:
+            cumulative_combination += combination
+            # print(f"Combination: {combination}, Results: {results}, Cumulative Combination: {cumulative_combination}")
+            cumulative_combinations.append(cumulative_combination.copy())
 
-            combination = np.zeros(dim, dtype=int)
-            combination[k] = 1
-
-            self.objective_function(combination=combination)
-
-        # self.results.pareto_sort()
+        # Evaluate each cumulative combination
+        for cumulative_combination in cumulative_combinations:
+            self.report_text(f"Evaluating cumulative combination: {cumulative_combination}")
+            self.objective_function(combination=cumulative_combination, record_results=True)
 
         self.report_done()
 
