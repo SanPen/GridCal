@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import WindingsConnection, TransformerControlType
+from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec
 from typing import List, Tuple, Dict
 
@@ -104,7 +104,7 @@ class BranchData:
         self.alpha1: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
         self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
         self.alpha3: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
-        self.control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+
         self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
         self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
 
@@ -171,7 +171,6 @@ class BranchData:
 
         data.conn = self.conn[elm_idx]  # winding connection
 
-        data.control_mode = self.control_mode[elm_idx]
         data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
         data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
 
@@ -207,9 +206,9 @@ class BranchData:
         data.ctrl_bus2 = self.ctrl_bus2[elm_idx]
         bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
-            if data.control_mode[k] != TransformerControlType.fixed:
+            if data.tap_module_control_mode[k] != 0:
                 data.ctrl_bus1[k] = bus_map[data.ctrl_bus1[k]]
-                data.ctrl_bus2[k] = bus_map[data.ctrl_bus2[k]]
+
             data.F[k] = bus_map[data.F[k]]
             data.T[k] = bus_map[data.T[k]]
 
@@ -260,7 +259,6 @@ class BranchData:
 
         data.conn = self.conn.copy()  # winding connection
 
-        data.control_mode = self.control_mode.copy()
         data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
         data.tap_module_control_mode = self.tap_module_control_mode.copy()
 

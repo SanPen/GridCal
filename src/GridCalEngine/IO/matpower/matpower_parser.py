@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import ConverterControlType
+from GridCalEngine.enumerations import TapModuleControl, TapPhaseControl
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Devices as dev
 import GridCalEngine.IO.matpower.matpower_branch_definitions as matpower_branches

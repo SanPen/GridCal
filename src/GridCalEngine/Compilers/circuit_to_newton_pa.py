@@ -21,7 +21,7 @@ import numpy as np
 from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import (TransformerControlType, HvdcControlType, SolverType, TimeGrouping,
+from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
                                         ZonalGrouping, MIPSolvers, ContingencyMethod)
 import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -668,14 +668,14 @@ def add_transformer_data(circuit: MultiCircuit,
     :param override_controls: If true the controls are set to Fix
     """
 
-    ctrl_dict = {
-        TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
-        TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
-        TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
-        TransformerControlType.V: npa.BranchControlModes.BranchVt,
-        TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
-    }
+    # ctrl_dict = {
+    #     TransformerControlType.fixed: npa.BranchControlModes.Fixed,
+    #     TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
+    #     TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.V: npa.BranchControlModes.BranchVt,
+    #     TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
+    # }
 
     for i, elm in enumerate(circuit.transformers2w):
         tr2 = npa.Transformer2WFull(uuid=elm.idtag,
@@ -743,14 +743,14 @@ def add_transformer3w_data(circuit: MultiCircuit,
     :param override_controls: If true the controls are set to Fix
     """
 
-    ctrl_dict = {
-        TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
-        TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
-        TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
-        TransformerControlType.V: npa.BranchControlModes.BranchVt,
-        TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
-    }
+    # ctrl_dict = {
+    #     TransformerControlType.fixed: npa.BranchControlModes.Fixed,
+    #     TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
+    #     TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.V: npa.BranchControlModes.BranchVt,
+    #     TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
+    # }
 
     for i, elm in enumerate(circuit.transformers3w):
         tr3 = npa.Transformer3W(uuid=elm.idtag,

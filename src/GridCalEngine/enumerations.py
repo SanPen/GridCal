@@ -598,42 +598,42 @@ class AcOpfMode(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class TransformerControlType(Enum):
-    """
-    Transformer control types
-    """
-    fixed = '0:Fixed'
-    Pf = '1:Pf'
-    Qt = '2:Qt'
-    PtQt = '3:Pt+Qt'
-    V = '4:V'
-    PtV = '5:Pt+V'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        """
-
-        :param s:
-        :return:
-        """
-        try:
-            return TransformerControlType[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        """
-
-        :return:
-        """
-        return list(map(lambda c: c.value, cls))
+# class TransformerControlType(Enum):
+#     """
+#     Transformer control types
+#     """
+#     fixed = '0:Fixed'
+#     Pf = '1:Pf'
+#     Qt = '2:Qt'
+#     PtQt = '3:Pt+Qt'
+#     V = '4:V'
+#     PtV = '5:Pt+V'
+#
+#     def __str__(self) -> str:
+#         return str(self.value)
+#
+#     def __repr__(self):
+#         return str(self)
+#
+#     @staticmethod
+#     def argparse(s):
+#         """
+#
+#         :param s:
+#         :return:
+#         """
+#         try:
+#             return TransformerControlType[s]
+#         except KeyError:
+#             return s
+#
+#     @classmethod
+#     def list(cls):
+#         """
+#
+#         :return:
+#         """
+#         return list(map(lambda c: c.value, cls))
 
 
 class TapModuleControl(Enum):
@@ -707,63 +707,63 @@ class TapPhaseControl(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class ConverterControlType(Enum):
-    """
-    Converter control types
-    """
-    # Type I
-    # theta_vac = '1:Angle+Vac'
-    # pf_qac = '2:Pflow + Qflow'
-    # pf_vac = '3:Pflow + Vac'
-    #
-    # # Type II
-    # vdc_qac = '4:Vdc+Qflow'
-    # vdc_vac = '5:Vdc+Vac'
-    #
-    # # type III
-    # vdc_droop_qac = '6:VdcDroop+Qac'
-    # vdc_droop_vac = '7:VdcDroop+Vac'
-
-    type_0_free = '0:Free'
-
-    type_I_1 = '1:Vac'
-    type_I_2 = '2:Pdc+Qac'
-    type_I_3 = '3:Pdc+Vac'
-
-    type_II_4 = '4:Vdc+Qac'
-    type_II_5 = '5:Vdc+Vac'
-
-    type_III_6 = '6:Droop+Qac'
-    type_III_7 = '7:Droop+Vac'
-
-    type_IV_I = '8:Vdc'
-    type_IV_II = '9:Pdc'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        """
-
-        :param s:
-        :return:
-        """
-        try:
-            return ConverterControlType[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        """
-
-        :return:
-        """
-        return list(map(lambda c: c.value, cls))
+# class ConverterControlType(Enum):
+#     """
+#     Converter control types
+#     """
+#     # Type I
+#     # theta_vac = '1:Angle+Vac'
+#     # pf_qac = '2:Pflow + Qflow'
+#     # pf_vac = '3:Pflow + Vac'
+#     #
+#     # # Type II
+#     # vdc_qac = '4:Vdc+Qflow'
+#     # vdc_vac = '5:Vdc+Vac'
+#     #
+#     # # type III
+#     # vdc_droop_qac = '6:VdcDroop+Qac'
+#     # vdc_droop_vac = '7:VdcDroop+Vac'
+#
+#     type_0_free = '0:Free'
+#
+#     type_I_1 = '1:Vac'
+#     type_I_2 = '2:Pdc+Qac'
+#     type_I_3 = '3:Pdc+Vac'
+#
+#     type_II_4 = '4:Vdc+Qac'
+#     type_II_5 = '5:Vdc+Vac'
+#
+#     type_III_6 = '6:Droop+Qac'
+#     type_III_7 = '7:Droop+Vac'
+#
+#     type_IV_I = '8:Vdc'
+#     type_IV_II = '9:Pdc'
+#
+#     def __str__(self) -> str:
+#         return str(self.value)
+#
+#     def __repr__(self):
+#         return str(self)
+#
+#     @staticmethod
+#     def argparse(s):
+#         """
+#
+#         :param s:
+#         :return:
+#         """
+#         try:
+#             return ConverterControlType[s]
+#         except KeyError:
+#             return s
+#
+#     @classmethod
+#     def list(cls):
+#         """
+#
+#         :return:
+#         """
+#         return list(map(lambda c: c.value, cls))
 
 
 class HvdcControlType(Enum):
@@ -787,7 +787,7 @@ class HvdcControlType(Enum):
         :return:
         """
         try:
-            return ConverterControlType[s]
+            return HvdcControlType[s]
         except KeyError:
             return s
 

@@ -22,7 +22,7 @@ from typing import List, Tuple
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import ConverterControlType, BuildStatus
+from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
@@ -39,7 +39,6 @@ class VSC(BranchParent):
                  tap_phase=0.1, tap_phase_max=6.28, tap_phase_min=-6.28,
                  Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
                  G0sw=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
-                 control_mode: ConverterControlType = ConverterControlType.type_0_free,
                  Pfset=0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
                  alpha1=0.0001, alpha2=0.015, alpha3=0.2,
                  mttf=0, mttr=0, cost=100, contingency_factor=1.0,
@@ -167,7 +166,7 @@ class VSC(BranchParent):
         self.Qac_set = Qfset
         self.Vac_set = Vac_set
         self.Vdc_set = Vdc_set
-        self.control_mode = control_mode
+        # self.control_mode = control_mode
 
         self.kdp = kdp
         self.alpha1 = alpha1
@@ -209,7 +208,7 @@ class VSC(BranchParent):
         self.register(key='alpha3', units='', tpe=float,
                       definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
         self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
-        self.register(key='control_mode', units='', tpe=ConverterControlType, definition='Converter control mode')
+
         self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
         self.register(key='Pdc_set', units='MW', tpe=float, definition='DC power set point.')
         self.register(key='Qac_set', units='MVAr', tpe=float, definition='AC Reactive power set point.')

@@ -1,8 +1,9 @@
 import numpy as np
 from typing import List, Tuple
 import scipy.sparse as sp
-from GridCalEngine.enumerations import ConverterControlType
+# from GridCalEngine.enumerations import ConverterControlType
 from GridCalEngine.basic_structures import Vec, IntVec, BoolVec, StrVec
+
 
 class VscData:
     """
@@ -49,19 +50,17 @@ class VscData:
         self.tap_module: Vec = np.zeros(nelm, dtype=float)
         self.tap_module_max: Vec = np.zeros(nelm, dtype=float)
         self.tap_module_min: Vec = np.zeros(nelm, dtype=float)
-        
-        
+
         # Loss Params
         self.alpha1: Vec = np.zeros(nelm, dtype=float)
         self.alpha2: Vec = np.zeros(nelm, dtype=float)
         self.alpha3: Vec = np.zeros(nelm, dtype=float)
 
-
         # Connection Matrix
         self.C_vsc_bus_f: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
-                                                         dtype=int)  # this ons is just for splitting islands
+                                                        dtype=int)  # this ons is just for splitting islands
         self.C_vsc_bus_t: sp.lil_matrix = sp.lil_matrix((nelm, nbus),
-                                                         dtype=int)  # this ons is just for splitting islands
+                                                        dtype=int)  # this ons is just for splitting islands
 
         # Control settings
         self.control_mode: List[ConverterControlType] = [ConverterControlType.type_0_free] * nelm
@@ -70,7 +69,6 @@ class VscData:
         self.Qac_set: Vec = np.zeros(nelm, dtype=float)
         self.Vac_set: Vec = np.zeros(nelm, dtype=float)
         self.Vdc_set: Vec = np.zeros(nelm, dtype=float)
-
 
     def update_loading(self, Pbus: Vec, Vbus: Vec, Sbase: float):
         """

@@ -18,8 +18,7 @@
 from typing import Union
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
-                                        TapPhaseControl, TapModuleControl)
+from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl, TapModuleControl)
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -63,7 +62,6 @@ class Winding(Transformer2W):
                  temp_base: float = 20.0,
                  temp_oper: float = 20.0,
                  alpha: float = 0.00330,
-                 control_mode: TransformerControlType = TransformerControlType.fixed,
                  tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
                  tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
                  template: TransformerType = None,
@@ -118,7 +116,8 @@ class Winding(Transformer2W):
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
-        :param control_mode: Control model
+        :param tap_module_control_mode: Tap module Control model
+        :param tap_phase_control_mode: Tap phase Control model
         :param template: Branch template
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
@@ -172,7 +171,6 @@ class Winding(Transformer2W):
                                temp_base=temp_base,
                                temp_oper=temp_oper,
                                alpha=alpha,
-                               control_mode=control_mode,
                                tap_module_control_mode=tap_module_control_mode,
                                tap_phase_control_mode=tap_phase_control_mode,
                                contingency_factor=contingency_factor,

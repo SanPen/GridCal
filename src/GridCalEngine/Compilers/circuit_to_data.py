@@ -22,7 +22,7 @@ from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, ConverterControlType,
+from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode,
                                         TapPhaseControl, TapModuleControl, HvdcControlType)
 from GridCalEngine.basic_structures import BoolVec
 import GridCalEngine.DataStructures as ds
@@ -80,15 +80,12 @@ def set_bus_control_voltage(i: int,
 
 
 def set_branch_control_mode(k: int, i: int, f: int, t: int,
-                            mode: Union[TransformerControlType, ConverterControlType],
-                            bus_data: ds.BusData, bus_voltage_used: BoolVec,):
+                            module_ctrl: TapModuleControl,
+                            phase_ctrl: TapPhaseControl,
+                            bus_data: ds.BusData, bus_voltage_used: BoolVec, ):
 
-    if mode == TransformerControlType.V:
+    if module_ctrl == TapModuleControl.Vm:
         bus_data.bus_types[i] = BusMode.PQV_tpe.value  # remote bus to PQV type
-    elif mode == TransformerControlType.PtV:
-        pass
-    if mode == ConverterControlType.type_I_1:  # VAC
-        pass
 
 
 def get_bus_data(circuit: MultiCircuit,
@@ -129,7 +126,8 @@ def get_bus_data(circuit: MultiCircuit,
             bus_data.bus_types[i] = BusMode.Slack_tpe.value  # VD
         else:
             # bus.determine_bus_type().value
-            bus_data.bus_types[i] = BusMode.PQ_tpe.value  # PQ by default, later it is modified by generators and batteries
+            bus_data.bus_types[
+                i] = BusMode.PQ_tpe.value  # PQ by default, later it is modified by generators and batteries
 
         bus_data.substations[i] = substation_dict.get(bus.substation, 0)
 
@@ -793,7 +791,9 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
 
-        data.control_mode[i] = TransformerControlType.fixed
+        data.control_mode[i] = 0
+        data.tap_phase_control_mode[i] = 0
+        data.tap_module_control_mode[i] = 0
 
         data.possible_tower_types[i] = elm.possible_tower_types
         data.possible_underground_line_types[i] = elm.possible_underground_line_types
@@ -836,7 +836,9 @@ def get_branch_data(circuit: MultiCircuit,
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
-        data.control_mode[ii] = TransformerControlType.fixed
+        data.control_mode[ii] = 0
+        data.tap_phase_control_mode[i] = 0
+        data.tap_module_control_mode[i] = 0
 
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
@@ -922,7 +924,8 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.Pfset[ii] = elm.Pset
 
-        data.control_mode[ii] = elm.control_mode
+        data.tap_phase_control_mode[i] = elm.tap_phase_control_mode
+        data.tap_module_control_mode[i] = elm.tap_module_control_mode
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
@@ -1004,7 +1007,8 @@ def get_branch_data(circuit: MultiCircuit,
 
             data.Pfset[ii] = elm.Pset
 
-            data.control_mode[ii] = elm.control_mode
+            data.tap_phase_control_mode[i] = elm.tap_phase_control_mode
+            data.tap_module_control_mode[i] = elm.tap_module_control_mode
             data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
             data.contingency_enabled[ii] = int(elm.contingency_enabled)
@@ -1087,7 +1091,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.Kdp[ii] = elm.kdp
         data.vf_set[ii] = elm.Vac_set
         data.vt_set[ii] = elm.Vdc_set
-        data.control_mode[ii] = elm.control_mode
+        data.tap_phase_control_mode[i] = elm.tap_phase_control_mode
+        data.tap_module_control_mode[i] = elm.tap_module_control_mode
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
@@ -1102,25 +1107,25 @@ def get_branch_data(circuit: MultiCircuit,
         type_III_7 = '7:Droop+Vac'
         '''
 
-        if not use_stored_guess:
-            if elm.control_mode == ConverterControlType.type_I_1:  # 1a:Vac
-                bus_data.Vbus[t] = elm.Vac_set
-
-            elif elm.control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-                bus_data.Vbus[t] = elm.Vac_set
-
-            elif elm.control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-                bus_data.Vbus[f] = elm.Vdc_set
-
-            elif elm.control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-                bus_data.Vbus[f] = elm.Vdc_set
-                bus_data.Vbus[t] = elm.Vac_set
-
-            elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
-                bus_data.Vbus[t] = elm.Vac_set
-
-            elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
-                bus_data.Vbus[f] = elm.Vdc_set
+        # if not use_stored_guess:
+        #     if elm.control_mode == ConverterControlType.type_I_1:  # 1a:Vac
+        #         bus_data.Vbus[t] = elm.Vac_set
+        #
+        #     elif elm.control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
+        #         bus_data.Vbus[t] = elm.Vac_set
+        #
+        #     elif elm.control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
+        #         bus_data.Vbus[f] = elm.Vdc_set
+        #
+        #     elif elm.control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
+        #         bus_data.Vbus[f] = elm.Vdc_set
+        #         bus_data.Vbus[t] = elm.Vac_set
+        #
+        #     elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
+        #         bus_data.Vbus[t] = elm.Vac_set
+        #
+        #     elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
+        #         bus_data.Vbus[f] = elm.Vdc_set
 
         ii += 1
 
@@ -1171,7 +1176,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
-        data.control_mode[ii] = TransformerControlType.fixed
+        data.tap_phase_control_mode[i] = 0
+        data.tap_module_control_mode[i] = 0
 
         ii += 1
 
@@ -1210,7 +1216,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
-        data.control_mode[ii] = TransformerControlType.fixed
+        data.tap_phase_control_mode[i] = 0
+        data.tap_module_control_mode[i] = 0
 
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 

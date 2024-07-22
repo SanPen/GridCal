@@ -26,7 +26,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TransformerControlType)
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -823,7 +823,8 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                 skip = False
                                 if property_name == 'control_mode':
                                     if property_value == "1:Pt":
-                                        elm.set_snapshot_value(gc_prop.name, TransformerControlType.Pf)
+                                        # elm.set_snapshot_value(gc_prop.name, TransformerControlType.Pf)
+                                        # TODO: handle this
                                         skip = True
 
                                 if not skip:
