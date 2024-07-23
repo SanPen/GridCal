@@ -24,11 +24,11 @@ from GridCalEngine.basic_structures import Logger, ConvergenceReport
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.DataStructures.numerical_circuit_general_pf import NumericalCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.DataStructures.numerical_circuit_general_pf import \
-    compile_numerical_circuit_at as compile_numerical_circuit_at_generalised_pf
+from GridCalEngine.DataStructures.numerical_circuit import (
+    compile_numerical_circuit_at as compile_numerical_circuit_at_generalised_pf)
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
@@ -49,6 +49,8 @@ def solve(circuit: NumericalCircuit,
           Beq: Vec,
           pq: IntVec,
           pv: IntVec,
+          pqv: IntVec,
+          p: IntVec,
           ref: IntVec,
           pqpv: IntVec,
           Qmin: Vec,
@@ -68,6 +70,8 @@ def solve(circuit: NumericalCircuit,
     :param Beq: Array of branch equivalent susceptances
     :param pq: Array of pq nodes
     :param pv: Array of pv nodes
+    :param pqv: Array of pqv nodes
+    :param p: Array of p values
     :param ref: Array of slack nodes
     :param pqpv: Array of (sorted) pq and pv nodes
     :param Qmin: Array of minimum reactive power capability per bus
@@ -195,6 +199,8 @@ def solve(circuit: NumericalCircuit,
                                                        Y0=Y0,
                                                        pv_=pv,
                                                        pq_=pq,
+                                                       pqv_=pqv,
+                                                       p_=p,
                                                        Qmin=Qmin,
                                                        Qmax=Qmax,
                                                        tol=options.tolerance,
@@ -212,28 +218,19 @@ def solve(circuit: NumericalCircuit,
                                  Ybus=circuit.Ybus,
                                  B1=circuit.B1,
                                  B2=circuit.B2,
-                                 pq=pq,
-                                 pv=pv,
-                                 pqpv=pqpv,
+                                 pv_=pv,
+                                 pq_=pq,
+                                 pqv_=pqv,
+                                 p_=p,
+                                 Qmin=Qmin,
+                                 Qmax=Qmax,
                                  tol=options.tolerance,
-                                 max_it=options.max_iter)
+                                 max_it=options.max_iter,
+                                 control_q=options.control_Q)
 
         # Newton-Raphson (full)
         elif solver_type == SolverType.NR:
-            if options.generalised_pf:
-                solution = pflw.NR_LS_GENERAL(nc=circuit,
-                                              V0=V0,
-                                              S0=S0,
-                                              I0=I0,
-                                              Y0=Y0,
-                                              tolerance=options.tolerance,
-                                              max_iter=options.max_iter,
-                                              acceleration_parameter=options.backtracking_parameter,
-                                              mu_0=options.trust_radius,
-                                              control_q=options.control_Q,
-                                              pf_options=options)
-
-            elif circuit.any_control:
+            if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
                 solution = pflw.NR_LS_ACDC(nc=circuit,
                                            V0=V0,
@@ -254,6 +251,8 @@ def solve(circuit: NumericalCircuit,
                                       Y0=Y0,
                                       pv_=pv,
                                       pq_=pq,
+                                      pqv_=pqv,
+                                      p_=p,
                                       Qmin=Qmin,
                                       Qmax=Qmax,
                                       tol=options.tolerance,
@@ -287,12 +286,15 @@ def solve(circuit: NumericalCircuit,
                                       Y0=Y0,
                                       pv_=pv,
                                       pq_=pq,
+                                      pqv_=pqv,
+                                      p_=p,
                                       Qmin=Qmin,
                                       Qmax=Qmax,
                                       tol=options.tolerance,
                                       max_it=options.max_iter,
                                       control_q=options.control_Q,
-                                      robust=True)
+                                      robust=True,
+                                      logger=logger)
 
         # Newton-Raphson in current equations
         elif solver_type == SolverType.NRI:
@@ -354,6 +356,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                      branch_rates: Vec,
                      pq: IntVec,
                      pv: IntVec,
+                     pqv: IntVec,
+                     p: IntVec,
                      vd: IntVec,
                      pqpv: IntVec,
                      Qmin: Vec,
@@ -374,6 +378,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
     :param branch_rates: Array of branch rates
     :param pq: Array of pq nodes
     :param pv: Array of pv nodes
+    :param pqv: Array of pqv nodes
+    :param p: Array of p nodes
     :param vd: Array of slack nodes
     :param pqpv: Array of (sorted) pq and pv nodes
     :param Qmin: Array of minimum reactive power capability per bus
@@ -419,6 +425,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                          Beq=Beq,
                          pq=pq,
                          pv=pv,
+                         pqv=pqv,
+                         p=p,
                          ref=vd,
                          pqpv=pqpv,
                          Qmin=Qmin,
@@ -446,6 +454,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                                  Beq=Beq,
                                  pq=pq,
                                  pv=pv,
+                                 pqv=pqv,
+                                 p=p,
                                  ref=vd,
                                  pqpv=pqpv,
                                  Qmin=Qmin,
@@ -619,12 +629,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     Shvdc_prev = Shvdc.copy()
 
     # compute islands
-    islands = None
-    if options.generalised_pf == True:
-        islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
-                                        generalised_pf=options.generalised_pf)
-    else:
-        islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
     results.island_number = len(islands)
 
     # initialize the all controls var
@@ -659,6 +664,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
                     branch_rates=island.Rates,
                     pq=island.pq,
                     pv=island.pv,
+                    pqv=island.pqv,
+                    p=island.p,
                     vd=island.vd,
                     pqpv=island.pqpv,
                     Qmin=island.Qmin_bus,

@@ -23,6 +23,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptio
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+import GridCalEngine.api as gce
 
 
 def test_ieee_grids():
@@ -206,3 +207,31 @@ def test_controllable_shunt() -> None:
     Vm_test = np.array([[1., 1.0164564, 1.02]])
 
     assert np.allclose(Vm_test, Vm, atol=1e-3)
+
+
+def test_voltage_remote_control_with_generation() -> None:
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+
+    grid = gce.open_file(fname)
+
+    # control bus 6 with generator 4
+    grid.generators[4].control_bus = grid.buses[6]
+
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=ReactivePowerControlMode.NoControl,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+
+        vm = np.abs(results.voltage)
+
+        assert results.converged
+        assert np.isclose(vm[6], grid.generators[4].Vset, atol=options.tolerance)
+
+        print(solver_type)

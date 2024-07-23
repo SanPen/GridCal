@@ -19,7 +19,7 @@ import time
 
 import numpy as np
 
-from GridCalEngine.DataStructures.numerical_circuit_general_pf import NumericalCircuit
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Topology.admittance_matrices import compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
@@ -600,6 +600,32 @@ def compute_g(V, Ybus, S0, I0, Y0, Vm, p_to, p_from, q_to, q_from, p_zip, q_zip,
 
 def compute_gx(x, fx, Vm, Va, Ybus, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus, nc,
                dc_buses, ac_buses, unknown_dict, passive_branch_dict, known_dict) -> CscMat:
+    """
+    Autodiff jacobian
+    :param x:
+    :param fx:
+    :param Vm:
+    :param Va:
+    :param Ybus:
+    :param S0:
+    :param I0:
+    :param Y0:
+    :param p_to:
+    :param p_from:
+    :param q_to:
+    :param q_from:
+    :param p_zip:
+    :param q_zip:
+    :param modulations:
+    :param taus:
+    :param nc:
+    :param dc_buses:
+    :param ac_buses:
+    :param unknown_dict:
+    :param passive_branch_dict:
+    :param known_dict:
+    :return:
+    """
     delta = 1e-6
     x1 = x.copy()
     J = np.zeros((len(x), len(x)), dtype=float)

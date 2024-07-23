@@ -795,7 +795,7 @@ def fubm_jacobian(nb, nl, k_pf_tau, k_pf_dp, k_qf_m, k_qt_m, k_vt_m, k_zero_beq,
     E = V / np.abs(V)
 
     # compose the derivatives of the power Injections w.r.t Va and Vm
-    dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, E)
+    dSbus_dVm_x, dSbus_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus.data, Ybus.indptr, Ybus.indices, V, np.abs(V))
 
     # compose the derivatives of the branch flow w.r.t Va and Vm
     dSf_dVm, dSf_dVa = deriv.dSf_dV_csc(Yf, V, F, T)

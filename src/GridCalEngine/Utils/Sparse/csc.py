@@ -24,7 +24,6 @@ from GridCalEngine.basic_structures import Mat
 
 
 def Csc0(m: int, n: int):
-
     return csc_matrix((m, n), dtype=float)
 
 
@@ -372,7 +371,8 @@ def sp_slice(mat: csc_matrix, rows, cols):
     # return sp_transpose(sp_slice_cols(mat2, rows))
 
     new_val, new_row_ind, new_col_ptr, n_rows, n_cols, nnz = csc_numba.csc_sub_matrix(Am=mat.shape[0], Annz=mat.nnz,
-                                                                                      Ap=mat.indptr, Ai=mat.indices, Ax=mat.data,
+                                                                                      Ap=mat.indptr, Ai=mat.indices,
+                                                                                      Ax=mat.data,
                                                                                       rows=rows, cols=cols)
     new_val = np.resize(new_val, nnz)
     new_row_ind = np.resize(new_row_ind, nnz)

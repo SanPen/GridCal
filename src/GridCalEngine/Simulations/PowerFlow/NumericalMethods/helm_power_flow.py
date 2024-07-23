@@ -319,7 +319,7 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
 
     pq_ = pq - nsl_counted[pq]
     pv_ = pv - nsl_counted[pv]
-    pqpv_ = np.sort(np.r_[pq_, pv_])
+    no_slack_ = np.sort(np.r_[pq_, pv_])
 
     # .......................CALCULATION OF TERMS [0] ------------------------------------------------------------------
 
@@ -334,16 +334,23 @@ def helm_coefficients_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, toler
     valor = np.zeros(npqpv, dtype=complex)
 
     # get the current Injections that appear due to the slack buses reduction
-    I_inj_slack = Yslack[pqpv_, :] * Vslack
+    I_inj_slack = Yslack[no_slack_, :] * Vslack
 
-    valor[pq_] = I_inj_slack[pq_] - Yslack[pq_].sum(axis=1).A1 + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_] - U[
-        0, pq_] * Ysh[pq_]
-    valor[pv_] = I_inj_slack[pv_] - Yslack[pv_].sum(axis=1).A1 + (vec_P[pv_]) * X[0, pv_] - U[0, pv_] * Ysh[pv_]
+    valor[pq_] = (I_inj_slack[pq_]
+                  - Yslack[pq_].sum(axis=1).A1
+                  + (vec_P[pq_] - vec_Q[pq_] * 1j) * X[0, pq_]
+                  - U[0, pq_] * Ysh[pq_])
+
+    valor[pv_] = (I_inj_slack[pv_]
+                  - Yslack[pv_].sum(axis=1).A1
+                  + (vec_P[pv_]) * X[0, pv_]
+                  - U[0, pv_] * Ysh[pv_])
 
     # compose the right-hand side vector
-    RHS = np.r_[valor.real,
-    valor.imag,
-    vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
+    RHS = np.r_[
+        valor.real,
+        valor.imag,
+        vec_W[pv_] - (U[0, pv_] * U[0, pv_]).real  # vec_W[pv_] - 1.0
     ]
 
     # Form the system matrix (MAT)

@@ -114,11 +114,12 @@ def compute_g(V: CxVec,
     # Scalc = V * np.conj(Ybus @ V - Yf_bus * V + Yt_bus * V)
 
     # Formulation 2
-    # Sbus = cf.compute_zip_power(S0=S0,
-    #                             I0=I0,
-    #                             Y0=Y0 + Yf_bus - Yt_bus,
-    #                             Vm=Vm)
+    Sbus = cf.compute_zip_power(S0=S0,
+                                I0=I0,
+                                Y0=Y0 + Yf_bus - Yt_bus,
+                                Vm=Vm)
     # Scalc = V * np.conj(Ybus @ V)
+    Scalc = V * np.conj(Cf.T @ Yf_ctrl @ V + Ct.T @ Yt_ctrl @ V)
 
     # Formulation 2.5
     # Sbus = cf.compute_zip_power(S0=S0,
@@ -137,11 +138,11 @@ def compute_g(V: CxVec,
     # Scalc = (V * np.conj(Ybus @ V))
 
     # Formulation 4
-    Sbus = cf.compute_zip_power(S0=S0,
-                                I0=I0,
-                                Y0=Y0,
-                                Vm=Vm)
-    Scalc = V * np.conj((Ybus + Ybus_ctrl) @ V)
+    # Sbus = cf.compute_zip_power(S0=S0,
+    #                             I0=I0,
+    #                             Y0=Y0,
+    #                             Vm=Vm)
+    # Scalc = V * np.conj((Ybus + Ybus_ctrl) @ V)
 
     g = cf.compute_fx(Scalc, Sbus, pvpq, pq)
 

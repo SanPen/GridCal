@@ -20,12 +20,13 @@ import scipy
 import numpy as np
 import scipy.sparse as sp
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobianVc
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Logger
+import GridCalEngine.Utils.Sparse.csc2 as csc
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -33,7 +34,7 @@ scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
-def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=50,
+def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=50,
                            control_q=ReactivePowerControlMode.NoControl,
                            verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
@@ -47,6 +48,8 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
     :param Y0: Array of nodal admittance Injections (ZIP)
     :param pv_: Array with the indices of the PV buses
     :param pq_: Array with the indices of the PQ buses
+    :param pqv_: Array with the indices of the PQV buses
+    :param p_: Array with the indices of the P buses
     :param Qmin: array of lower reactive power limits per bus
     :param Qmax: array of upper reactive power limits per bus
     :param tol: Tolerance
@@ -68,12 +71,15 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
     # set up indexing for updating V
     pq = pq_.copy()
     pv = pv_.copy()
-    pvpq = np.r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
-    npvpq = npq + npv
+    pqv = pqv_.copy()
+    p = p_.copy()
+    blck1_idx = np.r_[pv, pq, p, pqv]
+    blck2_idx = np.r_[pq, p]
+    blck3_idx = np.r_[pq, pqv]
+    n_block1 = len(blck1_idx)
+    n_block2 = len(blck2_idx)
 
-    if npvpq > 0:
+    if n_block1 > 0:
         normF = 100000
         update_jacobian = True
         converged = False
@@ -81,7 +87,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
         nu = 2.0
         lbmda = 0
         f_prev = 1e9  # very large number
-        nn = 2 * npq + npv
+        nn = n_block1 + n_block2
         Idn = sp.diags(np.ones(nn))  # csc_matrix identity
         H: sp.csc_matrix = sp.csc_matrix((0, 0))
         Ht: sp.csc_matrix = sp.csc_matrix((0, 0))
@@ -92,7 +98,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
             logger.add_debug('LM previous values ' + '-' * 200)
             logger.add_debug('Y (real):\n', Ybus.real.toarray())
             logger.add_debug('Y (imag):\n', Ybus.imag.toarray())
-            logger.add_debug('pvpq:\n', pvpq)
+            logger.add_debug('pv:\n', pv)
             logger.add_debug('pq:\n', pq)
             logger.add_debug('Vm:\n', Vm)
             logger.add_debug('Va:\n', Va)
@@ -104,7 +110,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
 
             # evaluate Jacobian
             if update_jacobian:
-                H = AC_jacobian(Ybus, V, pvpq, pq)
+                H = csc.mat_to_scipy(AC_jacobianVc(Ybus, V, blck1_idx, blck2_idx, blck3_idx))
 
                 # system matrix
                 # H1 = H^t
@@ -116,7 +122,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
             # evaluate the solution error F(x0)
             Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
             Scalc = cf.compute_power(Ybus, V)
-            dz = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+            dz = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
 
             # set first value of lmbda
             if iter_ == 0:
@@ -152,8 +158,8 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
                 nu = 2.0
 
                 # reassign the solution vector
-                dVa[pvpq] = dx[:npvpq]
-                dVm[pq] = dx[npvpq:]
+                dVa[blck1_idx] = dx[:n_block1]
+                dVm[blck2_idx] = dx[n_block1:]
 
                 # update Vm and Va again in case we wrapped around with a negative Vm
                 Vm -= dVm
@@ -174,7 +180,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
             # check convergence
             Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
             Scalc = cf.compute_power(Ybus, V)
-            e = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+            e = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
             normF = cf.compute_fx_error(e)
 
             if verbose:
@@ -184,34 +190,27 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and normF < 1e-2 and npv > 0:
+            if control_q != ReactivePowerControlMode.NoControl and normF < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, Sbus, pv, pq, pvpq, messages = control_q_inside_method(Scalc, Sbus, pv, pq,
-                                                                                         pvpq, Qmin, Qmax)
+                changed, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax)
 
-                if n_changes > 0:
+                if len(changed) > 0:
                     # adjust internal variables to the new pq|pv values
-                    npv = len(pv)
-                    npq = len(pq)
-                    npvpq = npv + npq
-                    pvpq_lookup = np.zeros(Ybus.shape[0], dtype=int)
-                    pvpq_lookup[pvpq] = np.arange(npvpq)
+                    blck1_idx = np.r_[pv, pq, p, pqv]
+                    blck2_idx = np.r_[pq, p]
+                    blck3_idx = np.r_[pq, pqv]
+                    n_block1 = len(blck1_idx)
 
-                    nn = 2 * npq + npv
+                    nn = len(blck1_idx) + len(blck2_idx)
                     ii = np.linspace(0, nn - 1, nn)
                     Idn = sparse((np.ones(nn), (ii, ii)), shape=(nn, nn))  # csc_matrix identity
 
                     # recompute the error based on the new Sbus
-                    e = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+                    e = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
                     normF = cf.compute_fx_error(e)
-
-                    if verbose > 0:
-                        for sense, idx, var in messages:
-                            msg = "Bus " + str(idx) + " changed to PQ, limited to " + str(var * 100) + " MVAr"
-                            logger.add_debug(msg)
 
             converged = normF < tol
             f_prev = f

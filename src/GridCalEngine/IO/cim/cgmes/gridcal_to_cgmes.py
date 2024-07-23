@@ -8,7 +8,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile, WindGenUnitKin
                                                     RegulatingControlModeKind, UnitMultiplier)
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
-# import GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices as cgmes
 import GridCalEngine.Devices as gcdev
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions
@@ -17,22 +16,6 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingM
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
-
-
-# region UTILS
-
-# class ReferenceManager:
-#     # use it after an element object added
-#     def __init__(self):
-#         self.data = dict()
-#
-#     def add(self, cgmes_obj: Base):
-#
-#         tpe_dict = self.data.get(cgmes_obj.tpe, None)
-#         if tpe_dict is None:
-#             self.data[cgmes_obj.tpe] = {cgmes_obj.rdfid: cgmes_obj}
-#         else:
-#             tpe_dict[cgmes_obj.rdfid] = cgmes_obj
 
 
 def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):  # TODO move to CGMES utils
@@ -409,7 +392,7 @@ def create_cgmes_regulating_control(cgmes_syn,
     rc.discrete = False
     rc.targetDeadband = 0.5
     rc.targetValueUnitMultiplier = UnitMultiplier.k
-    rc.enabled = True   # todo correct?
+    rc.enabled = True  # todo correct?
     rc.targetValue = mc_gen.Vset * mc_gen.bus.Vnom
     # TODO control_cn.Vnom
 
@@ -467,7 +450,6 @@ def create_operational_limit_set(terminal,
 def create_operational_limit_type(mc_elm: gcdev.Line,
                                   cgmes_model: CgmesCircuit,
                                   logger: DataLogger):
-
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("OperationalLimitSet")
     op_lim_type = object_template(rdfid=new_rdf_id)
@@ -831,7 +813,6 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         create_cgmes_current_limit(line.Terminals[0], current_rate, cgmes_model, logger)
         create_cgmes_current_limit(line.Terminals[1], current_rate, cgmes_model, logger)
 
-
         vnom = line.BaseVoltage.nominalVoltage
 
         if vnom is not None:
@@ -990,6 +971,13 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
 def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
+    """
+
+    :param multicircuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     for mc_elm in multicircuit_model.transformers2w:
         object_template = cgmes_model.get_class_type("PowerTransformer")
         cm_transformer = object_template(rdfid=form_rdfid(mc_elm.idtag))
@@ -1006,7 +994,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                 target_uuid=mc_elm.bus_from.substation.idtag
             )
 
-        cm_transformer.PowerTransformerEnd = []
+        cm_transformer.PowerTransformerEnd = list()
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
         pte1 = object_template()
         pte1.PowerTransformer = cm_transformer
@@ -1016,17 +1004,33 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
             target_vnom=mc_elm.bus_from.Vnom
         )
-        R, X, G, B, R0, X0, G0, B0 = (mc_elm.R, mc_elm.X, mc_elm.G, mc_elm.B, mc_elm.R0,
-                                      mc_elm.X0, mc_elm.G0, mc_elm.B0)
-        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.Sn, mc_elm.HV)
-        pte1.r = r
-        pte1.x = x
-        pte1.g = g
-        pte1.b = b
-        pte1.r0 = r0
-        pte1.x0 = x0
-        pte1.g0 = g0
-        pte1.b0 = b0
+
+        (r_ohm,
+         x_ohm,
+         g_ohm,
+         b_ohm,
+         r0_ohm,
+         x0_ohm,
+         g0_ohm,
+         b0_ohm) = get_ohm_values_power_transformer(r=mc_elm.R,
+                                                    x=mc_elm.X,
+                                                    g=mc_elm.G,
+                                                    b=mc_elm.B,
+                                                    r0=mc_elm.R0,
+                                                    x0=mc_elm.X0,
+                                                    g0=mc_elm.G0,
+                                                    b0=mc_elm.B0,
+                                                    nominal_power=mc_elm.Sn,
+                                                    rated_voltage=mc_elm.HV)
+
+        pte1.r = r_ohm
+        pte1.x = x_ohm
+        pte1.g = g_ohm
+        pte1.b = b_ohm
+        pte1.r0 = r0_ohm
+        pte1.x0 = x0_ohm
+        pte1.g0 = g0_ohm
+        pte1.b0 = b0_ohm
         pte1.ratedU = mc_elm.HV
         pte1.ratedS = mc_elm.Sn
         pte1.endNumber = 1
@@ -1039,17 +1043,21 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
             target_vnom=mc_elm.bus_to.Vnom
         )
-        pte2.r = 0
-        pte2.x = 0
-        pte2.g = 0
-        pte2.b = 0
-        pte2.r0 = 0
-        pte2.x0 = 0
-        pte2.g0 = 0
-        pte2.b0 = 0
+
+        # TODO: Shouldn't this be half?
+        pte2.r = 0.0
+        pte2.x = 0.0
+        pte2.g = 0.0
+        pte2.b = 0.0
+        pte2.r0 = 0.0
+        pte2.x0 = 0.0
+        pte2.g0 = 0.0
+        pte2.b0 = 0.0
         pte2.ratedU = mc_elm.LV
         pte2.ratedS = mc_elm.Sn
         pte2.endNumber = 2
+
+        # TODO: where are the taps? that is making the round trip fail...
 
         cm_transformer.PowerTransformerEnd.append(pte1)
         cgmes_model.add(pte1)
@@ -1057,6 +1065,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cgmes_model.add(pte2)
 
         cgmes_model.add(cm_transformer)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Create the 3W transformers
+    # ------------------------------------------------------------------------------------------------------------------
 
     for mc_elm in multicircuit_model.transformers3w:
         object_template = cgmes_model.get_class_type("PowerTransformer")
@@ -1077,6 +1089,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             target_uuid=mc_elm.bus1.substation.idtag
         )
 
+        # Winding 1 ----------------------------------------------------------------------------------------------------
         pte1 = object_template()
         pte1.PowerTransformer = cm_transformer
         pte1.Terminal = cm_transformer.Terminals[0]
@@ -1088,20 +1101,26 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte1.ratedU = mc_elm.V1
         pte1.ratedS = mc_elm.rate12
         pte1.endNumber = 1
-        R, X, G, B, R0, X0, G0, B0 = (
-            mc_elm.winding1.R, mc_elm.winding1.X, mc_elm.winding1.G, mc_elm.winding1.B, mc_elm.winding1.R0,
-            mc_elm.winding1.X0, mc_elm.winding1.G0, mc_elm.winding1.B0)
-        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding1.rate,
-                                                                      mc_elm.winding1.HV)
-        pte1.r = r
-        pte1.x = x
-        pte1.g = g
-        pte1.b = b
-        pte1.r0 = r0
-        pte1.x0 = x0
-        pte1.g0 = g0
-        pte1.b0 = b0
 
+        (pte1.r,
+         pte1.x,
+         pte1.g,
+         pte1.b,
+         pte1.r0,
+         pte1.x0,
+         pte1.g0,
+         pte1.b0) = get_ohm_values_power_transformer(r=mc_elm.winding1.R,
+                                                     x=mc_elm.winding1.X,
+                                                     g=mc_elm.winding1.G,
+                                                     b=mc_elm.winding1.B,
+                                                     r0=mc_elm.winding1.R0,
+                                                     x0=mc_elm.winding1.X0,
+                                                     g0=mc_elm.winding1.G0,
+                                                     b0=mc_elm.winding1.B0,
+                                                     nominal_power=mc_elm.winding1.rate,
+                                                     rated_voltage=mc_elm.winding1.HV)
+
+        # Winding 2 ----------------------------------------------------------------------------------------------------
         pte2 = object_template()
         pte2.PowerTransformer = cm_transformer
         pte2.Terminal = cm_transformer.Terminals[1]
@@ -1113,21 +1132,33 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.ratedU = mc_elm.V2
         pte2.ratedS = mc_elm.rate23
         pte2.endNumber = 2
-        R, X, G, B, R0, X0, G0, B0 = (
-            mc_elm.winding2.R, mc_elm.winding2.X, mc_elm.winding2.G, mc_elm.winding2.B, mc_elm.winding2.R0,
-            mc_elm.winding2.X0, mc_elm.winding2.G0, mc_elm.winding2.B0)
-        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding2.rate,
-                                                                      mc_elm.winding2.HV)
-        pte2.r = r
-        pte2.x = x
-        pte2.g = g
-        pte2.b = b
-        if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-            pte2.r0 = r0
-            pte2.x0 = x0
-            pte2.g0 = g0
-            pte2.b0 = b0
 
+        (pte2.r,
+         pte2.x,
+         pte2.g,
+         pte2.b,
+         pte2.r0,
+         pte2.x0,
+         pte2.g0,
+         pte2.b0) = get_ohm_values_power_transformer(r=mc_elm.winding2.R,
+                                                     x=mc_elm.winding2.X,
+                                                     g=mc_elm.winding2.G,
+                                                     b=mc_elm.winding2.B,
+                                                     r0=mc_elm.winding2.R0,
+                                                     x0=mc_elm.winding2.X0,
+                                                     g0=mc_elm.winding2.G0,
+                                                     b0=mc_elm.winding2.B0,
+                                                     nominal_power=mc_elm.winding2.rate,
+                                                     rated_voltage=mc_elm.winding2.HV)
+
+        # TODO: what is this?
+        # if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
+        #     pte2.r0 = r0
+        #     pte2.x0 = x0
+        #     pte2.g0 = g0
+        #     pte2.b0 = b0
+
+        # Winding 3 ----------------------------------------------------------------------------------------------------
         pte3 = object_template()
         pte3.PowerTransformer = cm_transformer
         pte3.Terminal = cm_transformer.Terminals[2]
@@ -1139,20 +1170,26 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte3.ratedU = mc_elm.V3
         pte3.ratedS = mc_elm.rate31
         pte3.endNumber = 3
-        R, X, G, B, R0, X0, G0, B0 = (
-            mc_elm.winding3.R, mc_elm.winding3.X, mc_elm.winding3.G, mc_elm.winding3.B, mc_elm.winding3.R0,
-            mc_elm.winding3.X0, mc_elm.winding3.G0, mc_elm.winding3.B0)
-        r, x, g, b, r0, x0, g0, b0 = get_ohm_values_power_transformer(R, X, G, B, R0, X0, G0, B0, mc_elm.winding3.rate,
-                                                                      mc_elm.winding3.HV)
-        pte3.r = r
-        pte3.x = x
-        pte3.g = g
-        pte3.b = b
-        pte3.r0 = r0
-        pte3.x0 = x0
-        pte3.g0 = g0
-        pte3.b0 = b0
 
+        (pte3.r,
+         pte3.x,
+         pte3.g,
+         pte3.b,
+         pte3.r0,
+         pte3.x0,
+         pte3.g0,
+         pte3.b0) = get_ohm_values_power_transformer(r=mc_elm.winding3.R,
+                                                     x=mc_elm.winding3.X,
+                                                     g=mc_elm.winding3.G,
+                                                     b=mc_elm.winding3.B,
+                                                     r0=mc_elm.winding3.R0,
+                                                     x0=mc_elm.winding3.X0,
+                                                     g0=mc_elm.winding3.G0,
+                                                     b0=mc_elm.winding3.B0,
+                                                     nominal_power=mc_elm.winding3.rate,
+                                                     rated_voltage=mc_elm.winding3.HV)
+
+        # compose transformer ------------------------------------------------------------------------------------------
         cm_transformer.PowerTransformerEnd.append(pte1)
         cgmes_model.add(pte1)
         cm_transformer.PowerTransformerEnd.append(pte2)
@@ -1238,7 +1275,7 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         # todo include boundary?
         # as the order of the results is the same as the order of buses (=tn)
         # bv = cgmes_model.cgmes_assets.TopologicalNode_list[i].BaseVoltage
-        sv_voltage.v = np.abs(voltage) #* bv.nominalVoltage
+        sv_voltage.v = np.abs(voltage)  # * bv.nominalVoltage
         sv_voltage.angle = np.angle(voltage, deg=True)
 
         # Add the SvVoltage instance to the SvVoltage_list
