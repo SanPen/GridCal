@@ -16,11 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import uuid
+# import uuid
 from typing import TYPE_CHECKING, List, Union
-
-import tkinter as tk
-from tkinter import messagebox
 
 import logging
 
@@ -33,6 +30,7 @@ from GridCalEngine.Devices.types import BRANCH_TYPES, FluidPath
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
+from GridCal.Gui.messages import error_msg
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
@@ -165,12 +163,11 @@ class MapLineContainer(GenericDiagramWidget):
 
         # draw line locations
         for elm in self.api_object.locations.data:
-
             graphic_obj = self.editor.create_node(line_container=self,
-                                                    api_object=elm,
-                                                    lat=elm.lat,  # 42.0 ...
-                                                    lon=elm.long,
-                                                    index=self.number_of_nodes())  # 2.7 ...
+                                                  api_object=elm,
+                                                  lat=elm.lat,  # 42.0 ...
+                                                  lon=elm.long,
+                                                  index=self.number_of_nodes())  # 2.7 ...
 
             self.register_new_node(node=graphic_obj)
 
@@ -274,7 +271,7 @@ class MapLineContainer(GenericDiagramWidget):
                                           z=new_api_node_data.alt,
                                           seq=new_api_node_data.seq,
                                           name=new_api_node_data.name,
-                                          idtag=uuid.uuid4(),
+                                          idtag=None,  # generates new UUID
                                           code=new_api_node_data.code)
 
             self.api_object.locations.data.insert(index, new_api_object)
@@ -451,10 +448,7 @@ class MapLineContainer(GenericDiagramWidget):
             return first_list, second_list
         else:
             # Handle invalid index
-            root = tk.Tk()
-            root.withdraw()  # Hide the main tkinter window
-            messagebox.showwarning("Warning", "Index out of range or invalid")
-            root.destroy()
+            error_msg("Index out of range or invalid", "split line")
 
     def merge_line(self):
         return 0
