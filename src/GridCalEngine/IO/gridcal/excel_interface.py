@@ -1139,6 +1139,6 @@ def save_excel(circuit: MultiCircuit, file_path):
     # flush-save ###################################################################################################
     with pd.ExcelWriter(file_path) as writer:
         for key in dfs.keys():
-            dfs[key].to_excel(writer, key)
+            dfs[key].to_excel(excel_writer=writer, sheet_name=key)
 
     return logger
