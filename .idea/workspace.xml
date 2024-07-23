@@ -28,11 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved edition functions for lines">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Bug fix for remove node function">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_container.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_container.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/node_graphic_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/node_graphic_item.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line_locations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line_locations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1375,7 +1373,7 @@
       <workItem from="1720683785264" duration="3978000" />
       <workItem from="1721034917058" duration="1323000" />
       <workItem from="1721631288287" duration="14200000" />
-      <workItem from="1721718450037" duration="667000" />
+      <workItem from="1721718450037" duration="1443000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1720,7 +1718,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="521" />
+    <option name="localTasksCounter" value="522" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1766,7 +1764,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added function to insert nodes in lines" />
     <MESSAGE value="Bug fix in function to insert nodes in lines" />
     <MESSAGE value="Fully functional split and add functions in nodes" />
     <MESSAGE value="Fully functional merge lines, split lines, add nodes to lines" />
@@ -1791,7 +1788,8 @@
     <MESSAGE value="Correct bug with voltage level radius" />
     <MESSAGE value="Added function to create line" />
     <MESSAGE value="Improved edition functions for lines" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved edition functions for lines" />
+    <MESSAGE value="Bug fix for remove node function" />
+    <option name="LAST_COMMIT_MESSAGE" value="Bug fix for remove node function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

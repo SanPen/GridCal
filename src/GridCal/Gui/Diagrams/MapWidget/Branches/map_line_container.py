@@ -15,6 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
+
+import uuid
 from typing import TYPE_CHECKING, List, Union
 
 import tkinter as tk
@@ -272,7 +274,7 @@ class MapLineContainer(GenericDiagramWidget):
                                           z=new_api_node_data.alt,
                                           seq=new_api_node_data.seq,
                                           name=new_api_node_data.name,
-                                          idtag=new_api_node_data.idtag,
+                                          idtag=uuid.uuid4(),
                                           code=new_api_node_data.code)
 
             self.api_object.locations.data.insert(index, new_api_object)
