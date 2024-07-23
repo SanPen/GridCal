@@ -15,7 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
+
+import uuid
 from typing import TYPE_CHECKING, List, Union
+
+import tkinter as tk
+from tkinter import messagebox
 
 import logging
 
@@ -183,6 +188,7 @@ class MapLineContainer(GenericDiagramWidget):
                 self.editor.map.diagram_scene.removeItem(seg)
 
         self.nodes_list.remove(node)
+        self.api_object.locations.remove(node.api_object)
 
         for nod in self.nodes_list:
             if nod.index > node.index:
@@ -268,7 +274,7 @@ class MapLineContainer(GenericDiagramWidget):
                                           z=new_api_node_data.alt,
                                           seq=new_api_node_data.seq,
                                           name=new_api_node_data.name,
-                                          idtag=new_api_node_data.idtag,
+                                          idtag=uuid.uuid4(),
                                           code=new_api_node_data.code)
 
             self.api_object.locations.data.insert(index, new_api_object)
@@ -445,7 +451,10 @@ class MapLineContainer(GenericDiagramWidget):
             return first_list, second_list
         else:
             # Handle invalid index
-            raise ValueError("Index out of range or invalid")
+            root = tk.Tk()
+            root.withdraw()  # Hide the main tkinter window
+            messagebox.showwarning("Warning", "Index out of range or invalid")
+            root.destroy()
 
     def merge_line(self):
         return 0
