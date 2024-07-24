@@ -8746,6 +8746,7 @@ QProgressBar::chunk{
      <string>Actions</string>
     </property>
     <addaction name="actionAdd_default_catalogue"/>
+    <addaction name="actionAdd_custom_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
    </widget>
@@ -10001,6 +10002,15 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Circuit differential</string>
+   </property>
+  </action>
+  <action name="actionAdd_custom_catalogue">
+   <property name="icon">
+    <iconset theme="application-x-executable" resource="icons.qrc">
+     <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add custom catalogue</string>
    </property>
   </action>
  </widget>
