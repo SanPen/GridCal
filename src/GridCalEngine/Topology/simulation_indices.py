@@ -197,8 +197,8 @@ class SimulationIndices:
         self.control_mode = control_mode
 
         # AC and DC indices
-        self.ac: IntVec = np.where(dc == 0)[0]
-        self.dc: IntVec = np.where(dc != 0)[0]
+        self.ac: IntVec = np.where(~dc)[0]
+        self.dc: IntVec = np.where(dc)[0]
 
         # bus type indices
         self.pq: IntVec = np.zeros(0, dtype=int)
