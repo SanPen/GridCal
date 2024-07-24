@@ -1078,11 +1078,11 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.tap_angle_min[ii] = elm.tap_phase_min
         data.tap_angle_max[ii] = elm.tap_phase_max
-        data.Pfset[ii] = elm.Pdc_set
-        data.Qtset[ii] = elm.Qac_set
+        data.Pfset[ii] = elm.Pset
+        data.Qtset[ii] = 0.0
         data.Kdp[ii] = elm.kdp
-        data.vf_set[ii] = elm.Vac_set
-        data.vt_set[ii] = elm.Vdc_set
+        # data.vf_set[ii] = elm.Vac_set
+        # data.vt_set[ii] = elm.Vdc_set
         data.tap_phase_control_mode[i] = elm.tap_phase_control_mode
         data.tap_module_control_mode[i] = elm.tap_module_control_mode
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
