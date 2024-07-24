@@ -31,6 +31,7 @@ from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.stop_crits import S
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_results import InvestmentsEvaluationResults
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_options import InvestmentsEvaluationOptions
 from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.NSGA_3 import NSGA_3
+from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.mixed_variable_NSGA_2 import NSGA_2
 from GridCalEngine.Simulations.InvestmentsEvaluation.Methods.random_eval import random_trial
 from GridCalEngine.Utils.scores import get_overload_score, get_voltage_phase_score, get_voltage_module_score
 from GridCalEngine.enumerations import (InvestmentEvaluationMethod, SimulationTypes, EngineType,
@@ -563,6 +564,38 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
 
         self.report_done()
 
+    def optimized_evaluation_mixed_nsga2(self) -> None:
+        """
+        Run an optimized investment evaluation on mixed variables with NSGA2
+        """
+        self.report_text("Evaluating investments with NSGA2...")
+
+        pop_size = int(round(self.dim)) * 2
+
+        # compile the snapshot
+        self.results = InvestmentsEvaluationResults(investment_groups_names=self.grid.get_investment_groups_names(),
+                                                    max_eval=self.options.max_eval * 2)
+
+        # add baseline
+        ret = self.objective_function(combination=np.zeros(self.results.n_groups, dtype=int))
+
+        # optimize
+        X, obj_values = NSGA_2(
+            obj_func=self.objective_function,
+            n_obj=len(ret),
+            max_evals=self.options.max_eval,  # termination
+            pop_size=pop_size,
+            # crossover_prob=0.8,
+            # mutation_probability=0.1,
+            # eta=30,
+        )
+
+        self.results.set_best_combination(combination=X[:, 0])
+
+        self.results.trim()
+
+        self.report_done()
+
     def run(self) -> None:
         """
         run the QThread
@@ -584,6 +617,9 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
 
         elif self.options.solver == InvestmentEvaluationMethod.Random:
             self.randomized_evaluation()
+
+        elif self.options.solver == InvestmentEvaluationMethod.MixedVariableGA:
+            self.optimized_evaluation_mixed_nsga2()
 
         else:
             raise Exception('Unsupported method')

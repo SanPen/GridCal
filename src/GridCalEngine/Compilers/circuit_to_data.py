@@ -115,6 +115,7 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.cost_v[i] = bus.Vm_cost
         # TODO: Check that the devices are are changing the guess
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
+        bus_data.is_dc[i] = bus.is_dc
 
         bus_data.angle_min[i] = bus.angle_min
         bus_data.angle_max[i] = bus.angle_max
@@ -126,8 +127,7 @@ def get_bus_data(circuit: MultiCircuit,
             bus_data.bus_types[
                 i] = BusMode.PQ_tpe.value  # PQ by default, later it is modified by generators and batteries
 
-        if bus.substation is not None:
-            bus_data.substations[i] = substation_dict[bus.substation]
+        bus_data.substations[i] = substation_dict.get(bus.substation, 0)
 
         bus_data.areas[i] = areas_dict.get(bus.area, 0)
 
