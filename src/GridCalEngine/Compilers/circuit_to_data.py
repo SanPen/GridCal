@@ -106,6 +106,7 @@ def get_bus_data(circuit: MultiCircuit,
         bus_data.cost_v[i] = bus.Vm_cost
         # TODO: Check that the devices are are changing the guess
         bus_data.Vbus[i] = bus.get_voltage_guess(None, use_stored_guess=use_stored_guess)
+        bus_data.is_dc[i] = bus.is_dc
 
         bus_data.angle_min[i] = bus.angle_min
         bus_data.angle_max[i] = bus.angle_max
