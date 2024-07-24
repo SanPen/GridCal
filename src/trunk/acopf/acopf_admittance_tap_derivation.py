@@ -2,10 +2,11 @@ import os
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
-from GridCalEngine.enumerations import TransformerControlType
+from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
 from scipy.sparse import csc_matrix as csc
 from scipy import sparse as sp
 import numpy as np
+
 
 def example_3bus_acopf():
     """
@@ -32,11 +33,11 @@ def example_3bus_acopf():
     grid.add_generator(b1, gce.Generator('G1', vset=1.00, Cost=1.0, Cost2=2.0))
     grid.add_generator(b2, gce.Generator('G2', P=10, vset=0.995, Cost=1.0, Cost2=3.0))
 
-    tr1 = gce.Transformer2W(b1, b2, 'Trafo1', control_mode=TransformerControlType.Pf,
+    tr1 = gce.Transformer2W(b1, b2, 'Trafo1', tap_phase_control_mode=TapPhaseControl.Pf,
                             tap_module=1.1, tap_phase=0.02, r=0.001, x=0.05)
     grid.add_transformer2w(tr1)
 
-    tr2 = gce.Transformer2W(b3, b1, 'Trafo1', control_mode=TransformerControlType.PtQt,
+    tr2 = gce.Transformer2W(b3, b1, 'Trafo1', tap_phase_control_mode=TapPhaseControl.Pf,
                             tap_module=1.05, tap_phase=-0.02, r=0.001, x=0.05)
     grid.add_transformer2w(tr2)
 
@@ -114,7 +115,6 @@ def compute_analytic_admittances(nc):
 
 
 def compute_finitediff_admittances(nc, tol=1e-5):
-
     k_m = nc.k_m
     k_tau = nc.k_tau
 
@@ -145,7 +145,6 @@ def compute_finitediff_admittances(nc, tol=1e-5):
 
 
 def compute_analytic_admittances_2dev(nc):
-
     k_m = nc.k_m
     k_tau = nc.k_tau
     k_mtau = nc.k_mtau
@@ -221,7 +220,6 @@ def compute_analytic_admittances_2dev(nc):
 
 
 def compute_finitediff_admittances_2dev(nc, tol=1e-5):
-
     k_m = nc.k_m
     k_tau = nc.k_tau
 
