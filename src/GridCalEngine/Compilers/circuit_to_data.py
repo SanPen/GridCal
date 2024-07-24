@@ -791,7 +791,6 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
 
-        data.control_mode[i] = 0
         data.tap_phase_control_mode[i] = 0
         data.tap_module_control_mode[i] = 0
 
@@ -836,7 +835,6 @@ def get_branch_data(circuit: MultiCircuit,
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
 
-        data.control_mode[ii] = 0
         data.tap_phase_control_mode[i] = 0
         data.tap_module_control_mode[i] = 0
 
@@ -1095,37 +1093,6 @@ def get_branch_data(circuit: MultiCircuit,
         data.tap_module_control_mode[i] = elm.tap_module_control_mode
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
-
-        '''
-        type_0_free = '0:Free'
-        type_I_1 = '1:Vac'
-        type_I_2 = '2:Pdc+Qac'
-        type_I_3 = '3:Pdc+Vac'
-        type_II_4 = '4:Vdc+Qac'
-        type_II_5 = '5:Vdc+Vac'
-        type_III_6 = '6:Droop+Qac'
-        type_III_7 = '7:Droop+Vac'
-        '''
-
-        # if not use_stored_guess:
-        #     if elm.control_mode == ConverterControlType.type_I_1:  # 1a:Vac
-        #         bus_data.Vbus[t] = elm.Vac_set
-        #
-        #     elif elm.control_mode == ConverterControlType.type_I_3:  # 3:Pdc+Vac
-        #         bus_data.Vbus[t] = elm.Vac_set
-        #
-        #     elif elm.control_mode == ConverterControlType.type_II_4:  # 4:Vdc+Qac
-        #         bus_data.Vbus[f] = elm.Vdc_set
-        #
-        #     elif elm.control_mode == ConverterControlType.type_II_5:  # 5:Vdc+Vac
-        #         bus_data.Vbus[f] = elm.Vdc_set
-        #         bus_data.Vbus[t] = elm.Vac_set
-        #
-        #     elif elm.control_mode == ConverterControlType.type_III_7:  # 7:Droop+Vac
-        #         bus_data.Vbus[t] = elm.Vac_set
-        #
-        #     elif elm.control_mode == ConverterControlType.type_IV_I:  # 8:Vdc
-        #         bus_data.Vbus[f] = elm.Vdc_set
 
         ii += 1
 

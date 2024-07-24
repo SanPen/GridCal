@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 from GridCalEngine.api import *
-from GridCalEngine.enumerations import HvdcControlType, TransformerControlType, TapPhaseControl
+from GridCalEngine.enumerations import HvdcControlType, TapModuleControl, TapPhaseControl
 
 
 def test_opf_hvdc():
