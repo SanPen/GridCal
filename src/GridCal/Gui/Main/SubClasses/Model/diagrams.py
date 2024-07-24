@@ -1831,9 +1831,13 @@ class DiagramsMain(CompiledArraysMain):
         """
         if self._enable_setting_auto_upgrade:
             diagram_widget = self.get_selected_diagram_widget()
-
+            if hasattr(diagram_widget,"map"):
+                level, longitude, latitude = diagram_widget.map.get_level_and_position()
             if diagram_widget is not None:
                 if isinstance(diagram_widget, GridMapWidget):
                     tile_name = self.ui.tile_provider_comboBox.currentText()
                     tile_src = self.tile_name_dict[tile_name]
                     diagram_widget.map.tile_src = tile_src
+                    if hasattr(diagram_widget, "map"):
+                        diagram_widget.map.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+                        diagram_widget.map.view.centerSchema()
