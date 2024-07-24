@@ -117,8 +117,7 @@ def get_bus_data(circuit: MultiCircuit,
             # bus.determine_bus_type().value
             bus_data.bus_types[i] = BusMode.PQ_tpe.value  # PQ by default, later it is modified by generators and batteries
 
-        if bus.substation is not None:
-            bus_data.substations[i] = substation_dict[bus.substation]
+        bus_data.substations[i] = substation_dict.get(bus.substation, 0)
 
         bus_data.areas[i] = areas_dict.get(bus.area, 0)
 
