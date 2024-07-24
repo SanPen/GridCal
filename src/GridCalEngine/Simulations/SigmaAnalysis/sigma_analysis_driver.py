@@ -121,7 +121,8 @@ class SigmaAnalysisResults:  # TODO: inherit from ResultsTemplate
         annot = ax.annotate("", xy=(0, 0), xytext=(20, 20),
                             textcoords="offset points",
                             bbox=dict(boxstyle="round", fc="w"),
-                            arrowprops=dict(arrowstyle="->"))
+                            arrowprops=dict(arrowstyle="->"),
+                            fontsize=8)
         annot.set_visible(False)
 
         ax.set_title(r'$\Sigma$ plot')

@@ -101,6 +101,7 @@ class InvestmentEvaluationMethod(Enum):
     MVRSM = "MVRSM"
     NSGA3 = "NSGA3"
     Random = "Random"
+    MixedVariableGA = "Mixed Variable NSGA2"
 
     def __str__(self):
         return self.value
@@ -1662,6 +1663,7 @@ class ResultTypes(Enum):
 
     InvestmentsParetoPlot = 'Pareto plots'
     InvestmentsIterationsPlot = 'Iterations plot'
+    InvestmentsParetoPlotNSGA2 = 'Pareto plot NSGA2'
 
     def __str__(self):
         return self.value
