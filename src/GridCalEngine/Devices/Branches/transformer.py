@@ -403,17 +403,18 @@ class Transformer2W(ControllableBranchParent):
         for property_name, properties in self.registered_properties.items():
             obj = getattr(self, property_name)
 
-            if properties.tpe == DeviceType.BusDevice:
-                obj = obj.idtag
-
-            elif properties.tpe == DeviceType.TransformerTypeDevice:
-                if obj is None:
-                    obj = ''
-                else:
+            if obj is not None:
+                if properties.tpe == DeviceType.BusDevice:
                     obj = obj.idtag
 
-            elif properties.tpe not in [str, float, int, bool]:
-                obj = str(obj)
+                elif properties.tpe == DeviceType.TransformerTypeDevice:
+                    if obj is None:
+                        obj = ''
+                    else:
+                        obj = obj.idtag
+
+                elif properties.tpe not in [str, float, int, bool]:
+                    obj = str(obj)
 
             data.append(obj)
         return data
