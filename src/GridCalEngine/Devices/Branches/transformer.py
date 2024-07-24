@@ -16,12 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl, TapModuleControl, TapChangerTypes)
+from GridCalEngine.Devices.Branches.tap_changer import TapChanger
+from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl,
+                                        TapModuleControl, SubObjectType, TapChangerTypes)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -65,7 +67,6 @@ class Transformer2W(ControllableBranchParent):
                  temp_base: float = 20.0,
                  temp_oper: float = 20.0,
                  alpha: float = 0.00330,
-                 # control_mode: TransformerControlType = TransformerControlType.fixed,  # legacy?
                  tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
                  tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
                  template: TransformerType = None,
@@ -125,7 +126,6 @@ class Transformer2W(ControllableBranchParent):
         :param temp_base: Base temperature at which `r` is measured in °C
         :param temp_oper: Operating temperature in °C
         :param alpha: Thermal constant of the material in °C
-        :param control_mode: Control model
         :param template: Branch template
         :param contingency_factor: Rating factor in case of contingency
         :param contingency_enabled: enabled for contingencies (Legacy)
@@ -194,12 +194,7 @@ class Transformer2W(ControllableBranchParent):
                                           capex=capex,
                                           opex=opex,
                                           build_status=build_status,
-                                          device_type=DeviceType.Transformer2WDevice,
-                                          tc_total_positions=tc_total_positions,
-                                          tc_neutral_position=tc_neutral_position,
-                                          tc_dV=tc_dV,
-                                          tc_asymmetry_angle=tc_asymmetry_angle,
-                                          tc_type=tc_type)
+                                          device_type=DeviceType.Transformer2WDevice)
 
         # set the high and low voltage values
         self.HV = HV
@@ -224,7 +219,24 @@ class Transformer2W(ControllableBranchParent):
         # type template
         self.template = template
 
+        # tap changer object
+        self._tap_changer = TapChanger(total_positions=tc_total_positions,
+                                       neutral_position=tc_neutral_position,
+                                       dV=tc_dV,
+                                       asymmetry_angle=tc_asymmetry_angle,
+                                       tc_type=tc_type)
+
+        # Tap module
+        if tap_module != 0:
+            self.tap_module = tap_module
+            self._tap_changer.set_tap_module(self.tap_module)
+        else:
+            self.tap_module = self._tap_changer.get_tap_module()
+
         # register
+        self.register(key='tap_changer', units='', tpe=SubObjectType.TapChanger, definition='Tap changer object',
+                      editable=False)
+
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
         self.register(key='Sn', units='MVA', tpe=float, definition='Nominal power')
@@ -237,6 +249,54 @@ class Transformer2W(ControllableBranchParent):
                       definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
 
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
+
+    @property
+    def tap_changer(self) -> TapChanger:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._tap_changer
+
+    @tap_changer.setter
+    def tap_changer(self, val: TapChanger):
+        if isinstance(val, TapChanger):
+            self._tap_changer = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_changer')
+
+    def tap_up(self):
+        """
+        Move the tap changer one position up
+        """
+        self.tap_changer.tap_up()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
+
+    def tap_down(self):
+        """
+        Move the tap changer one position up
+        """
+        self.tap_changer.tap_down()
+        self.tap_module = self.tap_changer.get_tap_module()
+        self.tap_phase = self.tap_changer.get_tap_phase()
+
+    def apply_tap_changer(self, tap_changer: TapChanger):
+        """
+        Apply a new tap changer
+
+        Argument:
+
+            **tap_changer** (:class:`GridCalEngine.Devices.branch.TapChanger`): Tap changer object
+
+        """
+        self.tap_changer = tap_changer
+
+        if self.tap_module != 0:
+            self.tap_changer.set_tap_module(tap_module=self.tap_module)
+        else:
+            self.tap_module = self.tap_changer.get_tap_module()
+            self.tap_phase = self.tap_changer.get_tap_phase()
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """
@@ -260,50 +320,6 @@ class Transformer2W(ControllableBranchParent):
             self.LV = vl
         else:
             self.LV = LV
-
-    # def copy(self, bus_dict=None):
-    #     """
-    #     Returns a copy of the branch
-    #     @return: A new  with the same content as this
-    #     """
-    #
-    #     if bus_dict is None:
-    #         f = self.bus_from
-    #         t = self.bus_to
-    #     else:
-    #         f = bus_dict[self.bus_from]
-    #         t = bus_dict[self.bus_to]
-    #
-    #     # z_series = complex(self.R, self.X)
-    #     # y_shunt = complex(self.G, self.B)
-    #     b = Transformer2W(bus_from=f,
-    #                       bus_to=t,
-    #                       name=self.name,
-    #                       r=self.R,
-    #                       x=self.X,
-    #                       g=self.G,
-    #                       b=self.B,
-    #                       rate=self.rate,
-    #                       tap_module=self.tap_module,
-    #                       tap_phase=self.tap_phase,
-    #                       active=self.active,
-    #                       mttf=self.mttf,
-    #                       mttr=self.mttr,
-    #                       vset=self.vset,
-    #                       temp_base=self.temp_base,
-    #                       temp_oper=self.temp_oper,
-    #                       alpha=self.alpha,
-    #                       template=self.template,
-    #                       opex=self.opex,
-    #                       capex=self.capex)
-    #
-    #     b.regulation_bus = self.regulation_bus
-    #     b.regulation_cn = self.regulation_cn
-    #     b.active_prof = self.active_prof
-    #     b.rate_prof = self.rate_prof
-    #     b.Cost_prof = self.Cost_prof
-    #
-    #     return b
 
     def get_from_to_nominal_voltages(self) -> Tuple[float, float]:
         """
@@ -394,7 +410,7 @@ class Transformer2W(ControllableBranchParent):
             else:
                 self.template = obj
 
-    def get_save_data(self):
+    def get_save_data(self) -> Union[None, List[str]]:
         """
         Return the data that matches the edit_headers
         :return:
