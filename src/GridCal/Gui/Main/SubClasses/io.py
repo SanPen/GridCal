@@ -80,6 +80,7 @@ class IoMain(ConfigurationMain):
 
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
+        self.ui.actionAdd_custom_catalogue.triggered.connect(self.select_csv_file)
         self.ui.actionAdd_circuit.triggered.connect(self.add_circuit)
         self.ui.actionExport_circuit_differential.triggered.connect(self.export_circuit_differential)
         self.ui.actionSave.triggered.connect(self.save_file)
@@ -256,7 +257,24 @@ class IoMain(ConfigurationMain):
             filenames = dialogue.selectedFiles()
             self.open_file_now(filenames, post_function)
 
-    def select_csv_file(self, caption='Open CSV file'):
+    # def select_csv_file(self, caption='Open CSV file'):
+    #     """
+    #     Select a CSV file
+    #     :return: csv file path
+    #     """
+    #     files_types = "CSV (*.csv)"
+    #
+    #     filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+    #                                                                     caption=caption,
+    #                                                                     dir=self.project_directory,
+    #                                                                     filter=files_types)
+    #
+    #     if len(filename) > 0:
+    #         return filename
+    #     else:
+    #         return None
+
+    def select_csv_file(self, caption='Open CSV file', post_function=None, title: str = 'Open CSV file'):
         """
         Select a CSV file
         :return: csv file path
@@ -267,6 +285,15 @@ class IoMain(ConfigurationMain):
                                                                         caption=caption,
                                                                         dir=self.project_directory,
                                                                         filter=files_types)
+
+        dialogue = QtWidgets.QFileDialog(None,
+                                         caption=title,
+                                         directory=self.project_directory,
+                                         filter=f"Formats ({files_types})")
+
+        if dialogue.exec():
+            filenames = dialogue.selectedFiles()
+            self.open_file_now(filenames, post_function)
 
         if len(filename) > 0:
             return filename
