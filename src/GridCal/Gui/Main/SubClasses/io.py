@@ -274,31 +274,48 @@ class IoMain(ConfigurationMain):
     #     else:
     #         return None
 
-    def select_csv_file(self, caption='Open CSV file', post_function=None, title: str = 'Open CSV file'):
+    def select_csv_file(self, caption='Open CSV file', post_function=None):
         """
         Select a CSV file
         :return: csv file path
         """
         files_types = "CSV (*.csv)"
 
-        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-                                                                        caption=caption,
-                                                                        dir=self.project_directory,
-                                                                        filter=files_types)
+        # filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+        #                                                                 caption=caption,
+        #                                                                 dir=self.project_directory,
+        #                                                                 filter=files_types)
 
-        dialogue = QtWidgets.QFileDialog(None,
-                                         caption=title,
-                                         directory=self.project_directory,
-                                         filter=f"Formats ({files_types})")
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                            caption=caption,
+                                                            dir=self.project_directory,
+                                                            filter=files_types)
 
-        if dialogue.exec():
-            filenames = dialogue.selectedFiles()
-            self.open_file_now(filenames, post_function)
+        if filename:
+            # Call the post_function if provided
+            if post_function:
+                post_function(filename)
 
-        if len(filename) > 0:
+            # Load the catalogue based on the selected CSV file
+            self.add_custom_catalogue(filename)
+
             return filename
         else:
             return None
+
+        # dialogue = QtWidgets.QFileDialog(None,
+        #                                  caption=title,
+        #                                  directory=self.project_directory,
+        #                                  filter=f"Formats ({files_types})")
+        #
+        # if dialogue.exec():
+        #     filenames = dialogue.selectedFiles()
+        #     self.open_file_now(filenames, post_function)
+        #
+        # if len(filename) > 0:
+        #     return filename
+        # else:
+        #     return None
 
     def open_file_now(self, filenames: Union[str, List[str]],
                       post_function: Union[None, Callable[[], None]] = None) -> None:

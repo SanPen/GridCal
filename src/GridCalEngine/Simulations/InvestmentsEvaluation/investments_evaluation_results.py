@@ -286,17 +286,35 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :return: DataFrame of the results
                 (or None if the result was not understood)
         """
+        # compose the investment names
+        # used_investments = np.zeros(len(self._capex), dtype=object)
+        # for i in range(self._combinations.shape[0]):
+        #     used_investments[i] = ""
+        #     for j in range(self._combinations.shape[1]):
+        #         if self._combinations[i, j] > 0:
+        #             name = self.investment_groups_names[j]
+        #             used_investments[i] += f"{name},"
+
+        # This reads the number label of investments, puts them in order and adds them to the list
+        investments_per_solution = np.zeros(len(self._combinations), dtype=object)
+        for i in range(self._combinations.shape[0]):
+            investments_per_solution[i] = ""
+            for j in range(self._combinations.shape[1]):
+                if self._combinations[i, j] > 0:
+                    name = self.investment_groups_names[j]
+                    investments_per_solution[i] += f"{name},"
+            investments_per_solution[i] = investments_per_solution[i].strip(',')
+
+        used_investments = []
+        for i in range(self._combinations.shape[0]):
+            investments = set()
+            for j in range(self._combinations.shape[1]):
+                if self._combinations[i, j] > 0:
+                    name = f"{j + 1}"  # Removed "Investment" from the name
+                    investments.add(name)
+            used_investments.append(", ".join(sorted(investments, key=lambda x: int(x))))
 
         if result_type in (ResultTypes.InvestmentsReportResults, ResultTypes.InvestmentsParetoReportResults):
-
-            # compose the investment names
-            used_investments = np.zeros(len(self._capex), dtype=object)
-            for i in range(self._combinations.shape[0]):
-                used_investments[i] = ""
-                for j in range(self._combinations.shape[1]):
-                    if self._combinations[i, j] > 0:
-                        name = self.investment_groups_names[j]
-                        used_investments[i] += f"{name},"
 
             columns = ["CAPEX (M€)",
                        "OPEX (M€)",
@@ -494,13 +512,13 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             fig.suptitle(result_type.value)
             plt.tight_layout()
-            used_investments = np.zeros(len(self._capex), dtype=object)
-            for i in range(self._combinations.shape[0]):
-                used_investments[i] = ""
-                for j in range(self._combinations.shape[1]):
-                    if self._combinations[i, j] > 0:
-                        name = self.investment_groups_names[j]
-                        used_investments[i] += f"{name},"
+            # used_investments = np.zeros(len(self._capex), dtype=object)
+            # for i in range(self._combinations.shape[0]):
+            #     used_investments[i] = ""
+            #     for j in range(self._combinations.shape[1]):
+            #         if self._combinations[i, j] > 0:
+            #             name = self.investment_groups_names[j]
+            #             used_investments[i] += f"{name},"
 
             annots = {}
             for i in range(2):
@@ -623,9 +641,14 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             columns = ["CAPEX (M€)", "OPEX (M€)"]
 
             technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
+            max_x_order_of_magnitude = 2
+            max_y_order_of_magnitude = self.calculate_magnitude(max(technical_score))
+            order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
+            scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
+            scaled_financial_score = self._financial * 10 ** -2
 
-            data = np.c_[
-                self._financial, technical_score]
+            # This data will actually be the capex and opex that come out of computation
+            data = np.c_[self._financial, technical_score]
             #    , self._opex]
             y_label = ''
             title = ''
@@ -634,36 +657,27 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             color_norm = plt_colors.Normalize()
             fig = plt.figure(figsize=(8, 6))
             ax3 = plt.subplot(1, 1, 1)
-            scatter_plot = ax3.scatter(self._financial, technical_score, c=self._financial + technical_score)
-            plt.xlabel("Investment cost [M€]")
-            plt.ylabel("Technical cost [M€]")
-
-            ## Put scaling back in when done with everything else ##
-            # Match magnitude of technical score with investment score
-            # max_x_order_of_magnitude = 2  # set to 2 so that costs are in the hundreds of millions
-            # print(self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude,
-            #       self.overload_scale, self.losses_scale, self.voltage_scale)
-            # max_y_order_of_magnitude = self.calculate_magnitude(max(technical_score))
-            # order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
-            # scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
-            # scaled_financial_score = self._financial * 10 ** -2
+            scatter_plot = ax3.scatter(scaled_financial_score, scaled_technical_score,
+                                       c=scaled_financial_score + scaled_technical_score)
+            plt.xlabel("CAPEX [M€]")
+            plt.ylabel("OPEX [M€]")
 
             fig.suptitle(result_type.value)
             plt.tight_layout()
-            used_investments = np.zeros(len(self._capex), dtype=object)
-            for i in range(self._combinations.shape[0]):
-                used_investments[i] = ""
-                for j in range(self._combinations.shape[1]):
-                    if self._combinations[i, j] > 0:
-                        name = self.investment_groups_names[j]
-                        used_investments[i] += f"{name},"
+            # used_investments = np.zeros(len(self._capex), dtype=object)
+            # for i in range(self._combinations.shape[0]):
+            #     used_investments[i] = ""
+            #     for j in range(self._combinations.shape[1]):
+            #         if self._combinations[i, j] > 0:
+            #             name = self.investment_groups_names[j]
+            #             used_investments[i] += f"{name},"
 
             annot = ax3.annotate("", xy=(0, 0), xytext=(20, 20),
-                                textcoords="offset points",
-                                bbox=dict(boxstyle="round", fc="w", pad=0.3),
-                                arrowprops=dict(arrowstyle="->"),
-                                fontsize=8,
-                                zorder=10)
+                                 textcoords="offset points",
+                                 bbox=dict(boxstyle="round", fc="w", pad=0.3),
+                                 arrowprops=dict(arrowstyle="->"),
+                                 fontsize=8,
+                                 zorder=10)
             annot.set_visible(False)
 
             def update_annotation(ind):
@@ -757,4 +771,3 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         else:
             raise Exception('Result type not understood:' + str(result_type))
-
