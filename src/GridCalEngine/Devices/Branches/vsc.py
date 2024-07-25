@@ -221,24 +221,14 @@ class VSC(ControllableBranchParent):
 
         self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
 
-    def get_weight(self):
-        """
-        Get a weight of this line for graph porpuses
-        the weight is the impedance moudule (sqrt(r^2 + x^2))
-        :return: weight value
-        """
-        return np.sqrt(self.R * self.R + self.X * self.X)
-
     def change_base(self, Sbase_old: float, Sbase_new: float):
         """
         Change the inpedance base
         :param Sbase_old: old base (MVA)
         :param Sbase_new: new base (MVA)
         """
+        super().change_base(Sbase_old, Sbase_new)
         b = Sbase_new / Sbase_old
-
-        self.R *= b
-        self.X *= b
         self.G0sw *= b
         self.Beq *= b
 
