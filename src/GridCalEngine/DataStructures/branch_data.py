@@ -107,6 +107,7 @@ class BranchData:
 
         self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
         self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_module_buses: ObjVec = np.zeros(self.nelm, dtype=object)
 
         self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
         self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
@@ -173,6 +174,7 @@ class BranchData:
 
         data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
         data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
+        data.tap_module_buses = self.tap_module_buses[elm_idx]
 
         data.contingency_enabled = self.contingency_enabled[elm_idx]
         data.monitor_loading = self.monitor_loading[elm_idx]
@@ -261,6 +263,7 @@ class BranchData:
 
         data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
         data.tap_module_control_mode = self.tap_module_control_mode.copy()
+        data.tap_module_buses = self.tap_module_buses.copy()
 
         data.contingency_enabled = self.contingency_enabled.copy()
         data.monitor_loading = self.monitor_loading.copy()
@@ -398,6 +401,10 @@ class BranchData:
 
     @property
     def tap(self) -> CxVec:
+        """
+
+        :return:
+        """
         return self.tap_module * np.exp(1.0j * self.tap_angle)
 
     def __len__(self) -> int:

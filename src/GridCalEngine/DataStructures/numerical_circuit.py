@@ -840,8 +840,7 @@ class NumericalCircuit:
                                     Pbus=self.Sbus.real,
                                     tap_module_control_mode=self.branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
-                                    F=self.branch_data.F,
-                                    T=self.branch_data.T,
+                                    tap_controlled_buses=self.branch_data.tap_module_buses,
                                     dc=self.bus_data.is_dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:

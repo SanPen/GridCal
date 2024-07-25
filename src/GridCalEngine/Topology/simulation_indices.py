@@ -72,103 +72,6 @@ def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, Int
     return ref, pq, pv, pqv, p, no_slack
 
 
-@nb.njit(cache=True)
-def compose_generator_voltage_profile(nbus: int,
-                                      gen_bus_indices: np.ndarray,
-                                      gen_vset: np.ndarray,
-                                      gen_status: np.ndarray,
-                                      gen_is_controlled: np.ndarray,
-                                      bat_bus_indices: np.ndarray,
-                                      bat_vset: np.ndarray,
-                                      bat_status: np.ndarray,
-                                      bat_is_controlled: np.ndarray,
-                                      hvdc_bus_f: np.ndarray,
-                                      hvdc_bus_t: np.ndarray,
-                                      hvdc_status: np.ndarray,
-                                      hvdc_vf: np.ndarray,
-                                      hvdc_vt: np.ndarray,
-                                      k_vf_beq: np.ndarray,
-                                      k_vt_m: np.ndarray,
-                                      i_vf_beq: np.ndarray,
-                                      i_vt_m: np.ndarray,
-                                      branch_status: np.ndarray,
-                                      br_vf: np.ndarray,
-                                      br_vt: np.ndarray):
-    """
-    Get the array of voltage set points per bus
-    :param nbus: number of buses
-    :param gen_bus_indices: array of bus indices per generator (ngen)
-    :param gen_vset: array of voltage set points (ngen)
-    :param gen_status: array of generator status (ngen)
-    :param gen_is_controlled: array of values indicating if a generator controls the voltage or not (ngen)
-    :param bat_bus_indices:  array of bus indices per battery (nbatt)
-    :param bat_vset: array of voltage set points (nbatt)
-    :param bat_status: array of battery status (nbatt)
-    :param bat_is_controlled: array of values indicating if a battery controls the voltage or not (nbatt)
-    :param hvdc_bus_f: array of hvdc bus from indices (nhvdc)
-    :param hvdc_bus_t: array of hvdc bus to indices (nhvdc)
-    :param hvdc_status: array of hvdc status (nhvdc)
-    :param hvdc_vf: array of hvdc voltage from set points (nhvdc)
-    :param hvdc_vt: array of hvdc voltage to set points (nhvdc)
-    :param k_vf_beq: indices of the Branches when controlling Vf with Beq
-    :param k_vt_m: indices of the Branches when controlling Vt with ma
-    :param i_vf_beq: indices of the buses where Vf is controlled by Beq
-    :param i_vt_m: indices of the buses where Vt is controlled by ma
-    :param branch_status: array of brach status (nbr)
-    :param br_vf: array of branch voltage from set points (nbr)
-    :param br_vt: array of branch voltage from set points (nbr)
-    :return: Voltage set points array per bus nbus
-    """
-    V = np.ones(nbus, dtype=nb.complex128)
-    used = np.zeros(nbus, dtype=nb.int8)
-    # V = np.ones(nbus, dtype=complex)
-    # used = np.zeros(nbus, dtype=int)
-
-    # generators
-    for i, bus_idx in enumerate(gen_bus_indices):
-        if gen_is_controlled[i]:
-            if used[bus_idx] == 0:
-                if gen_status[i]:
-                    V[bus_idx] = complex(gen_vset[i], 0)
-                    used[bus_idx] = 1
-
-    # batteries
-    for i, bus_idx in enumerate(bat_bus_indices):
-        if bat_is_controlled[i]:
-            if used[bus_idx] == 0:
-                if bat_status[i]:
-                    V[bus_idx] = complex(bat_vset[i], 0)
-                    used[bus_idx] = 1
-
-    # HVDC
-    for i in range(hvdc_status.shape[0]):
-        from_idx = hvdc_bus_f[i]
-        to_idx = hvdc_bus_t[i]
-        if hvdc_status[i] != 0:
-            if used[from_idx] == 0:
-                V[from_idx] = complex(hvdc_vf[i], 0)
-                used[from_idx] = 1
-            if used[to_idx] == 0:
-                V[to_idx] = complex(hvdc_vt[i], 0)
-                used[to_idx] = 1
-
-    # branch - from
-    for k, from_idx in zip(k_vf_beq, i_vf_beq):  # Branches controlling Vf
-        if branch_status[k] != 0:
-            if used[from_idx] == 0:
-                V[from_idx] = complex(br_vf[k], 0)
-                used[from_idx] = 1
-
-    # branch - to
-    for k, from_idx in zip(k_vt_m, i_vt_m):  # Branches controlling Vt
-        if branch_status[k] != 0:
-            if used[from_idx] == 0:
-                V[from_idx] = complex(br_vt[k], 0)
-                used[from_idx] = 1
-
-    return V
-
-
 class SimulationIndices:
     """
     Class to handle the simulation indices
@@ -179,8 +82,7 @@ class SimulationIndices:
                  Pbus: Vec,
                  tap_module_control_mode: List[TapModuleControl],
                  tap_phase_control_mode: List[TapPhaseControl],
-                 F: IntVec,
-                 T: IntVec,
+                 tap_controlled_buses: IntVec,
                  dc: IntVec):
         """
 
@@ -198,6 +100,7 @@ class SimulationIndices:
         # master array of branch control types (nbr)
         self.tap_module_control_mode = tap_module_control_mode
         self.tap_phase_control_mode = tap_phase_control_mode
+        self.tap_controlled_buses = tap_controlled_buses
 
         # AC and DC indices
         self.ac: IntVec = np.where(~dc)[0]
@@ -214,59 +117,14 @@ class SimulationIndices:
         # branch control indices
         self.any_control: bool = False
 
-        # (old iPfsh) indices of the Branches controlling Pf flow with theta sh
+        # indices of the Branches controlling Pf flow with tau
         self.k_pf_tau: IntVec = np.zeros(0, dtype=int)
 
-        # (old iQfma) indices of the Branches controlling Qf with ma
-        self.k_qf_m: IntVec = np.zeros(0, dtype=int)
+        # indices of the Branches when forcing the Qf flow to zero with Beq
+        self.k_qf_beq: IntVec = np.zeros(0, dtype=int)
 
-        # (old iBeqz) indices of the Branches when forcing the Qf flow to zero (aka "the zero condition")
-        self.k_zero_beq: IntVec = np.zeros(0, dtype=int)
-
-        # (old iBeqv) indices of the Branches when controlling Vf with Beq
-        self.k_vf_beq: IntVec = np.zeros(0, dtype=int)
-
-        # (old iVtma) indices of the Branches when controlling Vt with ma
+        # indices of the Branches when controlling V at some bus with m, those buses are accounted as PQV
         self.k_v_m: IntVec = np.zeros(0, dtype=int)
-
-        # (old iQtma) indices of the Branches controlling the Qt flow with ma
-        self.k_qt_m: IntVec = np.zeros(0, dtype=int)
-
-        # (old iPfdp) indices of the drop-Vm converters controlling the power flow with theta sh
-        self.k_pf_dp: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the transformers with controlled tap module
-        self.k_m: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the transformers with controlled tap angle
-        self.k_tau: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the transformers with controlled tap angle and module
-        self.k_mtau: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the buses with controlled tap module
-        self.i_m: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the buses with controlled tap angle
-        self.i_tau: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the buses with controlled tap angle and module
-        self.i_mtau: IntVec = np.zeros(0, dtype=int)
-
-        # (old iPfdp_va) indices of the drop-Va converters controlling the power flow with theta sh
-        self.iPfdp_va: IntVec = np.zeros(0, dtype=int)
-
-        # indices of the converters
-        self.i_vsc: IntVec = np.zeros(0, dtype=int)
-
-        # (old VfBeqbus) indices of the buses where Vf is controlled by Beq
-        self.i_vf_beq: IntVec = np.zeros(0, dtype=int)
-
-        # (old Vtmabus) indices of the buses where Vt is controlled by ma
-        self.i_vt_m: IntVec = np.zeros(0, dtype=int)
-
-        # determine the branch indices (may affect the bus types)
-        # self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
         # determine the bus indices
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
@@ -285,52 +143,11 @@ class SimulationIndices:
         # determine the bus indices
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
-    def compile_control_indices(self,
-                                # control_mode: List[Union[TransformerControlType, ConverterControlType]],
-                                F: IntVec,
-                                T: IntVec) -> None:
-        """
-        This function fills in the lists of indices to control different magnitudes
-
-        VSC Control modes:
-
-        in the paper's scheme:
-        from -> DC
-        to   -> AC
-
-        |   Mode    |   const.1 |   const.2 |   type    |
-        -------------------------------------------------
-        |   1       |   theta   |   Vac     |   I       |
-        |   2       |   Pf      |   Qac     |   I       |
-        |   3       |   Pf      |   Vac     |   I       |
-        -------------------------------------------------
-        |   4       |   Vdc     |   Qac     |   II      |
-        |   5       |   Vdc     |   Vac     |   II      |
-        -------------------------------------------------
-        |   6       | Vdc droop |   Qac     |   III     |
-        |   7       | Vdc droop |   Vac     |   III     |
-        -------------------------------------------------
-
-        Indices where each control goes:
-        mismatch  →  |  ∆Pf	Qf	Qf  Qt	∆Qt
-        variable  →  |  Ɵsh	Beq	m	m	Beq
-        Indices   →  |  Ish	Iqz	Ivf	Ivt	Iqt
-        ------------------------------------
-        VSC 1	     |  -	1	-	1	-   |   AC voltage control (voltage “to”)
-        VSC 2	     |  1	1	-	-	1   |   Active and reactive power control
-        VSC 3	     |  1	1	-	1	-   |   Active power and AC voltage control
-        VSC 4	     |  -	-	1	-	1   |   Dc voltage and Reactive power flow control
-        VSC 5	     |  -	-	-	1	1   |   Ac and Dc voltage control
-        ------------------------------------
-        Transformer 0|	-	-	-	-	-   |   Fixed transformer
-        Transformer 1|	1	-	-	-	-   |   Phase shifter → controls power
-        Transformer 2|	-	-	1	-	-   |   Control the voltage at the “from” side
-        Transformer 3|	-	-	-	1	-   |   Control the voltage at the “to” side
-        Transformer 4|	1	-	1	-	-   |   Control the power flow and the voltage at the “from” side
-        Transformer 5|	1	-	-	1	-   |   Control the power flow and the voltage at the “to” side
-        ------------------------------------
+    def compile_control_indices(self) -> None:
         """
 
+        :return:
+        """
         # indices in the global branch scheme
         k_pf_tau_lst = list()  # indices of the Branches controlling Pf flow with theta sh
         k_qf_m_lst = list()  # indices of the Branches controlling Qf with ma
