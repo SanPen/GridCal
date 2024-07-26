@@ -26,7 +26,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType)
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TapPhaseControl, TapModuleControl)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -865,6 +865,37 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                     if template_elm.device_type == DeviceType.ShuntDevice:
                         if property_name in ['is_controlled', 'Bmin', 'Bmax', 'Vset']:
                             skip = True
+
+                    if template_elm.device_type == DeviceType.VscDevice:
+                        if property_name == 'control_mode':
+                            if "Pdc" in property_value:
+                                elm.tap_phase_control_mode = TapPhaseControl.Pf
+                                skip = True
+                            if "Vac" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Vm
+                                elm.regulation_bus = elm.bus_to
+                                skip = True
+                            if "Vdc" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Vm
+                                elm.regulation_bus = elm.bus_from
+                                skip = True
+                        elif property_name == 'Vac_set':
+                            elm.vset = property_value
+                            skip = True
+
+                        elif property_name == 'Vdc_set':
+                            elm.vset = property_value
+                            skip = True
+
+                    if template_elm.device_type == DeviceType.Transformer2WDevice:
+                        if property_name == 'control_mode':
+                            if "Pf" in property_value:
+                                elm.tap_phase_control_mode = TapPhaseControl.Pf
+                                skip = True
+                            if "V" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Vm
+                                elm.regulation_bus = elm.bus_to
+                                skip = True
 
                     if property_name == 'contingency_enabled':
                         # this is a branch with the legacy property "contingency_enabled", hence, create a contingency

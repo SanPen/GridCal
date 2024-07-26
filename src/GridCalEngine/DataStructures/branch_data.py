@@ -320,6 +320,13 @@ class BranchData:
         """
         return np.where(self.dc != 0)[0]
 
+    def get_series_admittance(self) -> CxVec:
+        """
+
+        :return:
+        """
+        return 1.0 / (self.R + 1.0j * self.X)
+
     def get_linear_series_admittance(self) -> Vec:
         """
         Get the linear version of the series admittance for ACDC systems

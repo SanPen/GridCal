@@ -39,7 +39,8 @@ class AdmittanceMatrices:
                  ytf: CxVec,
                  ytt: CxVec,
                  Yshunt_bus: CxVec,
-                 Gsw: Vec):
+                 Gsw: Vec,
+                 beq: Vec):
         """
         Constructor
         :param Ybus: Admittance matrix
@@ -75,6 +76,8 @@ class AdmittanceMatrices:
         self.Yshunt_bus = Yshunt_bus
 
         self.Gsw = Gsw
+
+        self.beq = beq
 
     def modify_taps(self, m: Vec, m2: Vec, tau: Vec, tau2: Vec,
                     idx: Union[IntVec, None] = None) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix]:
@@ -114,6 +117,23 @@ class AdmittanceMatrices:
         self.Ybus = self.Cf.T * self.Yf + self.Ct.T * self.Yt + sp.diags(self.Yshunt_bus)
 
         return self.Ybus, self.Yf, self.Yt
+
+    def copy(self) -> "AdmittanceMatrices":
+        """
+        Get a deep copy
+        """
+        return AdmittanceMatrices(Ybus=self.Ybus.copy(),
+                                  Yf=self.Yf.copy(),
+                                  Yt=self.Yt.copy(),
+                                  Cf=self.Cf.copy(),
+                                  Ct=self.Ct.copy(),
+                                  yff=self.yff.copy(),
+                                  yft=self.yft.copy(),
+                                  ytf=self.ytf.copy(),
+                                  ytt=self.ytt.copy(),
+                                  Yshunt_bus=self.Yshunt_bus.copy(),
+                                  Gsw=self.Gsw.copy(),
+                                  beq=self.beq.copy())
 
 
 def compute_admittances(R: Vec,
@@ -411,7 +431,8 @@ def compile_y_acdc(Cf: sp.csc_matrix,
                    Beq: Vec,
                    Gsw: Vec,
                    virtual_tap_from: Vec,
-                   virtual_tap_to: Vec) -> Tuple[sp.csc_matrix, sp.csc_matrix, sp.csc_matrix, CxVec, CxVec, CxVec, CxVec, CxVec]:
+                   virtual_tap_to: Vec) -> Tuple[
+    sp.csc_matrix, sp.csc_matrix, sp.csc_matrix, CxVec, CxVec, CxVec, CxVec, CxVec]:
     """
     Compile the admittance matrices using the variable elements
     :param Cf: Connectivity branch-bus "from" with the branch states computed

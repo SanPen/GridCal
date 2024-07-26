@@ -1,7 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
     <file>icons/picture.svg</file>
-    <file>icons/CataloguePrivate.svg</file>
     <file>icons/record.svg</file>
     <file>icons/delete_schematic.svg</file>
     <file>icons/delete_db.svg</file>

@@ -3879,6 +3879,9 @@ QProgressBar::chunk{
                </item>
                <item>
                 <widget class="QCheckBox" name="control_q_checkBox">
+                 <property name="toolTip">
+                  <string>If active, the generators, abtteries, controllable shunts, etc control their reactive power to be within limits.</string>
+                 </property>
                  <property name="text">
                   <string>Control generators Q</string>
                  </property>
@@ -3886,15 +3889,21 @@ QProgressBar::chunk{
                </item>
                <item>
                 <widget class="QCheckBox" name="control_tap_modules_checkBox">
+                 <property name="toolTip">
+                  <string>If active the branches with tap module control such as transformers or VSC converters control some voltage with their tap module</string>
+                 </property>
                  <property name="text">
-                  <string>Control branch taps</string>
+                  <string>Control tap module</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QCheckBox" name="control_tap_phase_checkBox">
+                 <property name="toolTip">
+                  <string>If active the branches with tap phase control such as transformers or VSC converters control their &quot;from&quot; active power flow</string>
+                 </property>
                  <property name="text">
-                  <string>Control branch phase</string>
+                  <string>Control tap phase</string>
                  </property>
                 </widget>
                </item>
@@ -10006,7 +10015,7 @@ QProgressBar::chunk{
   </action>
   <action name="actionAdd_custom_catalogue">
    <property name="icon">
-    <iconset theme="application-x-executable" resource="icons.qrc">
+    <iconset theme="application-x-executable">
      <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
    </property>
    <property name="text">

@@ -623,9 +623,9 @@ class SimulationsMain(TimeEventsMain):
 
         control_q = self.ui.control_q_checkBox.isChecked()
 
-        control_taps_modules = self.ui.control_tap_modules_checkBox()
+        control_taps_modules = self.ui.control_tap_modules_checkBox.isChecked()
 
-        control_taps_phase = self.ui.control_tap_phase_checkBox
+        control_taps_phase = self.ui.control_tap_phase_checkBox.isChecked()
 
         verbose = self.ui.verbositySpinBox.value()
 
