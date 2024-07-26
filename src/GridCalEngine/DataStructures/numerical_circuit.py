@@ -171,15 +171,8 @@ class NumericalCircuit:
         'tap_f',
         'tap_t',
         'k_pf_tau',
-        'k_qf_m',
-        'k_zero_beq',
-        'k_vf_beq',
+        'k_qf_beq',
         'k_v_m',
-        'k_qt_m',
-        'k_pf_dp',
-        'i_vsc',
-        'i_vf_beq',
-        'i_vt_m'
     ]
 
     def __init__(self,
@@ -841,7 +834,8 @@ class NumericalCircuit:
                                     tap_module_control_mode=self.branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
                                     tap_controlled_buses=self.branch_data.tap_module_buses,
-                                    dc=self.bus_data.is_dc)
+                                    is_converter=self.branch_data.is_converter,
+                                    is_dc_bus=self.bus_data.is_dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """
@@ -1157,37 +1151,15 @@ class NumericalCircuit:
         return self.simulation_indices_.k_pf_tau
 
     @property
-    def k_qf_m(self):
+    def k_qf_beq(self):
         """
-        Get k_qf_m
+        Get k_qf_beq
         :return:
         """
         if self.simulation_indices_ is None:
             self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.simulation_indices_.k_qf_m
-
-    @property
-    def k_zero_beq(self):
-        """
-        Get k_zero_beq
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_zero_beq
-
-    @property
-    def k_vf_beq(self):
-        """
-        Get k_vf_beq
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_vf_beq
+        return self.simulation_indices_.k_qf_beq
 
     @property
     def k_v_m(self):
@@ -1199,28 +1171,6 @@ class NumericalCircuit:
             self.simulation_indices_ = self.get_simulation_indices()
 
         return self.simulation_indices_.k_v_m
-
-    @property
-    def k_qt_m(self):
-        """
-        Get k_qt_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_qt_m
-
-    @property
-    def k_pf_dp(self):
-        """
-        Get k_pf_dp
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_pf_dp
 
     @property
     def k_m(self):
@@ -1254,83 +1204,6 @@ class NumericalCircuit:
             self.simulation_indices_ = self.get_simulation_indices()
 
         return self.simulation_indices_.k_mtau
-
-    @property
-    def i_m(self):
-        """
-        Get i_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_m
-
-    @property
-    def i_tau(self):
-        """
-        Get i_tau
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_tau
-
-    @property
-    def i_mtau(self):
-        """
-        Get i_mtau
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_mtau
-
-    @property
-    def iPfdp_va(self):
-        """
-        Get iPfdp_va
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.iPfdp_va
-
-    @property
-    def i_vsc(self):
-        """
-        Get i_vsc
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_vsc
-
-    @property
-    def i_vf_beq(self):
-        """
-        Get i_vf_beq
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_vf_beq
-
-    @property
-    def i_vt_m(self):
-        """
-        Get i_vt_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_vt_m
 
     @property
     def structs_dict(self):
@@ -1629,12 +1502,12 @@ class NumericalCircuit:
             idx_dvm = np.r_[self.pq, self.p]
             idx_dm = np.r_[self.k_qf_m, self.k_qt_m, self.k_v_m]
             idx_dtau = np.r_[self.k_pf_tau, self.k_pf_dp]
-            # idx_dbeq = np.r_[self.k_zero_beq, self.k_vf_beq]
-            idx_dbeq = np.r_[self.k_zero_beq]
+            # idx_dbeq = np.r_[self.k_qf_beq, self.k_vf_beq]
+            idx_dbeq = np.r_[self.k_qf_beq]
 
             idx_dP = np.r_[self.pv, self.pq, self.p, self.pqv]
             idx_dQ = np.r_[self.pq, self.pqv, self.i_vt_m]
-            idx_dQf = np.r_[self.k_qf_m, self.k_zero_beq]
+            idx_dQf = np.r_[self.k_qf_m, self.k_qf_beq]
             idx_dQt = self.k_qt_m
             idx_dPf = self.k_pf_tau
             idx_dPdp = self.k_pf_dp
@@ -1768,25 +1641,11 @@ class NumericalCircuit:
                 index=self.branch_data.names[self.k_pf_tau],
             )
 
-        elif structure_type == 'k_qf_m':
+        elif structure_type == 'k_qf_beq':
             df = pd.DataFrame(
-                data=self.k_qf_m,
-                columns=['k_qf_m'],
-                index=self.branch_data.names[self.k_qf_m],
-            )
-
-        elif structure_type == 'k_zero_beq':
-            df = pd.DataFrame(
-                data=self.k_zero_beq,
-                columns=['k_zero_beq'],
-                index=self.branch_data.names[self.k_zero_beq],
-            )
-
-        elif structure_type == 'k_vf_beq':
-            df = pd.DataFrame(
-                data=self.k_vf_beq,
-                columns=['k_vf_beq'],
-                index=self.branch_data.names[self.k_vf_beq],
+                data=self.k_qf_beq,
+                columns=['k_qf_beq'],
+                index=self.branch_data.names[self.k_qf_beq],
             )
 
         elif structure_type == 'k_v_m':
@@ -1794,41 +1653,6 @@ class NumericalCircuit:
                 data=self.k_v_m,
                 columns=['k_v_m'],
                 index=self.branch_data.names[self.k_v_m],
-            )
-
-        elif structure_type == 'k_qt_m':
-            df = pd.DataFrame(
-                data=self.k_qt_m,
-                columns=['k_qt_m'],
-                index=self.branch_data.names[self.k_qt_m],
-            )
-
-        elif structure_type == 'k_pf_dp':
-            df = pd.DataFrame(
-                data=self.k_pf_dp,
-                columns=['k_pf_dp'],
-                index=self.branch_data.names[self.k_pf_dp],
-            )
-
-        elif structure_type == 'i_vsc':
-            df = pd.DataFrame(
-                data=self.i_vsc,
-                columns=['i_vsc'],
-                index=self.branch_data.names[self.i_vsc],
-            )
-
-        elif structure_type == 'i_vf_beq':
-            df = pd.DataFrame(
-                data=self.i_vf_beq,
-                columns=['i_vf_beq'],
-                index=self.bus_data.names[self.i_vf_beq],
-            )
-
-        elif structure_type == 'i_vt_m':
-            df = pd.DataFrame(
-                data=self.i_vt_m,
-                columns=['i_vt_m'],
-                index=self.bus_data.names[self.i_vt_m],
             )
 
         else:

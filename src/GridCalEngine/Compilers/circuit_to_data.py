@@ -24,7 +24,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode,
-                                        TapPhaseControl, TapModuleControl, HvdcControlType)
+                                        TapModuleControl, HvdcControlType)
 from GridCalEngine.basic_structures import BoolVec
 import GridCalEngine.DataStructures as ds
 
@@ -692,7 +692,7 @@ def get_battery_data(circuit: MultiCircuit,
 
 def fill_parent_branch(i: int,
                        elm: Union[dev.Line, dev.DcLine, dev.Transformer2W,
-                                  dev.Winding, dev.VSC, dev.UPFC, dev.SeriesReactance],
+                       dev.Winding, dev.VSC, dev.UPFC, dev.SeriesReactance],
                        data: ds.BranchData,
                        bus_dict: Dict[Bus, int],
                        apply_temperature: bool,
@@ -808,14 +808,12 @@ def fill_controllable_branch(ii: int,
                               time_series=time_series,
                               is_dc_branch=False)
 
-    data.conn[ii] = elm.conn
-
     if time_series:
 
         data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
         data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
 
-        reg_bus = elm.bus_to if elm.regulation_bus is None else elm.regulation_bus
+        reg_bus = elm.bus_from if elm.regulation_bus is None else elm.regulation_bus
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset_prof[t_idx]
@@ -832,7 +830,7 @@ def fill_controllable_branch(ii: int,
         data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
         data.tap_module_control_mode[ii] = elm.tap_module_control_mode
 
-        reg_bus = elm.bus_to if elm.regulation_bus is None else elm.regulation_bus
+        reg_bus = elm.bus_from if elm.regulation_bus is None else elm.regulation_bus
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset
@@ -935,6 +933,8 @@ def get_branch_data(circuit: MultiCircuit,
                                  opf_results=opf_results,
                                  use_stored_guess=use_stored_guess)
 
+        data.conn[ii] = elm.conn
+
         ii += 1
 
     # windings
@@ -954,6 +954,8 @@ def get_branch_data(circuit: MultiCircuit,
                                      opf_results=opf_results,
                                      use_stored_guess=use_stored_guess)
 
+            data.conn[ii] = elm.conn
+
             ii += 1
 
         else:
@@ -961,7 +963,6 @@ def get_branch_data(circuit: MultiCircuit,
 
     # VSC
     for i, elm in enumerate(circuit.vsc_devices):
-
         # generic stuff
         fill_controllable_branch(ii=ii,
                                  elm=elm,
@@ -975,6 +976,7 @@ def get_branch_data(circuit: MultiCircuit,
                                  opf_results=opf_results,
                                  use_stored_guess=use_stored_guess)
         data.Kdp[ii] = elm.kdp
+        data.is_converter[ii] = True
 
         ii += 1
 

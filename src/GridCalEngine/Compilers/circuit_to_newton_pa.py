@@ -1110,7 +1110,7 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
 
         data.k_pf_tau = control_indices.k_pf_tau
         data.k_qf_m = control_indices.k_qf_m
-        data.k_zero_beq = control_indices.k_zero_beq
+        data.k_zero_beq = control_indices.k_qf_beq
         data.k_vf_beq = control_indices.k_vf_beq
         data.k_vt_m = control_indices.k_v_m
         data.k_qt_m = control_indices.k_qt_m

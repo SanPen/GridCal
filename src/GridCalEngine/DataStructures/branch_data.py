@@ -19,7 +19,7 @@ import pandas as pd
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec, BoolVec
 from typing import List, Tuple, Dict
 
 
@@ -104,15 +104,16 @@ class BranchData:
 
         self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
         self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.tap_module_buses: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_module_buses: IntVec = np.zeros(self.nelm, dtype=int)
+        self.is_converter: BoolVec = np.zeros(self.nelm, dtype=bool)
 
         self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
         self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
 
-        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
-                                                           dtype=int)  # connectivity branch with their "from" bus
-        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
-                                                           dtype=int)  # connectivity branch with their "to" bus
+        # connectivity branch with their "from" bus
+        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
+        # connectivity branch with their "to" bus
+        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
 
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
@@ -172,6 +173,7 @@ class BranchData:
         data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
         data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
         data.tap_module_buses = self.tap_module_buses[elm_idx]
+        data.is_converter = self.is_converter[elm_idx]
 
         data.contingency_enabled = self.contingency_enabled[elm_idx]
         data.monitor_loading = self.monitor_loading[elm_idx]
@@ -258,6 +260,7 @@ class BranchData:
         data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
         data.tap_module_control_mode = self.tap_module_control_mode.copy()
         data.tap_module_buses = self.tap_module_buses.copy()
+        data.is_converter = self.is_converter.copy()
 
         data.contingency_enabled = self.contingency_enabled.copy()
         data.monitor_loading = self.monitor_loading.copy()

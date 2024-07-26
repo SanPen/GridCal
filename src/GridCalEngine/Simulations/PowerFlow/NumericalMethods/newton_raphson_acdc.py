@@ -108,10 +108,10 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     idx_dvm = np.r_[pq, p]
     idx_dm = np.r_[nc.k_qf_m, nc.k_qt_m, nc.k_v_m]
     idx_dtau = np.r_[nc.k_pf_tau, nc.k_pf_dp]
-    idx_dbeq = np.r_[nc.k_zero_beq, nc.k_vf_beq]
+    idx_dbeq = np.r_[nc.k_qf_beq, nc.k_vf_beq]
     idx_dP = np.r_[pv, pq, p, pqv]
     idx_dQ = np.r_[pq, pqv]
-    idx_dQf = np.r_[nc.k_qf_m, nc.k_zero_beq]
+    idx_dQf = np.r_[nc.k_qf_m, nc.k_qf_beq]
     idx_dQt = nc.k_qt_m
     idx_dPf = nc.k_pf_tau
     idx_dPdp = nc.k_pf_dp
@@ -120,7 +120,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     # variables dimensions in Jacobian
     sol_slicer = AcDcSolSlicer(block1=idx_dtheta,
                                block2=idx_dvm,
-                               k_zero_beq=nc.k_zero_beq,
+                               k_zero_beq=nc.k_qf_beq,
                                k_vf_beq=nc.k_vf_beq,
                                k_qf_m=nc.k_qf_m,
                                k_qt_m=nc.k_qt_m,
@@ -171,7 +171,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                          pq=idx_dQ,
                          k_pf_tau=nc.k_pf_tau,
                          k_qf_m=nc.k_qf_m,
-                         k_zero_beq=nc.k_zero_beq,
+                         k_zero_beq=nc.k_qf_beq,
                          k_qt_m=nc.k_qt_m,
                          k_pf_dp=nc.k_pf_dp,
                          i_vf_beq=nc.i_vf_beq,
@@ -300,7 +300,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                      pq=idx_dQ,
                                      k_pf_tau=nc.k_pf_tau,
                                      k_qf_m=nc.k_qf_m,
-                                     k_zero_beq=nc.k_zero_beq,
+                                     k_zero_beq=nc.k_qf_beq,
                                      k_qt_m=nc.k_qt_m,
                                      k_pf_dp=nc.k_pf_dp,
                                      i_vf_beq=nc.i_vf_beq,
@@ -372,7 +372,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                             # re declare the slicer because the indices of pq and pv changed
                             sol_slicer = AcDcSolSlicer(block1=idx_dtheta,
                                                        block2=idx_dvm,
-                                                       k_zero_beq=nc.k_zero_beq,
+                                                       k_zero_beq=nc.k_qf_beq,
                                                        k_vf_beq=nc.k_vf_beq,
                                                        k_qf_m=nc.k_qf_m,
                                                        k_qt_m=nc.k_qt_m,
@@ -397,7 +397,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                                  pq=idx_dQ,
                                                  k_pf_tau=nc.k_pf_tau,
                                                  k_qf_m=nc.k_qf_m,
-                                                 k_zero_beq=nc.k_zero_beq,
+                                                 k_zero_beq=nc.k_qf_beq,
                                                  k_qt_m=nc.k_qt_m,
                                                  k_pf_dp=nc.k_pf_dp,
                                                  i_vf_beq=nc.i_vf_beq,
