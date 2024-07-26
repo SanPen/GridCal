@@ -180,22 +180,27 @@ class ControllableBranchParent(BranchParent):
         self.tap_module = tap_module
         self._tap_module_prof = Profile(default_value=tap_module, data_type=float)
 
+        self.tap_module_max = tap_module_max
+        self.tap_module_min = tap_module_min
+
+        self.tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
+        self._tap_phase_control_mode_prof = Profile(default_value=tap_phase_control_mode, data_type=TapPhaseControl)
+
+        self.Pset = Pset
+        self._Pset_prof = Profile(default_value=Pset, data_type=float)
+
         # Tap angle
         self.tap_phase = tap_phase
         self._tap_phase_prof = Profile(default_value=tap_phase, data_type=float)
 
-        self.tap_module_max = tap_module_max
-        self.tap_module_min = tap_module_min
         self.tap_phase_max = tap_phase_max
         self.tap_phase_min = tap_phase_min
 
-        self.vset = vset
-        self.Pset = Pset
-
-        # self.control_mode: TransformerControlType = control_mode  # Legacy
-
         self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
-        self.tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
+        self._tap_module_control_mode_prof = Profile(default_value=tap_module_control_mode, data_type=TapModuleControl)
+
+        self.vset = vset
+        self._vset_prof = Profile(default_value=vset, data_type=float)
 
         self.regulation_branch: BranchParent = regulation_branch
 
@@ -224,31 +229,35 @@ class ControllableBranchParent(BranchParent):
         self.register(key='tap_module_max', units='', tpe=float, definition='Tap changer module max value')
         self.register(key='tap_module_min', units='', tpe=float, definition='Tap changer module min value')
 
-        self.register(key='tap_phase', units='rad', tpe=float, definition='Angle shift of the tap changer.',
-                      profile_name='tap_phase_prof', old_names=['angle'])
-        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max angle.', old_names=['angle_max'])
-        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min angle.', old_names=['angle_min'])
-
         self.register(key='tap_module_control_mode', units='', tpe=TapModuleControl,
-                      definition='Control available with the tap module')
-
-        self.register(key='tap_phase_control_mode', units='', tpe=TapPhaseControl,
-                      definition='Control available with the tap angle', old_names=['tap_angle_control_mode'])
+                      definition='Control available with the tap module',
+                      profile_name='tap_module_control_mode_prof')
 
         self.register(key='vset', units='p.u.', tpe=float,
-                      definition='Objective voltage at the "to" side of the bus when regulating the tap.')
-
-        self.register(key='Pset', units='p.u.', tpe=float,
-                      definition='Objective power at the "from" side of when regulating the angle.')
-
-        self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
-                      definition='Branch where the controls are applied.', editable=False)
+                      definition='Objective voltage at the "to" side of the bus when regulating the tap.',
+                      profile_name='vset_prof')
 
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
                       definition='Bus where the regulation is applied.', editable=False)
 
         self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
                       definition='Connectivity node where the regulation is applied.', editable=False)
+
+        self.register(key='tap_phase', units='rad', tpe=float, definition='Angle shift of the tap changer.',
+                      profile_name='tap_phase_prof', old_names=['angle'])
+        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max angle.', old_names=['angle_max'])
+        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min angle.', old_names=['angle_min'])
+
+        self.register(key='tap_phase_control_mode', units='', tpe=TapPhaseControl,
+                      definition='Control available with the tap angle', old_names=['tap_angle_control_mode'],
+                      profile_name='tap_phase_control_mode_prof')
+
+        self.register(key='Pset', units='p.u.', tpe=float,
+                      definition='Objective power at the "from" side of when regulating the angle.',
+                      profile_name='Pset_prof')
+
+        # self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
+        #               definition='Branch where the controls are applied.', editable=False)
 
         self.register(key='temp_base', units='ºC', tpe=float, definition='Base temperature at which R was measured.')
         self.register(key='temp_oper', units='ºC', tpe=float, definition='Operation temperature to modify R.',
@@ -291,6 +300,74 @@ class ControllableBranchParent(BranchParent):
             self._tap_phase_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a tap_phase_prof')
+
+    @property
+    def vset_prof(self) -> Profile:
+        """
+        vset profile
+        :return: Profile
+        """
+        return self._vset_prof
+
+    @vset_prof.setter
+    def vset_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._vset_prof = val
+        elif isinstance(val, np.ndarray):
+            self._vset_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a vset_prof')
+
+    @property
+    def Pset_prof(self) -> Profile:
+        """
+        vset profile
+        :return: Profile
+        """
+        return self._Pset_prof
+
+    @Pset_prof.setter
+    def Pset_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Pset_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Pset_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Pset_prof')
+
+    @property
+    def tap_module_control_mode_prof(self) -> Profile:
+        """
+        _tap_module_control_mode_prof profile
+        :return: Profile
+        """
+        return self._tap_module_control_mode_prof
+
+    @tap_module_control_mode_prof.setter
+    def tap_module_control_mode_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._tap_module_control_mode_prof = val
+        elif isinstance(val, np.ndarray):
+            self._tap_module_control_mode_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_control_mode_prof')
+
+    @property
+    def tap_phase_control_mode_prof(self) -> Profile:
+        """
+        tap_phase_control_mode_prof profile
+        :return: Profile
+        """
+        return self._tap_phase_control_mode_prof
+
+    @tap_phase_control_mode_prof.setter
+    def tap_phase_control_mode_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._tap_phase_control_mode_prof = val
+        elif isinstance(val, np.ndarray):
+            self._tap_phase_control_mode_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_phase_control_mode_prof')
 
     @property
     def temp_oper_prof(self) -> Profile:

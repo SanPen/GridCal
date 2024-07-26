@@ -129,6 +129,30 @@ class SimulationIndices:
         # determine the bus indices
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=bus_types)
 
+    @property
+    def k_m(self):
+        """
+        Return a composition of all indices affected by m
+        :return:
+        """
+        return self.k_v_m
+
+    @property
+    def k_tau(self):
+        """
+        Return a composition of all indices affected by tau
+        :return:
+        """
+        return self.k_pf_tau
+
+    @property
+    def k_mtau(self):
+        """
+        Return a composition of all indices affected by m|tau
+        :return:
+        """
+        return np.r_[self.k_m, self.k_tau]
+
     def recompile_types(self,
                         bus_types: IntVec,
                         Pbus: Vec):

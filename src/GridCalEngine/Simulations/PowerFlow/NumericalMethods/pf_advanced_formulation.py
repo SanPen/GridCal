@@ -184,7 +184,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.Qmin = Qmin
         self.Qmax = Qmax
 
-        self.Pset = nc.branch_data.Pfset[nc.k_pf_tau]
+        self.Pset = nc.branch_data.Pset[nc.k_pf_tau]
 
         self.k_pf_tau: IntVec = nc.k_pf_tau
         self.k_v_m: IntVec = nc.k_v_m

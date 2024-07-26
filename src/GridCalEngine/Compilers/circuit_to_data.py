@@ -17,6 +17,7 @@
 from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING, Tuple
 from GridCalEngine.basic_structures import Logger
+import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
@@ -687,6 +688,171 @@ def get_battery_data(circuit: MultiCircuit,
     return data
 
 
+def fill_parent_branch(i: int,
+                       elm: Union[dev.Line, dev.DcLine, dev.Transformer2W,
+                                  dev.Winding, dev.VSC, dev.UPFC, dev.SeriesReactance],
+                       data: ds.BranchData,
+                       bus_dict: Dict[Bus, int],
+                       apply_temperature: bool,
+                       branch_tolerance_mode: BranchImpedanceMode,
+                       t_idx: int = -1,
+                       time_series: bool = False,
+                       is_dc_branch: bool = False, ):
+    """
+
+    :param i:
+    :param elm:
+    :param data:
+    :param bus_dict:
+    :param apply_temperature:
+    :param branch_tolerance_mode:
+    :param t_idx:
+    :param time_series:
+    :param is_dc_branch:
+    :return:
+    """
+    data.names[i] = elm.name
+    data.idtag[i] = elm.idtag
+
+    data.mttf[i] = elm.mttf
+    data.mttr[i] = elm.mttr
+
+    if time_series:
+        data.active[i] = elm.active_prof[t_idx]
+        data.rates[i] = elm.rate_prof[t_idx]
+        data.contingency_rates[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
+        data.protection_rates[i] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
+
+        data.overload_cost[i] = elm.Cost_prof[t_idx]
+
+    else:
+        data.active[i] = elm.active
+        data.rates[i] = elm.rate
+        data.contingency_rates[i] = elm.rate * elm.contingency_factor
+        data.protection_rates[i] = elm.rate * elm.protection_rating_factor
+
+        data.overload_cost[i] = elm.Cost
+
+    f = bus_dict[elm.bus_from]
+    t = bus_dict[elm.bus_to]
+    data.C_branch_bus_f[i, f] = 1
+    data.C_branch_bus_t[i, t] = 1
+    data.F[i] = f
+    data.T[i] = t
+
+    if apply_temperature:
+        data.R[i] = elm.R_corrected
+    else:
+        data.R[i] = elm.R
+
+    if branch_tolerance_mode == BranchImpedanceMode.Lower:
+        data.R[i] *= (1 - elm.tolerance / 100.0)
+    elif branch_tolerance_mode == BranchImpedanceMode.Upper:
+        data.R[i] *= (1 + elm.tolerance / 100.0)
+
+    if not is_dc_branch:
+        data.X[i] = elm.X
+        data.B[i] = elm.B
+
+        data.R0[i] = elm.R0
+        data.X0[i] = elm.X0
+        data.B0[i] = elm.B0
+
+        data.R2[i] = elm.R2
+        data.X2[i] = elm.X2
+        data.B2[i] = elm.B2
+
+    data.contingency_enabled[i] = int(elm.contingency_enabled)
+    data.monitor_loading[i] = int(elm.monitor_loading)
+
+    data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
+
+    return f, t
+
+
+def fill_controllable_branch(ii: int,
+                             elm: Union[dev.Transformer2W, dev.Winding, dev.VSC, dev.UPFC],
+                             data: ds.BranchData,
+                             bus_data: ds.BusData,
+                             bus_dict: Dict[Bus, int],
+                             apply_temperature: bool,
+                             branch_tolerance_mode: BranchImpedanceMode,
+                             t_idx: int = -1,
+                             time_series: bool = False,
+                             opf_results: Union[OptimalPowerFlowResults, None] = None,
+                             use_stored_guess: bool = False, ):
+    """
+
+    :param ii:
+    :param elm:
+    :param data:
+    :param bus_data:
+    :param bus_dict:
+    :param apply_temperature:
+    :param branch_tolerance_mode:
+    :param t_idx:
+    :param time_series:
+    :param opf_results:
+    :param use_stored_guess:
+    :return:
+    """
+    _, t = fill_parent_branch(i=ii,
+                              elm=elm,
+                              data=data,
+                              bus_dict=bus_dict,
+                              apply_temperature=apply_temperature,
+                              branch_tolerance_mode=branch_tolerance_mode,
+                              t_idx=t_idx,
+                              time_series=time_series,
+                              is_dc_branch=False)
+
+    data.conn[ii] = elm.conn
+
+    if time_series:
+
+        data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
+        data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
+
+        reg_bus = elm.bus_to if elm.regulation_bus is None else elm.regulation_bus
+        data.tap_module_buses[ii] = bus_dict[reg_bus]
+
+        data.Pset[ii] = elm.Pset_prof[t_idx]
+        data.vset[ii] = elm.vset_prof[t_idx]
+
+        if opf_results is not None:
+            data.tap_module[ii] = elm.tap_module
+            data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
+        else:
+            data.tap_module[ii] = elm.tap_module_prof[t_idx]
+            data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
+    else:
+
+        data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
+        data.tap_module_control_mode[ii] = elm.tap_module_control_mode
+
+        reg_bus = elm.bus_to if elm.regulation_bus is None else elm.regulation_bus
+        data.tap_module_buses[ii] = bus_dict[reg_bus]
+
+        data.Pset[ii] = elm.Pset
+        data.vset[ii] = elm.vset
+
+        if opf_results is not None:
+            data.tap_module[ii] = elm.tap_module
+            data.tap_angle[ii] = opf_results.phase_shift[ii]
+        else:
+            data.tap_module[ii] = elm.tap_module
+            data.tap_angle[ii] = elm.tap_phase
+
+    data.tap_module_min[ii] = elm.tap_module_min
+    data.tap_module_max[ii] = elm.tap_module_max
+    data.tap_angle_min[ii] = elm.tap_phase_min
+    data.tap_angle_max[ii] = elm.tap_phase_max
+
+    if not use_stored_guess:
+        if elm.tap_module_control_mode == TapModuleControl.Vm:
+            bus_data.Vbus[t] = elm.vset
+
+
 def get_branch_data(circuit: MultiCircuit,
                     bus_dict: Dict[Bus, int],
                     bus_data: ds.BusData,
@@ -702,6 +868,7 @@ def get_branch_data(circuit: MultiCircuit,
     Compile BranchData for a time step or the snapshot
     :param circuit: MultiCircuit
     :param bus_dict: Dictionary of buses to compute the indices
+    :param bus_data: BusData
     :param bus_voltage_used:
     :param apply_temperature: apply the temperature correction?
     :param branch_tolerance_mode: BranchImpedanceMode
@@ -721,200 +888,46 @@ def get_branch_data(circuit: MultiCircuit,
     # Compile the lines
     for i, elm in enumerate(circuit.lines):
         # generic stuff
-        data.names[i] = elm.name
-        data.idtag[i] = elm.idtag
-
-        data.mttf[i] = elm.mttf
-        data.mttr[i] = elm.mttr
-
-        if time_series:
-            data.active[i] = elm.active_prof[t_idx]
-            data.rates[i] = elm.rate_prof[t_idx]
-            data.contingency_rates[i] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.protection_rates[i] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-
-            data.overload_cost[i] = elm.Cost_prof[t_idx]
-
-        else:
-            data.active[i] = elm.active
-            data.rates[i] = elm.rate
-            data.contingency_rates[i] = elm.rate * elm.contingency_factor
-            data.protection_rates[i] = elm.rate * elm.protection_rating_factor
-
-            data.overload_cost[i] = elm.Cost
-
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-        data.C_branch_bus_f[i, f] = 1
-        data.C_branch_bus_t[i, t] = 1
-        data.F[i] = f
-        data.T[i] = t
-
-        if apply_temperature:
-            data.R[i] = elm.R_corrected
-        else:
-            data.R[i] = elm.R
-
-        if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[i] *= (1 - elm.tolerance / 100.0)
-        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[i] *= (1 + elm.tolerance / 100.0)
-
-        data.X[i] = elm.X
-        data.B[i] = elm.B
-
-        data.R0[i] = elm.R0
-        data.X0[i] = elm.X0
-        data.B0[i] = elm.B0
-
-        data.R2[i] = elm.R2
-        data.X2[i] = elm.X2
-        data.B2[i] = elm.B2
-
-        # data.conn[i] = elm.conn
-
-        data.contingency_enabled[i] = int(elm.contingency_enabled)
-        data.monitor_loading[i] = int(elm.monitor_loading)
-
-        data.virtual_tap_f[i], data.virtual_tap_t[i] = elm.get_virtual_taps()
-
-        data.tap_phase_control_mode[i] = 0
-        data.tap_module_control_mode[i] = 0
+        fill_parent_branch(i=i,
+                           elm=elm,
+                           data=data,
+                           bus_dict=bus_dict,
+                           apply_temperature=apply_temperature,
+                           branch_tolerance_mode=branch_tolerance_mode,
+                           t_idx=t_idx,
+                           time_series=time_series,
+                           is_dc_branch=False)
 
         ii += 1
 
     # DC-lines
     for i, elm in enumerate(circuit.dc_lines):
         # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        data.dc[ii] = 1
-
-        if time_series:
-            data.active[ii] = elm.active_prof[t_idx]
-            data.rates[ii] = elm.rate_prof[t_idx]
-            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-            data.overload_cost[ii] = elm.Cost_prof[t_idx]
-        else:
-            data.active[ii] = elm.active
-            data.rates[ii] = elm.rate
-            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
-            data.overload_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
-
-        data.tap_phase_control_mode[i] = 0
-        data.tap_module_control_mode[i] = 0
-
-        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
-
-        if apply_temperature:
-            data.R[ii] = elm.R_corrected
-        else:
-            data.R[ii] = elm.R
-
-        if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[ii] *= (1 - elm.tolerance / 100.0)
-        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[ii] *= (1 + elm.tolerance / 100.0)
+        fill_parent_branch(i=ii,
+                           elm=elm,
+                           data=data,
+                           bus_dict=bus_dict,
+                           apply_temperature=apply_temperature,
+                           branch_tolerance_mode=branch_tolerance_mode,
+                           t_idx=t_idx,
+                           time_series=time_series,
+                           is_dc_branch=True)
 
         ii += 1
 
     # 2-winding transformers
     for i, elm in enumerate(circuit.transformers2w):
-
-        # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        if time_series:
-            data.active[ii] = elm.active_prof[t_idx]
-            data.rates[ii] = elm.rate_prof[t_idx]
-            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-            data.overload_cost[ii] = elm.Cost_prof[t_idx]
-        else:
-            data.active[ii] = elm.active
-            data.rates[ii] = elm.rate
-            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
-            data.overload_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.R[ii] = elm.R
-        data.X[ii] = elm.X
-        data.G[ii] = elm.G
-        data.B[ii] = elm.B
-
-        data.R0[ii] = elm.R0
-        data.X0[ii] = elm.X0
-        data.G0[ii] = elm.G0
-        data.B0[ii] = elm.B0
-
-        data.R2[ii] = elm.R2
-        data.X2[ii] = elm.X2
-        data.G2[ii] = elm.G2
-        data.B2[ii] = elm.B2
-
-        data.conn[ii] = elm.conn
-
-        if time_series:
-            if opf_results is not None:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
-            else:
-                data.tap_module[ii] = elm.tap_module_prof[t_idx]
-                data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
-        else:
-            if opf_results is not None:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = opf_results.phase_shift[ii]
-            else:
-                data.tap_module[ii] = elm.tap_module
-                data.tap_angle[ii] = elm.tap_phase
-
-        data.tap_module_min[ii] = elm.tap_module_min
-        data.tap_module_max[ii] = elm.tap_module_max
-        data.tap_angle_min[ii] = elm.tap_phase_min
-        data.tap_angle_max[ii] = elm.tap_phase_max
-
-        data.Pfset[ii] = elm.Pset
-
-        data.tap_phase_control_mode[i] = elm.tap_phase_control_mode
-        data.tap_module_control_mode[i] = elm.tap_module_control_mode
-        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
-
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
-
-        if not use_stored_guess:
-            if elm.tap_module_control_mode == TapModuleControl.Vm:
-                bus_data.Vbus[t] = elm.vset
+        fill_controllable_branch(ii=ii,
+                                 elm=elm,
+                                 data=data,
+                                 bus_data=bus_data,
+                                 bus_dict=bus_dict,
+                                 apply_temperature=apply_temperature,
+                                 branch_tolerance_mode=branch_tolerance_mode,
+                                 t_idx=t_idx,
+                                 time_series=time_series,
+                                 opf_results=opf_results,
+                                 use_stored_guess=use_stored_guess)
 
         ii += 1
 
@@ -923,81 +936,17 @@ def get_branch_data(circuit: MultiCircuit,
 
         if elm.bus_from is not None and elm.bus_to is not None:
             # generic stuff
-            data.names[ii] = elm.name
-            data.idtag[ii] = elm.idtag
-
-            data.mttf[ii] = elm.mttf
-            data.mttr[ii] = elm.mttr
-
-            if time_series:
-                data.active[ii] = elm.active_prof[t_idx]
-                data.rates[ii] = elm.rate_prof[t_idx]
-                data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-                data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-                data.overload_cost[ii] = elm.Cost_prof[t_idx]
-            else:
-                data.active[ii] = elm.active
-                data.rates[ii] = elm.rate
-                data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-                data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
-                data.overload_cost[ii] = elm.Cost
-
-            f = bus_dict[elm.bus_from]
-            t = bus_dict[elm.bus_to]
-            data.C_branch_bus_f[ii, f] = 1
-            data.C_branch_bus_t[ii, t] = 1
-            data.F[ii] = f
-            data.T[ii] = t
-
-            data.R[ii] = elm.R
-            data.X[ii] = elm.X
-            data.G[ii] = elm.G
-            data.B[ii] = elm.B
-
-            data.R0[ii] = elm.R0
-            data.X0[ii] = elm.X0
-            data.G0[ii] = elm.G0
-            data.B0[ii] = elm.B0
-
-            data.R2[ii] = elm.R2
-            data.X2[ii] = elm.X2
-            data.G2[ii] = elm.G2
-            data.B2[ii] = elm.B2
-
-            data.conn[ii] = elm.conn
-
-            if time_series:
-                if opf_results is not None:
-                    data.tap_module[ii] = elm.tap_module
-                    data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
-                else:
-                    data.tap_module[ii] = elm.tap_module_prof[t_idx]
-                    data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
-            else:
-                if opf_results is not None:
-                    data.tap_module[ii] = elm.tap_module
-                    data.tap_angle[ii] = opf_results.phase_shift[ii]
-                else:
-                    data.tap_module[ii] = elm.tap_module
-                    data.tap_angle[ii] = elm.tap_phase
-
-            data.tap_module_min[ii] = elm.tap_module_min
-            data.tap_module_max[ii] = elm.tap_module_max
-            data.tap_angle_min[ii] = elm.tap_phase_min
-            data.tap_angle_max[ii] = elm.tap_phase_max
-
-            data.Pfset[ii] = elm.Pset
-
-            data.tap_phase_control_mode[i] = elm.tap_phase_control_mode
-            data.tap_module_control_mode[i] = elm.tap_module_control_mode
-            data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
-
-            data.contingency_enabled[ii] = int(elm.contingency_enabled)
-            data.monitor_loading[ii] = int(elm.monitor_loading)
-
-            if not use_stored_guess:
-                if elm.tap_module_control_mode == TapModuleControl.Vm:
-                    bus_data.Vbus[t] = elm.vset
+            fill_controllable_branch(ii=ii,
+                                     elm=elm,
+                                     data=data,
+                                     bus_data=bus_data,
+                                     bus_dict=bus_dict,
+                                     apply_temperature=apply_temperature,
+                                     branch_tolerance_mode=branch_tolerance_mode,
+                                     t_idx=t_idx,
+                                     time_series=time_series,
+                                     opf_results=opf_results,
+                                     use_stored_guess=use_stored_guess)
 
             ii += 1
 
@@ -1008,74 +957,18 @@ def get_branch_data(circuit: MultiCircuit,
     for i, elm in enumerate(circuit.vsc_devices):
 
         # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        if time_series:
-            data.active[ii] = elm.active_prof[t_idx]
-            data.rates[ii] = elm.rate_prof[t_idx]
-            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-            data.overload_cost[ii] = elm.Cost_prof[t_idx]
-        else:
-            data.active[ii] = elm.active
-            data.rates[ii] = elm.rate
-            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
-            data.overload_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.R[ii] = elm.R
-        data.X[ii] = elm.X
-
-        data.R0[ii] = elm.R0
-        data.X0[ii] = elm.X0
-
-        data.R2[ii] = elm.R2
-        data.X2[ii] = elm.X2
-
-        data.G0sw[ii] = elm.G0sw
-        data.Beq[ii] = elm.Beq
-        data.tap_module[ii] = elm.tap_module
-        data.tap_module_max[ii] = elm.tap_module_max
-        data.tap_module_min[ii] = elm.tap_module_min
-        data.alpha1[ii] = elm.alpha1
-        data.alpha2[ii] = elm.alpha2
-        data.alpha3[ii] = elm.alpha3
-        data.k[ii] = elm.k  # 0.8660254037844386  # sqrt(3)/2 (do not confuse with k droop)
-
-        if time_series:
-            if opf_results is not None:
-                data.tap_angle[ii] = opf_results.phase_shift[t_idx, ii]
-            else:
-                data.tap_angle[ii] = elm.tap_phase
-        else:
-            if opf_results is not None:
-                data.tap_angle[ii] = opf_results.phase_shift[ii]
-            else:
-                data.tap_angle[ii] = elm.tap_phase
-
-        data.tap_angle_min[ii] = elm.tap_phase_min
-        data.tap_angle_max[ii] = elm.tap_phase_max
-        data.Pfset[ii] = elm.Pset
-        data.Qtset[ii] = 0.0
+        fill_controllable_branch(ii=ii,
+                                 elm=elm,
+                                 data=data,
+                                 bus_data=bus_data,
+                                 bus_dict=bus_dict,
+                                 apply_temperature=apply_temperature,
+                                 branch_tolerance_mode=branch_tolerance_mode,
+                                 t_idx=t_idx,
+                                 time_series=time_series,
+                                 opf_results=opf_results,
+                                 use_stored_guess=use_stored_guess)
         data.Kdp[ii] = elm.kdp
-        # data.vf_set[ii] = elm.Vac_set
-        # data.vt_set[ii] = elm.Vdc_set
-        data.tap_phase_control_mode[i] = elm.tap_phase_control_mode
-        data.tap_module_control_mode[i] = elm.tap_module_control_mode
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
 
         ii += 1
 
@@ -1121,7 +1014,7 @@ def get_branch_data(circuit: MultiCircuit,
         ysh1 = elm.get_ysh1()
         data.Beq[ii] = ysh1.imag
 
-        data.Pfset[ii] = elm.Pfset
+        data.Pset[ii] = elm.Pfset
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
@@ -1134,59 +1027,15 @@ def get_branch_data(circuit: MultiCircuit,
     # Series reactance
     for i, elm in enumerate(circuit.series_reactances):
         # generic stuff
-        f = bus_dict[elm.bus_from]
-        t = bus_dict[elm.bus_to]
-
-        data.names[ii] = elm.name
-        data.idtag[ii] = elm.idtag
-
-        data.mttf[ii] = elm.mttf
-        data.mttr[ii] = elm.mttr
-
-        data.dc[ii] = 0
-
-        if time_series:
-            data.active[ii] = elm.active_prof[t_idx]
-            data.rates[ii] = elm.rate_prof[t_idx]
-            data.contingency_rates[ii] = elm.rate_prof[t_idx] * elm.contingency_factor_prof[t_idx]
-            data.protection_rates[ii] = elm.rate_prof[t_idx] * elm.protection_rating_factor_prof[t_idx]
-            data.overload_cost[ii] = elm.Cost_prof[t_idx]
-        else:
-            data.active[ii] = elm.active
-            data.rates[ii] = elm.rate
-            data.contingency_rates[ii] = elm.rate * elm.contingency_factor
-            data.protection_rates[ii] = elm.rate * elm.protection_rating_factor
-            data.overload_cost[ii] = elm.Cost
-
-        data.C_branch_bus_f[ii, f] = 1
-        data.C_branch_bus_t[ii, t] = 1
-        data.F[ii] = f
-        data.T[ii] = t
-
-        data.contingency_enabled[ii] = int(elm.contingency_enabled)
-        data.monitor_loading[ii] = int(elm.monitor_loading)
-
-        data.tap_phase_control_mode[i] = 0
-        data.tap_module_control_mode[i] = 0
-
-        data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
-
-        if apply_temperature:
-            data.R[ii] = elm.R_corrected
-        else:
-            data.R[ii] = elm.R
-
-        if branch_tolerance_mode == BranchImpedanceMode.Lower:
-            data.R[ii] *= (1 - elm.tolerance / 100.0)
-        elif branch_tolerance_mode == BranchImpedanceMode.Upper:
-            data.R[ii] *= (1 + elm.tolerance / 100.0)
-
-        data.X[ii] = elm.X
-        data.R0[ii] = elm.R0
-        data.X0[ii] = elm.X0
-
-        data.R2[ii] = elm.R2
-        data.X2[ii] = elm.X2
+        fill_parent_branch(i=ii,
+                           elm=elm,
+                           data=data,
+                           bus_dict=bus_dict,
+                           apply_temperature=apply_temperature,
+                           branch_tolerance_mode=branch_tolerance_mode,
+                           t_idx=t_idx,
+                           time_series=time_series,
+                           is_dc_branch=False)
         ii += 1
 
     return data
