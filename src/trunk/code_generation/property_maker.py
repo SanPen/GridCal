@@ -1,7 +1,7 @@
 lst = [
     "k_pf_tau",
     "k_qf_m",
-    "k_zero_beq",
+    "k_qf_beq",
     "k_vf_beq",
     "k_v_m",
     "k_qt_m",

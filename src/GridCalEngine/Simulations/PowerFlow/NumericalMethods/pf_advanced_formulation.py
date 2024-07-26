@@ -188,7 +188,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.k_pf_tau: IntVec = nc.k_pf_tau
         self.k_v_m: IntVec = nc.k_v_m
-        self.k_qf_beq: IntVec = nc.k_zero_beq
+        self.k_qf_beq: IntVec = nc.k_qf_beq
 
         self.idx_dQf = self.k_qf_beq
         self.idx_dbeq = self.k_qf_beq

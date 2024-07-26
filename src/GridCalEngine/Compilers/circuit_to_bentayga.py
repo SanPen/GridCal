@@ -616,7 +616,7 @@ def get_snapshots_from_bentayga(circuit: MultiCircuit):
 
         data.k_pf_tau = btg_data.control_indices.k_pf_tau
         data.k_qf_m = btg_data.control_indices.k_qf_m
-        data.k_zero_beq = btg_data.control_indices.k_zero_beq
+        data.k_zero_beq = btg_data.control_indices.k_qf_beq
         data.k_vf_beq = btg_data.control_indices.k_vf_beq
         data.k_vt_m = btg_data.control_indices.k_v_m
         data.k_qt_m = btg_data.control_indices.k_qt_m
