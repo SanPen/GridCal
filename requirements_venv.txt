@@ -16,7 +16,7 @@ toml==0.10.0
 tox==3.13.2
 virtualenv==16.7.2
 wcwidth==0.1.7
-zipp==0.5.2
+zipp==3.19.1
 numba>=0.46
 Cython
 nptyping
