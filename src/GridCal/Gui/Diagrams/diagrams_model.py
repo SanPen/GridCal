@@ -72,16 +72,17 @@ class DiagramsModel(QtCore.QAbstractListModel):
         """
         if index.isValid():
 
-            diagram = self.items[index.row()]
+            if index.row() < len(self.items):
+                diagram = self.items[index.row()]
 
-            if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                return diagram.name
-            elif role == QtCore.Qt.ItemDataRole.DecorationRole:
+                if role == QtCore.Qt.ItemDataRole.DisplayRole:
+                    return diagram.name
+                elif role == QtCore.Qt.ItemDataRole.DecorationRole:
 
-                if isinstance(diagram, SchematicWidget):
-                    return self.bus_branch_editor_icon
-                elif isinstance(diagram, GridMapWidget):
-                    return self.map_editor_icon
+                    if isinstance(diagram, SchematicWidget):
+                        return self.bus_branch_editor_icon
+                    elif isinstance(diagram, GridMapWidget):
+                        return self.map_editor_icon
 
         return None
 

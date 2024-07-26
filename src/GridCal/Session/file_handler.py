@@ -35,10 +35,14 @@ class FileOpenThread(QThread):
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, file_name: Union[str, List[str]]):
+    def __init__(self,
+                 file_name: Union[str, List[str]],
+                 previous_circuit: Union[MultiCircuit, None] = None):
         """
         Constructor
         :param file_name: file name (s)
+        :param previous_circuit: we could provide an additional circuit.
+                                This is relevant if loading grid incrementals that rely on existing data
         """
         QThread.__init__(self)
 
@@ -55,6 +59,8 @@ class FileOpenThread(QThread):
         self.cgmes_logger: DataLogger = DataLogger()
 
         self.json_files = dict()
+
+        self._previous_circuit = previous_circuit
 
         self.__cancel__ = False
 
@@ -103,7 +109,8 @@ class FileOpenThread(QThread):
 
         self.logger = Logger()
 
-        file_handler = FileOpen(file_name=self.file_name)
+        file_handler = FileOpen(file_name=self.file_name,
+                                previous_circuit=self._previous_circuit)
 
         try:
             self.circuit = file_handler.open(text_func=self.progress_text.emit,

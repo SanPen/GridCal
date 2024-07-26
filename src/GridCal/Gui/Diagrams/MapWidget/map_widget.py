@@ -480,13 +480,17 @@ class MapWidget(QWidget):
         Set the current tile source
         :param tile_src: Tiles
         """
+
+        level, longitude, latitude = self.get_level_and_position()
+
         if tile_src.TilesetName != self._tile_src.TilesetName:  # avoid changing tilesets to themselves
             self._tile_src: Tiles = tile_src
             self._tile_src.setCallback(self.on_tile_available)
 
-            self.GotoLevelAndPosition(level=tile_src.min_level,
-                                      longitude=0.0,
-                                      latitude=0.0)
+            self.GotoLevelAndPosition(level=level,
+                                      longitude=longitude,
+                                      latitude=latitude)
+            self.view.centerSchema()
 
     @property
     def max_level(self):

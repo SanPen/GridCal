@@ -181,6 +181,7 @@ class SimulationsMain(TimeEventsMain):
             InvestmentEvaluationMethod.Independent,
             InvestmentEvaluationMethod.NSGA3,
             InvestmentEvaluationMethod.MVRSM,
+            InvestmentEvaluationMethod.MixedVariableGA,
         ]
         self.investment_evaluation_method_dict = OrderedDict()
         lst = list()

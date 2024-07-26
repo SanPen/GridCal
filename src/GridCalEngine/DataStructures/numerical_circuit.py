@@ -841,7 +841,7 @@ class NumericalCircuit:
                                     control_mode=self.branch_data.control_mode,
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
-                                    dc=self.branch_data.dc)
+                                    dc=self.bus_data.is_dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """

@@ -79,7 +79,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # self.api_object: LineLocation = api_object
         self.index = index
 
-        self.resize(r)
+        self.resize(r * 10)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
@@ -217,23 +217,18 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         menu = QMenu()
 
         add_menu_entry(menu=menu,
-                       text="Add",
-                       icon_path="",
-                       function_ptr=self.AddFunction)
-
-        add_menu_entry(menu=menu,
-                       text="Split",
-                       icon_path="",
-                       function_ptr=self.SplitFunction)
-
-        add_menu_entry(menu=menu,
                        text="Merge",
                        icon_path="",
                        function_ptr=self.MergeFunction)
 
         add_menu_entry(menu=menu,
-                       text="Remove",
-                       icon_path="",
+                       text="Split",
+                       icon_path=":/Icons/icons/divide.svg",
+                       function_ptr=self.SplitFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Delete",
+                       icon_path=":/Icons/icons/delete.svg",
                        function_ptr=self.RemoveFunction)
 
         menu.exec_(event.screenPos())
