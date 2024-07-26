@@ -93,11 +93,8 @@ class BranchData:
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
-        self.Pfset: Vec = np.zeros(nelm, dtype=float)
-        self.Qfset: Vec = np.zeros(nelm, dtype=float)
-        self.Qtset: Vec = np.zeros(nelm, dtype=float)
-        self.vf_set: Vec = np.ones(nelm, dtype=float)
-        self.vt_set: Vec = np.ones(nelm, dtype=float)
+        self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the from bus
+        self.vset: Vec = np.ones(nelm, dtype=float)
 
         self.Kdp: Vec = np.ones(self.nelm, dtype=float)
         self.Kdp_va: Vec = np.ones(self.nelm, dtype=float)
@@ -192,11 +189,8 @@ class BranchData:
         data.tap_angle_max = self.tap_angle_max[elm_idx]
         data.Beq = self.Beq[elm_idx]
         data.G0sw = self.G0sw[elm_idx]
-        data.Pfset = self.Pfset[elm_idx]
-        data.Qfset = self.Qfset[elm_idx]
-        data.Qtset = self.Qtset[elm_idx]
-        data.vf_set = self.vf_set[elm_idx]
-        data.vt_set = self.vt_set[elm_idx]
+        data.Pset = self.Pset[elm_idx]
+        data.vset = self.vset[elm_idx]
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
@@ -281,11 +275,8 @@ class BranchData:
         data.tap_angle_max = self.tap_angle_max.copy()
         data.Beq = self.Beq.copy()
         data.G0sw = self.G0sw.copy()
-        data.Pfset = self.Pfset.copy()
-        data.Qfset = self.Qfset.copy()
-        data.Qtset = self.Qtset.copy()
-        data.vf_set = self.vf_set.copy()
-        data.vt_set = self.vt_set.copy()
+        data.Pset = self.Pset.copy()
+        data.vset = self.vset.copy()
 
         data.C_branch_bus_f = self.C_branch_bus_f.copy()
         data.C_branch_bus_t = self.C_branch_bus_t.copy()

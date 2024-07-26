@@ -920,8 +920,8 @@ class NumericalCircuit:
             X=self.branch_data.X,
             B=self.branch_data.B,
             tap_module=self.branch_data.tap_module,
-            vtap_f=self.branch_data.vf_set,
-            vtap_t=self.branch_data.vt_set,
+            vtap_f=self.branch_data.virtual_tap_f,
+            vtap_t=self.branch_data.virtual_tap_t,
             Cf=self.Cf,
             Ct=self.Ct,
         )

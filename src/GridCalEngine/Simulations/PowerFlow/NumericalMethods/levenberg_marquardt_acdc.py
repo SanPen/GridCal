@@ -58,12 +58,12 @@ def LM_ACDC(nc: NumericalCircuit, Vbus: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
     # compute the ZIP power injection
     Sbus = cf.compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
-    Vmfset = nc.branch_data.vf_set
+    Vmfset = nc.branch_data.vset
     m = nc.branch_data.tap_module.copy()
     tau = nc.branch_data.tap_angle.copy()
     Beq = nc.branch_data.Beq.copy()
     Gsw = nc.branch_data.G0sw
-    Pfset = nc.branch_data.Pfset / nc.Sbase
+    Pfset = nc.branch_data.Pset / nc.Sbase
     Qfset = nc.branch_data.Qfset / nc.Sbase
     Qtset = nc.branch_data.Qfset / nc.Sbase
     Kdp = nc.branch_data.Kdp

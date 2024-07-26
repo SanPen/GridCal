@@ -70,12 +70,12 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     # compute the ZIP power injection
     Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 
-    Vmfset = nc.branch_data.vf_set
+    Vmfset = nc.branch_data.vset
     m = nc.branch_data.tap_module.copy()
     tau = nc.branch_data.tap_angle.copy()
     Beq = nc.branch_data.Beq.copy()
     Gsw = nc.branch_data.G0sw
-    Pfset = nc.branch_data.Pfset / nc.Sbase
+    Pfset = nc.branch_data.Pset / nc.Sbase
     Qfset = nc.branch_data.Qfset / nc.Sbase
     Qtset = nc.branch_data.Qfset / nc.Sbase
     Qmin = nc.Qmin_bus
