@@ -207,8 +207,10 @@ class ControllableBranchParent(BranchParent):
         self.regulation_bus: Bus = regulation_bus
         self.regulation_cn: ConnectivityNode = regulation_cn
 
-        self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.')
-        self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.')
+        self.register(key='R', units='p.u.', tpe=float, definition='Total positive sequence resistance.',
+                      old_names=['R1', 'Rl'])
+        self.register(key='X', units='p.u.', tpe=float, definition='Total positive sequence reactance.',
+                      old_names=['X1', 'Xl'])
         self.register(key='G', units='p.u.', tpe=float, definition='Total positive sequence shunt conductance.')
         self.register(key='B', units='p.u.', tpe=float, definition='Total positive sequence shunt susceptance.')
         self.register(key='R0', units='p.u.', tpe=float, definition='Total zero sequence resistance.')
@@ -225,9 +227,11 @@ class ControllableBranchParent(BranchParent):
                                  'is expected for transformers0% for lines.')
 
         self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
-                      profile_name='tap_module_prof', old_names=['tap'])
-        self.register(key='tap_module_max', units='', tpe=float, definition='Tap changer module max value')
-        self.register(key='tap_module_min', units='', tpe=float, definition='Tap changer module min value')
+                      profile_name='tap_module_prof', old_names=['tap', 'm'])
+        self.register(key='tap_module_max', units='', tpe=float, definition='Tap changer module max value',
+                      old_names=['m_max'])
+        self.register(key='tap_module_min', units='', tpe=float, definition='Tap changer module min value',
+                      old_names=['m_min'])
 
         self.register(key='tap_module_control_mode', units='', tpe=TapModuleControl,
                       definition='Control available with the tap module',
@@ -235,7 +239,7 @@ class ControllableBranchParent(BranchParent):
 
         self.register(key='vset', units='p.u.', tpe=float,
                       definition='Objective voltage at the "to" side of the bus when regulating the tap.',
-                      profile_name='vset_prof')
+                      profile_name='vset_prof', old_names=['Vdc_set'])
 
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
                       definition='Bus where the regulation is applied.', editable=False)
@@ -244,9 +248,11 @@ class ControllableBranchParent(BranchParent):
                       definition='Connectivity node where the regulation is applied.', editable=False)
 
         self.register(key='tap_phase', units='rad', tpe=float, definition='Angle shift of the tap changer.',
-                      profile_name='tap_phase_prof', old_names=['angle'])
-        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max angle.', old_names=['angle_max'])
-        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min angle.', old_names=['angle_min'])
+                      profile_name='tap_phase_prof', old_names=['angle', 'theta'])
+        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max angle.',
+                      old_names=['angle_max', 'theta_max'])
+        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min angle.',
+                      old_names=['angle_min', 'theta_min'])
 
         self.register(key='tap_phase_control_mode', units='', tpe=TapPhaseControl,
                       definition='Control available with the tap angle', old_names=['tap_angle_control_mode'],
@@ -254,7 +260,7 @@ class ControllableBranchParent(BranchParent):
 
         self.register(key='Pset', units='p.u.', tpe=float,
                       definition='Objective power at the "from" side of when regulating the angle.',
-                      profile_name='Pset_prof')
+                      profile_name='Pset_prof', old_names=['Pdc_set'])
 
         # self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
         #               definition='Branch where the controls are applied.', editable=False)

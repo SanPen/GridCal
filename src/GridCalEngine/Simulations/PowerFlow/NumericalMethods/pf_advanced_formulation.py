@@ -16,12 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Tuple
 import numpy as np
+import pandas as pd
 from numba import njit
-from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices
+from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices, compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.derivatives.csc_derivatives as deriv
+from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
@@ -151,9 +153,8 @@ def get_Sf(k: IntVec, Vm: Vec, V: CxVec, yff: CxVec, yft: CxVec, F: IntVec, T: I
 
 class PfAdvancedFormulation(PfFormulationTemplate):
 
-    def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec, Qmin: Vec, Qmax: Vec, # Pset: Vec,
+    def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec, Qmin: Vec, Qmax: Vec,
                  pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec,
-                 # k_pf_tau: IntVec, k_v_m: IntVec, k_qf_beq: IntVec,
                  nc: NumericalCircuit, options: PowerFlowOptions):
         """
 
@@ -167,9 +168,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param pv:
         :param pqv:
         :param p:
-        :param k_pf_tau:
-        :param k_v_m:
-        :param k_qf_beq:
         :param nc:
         :param options:
         """
@@ -322,58 +320,177 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         ]
         return self._f
 
-    def Jacobian(self) -> CSC:
+    def fx_diff(self, x: Vec):
         """
-        Get the Jacobian
+
+        :param x:
         :return:
         """
-        # Assumes the internal vars were updated already with self.x2var()
-        if self.adm.Ybus.format != 'csc':
-            self.adm.Ybus = self.adm.Ybus.tocsc()
+        a = len(self.idx_dVa)
+        b = a + len(self.idx_dVm)
+        c = b + len(self.k_pf_tau)
+        d = c + len(self.k_v_m)
+        e = d + len(self.k_qf_beq)
 
-        n_rows = len(self.idx_dP) + len(self.idx_dQ) + len(self.idx_dQf) + len(self.idx_dPf)
-        n_cols = len(self.idx_dVa) + len(self.idx_dVm) + len(self.idx_dm) + len(self.idx_dtau) + len(self.idx_dbeq)
-
-        if n_cols != n_rows:
-            raise ValueError("Incorrect J indices!")
-
-        # NOTE: beq, m, and tau are not of size nbranch
+        # update the vectors
+        Va = self.Va.copy()
+        Vm = self.Vm.copy()
         m = np.ones(self.nc.nbr, dtype=float)
         tau = np.zeros(self.nc.nbr, dtype=float)
         beq = np.zeros(self.nc.nbr, dtype=float)
 
-        m[self.k_v_m] = self.m
-        tau[self.k_pf_tau] = self.tau
-        beq[self.k_qf_beq] = self.beq
-        tap = polar_to_rect(m, tau)
+        Va[self.idx_dVa] += x[0:a]
+        Vm[self.idx_dVm] += x[a:b]
+        tau[self.k_pf_tau] += x[b:c]
+        m[self.k_v_m] += x[c:d]
+        beq[self.k_qf_beq] += x[d:e]
 
-        J = adv_jacobian(nbus=self.nc.nbus,
-                         idx_dtheta=self.idx_dVa,
-                         idx_dvm=self.idx_dVm,
-                         idx_dm=self.idx_dm,
-                         idx_dtau=self.idx_dtau,
-                         idx_dbeq=self.idx_dtau,
-                         idx_dP=self.idx_dP,
-                         idx_dQ=self.idx_dQ,
-                         idx_dQf=self.idx_dQf,
-                         idx_dPf=self.idx_dPf,
-                         F=self.nc.F,
-                         T=self.nc.T,
-                         Ys=1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X),
-                         kconv=self.nc.branch_data.k,
-                         complex_tap=tap,
-                         tap_modules=m,
-                         Bc=self.nc.branch_data.B,
-                         Beq=beq,
-                         V=self.V,
-                         Vm=self.Vm,
-                         Ybus_x=self.adm.Ybus.data,
-                         Ybus_p=self.adm.Ybus.indptr,
-                         Ybus_i=self.adm.Ybus.indices,
-                         yff=self.adm.yff,
-                         yft=self.adm.yft)
+        # compute the complex voltage
+        V = polar_to_rect(Vm, Va)
+
+        Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=self.nc.Cf,
+                                                               Ct=self.nc.Ct,
+                                                               C_bus_shunt=self.nc.shunt_data.C_bus_elm.tocsc(),
+                                                               shunt_admittance=self.nc.shunt_data.Y,
+                                                               shunt_active=self.nc.shunt_data.active,
+                                                               ys=self.nc.branch_data.get_series_admittance(),
+                                                               B=self.nc.branch_data.B,
+                                                               Sbase=self.nc.Sbase,
+                                                               tap_module=m,
+                                                               tap_angle=tau,
+                                                               Beq=beq,
+                                                               Gsw=self.nc.branch_data.G0sw,
+                                                               virtual_tap_from=self.nc.branch_data.virtual_tap_f,
+                                                               virtual_tap_to=self.nc.branch_data.virtual_tap_t)
+
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
+        Scalc = compute_power(Ybus, V)
+
+        dS = Scalc - Sbus  # compute the mismatch
+
+        Pf = get_Sf(k=self.k_pf_tau, Vm=Vm, V=V, yff=yff, yft=yft, F=self.nc.F, T=self.nc.T).real
+
+        Qf = get_Sf(k=self.k_qf_beq, Vm=Vm, V=V, yff=yff, yft=yft, F=self.nc.F, T=self.nc.T).real
+
+        f = np.r_[
+            dS[self.idx_dP].real,
+            dS[self.idx_dQ].imag,
+            Pf - self.Pset,
+            Qf  # Qf - 0
+        ]
+        return f
+
+    def Jacobian(self, autodiff: bool = False) -> CSC:
+        """
+        Get the Jacobian
+        :return:
+        """
+        if autodiff:
+            J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x())
+
+        else:
+            # Assumes the internal vars were updated already with self.x2var()
+            m = np.ones(self.nc.nbr, dtype=float)
+            tau = np.zeros(self.nc.nbr, dtype=float)
+            beq = np.zeros(self.nc.nbr, dtype=float)
+
+            tau[self.k_pf_tau] = self.tau
+            m[self.k_v_m] = self.m
+            beq[self.k_qf_beq] = self.beq
+
+            Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=self.nc.Cf,
+                                                                   Ct=self.nc.Ct,
+                                                                   C_bus_shunt=self.nc.shunt_data.C_bus_elm.tocsc(),
+                                                                   shunt_admittance=self.nc.shunt_data.Y,
+                                                                   shunt_active=self.nc.shunt_data.active,
+                                                                   ys=self.nc.branch_data.get_series_admittance(),
+                                                                   B=self.nc.branch_data.B,
+                                                                   Sbase=self.nc.Sbase,
+                                                                   tap_module=m,
+                                                                   tap_angle=tau,
+                                                                   Beq=beq,
+                                                                   Gsw=self.nc.branch_data.G0sw,
+                                                                   virtual_tap_from=self.nc.branch_data.virtual_tap_f,
+                                                                   virtual_tap_to=self.nc.branch_data.virtual_tap_t)
+
+            n_rows = len(self.idx_dP) + len(self.idx_dQ) + len(self.idx_dQf) + len(self.idx_dPf)
+            n_cols = len(self.idx_dVa) + len(self.idx_dVm) + len(self.idx_dm) + len(self.idx_dtau) + len(self.idx_dbeq)
+
+            if n_cols != n_rows:
+                raise ValueError("Incorrect J indices!")
+
+            # NOTE: beq, m, and tau are not of size nbranch
+            m = np.ones(self.nc.nbr, dtype=float)
+            tau = np.zeros(self.nc.nbr, dtype=float)
+            beq = np.zeros(self.nc.nbr, dtype=float)
+
+            m[self.k_v_m] = self.m
+            tau[self.k_pf_tau] = self.tau
+            beq[self.k_qf_beq] = self.beq
+            tap = polar_to_rect(m, tau)
+
+            J = adv_jacobian(nbus=self.nc.nbus,
+                             idx_dtheta=self.idx_dVa,
+                             idx_dvm=self.idx_dVm,
+                             idx_dm=self.idx_dm,
+                             idx_dtau=self.idx_dtau,
+                             idx_dbeq=self.idx_dtau,
+                             idx_dP=self.idx_dP,
+                             idx_dQ=self.idx_dQ,
+                             idx_dQf=self.idx_dQf,
+                             idx_dPf=self.idx_dPf,
+                             F=self.nc.F,
+                             T=self.nc.T,
+                             Ys=1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X),
+                             kconv=self.nc.branch_data.k,
+                             complex_tap=tap,
+                             tap_modules=m,
+                             Bc=self.nc.branch_data.B,
+                             Beq=beq,
+                             V=self.V,
+                             Vm=self.Vm,
+                             Ybus_x=Ybus.data,
+                             Ybus_p=Ybus.indptr,
+                             Ybus_i=Ybus.indices,
+                             yff=yff,
+                             yft=yft)
 
         return J
+
+    def get_jacobian_df(self, autodiff=True) -> pd.DataFrame:
+        """
+        Get the Jacobian DataFrame
+        :return: DataFrame
+        """
+        J = self.Jacobian(autodiff=autodiff)
+
+        idx_dtheta = np.r_[self.pv, self.pq, self.p, self.pqv]
+        idx_dvm = np.r_[self.pq, self.p]
+        idx_dm = self.k_v_m
+        idx_dtau = self.k_pf_tau
+        idx_dbeq = self.k_qf_beq
+
+        idx_dP = np.r_[self.pv, self.pq, self.p, self.pqv]
+        idx_dQ = np.r_[self.pq, self.pqv]
+        idx_dPf = self.k_pf_tau
+        idx_dQf = self.k_qf_beq
+
+        cols = ['1) dVa {0}'.format(i) for i in idx_dtheta]
+        cols += ['2) dVm {0}'.format(i) for i in idx_dvm]
+        cols += ['3) dm {0}'.format(i) for i in idx_dm]
+        cols += ['4) dtau {0}'.format(i) for i in idx_dtau]
+        cols += ['5) dBeq {0}'.format(i) for i in idx_dbeq]
+
+        rows = ['1) dP {0}'.format(i) for i in idx_dP]
+        rows += ['2) dQ {0}'.format(i) for i in idx_dQ]
+        rows += ['5) dPf {0}'.format(i) for i in idx_dPf]
+        rows += ['3) dQf {0}'.format(i) for i in idx_dQf]
+
+        return pd.DataFrame(
+            data=J.toarray(),
+            columns=cols,
+            index=rows,
+        )
 
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:
         """

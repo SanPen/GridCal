@@ -1175,7 +1175,7 @@ def dSbus_dbeq_csc(nbus, bus_indices, beq_indices, F: IntVec, kconv: Vec, tap_mo
 
         # from side
         if f_idx >= 0:
-            dyff_dBeq = 1j / np.power(kconv[k] * tap_module[k], 2.0)
+            dyff_dBeq = 1j / (1j * kconv[k] * kconv[k] * tap_module[k] + 1e-20)
             Tx[nnz] = V[f] * np.conj(dyff_dBeq * V[f])
             Ti[nnz] = f_idx
             Tj[nnz] = k_counter
@@ -1219,7 +1219,7 @@ def dSf_dbeq_csc(sf_indices, beq_indices, F: IntVec, kconv: Vec, tap_module: Vec
                 f = F[k]
 
                 # Partials of Ytt, Yff, Yft and Ytf w.r.t.Beq
-                dyff_dBeq = 1j / np.power(kconv[k] * tap_module[k], 2.0)
+                dyff_dBeq = 1j / (1j * kconv[k] * kconv[k] * tap_module[k] + 1e-20)
 
                 # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
                 Tx[nnz] = V[f] * np.conj(dyff_dBeq * V[f])

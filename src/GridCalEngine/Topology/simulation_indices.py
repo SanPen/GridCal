@@ -98,33 +98,32 @@ class SimulationIndices:
         # master aray of bus types (nbus)
         self.bus_types = bus_types
 
-        # master array of branch control types (nbr)
+        # arrays for branch control types (nbr)
         self.tap_module_control_mode = tap_module_control_mode
         self.tap_controlled_buses = tap_controlled_buses
-
         self.tap_phase_control_mode = tap_phase_control_mode
-
         self.is_converter = is_converter
 
         # AC and DC indices
         self.ac: IntVec = np.where(~is_dc_bus)[0]
         self.dc: IntVec = np.where(is_dc_bus)[0]
 
-        # bus type indices
-        self.pq: IntVec = np.zeros(0, dtype=int)
-        self.pqv: IntVec = np.zeros(0, dtype=int)
-        self.pv: IntVec = np.zeros(0, dtype=int)  # PV-local
-        self.p: IntVec = np.zeros(0, dtype=int)  # PV-remote
-        self.vd: IntVec = np.zeros(0, dtype=int)
-        self.no_slack: IntVec = np.zeros(0, dtype=int)
-
         # branch control indices
         self.any_control: bool = False
 
         # indices of the Branches controlling Pf flow with tau
+        self.k_pf_tau: IntVec = np.zeros(0, dtype=int)
+        self.k_qf_beq: IntVec = np.zeros(0, dtype=int)
+        self.k_v_m: IntVec = np.zeros(0, dtype=int)
         self.k_pf_tau, self.k_qf_beq, self.k_v_m = self.analyze_branch_controls()
 
         # determine the bus indices
+        self.pq: IntVec = np.zeros(0, dtype=int)
+        self.pv: IntVec = np.zeros(0, dtype=int)  # PV-local
+        self.p: IntVec = np.zeros(0, dtype=int)  # PV-remote
+        self.pqv: IntVec = np.zeros(0, dtype=int)  # PV-remote pair
+        self.vd: IntVec = np.zeros(0, dtype=int)  # slack
+        self.no_slack: IntVec = np.zeros(0, dtype=int)  # all bus indices that are not slack, sorted
         self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=self.bus_types)
 
     @property

@@ -3499,7 +3499,7 @@ QProgressBar::chunk{
            <enum>QTabWidget::South</enum>
           </property>
           <property name="currentIndex">
-           <number>7</number>
+           <number>0</number>
           </property>
           <property name="iconSize">
            <size>
@@ -3879,6 +3879,9 @@ QProgressBar::chunk{
                </item>
                <item>
                 <widget class="QCheckBox" name="control_q_checkBox">
+                 <property name="toolTip">
+                  <string>If active, the generators, abtteries, controllable shunts, etc control their reactive power to be within limits.</string>
+                 </property>
                  <property name="text">
                   <string>Control generators Q</string>
                  </property>
@@ -3886,15 +3889,21 @@ QProgressBar::chunk{
                </item>
                <item>
                 <widget class="QCheckBox" name="control_tap_modules_checkBox">
+                 <property name="toolTip">
+                  <string>If active the branches with tap module control such as transformers or VSC converters control some voltage with their tap module</string>
+                 </property>
                  <property name="text">
-                  <string>Control branch taps</string>
+                  <string>Control tap module</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QCheckBox" name="control_tap_phase_checkBox">
+                 <property name="toolTip">
+                  <string>If active the branches with tap phase control such as transformers or VSC converters control their &quot;from&quot; active power flow</string>
+                 </property>
                  <property name="text">
-                  <string>Control branch phase</string>
+                  <string>Control tap phase</string>
                  </property>
                 </widget>
                </item>
@@ -8711,7 +8720,6 @@ QProgressBar::chunk{
      <addaction name="actionExport_contingencies"/>
      <addaction name="actionExport_all_results"/>
      <addaction name="actionExport_circuit_differential"/>
-     <addaction name="actionExportCatalogue"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -8724,7 +8732,6 @@ QProgressBar::chunk{
      <addaction name="actionAdd_circuit"/>
      <addaction name="actionImport_bus_coordinates"/>
      <addaction name="actionImport_contingencies"/>
-     <addaction name="actionAdd_custom_catalogue"/>
     </widget>
     <addaction name="actionNew_project"/>
     <addaction name="actiongrid_Generator"/>
@@ -8748,6 +8755,7 @@ QProgressBar::chunk{
      <string>Actions</string>
     </property>
     <addaction name="actionAdd_default_catalogue"/>
+    <addaction name="actionAdd_custom_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
    </widget>
@@ -10007,23 +10015,11 @@ QProgressBar::chunk{
   </action>
   <action name="actionAdd_custom_catalogue">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset theme="application-x-executable">
      <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
    </property>
    <property name="text">
-    <string>Catalogue</string>
-   </property>
-   <property name="iconText">
-    <string>Catalogue</string>
-   </property>
-  </action>
-  <action name="actionExportCatalogue">
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Catalogue</string>
+    <string>Add custom catalogue</string>
    </property>
   </action>
  </widget>
