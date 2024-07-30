@@ -29,6 +29,7 @@ from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.LoadCatalogue.catalogue_dialogue import CatalogueGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
@@ -80,7 +81,7 @@ class IoMain(ConfigurationMain):
 
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
-        self.ui.actionAdd_custom_catalogue.triggered.connect(self.select_csv_file)
+        self.ui.actionAdd_custom_catalogue.triggered.connect(self.open_select_component)
         self.ui.actionAdd_circuit.triggered.connect(self.add_circuit)
         self.ui.actionExport_circuit_differential.triggered.connect(self.export_circuit_differential)
         self.ui.actionSave.triggered.connect(self.save_file)
@@ -257,66 +258,6 @@ class IoMain(ConfigurationMain):
             filenames = dialogue.selectedFiles()
             self.open_file_now(filenames, post_function)
 
-    # def select_csv_file(self, caption='Open CSV file'):
-    #     """
-    #     Select a CSV file
-    #     :return: csv file path
-    #     """
-    #     files_types = "CSV (*.csv)"
-    #
-    #     filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-    #                                                                     caption=caption,
-    #                                                                     dir=self.project_directory,
-    #                                                                     filter=files_types)
-    #
-    #     if len(filename) > 0:
-    #         return filename
-    #     else:
-    #         return None
-
-    def select_csv_file(self, caption='Open CSV file', post_function=None):
-        """
-        Select a CSV file
-        :return: csv file path
-        """
-        files_types = "CSV (*.csv)"
-
-        # filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-        #                                                                 caption=caption,
-        #                                                                 dir=self.project_directory,
-        #                                                                 filter=files_types)
-
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-                                                            caption=caption,
-                                                            dir=self.project_directory,
-                                                            filter=files_types)
-
-        if filename:
-            # Call the post_function if provided
-            if post_function:
-                post_function(filename)
-
-            # Load the catalogue based on the selected CSV file
-            self.add_custom_catalogue(filename)
-
-            return filename
-        else:
-            return None
-
-        # dialogue = QtWidgets.QFileDialog(None,
-        #                                  caption=title,
-        #                                  directory=self.project_directory,
-        #                                  filter=f"Formats ({files_types})")
-        #
-        # if dialogue.exec():
-        #     filenames = dialogue.selectedFiles()
-        #     self.open_file_now(filenames, post_function)
-        #
-        # if len(filename) > 0:
-        #     return filename
-        # else:
-        #     return None
-
     def open_file_now(self, filenames: Union[str, List[str]],
                       post_function: Union[None, Callable[[], None]] = None) -> None:
         """
@@ -425,9 +366,9 @@ class IoMain(ConfigurationMain):
 
                 self.ui.grid_name_line_edit.setText(self.circuit.name)
 
-                # if this was a cgmes file, launch the roseta GUI
+                # if this was a CGMES file, launch the Rosetta GUI
                 if self.open_file_thread_object.cgmes_circuit:
-                    # if there is a CGMES file, show Rosetta and the loguer there
+                    # if there is a CGMES file, show Rosetta and the logger there
                     self.rosetta_gui = RosetaExplorerGUI()
                     self.rosetta_gui.set_grid_model(self.open_file_thread_object.cgmes_circuit)
                     self.rosetta_gui.set_logger(self.open_file_thread_object.cgmes_logger)
@@ -456,6 +397,76 @@ class IoMain(ConfigurationMain):
         self.collect_memory()
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
+
+    def open_select_component(self):
+        # this will be filled with: open dialogue tab only, then connect select_csv_file from there
+        """
+        Open select component window for uploading catalogue data
+        """
+        self.catalogue_dialogue = CatalogueGUI(parent=self)
+        # self.catalogue_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio, this is what grid generator is set to
+        self.catalogue_dialogue.resize(int(1.61 * 400), 400)  # golden ratio
+        self.catalogue_dialogue.exec_()
+
+    # def select_csv_file(self, caption='Open CSV file'):
+    #     """
+    #     Select a CSV file
+    #     :return: csv file path
+    #     """
+    #     files_types = "CSV (*.csv)"
+    #
+    #     filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+    #                                                                     caption=caption,
+    #                                                                     dir=self.project_directory,
+    #                                                                     filter=files_types)
+    #
+    #     if len(filename) > 0:
+    #         return filename
+    #     else:
+    #         return None
+
+    def select_csv_file(self, caption='Open CSV file', post_function=None):
+        """
+        Select a CSV file
+        :return: csv file path
+        """
+        files_types = "CSV (*.csv)"
+
+        # filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+        #                                                                 caption=caption,
+        #                                                                 dir=self.project_directory,
+        #                                                                 filter=files_types)
+
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                            caption=caption,
+                                                            dir=self.project_directory,
+                                                            filter=files_types)
+
+        if filename:
+            # Call the post_function if provided
+            if post_function:
+                post_function(filename)
+
+            # Load the catalogue based on the selected CSV file
+            self.add_custom_catalogue(filename)
+
+            return filename
+        else:
+            return None
+
+        # dialogue = QtWidgets.QFileDialog(None,
+        #                                  caption=title,
+        #                                  directory=self.project_directory,
+        #                                  filter=f"Formats ({files_types})")
+        #
+        # if dialogue.exec():
+        #     filenames = dialogue.selectedFiles()
+        #     self.open_file_now(filenames, post_function)
+        #
+        # if len(filename) > 0:
+        #     return filename
+        # else:
+        #     return None
 
     def add_circuit(self):
         """

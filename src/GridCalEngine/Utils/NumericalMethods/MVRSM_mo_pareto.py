@@ -25,7 +25,7 @@ from scipy.linalg.blas import dger
 from scipy.optimize import minimize
 from GridCalEngine.Utils.NumericalMethods.non_dominated_sorting import non_dominated_sorting, dominates
 from GridCalEngine.basic_structures import Vec, Mat, IntVec
-
+import timeit
 
 def relu(x):
     """
@@ -189,21 +189,33 @@ class SurrogateModel:
         """
 
         phi = self.phi(x)  # basis function values for k = 1, ..., m.
-
+        st = timeit.default_timer()
         # Recursive least squares algorithm
         v = np.matmul(self.P, phi, out=self.scratch)
-        g0 = v / (1 + np.inner(phi,
-                               v))  # --> changes with multiple objectives.  Let g depend on the objective index. Do this initialization for all objectives.
+        end = timeit.default_timer()
+        print(f"Time to calculate v: {end - st}")
+
+        st = timeit.default_timer()
+        g0 = v / (1 + np.inner(phi, v))  # --> changes with multiple objectives.  Let g depend on the objective index. Do this initialization for all objectives.
         # P ← P - gvᵀ
+        end = timeit.default_timer()
+        print(f"Time to calculate g0: {end - st}")
+
+        st = timeit.default_timer()
         self.P = dger(-1.0, g0, v, a=self.P,
                       overwrite_x=False, overwrite_y=True, overwrite_a=True)
+        end = timeit.default_timer()
+        print(f"Time to update P: {end - st}")
 
+        st = timeit.default_timer()
         # for each objective index...
         for i in range(self.n_obj):
             g = g0 * (y[i] - np.inner(phi, self.c[i, :]))  # --> changes with multiple objectives.
             ## So do this calculation for all different objectives, make sure c and y correspond to the right objective
             # So there will be multiple g: one for each. Initialize them the same way with g = v / (1 + np.inner(phi, v))
             self.c[i, :] += g  # do this for each objective
+        end = timeit.default_timer()
+        print(f"Time to update c: {end - st}")
 
     def g(self, x):  # change this to have the objective index in the argument   def g(self, x, obj_index):
         """
@@ -401,6 +413,7 @@ def MVRSM_mo_pareto(obj_func,
     # Update the model with the normalized random evaluation points
     for rand_it in range(len(objectives_normalized)):
         model.update(x_population[rand_it], objectives_normalized[rand_it])
+        # print(f"Time to update model: {e_time - st_time}")
 
     # Iteratively evaluate the objective, update the model, find the minimum of the model,
     # and explore the search space.
@@ -416,8 +429,10 @@ def MVRSM_mo_pareto(obj_func,
 
         # Update the surrogate model
         y_normalized = normalize_md(y, normalization_factors)
-        model.update(x, y_normalized)
 
+        model.update(x, y_normalized)
+        e_time = time.time()
+        print(f"Time to update model: {e_time - st_time}")
         # Get scalarization weights
         # rnd_weights = np.random.rand(n_objectives)
         rnd_weights = np.random.lognormal(0, 1, n_objectives)
@@ -428,9 +443,10 @@ def MVRSM_mo_pareto(obj_func,
         if dominates(y, best_y):
             best_x = np.copy(x)
             best_y = y_normalized
-
+        st_time = time.time()
         next_x = model.minimum(best_x, scalarization_weights)
-
+        e_time = time.time()
+        print(f"Time to find minimum: {e_time - st_time}")
         # Round discrete variables to the nearest integer.
         next_x[0:num_int].round(out=next_x[0:num_int])
 
