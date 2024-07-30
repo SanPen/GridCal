@@ -1219,7 +1219,7 @@ def dSf_dbeq_csc(sf_indices, beq_indices, F: IntVec, kconv: Vec, tap_module: Vec
                 f = F[k]
 
                 # Partials of Ytt, Yff, Yft and Ytf w.r.t.Beq
-                dyff_dBeq = 1j / (1j * kconv[k] * kconv[k] * tap_module[k] + 1e-20)
+                dyff_dBeq = 1j / np.power(kconv[k] * tap_module[k] + 1e-20, 2.0)
 
                 # Partials of Sf w.r.t. Ɵ shift (makes sense that this is ∂Sbus/∂Pxsh assigned to the "from" bus)
                 Tx[nnz] = V[f] * np.conj(dyff_dBeq * V[f])

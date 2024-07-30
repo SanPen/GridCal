@@ -777,10 +777,11 @@ def fill_controllable_branch(ii: int,
                              bus_dict: Dict[Bus, int],
                              apply_temperature: bool,
                              branch_tolerance_mode: BranchImpedanceMode,
-                             t_idx: int = -1,
-                             time_series: bool = False,
-                             opf_results: Union[OptimalPowerFlowResults, None] = None,
-                             use_stored_guess: bool = False, ):
+                             t_idx: int,
+                             time_series: bool,
+                             opf_results: Union[OptimalPowerFlowResults, None],
+                             use_stored_guess: bool,
+                             logger: Logger):
     """
 
     :param ii:
@@ -794,6 +795,7 @@ def fill_controllable_branch(ii: int,
     :param time_series:
     :param opf_results:
     :param use_stored_guess:
+    :param logger:
     :return:
     """
     _, t = fill_parent_branch(i=ii,
@@ -848,7 +850,13 @@ def fill_controllable_branch(ii: int,
 
     if not use_stored_guess:
         if elm.tap_module_control_mode == TapModuleControl.Vm:
-            bus_data.Vbus[t] = elm.vset
+            if 0.9 <= elm.vset <= 1.1:
+                bus_data.Vbus[t] = elm.vset
+            else:
+                logger.add_warning("Branch control voltage out of bounds",
+                                   device_class=str(elm.device_type.value),
+                                   device=elm.name,
+                                   value=elm.vset)
 
 
 def get_branch_data(circuit: MultiCircuit,
@@ -925,7 +933,8 @@ def get_branch_data(circuit: MultiCircuit,
                                  t_idx=t_idx,
                                  time_series=time_series,
                                  opf_results=opf_results,
-                                 use_stored_guess=use_stored_guess)
+                                 use_stored_guess=use_stored_guess,
+                                 logger=logger)
 
         data.conn[ii] = elm.conn
 
@@ -946,7 +955,8 @@ def get_branch_data(circuit: MultiCircuit,
                                      t_idx=t_idx,
                                      time_series=time_series,
                                      opf_results=opf_results,
-                                     use_stored_guess=use_stored_guess)
+                                     use_stored_guess=use_stored_guess,
+                                     logger=logger)
 
             data.conn[ii] = elm.conn
 
@@ -968,7 +978,8 @@ def get_branch_data(circuit: MultiCircuit,
                                  t_idx=t_idx,
                                  time_series=time_series,
                                  opf_results=opf_results,
-                                 use_stored_guess=use_stored_guess)
+                                 use_stored_guess=use_stored_guess,
+                                 logger=logger)
         data.Kdp[ii] = elm.kdp
         data.is_converter[ii] = True
 

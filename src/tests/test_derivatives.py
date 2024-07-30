@@ -1,8 +1,25 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 import numpy as np
-import GridCalEngine.Simulations.derivatives.csc_derivatives as cscdiff
-import GridCalEngine.Simulations.derivatives.ac_jacobian as cscjac
-import GridCalEngine.Simulations.derivatives.matpower_derivatives as mdiff
+import GridCalEngine.Simulations.Derivatives.csc_derivatives as cscdiff
+import GridCalEngine.Simulations.Derivatives.ac_jacobian as cscjac
+import GridCalEngine.Simulations.Derivatives.matpower_derivatives as mdiff
+from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import compute_branch_power_derivatives
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Utils.Sparse.csc2 import mat_to_scipy
 import GridCalEngine.api as gce
@@ -187,35 +204,48 @@ def test_tau_derivatives() -> None:
         bus_idx = dta["bus_idx"]
         sf_idx = dta["sf_idx"]
 
-        dSbus_dtau1, dSf_dtau1, dSt_dtau1 = cscdiff.derivatives_tau_csc_numba(nbus=nc.nbus,
-                                                                              nbr=nc.nbr,
-                                                                              iPxsh=tau_idx,
-                                                                              F=nc.F,
-                                                                              T=nc.T,
-                                                                              Ys=Ys,
-                                                                              kconv=nc.branch_data.k,
-                                                                              tap=nc.branch_data.tap,
-                                                                              V=nc.Vbus)
+        (dSbus_dm1, dSf_dm1, dSt_dm1,
+         dSbus_dtau1, dSf_dtau1, dSt_dtau1) = compute_branch_power_derivatives(all_tap_m=nc.branch_data.tap_module,
+                                                                               all_tap_tau=nc.branch_data.tap_angle,
+                                                                               V=nc.Vbus,
+                                                                               k_m=np.empty(0, dtype=int),
+                                                                               k_tau=tau_idx,
+                                                                               Cf=nc.Cf,
+                                                                               Ct=nc.Ct,
+                                                                               F=nc.F,
+                                                                               T=nc.T,
+                                                                               R=nc.branch_data.R,
+                                                                               X=nc.branch_data.X)
+
+        # dSbus_dtau1, dSf_dtau1, dSt_dtau1 = cscdiff.derivatives_tau_csc_numba(nbus=nc.nbus,
+        #                                                                       nbr=nc.nbr,
+        #                                                                       iPxsh=tau_idx,
+        #                                                                       F=nc.F,
+        #                                                                       T=nc.T,
+        #                                                                       Ys=Ys,
+        #                                                                       kconv=nc.branch_data.k,
+        #                                                                       tap=nc.branch_data.tap,
+        #                                                                       V=nc.Vbus)
 
         # check_dSbus_dtau(dSbus_dtau1, br_idx, bus_idx, Ys, nc)
 
-        dSbus_dsh2 = cscdiff.dSbus_dtau_csc(nbus=nc.nbus,
-                                            bus_indices=bus_idx,
-                                            tau_indices=tau_idx,
-                                            F=nc.F,
-                                            T=nc.T,
-                                            Ys=Ys,
-                                            kconv=nc.branch_data.k,
-                                            tap=nc.branch_data.tap,
-                                            V=nc.Vbus)
+        dSbus_dtau2 = cscdiff.dSbus_dtau_csc(nbus=nc.nbus,
+                                             bus_indices=bus_idx,
+                                             tau_indices=tau_idx,
+                                             F=nc.F,
+                                             T=nc.T,
+                                             Ys=Ys,
+                                             kconv=nc.branch_data.k,
+                                             tap=nc.branch_data.tap,
+                                             V=nc.Vbus)
 
-        dSbus_dsh3 = mat_to_scipy(dSbus_dtau1)[bus_idx, :]
+        dSbus_dtau3 = dSbus_dtau1.tocsc()[bus_idx, :]
 
         # print(f"dSbus_dsh1 (matpower):\n {dSbus_dsh1.real.toarray()}")
         # print(f"dSbus_dsh3 (matpower):\n {dSbus_dsh3.real.toarray()}")
         # print(f"dSbus_dsh2 (new):\n {dSbus_dsh2.real.toarray()}")
-
-        assert np.allclose(dSbus_dsh3.toarray(), dSbus_dsh2.toarray())
+        ok1 = np.allclose(dSbus_dtau3.toarray(), dSbus_dtau2.toarray())
+        assert ok1
 
         # check_dSf_dtau(dSf_dtau1, sf_idx, br_idx, Ys, nc)
 
@@ -228,13 +258,13 @@ def test_tau_derivatives() -> None:
                                          tap=nc.branch_data.tap,
                                          V=nc.Vbus)
 
-        dSf_dtau3 = mat_to_scipy(dSf_dtau1)[sf_idx, :]
+        dSf_dtau3 = dSf_dtau1.tocsc()[sf_idx, :]
 
         # print(f"dSf_dtau1 (matpower):\n {dSf_dtau1.real.toarray()}")
         # print(f"dSf_dtau3 (matpower):\n {dSf_dtau3.real.toarray()}")
         # print(f"dSf_dtau2 (new):\n {dSf_dtau2.real.toarray()}")
-
-        assert np.allclose(dSf_dtau3.toarray(), dSf_dtau2.toarray())
+        ok2 = np.allclose(dSf_dtau3.toarray(), dSf_dtau2.toarray())
+        assert ok2
 
         # check_dSt_dtau(dSt_dtau1, sf_idx, br_idx, Ys, nc)
 
@@ -247,13 +277,13 @@ def test_tau_derivatives() -> None:
                                          tap=nc.branch_data.tap,
                                          V=nc.Vbus)
 
-        dSt_dtau3 = mat_to_scipy(dSt_dtau1)[sf_idx, :]
+        dSt_dtau3 = dSt_dtau1.tocsc()[sf_idx, :]
 
         # print(f"dSt_dtau1 (matpower):\n {dSt_dtau1.real.toarray()}")
         # print(f"dSt_dtau3 (matpower):\n {dSt_dtau3.real.toarray()}")
         # print(f"dSt_dtau2 (new):\n {dSt_dtau2.real.toarray()}")
-
-        assert np.allclose(dSt_dtau3.toarray(), dSt_dtau2.toarray())
+        ok3 = np.allclose(dSt_dtau3.toarray(), dSt_dtau2.toarray())
+        assert ok3
 
 
 def test_m_derivatives() -> None:
@@ -291,18 +321,31 @@ def test_m_derivatives() -> None:
         bus_idx = dta["bus_idx"]
         sf_idx = dta["sf_idx"]
 
-        dSbus_dm1, dSf_dm1, dSt_dm1 = cscdiff.derivatives_ma_csc_numba(nbus=nc.nbus,
-                                                                       nbr=nc.nbr,
-                                                                       iXxma=m_idx,
-                                                                       F=nc.F,
-                                                                       T=nc.T,
-                                                                       Ys=Ys,
-                                                                       kconv=nc.branch_data.k,
-                                                                       tap=nc.branch_data.tap,
-                                                                       tap_module=nc.branch_data.tap_module,
-                                                                       Bc=nc.branch_data.B,
-                                                                       Beq=nc.branch_data.Beq,
-                                                                       V=nc.Vbus)
+        # dSbus_dm1, dSf_dm1, dSt_dm1 = cscdiff.derivatives_ma_csc_numba(nbus=nc.nbus,
+        #                                                                nbr=nc.nbr,
+        #                                                                iXxma=m_idx,
+        #                                                                F=nc.F,
+        #                                                                T=nc.T,
+        #                                                                Ys=Ys,
+        #                                                                kconv=nc.branch_data.k,
+        #                                                                tap=nc.branch_data.tap,
+        #                                                                tap_module=nc.branch_data.tap_module,
+        #                                                                Bc=nc.branch_data.B,
+        #                                                                Beq=nc.branch_data.Beq,
+        #                                                                V=nc.Vbus)
+
+        (dSbus_dm1, dSf_dm1, dSt_dm1,
+         dSbus_dtau1, dSf_dtau1, dSt_dtau1) = compute_branch_power_derivatives(all_tap_m=nc.branch_data.tap_module,
+                                                                               all_tap_tau=nc.branch_data.tap_angle,
+                                                                               V=nc.Vbus,
+                                                                               k_m=m_idx,
+                                                                               k_tau=np.empty(0, dtype=int),
+                                                                               Cf=nc.Cf,
+                                                                               Ct=nc.Ct,
+                                                                               F=nc.F,
+                                                                               T=nc.T,
+                                                                               R=nc.branch_data.R,
+                                                                               X=nc.branch_data.X)
 
         dSbus_dm2 = cscdiff.dSbus_dm_csc(nbus=nc.nbus,
                                          bus_indices=bus_idx,
@@ -316,8 +359,8 @@ def test_m_derivatives() -> None:
                                          tap=nc.branch_data.tap,
                                          tap_module=nc.branch_data.tap_module,
                                          V=nc.Vbus)
-        dSbus_dsh3 = mat_to_scipy(dSbus_dm1)[bus_idx, :]
-        assert np.allclose(dSbus_dsh3.toarray(), dSbus_dm2.toarray())
+        dSbus_dm3 = dSbus_dm1.tocsc()[bus_idx, :]
+        assert np.allclose(dSbus_dm3.toarray(), dSbus_dm2.toarray())
 
         dSf_dm2 = cscdiff.dSf_dm_csc(sf_indices=sf_idx,
                                      m_indices=m_idx,
@@ -330,8 +373,8 @@ def test_m_derivatives() -> None:
                                      tap=nc.branch_data.tap,
                                      tap_module=nc.branch_data.tap_module,
                                      V=nc.Vbus)
-        dSf_dtau3 = mat_to_scipy(dSf_dm1)[sf_idx, :]
-        assert np.allclose(dSf_dtau3.toarray(), dSf_dm2.toarray())
+        dSf_dm3 = dSf_dm1.tocsc()[sf_idx, :]
+        assert np.allclose(dSf_dm3.toarray(), dSf_dm2.toarray())
 
         dSt_dm2 = cscdiff.dSt_dm_csc(sf_indices=sf_idx,
                                      m_indices=m_idx,
@@ -342,7 +385,7 @@ def test_m_derivatives() -> None:
                                      tap=nc.branch_data.tap,
                                      tap_module=nc.branch_data.tap_module,
                                      V=nc.Vbus)
-        dSt_dm3 = mat_to_scipy(dSt_dm1)[sf_idx, :]
+        dSt_dm3 = dSt_dm1.tocsc()[sf_idx, :]
         assert np.allclose(dSt_dm3.toarray(), dSt_dm2.toarray())
 
 

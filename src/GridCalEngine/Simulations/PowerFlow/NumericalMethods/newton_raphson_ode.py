@@ -20,7 +20,7 @@ import scipy
 import numpy as np
 
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
 

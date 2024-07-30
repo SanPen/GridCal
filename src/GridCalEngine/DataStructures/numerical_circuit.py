@@ -28,7 +28,6 @@ from GridCalEngine.enumerations import BranchImpedanceMode
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
 
-from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Topology.admittance_matrices as ycalc
 import GridCalEngine.DataStructures as ds
@@ -39,8 +38,6 @@ from GridCalEngine.Devices.Aggregation.contingency import Contingency
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-
-sparse_type = get_sparse_type()
 
 ALL_STRUCTS = Union[
     ds.BusData,
@@ -1478,71 +1475,10 @@ class NumericalCircuit:
 
         elif structure_type == 'Jacobian':
 
-            # from GridCalEngine.Simulations.derivatives.acdc_jacobian import fubm_jacobian
-
-            # compute admittances
-            # Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
-            # Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = ycalc.compile_y_acdc(
-            #     Cf=self.Cf,
-            #     Ct=self.Ct,
-            #     C_bus_shunt=self.shunt_data.C_bus_elm.tocsc(),
-            #     shunt_admittance=self.shunt_data.Y,
-            #     shunt_active=self.shunt_data.active,
-            #     ys=Ys,
-            #     B=self.branch_data.B,
-            #     Sbase=self.Sbase,
-            #     tap_module=self.branch_data.tap_module,
-            #     tap_angle=self.branch_data.tap_angle,
-            #     Beq=self.branch_data.Beq,
-            #     Gsw=self.branch_data.G0sw,
-            #     virtual_tap_from=self.branch_data.virtual_tap_f,
-            #     virtual_tap_to=self.branch_data.virtual_tap_t,
-            # )
-
-            # idx_dtheta = np.r_[self.pv, self.pq, self.p, self.pqv]
-            # idx_dvm = np.r_[self.pq, self.p]
-            # idx_dm = self.k_v_m
-            # idx_dtau = self.k_pf_tau
-            # idx_dbeq = self.k_qf_beq
-            #
-            # idx_dP = np.r_[self.pv, self.pq, self.p, self.pqv]
-            # idx_dQ = np.r_[self.pq, self.pqv]
-            # idx_dPf = self.k_pf_tau
-            # idx_dQf = self.k_qf_beq
-
-            # J = fubm_jacobian(
-            #     nbus=self.nbus,
-            #     idx_dtheta=idx_dtheta,
-            #     idx_dvm=idx_dvm,
-            #     idx_dm=idx_dm,
-            #     idx_dtau=idx_dtau,
-            #     idx_dbeq=idx_dbeq,
-            #     idx_dP=idx_dP,
-            #     idx_dQ=idx_dQ,
-            #     idx_dQf=idx_dQf,
-            #     idx_dPf=idx_dPf,
-            #     F=self.F,
-            #     T=self.T,
-            #     Ys=Ys,
-            #     kconv=self.branch_data.k,
-            #     complex_tap=tap,
-            #     tap_modules=self.branch_data.tap_module,
-            #     Bc=self.branch_data.B,
-            #     Beq=self.branch_data.Beq,
-            #     Kdp=self.branch_data.Kdp,
-            #     V=self.Vbus,
-            #     Vm=np.abs(self.Vbus),
-            #     Ybus_x=self.Ybus.data,
-            #     Ybus_p=self.Ybus.indptr,
-            #     Ybus_i=self.Ybus.indices,
-            #     yff=self.admittances_.yff,
-            #     yft=self.admittances_.yft,
-            #     ytf=self.admittances_.ytf,
-            #     ytt=self.admittances_.ytt
-            # )
-            from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import \
-                PfAdvancedFormulation
+            from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import (
+                PfAdvancedFormulation)
             from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+
             formulation = PfAdvancedFormulation(V0=self.Vbus,
                                                 S0=self.Sbus,
                                                 I0=self.Ibus,
@@ -1556,26 +1492,7 @@ class NumericalCircuit:
                                                 nc=self,
                                                 options=PowerFlowOptions())
 
-            # J = formulation.Jacobian(autodiff=True)
-            #
-            # cols = ['1) dVa {0}'.format(i) for i in idx_dtheta]
-            # cols += ['2) dVm {0}'.format(i) for i in idx_dvm]
-            # cols += ['3) dm {0}'.format(i) for i in idx_dm]
-            # cols += ['4) dtau {0}'.format(i) for i in idx_dtau]
-            # cols += ['5) dBeq {0}'.format(i) for i in idx_dbeq]
-            #
-            # rows = ['1) dP {0}'.format(i) for i in idx_dP]
-            # rows += ['2) dQ {0}'.format(i) for i in idx_dQ]
-            # rows += ['5) dPf {0}'.format(i) for i in idx_dPf]
-            # rows += ['3) dQf {0}'.format(i) for i in idx_dQf]
-            #
-            # df = pd.DataFrame(
-            #     data=J.toarray(),
-            #     columns=cols,
-            #     index=rows,
-            # )
-
-            df = formulation.get_jacobian_df(autodiff=True)
+            df = formulation.get_jacobian_df(autodiff=False)
 
         elif structure_type == 'Qmin':
             df = pd.DataFrame(

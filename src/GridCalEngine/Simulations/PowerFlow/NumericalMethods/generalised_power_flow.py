@@ -252,9 +252,9 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                        rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ, acopf_mode=acopf_mode)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf,
-                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, slack=slack, pq=pq,
-                                                       pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, fdc=fdc,
-                                                       tdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
+                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, mon_br_idx=il, ig=ig, slack=slack, pq=pq,
+                                                       pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, F_hvdc=fdc,
+                                                       T_hvdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
                                                        F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
                                                        compute_jac=compute_jac, compute_hess=compute_hess)
 

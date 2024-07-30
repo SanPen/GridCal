@@ -253,7 +253,7 @@ def compute_admittances(R: Vec,
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
     Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
 
-    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw)
+    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw, Beq)
 
 
 def compute_passive_admittances(R: Vec,

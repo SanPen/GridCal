@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Callable, Union, Tuple, List, Any
+from typing import Callable, Union, Tuple, Any
 import numpy as np
 from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
