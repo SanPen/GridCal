@@ -73,8 +73,8 @@ def run_cgmes_to_raw(import_path: str | list[str], export_fname: str):
 
     ok, logger = circuit.compare_circuits(circuit_2)
 
-    # if not ok:
-    #     logger.print()
+    if not ok:
+        logger.print()
 
     ok, logger = nc_1.compare(nc_2=nc_2, tol=1e-6)
 
@@ -121,9 +121,10 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
     cgmes_export.save_cgmes()
 
     circuit2 = gce.open_file([export_fname, boundary_zip_path])
-    # compare_inputs(circuit, circuit2)
 
-    # ok, logger = circuit.compare_circuits(circuit2)
+    ok, logger = circuit.compare_circuits(circuit2)
+    if not ok:
+        logger.print()
 
     nc1 = gce.compile_numerical_circuit_at(circuit)
     nc2 = gce.compile_numerical_circuit_at(circuit2)
@@ -171,8 +172,8 @@ def test_raw_to_cgmes_roundtrip():
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'ENTSOe_boundary_set.zip')
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
-    # test_grid_name = 'IEEE 14 bus'
-    test_grid_name = 'IEEE 30 bus'
+    test_grid_name = 'IEEE 14 bus'
+    # test_grid_name = 'IEEE 30 bus'
 
     raw_relative_path = os.path.join('data', 'grids', 'RAW', f"{test_grid_name}.raw")
     raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))

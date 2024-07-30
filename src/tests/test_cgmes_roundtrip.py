@@ -45,6 +45,7 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
     # CGMES model import to MultiCircuit
     circuit_1 = gc.open_file(import_path)
     circuit_1.buses.sort(key=lambda obj: obj.name)      # SORTING
+    # circuit_1.buses.sort(key=lambda obj: obj.idtag)     # SORTING by idtag
     nc_1 = gc.compile_numerical_circuit_at(circuit_1)
     # run power flow
     pf_options = PowerFlowOptions()
