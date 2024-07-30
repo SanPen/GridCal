@@ -18,7 +18,7 @@
 import numpy as np
 from typing import Tuple
 from scipy.sparse import diags, csc_matrix, vstack, hstack
-from GridCalEngine.basic_structures import CxVec, IntVec
+from GridCalEngine.basic_structures import CxVec, IntVec, Vec
 
 
 def dSbus_dV_matpower(Ybus: csc_matrix, V: CxVec) -> Tuple[csc_matrix, csc_matrix]:
@@ -145,6 +145,144 @@ def dSt_dV_matpower(Yt, V, T, Ct, Vc, diagVc, diagE, diagV):
     dSt_dVm = diagVt * np.conj(Yt * diagE) + diagItc * CVnt
 
     return dSt_dVa.tocsc(), dSt_dVm.tocsc()
+
+
+def dS_dm_matpower(V: CxVec, Cf: csc_matrix, Ct: csc_matrix,
+                   R: Vec, X: Vec, B: Vec, Beq: Vec, k2: Vec, m: Vec, tau: Vec):
+    """
+
+    :param V:
+    :param Cf:
+    :param Ct:
+    :param R:
+    :param X:
+    :param B:
+    :param Beq:
+    :param k2:
+    :param m:
+    :param tau:
+    :return:
+    """
+    diagV = diags(V)
+    Vf = Cf @ V
+    Vt = Ct @ V
+    diagVf = diags(Vf)
+    diagVt = diags(Vt)
+
+    ys = 1.0 / (R + 1j * X + 1e-20)
+
+    dyff_dm = (-2.0 * (ys + 1.0j * B / 2.0 + 1.0j * Beq)) / (np.power(k2, 2) * np.power(m, 3))
+    dyft_dm = ys / (k2 * np.power(m, 2) * np.exp(-1j * tau))
+    dytf_dm = ys / (k2 * np.power(m, 2) * np.exp(1j * tau))
+    dytt_dm = np.zeros(len(m))
+
+    dYf_dm = diags(dyff_dm) @ Cf + diags(dyft_dm) @ Ct
+    dYt_dm = diags(dytf_dm) @ Cf + diags(dytt_dm) @ Ct
+
+    dY_dm = Cf.T @ dYf_dm + Ct.T @ dYt_dm
+
+    dS_dm = diagV @ np.conj(dY_dm @ diagV)
+    dSf_dm = diagVf @ diags(np.conj(dYf_dm @ V))
+    dSt_dm = diagVt @ diags(np.conj(dYt_dm @ V))
+
+    return dS_dm, dSf_dm, dSt_dm
+
+
+def dS_dtau_matpower(V: CxVec, Cf: csc_matrix, Ct: csc_matrix,
+                     R: Vec, X: Vec, k2: Vec, m: Vec, tau: Vec):
+    """
+    Ybus = Cf' * Yf + Ct' * Yt + diag(Ysh)
+
+    Yf = Yff * Cf + Yft * Ct
+    Yt = Ytf * Cf + Ytt * Ct
+
+    Ytt = Ys + 1j*Bc/2
+    Yff = Gsw+( (Ytt+1j*Beq) ./ ((k2.^2).*tap .* conj(tap))  ) %%<<AAB- FUBM formulation- Original: Yff = Ytt ./ (tap .* conj(tap));
+    Yft = - Ys ./ conj(tap)
+    Ytf = - Ys ./ tap
+
+    Polar coordinates:
+    Partials of Ytt, Yff, Yft and Ytf w.r.t. Theta_shift
+      dYtt/dsh = zeros(nl,1)
+      dYff/dsh = zeros(nl,1)
+      dYft/dsh = -Ys./(-1j*k2.*conj(tap))
+      dYtf/dsh = -Ys./( 1j*k2.*tap      )
+
+    Partials of Yf, Yt, Ybus w.r.t. Theta_shift
+      dYf/dsh = dYff/dsh * Cf + dYft/dsh * Ct
+      dYt/dsh = dYtf/dsh * Cf + dYtt/dsh * Ct
+
+      dYbus/dsh = Cf' * dYf/dsh + Ct' * dYt/dsh
+
+    Partials of Sbus w.r.t. shift angle
+      dSbus/dsh = diag(V) * conj(dYbus/dsh * V)
+    :param V:
+    :param Cf:
+    :param Ct:
+    :param R:
+    :param X:
+    :param k2:
+    :param m:
+    :param tau:
+    :return:
+    """
+    diagV = diags(V)
+    Vf = Cf @ V
+    Vt = Ct @ V
+    diagVf = diags(Vf)
+    diagVt = diags(Vt)
+
+    ys = 1.0 / (R + 1j * X + 1e-20)
+    tap = m * np.exp(1j * tau)
+
+    dyff_dtau = np.zeros(len(m))
+    dyft_dtau = (-1j * ys) / (k2 * np.conj(tap))
+    dytf_dtau = (1j * ys) / (k2 * tap)
+    dytt_dtau = np.zeros(len(m))
+
+    dYf_dtau = diags(dyff_dtau) @ Cf + diags(dyft_dtau) @ Ct
+    dYt_dtau = diags(dytf_dtau) @ Cf + diags(dytt_dtau) @ Ct
+
+    dY_dtau = Cf.T @ dYf_dtau + Ct.T @ dYt_dtau
+
+    dS_dtau = diagV @ np.conj(dY_dtau @ diagV)
+    dSf_dtau = diagVf @ diags(np.conj(dYf_dtau @ V))
+    dSt_dtau = diagVt @ diags(np.conj(dYt_dtau @ V))
+
+    return dS_dtau, dSf_dtau, dSt_dtau
+
+
+def dS_dbeq_matpower(V: CxVec, Cf: csc_matrix, Ct: csc_matrix, k2: Vec, m: Vec):
+    """
+
+    :param V:
+    :param Cf:
+    :param Ct:
+    :param k2:
+    :param m:
+    :return:
+    """
+    diagV = diags(V)
+    Vf = Cf @ V
+    Vt = Ct @ V
+    diagVf = diags(Vf)
+    diagVt = diags(Vt)
+
+    dyff_dbeq = 1.0j / np.power(k2 * m, 2)
+    dyft_dbeq = np.zeros(len(m))
+    dytf_dbeq = np.zeros(len(m))
+    dytt_dbeq = np.zeros(len(m))
+
+    dYf_dbeq = diags(dyff_dbeq) @ Cf + diags(dyft_dbeq) @ Ct
+    dYt_dbeq = diags(dytf_dbeq) @ Cf + diags(dytt_dbeq) @ Ct
+
+    dY_dbeq = Cf.T @ dYf_dbeq + Ct.T @ dYt_dbeq
+
+    dS_dbeq = diagV @ np.conj(dY_dbeq @ diagV)
+    dSf_dbeq = diagVf @ diags(np.conj(dYf_dbeq @ V))
+    dSt_dbeq = diagVt @ diags(np.conj(dYt_dbeq @ V))
+
+    return dS_dbeq, dSf_dbeq, dSt_dbeq
 
 
 def Jacobian(Ybus, V: CxVec, idx_dP: IntVec, idx_dQ: IntVec, idx_dVa: IntVec, idx_dVm: IntVec) -> csc_matrix:

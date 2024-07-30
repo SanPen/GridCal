@@ -863,6 +863,7 @@ def fubm_jacobian_old(nb, nl,
 
 # @nb.njit()
 def fubm_jacobian(nbus: int,
+                  nbr: int,
                   idx_dtheta: IntVec,
                   idx_dvm: IntVec,
                   idx_dm: IntVec,
@@ -956,22 +957,22 @@ def fubm_jacobian(nbus: int,
 
     dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
     dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
-    dPf_dm_ = deriv.dSf_dm_csc(idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
-    dQf_dm_ = deriv.dSf_dm_csc(idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
+    dPf_dm_ = deriv.dSf_dm_csc(nbr, idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(nbr, idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
     # dQt_dm_ = deriv.dSt_dm_csc(idx_dQt, idx_dm, F, T, Ys, kconv, complex_tap, tap_modules, V).imag
     # dPdp_dm = deriv.dSf_dm_csc(idx_dPdp, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
 
     dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
     dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dPf_dtau_ = deriv.dSf_dtau_csc(idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQf_dtau_ = deriv.dSf_dtau_csc(idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
     # dQt_dtau_ = deriv.dSt_dtau_csc(idx_dQt, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
     # dPdp_dtau = deriv.dSf_dtau_csc(idx_dPdp, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
 
     dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
     dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
-    dPf_dbeq_ = deriv.dSf_dbeq_csc(idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
-    dQf_dbeq_ = deriv.dSf_dbeq_csc(idx_dQf, idx_dbeq, F, kconv, tap_modules, V).imag
+    dPf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
+    dQf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dQf, idx_dbeq, F, kconv, tap_modules, V).imag
     # dQt_dbeq_ = CSC(len(idx_dQt), len(idx_dbeq), 0, False)
     # dPdp_dbeq = deriv.dSf_dbeq_csc(idx_dPdp, idx_dbeq, F, kconv, tap_modules, V).real
 
