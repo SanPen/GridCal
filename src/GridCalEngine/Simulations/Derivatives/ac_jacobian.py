@@ -18,8 +18,8 @@ from numba import jit
 from numpy import float64, int32
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix
-from GridCalEngine.Simulations.derivatives.csr_derivatives import dSbus_dV_numba_sparse_csr
-from GridCalEngine.Simulations.derivatives.csc_derivatives import dSbus_dV_numba_sparse_csc
+from GridCalEngine.Simulations.Derivatives.csr_derivatives import dSbus_dV_numba_sparse_csr
+from GridCalEngine.Simulations.Derivatives.csc_derivatives import dSbus_dV_numba_sparse_csc
 from GridCalEngine.basic_structures import IntVec, CxVec
 from GridCalEngine.Utils.Sparse.csc2 import make_lookup, CSC
 

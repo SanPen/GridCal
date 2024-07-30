@@ -18,7 +18,7 @@
 import numpy as np
 import numba as nb
 from cmath import rect
-import GridCalEngine.Simulations.derivatives.csc_derivatives as deriv
+import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, make_lookup, sp_slice, csc_stack_2d_ff, sp_slice_rows
 

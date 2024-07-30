@@ -23,7 +23,7 @@ import scipy.sparse as sp
 import numba as nb
 from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
-from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
 from GridCalEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
 from GridCalEngine.enumerations import SolverType
 import numpy as np

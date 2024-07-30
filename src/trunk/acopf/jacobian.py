@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 from math import sin, cos
 import GridCalEngine.api as gc
-from GridCalEngine.Simulations.derivatives.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_power
 
 

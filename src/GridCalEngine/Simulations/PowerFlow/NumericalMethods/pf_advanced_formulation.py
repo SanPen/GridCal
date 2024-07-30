@@ -22,9 +22,9 @@ from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices, compi
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-import GridCalEngine.Simulations.derivatives.csc_derivatives as deriv
+import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
@@ -35,7 +35,7 @@ from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 # @njit()
 def adv_jacobian(nbus: int,
-                 idx_dtheta: IntVec,
+                 idx_dva: IntVec,
                  idx_dvm: IntVec,
                  idx_dm: IntVec,
                  idx_dtau: IntVec,
@@ -62,7 +62,7 @@ def adv_jacobian(nbus: int,
     """
 
     :param nbus:
-    :param idx_dtheta:
+    :param idx_dva:
     :param idx_dvm:
     :param idx_dm:
     :param idx_dtau:
@@ -97,30 +97,30 @@ def adv_jacobian(nbus: int,
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False)
     dS_dVa.set(Ybus_i, Ybus_p, dS_dVa_x)
 
-    dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dtheta)
-    dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dtheta)
-    dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dtheta, yff, yft, V, F, T).imag
-    dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dtheta, yff, yft, V, F, T).real
+    dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dva)
+    dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dva)
+    dPf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dPf, idx_dva, yff, yft, V, F, T).real
+    dQf_dVa_ = deriv.dSf_dVa_csc(nbus, idx_dQf, idx_dva, yff, yft, V, F, T).imag
 
     dP_dVm__ = sp_slice(dS_dVm.real, idx_dP, idx_dvm)
     dQ_dVm__ = sp_slice(dS_dVm.imag, idx_dQ, idx_dvm)
-    dQf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dQf, idx_dtheta, yff, yft, V, F, T).imag
-    dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dtheta, yff, yft, V, F, T).real
-
-    dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
-    dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
-    dQf_dbeq_ = deriv.dSf_dbeq_csc(idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
-    dPf_dbeq_ = deriv.dSf_dbeq_csc(idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
+    dPf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dPf, idx_dvm, yff, yft, V, F, T).real
+    dQf_dVm_ = deriv.dSf_dVm_csc(nbus, idx_dQf, idx_dvm, yff, yft, V, F, T).imag
 
     dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
     dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
-    dQf_dm_ = deriv.dSf_dm_csc(idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
     dPf_dm_ = deriv.dSf_dm_csc(idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
 
     dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
     dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dQf_dtau_ = deriv.dSf_dtau_csc(idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
     dPf_dtau_ = deriv.dSf_dtau_csc(idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+
+    dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
+    dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
+    dPf_dbeq_ = deriv.dSf_dbeq_csc(idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
+    dQf_dbeq_ = deriv.dSf_dbeq_csc(idx_dQf, idx_dbeq, F, kconv, tap_modules, V).imag
 
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
@@ -194,9 +194,10 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.idx_dtau = self.k_pf_tau
         self.idx_dm = self.k_v_m
 
-        self.m: Vec = np.zeros(len(self.pqv))
-        self.tau: Vec = np.zeros(len(self.k_pf_tau))
-        self.beq: Vec = np.zeros(len(self.k_qf_beq))
+        self.m: Vec = np.ones(len(self.idx_dm))
+        self.tau: Vec = np.zeros(len(self.idx_dtau))
+        self.beq: Vec = np.zeros(len(self.idx_dbeq))
+        self.beq += 0.001  # some initial value
 
         if not len(self.pqv) >= len(self.k_v_m):
             raise ValueError("k_v_m indices must be the same size as pqv indices!")
@@ -208,7 +209,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
     def adm(self) -> AdmittanceMatrices:
         """
 
-        :return:
+        :return: AdmittanceMatrices
         """
         return self.nc.admittances_
 
@@ -322,9 +323,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
     def fx_diff(self, x: Vec):
         """
-
-        :param x:
-        :return:
+        Fx for autodiff
+        :param x: solutions vector
+        :return: f(x)
         """
         a = len(self.idx_dVa)
         b = a + len(self.idx_dVm)
@@ -387,7 +388,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         """
         if autodiff:
             J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x())
-
+            return scipy_to_mat(J)
         else:
             # Assumes the internal vars were updated already with self.x2var()
             m = np.ones(self.nc.nbr, dtype=float)
@@ -413,7 +414,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                                                                    virtual_tap_from=self.nc.branch_data.virtual_tap_f,
                                                                    virtual_tap_to=self.nc.branch_data.virtual_tap_t)
 
-            n_rows = len(self.idx_dP) + len(self.idx_dQ) + len(self.idx_dQf) + len(self.idx_dPf)
+            n_rows = len(self.idx_dP) + len(self.idx_dQ) + len(self.idx_dPf) + len(self.idx_dQf)
             n_cols = len(self.idx_dVa) + len(self.idx_dVm) + len(self.idx_dm) + len(self.idx_dtau) + len(self.idx_dbeq)
 
             if n_cols != n_rows:
@@ -430,11 +431,11 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             tap = polar_to_rect(m, tau)
 
             J = adv_jacobian(nbus=self.nc.nbus,
-                             idx_dtheta=self.idx_dVa,
+                             idx_dva=self.idx_dVa,
                              idx_dvm=self.idx_dVm,
                              idx_dm=self.idx_dm,
                              idx_dtau=self.idx_dtau,
-                             idx_dbeq=self.idx_dtau,
+                             idx_dbeq=self.idx_dbeq,
                              idx_dP=self.idx_dP,
                              idx_dQ=self.idx_dQ,
                              idx_dQf=self.idx_dQf,
@@ -455,7 +456,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                              yff=yff,
                              yft=yft)
 
-        return J
+            return J
 
     def get_jacobian_df(self, autodiff=True) -> pd.DataFrame:
         """
@@ -475,16 +476,16 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         idx_dPf = self.k_pf_tau
         idx_dQf = self.k_qf_beq
 
-        cols = ['1) dVa {0}'.format(i) for i in idx_dtheta]
-        cols += ['2) dVm {0}'.format(i) for i in idx_dvm]
-        cols += ['3) dm {0}'.format(i) for i in idx_dm]
-        cols += ['4) dtau {0}'.format(i) for i in idx_dtau]
-        cols += ['5) dBeq {0}'.format(i) for i in idx_dbeq]
+        cols = [f'dVa {i}' for i in idx_dtheta]
+        cols += [f'dVm {i}' for i in idx_dvm]
+        cols += [f'dm {i}' for i in idx_dm]
+        cols += [f'dtau {i}' for i in idx_dtau]
+        cols += [f'dBeq {i}' for i in idx_dbeq]
 
-        rows = ['1) dP {0}'.format(i) for i in idx_dP]
-        rows += ['2) dQ {0}'.format(i) for i in idx_dQ]
-        rows += ['5) dPf {0}'.format(i) for i in idx_dPf]
-        rows += ['3) dQf {0}'.format(i) for i in idx_dQf]
+        rows = [f'dP {i}' for i in idx_dP]
+        rows += [f'dQ {i}' for i in idx_dQ]
+        rows += [f'dPf {i}' for i in idx_dPf]
+        rows += [f'dQf {i}' for i in idx_dQf]
 
         return pd.DataFrame(
             data=J.toarray(),
