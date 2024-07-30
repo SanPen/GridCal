@@ -33,6 +33,7 @@ class MixedVariableProblem(ElementwiseProblem):
         :param obj_func:
         :param n_obj:
         """
+        # These will need to be inputted automatically from the csv file on GridCal
         vars = {
             "react1_bi": Binary(),
             "react2_bi": Binary(),

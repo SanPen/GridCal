@@ -154,3 +154,67 @@ def get_sequence_lines_catalogue():
         return lst
     else:
         return list()
+
+# def read_csv_columns(file_path):
+#     df = pd.read_csv(file_path)
+#     return df.columns.tolist()
+
+# def get_component_type(column_name):
+#     """
+#     Extract the component type from the column name.
+#     """
+#     # For example, if column name is 'transformer_types', return 'transformer'
+#     if 'transformer' in column_name:
+#         return 'transformer'
+#     elif 'cable' in column_name:
+#         return 'cable'
+#     elif 'wire' in column_name:
+#         return 'wire'
+#     elif 'sequence_line' in column_name:
+#         return 'sequence_line'
+#     return None
+
+
+# def get_catalogue_function(component_type):
+#     """
+#     Get the catalogue function based on the component type and call it with the file path.
+#     :param component_type: Type of the component (e.g., 'transformer').
+#     :return: The catalogue data for the specified component type.
+#     """
+#     catalogue_functions = {
+#         'transformer': get_transformer_catalogue,
+#         'cable': get_cables_catalogue,
+#         'wire': get_wires_catalogue,
+#         'sequence_line': get_sequence_lines_catalogue,
+#         # Add other mappings here
+#     }
+#
+#     catalogue_functions.get(component_type)
+
+
+# def get_transformer_catalogue(file_path):
+#     """
+#     Get transformer catalogue from a CSV file.
+#     :param file_path: Path to the CSV file containing transformer data.
+#     :return: List of TransformerType objects.
+#     """
+#     if os.path.exists(file_path):
+#         df = pd.read_csv(file_path)
+#         lst = list()
+#         for i, item in df.iterrows():
+#             tpe = TransformerType(
+#                 hv_nominal_voltage=item['HV (kV)'],
+#                 lv_nominal_voltage=item['LV (kV)'],
+#                 nominal_power=item['Rate (MVA)'],
+#                 copper_losses=item['Copper losses (kW)'],
+#                 iron_losses=item['No load losses (kW)'],
+#                 no_load_current=item['No load current (%)'],
+#                 short_circuit_voltage=item['V short circuit (%)'],
+#                 gr_hv1=0.5,
+#                 gx_hv1=0.5,
+#                 name=item['Name']
+#             )
+#             lst.append(tpe)
+#         return lst
+#     else:
+#         return list()
