@@ -487,10 +487,14 @@ class MapWidget(QWidget):
             self._tile_src: Tiles = tile_src
             self._tile_src.setCallback(self.on_tile_available)
 
-            self.GotoLevelAndPosition(level=level,
-                                      longitude=longitude,
-                                      latitude=latitude)
-            self.view.centerSchema()
+            if self.GotoLevel(level):
+                self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
+                self.view.centerSchema()
+            else:
+                while abs(self.view.schema_zoom - 0.015625) > 0.00001:
+                    self.view.schema_zoom = self.view.schema_zoom / self.view.map_widget.zoom_factor
+                    self.view.scale(1.0 / self.view.map_widget.zoom_factor, 1.0 / self.view.map_widget.zoom_factor)
+                self.GotoLevelAndPosition(level=0, longitude=None, latitude=None)
 
     @property
     def max_level(self):
