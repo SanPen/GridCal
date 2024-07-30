@@ -35,6 +35,7 @@ from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 # @njit()
 def adv_jacobian(nbus: int,
+                 nbr: int,
                  idx_dva: IntVec,
                  idx_dvm: IntVec,
                  idx_dm: IntVec,
@@ -62,6 +63,7 @@ def adv_jacobian(nbus: int,
     """
 
     :param nbus:
+    :param nbr:
     :param idx_dva:
     :param idx_dvm:
     :param idx_dm:
@@ -109,18 +111,18 @@ def adv_jacobian(nbus: int,
 
     dP_dm__ = deriv.dSbus_dm_csc(nbus, idx_dP, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
     dQ_dm__ = deriv.dSbus_dm_csc(nbus, idx_dQ, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
-    dPf_dm_ = deriv.dSf_dm_csc(idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
-    dQf_dm_ = deriv.dSf_dm_csc(idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
+    dPf_dm_ = deriv.dSf_dm_csc(nbr, idx_dPf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).real
+    dQf_dm_ = deriv.dSf_dm_csc(nbr, idx_dQf, idx_dm, F, T, Ys, Bc, Beq, kconv, complex_tap, tap_modules, V).imag
 
     dP_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dP, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
     dQ_dtau__ = deriv.dSbus_dtau_csc(nbus, idx_dQ, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
-    dPf_dtau_ = deriv.dSf_dtau_csc(idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
-    dQf_dtau_ = deriv.dSf_dtau_csc(idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
+    dPf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dPf, idx_dtau, F, T, Ys, kconv, complex_tap, V).real
+    dQf_dtau_ = deriv.dSf_dtau_csc(nbr, idx_dQf, idx_dtau, F, T, Ys, kconv, complex_tap, V).imag
 
     dP_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dP, idx_dbeq, F, kconv, tap_modules, V).real
     dQ_dbeq__ = deriv.dSbus_dbeq_csc(nbus, idx_dQ, idx_dbeq, F, kconv, tap_modules, V).imag
-    dPf_dbeq_ = deriv.dSf_dbeq_csc(idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
-    dQf_dbeq_ = deriv.dSf_dbeq_csc(idx_dQf, idx_dbeq, F, kconv, tap_modules, V).imag
+    dPf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dPf, idx_dbeq, F, kconv, tap_modules, V).real
+    dQf_dbeq_ = deriv.dSf_dbeq_csc(nbr, idx_dQf, idx_dbeq, F, kconv, tap_modules, V).imag
 
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
@@ -431,6 +433,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             tap = polar_to_rect(m, tau)
 
             J = adv_jacobian(nbus=self.nc.nbus,
+                             nbr=self.nc.nbr,
                              idx_dva=self.idx_dVa,
                              idx_dvm=self.idx_dVm,
                              idx_dm=self.idx_dm,
