@@ -67,8 +67,11 @@ def case14() -> tuple[NonlinearOPFResults, NonlinearOPFResults, NonlinearOPFResu
     opf_options.acopf_mode = gce.AcOpfMode.ACOPFslacks
     slack_sol = ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
-    grid.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pf
+    grid.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pt
+    grid.transformers2w[0].tap_module_control_mode = TapModuleControl.Qt
+
     grid.transformers2w[1].tap_phase_control_mode = TapPhaseControl.Pf
+
     grid.transformers2w[2].tap_module_control_mode = TapModuleControl.Vm
     grid.transformers2w[2].regulation_bus = grid.transformers2w[2].bus_from
 

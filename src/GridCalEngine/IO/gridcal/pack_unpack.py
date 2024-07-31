@@ -871,6 +871,9 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                             if "Pdc" in property_value:
                                 elm.tap_phase_control_mode = TapPhaseControl.Pf
                                 skip = True
+                            if "Qac" in property_value:
+                                elm.tap_phase_module_mode = TapModuleControl.Qf
+                                skip = True
                             if "Vac" in property_value:
                                 elm.tap_module_control_mode = TapModuleControl.Vm
                                 elm.regulation_bus = elm.bus_to
@@ -879,12 +882,24 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                 elm.tap_module_control_mode = TapModuleControl.Vm
                                 elm.regulation_bus = elm.bus_from
                                 skip = True
+
+                            if "fixed" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.fixed
+                                elm.tap_phase_control_mode = TapPhaseControl.fixed
+                                skip = True
+
                         elif property_name == 'Vac_set':
-                            elm.vset = property_value
+                            if property_value > 0.0:
+                                elm.vset = property_value
                             skip = True
 
                         elif property_name == 'Vdc_set':
-                            elm.vset = property_value
+                            if property_value > 0.0:
+                                elm.vset = property_value
+                            skip = True
+
+                        elif property_name == 'Qac_set':
+                            elm.Qset = property_value
                             skip = True
 
                     if template_elm.device_type == DeviceType.Transformer2WDevice:
@@ -892,15 +907,29 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                             if "Pf" in property_value:
                                 elm.tap_phase_control_mode = TapPhaseControl.Pf
                                 skip = True
+                            if "Pt" in property_value:
+                                elm.tap_phase_control_mode = TapPhaseControl.Pt
+                                skip = True
                             if "V" in property_value:
                                 elm.tap_module_control_mode = TapModuleControl.Vm
                                 elm.regulation_bus = elm.bus_to
+                                skip = True
+                            if "Qf" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Qf
+                                skip = True
+                            if "Qt" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Qt
+                                skip = True
+                            if "fixed" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.fixed
+                                elm.tap_phase_control_mode = TapPhaseControl.fixed
                                 skip = True
 
                     if property_name == 'contingency_enabled':
                         # this is a branch with the legacy property "contingency_enabled", hence, create a contingency
                         on_the_fly.create_contingency(elm=elm)
                         skip = True
+
                     elif property_name == 'technology':
                         on_the_fly.create_technology(elm=elm, tech_name=property_value)
                         skip = True

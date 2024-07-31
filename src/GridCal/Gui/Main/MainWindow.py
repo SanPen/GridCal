@@ -474,12 +474,7 @@ class Ui_mainWindow(object):
         self.actionAdd_custom_catalogue = QAction(mainWindow)
         self.actionAdd_custom_catalogue.setObjectName(u"actionAdd_custom_catalogue")
         icon72 = QIcon()
-        iconThemeName = u"application-x-executable"
-        if QIcon.hasThemeIcon(iconThemeName):
-            icon72 = QIcon.fromTheme(iconThemeName)
-        else:
-            icon72.addFile(u":/Icons/icons/CataloguePrivate.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-
+        icon72.addFile(u":/Icons/icons/CataloguePrivate.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionAdd_custom_catalogue.setIcon(icon72)
         self.centralwidget = QWidget(mainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -4319,13 +4314,13 @@ class Ui_mainWindow(object):
 
         self.retranslateUi(mainWindow)
 
-        self.tabWidget.setCurrentIndex(4)
+        self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
         self.tabWidget_6.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
-        self.settings_tabWidget.setCurrentIndex(7)
+        self.settings_tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(mainWindow)

@@ -174,6 +174,42 @@ def compute_converter_losses(V: CxVec,
     return Gsw
 
 
+@nb.njit()
+def get_Sf(k: IntVec, Vm: Vec, V: CxVec, yff: CxVec, yft: CxVec, F: IntVec, T: IntVec):
+    """
+
+    :param k:
+    :param Vm:
+    :param V:
+    :param yff:
+    :param yft:
+    :param F:
+    :param T:
+    :return:
+    """
+    f = F[k]
+    t = T[k]
+    return np.power(Vm[f], 2.0) * np.conj(yff[k]) + V[f] * np.conj(V[t]) * np.conj(yft[k])
+
+
+@nb.njit()
+def get_St(k: IntVec, Vm: Vec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
+    """
+
+    :param k:
+    :param Vm:
+    :param V:
+    :param ytf:
+    :param ytt:
+    :param F:
+    :param T:
+    :return:
+    """
+    f = F[k]
+    t = T[k]
+    return np.power(Vm[t], 2.0) * np.conj(ytt[k]) + V[t] * np.conj(V[f]) * np.conj(ytf[k])
+
+
 @nb.jit(nopython=True, cache=True, fastmath=True)
 def compute_acdc_fx(Vm: Vec,
                     Sbus: CxVec,
@@ -221,7 +257,8 @@ def compute_acdc_fx(Vm: Vec,
     """
     # mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
 
-    n = len(pvpq) + len(pq) + len(i_vf_beq) + len(i_vt_m) + len(k_pf_tau) + len(k_qf_m) + len(k_zero_beq) + len(k_qt_m) + len(
+    n = len(pvpq) + len(pq) + len(i_vf_beq) + len(i_vt_m) + len(k_pf_tau) + len(k_qf_m) + len(k_zero_beq) + len(
+        k_qt_m) + len(
         k_pf_dp)
 
     fx = np.empty(n)

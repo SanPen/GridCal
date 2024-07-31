@@ -279,7 +279,7 @@ def test_tau_derivatives() -> None:
         # check_dSt_dtau(dSt_dtau1, sf_idx, br_idx, Ys, nc)
 
         dSt_dtau2 = cscdiff.dSt_dtau_csc(nbr=nc.nbr,
-                                         sf_indices=sf_idx,
+                                         st_indices=sf_idx,
                                          tau_indices=tau_idx,
                                          F=nc.F,
                                          T=nc.T,
@@ -401,7 +401,7 @@ def test_m_derivatives() -> None:
         assert np.allclose(dSf_dm3.toarray(), dSf_dm2.toarray())
 
         dSt_dm2 = cscdiff.dSt_dm_csc(nbr=nc.nbr,
-                                     sf_indices=sf_idx,
+                                     st_indices=sf_idx,
                                      m_indices=m_idx,
                                      F=nc.F,
                                      T=nc.T,

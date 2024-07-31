@@ -1492,7 +1492,7 @@ class NumericalCircuit:
                                                 nc=self,
                                                 options=PowerFlowOptions())
 
-            df = formulation.get_jacobian_df(autodiff=False)
+            df = formulation.get_jacobian_df(autodiff=True)
 
         elif structure_type == 'Qmin':
             df = pd.DataFrame(

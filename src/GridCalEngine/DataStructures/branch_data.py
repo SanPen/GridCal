@@ -94,6 +94,7 @@ class BranchData:
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
         self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the from bus
+        self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the from bus
         self.vset: Vec = np.ones(nelm, dtype=float)
 
         self.Kdp: Vec = np.ones(self.nelm, dtype=float)
@@ -192,6 +193,7 @@ class BranchData:
         data.Beq = self.Beq[elm_idx]
         data.G0sw = self.G0sw[elm_idx]
         data.Pset = self.Pset[elm_idx]
+        data.Qset = self.Qset[elm_idx]
         data.vset = self.vset[elm_idx]
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
@@ -279,6 +281,7 @@ class BranchData:
         data.Beq = self.Beq.copy()
         data.G0sw = self.G0sw.copy()
         data.Pset = self.Pset.copy()
+        data.Qset = self.Qset.copy()
         data.vset = self.vset.copy()
 
         data.C_branch_bus_f = self.C_branch_bus_f.copy()

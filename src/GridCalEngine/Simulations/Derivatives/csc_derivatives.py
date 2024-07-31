@@ -796,14 +796,14 @@ def dSf_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
 
 
 @njit()
-def dSt_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec, tap: CxVec, V: CxVec) -> CxCSC:
+def dSt_dtau_csc(nbr, st_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec, tap: CxVec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
     :param nbr: number of branches
-    :param sf_indices: array of sf indices
+    :param st_indices: array of st indices
     :param tau_indices: array of branch indices with tau control
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -816,13 +816,13 @@ def dSt_dtau_csc(nbr, sf_indices, tau_indices, F: IntVec, T: IntVec, Ys: CxVec, 
     """
 
     n_cols = len(tau_indices)
-    n_rows = len(sf_indices)
+    n_rows = len(st_indices)
     max_nnz = len(tau_indices)
     mat = CxCSC(n_rows, n_cols, max_nnz, False)
     Tx = np.empty(max_nnz, dtype=np.complex128)
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
-    i_lookup = make_lookup(nbr, sf_indices)
+    i_lookup = make_lookup(nbr, st_indices)
     nnz = 0
     for k_idx, k in enumerate(tau_indices):
         i_idx = i_lookup[k]
@@ -999,13 +999,17 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
     - dSbus_dPfsh, dSf_dPfsh, dSt_dPfsh -> if iPxsh=iPfsh
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
+    :param nbr
     :param sf_indices: array of sf indices
     :param m_indices: array of branch indices with tau control
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
     :param Ys: Array of branch series admittances
+    :param Bc: Array of branch total susceptance values
+    :param Beq: Array of regulation susceptance of the FUBM model
     :param kconv: Array of "k2" parameters
     :param tap: Array of branch complex taps (m * exp(1j * tau)
+    :param tap_module: Array of tap modules
     :param V: Array of complex voltages
     :return: dSf_dsh
     """
@@ -1044,7 +1048,7 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
 
 
 @njit()
-def dSt_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec,
+def dSt_dm_csc(nbr, st_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kconv: Vec,
                tap: CxVec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
@@ -1052,7 +1056,7 @@ def dSt_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kcon
     - dSbus_dPfdp, dSf_dPfdp, dSt_dPfdp -> if iPxsh=iPfdp
 
     :param nbr:
-    :param sf_indices: array of sf indices
+    :param st_indices: array of st indices
     :param m_indices: array of branch indices with tau control
     :param F: Array of branch "from" bus indices
     :param T: Array of branch "to" bus indices
@@ -1066,13 +1070,13 @@ def dSt_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, kcon
     """
 
     n_cols = len(m_indices)
-    n_rows = len(sf_indices)
+    n_rows = len(st_indices)
     max_nnz = len(m_indices)
     mat = CxCSC(n_rows, n_cols, max_nnz, False)
     Tx = np.empty(max_nnz, dtype=np.complex128)
     Ti = np.empty(max_nnz, dtype=np.int32)
     Tj = np.empty(max_nnz, dtype=np.int32)
-    i_lookup = make_lookup(nbr, sf_indices)
+    i_lookup = make_lookup(nbr, st_indices)
     nnz = 0
     for k_idx, k in enumerate(m_indices):
         i_idx = i_lookup[k]
@@ -1196,7 +1200,7 @@ def dSbus_dbeq_csc(nbus, bus_indices, beq_indices, F: IntVec, kconv: Vec, tap_mo
             val_f = V[f] * np.conj(dyff_dBeq * V[f])
             """
 
-            dyff_dBeq = 1j / np.power(kconv[k] * tap_module[k] + 1e-20, 2.0)
+            dyff_dBeq = 1.0j / np.power(kconv[k] * tap_module[k] + 1e-20, 2.0)
             Tx[nnz] = V[f] * np.conj(dyff_dBeq * V[f])
             Ti[nnz] = f_idx
             Tj[nnz] = k_counter

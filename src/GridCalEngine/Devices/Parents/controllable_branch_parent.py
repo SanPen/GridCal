@@ -50,6 +50,7 @@ class ControllableBranchParent(BranchParent):
                  tolerance: float,
                  vset: float,
                  Pset: float,
+                 Qset: float,
                  regulation_branch: Union[BranchParent, None],
                  regulation_bus: Union[Bus, None],
                  regulation_cn: Union[ConnectivityNode, None],
@@ -189,6 +190,9 @@ class ControllableBranchParent(BranchParent):
         self.Pset = Pset
         self._Pset_prof = Profile(default_value=Pset, data_type=float)
 
+        self.Qset = Qset
+        self._Qset_prof = Profile(default_value=Qset, data_type=float)
+
         # Tap angle
         self.tap_phase = tap_phase
         self._tap_phase_prof = Profile(default_value=tap_phase, data_type=float)
@@ -241,6 +245,10 @@ class ControllableBranchParent(BranchParent):
                       definition='Objective voltage at the "to" side of the bus when regulating the tap.',
                       profile_name='vset_prof', old_names=['Vdc_set'])
 
+        self.register(key='Qset', units='p.u.', tpe=float,
+                      definition='Objective power at the selected side.',
+                      profile_name='Qset_prof')
+
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
                       definition='Bus where the regulation is applied.', editable=False)
 
@@ -259,7 +267,7 @@ class ControllableBranchParent(BranchParent):
                       profile_name='tap_phase_control_mode_prof')
 
         self.register(key='Pset', units='p.u.', tpe=float,
-                      definition='Objective power at the "from" side of when regulating the angle.',
+                      definition='Objective power at the selected side.',
                       profile_name='Pset_prof', old_names=['Pdc_set'])
 
         # self.register(key='regulation_branch', units='', tpe=DeviceType.BranchDevice,
@@ -340,6 +348,23 @@ class ControllableBranchParent(BranchParent):
             self._Pset_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Pset_prof')
+
+    @property
+    def Qset_prof(self) -> Profile:
+        """
+        vset profile
+        :return: Profile
+        """
+        return self._Qset_prof
+
+    @Qset_prof.setter
+    def Qset_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._Qset_prof = val
+        elif isinstance(val, np.ndarray):
+            self._Qset_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a Qset_prof')
 
     @property
     def tap_module_control_mode_prof(self) -> Profile:
