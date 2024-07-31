@@ -1,8 +1,4 @@
 import sys
-import numpy as np
-from numpy.random import default_rng
-import networkx as nx
-import os
 from typing import Union, List, Callable
 import pandas as pd
 from PySide6 import QtWidgets
@@ -45,7 +41,7 @@ class CatalogueGUI(QtWidgets.QDialog):
         return pd.read_csv(filename)
 
     def get_transformer_catalogue(self, df):
-        transformers = []
+        lst = list()
         for _, item in df.iterrows():
             transformer = TransformerType(
                 hv_nominal_voltage=item['HV (kV)'],
@@ -59,31 +55,12 @@ class CatalogueGUI(QtWidgets.QDialog):
                 gx_hv1=0.5,
                 name=item['Name']
             )
-            transformers.append(transformer)
-        return transformers
+            lst.append(transformer)
+        return lst
 
-    def add_transformers_to_circuit(self, transformers):
-        self.circuit.transformer_types += transformers
-
-    def open_file_and_add_data(self, filename):
-        df = self.read_csv_file(filename)
-        if self.ui.checkBox.isChecked() or self.ui.checkBox_5.isChecked():
-            transformers = self.get_transformer_catalogue(df)
-            self.add_transformers_to_circuit(transformers)
-        # Add similar methods for other types of data (e.g., UndergroundLineType, SequenceLineType, etc.)
-
-    def open_file_threaded(self, post_function=None, title: str = 'Open file'):
-        files_types = "CSV (*.csv)"
-        dialogue = QtWidgets.QFileDialog(None, caption=title, filter=f"Formats ({files_types})")
-        if dialogue.exec():
-            filename = dialogue.selectedFiles()[0]
-            self.open_file_and_add_data(filename)
-            if post_function:
-                post_function()
-
-    def get_cables_catalogue(self, filename):
-        df = pd.read_csv(filename)
-        lst = []
+    def get_cables_catalogue(self, df):
+        # df = pd.read_csv(filename)
+        lst = list()
         for _, item in df.iterrows():
             tpe = UndergroundLineType(name=item['Name'],
                                       Imax=item['Rated current [kA]'],
@@ -98,21 +75,10 @@ class CatalogueGUI(QtWidgets.QDialog):
 
         return lst
 
-    def get_sequence_lines_catalogue(self, filename):
-        df = pd.read_csv(filename)
-        lst = []
+    def get_sequence_lines_catalogue(self, df):
+        # df = pd.read_csv(filename)
+        lst = list()
         for i, item in df.iterrows():
-            """
-            Name,
-            Vnom (kV)
-            r (ohm/km)
-            x (ohm/km)
-            b (uS/km)
-            r0 (ohm/km)
-            x0 (ohm/km)
-            b0 (uS/km)
-            Imax (kA)
-            """
             tpe = SequenceLineType(name=item['Name'],
                                    Vnom=item['Vnom (kV)'],
                                    Imax=item['Imax (kA)'],
@@ -125,6 +91,51 @@ class CatalogueGUI(QtWidgets.QDialog):
 
             lst.append(tpe)
         return lst
+
+    def open_file_and_add_data(self, filename):
+        df = self.read_csv_file(filename)
+        print(df.head())
+        checkbox_checked = False
+
+        if self.ui.checkBox.isChecked() or self.ui.checkBox_5.isChecked():
+            print(df.head())
+            transformers = self.get_transformer_catalogue(df)
+            print(f'Adding {len(transformers)} transformer types')
+            self.circuit.transformer_types += transformers
+            print(self.circuit.transformer_types)
+
+        elif self.ui.checkBox_2.isChecked():  # and self.open_file_thread_object.circuit == 'UndergroundLineType'
+            self.circuit.underground_cable_types += self.get_cables_catalogue(df)
+
+        elif self.ui.checkBox_3.isChecked() or self.ui.checkBox_6.isChecked():  # and self.open_file_thread_object.circuit == 'SequenceLineType'
+            self.circuit.sequence_line_types += self.get_sequence_lines_catalogue(df)
+
+        else:
+            if not checkbox_checked:
+                # quit_msg = "No checkbox was selected for adding the component to the catalogue."
+                print("No checkbox was selected for adding the component to the catalogue.")
+                # QtWidgets.QMessageBox.warning(self, "Can't upload file", quit_msg)
+
+    def open_file_threaded(self, post_function=None, title: str = 'Open file'):
+        files_types = "CSV (*.csv)"
+        dialogue = QtWidgets.QFileDialog(None, caption=title, filter=f"Formats ({files_types})")
+        if dialogue.exec():
+            filename = dialogue.selectedFiles()[0]
+            self.open_file_and_add_data(filename)
+            if post_function:
+                post_function()
+
+    def print_circuit_content(self):
+        print("Circuit Content:")
+        print("Transformer Types:")
+        for transformer in self.circuit.transformer_types:
+            print(transformer)
+        print("Underground Cable Types:")
+        for cable in self.circuit.underground_cable_types:
+            print(cable)
+        print("Sequence Line Types:")
+        for line in self.circuit.sequence_line_types:
+            print(line)
 
 
 if __name__ == "__main__":

@@ -48,7 +48,7 @@ from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGU
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg, error_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
-# from GridCal.Gui.LoadCatalogue.catalogue_dialogue import CatalogueGUI
+from GridCal.Gui.LoadCatalogue.catalogue_dialogue import CatalogueGUI
 from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
@@ -167,7 +167,7 @@ class BaseMainGui(QMainWindow):
         self.file_sync_window: Union[SyncDialogueWindow, None] = None
         self.sigma_dialogue: Union[SigmaAnalysisGUI, None] = None
         self.grid_generator_dialogue: Union[GridGeneratorGUI, None] = None
-        # self.catalogue_dialogue: Union[CatalogueGUI, None] = None
+        self.catalogue_dialogue: Union[CatalogueGUI, None] = None
         self.contingency_planner_dialogue: Union[ContingencyPlannerGUI, None] = None
         self.analysis_dialogue: Union[GridAnalysisGUI, None] = None
         self.profile_input_dialogue: Union[ProfileInputGUI, None] = None
