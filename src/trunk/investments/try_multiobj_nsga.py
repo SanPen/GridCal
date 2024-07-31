@@ -14,19 +14,27 @@ if __name__ == "__main__":
     # absolute_path = os.path.abspath(
     #   os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
 
-    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
-    fname = os.path.join('/Users/CristinaFray/PycharmProjects/GridCal/src/trunk/investments/edited_IEEE 118 Bus - investments.gridcal')
+    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
+    # fname = os.path.join('final_edited_118_bus_grid.gridcal')
     grid = FileOpen(fname).open()
 
     pf_options = sim.PowerFlowOptions()
 
     # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.NSGA3,
-    #                                            max_eval=4 * len(grid.investments),
+    #                                            max_eval=1 * len(grid.investments),
     #                                            pf_options=pf_options)
 
-    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Random,
-                                               max_eval=80 * len(grid.investments),
+    # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.MVRSM,
+    #                                            max_eval=1 * len(grid.investments),
+    #                                            pf_options=pf_options)
+
+    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Independent,
+                                               max_eval=1 * len(grid.investments),
                                                pf_options=pf_options)
+
+    # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Random,
+    #                                            max_eval=1 * len(grid.investments),
+    #                                            pf_options=pf_options)
 
     inv = sim.InvestmentsEvaluationDriver(grid, options=options)
     st_time = time.time()

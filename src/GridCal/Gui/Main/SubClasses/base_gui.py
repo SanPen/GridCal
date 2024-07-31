@@ -48,6 +48,7 @@ from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGU
 from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg, error_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
+from GridCal.Gui.LoadCatalogue.catalogue_dialogue import CatalogueGUI
 from GridCal.Gui.Main.MainWindow import Ui_mainWindow, QMainWindow
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
@@ -166,6 +167,7 @@ class BaseMainGui(QMainWindow):
         self.file_sync_window: Union[SyncDialogueWindow, None] = None
         self.sigma_dialogue: Union[SigmaAnalysisGUI, None] = None
         self.grid_generator_dialogue: Union[GridGeneratorGUI, None] = None
+        self.catalogue_dialogue: Union[CatalogueGUI, None] = None
         self.contingency_planner_dialogue: Union[ContingencyPlannerGUI, None] = None
         self.analysis_dialogue: Union[GridAnalysisGUI, None] = None
         self.profile_input_dialogue: Union[ProfileInputGUI, None] = None
@@ -746,26 +748,6 @@ class BaseMainGui(QMainWindow):
         """
         Add default catalogue to circuit
         """
-
-        self.circuit.transformer_types += get_transformer_catalogue()
-        self.circuit.underground_cable_types += get_cables_catalogue()
-        self.circuit.wire_types += get_wires_catalogue()
-        self.circuit.sequence_line_types += get_sequence_lines_catalogue()
-
-    def add_custom_catalogue(self, csv_file_path) -> None:
-        """
-        Add custom catalogue to circuit based on CSV columns.
-        """
-        # components = read_csv_columns(csv_file_path)
-        #
-        # for component in components:
-        #     component_type = get_component_type(component)
-        #     if component_type:
-        #         catalogue_function = get_catalogue_function(component_type)
-        #         if catalogue_function:
-        #             catalogue_data = catalogue_function()
-        #             current_attr = getattr(self.circuit, component, [])
-        #             setattr(self.circuit, component, current_attr + catalogue_data)
 
         self.circuit.transformer_types += get_transformer_catalogue()
         self.circuit.underground_cable_types += get_cables_catalogue()
