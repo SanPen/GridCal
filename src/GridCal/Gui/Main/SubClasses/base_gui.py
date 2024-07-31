@@ -59,8 +59,7 @@ from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
-from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
-                               get_sequence_lines_catalogue)
+from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue, get_sequence_lines_catalogue)
 
 
 def terminate_thread(thread):
@@ -747,6 +746,26 @@ class BaseMainGui(QMainWindow):
         """
         Add default catalogue to circuit
         """
+
+        self.circuit.transformer_types += get_transformer_catalogue()
+        self.circuit.underground_cable_types += get_cables_catalogue()
+        self.circuit.wire_types += get_wires_catalogue()
+        self.circuit.sequence_line_types += get_sequence_lines_catalogue()
+
+    def add_custom_catalogue(self, csv_file_path) -> None:
+        """
+        Add custom catalogue to circuit based on CSV columns.
+        """
+        # components = read_csv_columns(csv_file_path)
+        #
+        # for component in components:
+        #     component_type = get_component_type(component)
+        #     if component_type:
+        #         catalogue_function = get_catalogue_function(component_type)
+        #         if catalogue_function:
+        #             catalogue_data = catalogue_function()
+        #             current_attr = getattr(self.circuit, component, [])
+        #             setattr(self.circuit, component, current_attr + catalogue_data)
 
         self.circuit.transformer_types += get_transformer_catalogue()
         self.circuit.underground_cable_types += get_cables_catalogue()
