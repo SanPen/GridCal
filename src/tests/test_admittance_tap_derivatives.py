@@ -56,8 +56,10 @@ def case_3bus():
                             tap_module=1.1, tap_phase=0.02, r=0.001, x=0.05)
     grid.add_transformer2w(tr1)
 
-    tr2 = gce.Transformer2W(b3, b1, 'Trafo1', tap_phase_control_mode=TapPhaseControl.Pf,
-                            tap_module=1.05, tap_phase=-0.02, r=0.001, x=0.05)
+    tr2 = gce.Transformer2W(b3, b1, 'Trafo1',
+                            tap_phase_control_mode=TapPhaseControl.Pt, tap_phase=-0.02,
+                            tap_module_control_mode=TapModuleControl.Qt, tap_module=1.05,
+                            r=0.001, x=0.05)
     grid.add_transformer2w(tr2)
 
     nc = compile_numerical_circuit_at(circuit=grid)
@@ -164,7 +166,8 @@ def case14() -> NumericalCircuit:
 
     grid = gce.FileOpen(file_path).open()
     for l in grid.get_transformers2w():
-        l.tap_phase_control_mode = TapPhaseControl.fixed
+        l.tap_phase_control_mode = TapPhaseControl.Pt
+        l.tap_module_control_mode = TapModuleControl.Qt
 
     nc = gce.compile_numerical_circuit_at(grid)
 
@@ -181,10 +184,17 @@ def case_pegase89() -> NumericalCircuit:
     file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-    grid.get_transformers2w()[3].tap_phase_control_mode = TapPhaseControl.Pf
-    grid.get_transformers2w()[7].tap_phase_control_mode = TapPhaseControl.Pf
+    grid.get_transformers2w()[3].tap_phase_control_mode = TapPhaseControl.Pt
+    grid.get_transformers2w()[3].tap_module_control_mode = TapModuleControl.Qt
+
+    grid.get_transformers2w()[7].tap_phase_control_mode = TapPhaseControl.Pt
+    grid.get_transformers2w()[7].tap_module_control_mode = TapModuleControl.Qt
+
     grid.get_transformers2w()[18].tap_module_control_mode = TapModuleControl.Vm
-    grid.get_transformers2w()[21].tap_phase_control_mode = TapPhaseControl.Pf
+
+    grid.get_transformers2w()[21].tap_phase_control_mode = TapPhaseControl.Pt
+    grid.get_transformers2w()[21].tap_module_control_mode = TapModuleControl.Qt
+
     grid.get_transformers2w()[36].tap_phase_control_mode = TapPhaseControl.Pf
 
     nc = gce.compile_numerical_circuit_at(grid)

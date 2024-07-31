@@ -642,8 +642,8 @@ class TapModuleControl(Enum):
     """
     fixed = 'Fixed'
     Vm = 'Vm'
-    # Qf = 'Qf'
-    # Qt = 'Qt'
+    Qf = 'Qf'
+    Qt = 'Qt'
 
     def __str__(self) -> str:
         return str(self.value)
@@ -678,6 +678,7 @@ class TapPhaseControl(Enum):
     """
     fixed = 'Fixed'
     Pf = 'Pf'
+    Pt = 'Pt'
 
     def __str__(self) -> str:
         return str(self.value)

@@ -10015,7 +10015,7 @@ QProgressBar::chunk{
   </action>
   <action name="actionAdd_custom_catalogue">
    <property name="icon">
-    <iconset theme="application-x-executable">
+    <iconset resource="icons.qrc">
      <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
    </property>
    <property name="text">

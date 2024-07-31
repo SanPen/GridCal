@@ -819,6 +819,7 @@ def fill_controllable_branch(ii: int,
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset_prof[t_idx]
+        data.Qset[ii] = elm.Qset_prof[t_idx]
         data.vset[ii] = elm.vset_prof[t_idx]
 
         if opf_results is not None:
@@ -836,6 +837,7 @@ def fill_controllable_branch(ii: int,
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset
+        data.Qset[ii] = elm.Qset
         data.vset[ii] = elm.vset
 
         if opf_results is not None:

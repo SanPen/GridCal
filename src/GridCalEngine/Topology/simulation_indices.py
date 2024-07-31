@@ -113,9 +113,12 @@ class SimulationIndices:
 
         # indices of the Branches controlling Pf flow with tau
         self.k_pf_tau: IntVec = np.zeros(0, dtype=int)
+        self.k_pt_tau: IntVec = np.zeros(0, dtype=int)
+        self.k_qf_m: IntVec = np.zeros(0, dtype=int)
+        self.k_qt_m: IntVec = np.zeros(0, dtype=int)
         self.k_qf_beq: IntVec = np.zeros(0, dtype=int)
         self.k_v_m: IntVec = np.zeros(0, dtype=int)
-        self.k_pf_tau, self.k_qf_beq, self.k_v_m = self.analyze_branch_controls()
+        self.analyze_branch_controls()
 
         # determine the bus indices
         self.pq: IntVec = np.zeros(0, dtype=int)
@@ -130,17 +133,17 @@ class SimulationIndices:
     def k_m(self):
         """
         Return a composition of all indices affected by m
-        :return:
+        :return: k_v_m | k_qf_m | k_qt_m
         """
-        return self.k_v_m
+        return np.r_[self.k_v_m, self.k_qf_m, self.k_qt_m]
 
     @property
     def k_tau(self):
         """
         Return a composition of all indices affected by tau
-        :return:
+        :return: k_pf_tau | k_pt_tau
         """
-        return self.k_pf_tau
+        return np.r_[self.k_pf_tau, self.k_pt_tau]
 
     @property
     def k_mtau(self):
@@ -150,12 +153,15 @@ class SimulationIndices:
         """
         return np.r_[self.k_m, self.k_tau]
 
-    def analyze_branch_controls(self) -> Tuple[IntVec, IntVec, IntVec]:
+    def analyze_branch_controls(self) -> None:
         """
         Analyze the control branches and compute the indices
-        :return: k_pf_tau, k_qf_beq, k_v_m
+        :return: None
         """
         k_pf_tau = list()
+        k_pt_tau = list()
+        k_qf_m = list()
+        k_qt_m = list()
         k_qf_beq = list()
         k_v_m = list()
 
@@ -167,10 +173,37 @@ class SimulationIndices:
                 self.bus_types[bus_idx] = BusMode.PQV_tpe.value
                 k_v_m.append(k)
 
+            elif ctrl == TapModuleControl.Qf:
+                k_qf_m.append(k)
+
+            elif ctrl == TapModuleControl.Qt:
+                k_qt_m.append(k)
+
+            elif ctrl == TapModuleControl.fixed:
+                pass
+
+            elif ctrl == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase module mode {ctrl}")
+
         # analyze tap-phase controls
         for k, ctrl in enumerate(self.tap_phase_control_mode):
             if ctrl == TapPhaseControl.Pf:
                 k_pf_tau.append(k)
+
+            elif ctrl == TapPhaseControl.Pt:
+                k_pt_tau.append(k)
+
+            elif ctrl == TapPhaseControl.fixed:
+                pass
+
+            elif ctrl == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase control mode {ctrl}")
 
         # analyze the converter Qf=0 indices
         for k, is_conv in enumerate(self.is_converter):
@@ -180,4 +213,10 @@ class SimulationIndices:
         # determine if there is any control
         self.any_control = bool(len(k_pf_tau) + len(k_qf_beq) + len(k_v_m))
 
-        return np.array(k_pf_tau, dtype=int), np.array(k_qf_beq, dtype=int), np.array(k_v_m, dtype=int)
+        # convert lists to integer arrays
+        self.k_pf_tau = np.array(k_pf_tau, dtype=int)
+        self.k_pt_tau = np.array(k_pt_tau, dtype=int)
+        self.k_qf_m = np.array(k_qf_m, dtype=int)
+        self.k_qt_m = np.array(k_qt_m, dtype=int)
+        self.k_qf_beq = np.array(k_qf_beq, dtype=int)
+        self.k_v_m = np.array(k_v_m, dtype=int)
