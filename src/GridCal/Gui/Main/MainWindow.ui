@@ -123,7 +123,7 @@ QProgressBar::chunk{
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="GridTab">
        <attribute name="icon">
@@ -8717,6 +8717,7 @@ QProgressBar::chunk{
      <addaction name="actionExport_contingencies"/>
      <addaction name="actionExport_all_results"/>
      <addaction name="actionExport_circuit_differential"/>
+     <addaction name="actionExportCatalogue"/>
     </widget>
     <widget class="QMenu" name="menuImport">
      <property name="title">
@@ -8729,6 +8730,7 @@ QProgressBar::chunk{
      <addaction name="actionAdd_circuit"/>
      <addaction name="actionImport_bus_coordinates"/>
      <addaction name="actionImport_contingencies"/>
+     <addaction name="actionAdd_custom_catalogue"/>
     </widget>
     <addaction name="actionNew_project"/>
     <addaction name="actiongrid_Generator"/>
@@ -8752,7 +8754,6 @@ QProgressBar::chunk{
      <string>Actions</string>
     </property>
     <addaction name="actionAdd_default_catalogue"/>
-    <addaction name="actionAdd_custom_catalogue"/>
     <addaction name="actionClear_stuff_running_right_now"/>
     <addaction name="actionReset_console"/>
    </widget>
@@ -10012,11 +10013,19 @@ QProgressBar::chunk{
   </action>
   <action name="actionAdd_custom_catalogue">
    <property name="icon">
-    <iconset theme="application-x-executable" resource="icons.qrc">
-     <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/CatalogueAdd.svg</normaloff>:/Icons/icons/CatalogueAdd.svg</iconset>
    </property>
    <property name="text">
-    <string>Add custom catalogue</string>
+    <string>Catalogue</string>
+   </property>
+   <property name="iconText">
+    <string>Catalogue</string>
+   </property>
+  </action>
+  <action name="actionExportCatalogue">
+   <property name="text">
+    <string>Catalogue</string>
    </property>
   </action>
  </widget>
