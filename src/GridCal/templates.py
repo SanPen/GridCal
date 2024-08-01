@@ -20,30 +20,21 @@ import pandas as pd
 from GridCalEngine.Devices.Branches.line import SequenceLineType, UndergroundLineType
 from GridCalEngine.Devices.Branches.transformer import TransformerType
 from GridCalEngine.Devices.Branches.wire import Wire
+from GridCalEngine.IO.gridcal.catalogue import parse_transformer_types
 
 
 def get_transformer_catalogue():
+    """
+
+    :return:
+    """
     here = os.path.dirname(os.path.abspath(__file__))
     fname = os.path.join(here, 'data', 'transformers.csv')
 
     if os.path.exists(fname):
         df = pd.read_csv(fname)
 
-        lst = list()
-        for i, item in df.iterrows():
-            tpe = TransformerType(hv_nominal_voltage=item['HV (kV)'],
-                                  lv_nominal_voltage=item['LV (kV)'],
-                                  nominal_power=item['Rate (MVA)'],
-                                  copper_losses=item['Copper losses (kW)'],
-                                  iron_losses=item['No load losses (kW)'],
-                                  no_load_current=item['No load current (%)'],
-                                  short_circuit_voltage=item['V short circuit (%)'],
-                                  gr_hv1=0.5,
-                                  gx_hv1=0.5,
-                                  name=item['Name'])
-            lst.append(tpe)
-
-        return lst
+        return parse_transformer_types(df)
     else:
         return list()
 
@@ -91,6 +82,10 @@ def get_cables_catalogue():
 
 
 def get_wires_catalogue():
+    """
+
+    :return:
+    """
     here = os.path.dirname(os.path.abspath(__file__))
     fname = os.path.join(here, 'data', 'wires.csv')
 

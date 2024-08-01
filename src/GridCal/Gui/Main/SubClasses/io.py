@@ -29,7 +29,6 @@ from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
-from GridCal.Gui.LoadCatalogue.catalogue_dialogue import CatalogueGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
@@ -37,9 +36,13 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
+from GridCalEngine.IO.gridcal.catalogue import save_catalogue, load_catalogue
+from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
+                               get_sequence_lines_catalogue)
 
 
 class IoMain(ConfigurationMain):
@@ -81,7 +84,6 @@ class IoMain(ConfigurationMain):
 
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
-        self.ui.actionAdd_custom_catalogue.triggered.connect(self.open_select_component)
         self.ui.actionAdd_circuit.triggered.connect(self.add_circuit)
         self.ui.actionExport_circuit_differential.triggered.connect(self.export_circuit_differential)
         self.ui.actionSave.triggered.connect(self.save_file)
@@ -92,6 +94,9 @@ class IoMain(ConfigurationMain):
         self.ui.actionImport_bus_coordinates.triggered.connect(self.import_bus_coordinates)
         self.ui.actionImport_contingencies.triggered.connect(self.import_contingencies)
         self.ui.actionExport_contingencies.triggered.connect(self.export_contingencies)
+        self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
+        self.ui.actionAdd_custom_catalogue.triggered.connect(self.load_custom_catalogue)
+        self.ui.actionExportCatalogue.triggered.connect(self.save_custom_catalogue)
 
         # Buttons
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
@@ -415,75 +420,23 @@ class IoMain(ConfigurationMain):
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
 
-    def open_select_component(self):
-        # this will be filled with: open dialogue tab only, then connect select_csv_file from there
-        """
-        Open select component window for uploading catalogue data
-        """
-        self.catalogue_dialogue = CatalogueGUI(parent=self)
-        # self.catalogue_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio, this is what grid generator is set to
-        self.catalogue_dialogue.resize(int(1.61 * 400), 400)  # golden ratio
-        self.catalogue_dialogue.exec_()
 
-    # def select_csv_file(self, caption='Open CSV file'):
-    #     """
-    #     Select a CSV file
-    #     :return: csv file path
-    #     """
-    #     files_types = "CSV (*.csv)"
-    #
-    #     filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-    #                                                                     caption=caption,
-    #                                                                     dir=self.project_directory,
-    #                                                                     filter=files_types)
-    #
-    #     if len(filename) > 0:
-    #         return filename
-    #     else:
-    #         return None
-
-    def select_csv_file(self, caption='Open CSV file', post_function=None):
+    def select_csv_file(self, caption='Open CSV file'):
         """
         Select a CSV file
         :return: csv file path
         """
         files_types = "CSV (*.csv)"
 
-        # filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-        #                                                                 caption=caption,
-        #                                                                 dir=self.project_directory,
-        #                                                                 filter=files_types)
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                                        caption=caption,
+                                                                        dir=self.project_directory,
+                                                                        filter=files_types)
 
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-                                                            caption=caption,
-                                                            dir=self.project_directory,
-                                                            filter=files_types)
-
-        if filename:
-            # Call the post_function if provided
-            if post_function:
-                post_function(filename)
-
-            # Load the catalogue based on the selected CSV file
-            self.add_custom_catalogue(filename)
-
+        if len(filename) > 0:
             return filename
         else:
             return None
-
-        # dialogue = QtWidgets.QFileDialog(None,
-        #                                  caption=title,
-        #                                  directory=self.project_directory,
-        #                                  filter=f"Formats ({files_types})")
-        #
-        # if dialogue.exec():
-        #     filenames = dialogue.selectedFiles()
-        #     self.open_file_now(filenames, post_function)
-        #
-        # if len(filename) > 0:
-        #     return filename
-        # else:
-        #     return None
 
     def add_circuit(self):
         """
@@ -1016,3 +969,67 @@ class IoMain(ConfigurationMain):
             if filename != "":
                 # save file
                 export_contingencies_json_file(circuit=self.circuit, file_path=filename)
+
+    def add_default_catalogue(self) -> None:
+        """
+        Add default catalogue to circuit
+        """
+
+        self.circuit.transformer_types += get_transformer_catalogue()
+        self.circuit.underground_cable_types += get_cables_catalogue()
+        self.circuit.wire_types += get_wires_catalogue()
+        self.circuit.sequence_line_types += get_sequence_lines_catalogue()
+
+    def load_custom_catalogue(self):
+        """
+        Load a catalogue file and add it to the current one
+        """
+        # this will be filled with: open dialogue tab only, then connect select_csv_file from there
+        """
+        Open select component window for uploading catalogue data
+        """
+        # self.catalogue_dialogue = CatalogueGUI(parent=self)
+        # # self.catalogue_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio, this is what grid generator is set to
+        # self.catalogue_dialogue.resize(int(1.61 * 400), 400)  # golden ratio
+        # self.catalogue_dialogue.exec_()
+        #
+        # filename = self.catalogue_dialogue.selected_file
+        # self.add_data_to_circuit(filename)
+
+        files_types = "Catalogue file (*.xlsx)"
+
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                                        caption="Load catalogue",
+                                                                        dir=self.project_directory,
+                                                                        filter=files_types)
+
+        if len(filename) > 0:
+            if os.path.exists(filename):
+
+                data, logger = load_catalogue(fname=filename)
+
+                if logger.has_logs():
+                    dlg = LogsDialogue('Open catalogue logger', logger)
+                    dlg.exec()
+
+                self.circuit.add_catalogue(data)
+        else:
+            return None
+
+    def save_custom_catalogue(self):
+        """
+        Save the current catalogue
+        """
+
+        # declare the allowed file types
+        files_types = "Catalogue file (*.xlsx)"
+
+        # call dialog to select the file
+        filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self,
+                                                                        'Save catalogue', '', files_types)
+
+        if not (filename.endswith('.xlsx')):
+            filename += ".xlsx"
+
+        if filename != "":
+            save_catalogue(fname=filename, grid=self.circuit)
