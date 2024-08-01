@@ -44,6 +44,7 @@ class Ui_ExcelSelectionDialog(object):
 
         self.retranslateUi(ExcelSelectionDialog)
         self.buttonBox.accepted.connect(ExcelSelectionDialog.accept)
+        self.butonBox.accepted.connect(ExcelSelectionDialog.accept)
         self.buttonBox.rejected.connect(ExcelSelectionDialog.reject)
 
         QMetaObject.connectSlotsByName(ExcelSelectionDialog)
