@@ -36,7 +36,6 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
-from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
@@ -988,13 +987,6 @@ class IoMain(ConfigurationMain):
         """
         Open select component window for uploading catalogue data
         """
-        # self.catalogue_dialogue = CatalogueGUI(parent=self)
-        # # self.catalogue_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio, this is what grid generator is set to
-        # self.catalogue_dialogue.resize(int(1.61 * 400), 400)  # golden ratio
-        # self.catalogue_dialogue.exec_()
-        #
-        # filename = self.catalogue_dialogue.selected_file
-        # self.add_data_to_circuit(filename)
 
         files_types = "Catalogue file (*.xlsx)"
 
