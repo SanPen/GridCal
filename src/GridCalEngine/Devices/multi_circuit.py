@@ -2517,3 +2517,14 @@ class MultiCircuit(Assets):
                                            status=False, group=inv_group))
 
         return mid_sub, mid_vl, B1, B2, B3, br1, br2, br3, br4
+
+    def add_catalogue(self, data: Assets):
+        """
+        Add the catalogue from another circuit
+        :param data:
+        :return:
+        """
+        self.transformer_types += data.transformer_types
+        self.underground_cable_types += data.underground_cable_types
+        self.wire_types += data.wire_types
+        self.sequence_line_types += data.sequence_line_types

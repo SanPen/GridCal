@@ -10014,7 +10014,7 @@ QProgressBar::chunk{
   <action name="actionAdd_custom_catalogue">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/Icons/icons/CatalogueAdd.svg</normaloff>:/Icons/icons/CatalogueAdd.svg</iconset>
+     <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
    </property>
    <property name="text">
     <string>Catalogue</string>
@@ -10024,6 +10024,10 @@ QProgressBar::chunk{
    </property>
   </action>
   <action name="actionExportCatalogue">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
+   </property>
    <property name="text">
     <string>Catalogue</string>
    </property>

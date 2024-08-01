@@ -36,11 +36,13 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Simulations as sim
 from GridCalEngine.enumerations import EngineType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
-import GridCal.Gui.GuiFunctions as gf
-import GridCal.Session.synchronization_driver as syncdrv
+
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
+
+import GridCal.Gui.GuiFunctions as gf
+import GridCal.Session.synchronization_driver as syncdrv
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
@@ -60,8 +62,6 @@ from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import clear_qt_layout
 from GridCal.Gui.ConsoleWidget import ConsoleWidget
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
-from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
-                               get_sequence_lines_catalogue)
 
 
 def terminate_thread(thread):
@@ -214,8 +214,7 @@ class BaseMainGui(QMainWindow):
         self.ui.actionLaunch_data_analysis_tool.triggered.connect(self.display_grid_analysis)
         self.ui.actionOnline_documentation.triggered.connect(self.show_online_docs)
         self.ui.actionReport_a_bug.triggered.connect(self.report_a_bug)
-        self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
-        self.ui.actionAdd_custom_catalogue.triggered.connect(self.open_select_component)
+
         self.ui.actionFix_generators_active_based_on_the_power.triggered.connect(
             self.fix_generators_active_based_on_the_power
         )
@@ -230,19 +229,6 @@ class BaseMainGui(QMainWindow):
         self.ui.sbase_doubleSpinBox.valueChanged.connect(self.change_circuit_base)
 
         self.ui.grid_name_line_edit.textChanged.connect(self.change_circuit_name)
-
-    def open_select_component(self):
-        # this will be filled with: open dialogue tab only, then connect select_csv_file from there
-        """
-        Open select component window for uploading catalogue data
-        """
-        self.catalogue_dialogue = CatalogueGUI(parent=self)
-        # self.catalogue_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio, this is what grid generator is set to
-        self.catalogue_dialogue.resize(int(1.61 * 400), 400)  # golden ratio
-        self.catalogue_dialogue.exec_()
-
-        filename = self.catalogue_dialogue.selected_file
-        self.add_data_to_circuit(filename)
 
     def add_data_to_circuit(self, filename):
         df = self.catalogue_dialogue.read_csv_file(filename)
@@ -774,16 +760,6 @@ class BaseMainGui(QMainWindow):
         :return:
         """
         self.circuit.name = self.ui.grid_name_line_edit.text().strip()
-
-    def add_default_catalogue(self) -> None:
-        """
-        Add default catalogue to circuit
-        """
-
-        self.circuit.transformer_types += get_transformer_catalogue()
-        self.circuit.underground_cable_types += get_cables_catalogue()
-        self.circuit.wire_types += get_wires_catalogue()
-        self.circuit.sequence_line_types += get_sequence_lines_catalogue()
 
     def get_snapshot_circuit(self):
         """
