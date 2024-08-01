@@ -452,7 +452,7 @@ class GridMapWidget(BaseDiagramWidget):
             return 0
 
         newline = Line()
-        newline.copyData(it1.line_container.api_object)
+        newline.set_data_from(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
 
         better_first, better_second, busfrom, busto = compare_options(it1, it2)

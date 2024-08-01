@@ -414,11 +414,11 @@ class MapLineContainer(GenericDiagramWidget):
         if 0 < index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 3:
 
             ln1 = Line()
-            ln1.copyData(self.api_object)
+            ln1.set_data_from(self.api_object)
             # ln1 = self.api_object.copy()
 
             ln2 = Line()
-            ln2.copyData(self.api_object)
+            ln2.set_data_from(self.api_object)
 
             first_list = self.api_object.locations.data[:index]
             second_list = self.api_object.locations.data[index:]

@@ -21,8 +21,9 @@ from typing import Tuple, Union
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
+from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.enumerations import (TransformerControlType, WindingsConnection, BuildStatus,
-                                        TapAngleControl, TapModuleControl, TapChangerTypes)
+                                        TapAngleControl, TapModuleControl, TapChangerTypes, SubObjectType)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
@@ -225,6 +226,9 @@ class Transformer2W(ControllableBranchParent):
         # type template
         self.template = template
 
+        # association with transformer templates
+        self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)
+
         # register
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
@@ -238,6 +242,10 @@ class Transformer2W(ControllableBranchParent):
                       definition='Windings connection (from, to):G: grounded starS: ungrounded starD: delta')
 
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
+
+        self.register(key='possible_transformer_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible transformer types (>1 to denote association), - to denote no association',
+                      display=False)
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """

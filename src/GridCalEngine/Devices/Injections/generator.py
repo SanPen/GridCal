@@ -417,5 +417,3 @@ class Generator(GeneratorParent):
         :param val: float value
         """
         self._Snom = val
-        # if not self.custom_q_points:
-        #     self.q_curve.make_default_q_curve(self._Snom, self.qmin_set, self.qmax_set)

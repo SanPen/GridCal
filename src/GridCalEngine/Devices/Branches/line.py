@@ -27,6 +27,7 @@ from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
@@ -137,6 +138,11 @@ class Line(BranchParent):
         # type template
         self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
 
+        # association with various templates
+        self.possible_tower_types: Associations = Associations(device_type=DeviceType.OverheadLineTypeDevice)
+        self.possible_undergroud_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
+        self.possible_sequence_line_types: Associations = Associations(device_type=DeviceType.SequenceLineDevice)
+
         # Line locations
         self._locations: LineLocations = LineLocations()
 
@@ -172,6 +178,18 @@ class Line(BranchParent):
                                  'therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
         self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
+
+        self.register(key='possible_tower_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible overhead line types (>1 to denote association), - to denote no association',
+                      display=False)
+
+        self.register(key='possible_undergroud_line_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible underground line types (>1 to denote association), - to denote no association',
+                      display=False)
+
+        self.register(key='possible_sequence_line_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible sequence line types (>1 to denote association), - to denote no association',
+                      display=False)
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -353,8 +371,8 @@ class Line(BranchParent):
         """
         R = r_ohm * length
         X = x_ohm * length
-        B = (
-                    2 * np.pi * freq * c_nf * 1e-9) * length  # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
+        # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
+        B = (2 * np.pi * freq * c_nf * 1e-9) * length
 
         Vf = self.get_max_bus_nominal_voltage()
 
@@ -367,12 +385,17 @@ class Line(BranchParent):
         self.rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
         self.length = length
 
-    def copyData(self, second_Line):
+    def set_data_from(self, second_Line: "Line"):
+        """
+        Set the data from another line
+        :param second_Line:
+        :return:
+        """
         self.copy()
-        self.busfrom = getattr(second_Line, 'bus_from', None)
-        self.busto = getattr(second_Line, 'bus_to', None)
-        self.cnfrom = getattr(second_Line, 'cn_from', None)
-        self.cnto = getattr(second_Line, 'cn_to', None)
+        self.bus_from = second_Line.bus_from
+        self.bus_to = second_Line.bus_to
+        self.cn_from = second_Line.cn_from
+        self.cn_to = second_Line.cn_to
         self.name = second_Line.name
         self.idtag = second_Line.idtag
         self.code = second_Line.code
@@ -406,16 +429,3 @@ class Line(BranchParent):
         self.capex = second_Line.capex
         self.opex = second_Line.opex
         self.build_status = second_Line.build_status
-
-        # # Fetch all attributes from second_Line dynamically
-        # attributes = [attr for attr in dir(second_Line) if
-        #               not attr.startswith('__') and not callable(getattr(second_Line, attr))]
-        #
-        # # Using getattr to fetch each attribute, defaulting to None if not found
-        # for attr in attributes:
-        #     if not attr == 'locations':
-        #         try:
-        #             # Try setting the attribute, if it is writable
-        #             setattr(self, attr, getattr(second_Line, attr, None))
-        #         except AttributeError as e:
-        #             print(f"Cannot set protected attribute {attr}: {str(e)}")
