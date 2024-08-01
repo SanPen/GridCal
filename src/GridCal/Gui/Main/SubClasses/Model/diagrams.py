@@ -800,7 +800,6 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
-        print("Colour!")
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
@@ -1824,6 +1823,14 @@ class DiagramsMain(CompiledArraysMain):
                 cmap_text = self.ui.palette_comboBox.currentText()
                 cmap = self.cmap_dict[cmap_text]
                 diagram_widget.diagram.palette = cmap
+
+                current_study = self.ui.available_results_to_color_comboBox.currentText()
+                val = self.ui.diagram_step_slider.value()
+                t_idx = val if val > -1 else None
+
+                self.grid_colour_function(diagram=diagram_widget,
+                                          current_study=current_study,
+                                          t_idx=t_idx)
 
     def set_diagrams_map_tile_provider(self):
         """

@@ -250,10 +250,10 @@ class ControllableBranchParent(BranchParent):
                       profile_name='Qset_prof')
 
         self.register(key='regulation_bus', units='', tpe=DeviceType.BusDevice,
-                      definition='Bus where the regulation is applied.', editable=False)
+                      definition='Bus where the regulation is applied.', editable=True)
 
         self.register(key='regulation_cn', units='', tpe=DeviceType.ConnectivityNodeDevice,
-                      definition='Connectivity node where the regulation is applied.', editable=False)
+                      definition='Connectivity node where the regulation is applied.', editable=True)
 
         self.register(key='tap_phase', units='rad', tpe=float, definition='Angle shift of the tap changer.',
                       profile_name='tap_phase_prof', old_names=['angle', 'theta'])

@@ -820,17 +820,9 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                     prof.fill(val)
 
                             except ValueError:
-                                skip = False
-                                if property_name == 'control_mode':
-                                    if property_value == "1:Pt":
-                                        # elm.set_snapshot_value(gc_prop.name, TransformerControlType.Pf)
-                                        # TODO: handle this
-                                        skip = True
-
-                                if not skip:
-                                    logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
-                                                     device=elm.name,
-                                                     value=property_value)
+                                logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                 device=elm.name,
+                                                 value=property_value)
 
                         else:
                             raise Exception(f'Unsupported property type: {gc_prop.tpe}')
