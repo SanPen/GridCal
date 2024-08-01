@@ -89,7 +89,9 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.dataStructureTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
 
         # wrap headers
-        # self.ui.dataStructureTableView.setHorizontalHeader(HeaderViewWithWordWrap())
+        self.ui.dataStructureTableView.setHorizontalHeader(HeaderViewWithWordWrap())
+        self.ui.profiles_tableView.setHorizontalHeader(HeaderViewWithWordWrap())
+        self.ui.associationsTableView.setHorizontalHeader(HeaderViewWithWordWrap())
 
         # combobox change
         self.ui.associationsComboBox.currentTextChanged.connect(self.display_associations)

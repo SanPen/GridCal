@@ -32,13 +32,18 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         :return:
         """
         if self.model():
-            headerText = self.model().headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
-            # options = self.viewOptions()
-
+            headerText = self.model().headerData(logicalIndex,
+                                                 self.orientation(),
+                                                 QtCore.Qt.ItemDataRole.DisplayRole)
+            option = QtWidgets.QStyleOptionHeader()
+            self.initStyleOption(option)
+            option.section = logicalIndex
             metrics = QtGui.QFontMetrics(self.font())
+
             maxWidth = self.sectionSize(logicalIndex)
+
             rect = metrics.boundingRect(QtCore.QRect(0, 0, maxWidth, 5000),
-                                        self.defaultAlignment() |
+                                        QtCore.Qt.AlignmentFlag.AlignLeft |
                                         QtCore.Qt.TextFlag.TextWordWrap |
                                         QtCore.Qt.TextFlag.TextExpandTabs,
                                         headerText, 4)
@@ -46,7 +51,7 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         else:
             return QtWidgets.QHeaderView.sectionSizeFromContents(self, logicalIndex)
 
-    def paintSection(self, painter, rect, logicalIndex):
+    def paintSection(self, painter, rect, logicalIndex: int):
         """
 
         :param painter:
@@ -56,14 +61,24 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         """
         if self.model():
             painter.save()
-            # self.model().hideHeaders()
-            QtWidgets.QHeaderView.paintSection(self, painter, rect, logicalIndex)
-            # self.model().unhideHeaders()
+            self.model().hideHeaders()
+            super().paintSection(painter, rect, logicalIndex)
+            self.model().unhideHeaders()
             painter.restore()
             headerText = self.model().headerData(logicalIndex,
                                                  self.orientation(),
                                                  QtCore.Qt.ItemDataRole.DisplayRole)
+            if headerText is not None:
+                headerText = headerText.replace("_", " ")
 
-            painter.drawText(QtCore.QRectF(rect), QtCore.Qt.TextFlag.TextWordWrap, headerText)
+                # painter.drawText(QtCore.QRectF(rect), QtCore.Qt.TextFlag.TextWordWrap, headerText)
+                # Define text indentation
+                indentation = 4  # pixels
+                textRect = QtCore.QRectF(rect.adjusted(indentation, 0, 0, 0))  # Indent left and right
+
+                painter.drawText(textRect,
+                                 QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.TextFlag.TextWordWrap,
+                                 headerText)
+                # painter.restore()
         else:
             QtWidgets.QHeaderView.paintSection(self, painter, rect, logicalIndex)

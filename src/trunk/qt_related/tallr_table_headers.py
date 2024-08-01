@@ -19,7 +19,7 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         """
         if self.model():
             headerText = self.model().headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
-            # options = self.viewOptions()
+            # headerText = headerText.replace("_", " _ ")
 
             metrics = QtGui.QFontMetrics(self.font())
             maxWidth = self.sectionSize(logicalIndex)
@@ -49,6 +49,7 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
             headerText = self.model().headerData(logicalIndex,
                                                  self.orientation(),
                                                  QtCore.Qt.ItemDataRole.DisplayRole)
+            headerText = headerText.replace("_", " ")
 
             painter.drawText(QtCore.QRectF(rect), QtCore.Qt.TextFlag.TextWordWrap, headerText)
         else:
@@ -58,10 +59,10 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
 class Model(QtCore.QAbstractTableModel):
     def __init__(self):
         QtCore.QAbstractTableModel.__init__(self)
-        self.model_cols_names = ["Very-very long name of my first column",
-                                 "Very-very long name of my second column",
-                                 "Very-very long name of my third column",
-                                 "Very-very long name of my fourth column"]
+        self.model_cols_names = ["Very-very_long name of my first column",
+                                 "Very-very_long name of my second column",
+                                 "Very-very_long name of my third column",
+                                 "Very-very_long name of my fourth column"]
         self.hide_headers_mode = False
         self._data = []
         for i in range(0, 10):

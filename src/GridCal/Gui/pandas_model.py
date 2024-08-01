@@ -86,6 +86,23 @@ class PandasModel(QtCore.QAbstractTableModel):
 
         self.formatter = lambda x: "%.2f" % x
 
+        # flag for the headers text wraper: HeaderViewWithWordWrap
+        self._hide_headers_mode = False
+
+    def hideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = True
+
+    def unhideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = False
+
     def flags(self, index: QtCore.QModelIndex):
         """
 
@@ -161,6 +178,9 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if self._hide_headers_mode is True:
+            return None
+
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 return self.cols_c[section]
