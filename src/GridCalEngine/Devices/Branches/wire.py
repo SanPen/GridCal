@@ -24,7 +24,7 @@ class Wire(EditableDevice):
     This class represents a wire (an actual wire)
     to compose towers
     """
-    def __init__(self, name='', idtag: Union[str, None] = None, gmr=0.01, r=0.01, x=0.0, max_current=1):
+    def __init__(self, name='', idtag: Union[str, None] = None, gmr=0.01, r=0.01, x=0.0, max_current=1, stranding=0.0, material=0.0, diameter=0.0):
         """
         Wire definition
         :param name: Name of the wire type
@@ -42,6 +42,9 @@ class Wire(EditableDevice):
                                 device_type=DeviceType.WireDevice)
 
         # self.wire_name = name
+        self.stranding = stranding
+        self.material = material
+        self.diameter = diameter
         self.r = r
         self.x = x
         self.gmr = gmr
@@ -51,6 +54,9 @@ class Wire(EditableDevice):
         self.register(key='x', units='Ohm/km', tpe=float, definition='reactance of the conductor')
         self.register(key='gmr', units='m', tpe=float, definition='Geometric Mean Radius of the conductor')
         self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
+        self.register(key='stranding', tpe=float, definition='Stranding of wire')
+        self.register(key='material', tpe=float, definition='Material of wire')
+        self.register(key='diameter', units='cm', tpe=float, definition='Diameter of wire')
 
     def copy(self):
         """
@@ -58,4 +64,4 @@ class Wire(EditableDevice):
         :return:
         """
         # name='', idtag=None, gmr=0.01, r=0.01, x=0.0, max_current=1
-        return Wire(name=self.name, gmr=self.gmr, r=self.r, x=self.x, max_current=self.max_current)
+        return Wire(name=self.name, gmr=self.gmr, r=self.r, x=self.x, max_current=self.max_current, stranding=self.stranding, material=self.material, diameter=self.diameter)

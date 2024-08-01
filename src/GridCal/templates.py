@@ -20,7 +20,7 @@ import pandas as pd
 from GridCalEngine.Devices.Branches.line import SequenceLineType, UndergroundLineType
 from GridCalEngine.Devices.Branches.transformer import TransformerType
 from GridCalEngine.Devices.Branches.wire import Wire
-from GridCalEngine.IO.gridcal.catalogue import parse_transformer_types
+from GridCalEngine.IO.gridcal.catalogue import parse_transformer_types, parse_cable_types, parse_wire_types, parse_sequence_line_types
 
 
 def get_transformer_catalogue():
@@ -50,33 +50,7 @@ def get_cables_catalogue():
     if os.path.exists(fname):
         df = pd.read_csv(fname)
 
-        lst = list()
-        for i, item in df.iterrows():
-            """
-            Name,
-            Rated voltage [kV],
-            Rated current [kA],
-            Nominal Frequency,
-            R [Ohm/km AC,20°C],
-            X [Ohm/km],
-            L [Ohm/km],
-            R0 (AC) [Ohm/km],
-            X0  [Ohm/km]
-            L0 [mH/km]
-            """
-            tpe = UndergroundLineType(name=item['Name'],
-                                      Imax=item['Rated current [kA]'],
-                                      Vnom=item['Rated voltage [kV]'],
-                                      R=item['R [Ohm/km AC@20°C]'],
-                                      X=item['X [Ohm/km]'],
-                                      B=0.0,
-                                      R0=item['R0 (AC) [Ohm/km]'],
-                                      X0=item['X0  [Ohm/km]'],
-                                      B0=0.0)
-
-            lst.append(tpe)
-
-        return lst
+        return parse_cable_types(df)
     else:
         return list()
 
@@ -92,20 +66,7 @@ def get_wires_catalogue():
     if os.path.exists(fname):
         df = pd.read_csv(fname)
 
-        lst = list()
-        for i, item in df.iterrows():
-            '''
-            Size,Stranding,Material,Diameter [cm],GMR [m],R [Ohm/km],Rating [kA]
-            '''
-            name = str(item['Stranding']) + '_' + str(item['Material']) + '_' + str(item['Diameter [cm]'])
-            tpe = Wire(name=name,
-                       gmr=item['GMR [m]'],
-                       r=item['R [Ohm/km]'],
-                       x=0.0,
-                       max_current=item['Rating [kA]'])
-            lst.append(tpe)
-
-        return lst
+        return parse_wire_types(df)
     else:
         return list()
 
@@ -121,31 +82,6 @@ def get_sequence_lines_catalogue():
     if os.path.exists(fname):
         df = pd.read_csv(fname)
 
-        lst = list()
-        for i, item in df.iterrows():
-            """
-            Name,
-            Vnom (kV)	
-            r (ohm/km)	
-            x (ohm/km)	
-            b (uS/km)	
-            r0 (ohm/km)	
-            x0 (ohm/km)	
-            b0 (uS/km)	
-            Imax (kA)
-            """
-            tpe = SequenceLineType(name=item['Name'],
-                                   Vnom=item['Vnom (kV)'],
-                                   Imax=item['Imax (kA)'],
-                                   R=item['r (ohm/km)'],
-                                   X=item['x (ohm/km)'],
-                                   B=item['b (uS/km)'],
-                                   R0=item['r0 (ohm/km)'],
-                                   X0=item['x0 (ohm/km)'],
-                                   B0=item['b0 (uS/km)'])
-
-            lst.append(tpe)
-
-        return lst
+        return parse_sequence_line_types(df)
     else:
         return list()
