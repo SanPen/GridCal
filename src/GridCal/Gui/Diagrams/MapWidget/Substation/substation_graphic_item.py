@@ -88,7 +88,9 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         # self.resize(r)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         # self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
-        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
+        self.setFlag(
+            self.GraphicsItemFlag.ItemIsSelectable | QGraphicsRectItem.ItemIsMovable)  # Allow selecting the node
+
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Create a pen with reduced line width
@@ -230,7 +232,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.itemSelected = False
         self.setDefaultColor()
 
-
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse release events.
@@ -295,8 +296,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        icon_path="",
                        function_ptr=self.new_substation_diagram)
 
-
-
         menu.exec_(event.screenPos())
 
     def create_new_line(self):
@@ -338,7 +337,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         pass
 
-    def remove_function(self):
+    def remove_function(self) -> None:
         """
         Function to be called when Action 1 is selected.
         """

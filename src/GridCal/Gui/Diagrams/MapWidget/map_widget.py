@@ -136,6 +136,9 @@ class MapView(QGraphicsView):
 
         self.selectedItems = list()
 
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
+
     def mousePressEvent(self, event: QMouseEvent):
         """
 
