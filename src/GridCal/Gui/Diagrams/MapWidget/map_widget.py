@@ -30,7 +30,7 @@ ygeo: latitude
 from __future__ import annotations
 from typing import List, Union, Tuple, Callable, TYPE_CHECKING
 from enum import Enum
-from PySide6.QtCore import Qt, QTimer, QEvent, QPointF, QRectF
+from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
@@ -497,7 +497,7 @@ class MapWidget(QWidget):
                 while abs(self.view.schema_zoom - 0.015625) > 0.00001:
                     self.view.schema_zoom = self.view.schema_zoom / self.view.map_widget.zoom_factor
                     self.view.scale(1.0 / self.view.map_widget.zoom_factor, 1.0 / self.view.map_widget.zoom_factor)
-                self.GotoLevelAndPosition(level=0, longitude=None, latitude=None)
+                self.GotoLevelAndPosition(level=0, longitude=0, latitude=0)
 
     @property
     def max_level(self):
