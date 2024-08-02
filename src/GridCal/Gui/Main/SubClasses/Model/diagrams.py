@@ -801,7 +801,6 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
-        print("Colour!")
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
