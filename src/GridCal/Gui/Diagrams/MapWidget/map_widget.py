@@ -65,7 +65,7 @@ class MapScene(QGraphicsScene):
     """
 
     def __init__(self, parent: "MapWidget" = None) -> None:
-        super().__init__(parent)
+        super(MapScene, self).__init__(parent)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.BspTreeIndex)  # For efficient item indexing
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -134,8 +134,6 @@ class MapView(QGraphicsView):
 
         self.scale(initial_zoom_factor, initial_zoom_factor)
 
-        self.selectedItems = list()
-
     def mousePressEvent(self, event: QMouseEvent):
         """
 
@@ -145,12 +143,7 @@ class MapView(QGraphicsView):
         self.map_widget.mousePressEvent(event)
         self.pressed = True
         self.disableMove = False
-        b = event.button()
-        if b == Qt.RightButton:
-            if not self.inItem:
-                for item in self.selectedItems:
-                    item.deSelectItem()
-                self.selectedItems.clear()
+
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent):
@@ -162,6 +155,7 @@ class MapView(QGraphicsView):
         self.map_widget.mouseReleaseEvent(event)
         self.pressed = False
         self.disableMove = True
+        super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         """
@@ -170,6 +164,7 @@ class MapView(QGraphicsView):
         :return:
         """
         self.map_widget.mouseDoubleClickEvent(event)
+        super().mouseDoubleClickEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         """
@@ -602,8 +597,8 @@ class MapWidget(QWidget):
         click_y = event.y()
 
         # assume we aren't dragging
-        self.start_drag_x = None
-        self.start_drag_y = None
+        # self.start_drag_x = None
+        # self.start_drag_y = None
 
         b = event.button()
         if b == Qt.MouseButton.NoButton:

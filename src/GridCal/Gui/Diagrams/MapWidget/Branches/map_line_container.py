@@ -450,9 +450,6 @@ class MapLineContainer(GenericDiagramWidget):
             # Handle invalid index
             error_msg("Index out of range or invalid", "split line")
 
-    def merge_line(self):
-        return 0
-
     def disable_line(self):
         """
 
