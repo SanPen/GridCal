@@ -20,13 +20,13 @@ from enum import Enum
 
 class BusMode(Enum):
     """
-    Emumetarion of bus modes
+    Bus modes
     """
-    PQ = 1  # control P, Q
-    PV = 2  # Control P, Vm
-    Slack = 3  # Contol Vm, Va (slack)
-    PQV = 4  # control P, Q and Vm
-    D = 5  # only control the voltage angle (Va)
+    PQ_tpe = 1  # control P, Q
+    PV_tpe = 2  # Control P, Vm
+    Slack_tpe = 3  # Control Vm, Va (slack)
+    PQV_tpe = 4  # voltage-controlled bus (P, Q, V set, theta computed)
+    P_tpe = 5  # voltage-controlling bus (P set, Q, V, theta computed)
 
     def __str__(self):
         return self.value
@@ -101,6 +101,7 @@ class InvestmentEvaluationMethod(Enum):
     MVRSM = "MVRSM"
     NSGA3 = "NSGA3"
     Random = "Random"
+    MixedVariableGA = "Mixed Variable NSGA2"
 
     def __str__(self):
         return self.value
@@ -1662,6 +1663,7 @@ class ResultTypes(Enum):
 
     InvestmentsParetoPlot = 'Pareto plots'
     InvestmentsIterationsPlot = 'Iterations plot'
+    InvestmentsParetoPlotNSGA2 = 'Pareto plot NSGA2'
 
     def __str__(self):
         return self.value

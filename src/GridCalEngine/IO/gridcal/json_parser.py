@@ -164,7 +164,7 @@ def parse_json_data(data) -> MultiCircuit:
                               active=True)
 
                 if element["is_slack"]:
-                    elm.type = dev.BusMode.Slack
+                    elm.type = dev.BusMode.Slack_tpe
                 if element["vmax"] > 0:
                     elm.Vmax = element["vmax"]
                 if element["vmin"] > 0:

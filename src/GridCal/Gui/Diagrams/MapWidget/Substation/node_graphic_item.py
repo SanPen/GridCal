@@ -79,7 +79,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # self.api_object: LineLocation = api_object
         self.index = index
 
-        self.resize(r)
+        self.resize(r * 10)
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
@@ -88,7 +88,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
         self.hovered = False
         self.enabled = True
-        self.itemSelected = False
 
         # Create a pen with reduced line width
         self.change_pen_width(0.001)
@@ -173,13 +172,13 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-
+        selected_items = self.editor.map.view._scene.selectedItems()
+        if len(selected_items) < 2:
+            self.setSelected(True)
         if self.enabled:
             self.editor.map.view.disableMove = True
             if event.button() == Qt.RightButton:
                 pass
-            elif event.button() == Qt.LeftButton:
-                self.selectItem()
 
     def mouseReleaseEvent(self, event):
         """
@@ -190,11 +189,15 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.updateDiagram()
         self.editor.map.view._scene.update()
 
+        selected_items = self.editor.map.view._scene.selectedItems()
+        if len(selected_items) < 2:
+            self.setSelected(True)
+
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
-        self.editor.inItem = True
+        self.editor.map.view.inItem = True
         self.hovered = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -203,7 +206,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
-        self.editor.inItem = False
+        self.editor.map.view.inItem = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
@@ -217,44 +220,21 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         menu = QMenu()
 
         add_menu_entry(menu=menu,
-                       text="Add",
-                       icon_path="",
-                       function_ptr=self.AddFunction)
-
-        add_menu_entry(menu=menu,
-                       text="Split",
-                       icon_path="",
-                       function_ptr=self.SplitFunction)
-
-        add_menu_entry(menu=menu,
                        text="Merge",
                        icon_path="",
                        function_ptr=self.MergeFunction)
 
         add_menu_entry(menu=menu,
-                       text="Remove",
-                       icon_path="",
+                       text="Split",
+                       icon_path=":/Icons/icons/divide.svg",
+                       function_ptr=self.SplitFunction)
+
+        add_menu_entry(menu=menu,
+                       text="Delete",
+                       icon_path=":/Icons/icons/delete.svg",
                        function_ptr=self.RemoveFunction)
 
         menu.exec_(event.screenPos())
-
-    def selectItem(self):
-        """
-
-        :return:
-        """
-        if not self.itemSelected:
-            self.editor.map.view.selectedItems.append(self)
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        self.itemSelected = True
-
-    def deSelectItem(self):
-        """
-
-        :return:
-        """
-        self.itemSelected = False
-        self.setDefaultColor()
 
     def AddFunction(self):
         """
@@ -312,10 +292,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        if self.itemSelected:
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        else:
-            self.setNodeColor(self.colorInner, self.colorBorder)
+        self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self) -> QPointF:
         """

@@ -805,17 +805,17 @@ class SchematicWidget(BaseDiagramWidget):
                                                    to_port=bus_1_graphic.get_terminal(),
                                                    editor=self)
 
-                        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
+                        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=False)
 
                         conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
                                                    to_port=bus_2_graphic.get_terminal(),
                                                    editor=self)
-                        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
+                        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=False)
 
                         conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
                                                    to_port=bus_3_graphic.get_terminal(),
                                                    editor=self)
-                        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
+                        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=False)
 
                         graphic_object.set_position(x=location.x, y=location.y)
                         graphic_object.change_size(h=location.h, w=location.w)
@@ -1091,8 +1091,10 @@ class SchematicWidget(BaseDiagramWidget):
         Add item to the diagram and the diagram scene
         :param graphic_object: Graphic object associated
         """
-
-        self.diagram_scene.addItem(graphic_object)
+        if graphic_object is not None:
+            self.diagram_scene.addItem(graphic_object)
+        else:
+            warn("Null graphics skipped")
 
     def remove_from_scene(self, graphic_object: QGraphicsItem = None) -> None:
         """
@@ -1601,7 +1603,10 @@ class SchematicWidget(BaseDiagramWidget):
                                     api_object=winding
                                 )
 
-                                tr3_graphic_object.set_connection(i, bus, winding_graphics)
+                                tr3_graphic_object.set_connection(i=i,
+                                                                  bus=bus,
+                                                                  conn=winding_graphics,
+                                                                  set_voltage=True)
                                 tr3_graphic_object.update_conn()  # create winding
 
                         elif self.started_branch.connected_between_bus_and_tr3():
@@ -1626,7 +1631,10 @@ class SchematicWidget(BaseDiagramWidget):
                                     to_port=self.started_branch.get_terminal_to(),
                                     api_object=winding)
 
-                                tr3_graphic_object.set_connection(i, bus, winding_graphics)
+                                tr3_graphic_object.set_connection(i=i,
+                                                                  bus=bus,
+                                                                  conn=winding_graphics,
+                                                                  set_voltage=True)
                                 tr3_graphic_object.update_conn()
 
                         elif self.started_branch.connected_between_fluid_nodes():  # fluid path
@@ -2577,10 +2585,11 @@ class SchematicWidget(BaseDiagramWidget):
                                    draw_labels=draw_labels,
                                    logger=logger)
 
-    def add_api_transformer_3w(self, elm: Transformer3W):
+    def add_api_transformer_3w(self, elm: Transformer3W, set_voltage: bool = False):
         """
         add API branch to the Scene
         :param elm: Branch instance
+        :param set_voltage:
         """
 
         tr3_graphic_object = self.create_transformer_3w_graphics(elm=elm, x=elm.x, y=elm.y)
@@ -2592,17 +2601,17 @@ class SchematicWidget(BaseDiagramWidget):
         conn1 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[0],
                                    to_port=port1,
                                    editor=self)
-        tr3_graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1)
+        tr3_graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=set_voltage)
 
         conn2 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[1],
                                    to_port=port2,
                                    editor=self)
-        tr3_graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2)
+        tr3_graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=set_voltage)
 
         conn3 = WindingGraphicItem(from_port=tr3_graphic_object.terminals[2],
                                    to_port=port3,
                                    editor=self)
-        tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3)
+        tr3_graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=set_voltage)
 
         tr3_graphic_object.update_conn()
 
@@ -2958,7 +2967,7 @@ class SchematicWidget(BaseDiagramWidget):
                 graphic_obj = self.add_api_transformer(elm)
 
             elif isinstance(elm, Transformer3W):
-                graphic_obj = self.add_api_transformer_3w(elm)
+                graphic_obj = self.add_api_transformer_3w(elm, set_voltage=False)
 
             elif isinstance(elm, HvdcLine):
                 graphic_obj = self.add_api_hvdc(elm)
@@ -3042,9 +3051,10 @@ class SchematicWidget(BaseDiagramWidget):
                 if prog_func is not None:
                     prog_func((i + 1) / nn * 100.0)
 
-                self.add_api_bus(bus=bus,
-                                 injections_by_tpe=injections_by_bus.get(bus, dict()),
-                                 explode_factor=explode_factor)
+                graphic_obj = self.add_api_bus(bus=bus,
+                                               injections_by_tpe=injections_by_bus.get(bus, dict()),
+                                               explode_factor=explode_factor)
+                self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3056,7 +3066,10 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_busbar(bus=bus, injections_by_tpe=injections_by_cn.get(bus.cn, dict()))
+            graphic_obj = self.add_api_busbar(bus=bus,
+                                              injections_by_tpe=injections_by_cn.get(bus.cn, dict()))
+
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -3070,7 +3083,9 @@ class SchematicWidget(BaseDiagramWidget):
                 prog_func((i + 1) / nn * 100.0)
 
             if not cn.internal:
-                self.add_api_cn(cn=cn, injections_by_tpe=injections_by_cn.get(cn, dict()))
+                graphic_obj = self.add_api_cn(cn=cn,
+                                              injections_by_tpe=injections_by_cn.get(cn, dict()))
+                self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -3083,7 +3098,10 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_fluid_node(node=elm, injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
+            graphic_obj = self.add_api_fluid_node(node=elm,
+                                                  injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
+
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3095,7 +3113,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_line(branch)
+            graphic_obj = self.add_api_line(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3107,7 +3126,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_dc_line(branch)
+            graphic_obj = self.add_api_dc_line(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3119,7 +3139,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_transformer(branch)
+            graphic_obj = self.add_api_transformer(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3131,7 +3152,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_transformer_3w(elm)
+            graphic_obj = self.add_api_transformer_3w(elm, set_voltage=False)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3143,7 +3165,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_hvdc(branch)
+            graphic_obj = self.add_api_hvdc(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3155,7 +3178,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_vsc(branch)
+            graphic_obj = self.add_api_vsc(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3167,7 +3191,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_upfc(branch)
+            graphic_obj = self.add_api_upfc(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3179,7 +3204,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_switch(branch)
+            graphic_obj = self.add_api_switch(branch)
+            self.add_to_scene(graphic_obj)
 
         # --------------------------------------------------------------------------------------------------------------
         if text_func is not None:
@@ -3191,7 +3217,8 @@ class SchematicWidget(BaseDiagramWidget):
             if prog_func is not None:
                 prog_func((i + 1) / nn * 100.0)
 
-            self.add_api_fluid_path(elm)
+            graphic_obj = self.add_api_fluid_path(elm)
+            self.add_to_scene(graphic_obj)
 
     def align_schematic(self, buses: List[Bus] = ()):
         """
@@ -3428,7 +3455,7 @@ class SchematicWidget(BaseDiagramWidget):
         PVB = 6
         '''
 
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage', 'P', 'PQV']
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
         max_flow = 1
 
         if len(buses) == len(vnorm):

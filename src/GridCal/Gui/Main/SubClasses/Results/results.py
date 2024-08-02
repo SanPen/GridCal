@@ -18,7 +18,7 @@ import numpy as np
 from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
 from typing import Union
-import GridCalEngine.Simulations as sim
+from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
@@ -64,6 +64,9 @@ class ResultsMain(SimulationsMain):
 
         # line edit enter
         self.ui.sear_results_lineEdit.returnPressed.connect(self.search_in_results)
+
+        # wrap headers
+        self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap())
 
     def results_tree_view_click(self, index):
         """

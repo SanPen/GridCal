@@ -16,16 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-import pandas as pd
 from typing import Dict, List, Union, Any, Tuple
 from PySide6 import QtCore, QtWidgets, QtGui
-from warnings import warn
-from enum import EnumMeta
 from collections import defaultdict
 
-from GridCalEngine.Devices import Bus, ContingencyGroup
-from GridCalEngine.Devices.Parents.editable_device import GCProp, EditableDevice
-from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import IntVec
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, Base

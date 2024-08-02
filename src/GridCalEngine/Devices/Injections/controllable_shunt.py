@@ -16,9 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Union
 import numpy as np
+
 from GridCalEngine.enumerations import DeviceType, BuildStatus, SubObjectType
 from GridCalEngine.Devices.Parents.shunt_parent import ShuntParent
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Substation.bus import Bus
 
 
 class ControllableShunt(ShuntParent):
@@ -47,6 +49,7 @@ class ControllableShunt(ShuntParent):
                  capex: float = 0.0,
                  opex: float = 0.0,
                  is_controlled: bool = True,
+                 control_bus: Bus = None,
                  build_status: BuildStatus = BuildStatus.Commissioned):
         """
         The controllable shunt object implements the so-called ZIP model, in which the load can be
@@ -93,6 +96,9 @@ class ControllableShunt(ShuntParent):
         self._step = step
         self._step_prof = Profile(default_value=step, data_type=int)
 
+        self.control_bus = control_bus
+        self._control_bus_prof = Profile(default_value=control_bus, data_type=DeviceType.BusDevice)
+
         # Voltage module set point (p.u.)
         self.Vset = vset
 
@@ -122,13 +128,11 @@ class ControllableShunt(ShuntParent):
     def step(self, value: int):
 
         if 0 <= value < len(self._b_steps):
-
             self._step = int(value)
 
             # override value on change
             self.B = self._b_steps[self._step]
             self.G = self._g_steps[self._step]
-
 
     @property
     def Bmin(self):
@@ -236,3 +240,20 @@ class ControllableShunt(ShuntParent):
             self._step_prof.set(arr=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a step_prof')
+
+    @property
+    def control_bus_prof(self) -> Profile:
+        """
+        Control bus profile
+        :return: Profile
+        """
+        return self._control_bus_prof
+
+    @control_bus_prof.setter
+    def control_bus_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._control_bus_prof = val
+        elif isinstance(val, np.ndarray):
+            self._control_bus_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into control_bus_prof')

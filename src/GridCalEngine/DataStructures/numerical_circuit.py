@@ -163,6 +163,8 @@ class NumericalCircuit:
         'Qmin',
         'Qmax',
         'pq',
+        'pqv',
+        'p',
         'pv',
         'vd',
         'pqpv',
@@ -839,7 +841,7 @@ class NumericalCircuit:
                                     control_mode=self.branch_data.control_mode,
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
-                                    dc=self.branch_data.dc)
+                                    dc=self.bus_data.is_dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """
@@ -1097,6 +1099,28 @@ class NumericalCircuit:
             self.simulation_indices_ = self.get_simulation_indices()
 
         return self.simulation_indices_.pv
+
+    @property
+    def pqv(self):
+        """
+
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.pqv
+
+    @property
+    def p(self):
+        """
+
+        :return:
+        """
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        return self.simulation_indices_.p
 
     @property
     def pqpv(self):
@@ -1436,10 +1460,10 @@ class NumericalCircuit:
                 bus_active=self.bus_data.active
             )
 
-    def get_structure(self, structure_type) -> pd.DataFrame:
+    def get_structure(self, structure_type: str) -> pd.DataFrame:
         """
         Get a DataFrame with the input.
-        :param: structure_type: String representig structure type
+        :param: structure_type: String representing structure type
         :return: pandas DataFrame
         """
 
@@ -1686,6 +1710,20 @@ class NumericalCircuit:
                 data=self.pv,
                 columns=['pv'],
                 index=self.bus_data.names[self.pv],
+            )
+
+        elif structure_type == 'pqv':
+            df = pd.DataFrame(
+                data=self.pqv,
+                columns=['pqv'],
+                index=self.bus_data.names[self.pqv],
+            )
+
+        elif structure_type == 'p':
+            df = pd.DataFrame(
+                data=self.p,
+                columns=['p'],
+                index=self.bus_data.names[self.p],
             )
 
         elif structure_type == 'vd':

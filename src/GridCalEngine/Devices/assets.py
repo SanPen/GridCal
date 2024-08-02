@@ -4669,6 +4669,9 @@ class Assets:
         elif device_type == DeviceType.ModellingAuthority:
             return self.get_modelling_authorities()
 
+        elif device_type == DeviceType.LambdaDevice:
+            return list()
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
@@ -5273,21 +5276,27 @@ class Assets:
         return data
 
     def get_all_elements_dict_by_type(self,
-                                      add_locations: bool = False) -> dict[str, Union[dict[str, ALL_DEV_TYPES], Any]]:
+                                      add_locations: bool = False,
+                                      string_keys: bool = True) -> dict[
+        Union[str, DeviceType], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
+        :param add_locations: Add locations to dict
+        :param string_keys: make the keys string otherwise use DeviceType
         :return:
         """
 
         data = dict()
         for key, tpe in self.device_type_name_dict.items():
-            data[tpe.value] = self.get_elements_dict_by_type(element_type=tpe,
-                                                             use_secondary_key=False)
+            key = tpe.value if string_keys else tpe
+            data[key] = self.get_elements_dict_by_type(element_type=tpe,
+                                                       use_secondary_key=False)
 
         # add locations
         if add_locations:
-            data[DeviceType.LineLocation.value] = self.get_elements_dict_by_type(element_type=DeviceType.LineLocation,
-                                                                                 use_secondary_key=False)
+            key = DeviceType.LineLocation.value if string_keys else DeviceType.LineLocation
+            data[key] = self.get_elements_dict_by_type(element_type=DeviceType.LineLocation,
+                                                       use_secondary_key=False)
 
         return data
 

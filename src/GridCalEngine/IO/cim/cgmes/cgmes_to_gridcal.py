@@ -29,7 +29,8 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     get_pu_values_power_transformer_end,
                                                     get_slack_id,
                                                     find_object_by_idtag,
-                                                    find_terms_connections)
+                                                    find_terms_connections,
+                                                    build_rates_dict)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.base import Base
 
@@ -705,6 +706,29 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                  expected_value=2)
 
 
+def get_tap_changer_values(windings):
+    """
+    Get Tap Changer values for given windings.
+
+    :param windings: List of transformer windings.
+    :return:
+    """
+    total_positions, neutral_position, dV = 0, 0, 0
+
+    for winding in windings:
+        rtc = winding.RatioTapChanger
+        if rtc is not None:
+            total_positions = rtc.highStep - rtc.lowStep + 1
+            neutral_position = rtc.neutralStep
+            dV = rtc.stepVoltageIncrement / 100
+            # self._tap_position = neutral_position  # index with respect to the neutral position = Step from SSH
+            # self.tc_type = tc_type  # tap changer mode # TODO which enum to use for control
+        else:
+            continue
+
+    return total_positions, neutral_position, dV
+
+
 def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                               gcdev_model: MultiCircuit,
                               calc_node_dict: Dict[str, gcdev.Bus],
@@ -724,6 +748,10 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     :return: None
     """
 
+    # build the ratings dictionary
+    trafo_type = cgmes_model.get_class_type("PowerTransformer")
+    rates_dict = build_rates_dict(cgmes_model, trafo_type, logger)
+
     # convert ac lines
     for device_list in [cgmes_model.cgmes_assets.PowerTransformer_list]:
 
@@ -738,6 +766,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             windings = [x for x in windings if x is not None]
             # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
+
+            rate_mva = rates_dict.get(cgmes_elm.uuid, None)  # min PATL rate in MW/MVA
 
             if len(windings) == 2:
                 calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
@@ -758,10 +788,11 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     LV = windings[1].ratedU
                     # HV = max(v1, v2)
                     # LV = min(v1, v2)
-                    # get per unit vlaues
-
+                    # get per unit values
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
                     rated_s = windings[0].ratedS
+                    # get Tap data
+                    total_positions, neutral_position, dV = get_tap_changer_values(windings)
 
                     gcdev_elm = gcdev.Transformer2W(idtag=cgmes_elm.uuid,
                                                     code=cgmes_elm.description,
@@ -782,13 +813,15 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     x0=x0,
                                                     g0=g0,
                                                     b0=b0,
-                                                    tap_module=1.0,
-                                                    tap_phase=0.0,
-                                                    # control_mode,  # legacy
-                                                    # tap_module_control_mode=,
+                                                    # tap_module=1.0,     # TODO (how) should it be calculated?
+                                                    # tap_phase=0.0,
+                                                    # tap_module_control_mode=,  # leave fixed
                                                     # tap_angle_control_mode=,
-                                                    # rate=get_rate(cgmes_elm))
-                                                    rate=rated_s)
+                                                    tc_total_positions=total_positions,
+                                                    tc_neutral_position=neutral_position,
+                                                    tc_dV=dV,
+                                                    # tc_asymmetry_angle = 90,
+                                                    rate=rate_mva)
 
                     gcdev_model.add_transformer2w(gcdev_elm)
                 else:
@@ -1152,6 +1185,8 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
 
     for cgmes_elm in cgmes_model.cgmes_assets.VoltageLevel_list:
 
+        # if not isinstance(cgmes_elm.BaseVoltage, str):  # if it is a string it wass not substituted...
+
         gcdev_elm = gcdev.VoltageLevel(
             idtag=cgmes_elm.uuid,
             name=cgmes_elm.name,
@@ -1167,6 +1202,8 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
 
         gcdev_model.add_voltage_level(gcdev_elm)
         volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
+    else:
+        logger.add_error(msg='Base voltage not found', device=str(cgmes_elm.BaseVoltage))
 
     return volt_lev_dict
 
@@ -1315,7 +1352,6 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
 
     get_gcdev_countries(cgmes_model, gc_model)
 
-    # TODO: Assign the community in the buses
     get_gcdev_community(cgmes_model, gc_model)
 
     get_gcdev_substations(cgmes_model, gc_model)

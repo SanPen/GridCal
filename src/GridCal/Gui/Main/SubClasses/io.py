@@ -39,6 +39,9 @@ from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
+from GridCalEngine.IO.gridcal.catalogue import save_catalogue, load_catalogue
+from GridCal.templates import (get_cables_catalogue, get_transformer_catalogue, get_wires_catalogue,
+                               get_sequence_lines_catalogue)
 
 
 class IoMain(ConfigurationMain):
@@ -57,7 +60,7 @@ class IoMain(ConfigurationMain):
 
         self.rosetta_gui: Union[RosetaExplorerGUI, None] = None
 
-        self.accepted_extensions = ['.gridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
+        self.accepted_extensions = ['.gridcal', '.dgridcal', '.xlsx', '.xls', '.sqlite', '.gch5',
                                     '.dgs', '.m', '.raw', '.RAW', '.json',
                                     '.ejson2', '.ejson3',
                                     '.xml', '.rawx', '.zip', '.dpx', '.epc', '.EPC']
@@ -90,6 +93,9 @@ class IoMain(ConfigurationMain):
         self.ui.actionImport_bus_coordinates.triggered.connect(self.import_bus_coordinates)
         self.ui.actionImport_contingencies.triggered.connect(self.import_contingencies)
         self.ui.actionExport_contingencies.triggered.connect(self.export_contingencies)
+        self.ui.actionAdd_default_catalogue.triggered.connect(self.add_default_catalogue)
+        self.ui.actionAdd_custom_catalogue.triggered.connect(self.load_custom_catalogue)
+        self.ui.actionExportCatalogue.triggered.connect(self.save_custom_catalogue)
 
         # Buttons
         self.ui.exportSimulationDataButton.clicked.connect(self.export_simulation_data)
@@ -128,23 +134,38 @@ class IoMain(ConfigurationMain):
 
                 file_names = list()
 
+                any_grid_delta = False
+                any_normal_grid = False
+
                 for event in events:
                     file_name = event.toLocalFile()
                     name, file_extension = os.path.splitext(file_name)
                     if file_extension.lower() in self.accepted_extensions:
                         file_names.append(file_name)
+
+                        if file_name.endswith('.dgridcal'):
+                            any_grid_delta = True
+                        else:
+                            any_normal_grid = True
+
                     else:
                         error_msg('The file type ' + file_extension.lower() + ' is not accepted :(')
 
                 if self.circuit.valid_for_simulation() > 0:
-                    quit_msg = "Are you sure that you want to quit the current grid and open a new one?" \
-                               "\n If the process is cancelled the grid will remain."
-                    reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
-                                                           QtWidgets.QMessageBox.StandardButton.Yes,
-                                                           QtWidgets.QMessageBox.StandardButton.No)
 
-                    if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
-                        self.open_file_now(filenames=file_names)
+                    if any_grid_delta and not any_normal_grid:
+                        # only grid deltas...
+                        self.open_file_now(filenames=file_names,
+                                           post_function=self.post_add_circuit)
+                    else:
+                        quit_msg = ("Are you sure that you want to quit the current grid and open a new one?"
+                                    "\n If the process is cancelled the grid will remain.")
+                        reply = QtWidgets.QMessageBox.question(self, 'Message', quit_msg,
+                                                               QtWidgets.QMessageBox.StandardButton.Yes,
+                                                               QtWidgets.QMessageBox.StandardButton.No)
+
+                        if reply == QtWidgets.QMessageBox.StandardButton.Yes.value:
+                            self.open_file_now(filenames=file_names)
                 else:
                     # Just open the file
                     self.open_file_now(filenames=file_names)
@@ -256,23 +277,6 @@ class IoMain(ConfigurationMain):
             filenames = dialogue.selectedFiles()
             self.open_file_now(filenames, post_function)
 
-    def select_csv_file(self, caption='Open CSV file'):
-        """
-        Select a CSV file
-        :return: csv file path
-        """
-        files_types = "CSV (*.csv)"
-
-        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
-                                                                        caption=caption,
-                                                                        dir=self.project_directory,
-                                                                        filter=files_types)
-
-        if len(filename) > 0:
-            return filename
-        else:
-            return None
-
     def open_file_now(self, filenames: Union[str, List[str]],
                       post_function: Union[None, Callable[[], None]] = None) -> None:
         """
@@ -292,13 +296,15 @@ class IoMain(ConfigurationMain):
 
             # create thread
             self.open_file_thread_object = filedrv.FileOpenThread(
-                file_name=filenames if len(filenames) > 1 else filenames[0]
+                file_name=filenames if len(filenames) > 1 else filenames[0],
+                previous_circuit=self.circuit
             )
 
             # make connections
             self.open_file_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
             self.open_file_thread_object.progress_text.connect(self.ui.progress_label.setText)
             self.open_file_thread_object.done_signal.connect(self.UNLOCK)
+
             if post_function is None:
                 self.open_file_thread_object.done_signal.connect(self.post_open_file)
             else:
@@ -381,9 +387,9 @@ class IoMain(ConfigurationMain):
 
                 self.ui.grid_name_line_edit.setText(self.circuit.name)
 
-                # if this was a cgmes file, launch the roseta GUI
+                # if this was a CGMES file, launch the Rosetta GUI
                 if self.open_file_thread_object.cgmes_circuit:
-                    # if there is a CGMES file, show Rosetta and the loguer there
+                    # if there is a CGMES file, show Rosetta and the logger there
                     self.rosetta_gui = RosetaExplorerGUI()
                     self.rosetta_gui.set_grid_model(self.open_file_thread_object.cgmes_circuit)
                     self.rosetta_gui.set_logger(self.open_file_thread_object.cgmes_logger)
@@ -413,11 +419,30 @@ class IoMain(ConfigurationMain):
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
 
+
+    def select_csv_file(self, caption='Open CSV file'):
+        """
+        Select a CSV file
+        :return: csv file path
+        """
+        files_types = "CSV (*.csv)"
+
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                                        caption=caption,
+                                                                        dir=self.project_directory,
+                                                                        filter=files_types)
+
+        if len(filename) > 0:
+            return filename
+        else:
+            return None
+
     def add_circuit(self):
         """
         Prompt to add another circuit
         """
-        self.open_file_threaded(post_function=self.post_add_circuit)
+        self.open_file_threaded(post_function=self.post_add_circuit,
+                                allow_diff_file_format=True)
 
     def post_add_circuit(self):
         """
@@ -428,60 +453,69 @@ class IoMain(ConfigurationMain):
 
         if self.open_file_thread_object is not None:
 
+            new_circuit = self.open_file_thread_object.circuit
+
             if len(self.open_file_thread_object.logger) > 0:
-                dlg = LogsDialogue('Open file logger', self.open_file_thread_object.logger)
+                dlg = LogsDialogue('Open file logger',
+                                   self.open_file_thread_object.logger)
                 dlg.exec_()
 
             if self.open_file_thread_object.valid:
 
-                if not self.circuit.valid_for_simulation():
+                if not new_circuit.valid_for_simulation():
                     # load the circuit right away
                     self.stuff_running_now.append('file_open')
                     self.post_open_file()
                 else:
                     # add the circuit
-                    new_circuit = self.open_file_thread_object.circuit
                     logger = self.circuit.add_circuit(new_circuit)
 
-                    dlg = CustomQuestionDialogue(title="Add new grid",
-                                                 question="Do you want to add the loaded grid to a new diagram?",
-                                                 answer1="Add to new diagram",
-                                                 answer2="Add to current diagram")
-                    dlg.exec_()
+                    if len(logger) > 0:
+                        dlg = LogsDialogue('File merge logger', logger)
+                        dlg.exec_()
 
-                    if dlg.accepted_answer == 1:
-                        diagram_widget = self.add_complete_bus_branch_diagram_now(name=new_circuit.name)
-                    elif dlg.accepted_answer == 2:
+                    dlg2 = CustomQuestionDialogue(title="Grid differential",
+                                                  question="How do you want to represent the loaded grid?",
+                                                  answer1="Create new diagram",
+                                                  answer2="Add to current diagram")
+                    dlg2.exec_()
+
+                    if dlg2.accepted_answer == 1:
+                        # Create a blank diagram and add to it
+                        diagram_widget = self.create_blank_schematic_diagram(name=new_circuit.name)
+
+                    elif dlg2.accepted_answer == 2:
                         diagram_widget = self.get_selected_diagram_widget()
+
                     else:
                         return
 
-                    # add to schematic
                     if diagram_widget is not None:
-                        if isinstance(diagram_widget, SchematicWidget):
-                            injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
-                            injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
-                            injections_by_cn = self.circuit.get_injection_devices_grouped_by_cn()
-                            diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
-                                                                     connectivity_nodes=new_circuit.connectivity_nodes,
-                                                                     busbars=new_circuit.bus_bars,
-                                                                     lines=new_circuit.lines,
-                                                                     dc_lines=new_circuit.dc_lines,
-                                                                     transformers2w=new_circuit.transformers2w,
-                                                                     transformers3w=new_circuit.transformers3w,
-                                                                     hvdc_lines=new_circuit.hvdc_lines,
-                                                                     vsc_devices=new_circuit.vsc_devices,
-                                                                     upfc_devices=new_circuit.upfc_devices,
-                                                                     switches=new_circuit.switch_devices,
-                                                                     fluid_nodes=new_circuit.fluid_nodes,
-                                                                     fluid_paths=new_circuit.fluid_paths,
-                                                                     injections_by_bus=injections_by_bus,
-                                                                     injections_by_fluid_node=injections_by_fluid_node,
-                                                                     injections_by_cn=injections_by_cn,
-                                                                     explode_factor=1.0,
-                                                                     prog_func=None,
-                                                                     text_func=None)
-                            diagram_widget.set_selected_buses(buses=new_circuit.buses)
+                        injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
+                        injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
+                        injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
+                        diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                                 connectivity_nodes=new_circuit.connectivity_nodes,
+                                                                 busbars=new_circuit.bus_bars,
+                                                                 lines=new_circuit.lines,
+                                                                 dc_lines=new_circuit.dc_lines,
+                                                                 transformers2w=new_circuit.transformers2w,
+                                                                 transformers3w=new_circuit.transformers3w,
+                                                                 hvdc_lines=new_circuit.hvdc_lines,
+                                                                 vsc_devices=new_circuit.vsc_devices,
+                                                                 upfc_devices=new_circuit.upfc_devices,
+                                                                 switches=new_circuit.switch_devices,
+                                                                 fluid_nodes=new_circuit.fluid_nodes,
+                                                                 fluid_paths=new_circuit.fluid_paths,
+                                                                 injections_by_bus=injections_by_bus,
+                                                                 injections_by_fluid_node=injections_by_fluid_node,
+                                                                 injections_by_cn=injections_by_cn,
+                                                                 explode_factor=1.0,
+                                                                 prog_func=None,
+                                                                 text_func=None)
+                        diagram_widget.set_selected_buses(buses=new_circuit.buses)
+                    else:
+                        info_msg("No diagram was selected...", title="Add to current diagram")
 
     def export_circuit_differential(self):
         """
@@ -934,3 +968,60 @@ class IoMain(ConfigurationMain):
             if filename != "":
                 # save file
                 export_contingencies_json_file(circuit=self.circuit, file_path=filename)
+
+    def add_default_catalogue(self) -> None:
+        """
+        Add default catalogue to circuit
+        """
+
+        self.circuit.transformer_types += get_transformer_catalogue()
+        self.circuit.underground_cable_types += get_cables_catalogue()
+        self.circuit.wire_types += get_wires_catalogue()
+        self.circuit.sequence_line_types += get_sequence_lines_catalogue()
+
+    def load_custom_catalogue(self):
+        """
+        Load a catalogue file and add it to the current one
+        """
+        # this will be filled with: open dialogue tab only, then connect select_csv_file from there
+        """
+        Open select component window for uploading catalogue data
+        """
+
+        files_types = "Catalogue file (*.xlsx)"
+
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(parent=self,
+                                                                        caption="Load catalogue",
+                                                                        dir=self.project_directory,
+                                                                        filter=files_types)
+
+        if len(filename) > 0:
+            if os.path.exists(filename):
+
+                data, logger = load_catalogue(fname=filename)
+
+                if logger.has_logs():
+                    dlg = LogsDialogue('Open catalogue logger', logger)
+                    dlg.exec()
+
+                self.circuit.add_catalogue(data)
+        else:
+            return None
+
+    def save_custom_catalogue(self):
+        """
+        Save the current catalogue
+        """
+
+        # declare the allowed file types
+        files_types = "Catalogue file (*.xlsx)"
+
+        # call dialog to select the file
+        filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self,
+                                                                        'Save catalogue', '', files_types)
+
+        if not (filename.endswith('.xlsx')):
+            filename += ".xlsx"
+
+        if filename != "":
+            save_catalogue(fname=filename, grid=self.circuit)

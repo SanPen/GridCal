@@ -15,6 +15,8 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
+
+# import uuid
 from typing import TYPE_CHECKING, List, Union
 
 import logging
@@ -28,6 +30,7 @@ from GridCalEngine.Devices.types import BRANCH_TYPES, FluidPath
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
+from GridCal.Gui.messages import error_msg
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
@@ -158,39 +161,15 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.clean()
 
-        diagram_locations: PointsGroup = self.editor.diagram.data.get(DeviceType.LineLocation.value, None)
-
         # draw line locations
         for elm in self.api_object.locations.data:
+            graphic_obj = self.editor.create_node(line_container=self,
+                                                  api_object=elm,
+                                                  lat=elm.lat,  # 42.0 ...
+                                                  lon=elm.long,
+                                                  index=self.number_of_nodes())  # 2.7 ...
 
-            if diagram_locations is None:
-                # no locations found, use the data from the api object
-                # lat = elm.lat
-                # lon = elm.long
-                pass
-            else:
-
-                # try to get location from the diagram
-                # We will not take the location of the element in the database because we want to keep...
-                # ... the diagram separated from database
-                # diagram_location = diagram_locations.locations.get(elm.idtag, None)
-
-                # if diagram_location is None:
-                #     # no particular location found, use the data from the api object
-                #     # lat = elm.lat
-                #     # lon = elm.long
-                #     pass
-                # else:
-                #     # Draw only what's on the diagram
-                #     # diagram data found, use it
-
-                graphic_obj = self.editor.create_node(line_container=self,
-                                                      api_object=elm,
-                                                      lat=elm.lat,  # 42.0 ...
-                                                      lon=elm.long,
-                                                      index=self.number_of_nodes())  # 2.7 ...
-
-                self.register_new_node(node=graphic_obj)
+            self.register_new_node(node=graphic_obj)
 
         # second pass: create the segments
         self.redraw_segments()
@@ -206,6 +185,7 @@ class MapLineContainer(GenericDiagramWidget):
                 self.editor.map.diagram_scene.removeItem(seg)
 
         self.nodes_list.remove(node)
+        self.api_object.locations.remove(node.api_object)
 
         for nod in self.nodes_list:
             if nod.index > node.index:
@@ -291,7 +271,7 @@ class MapLineContainer(GenericDiagramWidget):
                                           z=new_api_node_data.alt,
                                           seq=new_api_node_data.seq,
                                           name=new_api_node_data.name,
-                                          idtag=new_api_node_data.idtag,
+                                          idtag=None,  # generates new UUID
                                           code=new_api_node_data.code)
 
             self.api_object.locations.data.insert(index, new_api_object)
@@ -434,11 +414,11 @@ class MapLineContainer(GenericDiagramWidget):
         if 0 < index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 3:
 
             ln1 = Line()
-            ln1.copyData(self.api_object)
+            ln1.set_data_from(self.api_object)
             # ln1 = self.api_object.copy()
 
             ln2 = Line()
-            ln2.copyData(self.api_object)
+            ln2.set_data_from(self.api_object)
 
             first_list = self.api_object.locations.data[:index]
             second_list = self.api_object.locations.data[index:]
@@ -457,6 +437,9 @@ class MapLineContainer(GenericDiagramWidget):
                 api_obj.long = self.nodes_list[idx].lon
                 idx = idx + 1
 
+            ln1.bus_from = self.api_object.bus_from
+            ln2.bus_to = self.api_object.bus_to
+
             l1 = self.editor.add_api_line(ln1, original=False)
             l2 = self.editor.add_api_line(ln2, original=False)
 
@@ -465,10 +448,7 @@ class MapLineContainer(GenericDiagramWidget):
             return first_list, second_list
         else:
             # Handle invalid index
-            raise ValueError("Index out of range or invalid")
-
-    def merge_line(self):
-        return 0
+            error_msg("Index out of range or invalid", "split line")
 
     def disable_line(self):
         """

@@ -50,6 +50,7 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGrap
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
+from GridCal.Gui.Diagrams.MapWidget.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
@@ -79,7 +80,7 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     return R * c
 
 
-def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem) -> Tuple[NodeGraphicItem, NodeGraphicItem]:
+def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem):
     """
 
     :param it1:
@@ -105,9 +106,9 @@ def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem) -> Tuple[NodeGra
                                          first_first_lat, first_first_long)
 
     if distance_1_to_2 <= distance_2_to_1:
-        return it1, it2
+        return it1, it2, it1.line_container.api_object.bus_from, it2.line_container.api_object.bus_to
     else:
-        return it2, it1
+        return it2, it1, it2.line_container.api_object.bus_from, it1.line_container.api_object.bus_to
 
 
 class MapLibraryModel(QStandardItemModel):
@@ -441,25 +442,34 @@ class GridMapWidget(BaseDiagramWidget):
 
         :return:
         """
-        if len(self.map.view.selectedItems) < 2:
+
+        selected_items = self.map.view._scene.selectedItems()
+        selectedItems = []
+        for item in selected_items:
+            selectedItems.append(item)
+
+        if len(selectedItems) < 2:
             return 0
 
-        it1 = self.map.view.selectedItems[0]
-        it2 = self.map.view.selectedItems[1]
+        it1 = selectedItems[0]
+        it2 = selectedItems[1]
 
         if it1 == it2:
             return 0
 
         newline = Line()
-        newline.copyData(it1.line_container.api_object)
+        newline.set_data_from(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
 
-        better_first, better_second = compare_options(it1, it2)
+        better_first, better_second, busfrom, busto = compare_options(it1, it2)
 
         first_list = better_first.line_container.api_object.locations.data
         second_list = better_second.line_container.api_object.locations.data
 
         newline.locations.data = first_list + second_list
+
+        newline.bus_from = busfrom
+        newline.bus_to = busto
 
         idx = 0
         for nod in better_first.line_container.nodes_list:
@@ -476,6 +486,34 @@ class GridMapWidget(BaseDiagramWidget):
 
         better_first.line_container.disable_line()
         better_second.line_container.disable_line()
+
+    def createNewLineWizard(self):
+        """
+        Create a new line in the map with dialogues
+        """
+
+        selected_items = self.map.view._scene.selectedItems()
+        selectedItems = []
+        for item in selected_items:
+            selectedItems.append(item)
+
+        if len(selectedItems) < 2:
+            return 0
+
+        it1: SubstationGraphicItem = selectedItems[0]
+        it2: SubstationGraphicItem = selectedItems[1]
+
+        if it1 == it2:
+            return None
+
+        dialog = NewMapLineDialogue(grid=self.circuit, se_from=it1.api_object, se_to=it2.api_object)
+        dialog.exec()
+        if dialog.is_valid():
+            bus1 = dialog.bus_from()
+            bus2 = dialog.bus_to()
+            if bus1 is not None and bus2 is not None:
+                newline = Line(bus_from=bus1, bus_to=bus2)
+                self.add_api_line(newline, original=True)
 
     def removeNode(self, node: NodeGraphicItem):
         """
@@ -801,15 +839,16 @@ class GridMapWidget(BaseDiagramWidget):
             y0 = point0.y()
             lat, lon = self.to_lat_lon(x=x0, y=y0)
 
-            print(f"Droped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
+            # print(f"Dropped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
 
             if obj_type == self.library_model.get_substation_mime_data():
-                print("Create substation...")
+
                 api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}",
                                         latitude=lat,
                                         longitude=lon)
                 self.circuit.add_substation(obj=api_object)
-                self.add_api_substation(api_object=api_object, lat=lat, lon=lon)
+                substation_graphics = self.add_api_substation(api_object=api_object, lat=lat, lon=lon)
+                substation_graphics.add_voltage_level()
 
     def wheelEvent(self, event: QWheelEvent):
         """
@@ -911,7 +950,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'None', 'Storage']
+        bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
 
         vmin = 0
         vmax = 1.2

@@ -23,17 +23,18 @@ from PySide6 import QtGui, QtWidgets, QtCore
 from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
-import GridCalEngine.Devices as dev
-import GridCalEngine.Simulations as sim
-import GridCal.Gui.GuiFunctions as gf
-from GridCal.Gui.object_model import ObjectsModel
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import SimulationTypes
+from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
+import GridCalEngine.Devices as dev
+import GridCalEngine.Simulations as sim
+import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
                                                                    generate_schematic_diagram,
@@ -448,13 +449,13 @@ class DiagramsMain(CompiledArraysMain):
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
                                               hvdc_lines=hvdc_lines,
-                                              Sbus=results.Sbus[t_idx, :],
+                                              Sbus=results.Sbus[-1, :],
                                               bus_active=bus_active,
-                                              Sf=results.Sf[t_idx, :],
-                                              St=results.St[t_idx, :],
-                                              voltages=results.voltages[t_idx, :],
+                                              Sf=results.Sf[-1, :],
+                                              St=results.St[-1, :],
+                                              voltages=results.voltages[-1, :],
                                               types=results.bus_types,
-                                              loadings=np.abs(results.loading[t_idx, :]),
+                                              loadings=np.abs(results.loading[-1, :]),
                                               br_active=br_active,
                                               hvdc_Pf=None,
                                               hvdc_Pt=None,
@@ -832,6 +833,29 @@ class DiagramsMain(CompiledArraysMain):
             return self.diagram_widgets_list[idx]
         else:
             return None
+
+    def create_blank_schematic_diagram(self, name: str = "") -> SchematicWidget:
+        """
+        Create a new schematic widget
+        :param name: name of the new schematic
+        :return:
+        """
+        diagram = SchematicDiagram(name=name)
+
+        diagram_widget = SchematicWidget(circuit=self.circuit,
+                                         diagram=diagram,
+                                         default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                         time_index=self.get_diagram_slider_index(),
+                                         prefer_node_breaker=False,
+                                         call_delete_db_element_func=self.call_delete_db_element)
+
+        diagram_widget.setStretchFactor(1, 10)
+        diagram_widget.center_nodes()
+        self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
+        self.set_diagrams_list_view()
+        self.set_diagram_widget(diagram_widget)
+
+        return diagram_widget
 
     def redraw_current_diagram(self):
         """

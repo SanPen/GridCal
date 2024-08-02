@@ -19,11 +19,13 @@ import time
 import scipy
 import numpy as np
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobianVc, CSC
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
+from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -31,7 +33,7 @@ scipy.ALLOW_THREADS = True
 np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
-def mu(Ybus, J, incS, dV, dx, pvpq, pq):
+def mu(Ybus, J: CSC, incS: Vec, dV: CxVec, dx: Vec, block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec):
     """
     Calculate the Iwamoto acceleration parameter as described in:
     "A Load Flow Calculation Method for Ill-Conditioned Power Systems" by Iwamoto, S. and Tamura, Y."
@@ -40,8 +42,9 @@ def mu(Ybus, J, incS, dV, dx, pvpq, pq):
     :param incS: mismatch vector
     :param dV: voltage increment (in complex form)
     :param dx: solution vector as calculated dx = solve(J, incS)
-    :param pvpq: array of the pq and pv indices
-    :param pq: array of the pq indices
+    :param block1_idx: pv, pq, p, pqv
+    :param block2_idx: pq, p
+    :param block3_idx: pq, pqv
     :return: the Iwamoto's optimal multiplier for ill conditioned systems
     """
 
@@ -49,11 +52,11 @@ def mu(Ybus, J, incS, dV, dx, pvpq, pq):
     # theoretically this is the second derivative matrix
     # since the Jacobian (J2) has been calculated with dV instead of V
 
-    J2 = AC_jacobian(Ybus, dV, pvpq, pq)
+    J2 = AC_jacobianVc(Ybus, dV, block1_idx, block2_idx, block3_idx)
 
     a = incS
-    b = J * dx
-    c = 0.5 * dx * J2 * dx
+    b = J.dot(dx)
+    c = 0.5 * dx * J2.dot(dx)
 
     g0 = -a.dot(b)
     g1 = b.dot(b) + 2 * a.dot(c)
@@ -61,12 +64,14 @@ def mu(Ybus, J, incS, dV, dx, pvpq, pq):
     g3 = 2.0 * c.dot(c)
 
     roots = np.roots([g3, g2, g1, g0])
+
     # three solutions are provided, the first two are complex, only the real solution is valid
     return roots[2].real
 
 
-def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
-              control_q=ReactivePowerControlMode.NoControl, robust=False) -> NumericPowerFlowResults:
+def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15,
+              control_q=ReactivePowerControlMode.NoControl, robust=False,
+              logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     :param Ybus: Admittance matrix
@@ -76,6 +81,8 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     :param Y0: Array of nodal admittance Injections
     :param pv_: Array with the indices of the PV buses
     :param pq_: Array with the indices of the PQ buses
+    :param pqv_: Array with the indices of the PQV buses
+    :param p_: Array with the indices of the P buses
     :param Qmin: Array of nodal minimum reactive power injections
     :param Qmax: Array of nodal maximum reactive power injections
     :param tol: Tolerance
@@ -98,17 +105,19 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
     # set up indexing for updating V
     pq = pq_.copy()
     pv = pv_.copy()
-    pvpq = np.r_[pv, pq]
-    npv = len(pv)
-    npq = len(pq)
-    npvpq = npv + npq
+    pqv = pqv_.copy()
+    p = p_.copy()
+    blck1_idx = np.r_[pv, pq, p, pqv]
+    blck2_idx = np.r_[pq, p]
+    blck3_idx = np.r_[pq, pqv]
+    n_block1 = len(blck1_idx)
 
-    if npvpq > 0:
+    if n_block1 > 0:
 
         # evaluate F(x0)
         Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
         Scalc = cf.compute_power(Ybus, V)
-        f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+        f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
         norm_f = cf.compute_fx_error(f)
 
         # check tolerance
@@ -120,12 +129,23 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
             iter_ += 1
 
             # evaluate Jacobian
-            J = AC_jacobian(Ybus, V, pvpq, pq)
+            J = AC_jacobianVc(Ybus, V, blck1_idx, blck2_idx, blck3_idx)
 
             # compute update step
             try:
-                dx = linear_solver(J, f)
-            except:
+                dx = spsolve_csc(J, f)
+
+                if np.isnan(dx).any():
+                    end = time.time()
+                    elapsed = end - start
+                    logger.add_error('NR Singular matrix @iter:'.format(iter_))
+
+                    return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
+                                                   Scalc=S0, ma=None, theta=None, Beq=None,
+                                                   Ybus=None, Yf=None, Yt=None,
+                                                   iterations=iter_, elapsed=elapsed)
+
+            except ValueError:
                 print(J)
                 converged = False
                 iter_ = max_it + 1  # exit condition
@@ -137,8 +157,8 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                                                iterations=iter_, elapsed=elapsed)
 
             # assign the solution vector
-            dVa[pvpq] = dx[:npvpq]
-            dVm[pq] = dx[npvpq:]
+            dVa[blck1_idx] = dx[:n_block1]
+            dVm[blck2_idx] = dx[n_block1:]
             dV = dVm * np.exp(1j * dVa)  # voltage mismatch
 
             # update voltage
@@ -146,7 +166,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
                 # if dV contains zeros will crash the second Jacobian derivative
                 if not (dV == 0.0).any():
                     # calculate the optimal multiplier for enhanced convergence
-                    mu_ = mu(Ybus, J, f, dV, dx, pvpq, pq)
+                    mu_ = mu(Ybus, J, f, dV, dx, blck1_idx, blck2_idx, blck3_idx)
                 else:
                     mu_ = 1.0
             else:
@@ -162,35 +182,30 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15,
             # evaluate F(x)
             Sbus = cf.compute_zip_power(S0, I0, Y0, Vm)
             Scalc = cf.compute_power(Ybus, V)
-            f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+            f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
             norm_f = cf.compute_fx_error(f)
 
             # review reactive power limits
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and npv > 0:
+            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
                 # but not pq to pv because that is unstable
-                n_changes, Scalc, Sbus, pv, pq, pvpq, messages = control_q_inside_method(Scalc, Sbus, pv, pq,
-                                                                                         pvpq, Qmin, Qmax)
+                changed, pv, pq, pqv, p = control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax)
 
-                if n_changes > 0:
+                if len(changed) > 0:
                     # adjust internal variables to the new pq|pv values
-                    npv = len(pv)
-                    npq = len(pq)
-                    npvpq = npv + npq
+                    blck1_idx = np.r_[pv, pq, p, pqv]
+                    blck2_idx = np.r_[pq, p]
+                    blck3_idx = np.r_[pq, pqv]
+                    n_block1 = len(blck1_idx)
 
                     # recompute the error based on the new Sbus
-                    f = cf.compute_fx(Scalc, Sbus, pvpq, pq)
+                    f = cf.compute_fx(Scalc, Sbus, blck1_idx, blck3_idx)
                     norm_f = cf.compute_fx_error(f)
-
-                    # if verbose > 0:
-                    #     for sense, idx, var in messages:
-                    #         msg = "Bus " + str(idx) + " changed to PQ, limited to " + str(var * 100) + " MVAr"
-                    #         logger.add_debug(msg)
 
             # check convergence
             converged = norm_f < tol

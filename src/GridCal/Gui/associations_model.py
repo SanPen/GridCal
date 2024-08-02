@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Union
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from GridCal.Gui.GuiFunctions import (FloatDelegate)
 from GridCalEngine.Devices.Associations.association import Association, Associations
@@ -84,7 +84,22 @@ class AssociationsModel(QtCore.QAbstractTableModel):
 
         self._decimals = decimals
 
-        # self.set_delegates()
+        # flag for the headers text wraper: HeaderViewWithWordWrap
+        self._hide_headers_mode = False
+
+    def hideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = True
+
+    def unhideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = False
 
     def get_association(self, i: int, j: int) -> Union[None, Association]:
         """
@@ -224,6 +239,8 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if self._hide_headers_mode is True:
+            return None
 
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
 

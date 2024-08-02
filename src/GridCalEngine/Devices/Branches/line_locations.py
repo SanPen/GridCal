@@ -108,6 +108,9 @@ class LineLocations(EditableDevice):
         """
         self.data.append(LineLocation(lat=latitude, lon=longitude, z=altitude, seq=sequence, idtag=idtag))
 
+    def remove(self, loc: LineLocation):
+        self.data.remove(loc)
+
     def parse(self, data: List[Union[Tuple[int, float, float, float], Tuple[int, float, float, float, str]]]):
         """
         Parse Json data

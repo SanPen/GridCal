@@ -22,8 +22,10 @@ from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxMat, Mat, Bool
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
-
 class ContinuationPowerFlowResults(ResultsTemplate):
+    """
+    ContinuationPowerFlowResults
+    """
 
     def __init__(self, nval, nbus, nbr, bus_names, branch_names, bus_types, area_names: StrVec = None):
         """

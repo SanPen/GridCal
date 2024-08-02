@@ -1,6 +1,23 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import numba as nb
 from GridCalEngine.enumerations import BusMode
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
 def get_q_increment(V1, V2, k):
@@ -76,10 +93,10 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
 
     for i in range(n):
 
-        if types[i] == BusMode.Slack.value:
+        if types[i] == BusMode.Slack_tpe.value:
             pass
 
-        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PQ_tpe.value and original_types[i] == BusMode.PV_tpe.value:
 
             gain = get_q_increment(Vm[i], abs(Vset[i]), k)
 
@@ -184,9 +201,9 @@ def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, 
                                                                      )
                           )
 
-        elif types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PV_tpe.value:
             # If it's still in PV mode (first run), change it to PQ mode
-            types_new[i] = BusMode.PQ.value
+            types_new[i] = BusMode.PQ_tpe.value
             Qnew[i] = 0
             if verbose:
                 print("Bus {} switching to PQ control, with a Q of 0".format(i))
@@ -281,10 +298,10 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
     for i in range(n):
 
-        if types[i] == BusMode.Slack.value:
+        if types[i] == BusMode.Slack_tpe.value:
             pass
 
-        elif types[i] == BusMode.PQ.value and original_types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PQ_tpe.value and original_types[i] == BusMode.PV_tpe.value:
 
             if Vm[i] != Vset[i]:
 
@@ -296,7 +313,7 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
                 else:  # switch back to PV, set Vnew = Vset.
 
-                    types_new[i] = BusMode.PV.value
+                    types_new[i] = BusMode.PV_tpe.value
                     Vnew[i] = complex(Vset[i], 0)
 
                     if verbose:
@@ -307,11 +324,11 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
             else:
                 pass  # The voltages are equal
 
-        elif types[i] == BusMode.PV.value:
+        elif types[i] == BusMode.PV_tpe.value:
 
             if Q[i] >= Qmax[i]:  # it is switched to PQ and set Q = Qmax .
 
-                types_new[i] = BusMode.PQ.value
+                types_new[i] = BusMode.PQ_tpe.value
                 Qnew[i] = Qmax[i]
                 any_control_issue = True
 
@@ -320,7 +337,7 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
             elif Q[i] <= Qmin[i]:  # it is switched to PQ and set Q = Qmin .
 
-                types_new[i] = BusMode.PQ.value
+                types_new[i] = BusMode.PQ_tpe.value
                 Qnew[i] = Qmin[i]
                 any_control_issue = True
 
@@ -337,40 +354,40 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
 
 @nb.njit(cache=True)
-def control_q_inside_method(Scalc, Sbus, pv, pq, pvpq, Qmin, Qmax):
+def control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax):
     """
     Control of reactive power within the numerical method
     :param Scalc: Calculated power array (changed inside)
-    :param Sbus: Specified power array (changed inside)
+    :param S0: Specified power array (changed inside)
     :param pv: array of pv bus indices (changed inside)
     :param pq: array of pq bus indices (changed inside)
-    :param pvpq: array of pv|pq bus indices (changed inside)
+    :param pqv: array of pqv bus indices (changed inside)
+    :param p: array of p bus indices (changed inside)
     :param Qmin: Array of lower reactive power limits per bus in p.u.
     :param Qmax: Array of upper reactive power limits per bus in p.u.
-    :return: any change?, Scalc, Sbus, pv, pq, pvpq
+    :return: any change?, Scalc, Sbus, pv, pq, pqv, p
     """
-    messages = list()
+    pv_indices = list()
     changed = list()
     for k, i in enumerate(pv):
         Q = Scalc[i].imag
         if Q > Qmax[i]:
-            Sbus[i] = np.complex128(complex(Sbus[i].real, Qmax[i]))
-            changed.append(k)
-            messages.append((1, i, Qmax[i]))
+            S0[i] = np.complex128(complex(S0[i].real, Qmax[i]))
+            changed.append(i)
+            pv_indices.append(k)
         elif Q < Qmin[i]:
-            Sbus[i] = np.complex128(complex(Sbus[i].real, Qmin[i]))
-            changed.append(k)
-            messages.append((1, i, Qmin[i]))
+            S0[i] = np.complex128(complex(S0[i].real, Qmin[i]))
+            changed.append(i)
+            pv_indices.append(k)
 
     if len(changed) > 0:
         # convert PV nodes to PQ
-        pv_new = pv[np.array(changed)]
-        pq = np.concatenate((pq, pv_new))
-        pv = np.delete(pv, changed)
+        pq_new = np.array(changed)
+        pq = np.concatenate((pq, pq_new))
+        pv = np.delete(pv, pv_indices)
         pq.sort()
-        pvpq = np.concatenate((pv, pq))
 
-    return len(changed), Scalc, Sbus, pv, pq, pvpq, messages
+    return changed, pv, pq, pqv, p
 
 
 def tap_up(tap, max_tap):

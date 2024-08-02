@@ -19,14 +19,12 @@ import textwrap
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.colors as plt_colors
-from matplotlib.widgets import Cursor
 
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
-from collections import Counter
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -50,7 +48,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                                         ResultTypes.InvestmentsParetoFrequencyResults],
 
             ResultTypes.SpecialPlots: [ResultTypes.InvestmentsParetoPlot,
-                                       ResultTypes.InvestmentsIterationsPlot]
+                                       ResultTypes.InvestmentsIterationsPlot,
+                                       ResultTypes.InvestmentsParetoPlotNSGA2],
         }
 
         ResultsTemplate.__init__(self,
@@ -287,17 +286,35 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :return: DataFrame of the results
                 (or None if the result was not understood)
         """
+        # compose the investment names
+        # used_investments = np.zeros(len(self._capex), dtype=object)
+        # for i in range(self._combinations.shape[0]):
+        #     used_investments[i] = ""
+        #     for j in range(self._combinations.shape[1]):
+        #         if self._combinations[i, j] > 0:
+        #             name = self.investment_groups_names[j]
+        #             used_investments[i] += f"{name},"
+
+        # This reads the number label of investments, puts them in order and adds them to the list
+        investments_per_solution = np.zeros(len(self._combinations), dtype=object)
+        for i in range(self._combinations.shape[0]):
+            investments_per_solution[i] = ""
+            for j in range(self._combinations.shape[1]):
+                if self._combinations[i, j] > 0:
+                    name = self.investment_groups_names[j]
+                    investments_per_solution[i] += f"{name},"
+            investments_per_solution[i] = investments_per_solution[i].strip(',')
+
+        used_investments = []
+        for i in range(self._combinations.shape[0]):
+            investments = set()
+            for j in range(self._combinations.shape[1]):
+                if self._combinations[i, j] > 0:
+                    name = f"{j + 1}"  # Removed "Investment" from the name
+                    investments.add(name)
+            used_investments.append(", ".join(sorted(investments, key=lambda x: int(x))))
 
         if result_type in (ResultTypes.InvestmentsReportResults, ResultTypes.InvestmentsParetoReportResults):
-
-            # compose the investment names
-            used_investments = np.zeros(len(self._capex), dtype=object)
-            for i in range(self._combinations.shape[0]):
-                used_investments[i] = ""
-                for j in range(self._combinations.shape[1]):
-                    if self._combinations[i, j] > 0:
-                        name = self.investment_groups_names[j]
-                        used_investments[i] += f"{name},"
 
             columns = ["CAPEX (M€)",
                        "OPEX (M€)",
@@ -495,13 +512,13 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             fig.suptitle(result_type.value)
             plt.tight_layout()
-            used_investments = np.zeros(len(self._capex), dtype=object)
-            for i in range(self._combinations.shape[0]):
-                used_investments[i] = ""
-                for j in range(self._combinations.shape[1]):
-                    if self._combinations[i, j] > 0:
-                        name = self.investment_groups_names[j]
-                        used_investments[i] += f"{name},"
+            # used_investments = np.zeros(len(self._capex), dtype=object)
+            # for i in range(self._combinations.shape[0]):
+            #     used_investments[i] = ""
+            #     for j in range(self._combinations.shape[1]):
+            #         if self._combinations[i, j] > 0:
+            #             name = self.investment_groups_names[j]
+            #             used_investments[i] += f"{name},"
 
             annots = {}
             for i in range(2):
@@ -607,6 +624,139 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             ax3.set_ylabel('Objective')
             fig.suptitle(str(result_type.value))
             plt.grid()
+            plt.show()
+
+            return ResultsTable(data=data,
+                                index=np.array(labels),
+                                idx_device_type=DeviceType.NoDevice,
+                                columns=np.array(columns),
+                                cols_device_type=DeviceType.NoDevice.NoDevice,
+                                title=title,
+                                ylabel=y_label,
+                                xlabel='',
+                                units=y_label)
+
+        elif result_type == ResultTypes.InvestmentsParetoPlotNSGA2:
+            labels = self._index_names
+            columns = ["CAPEX (M€)", "OPEX (M€)"]
+
+            technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
+            max_x_order_of_magnitude = 2
+            max_y_order_of_magnitude = self.calculate_magnitude(max(technical_score))
+            order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
+            scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
+            scaled_financial_score = self._financial * 10 ** -2
+
+            # This data will actually be the capex and opex that come out of computation
+            data = np.c_[self._financial, technical_score]
+            #    , self._opex]
+            y_label = ''
+            title = ''
+
+            plt.ion()
+            color_norm = plt_colors.Normalize()
+            fig = plt.figure(figsize=(8, 6))
+            ax3 = plt.subplot(1, 1, 1)
+            scatter_plot = ax3.scatter(scaled_financial_score, scaled_technical_score,
+                                       c=scaled_financial_score + scaled_technical_score)
+            plt.xlabel("CAPEX [M€]")
+            plt.ylabel("OPEX [M€]")
+
+            fig.suptitle(result_type.value)
+            plt.tight_layout()
+            # used_investments = np.zeros(len(self._capex), dtype=object)
+            # for i in range(self._combinations.shape[0]):
+            #     used_investments[i] = ""
+            #     for j in range(self._combinations.shape[1]):
+            #         if self._combinations[i, j] > 0:
+            #             name = self.investment_groups_names[j]
+            #             used_investments[i] += f"{name},"
+
+            annot = ax3.annotate("", xy=(0, 0), xytext=(20, 20),
+                                 textcoords="offset points",
+                                 bbox=dict(boxstyle="round", fc="w", pad=0.3),
+                                 arrowprops=dict(arrowstyle="->"),
+                                 fontsize=8,
+                                 zorder=10)
+            annot.set_visible(False)
+
+            def update_annotation(ind):
+                pos = scatter_plot.get_offsets()[ind["ind"][0]]
+                annot.xy = pos
+                investment_names = used_investments[ind["ind"][0]].replace("Investment", "").replace(" ", "").split(',')
+                text = "Investments:\n{}".format(", ".join(investment_names))
+                wrapped_text = textwrap.fill(text, width=30)
+                annot.set_text(wrapped_text)
+                annot.get_bbox_patch().set_alpha(0.8)
+
+            def hover(event):
+                if event.inaxes == ax3:
+                    cont, ind = scatter_plot.contains(event)
+                    if cont:
+                        update_annotation(ind)
+                        annot.set_visible(True)
+                        fig.canvas.draw_idle()
+                    else:
+                        if annot.get_visible():
+                            annot.set_visible(False)
+                            fig.canvas.draw_idle()
+
+            def click_solution(event):
+                if event.inaxes is not None:
+                    click_x, click_y = event.xdata, event.ydata
+                    tolerance = 0.1 * (ax3.get_xlim()[1] - ax3.get_xlim()[0])
+                    offsets = scatter_plot.get_offsets()
+                    scatter_x = offsets[:, 0]
+                    scatter_y = offsets[:, 1]
+                    distances = np.hypot(scatter_x - click_x, scatter_y - click_y)
+                    min_idx = distances.argmin()
+
+                    if distances[min_idx] < tolerance:
+                        investment_names = used_investments[min_idx].split(',')
+                        print("Investments made:")
+                        for name in investment_names:
+                            print(name)
+
+            # need to replace above with this stuff:
+            # def update_annotation(ind, scatter_plot, ax):
+            #     pos = scatter_plot.get_offsets()[ind["ind"][0]]
+            #     annot = annots[(0, 0)]
+            #     annot.xy = pos
+            #     index = ind["ind"][0]
+            #     variables = res.X[index]
+            #     text = "Variables:\n" + "\n".join([f"{name}: {variables[name]}" for name in variable_names])
+            #     annot.set_text(text)
+            #     annot.get_bbox_patch().set_alpha(0.8)
+            #     annot.set_visible(True)
+            #
+            # def hover(event):
+            #     vis = annots[(0, 0)].get_visible()
+            #     if event.inaxes == ax:
+            #         cont, ind = scatter.contains(event)
+            #         if cont:
+            #             update_annotation(ind, scatter, ax)
+            #             fig.canvas.draw_idle()
+            #         elif vis:
+            #             annots[(0, 0)].set_visible(False)
+            #             fig.canvas.draw_idle()
+            #
+            # def click_solution(event):
+            #     if event.inaxes is not None:
+            #         click_x, click_y = event.xdata, event.ydata
+            #         tolerance = 0.2 * (ax.get_xlim()[1] - ax.get_xlim()[0])
+            #         offsets = scatter.get_offsets()
+            #         scatter_x = offsets[:, 0]
+            #         scatter_y = offsets[:, 1]
+            #         distances = np.hypot(scatter_x - click_x, scatter_y - click_y)
+            #         min_idx = distances.argmin()
+            #
+            #         if distances[min_idx] < tolerance:
+            #             variables = res.X[min_idx]
+            #             variables_str = ", ".join([f"{name}: {variables[name]}" for name in variable_names])
+            #             print(f"Variables for selected point: {variables_str}")
+
+            fig.canvas.mpl_connect("motion_notify_event", hover)
+            fig.canvas.mpl_connect('button_press_event', click_solution)
             plt.show()
 
             return ResultsTable(data=data,

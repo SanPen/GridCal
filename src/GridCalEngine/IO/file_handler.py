@@ -124,10 +124,13 @@ class FileOpen:
     File open interface
     """
 
-    def __init__(self, file_name: Union[str, List[str]]):
+    def __init__(self,
+                 file_name: Union[str, List[str]],
+                 previous_circuit: Union[MultiCircuit, None] = None):
         """
         File open handler
         :param file_name: name of the file
+        :param previous_circuit: previous circuit
         """
         self.file_name: Union[str, List[str]] = file_name
 
@@ -141,6 +144,8 @@ class FileOpen:
 
         self.cgmes_logger = DataLogger()
 
+        self._previous_circuit = previous_circuit
+
         if isinstance(self.file_name, str):
             if not os.path.exists(self.file_name):
                 raise Exception("File not found :( \n{}".format(self.file_name))
@@ -151,7 +156,8 @@ class FileOpen:
         else:
             raise Exception("file_name type not supported :( \n{}".format(self.file_name))
 
-    def open(self, text_func: Union[None, Callable] = None,
+    def open(self,
+             text_func: Union[None, Callable] = None,
              progress_func: Union[None, Callable] = None) -> Union[MultiCircuit, None]:
         """
         Load GridCal compatible file
@@ -207,7 +213,7 @@ class FileOpen:
                     else:
                         self.logger.add('The file could not be processed')
 
-                elif file_extension.lower() in ['.gridcal', '.dgridcal']:
+                elif file_extension.lower() in ['.gridcal']:
 
                     # open file content
                     data_dictionary, self.json_files = get_frames_from_zip(self.file_name,
@@ -217,6 +223,24 @@ class FileOpen:
                     # interpret file content
                     if data_dictionary is not None:
                         self.circuit = parse_gridcal_data(data=data_dictionary,
+                                                          text_func=text_func,
+                                                          progress_func=progress_func,
+                                                          logger=self.logger)
+                    else:
+                        self.logger.add("Error while reading the file :(")
+                        return None
+
+                elif file_extension.lower() in ['.dgridcal']:
+
+                    # open file content
+                    data_dictionary, self.json_files = get_frames_from_zip(self.file_name,
+                                                                           text_func=text_func,
+                                                                           progress_func=progress_func,
+                                                                           logger=self.logger)
+                    # interpret file content
+                    if data_dictionary is not None:
+                        self.circuit = parse_gridcal_data(data=data_dictionary,
+                                                          previous_circuit=self._previous_circuit,
                                                           text_func=text_func,
                                                           progress_func=progress_func,
                                                           logger=self.logger)
