@@ -88,7 +88,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
         self.hovered = False
         self.enabled = True
-        self.itemSelected = False
 
         # Create a pen with reduced line width
         self.change_pen_width(0.001)
@@ -173,13 +172,13 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-
+        selected_items = self.editor.map.view._scene.selectedItems()
+        if len(selected_items) < 2:
+            self.setSelected(True)
         if self.enabled:
             self.editor.map.view.disableMove = True
             if event.button() == Qt.RightButton:
                 pass
-            elif event.button() == Qt.LeftButton:
-                self.selectItem()
 
     def mouseReleaseEvent(self, event):
         """
@@ -189,6 +188,10 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.editor.disableMove = True
         self.updateDiagram()
         self.editor.map.view._scene.update()
+
+        selected_items = self.editor.map.view._scene.selectedItems()
+        if len(selected_items) < 2:
+            self.setSelected(True)
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
@@ -232,24 +235,6 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
                        function_ptr=self.RemoveFunction)
 
         menu.exec_(event.screenPos())
-
-    def selectItem(self):
-        """
-
-        :return:
-        """
-        if not self.itemSelected:
-            self.editor.map.view.selectedItems.append(self)
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        self.itemSelected = True
-
-    def deSelectItem(self):
-        """
-
-        :return:
-        """
-        self.itemSelected = False
-        self.setDefaultColor()
 
     def AddFunction(self):
         """
@@ -307,10 +292,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        if self.itemSelected:
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        else:
-            self.setNodeColor(self.colorInner, self.colorBorder)
+        self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self) -> QPointF:
         """
