@@ -54,8 +54,8 @@ class Wire(EditableDevice):
         self.register(key='x', units='Ohm/km', tpe=float, definition='reactance of the conductor')
         self.register(key='gmr', units='m', tpe=float, definition='Geometric Mean Radius of the conductor')
         self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
-        self.register(key='stranding', tpe=float, definition='Stranding of wire')
-        self.register(key='material', tpe=float, definition='Material of wire')
+        self.register(key='stranding', tpe=str, definition='Stranding of wire')
+        self.register(key='material', tpe=str, definition='Material of wire')
         self.register(key='diameter', units='cm', tpe=float, definition='Diameter of wire')
 
     def copy(self):

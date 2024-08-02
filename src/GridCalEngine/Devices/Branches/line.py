@@ -140,7 +140,7 @@ class Line(BranchParent):
 
         # association with various templates
         self.possible_tower_types: Associations = Associations(device_type=DeviceType.OverheadLineTypeDevice)
-        self.possible_undergroud_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
+        self.possible_underground_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
         self.possible_sequence_line_types: Associations = Associations(device_type=DeviceType.SequenceLineDevice)
 
         # Line locations
@@ -183,7 +183,7 @@ class Line(BranchParent):
                       definition='Possible overhead line types (>1 to denote association), - to denote no association',
                       display=False)
 
-        self.register(key='possible_undergroud_line_types', units='', tpe=SubObjectType.Associations,
+        self.register(key='possible_underground_line_types', units='', tpe=SubObjectType.Associations,
                       definition='Possible underground line types (>1 to denote association), - to denote no association',
                       display=False)
 
