@@ -97,7 +97,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.colorBorder = QColor(255, 100, 100, 100)
 
         # Assign color to the node
-        self.itemSelected = False
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
@@ -194,13 +193,13 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
+        selected_items = self.editor.map.view._scene.selectedItems()
+        if len(selected_items) < 2:
+            self.setSelected(True)
+
         event.setAccepted(True)
         self.editor.map.view.disableMove = True
 
-        if event.button() == Qt.LeftButton:
-            self.selectItem()
-
-        print("SE mouse press")
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists={
@@ -211,24 +210,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                                              DeviceType.AreaDevice: self.editor.circuit.get_areas(),
                                              DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
                                          })
-
-    def selectItem(self):
-        """
-
-        :return:
-        """
-        if not self.itemSelected:
-            self.editor.map.view.selectedItems.append(self)
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        self.itemSelected = True
-
-    def deSelectItem(self):
-        """
-
-        :return:
-        """
-        self.itemSelected = False
-        self.setDefaultColor()
 
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
@@ -421,10 +402,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        if self.itemSelected:
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        else:
-            self.setNodeColor(self.colorInner, self.colorBorder)
+        self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self) -> QPointF:
         """
