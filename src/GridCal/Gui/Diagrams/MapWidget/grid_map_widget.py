@@ -442,11 +442,17 @@ class GridMapWidget(BaseDiagramWidget):
 
         :return:
         """
-        if len(self.map.view.selectedItems) < 2:
+
+        selected_items = self.map.view._scene.selectedItems()
+        selectedItems = []
+        for item in selected_items:
+            selectedItems.append(item)
+
+        if len(selectedItems) < 2:
             return 0
 
-        it1 = self.map.view.selectedItems[0]
-        it2 = self.map.view.selectedItems[1]
+        it1 = selectedItems[0]
+        it2 = selectedItems[1]
 
         if it1 == it2:
             return 0
@@ -486,11 +492,17 @@ class GridMapWidget(BaseDiagramWidget):
         Create a new line in the map with dialogues
         """
 
-        if len(self.map.view.selectedItems) < 2:
-            return None
+        selected_items = self.map.view._scene.selectedItems()
+        selectedItems = []
+        for item in selected_items:
+            selectedItems.append(item)
 
-        it1: SubstationGraphicItem = self.map.view.selectedItems[0]
-        it2: SubstationGraphicItem = self.map.view.selectedItems[1]
+        if len(selectedItems) < 2:
+            return 0
+
+        it1: SubstationGraphicItem = selectedItems[0]
+        it2: SubstationGraphicItem = selectedItems[1]
+
         if it1 == it2:
             return None
 

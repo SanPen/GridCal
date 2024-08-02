@@ -30,12 +30,12 @@ ygeo: latitude
 from __future__ import annotations
 from typing import List, Union, Tuple, Callable, TYPE_CHECKING
 from enum import Enum
-from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
+from PySide6.QtCore import Qt, QTimer, QEvent, QPointF, QRectF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QVBoxLayout,
-                               QGraphicsSceneMouseEvent, QGraphicsItem)
+                               QGraphicsSceneMouseEvent)
 
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
@@ -83,7 +83,7 @@ class MapScene(QGraphicsScene):
         :param event:
         :return:
         """
-        # print(f"Scene released at {event.scenePos()}")
+        print(f"Scene released at {event.scenePos()}")
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -133,13 +133,6 @@ class MapView(QGraphicsView):
         self.schema_zoom = 1.0
 
         self.scale(initial_zoom_factor, initial_zoom_factor)
-
-    def selected_items(self) -> List[QGraphicsItem]:
-        """
-        Get the selected items
-        :return:
-        """
-        return self._scene.selectedItems()
 
     def mousePressEvent(self, event: QMouseEvent):
         """
@@ -496,7 +489,7 @@ class MapWidget(QWidget):
                 while abs(self.view.schema_zoom - 0.015625) > 0.00001:
                     self.view.schema_zoom = self.view.schema_zoom / self.view.map_widget.zoom_factor
                     self.view.scale(1.0 / self.view.map_widget.zoom_factor, 1.0 / self.view.map_widget.zoom_factor)
-                self.GotoLevelAndPosition(level=0, longitude=0, latitude=0)
+                self.GotoLevelAndPosition(level=0, longitude=None, latitude=None)
 
     @property
     def max_level(self):
@@ -613,7 +606,6 @@ class MapWidget(QWidget):
 
         elif b == Qt.MouseButton.LeftButton:
             self.left_mbutton_down = True
-            self.editor.object_editor_table.setModel(None)
 
         elif b == Qt.MouseButton.MiddleButton:
             self.mid_mbutton_down = True
@@ -622,8 +614,7 @@ class MapWidget(QWidget):
             self.right_mbutton_down = True
 
         else:
-            pass
-            # print('mousePressEvent: unknown button')
+            print('mousePressEvent: unknown button')
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         """
@@ -666,8 +657,7 @@ class MapWidget(QWidget):
             self.right_mbutton_down = False
 
         else:
-            pass
-            # print('mouseReleaseEvent: unknown button')
+            print('mouseReleaseEvent: unknown button')
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         """
@@ -685,8 +675,7 @@ class MapWidget(QWidget):
         elif b == Qt.RightButton:
             pass
         else:
-            pass
-            # print('mouseDoubleClickEvent: unknown button')
+            print('mouseDoubleClickEvent: unknown button')
 
     def mouseMoveEvent(self, event: QMouseEvent):
         """
@@ -1827,11 +1816,11 @@ class MapWidget(QWidget):
         exist in the new tileset.
         """
 
-        # print('ChangeTileSet: tile_src=%s' % str(tile_src))
+        print('ChangeTileSet: tile_src=%s' % str(tile_src))
 
         # get level and geo position of view centre
         level, longitude, latitude = self.get_level_and_position()
-        # print('level=%s, geo=(%s, %s)' % (str(level), str(longitude), str(latitude)))
+        print('level=%s, geo=(%s, %s)' % (str(level), str(longitude), str(latitude)))
 
         # remember old tileset
         old_tileset = self.tile_src
