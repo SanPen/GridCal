@@ -59,12 +59,12 @@ class MapLineContainer(GenericDiagramWidget):
                                       editor=editor,
                                       draw_labels=draw_labels)
 
-        self.editor: GridMapWidget = editor  # re assign to make clear the editor type
+        self.editor: GridMapWidget = editor  # reassign to make clear the editor type
 
         self.nodes_list: List[NodeGraphicItem] = list()
         self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
-        self.original = True
+        self.original = True  # TODO: Que es esto?
 
     def setWidthScale(self, val: float):
         """
