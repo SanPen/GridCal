@@ -16,6 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING, Tuple
+
+from GridCalEngine.Devices import Associations
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
@@ -910,7 +912,7 @@ def get_branch_data(circuit: MultiCircuit,
 
         data.control_mode[ii] = elm.control_mode
 
-        data.possible_transformer_types[i] = elm.possible_transformer_types
+        data.possible_transformer_types[ii] = elm.possible_transformer_types
 
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 

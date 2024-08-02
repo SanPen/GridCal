@@ -118,6 +118,11 @@ class BranchData:
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
 
+        self.possible_transformer_types = np.ones(self.nelm, dtype=list)
+        self.possible_tower_types = np.ones(self.nelm, dtype=list)
+        self.possible_underground_line_types = np.ones(self.nelm, dtype=list)
+        self.possible_sequence_line_types = np.ones(self.nelm, dtype=list)
+
     def size(self) -> int:
         """
         Get size of the structure
