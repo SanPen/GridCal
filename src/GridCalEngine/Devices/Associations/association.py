@@ -84,7 +84,7 @@ class Associations:
         Constructor
         :param device_type: DeviceType
         """
-        self._data: Dict[str, Association] = dict()
+        self.data: Dict[str, Association] = dict()
         self._device_type = device_type
 
     @property
@@ -103,7 +103,7 @@ class Associations:
         """
 
         if val.api_object is not None:
-            self._data[val.api_object.idtag] = val
+            self.data[val.api_object.idtag] = val
 
     def add_object(self, api_object: ASSOCIATION_TYPES, val: float) -> Association:
         """
@@ -123,7 +123,7 @@ class Associations:
         :return: None
         """
         if val.api_object is not None:
-            del self._data[val.api_object.idtag]
+            del self.data[val.api_object.idtag]
 
     def remove_by_key(self, key: str):
         """
@@ -131,8 +131,8 @@ class Associations:
         :param key:
         :return:
         """
-        if key in self._data.keys():
-            del self._data[key]
+        if key in self.data.keys():
+            del self.data[key]
 
     def at_key(self, key: str) -> Union[Association, None]:
         """
@@ -140,14 +140,14 @@ class Associations:
         :param key:
         :return:
         """
-        return self._data.get(key, None)
+        return self.data.get(key, None)
 
     def to_dict(self) -> List[Dict[str, Union[str, float]]]:
         """
         Get dictionary representation of Associations
         :return:
         """
-        return [val.to_dict() for _, val in self._data.items()]
+        return [val.to_dict() for _, val in self.data.items()]
 
     def parse(self,
               data: List[Dict[str, Union[str, float]]],
@@ -186,20 +186,20 @@ class Associations:
         self.add(item)
 
     def __len__(self) -> int:
-        return len(self._data)
+        return len(self.data)
 
     def __iter__(self) -> Iterator[Association]:
-        for key, val in self._data.items():
+        for key, val in self.data.items():
             yield val
 
     def __repr__(self) -> str:
-        return repr(self._data)
+        return repr(self.data)
 
     def clear(self) -> None:
         """
         Clear data
         """
-        self._data.clear()
+        self.data.clear()
 
     def __eq__(self, other: "Associations") -> bool:
         """
@@ -214,9 +214,9 @@ class Associations:
             # different length
             return False
 
-        for key, val in self._data.items():
+        for key, val in self.data.items():
 
-            val2 = other._data.get(key, None)
+            val2 = other.data.get(key, None)
 
             if val2 is None:
                 # a key was not found, these are not equal
@@ -227,8 +227,3 @@ class Associations:
                     return False
 
         return True
-
-
-
-
-

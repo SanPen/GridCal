@@ -5,7 +5,7 @@ import GridCalEngine.api as gce
 # fname = os.path.join('C:/Users/J/Downloads/simple1.gridcal')
 # main_circuit = gce.open_file(fname)
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
-fname = os.path.join(folder, 'simple1.gridcal')
+fname = os.path.join(folder, 'test.gridcal')
 main_circuit = gce.open_file(fname)
 
 

@@ -225,6 +225,7 @@ class Transformer2W(ControllableBranchParent):
 
         # type template
         self.template = template
+        self.data = {'possible_transformer_types': Associations(DeviceType.TransformerTypeDevice)}
 
         # association with transformer templates
         self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)
@@ -402,6 +403,10 @@ class Transformer2W(ControllableBranchParent):
                     logger.add_error('Template not recognised', self.name)
             else:
                 self.template = obj
+
+        for transformer_type in self.data['possible_transformer_types'].data.values():
+            if isinstance(transformer_type.api_object, TransformerType):
+                transformer_type.api_object.apply_template(obj, Sbase, logger)
 
     def get_save_data(self):
         """
