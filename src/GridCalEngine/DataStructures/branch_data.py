@@ -105,6 +105,10 @@ class BranchData:
         self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
         self.alpha3: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
         self.control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.possible_tower_types: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.possible_underground_line_types: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.possible_sequence_line_types: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.possible_transformer_types: ObjVec = np.zeros(self.nelm, dtype=object)
 
         self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
         self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)

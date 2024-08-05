@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Union, List, Iterator
+
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
 
@@ -70,7 +71,8 @@ class Association:
         :param other: Association
         :return: is equal?
         """
-        if self.api_object.idtag != other.api_object.idtag:
+        if self.api_object.idtag != self.api_object.idtag:
+            # Different reference objects
             return False
         if self.value != other.value:
             return False
@@ -104,6 +106,7 @@ class Associations:
         :param val: Association
         :return: None
         """
+
         if val.api_object is not None:
             self._data[val.api_object.idtag] = val
 

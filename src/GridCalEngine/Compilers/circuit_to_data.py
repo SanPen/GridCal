@@ -784,8 +784,8 @@ def get_branch_data(circuit: MultiCircuit,
         data.control_mode[i] = TransformerControlType.fixed
 
         data.possible_tower_types[i] = elm.possible_tower_types
-        data.possible_sequence_line_types[i] = elm.possible_sequence_line_types
         data.possible_underground_line_types[i] = elm.possible_underground_line_types
+        data.possible_sequence_line_types[i] = elm.possible_sequence_line_types
 
         ii += 1
 
@@ -911,9 +911,6 @@ def get_branch_data(circuit: MultiCircuit,
         data.Pfset[ii] = elm.Pset
 
         data.control_mode[ii] = elm.control_mode
-
-        data.possible_transformer_types[ii] = elm.possible_transformer_types
-
         data.virtual_tap_f[ii], data.virtual_tap_t[ii] = elm.get_virtual_taps()
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
