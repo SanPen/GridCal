@@ -28,7 +28,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes, DeviceType
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
 import GridCalEngine.Devices as dev
@@ -1585,13 +1585,50 @@ class DiagramsMain(CompiledArraysMain):
                     # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
-                        con = dev.Investment(device_idtag=elm.idtag,
-                                             code=elm.code,
-                                             name=elm.type_name + ": " + elm.name,
-                                             CAPEX=0.0,
-                                             OPEX=0.0,
-                                             group=group)
-                        self.circuit.add_investment(con)
+                        if elm is DeviceType.TransformerTypeDevice:
+                            con = dev.Investment(device_idtag=elm.idtag,
+                                                 code=elm.code,
+                                                 name=elm.type_name + ": " + elm.name,
+                                                 CAPEX=0.0,
+                                                 OPEX=0.0,
+                                                 group=group,
+                                                 template=elm.possible_transformer_types[:])
+                            self.circuit.add_investment(con)
+                        elif elm is DeviceType.OverheadLineTypeDevice:
+                            con = dev.Investment(device_idtag=elm.idtag,
+                                                 code=elm.code,
+                                                 name=elm.type_name + ": " + elm.name,
+                                                 CAPEX=0.0,
+                                                 OPEX=0.0,
+                                                 group=group,
+                                                 template=elm.possible_sequence_line_types[:])
+                            self.circuit.add_investment(con)
+                        elif elm is DeviceType.UnderGroundLineDevice:
+                            con = dev.Investment(device_idtag=elm.idtag,
+                                                 code=elm.code,
+                                                 name=elm.type_name + ": " + elm.name,
+                                                 CAPEX=0.0,
+                                                 OPEX=0.0,
+                                                 group=group,
+                                                 template=elm.possible_underground_line_types[:])
+                            self.circuit.add_investment(con)
+                        elif elm is DeviceType.LineTypeDevice:
+                            con = dev.Investment(device_idtag=elm.idtag,
+                                                 code=elm.code,
+                                                 name=elm.type_name + ": " + elm.name,
+                                                 CAPEX=0.0,
+                                                 OPEX=0.0,
+                                                 group=group,
+                                                 template=elm.possible_tower_types[:])
+                            self.circuit.add_investment(con)
+                        else:
+                            con = dev.Investment(device_idtag=elm.idtag,
+                                                 code=elm.code,
+                                                 name=elm.type_name + ": " + elm.name,
+                                                 CAPEX=0.0,
+                                                 OPEX=0.0,
+                                                 group=group)
+                            self.circuit.add_investment(con)
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to investment")
 
