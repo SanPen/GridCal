@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Any
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
@@ -18,6 +18,7 @@ class Investment(EditableDevice):
                  OPEX=0.0,
                  status: bool = True,
                  group: InvestmentsGroup = None,
+                 template: DeviceType = None,
                  comment: str = ""):
         """
         Investment
@@ -27,7 +28,7 @@ class Investment(EditableDevice):
         :param CAPEX: Float. Capital expenditures
         :param OPEX: Float. Operating expenditures
         :param status: If true the investment activates when applied, otherwise is deactivated
-        :param group: ContingencyGroup. Contingency group
+        :param group: InvestmentGroup. Investment group
         :param comment: Comment
         """
 
@@ -44,16 +45,16 @@ class Investment(EditableDevice):
         self.OPEX = OPEX
         self._group: InvestmentsGroup = group
         self.status: bool = status
-        self._template = None
+        self.template = template
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
-        self.register(key='CAPEX', units='Me', tpe=float,
+        self.register(key='CAPEX', units='M€', tpe=float,
                       definition='Capital expenditures. This is the initial investment.')
-        self.register(key='OPEX', units='Me', tpe=float,
+        self.register(key='OPEX', units='M€', tpe=float,
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
-        self.register(key='template', units='', tpe=DeviceType.OverheadLineTypeDevice, definition='', editable=False)
+        self.register(key='template', units='', tpe=template, definition='Possible templates of each component')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
 
     @property
@@ -81,14 +82,14 @@ class Investment(EditableDevice):
         # The category is set through the group, so no implementation here
         pass
 
-    @property
-    def template(self):
-        """
-        Template of component
-        :return:
-        """
-        return self._template
-
-    @template.setter
-    def template(self, val):
-        self._template = val
+    # @property
+    # def template(self):
+    #     """
+    #     Template of component
+    #     :return:
+    #     """
+    #     return self.template
+    #
+    # @template.setter
+    # def template(self, val):
+    #     self.template = val
