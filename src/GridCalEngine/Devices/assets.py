@@ -3254,6 +3254,21 @@ class Assets:
         """
         self._investments.append(obj)
 
+    # def add_template(self, obj: Union[dev.OverheadLineType, dev.TransformerType, dev.UndergroundLineType]):
+    #     """
+    #     Add template
+    #     :param obj: Template
+    #     """
+    #     if isinstance(obj, dev.TransformerType):
+    #         for elm in self.transformers2w:
+    #             elm.template = obj
+    #     elif isinstance(obj, dev.OverheadLineType):
+    #         for elm in self.overhead_line_types:
+    #             elm.template = obj
+    #     elif isinstance(obj, dev.UndergroundLineType):
+    #         for elm in self.underground_cable_types:
+    #             elm.template = obj
+
     def delete_investment(self, obj: dev.Investment):
         """
         Delete zone

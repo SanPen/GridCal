@@ -1,5 +1,7 @@
 import os
 import random
+from typing import Union
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -40,7 +42,9 @@ def add_investments_to_grid(grid):
         grid.add_line(line)
         inv_group = dev.InvestmentsGroup(name='Ig' + str(i))
         investment = dev.Investment(device_idtag=line.idtag, name='Investment' + str(i), CAPEX=1,
-                                    group=inv_group)
+                                    group=inv_group, template=line.possible_tower_types[:])
+        # template = Union[dev.OverheadLineType(name='Template' + str(i)), dev.TransformerType(name='Template' + str(i)), dev.UndergroundLineType(name='Template' + str(i))]
+        # grid.add_template(template)
         grid.add_investment(investment)
         grid.add_investments_group(inv_group)
 
