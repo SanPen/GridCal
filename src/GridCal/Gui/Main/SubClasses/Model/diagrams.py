@@ -1582,6 +1582,7 @@ class DiagramsMain(CompiledArraysMain):
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
                         if elm.type_name == 'Transformer':
+                            print('trafo')
                             con = dev.Investment(device_idtag=elm.idtag,
                                                  code=elm.code,
                                                  name=elm.type_name + ": " + elm.name,
@@ -1590,33 +1591,37 @@ class DiagramsMain(CompiledArraysMain):
                                                  group=group,
                                                  template=list(elm.possible_transformer_types.data))
                             self.circuit.add_investment(con)
-                        elif elm.type_name == 'Sequence line':
-                            con = dev.Investment(device_idtag=elm.idtag,
-                                                 code=elm.code,
-                                                 name=elm.type_name + ": " + elm.name,
-                                                 CAPEX=0.0,
-                                                 OPEX=0.0,
-                                                 group=group,
-                                                 template=list(elm.possible_sequence_line_types.data))
-                            self.circuit.add_investment(con)
-                        elif elm.type_name == 'Underground line':
-                            con = dev.Investment(device_idtag=elm.idtag,
-                                                 code=elm.code,
-                                                 name=elm.type_name + ": " + elm.name,
-                                                 CAPEX=0.0,
-                                                 OPEX=0.0,
-                                                 group=group,
-                                                 template=list(elm.possible_underground_line_types.data))
-                            self.circuit.add_investment(con)
-                        elif elm.type_name == 'Tower':
-                            con = dev.Investment(device_idtag=elm.idtag,
-                                                 code=elm.code,
-                                                 name=elm.type_name + ": " + elm.name,
-                                                 CAPEX=0.0,
-                                                 OPEX=0.0,
-                                                 group=group,
-                                                 template=list(elm.possible_tower_types.data))
-                            self.circuit.add_investment(con)
+                        elif elm.type_name == 'Line':
+                            print('seq line')
+                            if elm.type_name == 'Sequence line':
+                                con = dev.Investment(device_idtag=elm.idtag,
+                                                     code=elm.code,
+                                                     name=elm.type_name + ": " + elm.name,
+                                                     CAPEX=0.0,
+                                                     OPEX=0.0,
+                                                     group=group,
+                                                     template=list(elm.possible_sequence_line_types.data))
+                                self.circuit.add_investment(con)
+                            elif elm.type_name == 'Underground line':
+                                print('und line')
+                                con = dev.Investment(device_idtag=elm.idtag,
+                                                     code=elm.code,
+                                                     name=elm.type_name + ": " + elm.name,
+                                                     CAPEX=0.0,
+                                                     OPEX=0.0,
+                                                     group=group,
+                                                     template=list(elm.possible_underground_line_types.data))
+                                self.circuit.add_investment(con)
+                            elif elm.type_name == 'Tower':
+                                print('tower')
+                                con = dev.Investment(device_idtag=elm.idtag,
+                                                     code=elm.code,
+                                                     name=elm.type_name + ": " + elm.name,
+                                                     CAPEX=0.0,
+                                                     OPEX=0.0,
+                                                     group=group,
+                                                     template=list(elm.possible_tower_types.data))
+                                self.circuit.add_investment(con)
                         else:
                             con = dev.Investment(device_idtag=elm.idtag,
                                                  code=elm.code,
