@@ -18,7 +18,7 @@ class Investment(EditableDevice):
                  OPEX=0.0,
                  status: bool = True,
                  group: InvestmentsGroup = None,
-                 template: DeviceType = None,
+                 template: DeviceType.TransformerTypeDevice = None,
                  comment: str = ""):
         """
         Investment

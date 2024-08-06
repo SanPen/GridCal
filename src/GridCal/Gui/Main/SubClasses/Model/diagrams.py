@@ -24,11 +24,12 @@ from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
+from GridCalEngine.Devices import TransformerType, OverheadLineType, SequenceLineType, UndergroundLineType
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import SimulationTypes, DeviceType
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
 import GridCalEngine.Devices as dev
@@ -1580,41 +1581,41 @@ class DiagramsMain(CompiledArraysMain):
                     # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
-                        if elm is DeviceType.TransformerTypeDevice:
+                        if elm.type_name == 'Transformer':
                             con = dev.Investment(device_idtag=elm.idtag,
                                                  code=elm.code,
                                                  name=elm.type_name + ": " + elm.name,
                                                  CAPEX=0.0,
                                                  OPEX=0.0,
                                                  group=group,
-                                                 template=elm.possible_transformer_types[:])
+                                                 template=list(elm.possible_transformer_types.data))
                             self.circuit.add_investment(con)
-                        elif elm is DeviceType.OverheadLineTypeDevice:
+                        elif elm.type_name == 'Sequence line':
                             con = dev.Investment(device_idtag=elm.idtag,
                                                  code=elm.code,
                                                  name=elm.type_name + ": " + elm.name,
                                                  CAPEX=0.0,
                                                  OPEX=0.0,
                                                  group=group,
-                                                 template=elm.possible_sequence_line_types[:])
+                                                 template=list(elm.possible_sequence_line_types.data))
                             self.circuit.add_investment(con)
-                        elif elm is DeviceType.UnderGroundLineDevice:
+                        elif elm.type_name == 'Underground line':
                             con = dev.Investment(device_idtag=elm.idtag,
                                                  code=elm.code,
                                                  name=elm.type_name + ": " + elm.name,
                                                  CAPEX=0.0,
                                                  OPEX=0.0,
                                                  group=group,
-                                                 template=elm.possible_underground_line_types[:])
+                                                 template=list(elm.possible_underground_line_types.data))
                             self.circuit.add_investment(con)
-                        elif elm is DeviceType.LineTypeDevice:
+                        elif elm.type_name == 'Tower':
                             con = dev.Investment(device_idtag=elm.idtag,
                                                  code=elm.code,
                                                  name=elm.type_name + ": " + elm.name,
                                                  CAPEX=0.0,
                                                  OPEX=0.0,
                                                  group=group,
-                                                 template=elm.possible_tower_types[:])
+                                                 template=list(elm.possible_tower_types.data))
                             self.circuit.add_investment(con)
                         else:
                             con = dev.Investment(device_idtag=elm.idtag,
