@@ -406,6 +406,8 @@ class MultiCircuit(Assets):
         for branch in self._transformers2w:
             if branch.template is not None:
                 branch.apply_template(branch.template, self.Sbase, logger=logger)
+            # for transformer types found in associations, where to put this
+            branch.apply_templates_to_transformers(branch.template, self.Sbase, logger=logger)
 
         return logger
 
