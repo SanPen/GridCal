@@ -959,6 +959,7 @@ class DeviceType(Enum):
     LoadLikeDevice = 'Load like'
     BranchGroupDevice = 'Branch group'
     LambdaDevice = r"Loading from the base situation ($\lambda$)"
+    Template = 'Template'
 
     PiMeasurementDevice = 'Pi Measurement'
     QiMeasurementDevice = 'Qi Measurement'

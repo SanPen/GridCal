@@ -342,7 +342,6 @@ class Transformer2W(ControllableBranchParent):
         """
 
         if isinstance(obj, TransformerType):
-            print(f"Applying template to {self.name}")
             VH, VL = self.get_sorted_buses_voltages()
 
             # get the transformer impedance in the base of the transformer

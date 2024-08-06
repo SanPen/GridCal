@@ -1,21 +1,5 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 from typing import Union
+
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
 
@@ -60,6 +44,7 @@ class Investment(EditableDevice):
         self.OPEX = OPEX
         self._group: InvestmentsGroup = group
         self.status: bool = status
+        self._template = None
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
         self.register(key='CAPEX', units='Me', tpe=float,
@@ -68,6 +53,7 @@ class Investment(EditableDevice):
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
+        self.register(key='template', units='', tpe=DeviceType.OverheadLineTypeDevice, definition='', editable=False)
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
 
     @property
@@ -92,5 +78,17 @@ class Investment(EditableDevice):
 
     @category.setter
     def category(self, val):
-        # self.group.category = val
+        # The category is set through the group, so no implementation here
         pass
+
+    @property
+    def template(self):
+        """
+        Template of component
+        :return:
+        """
+        return self._template
+
+    @template.setter
+    def template(self, val):
+        self._template = val
