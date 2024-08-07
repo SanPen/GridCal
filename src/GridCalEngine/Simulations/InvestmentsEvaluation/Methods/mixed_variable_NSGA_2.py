@@ -33,7 +33,6 @@ class MixedVariableProblem(ElementwiseProblem):
         :param obj_func:
         :param n_obj:
         """
-        # These will need to be inputted automatically from the csv file on GridCal
         vars = {
             "react1_bi": Binary(),
             "react2_bi": Binary(),
@@ -113,7 +112,7 @@ def NSGA_2(obj_func,
                    verbose=True,
                    save_history=False)
 
-    # Shall we need this?
+    # Do they want opex or capex to have more weight?
     # weights = np.array([0.5, 0.5])
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()

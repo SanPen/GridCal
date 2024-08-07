@@ -28,6 +28,7 @@
     <select />
   </component>
   <component name="ChangeListManager">
+<<<<<<< HEAD
     <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="found the derivatives bug: all in CSC">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" afterDir="false" />
@@ -35,6 +36,12 @@
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_basic_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_basic_formulation.py" afterDir="false" />
+=======
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="New capex scores file to be used later">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/acciona_capex.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/acciona_capex.py" afterDir="false" />
+>>>>>>> 12bd48dab (Capex class set up Python version)
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -170,7 +177,12 @@
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
     "Python.ExecuteGridCal.executor": "Run",
+<<<<<<< HEAD
     "Python.GridCalMain.executor": "Run",
+=======
+    "Python.acciona_capex.executor": "Run",
+    "Python.associations_templates.executor": "Debug",
+>>>>>>> 12bd48dab (Capex class set up Python version)
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.fubm_example.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
@@ -680,7 +692,12 @@
     </list>
     <recent_temporary>
       <list>
+<<<<<<< HEAD
         <item itemvalue="Python tests.pytest for src.tests.test_load_all_grids.test_all_grids" />
+=======
+        <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.tallr_table_headers" />
+>>>>>>> 12bd48dab (Capex class set up Python version)
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.fubm_example" />
         <item itemvalue="Python tests.pytest for test_derivatives.test_bus_derivatives" />
@@ -1779,7 +1796,11 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
+<<<<<<< HEAD
     <option name="localTasksCounter" value="540" />
+=======
+    <option name="localTasksCounter" value="544" />
+>>>>>>> 12bd48dab (Capex class set up Python version)
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1825,6 +1846,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+<<<<<<< HEAD
     <MESSAGE value="avoid changing tilesets to themselves" />
     <MESSAGE value="Fixed the CN children connection point" />
     <MESSAGE value="Fixed theme changing on all diagrams" />
@@ -1851,6 +1873,34 @@
     <MESSAGE value="added fubm test" />
     <MESSAGE value="found the derivatives bug: all in CSC" />
     <option name="LAST_COMMIT_MESSAGE" value="found the derivatives bug: all in CSC" />
+=======
+    <MESSAGE value="Added logger to the numerical circuit compilation" />
+    <MESSAGE value="worked on test_cgmes_ieeee.py" />
+    <MESSAGE value="passing test_ieee_grids" />
+    <MESSAGE value="passing test_ieee_grids (minimal refactor)" />
+    <MESSAGE value="created numba csc2" />
+    <MESSAGE value="created numba csc2 spsolve and extend&#10;Changed the AC Jacobian to return a CSC matrix built in CSC mode" />
+    <MESSAGE value="converted most Jacobian uses to the CSC matrix" />
+    <MESSAGE value="Remove voltage control with generators working for NR" />
+    <MESSAGE value="Implemented the remote voltage control in NR, LM, IWAMOTO and FD. The Q control fails since it needs to be updated." />
+    <MESSAGE value="Fix the reactive power limits checking" />
+    <MESSAGE value="Added the generator remote control bus from and to PSSe" />
+    <MESSAGE value="Fixed issue when setting the voltage control bus to the same bus..." />
+    <MESSAGE value="Improved raw compatibility" />
+    <MESSAGE value="Improved the reading of dgridcal files" />
+    <MESSAGE value="Fixed issue with indexing in DiagramsModel" />
+    <MESSAGE value="Fixed the derivatives" />
+    <MESSAGE value="added catalogue actions" />
+    <MESSAGE value="Started the catalogue import and export functions" />
+    <MESSAGE value="Some refactoring&#10;Added a multiple-selection example" />
+    <MESSAGE value="Made regulation bus and cn editable&#10;Added ability to set the voltage control from the pertinent branches&#10;Removed redundant control catch code" />
+    <MESSAGE value="Added possible associations of transformer and lines with their respective templates" />
+    <MESSAGE value="Added header text wrap" />
+    <MESSAGE value="Implementing apply template to associations with 1s" />
+    <MESSAGE value="Line implemented properly in investments templates" />
+    <MESSAGE value="New capex scores file to be used later" />
+    <option name="LAST_COMMIT_MESSAGE" value="New capex scores file to be used later" />
+>>>>>>> 12bd48dab (Capex class set up Python version)
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
