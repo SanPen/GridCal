@@ -41,7 +41,6 @@ def add_investments_to_grid(grid):
     for i, line in enumerate(lines_list):
         grid.add_line(line)
         inv_group = dev.InvestmentsGroup(name='Ig' + str(i))
-        # templ_group = dev.TemplateGroup(name='Tg' + str(i))
         investment = dev.Investment(device_idtag=line.idtag, name='Investment' + str(i), CAPEX=1,
                                     group=inv_group, template=DeviceType.TransformerTypeDevice)  # template=line.possible_tower_types[:]
         grid.add_investment(investment)
