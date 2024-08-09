@@ -262,7 +262,7 @@ def parse_generators(circuit: MultiCircuit,
         # parse the OPF data
         opf_table = data['gencost']
 
-        for i in range(opf_table.shape[0]):
+        for i in gen_dict.keys():
             curve_model = opf_table[i, 0]
             gen_dict[i].StartupCost = opf_table[i, 1]
             gen_dict[i].ShutdownCost = opf_table[i, 2]
@@ -313,62 +313,74 @@ def parse_branches_data(circuit: MultiCircuit,
     for i in range(n):
         f_idx = int(table[i, matpower_branches.F_BUS])
         t_idx = int(table[i, matpower_branches.T_BUS])
-        f = circuit.buses[bus_idx_dict[f_idx]]
-        t = circuit.buses[bus_idx_dict[t_idx]]
+        bus_f = circuit.buses[bus_idx_dict[f_idx]]
+        bus_t = circuit.buses[bus_idx_dict[t_idx]]
 
         if table.shape[1] == 37:  # FUBM model
 
             # converter type (I, II, III)
             matpower_converter_mode = table[i, matpower_branches.CONV_A]
 
-            if matpower_converter_mode > 0:  # it is a converter
+            # determine the converter control mode
+            Pfset = table[i, matpower_branches.PF]
+            Ptset = table[i, matpower_branches.PT]
+            Vt_set = table[i, matpower_branches.VT_SET]
+            Vf_set = table[i, matpower_branches.VF_SET]  # dc voltage
+            Qfset = table[i, matpower_branches.QF]
+            Qtset = table[i, matpower_branches.QT]
+            m = table[i, matpower_branches.TAP] if table[i, matpower_branches.TAP] > 0 else 1.0
+            tap_phase = np.deg2rad(table[i, matpower_branches.SHIFT])
+            v_set = 1.0
+            Pset = 0.0
+            Qset = 0.0
+            control_bus = None
 
+            # tau based controls
+            if Pfset != 0.0:
+                tap_phase_control_mode = TapPhaseControl.Pf
+                Pset = Pfset
+            elif Ptset != 0.0:
+                tap_phase_control_mode = TapPhaseControl.Pt
+                Pset = Ptset
+            else:
+                tap_phase_control_mode = TapPhaseControl.fixed
+
+            # m based controls
+            if Qtset != 0.0:
+                tap_module_control_mode = TapModuleControl.Qt
+                Qset = Qtset
+            elif Qfset != 0.0:
+                tap_module_control_mode = TapModuleControl.Qf
+                Qset = Qtset
+            elif Vt_set != 0.0:
+                tap_module_control_mode = TapModuleControl.Vm
+                v_set = Vt_set
+                control_bus = bus_t
+            elif Vf_set != 0.0:
+                tap_module_control_mode = TapModuleControl.Vm
+                v_set = Vf_set
+                control_bus = bus_f
+            else:
+                tap_module_control_mode = TapModuleControl.fixed
+
+            if matpower_converter_mode > 0:  # it is a converter
                 # set the from bus as a DC bus
                 # this is by design of the matpower FUBM model,
                 # if it is a converter,
                 # the DC bus is always the "from" bus
-                f.is_dc = True
+                bus_f.is_dc = True
 
-                # determine the converter control mode
-                Pfset = table[i, matpower_branches.PF]
-                Ptset = table[i, matpower_branches.PT]
-                Vac_set = table[i, matpower_branches.VT_SET]
-                Vdc_set = table[i, matpower_branches.VF_SET]
-                Qfset = table[i, matpower_branches.QF]
-                Qtset = table[i, matpower_branches.QT]
-                m = table[i, matpower_branches.TAP] if table[i, matpower_branches.TAP] > 0 else 1.0
+                if matpower_converter_mode == 1:  # Type I: normal converter
+                    pass
 
-                if matpower_converter_mode == 1:
+                elif matpower_converter_mode == 2:  # Type II: voltage controlling converter (slack converter)
+                    pass
 
-                    if Pfset != 0.0:
-
-                        if Qtset != 0.0:
-                            control_mode = ConverterControlType.type_I_2
-
-                        elif Vac_set != 0.0:
-                            control_mode = ConverterControlType.type_I_3
-
-                        else:
-                            control_mode = ConverterControlType.type_I_1
-
-                    else:
-                        control_mode = ConverterControlType.type_0_free
-
-                elif matpower_converter_mode == 2:
-
-                    if Vac_set == 0.0:
-                        control_mode = ConverterControlType.type_II_4
-                    else:
-                        control_mode = ConverterControlType.type_II_5
-
-                elif matpower_converter_mode == 3:
-                    control_mode = ConverterControlType.type_III_6
-
-                elif matpower_converter_mode == 4:
-                    control_mode = ConverterControlType.type_III_7
+                elif matpower_converter_mode == 3:  # Type III: Power-voltage droop
+                    pass
 
                 else:
-                    control_mode = ConverterControlType.type_0_free
+                    pass
 
                 rate = max(table[i, [matpower_branches.RATE_A, matpower_branches.RATE_B, matpower_branches.RATE_C]])
 
@@ -379,8 +391,8 @@ def parse_branches_data(circuit: MultiCircuit,
                 else:
                     monitor_loading = True
 
-                branch = dev.VSC(bus_from=f,
-                                 bus_to=t,
+                branch = dev.VSC(bus_from=bus_f,
+                                 bus_to=bus_t,
                                  code="{0}_{1}_1".format(f_idx, t_idx),
                                  name='VSC' + str(len(circuit.vsc_devices) + 1),
                                  active=bool(table[i, matpower_branches.BR_STATUS]),
@@ -389,9 +401,9 @@ def parse_branches_data(circuit: MultiCircuit,
                                  tap_module=m,
                                  tap_module_max=table[i, matpower_branches.MA_MAX],
                                  tap_module_min=table[i, matpower_branches.MA_MIN],
-                                 tap_phase=np.deg2rad(table[i, matpower_branches.SHIFT]),  # * np.pi / 180,
-                                 tap_phase_max=np.deg2rad(table[i, matpower_branches.ANGMAX]),
-                                 tap_phase_min=np.deg2rad(table[i, matpower_branches.ANGMIN]),
+                                 tap_phase=tap_phase,
+                                 tap_phase_max=np.deg2rad(table[i, matpower_branches.SH_MAX]),
+                                 tap_phase_min=np.deg2rad(table[i, matpower_branches.SH_MIN]),
                                  G0sw=table[i, matpower_branches.GSW],
                                  Beq=table[i, matpower_branches.BEQ],
                                  Beq_max=table[i, matpower_branches.BEQ_MAX],
@@ -399,22 +411,25 @@ def parse_branches_data(circuit: MultiCircuit,
                                  rate=rate,
                                  kdp=table[i, matpower_branches.KDP],
                                  k=table[i, matpower_branches.K2],
-                                 control_mode=control_mode,
-                                 Pfset=Pfset,
-                                 Qfset=Qfset,
-                                 Vac_set=Vac_set if Vac_set > 0 else 1.0,
-                                 Vdc_set=Vdc_set if Vdc_set > 0 else 1.0,
+                                 tap_phase_control_mode=tap_phase_control_mode,
+                                 tap_module_control_mode=tap_module_control_mode,
+                                 Pset=Pset,
+                                 Qset=Qset,
+                                 vset=v_set,
                                  alpha1=table[i, matpower_branches.ALPHA1],
                                  alpha2=table[i, matpower_branches.ALPHA2],
                                  alpha3=table[i, matpower_branches.ALPHA3],
                                  monitor_loading=monitor_loading)
+
+                branch.regulation_bus = control_bus
+
                 circuit.add_vsc(obj=branch)
 
                 logger.add_info('Branch as converter', 'Branch {}'.format(str(i + 1)))
 
             else:
 
-                if (f.Vnom != t.Vnom or
+                if (bus_f.Vnom != bus_t.Vnom or
                         (table[i, matpower_branches.TAP] != 1.0 and
                          table[i, matpower_branches.TAP] != 0) or
                         table[i, matpower_branches.SHIFT] != 0.0):
@@ -428,8 +443,8 @@ def parse_branches_data(circuit: MultiCircuit,
                     else:
                         monitor_loading = True
 
-                    branch = dev.Transformer2W(bus_from=f,
-                                               bus_to=t,
+                    branch = dev.Transformer2W(bus_from=bus_f,
+                                               bus_to=bus_t,
                                                code="{0}_{1}_1".format(f_idx, t_idx),
                                                name=names[i],
                                                r=float(table[i, matpower_branches.BR_R]),
@@ -437,11 +452,20 @@ def parse_branches_data(circuit: MultiCircuit,
                                                g=0.0,
                                                b=float(table[i, matpower_branches.BR_B]),
                                                rate=rate,
+                                               active=bool(table[i, matpower_branches.BR_STATUS]),
                                                monitor_loading=monitor_loading,
-                                               tap_module=float(table[i, matpower_branches.TAP]),
-                                               tap_phase=np.deg2rad(table[i, matpower_branches.SHIFT]),
-                                               # * np.pi / 180,
-                                               active=bool(table[i, matpower_branches.BR_STATUS]))
+                                               tap_module=m,
+                                               tap_module_max=float(table[i, matpower_branches.MA_MAX]),
+                                               tap_module_min=float(table[i, matpower_branches.MA_MIN]),
+                                               tap_phase=tap_phase,
+                                               tap_phase_max=np.deg2rad(table[i, matpower_branches.SH_MAX]),
+                                               tap_phase_min=np.deg2rad(table[i, matpower_branches.SH_MIN]),
+                                               tap_phase_control_mode=tap_phase_control_mode,
+                                               tap_module_control_mode=tap_module_control_mode,
+                                               Pset=Pset,
+                                               Qset=Qset,
+                                               vset=v_set)
+                    branch.regulation_bus = control_bus
                     circuit.add_transformer2w(obj=branch)
                     logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
@@ -455,8 +479,8 @@ def parse_branches_data(circuit: MultiCircuit,
                     else:
                         monitor_loading = True
 
-                    branch = dev.Line(bus_from=f,
-                                      bus_to=t,
+                    branch = dev.Line(bus_from=bus_f,
+                                      bus_to=bus_t,
                                       code="{0}_{1}_1".format(f_idx, t_idx),
                                       name=names[i],
                                       r=table[i, matpower_branches.BR_R],
@@ -470,7 +494,7 @@ def parse_branches_data(circuit: MultiCircuit,
 
         else:
 
-            if (f.Vnom != t.Vnom or
+            if (bus_f.Vnom != bus_t.Vnom or
                     (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or
                     table[i, matpower_branches.SHIFT] != 0.0):
 
@@ -483,8 +507,8 @@ def parse_branches_data(circuit: MultiCircuit,
                 else:
                     monitor_loading = True
 
-                branch = dev.Transformer2W(bus_from=f,
-                                           bus_to=t,
+                branch = dev.Transformer2W(bus_from=bus_f,
+                                           bus_to=bus_t,
                                            code="{0}_{1}_1".format(f_idx, t_idx),
                                            name=names[i],
                                            r=float(table[i, matpower_branches.BR_R]),
@@ -510,8 +534,8 @@ def parse_branches_data(circuit: MultiCircuit,
                 else:
                     monitor_loading = True
 
-                branch = dev.Line(bus_from=f,
-                                  bus_to=t,
+                branch = dev.Line(bus_from=bus_f,
+                                  bus_to=bus_t,
                                   code="{0}_{1}_1".format(f_idx, t_idx),
                                   name=names[i],
                                   r=table[i, matpower_branches.BR_R],
