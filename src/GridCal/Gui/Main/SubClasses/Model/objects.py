@@ -21,6 +21,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 from GridCal.Gui.associations_model import AssociationsModel
+from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
@@ -87,6 +88,11 @@ class ObjectsTableMain(DiagramsMain):
 
         # Set context menu policy to CustomContextMenu
         self.ui.dataStructureTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
+
+        # wrap headers
+        self.ui.dataStructureTableView.setHorizontalHeader(HeaderViewWithWordWrap())
+        self.ui.profiles_tableView.setHorizontalHeader(HeaderViewWithWordWrap())
+        self.ui.associationsTableView.setHorizontalHeader(HeaderViewWithWordWrap())
 
         # combobox change
         self.ui.associationsComboBox.currentTextChanged.connect(self.display_associations)

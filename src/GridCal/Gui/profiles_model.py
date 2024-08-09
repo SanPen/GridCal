@@ -142,6 +142,23 @@ class ProfilesModel(QtCore.QAbstractTableModel):
 
         self.set_delegates()
 
+        # flag for the headers text wraper: HeaderViewWithWordWrap
+        self._hide_headers_mode = False
+
+    def hideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = True
+
+    def unhideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = False
+
     def set_delegates(self) -> None:
         """
         Set the cell editor types depending on the attribute_types array
@@ -257,6 +274,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+
+        if self._hide_headers_mode is True:
+            return None
+
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if len(self.elements):
                 if orientation == QtCore.Qt.Orientation.Horizontal:

@@ -21,7 +21,7 @@ from typing import Tuple, Union, List
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.Devices.Branches.tap_changer import TapChanger
+from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.enumerations import (WindingsConnection, BuildStatus, TapPhaseControl,
                                         TapModuleControl, SubObjectType, TapChangerTypes)
 from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
@@ -196,7 +196,12 @@ class Transformer2W(ControllableBranchParent):
                                           capex=capex,
                                           opex=opex,
                                           build_status=build_status,
-                                          device_type=DeviceType.Transformer2WDevice)
+                                          device_type=DeviceType.Transformer2WDevice,
+                                          tc_total_positions=tc_total_positions,
+                                          tc_neutral_position=tc_neutral_position,
+                                          tc_dV=tc_dV,
+                                          tc_asymmetry_angle=tc_asymmetry_angle,
+                                          tc_type=tc_type)
 
         # set the high and low voltage values
         self.HV = HV
@@ -221,24 +226,10 @@ class Transformer2W(ControllableBranchParent):
         # type template
         self.template = template
 
-        # tap changer object
-        self._tap_changer = TapChanger(total_positions=tc_total_positions,
-                                       neutral_position=tc_neutral_position,
-                                       dV=tc_dV,
-                                       asymmetry_angle=tc_asymmetry_angle,
-                                       tc_type=tc_type)
-
-        # Tap module
-        if tap_module != 0:
-            self.tap_module = tap_module
-            self._tap_changer.set_tap_module(self.tap_module)
-        else:
-            self.tap_module = self._tap_changer.get_tap_module()
+        # association with transformer templates
+        self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)
 
         # register
-        self.register(key='tap_changer', units='', tpe=SubObjectType.TapChanger, definition='Tap changer object',
-                      editable=False)
-
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
         self.register(key='LV', units='kV', tpe=float, definition='Low voltage rating')
         self.register(key='Sn', units='MVA', tpe=float, definition='Nominal power')
@@ -252,53 +243,9 @@ class Transformer2W(ControllableBranchParent):
 
         self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice, definition='', editable=False)
 
-    @property
-    def tap_changer(self) -> TapChanger:
-        """
-        Cost profile
-        :return: Profile
-        """
-        return self._tap_changer
-
-    @tap_changer.setter
-    def tap_changer(self, val: TapChanger):
-        if isinstance(val, TapChanger):
-            self._tap_changer = val
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a tap_changer')
-
-    def tap_up(self):
-        """
-        Move the tap changer one position up
-        """
-        self.tap_changer.tap_up()
-        self.tap_module = self.tap_changer.get_tap_module()
-        self.tap_phase = self.tap_changer.get_tap_phase()
-
-    def tap_down(self):
-        """
-        Move the tap changer one position up
-        """
-        self.tap_changer.tap_down()
-        self.tap_module = self.tap_changer.get_tap_module()
-        self.tap_phase = self.tap_changer.get_tap_phase()
-
-    def apply_tap_changer(self, tap_changer: TapChanger):
-        """
-        Apply a new tap changer
-
-        Argument:
-
-            **tap_changer** (:class:`GridCalEngine.Devices.branch.TapChanger`): Tap changer object
-
-        """
-        self.tap_changer = tap_changer
-
-        if self.tap_module != 0:
-            self.tap_changer.set_tap_module(tap_module=self.tap_module)
-        else:
-            self.tap_module = self.tap_changer.get_tap_module()
-            self.tap_phase = self.tap_changer.get_tap_phase()
+        self.register(key='possible_transformer_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible transformer types (>1 to denote association), - to denote no association',
+                      display=False)
 
     def set_hv_and_lv(self, HV: float, LV: float):
         """

@@ -59,12 +59,12 @@ class MapLineContainer(GenericDiagramWidget):
                                       editor=editor,
                                       draw_labels=draw_labels)
 
-        self.editor: GridMapWidget = editor  # re assign to make clear the editor type
+        self.editor: GridMapWidget = editor  # reassign to make clear the editor type
 
         self.nodes_list: List[NodeGraphicItem] = list()
         self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
-        self.original = True
+        self.original = True  # TODO: Que es esto?
 
     def setWidthScale(self, val: float):
         """
@@ -414,11 +414,11 @@ class MapLineContainer(GenericDiagramWidget):
         if 0 < index < len(self.api_object.locations.data) and len(self.api_object.locations.data) > 3:
 
             ln1 = Line()
-            ln1.copyData(self.api_object)
+            ln1.set_data_from(self.api_object)
             # ln1 = self.api_object.copy()
 
             ln2 = Line()
-            ln2.copyData(self.api_object)
+            ln2.set_data_from(self.api_object)
 
             first_list = self.api_object.locations.data[:index]
             second_list = self.api_object.locations.data[index:]
@@ -449,9 +449,6 @@ class MapLineContainer(GenericDiagramWidget):
         else:
             # Handle invalid index
             error_msg("Index out of range or invalid", "split line")
-
-    def merge_line(self):
-        return 0
 
     def disable_line(self):
         """

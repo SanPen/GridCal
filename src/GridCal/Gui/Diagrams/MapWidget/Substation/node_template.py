@@ -52,8 +52,6 @@ class NodeTemplate(GenericDiagramWidget):
 
         self._callbacks: List[Callable[[float, float], None]] = list()
 
-
-
     def add_position_change_callback(self, fcn: Callable[[float, float], None]):
         """
         Add callable function

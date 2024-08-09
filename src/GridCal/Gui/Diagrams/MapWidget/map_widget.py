@@ -35,7 +35,7 @@ from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QVBoxLayout,
-                               QGraphicsSceneMouseEvent)
+                               QGraphicsSceneMouseEvent, QGraphicsItem)
 
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
@@ -65,7 +65,7 @@ class MapScene(QGraphicsScene):
     """
 
     def __init__(self, parent: "MapWidget" = None) -> None:
-        super().__init__(parent)
+        super(MapScene, self).__init__(parent)
         self.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.BspTreeIndex)  # For efficient item indexing
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -83,7 +83,7 @@ class MapScene(QGraphicsScene):
         :param event:
         :return:
         """
-        print(f"Scene released at {event.scenePos()}")
+        # print(f"Scene released at {event.scenePos()}")
         super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -134,10 +134,12 @@ class MapView(QGraphicsView):
 
         self.scale(initial_zoom_factor, initial_zoom_factor)
 
-        self.selectedItems = list()
-
-        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-        self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
+    def selected_items(self) -> List[QGraphicsItem]:
+        """
+        Get the selected items
+        :return:
+        """
+        return self._scene.selectedItems()
 
     def mousePressEvent(self, event: QMouseEvent):
         """
@@ -148,12 +150,7 @@ class MapView(QGraphicsView):
         self.map_widget.mousePressEvent(event)
         self.pressed = True
         self.disableMove = False
-        b = event.button()
-        if b == Qt.RightButton:
-            if not self.inItem:
-                for item in self.selectedItems:
-                    item.deSelectItem()
-                self.selectedItems.clear()
+
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent):
@@ -165,6 +162,7 @@ class MapView(QGraphicsView):
         self.map_widget.mouseReleaseEvent(event)
         self.pressed = False
         self.disableMove = True
+        super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         """
@@ -173,6 +171,7 @@ class MapView(QGraphicsView):
         :return:
         """
         self.map_widget.mouseDoubleClickEvent(event)
+        super().mouseDoubleClickEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent):
         """
@@ -605,8 +604,8 @@ class MapWidget(QWidget):
         click_y = event.y()
 
         # assume we aren't dragging
-        self.start_drag_x = None
-        self.start_drag_y = None
+        # self.start_drag_x = None
+        # self.start_drag_y = None
 
         b = event.button()
         if b == Qt.MouseButton.NoButton:
@@ -614,6 +613,7 @@ class MapWidget(QWidget):
 
         elif b == Qt.MouseButton.LeftButton:
             self.left_mbutton_down = True
+            self.editor.object_editor_table.setModel(None)
 
         elif b == Qt.MouseButton.MiddleButton:
             self.mid_mbutton_down = True
@@ -622,7 +622,8 @@ class MapWidget(QWidget):
             self.right_mbutton_down = True
 
         else:
-            print('mousePressEvent: unknown button')
+            pass
+            # print('mousePressEvent: unknown button')
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         """
@@ -665,7 +666,8 @@ class MapWidget(QWidget):
             self.right_mbutton_down = False
 
         else:
-            print('mouseReleaseEvent: unknown button')
+            pass
+            # print('mouseReleaseEvent: unknown button')
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
         """
@@ -683,7 +685,8 @@ class MapWidget(QWidget):
         elif b == Qt.RightButton:
             pass
         else:
-            print('mouseDoubleClickEvent: unknown button')
+            pass
+            # print('mouseDoubleClickEvent: unknown button')
 
     def mouseMoveEvent(self, event: QMouseEvent):
         """
@@ -1824,11 +1827,11 @@ class MapWidget(QWidget):
         exist in the new tileset.
         """
 
-        print('ChangeTileSet: tile_src=%s' % str(tile_src))
+        # print('ChangeTileSet: tile_src=%s' % str(tile_src))
 
         # get level and geo position of view centre
         level, longitude, latitude = self.get_level_and_position()
-        print('level=%s, geo=(%s, %s)' % (str(level), str(longitude), str(latitude)))
+        # print('level=%s, geo=(%s, %s)' % (str(level), str(longitude), str(latitude)))
 
         # remember old tileset
         old_tileset = self.tile_src

@@ -214,11 +214,12 @@ class VSC(ControllableBranchParent):
         self.register(key='Beq_min', units='p.u.', tpe=float, definition='Min total shunt susceptance.')
 
         self.register(key='alpha1', units='', tpe=float,
-                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+                      definition='Losses constant parameter (IEC 62751-2 loss Correction).')
         self.register(key='alpha2', units='', tpe=float,
-                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+                      definition='Losses linear parameter (IEC 62751-2 loss Correction).')
         self.register(key='alpha3', units='', tpe=float,
-                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+                      definition='Losses quadratic parameter (IEC 62751-2 loss Correction).')
+
         self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
 
         self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')

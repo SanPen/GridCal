@@ -93,6 +93,23 @@ class ObjectsModel(QtCore.QAbstractTableModel):
 
         self.set_delegates()
 
+        # flag for the headers text wraper: HeaderViewWithWordWrap
+        self._hide_headers_mode = False
+
+    def hideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = True
+
+    def unhideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = False
+
     def set_time_index(self, time_index: Union[int, None]):
         """
         Set the time index of the table
@@ -176,7 +193,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         # whatever code
         self.endInsertRows()
 
-    def flags(self, index):
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
         Get the display mode
         :param index:
@@ -341,6 +358,9 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :return:
         """
         if len(self.objects) == 0:
+            return None
+
+        if self._hide_headers_mode is True:
             return None
 
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
