@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Implementing apply template to associations with 1s">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="New capex scores file to be used later">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/acciona_capex.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/acciona_capex.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,7 +161,8 @@
     "Python tests.pytest in test_topology_processor.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.acciona_capex.executor": "Run",
     "Python.associations_templates.executor": "Debug",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.multi_select.executor": "Run",
@@ -689,8 +690,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.tallr_table_headers" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.tallr_table_headers" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.multi_select" />
         <item itemvalue="Python.update_gui_file" />
@@ -1788,7 +1789,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="542" />
+    <option name="localTasksCounter" value="544" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1834,8 +1835,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed theme changing on all diagrams" />
-    <MESSAGE value="The topology processing happens not without altering the default_bus property of the CN" />
     <MESSAGE value="Added logger to the numerical circuit compilation" />
     <MESSAGE value="worked on test_cgmes_ieeee.py" />
     <MESSAGE value="passing test_ieee_grids" />
@@ -1859,7 +1858,9 @@
     <MESSAGE value="Added possible associations of transformer and lines with their respective templates" />
     <MESSAGE value="Added header text wrap" />
     <MESSAGE value="Implementing apply template to associations with 1s" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implementing apply template to associations with 1s" />
+    <MESSAGE value="Line implemented properly in investments templates" />
+    <MESSAGE value="New capex scores file to be used later" />
+    <option name="LAST_COMMIT_MESSAGE" value="New capex scores file to be used later" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

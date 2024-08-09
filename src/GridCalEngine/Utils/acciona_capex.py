@@ -14,314 +14,299 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from cmath import log
-import numpy as np
-import numba as nb
-from typing import Union
-from GridCalEngine.basic_structures import Vec, CxVec, CxMat
+import math
 
 
-# Double check units!
-# Eng + Management (CEngManag)
-def calculate_eng_management_cost(K: float, X: float, CEngManag: float) -> float:
+class CapexAcciona:
     """
-    Calculate the cost for engineering and management.
-    :param K: multiplication factor
-    :param X: add on to total
-    :param CEngManag: cost for engineering and management
-    :return: total cost
+    CapexAcciona
     """
-    return K * CEngManag + X
+    def __init__(self):
+        self.K = 1.0
+        self.X = 0.0
+        self.Y = 1.0
+        self.L = 1.0  # length m
+        self.A = 1.0  # input cross section mm^2
+        self.V = 1.0  # voltage kV
+        self.num_circuits = 2
+        self.num_trenches = 1
+        self.ratio = 1.0
+        self.mw_transformer = 300  # MW
+        self.num_transformers = 2
+        self.num_lines = 4
+        self.mvar_shunt_reactor = 1
+        self.mvar_statcom = 1
+        self.mvar_harmonic_filter_banks = 1
 
+    # make subclasses for different K etc
 
-# Turbine (Cturbine)
-def calculate_turbine_cost(K: float, X: float, power: float, category: str) -> float:
-    """
-    Calculate the cost for the turbine.
-    :param K: multiplication factor
-    :param X: add on to total
-    :param power: power of the turbine
-    :param category: category of the turbine
-    :return: total cost
-    """
-    if category == "Scope A":
-        cost_turbine = 3.5  # M€/MW
+    # Double check units!
+    # Eng + Management (CEngManag)
+    def calculate_eng_management_cost(self, cost_eng_manag: float) -> float:
+        """
+        Calculate the cost for engineering and management.
+        :param cost_eng_manag: cost for engineering and management
+        """
+        return self.K * cost_eng_manag + self.X
 
-    elif category == "Scope B":
-        cost_turbine = 2.7  # M€/MW
+    # Turbine (Cturbine)
+    def calculate_turbine_cost(self, category: str, power: float) -> float:
+        """
+        Calculate the cost for the turbine.
+        :param power: power of the turbine
+        :param category: category of the turbine
+        """
+        if category == "Scope A":
+            cost_turbine = 3.5  # M€/MW
 
-    else:
-        raise ValueError("Category of the turbine is not valid")
+        elif category == "Scope B":
+            cost_turbine = 2.7  # M€/MW
 
-    return cost_turbine * power * K + X
+        else:
+            raise ValueError("Category of the turbine is not valid")
 
+        return cost_turbine * power * self.K + self.X
 
-# IAC (CcablesIAC)
-def calculate_cables_iac_cost(K: float, X: float) -> float:
-    """
-    Calculate the cost for the IAC cables.
-    :param K: multiplication factor
-    :param X: add on to total
-    """
-    cost_cables_iac = 0.22  # M€/MW
-    return cost_cables_iac * K + X
+    # IAC (CcablesIAC)
+    def calculate_cables_iac_cost(self) -> float:
+        """
+        Calculate the cost for the IAC cables.
+        """
+        cost_cables_iac = 0.22  # M€/MW
+        return cost_cables_iac * self.K + self.X
 
+    # OFFSET (CssOff)
+    def calculate_offset_cost(self) -> float:
+        """
+        Calculate the cost for the offset.
+        """
+        cost_offset = 0.18  # M€/MW
+        return cost_offset * self.K + self.X
 
-# OFFSET (CssOff)
-def calculate_offset_cost(K: float, X: float) -> float:
-    """
-    Calculate the cost for the offset.
-    :param K: multiplication factor
-    :param X: add on to total
-    """
-    cost_offset = 0.18  # M€/MW
-    return cost_offset * K + X
+    # EXC (Ccablesoff)
+    def calculate_exc_cost(self) -> float:
+        """
+        Calculate the cost for the EXC.
+        """
+        # cost for cross-section
+        CA = 355 * 1e-6  # M€/m
+        cost_cross_section = CA * (self.A / 240) ** math.log(1.2)  # M€/m
+        # cost for voltage
+        cost_voltage = cost_cross_section * (self.V / 66) ** math.log(1.2)  # M€/m
+        # total cable cost
+        cost_cable = cost_voltage * self.L
+        # cost for installing length
+        cost_installation = 580 * 1e-6 * self.L  # M€/m
+        return self.X + (cost_cable + cost_installation) * self.K
 
+    # Onshore cables (Ccableson)
+    def calculate_onshore_cable_cost(self, cable_type: str) -> float:
+        """
+        Calculate the cost for the onshore cables.
+        :param cable_type: type of cable ('buried' or 'overhead')
+        """
+        if cable_type == "buried":
+            CA = 1.0
+            CT = 1.0
+            known_A = 1.0
+            ratio = 1.0
 
-# EXC (Ccablesoff)
-def calculate_exc_cost(L, A, V, K, X):
-    """
-    Calculate the cost for the EXC.
-    :param L: length of the cable
-    :param A: cross-section of the cable
-    :param V: voltage of the cable
-    :param K: multiplication factor
-    :param X: add on to total
-    """
-    # cost for cross-section
-    CA = 355 * 1e-6  # M€/m
-    cost_cross_section = CA * (A / 240) ** log(1.2)  # M€/m
-    # cost for voltage
-    cost_voltage = cost_cross_section * (V / 66) ** log(1.2)  # M€/m
-    # total cable cost
-    cost_cable = cost_voltage * L
-    # cost for installing length
-    cost_installation = 580 * 1e-6 * L  # M€/m
-    return X + (cost_cable + cost_installation) * K
+            if self.V == 132:
+                known_A = 1000  # mm^2
+                CA = 90 * 1e-6  # M€/m
+                ratio = 1.25
+                CT = 275 * 1e-6  # M€/m trench cost per meter for 1 circuit
+            elif self.V == 220:
+                known_A = 800
+                CA = 98 * 1e-6
+                ratio = 1.25
+                CT = 375 * 1e-6
+            elif self.V == 380:
+                known_A = 630
+                CA = 215 * 1e-6
+                ratio = 1.15
+                CT = 475 * 1e-6
 
+            ratio_price = 1.2
+            ratio_installation = 1.2
+            multiplier = 1.57  # Multiplier for two circuits
 
-# Onshore cables (Ccableson)
-def calculate_onshore_cable_cost(L, A, V, num_circuits, num_trenches, cable_type, K, X):
-    """
-    Calculate the cost for the onshore cables.
-    :param L: length of the cable (in meters)
-    :param A: cross-section of the cable (in mm^2)
-    :param V: voltage of the cable (in kV)
-    :param num_circuits: number of circuits
-    :param num_trenches: number of trenches (only for buried cables)
-    :param cable_type: type of cable ('buried' or 'overhead')
-    :param K: multiplication factor
-    :param X: fixed additional cost
-    """
-    if cable_type == "buried":
-        CA = 1.0
-        CT = 1.0
-        known_A = 1.0
-        ratio = 1.0
+            # Calculate cost for cross-section
+            cost_cross_section = CA * (self.A / known_A) ** math.log(ratio)  # €/m
+            # Calculate total cable cost
+            cost_cable = cost_cross_section * self.L  # €/m
+            # Calculate cost with supplies
+            cost_with_supplies = cost_cable * ratio_price  # €/m
+            # Calculate cost for installation
+            cost_installation = cost_with_supplies * ratio_installation  # €/m
+            # Calculate cost for trench
+            cost_trench = CT * self.L * self.num_trenches * self.num_circuits  # €/m
+            if self.num_trenches == 2:  # or > 1 ???
+                cost_trench *= multiplier  # €/m
+            # Total cost for buried cables
+            total_cost = cost_installation + cost_trench
 
-        if V == 132:
-            known_A = 1000  # mm^2
-            CA = 90 * 1e-6  # M€/m
-            ratio = 1.25
-            CT = 275 * 1e-6  # M€/m trench cost per meter for 1 circuit
-        elif V == 220:
-            known_A = 800
-            CA = 98 * 1e-6
-            ratio = 1.25
-            CT = 375 * 1e-6
-        elif V == 380:
-            known_A = 630
-            CA = 215 * 1e-6
-            ratio = 1.15
-            CT = 475 * 1e-6
+        elif cable_type == "overhead":
+            cost_per_km = 1.0
 
-        ratio_price = 1.2
-        ratio_installation = 1.2
-        multiplier = 1.57  # Multiplier for two circuits
+            if self.V == 132:
+                cost_per_km = 0.175  # M€/km
+            elif self.V == 220:
+                cost_per_km = 0.25
+            elif self.V == 380:
+                cost_per_km = 0.375
 
-        # Calculate cost for cross-section
-        cost_cross_section = CA * (A / known_A) ** log(ratio)  # €/m
-        # Calculate total cable cost
-        cost_cable = cost_cross_section * L  # €/m
-        # Calculate cost with supplies
-        cost_with_supplies = cost_cable * ratio_price  # €/m
-        # Calculate cost for installation
-        cost_installation = cost_with_supplies * ratio_installation  # €/m
-        # Calculate cost for trench
-        cost_trench = CT * L * num_trenches * num_circuits  # €/m
-        if num_trenches == 2:  # or > 1 ???
-            cost_trench *= multiplier  # €/m
-        # Total cost for buried cables
-        total_cost = cost_installation + cost_trench
+            multiplier = 1.57  # Multiplier for two circuits
+            cost_per_meter = cost_per_km / 1000
+            # Calculate overhead cable cost
+            cost_cable = cost_per_meter * self.L  # M€/m
+            if self.num_circuits == 2:  # or > 1 ???
+                cost_cable *= multiplier  # Factor for 2 circuits
+            total_cost = cost_cable
 
-    elif cable_type == "overhead":
-        cost_per_km = 1.0
+        else:
+            raise ValueError("Cable type is not valid.")
 
-        if V == 132:
-            cost_per_km = 0.175  # M€/km
-        elif V == 220:
-            cost_per_km = 0.25
-        elif V == 380:
-            cost_per_km = 0.375
+        return self.K * total_cost + self.X  # €/m
 
-        multiplier = 1.57  # Multiplier for two circuits
-        cost_per_meter = cost_per_km / 1000
-        # Calculate overhead cable cost
-        cost_cable = cost_per_meter * L  # M€/m
-        if num_circuits == 2:  # or > 1 ???
-            cost_cable *= multiplier  # Factor for 2 circuits
-        total_cost = cost_cable
+    # ONSSET (CssOn)
+    def calculate_onshore_substation_cost(self) -> float:
+        """
+        Calculate the cost for the onshore substation.
+        """
+        if 100 <= self.mw_transformer <= 200:
+            cost_transformer = 0.014
+            cost_civil_works = 0.3
+            cost_indoorequip_transformer = 0.4
+            cost_indoorequip_line = 0.825
+            cost_busbar = 0.12
+            cost_cable = 0.06
+            cost_metal_structure = 0.15
+            cost_lighting = 0.075
+            cost_scada = 0.3
+            cost_building = 0.25
+            cost_eng = 0.18
+            cost_misc = 0.075
 
-    else:
-        raise ValueError("Cable type is not valid.")
+        elif 200 < self.mw_transformer <= 500:
+            cost_transformer = 0.012
+            cost_civil_works = 0.5
+            cost_indoorequip_transformer = 0.7
+            cost_indoorequip_line = 0.9
+            cost_busbar = 0.175
+            cost_cable = 0.2
+            cost_metal_structure = 0.22
+            cost_lighting = 0.1
+            cost_scada = 0.3
+            cost_building = 0.6
+            cost_eng = 0.3
+            cost_misc = 0.15
 
-    return K * total_cost + X  # €/m
+        elif self.mw_transformer > 500:
+            cost_transformer = 0.01
+            cost_civil_works = 0.8
+            cost_indoorequip_transformer = 0.8125
+            cost_indoorequip_line = 1.25
+            cost_busbar = 0.2
+            cost_cable = 0.3
+            cost_metal_structure = 0.35
+            cost_lighting = 0.12
+            cost_scada = 0.4
+            cost_building = 1.2
+            cost_eng = 0.4
+            cost_misc = 0.25
+        else:
+            raise ValueError("Power of the transformers is not valid.")
 
+        cost_shunt_reactor = 0.05
+        cost_statcom = 0.13
+        cost_harmonic_filter_banks = 0.05
 
-# ONSSET (CssOn)
-def calculate_onshore_substation_cost(mw_transformer, num_transformers, num_lines, mvar_shunt_reactor, mvar_statcom,
-                                      mvar_harmonic_filter_banks, K, X, Y):
-    """
-    Calculate the cost for the onshore substation.
-    :param mw_transformer: power of the transformers
-    :param num_transformers: number of transformers
-    :param num_lines: number of lines
-    :param mvar_shunt_reactor: number of shunt reactors
-    :param mvar_statcom: number of statcom
-    :param mvar_harmonic_filter_banks: number of harmonic filter banks
-    :param K: multiplication factor
-    :param X: add on to total
-    :param Y: factor GIS
-    """
-    if 100 <= mw_transformer <= 200:
-        cost_transformer = 0.014
-        cost_civil_works = 0.3
-        cost_indoorequip_transformer = 0.4
-        cost_indoorequip_line = 0.825
-        cost_busbar = 0.12
-        cost_cable = 0.06
-        cost_metal_structure = 0.15
-        cost_lighting = 0.075
-        cost_scada = 0.3
-        cost_building = 0.25
-        cost_eng = 0.18
-        cost_misc = 0.075
+        total_cost_transformer = self.mw_transformer * cost_transformer * self.num_transformers
+        total_cost_civil_works = cost_civil_works * self.num_transformers
+        total_cost_indoorequip_transformer = cost_indoorequip_transformer * self.num_transformers
+        total_cost_indoorequip_line = cost_indoorequip_line * self.num_lines
+        equipment_installation = 0.2
+        total_cost_installation = equipment_installation * (
+                total_cost_indoorequip_transformer + total_cost_indoorequip_line)
+        total_cost_busbar = cost_busbar * self.num_lines
+        total_cost_cable = cost_cable * self.num_transformers
 
-    elif 200 < mw_transformer <= 500:
-        cost_transformer = 0.012
-        cost_civil_works = 0.5
-        cost_indoorequip_transformer = 0.7
-        cost_indoorequip_line = 0.9
-        cost_busbar = 0.175
-        cost_cable = 0.2
-        cost_metal_structure = 0.22
-        cost_lighting = 0.1
-        cost_scada = 0.3
-        cost_building = 0.6
-        cost_eng = 0.3
-        cost_misc = 0.15
+        total_cost_shunt_reactor = cost_shunt_reactor * self.mvar_shunt_reactor
+        total_cost_statcom = cost_statcom * self.mvar_statcom
+        total_cost_harmonic_filter_banks = cost_harmonic_filter_banks * self.mvar_harmonic_filter_banks
+        total_cost_additional = (cost_lighting + cost_scada + cost_building +
+                                 cost_eng + cost_misc +
+                                 total_cost_shunt_reactor + total_cost_statcom +
+                                 total_cost_harmonic_filter_banks)
 
-    elif mw_transformer > 500:
-        cost_transformer = 0.01
-        cost_civil_works = 0.8
-        cost_indoorequip_transformer = 0.8125
-        cost_indoorequip_line = 1.25
-        cost_busbar = 0.2
-        cost_cable = 0.3
-        cost_metal_structure = 0.35
-        cost_lighting = 0.12
-        cost_scada = 0.4
-        cost_building = 1.2
-        cost_eng = 0.4
-        cost_misc = 0.25
-    else:
-        raise ValueError("Power of the transformers is not valid.")
+        total_cost = (total_cost_transformer + total_cost_civil_works + cost_metal_structure +
+                      total_cost_indoorequip_transformer + total_cost_indoorequip_line +
+                      total_cost_installation + total_cost_busbar + total_cost_cable + total_cost_additional)
 
-    cost_shunt_reactor = 0.05
-    cost_statcom = 0.13
-    cost_harmonic_filter_banks = 0.05
+        # Where do we multiply Y??
+        total_cost *= self.Y
 
-    total_cost_transformer = mw_transformer * cost_transformer * num_transformers
-    total_cost_civil_works = cost_civil_works * num_transformers
-    total_cost_indoorequip_transformer = cost_indoorequip_transformer * num_transformers
-    total_cost_indoorequip_line = cost_indoorequip_line * num_lines
-    equipment_installation = 0.2
-    total_cost_installation = equipment_installation * (
-            total_cost_indoorequip_transformer + total_cost_indoorequip_line)
-    total_cost_busbar = cost_busbar * num_lines
-    total_cost_cable = cost_cable * num_transformers
+        return self.K * total_cost + self.X
 
-    total_cost_shunt_reactor = cost_shunt_reactor * mvar_shunt_reactor
-    total_cost_statcom = cost_statcom * mvar_statcom
-    total_cost_harmonic_filter_banks = cost_harmonic_filter_banks * mvar_harmonic_filter_banks
-    total_cost_additional = (cost_lighting + cost_scada + cost_building +
-                             cost_eng + cost_misc +
-                             total_cost_shunt_reactor + total_cost_statcom +
-                             total_cost_harmonic_filter_banks)
+    # POI (CPOI)
+    def calculate_poi_cost(self, CPOI: float) -> float:
+        """
+        Calculate the cost for the POI.
+        :param CPOI: cost for the POI
+        """
+        return self.K * CPOI + self.X
 
-    total_cost = (total_cost_transformer + total_cost_civil_works + cost_metal_structure +
-                  total_cost_indoorequip_transformer + total_cost_indoorequip_line +
-                  total_cost_installation + total_cost_busbar + total_cost_cable + total_cost_additional)
+    # Other costs (Cothers)
+    def calculate_other_costs(self, cost_others: float) -> float:
+        """
+        Calculate the cost for other costs.
+        :param cost_others: cost for other factors
+        """
+        return self.K * cost_others + self.X
 
-    # Where do we multiply Y??
-    return K * total_cost + X
+    # K = 1.0
+    # X = 0.0
+    # Y = 1.0
+    # L = 1.0  # length m
+    # A = 1.0  # input cross section mm^2
+    # V = 1.0  # voltage kV
+    # num_circuits = 2
+    # num_trenches = 1
+    # ratio = 1.0
+    # mw_trafos = 300  # MW
+    # num_trafos = 2
+    # num_lines = 4
+    # num_shunt_reactor = 1
+    # num_statcom = 1
+    # num_harmonic_filter_banks = 1
 
+    def calculate_total_capex(self) -> float:
+        """
+        Calculate the total CAPEX.
+        """
+        cost_onshore_substation = self.calculate_onshore_substation_cost()
+        cost_onshore_cable = self.calculate_onshore_cable_cost("buried")
+        cost_exc = self.calculate_exc_cost()
+        cost_offset = self.calculate_offset_cost()
+        cost_cables_iac = self.calculate_cables_iac_cost()
+        cost_turbine = self.calculate_turbine_cost("Scope A", 1.0)
+        cost_eng_management = self.calculate_eng_management_cost(1.0)
+        cost_poi = self.calculate_poi_cost(1.0)
+        cost_others = self.calculate_other_costs(1.0)
 
-# POI (CPOI)
-def calculate_poi_cost(K: float, X: float, CPOI: float) -> float:
-    """
-    Calculate the cost for the POI.
-    :param K: multiplication factor
-    :param X: add on to total
-    :param CPOI: cost for the POI
-    """
-    return K * CPOI + X
+        capex = (cost_onshore_substation + cost_onshore_cable + cost_exc + cost_offset +
+                 cost_cables_iac + cost_turbine + cost_eng_management + cost_poi + cost_others)
 
+        return capex
 
-# Other costs (Cothers)
-def calculate_other_costs(K: float, X: float, cost_others: float) -> float:
-    """
-    Calculate the cost for other costs.
-    :param K: multiplication factor
-    :param X: add on to total
-    :param cost_others: cost for other factors
-    """
-    return K * cost_others + X
+    def print_capex(self):
+        """
+        Print the total CAPEX.
+        """
+        capex = self.calculate_total_capex()
+        print(f"Capex: {capex} M€")
 
-
-K = 1.0
-X = 0.0
-Y = 1.0
-L = 1.0  # length m
-A = 1.0  # input cross section mm^2
-V = 1.0  # voltage kV
-num_circuits = 2
-num_trenches = 1
-ratio = 1.0
-mw_trafos = 300  # MW
-num_trafos = 2
-num_lines = 4
-num_shunt_reactor = 1
-num_statcom = 1
-num_harmonic_filter_banks = 1
-
-# Calculate all costs
-cost_onshore_substation = calculate_onshore_substation_cost(mw_trafos, num_trafos, num_lines, num_shunt_reactor,
-                                                            num_statcom,
-                                                            num_harmonic_filter_banks, K, X, Y)
-cost_onshore_cable = calculate_onshore_cable_cost(L, A, V, num_circuits, num_trenches, "buried", K, X)
-cost_exc = calculate_exc_cost(L, A, V, K, X)
-cost_offset = calculate_offset_cost(K, X)
-cost_cables_iac = calculate_cables_iac_cost(K, X)
-cost_turbine = calculate_turbine_cost(K, X, 100, "Scope A")
-cost_eng_management = calculate_eng_management_cost(K, X, 0.0)
-cost_poi = calculate_poi_cost(K, X, 0.0)
-cost_others = calculate_other_costs(K, X, 0.0)
-
-capex = cost_onshore_substation + cost_onshore_cable + cost_exc + cost_offset + cost_cables_iac + cost_turbine + \
-        cost_eng_management + cost_poi + cost_others
-
-print(f"Capex: {capex}")
 
 # @nb.njit(cache=True)
 # def get_overload_score(loading: Union[CxMat, CxVec], branches_cost: Vec, threshold=1.0) -> float:
