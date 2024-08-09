@@ -184,7 +184,7 @@ class ControllableBranchParent(BranchParent):
         self.tap_module_max = tap_module_max
         self.tap_module_min = tap_module_min
 
-        self.tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
+        self._tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
         self._tap_phase_control_mode_prof = Profile(default_value=tap_phase_control_mode, data_type=TapPhaseControl)
 
         self.Pset = Pset
@@ -200,7 +200,7 @@ class ControllableBranchParent(BranchParent):
         self.tap_phase_max = tap_phase_max
         self.tap_phase_min = tap_phase_min
 
-        self.tap_module_control_mode: TapModuleControl = tap_module_control_mode
+        self._tap_module_control_mode: TapModuleControl = tap_module_control_mode
         self._tap_module_control_mode_prof = Profile(default_value=tap_module_control_mode, data_type=TapModuleControl)
 
         self.vset = vset
@@ -418,6 +418,32 @@ class ControllableBranchParent(BranchParent):
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
+    def tap_phase_control_mode(self) -> TapPhaseControl:
+        """
+        Get the tap phase control mode
+        :return: TapPhaseControl
+        """
+        return self._tap_phase_control_mode
+
+    @tap_phase_control_mode.setter
+    def tap_phase_control_mode(self, val: TapPhaseControl):
+        assert isinstance(val, TapPhaseControl)
+        self._tap_phase_control_mode = val
+
+    @property
+    def tap_module_control_mode(self) -> TapModuleControl:
+        """
+        Get the tap module control mode
+        :return: TapPhaseControl
+        """
+        return self._tap_module_control_mode
+
+    @tap_module_control_mode.setter
+    def tap_module_control_mode(self, val: TapModuleControl):
+        assert isinstance(val, TapModuleControl)
+        self._tap_module_control_mode = val
+
+    @property
     def R_corrected(self):
         """
         Returns a temperature corrected resistance based on a formula provided by:
@@ -453,3 +479,12 @@ class ControllableBranchParent(BranchParent):
         """
         F, T = self.bus_from, self.bus_to
         self.bus_to, self.bus_from = F, T
+
+    def set_tap_controls(self, tap_phase_control_mode: TapPhaseControl, tap_module_control_mode: TapModuleControl):
+        """
+        Set both tap controls
+        :param tap_phase_control_mode: TapPhaseControl
+        :param tap_module_control_mode: TapModuleControl
+        """
+        self.tap_phase_control_mode = tap_phase_control_mode
+        self.tap_module_control_mode = tap_module_control_mode

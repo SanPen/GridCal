@@ -148,10 +148,10 @@ class SimulationIndices:
     @property
     def k_mtau(self):
         """
-        Return a composition of all indices affected by m|tau
+        Return a composition of all indices affected by the intersection of "m" and "tau"
         :return:
         """
-        return np.r_[self.k_m, self.k_tau]
+        return np.intersect1d(self.k_m, self.k_tau)
 
     def analyze_branch_controls(self) -> None:
         """
