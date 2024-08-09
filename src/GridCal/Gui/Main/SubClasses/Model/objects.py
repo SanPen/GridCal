@@ -38,6 +38,7 @@ from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
 from GridCal.Gui.GeneralDialogues import LogsDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
+from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler
 
 
@@ -539,21 +540,27 @@ class ObjectsTableMain(DiagramsMain):
         if len(selected_objects):
 
             diagram = self.get_selected_diagram_widget()
+            logger = bs.Logger()
 
             if isinstance(diagram, SchematicWidget):
                 injections_by_bus = self.circuit.get_injection_devices_grouped_by_bus()
                 injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
-                logger = bs.Logger()
+
                 for device in selected_objects:
                     diagram.add_object_to_the_schematic(elm=device,
                                                         injections_by_bus=injections_by_bus,
                                                         injections_by_fluid_node=injections_by_fluid_node,
                                                         logger=logger)
 
-                if len(logger):
-                    dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=logger)
-                    dlg.setModal(True)
-                    dlg.exec()
+            elif isinstance(diagram, GridMapWidget):
+
+                for device in selected_objects:
+                    diagram.add_object_to_the_schematic(elm=device, logger=logger)
+
+            if len(logger):
+                dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=logger)
+                dlg.setModal(True)
+                dlg.exec()
 
     def add_objects(self):
         """

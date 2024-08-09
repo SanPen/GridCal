@@ -2305,6 +2305,7 @@ class Ui_mainWindow(object):
         self.ptdf_threshold_doubleSpinBox.setFont(font1)
         self.ptdf_threshold_doubleSpinBox.setDecimals(6)
         self.ptdf_threshold_doubleSpinBox.setMaximum(1.000000000000000)
+        self.ptdf_threshold_doubleSpinBox.setSingleStep(0.001000000000000)
         self.ptdf_threshold_doubleSpinBox.setValue(0.010000000000000)
 
         self.gridLayout_14.addWidget(self.ptdf_threshold_doubleSpinBox, 6, 1, 1, 1)
@@ -2334,6 +2335,7 @@ class Ui_mainWindow(object):
         self.lodf_threshold_doubleSpinBox.setFont(font1)
         self.lodf_threshold_doubleSpinBox.setDecimals(6)
         self.lodf_threshold_doubleSpinBox.setMaximum(1.000000000000000)
+        self.lodf_threshold_doubleSpinBox.setSingleStep(0.001000000000000)
         self.lodf_threshold_doubleSpinBox.setValue(0.050000000000000)
 
         self.gridLayout_14.addWidget(self.lodf_threshold_doubleSpinBox, 7, 1, 1, 1)
@@ -2689,6 +2691,7 @@ class Ui_mainWindow(object):
         self.ips_trust_radius_doubleSpinBox.setObjectName(u"ips_trust_radius_doubleSpinBox")
         self.ips_trust_radius_doubleSpinBox.setFont(font7)
         self.ips_trust_radius_doubleSpinBox.setDecimals(4)
+        self.ips_trust_radius_doubleSpinBox.setSingleStep(0.100000000000000)
         self.ips_trust_radius_doubleSpinBox.setValue(1.000000000000000)
 
         self.gridLayout_27.addWidget(self.ips_trust_radius_doubleSpinBox, 3, 1, 1, 1)
@@ -2741,6 +2744,7 @@ class Ui_mainWindow(object):
         self.opfContingencyToleranceSpinBox.setObjectName(u"opfContingencyToleranceSpinBox")
         self.opfContingencyToleranceSpinBox.setFont(font7)
         self.opfContingencyToleranceSpinBox.setDecimals(4)
+        self.opfContingencyToleranceSpinBox.setSingleStep(0.010000000000000)
         self.opfContingencyToleranceSpinBox.setValue(0.050000000000000)
 
         self.gridLayout_18.addWidget(self.opfContingencyToleranceSpinBox, 3, 1, 1, 1)
@@ -3108,6 +3112,7 @@ class Ui_mainWindow(object):
         self.atcThresholdSpinBox.setFont(font1)
         self.atcThresholdSpinBox.setDecimals(4)
         self.atcThresholdSpinBox.setMaximum(1.000000000000000)
+        self.atcThresholdSpinBox.setSingleStep(0.010000000000000)
         self.atcThresholdSpinBox.setValue(0.050000000000000)
 
         self.gridLayout_29.addWidget(self.atcThresholdSpinBox, 1, 0, 1, 2)
@@ -3991,6 +3996,7 @@ class Ui_mainWindow(object):
         self.explosion_factor_doubleSpinBox.setFont(font1)
         self.explosion_factor_doubleSpinBox.setMinimum(0.000000000000000)
         self.explosion_factor_doubleSpinBox.setMaximum(999999999.000000000000000)
+        self.explosion_factor_doubleSpinBox.setSingleStep(0.100000000000000)
         self.explosion_factor_doubleSpinBox.setValue(1.500000000000000)
 
         self.verticalLayout_36.addWidget(self.explosion_factor_doubleSpinBox)
@@ -4080,6 +4086,7 @@ class Ui_mainWindow(object):
         self.branch_rating_doubleSpinBox.setFont(font1)
         self.branch_rating_doubleSpinBox.setMinimum(1.000000000000000)
         self.branch_rating_doubleSpinBox.setMaximum(100.000000000000000)
+        self.branch_rating_doubleSpinBox.setSingleStep(0.100000000000000)
         self.branch_rating_doubleSpinBox.setValue(1.200000000000000)
 
         self.verticalLayout_15.addWidget(self.branch_rating_doubleSpinBox)
@@ -4632,7 +4639,7 @@ class Ui_mainWindow(object):
 
         self.tabWidget.setCurrentIndex(0)
         self.tabWidget_3.setCurrentIndex(0)
-        self.tabWidget_6.setCurrentIndex(1)
+        self.tabWidget_6.setCurrentIndex(0)
         self.tabWidget_5.setCurrentIndex(0)
         self.tabWidget_4.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(0)
