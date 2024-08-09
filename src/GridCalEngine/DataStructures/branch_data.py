@@ -206,7 +206,7 @@ class BranchData:
         data.ctrl_bus2 = self.ctrl_bus2[elm_idx]
         bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
-            if data.tap_module_control_mode[k] != 0:
+            if data.ctrl_bus1[k] != 0:
                 data.ctrl_bus1[k] = bus_map[data.ctrl_bus1[k]]
 
             data.F[k] = bus_map[data.F[k]]
