@@ -20,14 +20,13 @@ import numpy as np
 import GridCalEngine.api as gce
 from GridCalEngine.enumerations import TapPhaseControl, TapModuleControl
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at, NumericalCircuit
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import ac_optimal_power_flow, NonlinearOPFResults
 from trunk.acopf.acopf_admittance_tap_derivation import (compute_finitediff_admittances,
                                                          compute_finitediff_admittances_2dev,
                                                          compute_analytic_admittances,
                                                          compute_analytic_admittances_2dev)
 
 
-def case_3bus():
+def case_3bus() -> NumericalCircuit:
     """
 
     :return:
@@ -67,7 +66,7 @@ def case_3bus():
     return nc
 
 
-def case_5bus():
+def case_5bus() -> NumericalCircuit:
     """
     Grid from Lynn Powel's book
     """
@@ -110,19 +109,19 @@ def case_5bus():
     grid.add_line(gce.Line(bus1, bus3, name='line 1-3', r=0.05, x=0.11, b=0.02, rate=1000))
     grid.add_line(gce.Line(bus1, bus5, name='line 1-5', r=0.03, x=0.08, b=0.02, rate=1000))
 
-    tr1 = gce.Transformer2W(bus1, bus2, name='Trafo1', tap_phase_control_mode=TapPhaseControl.fixed,
+    tr1 = gce.Transformer2W(bus1, bus2, name='Trafo1',
                             tap_module=1.1, tap_phase=0.02, r=0.05, x=0.11, b=0.02)
     grid.add_transformer2w(tr1)
-    tr2 = gce.Transformer2W(bus2, bus3, name='Trafo2', tap_phase_control_mode=TapPhaseControl.fixed,
+    tr2 = gce.Transformer2W(bus2, bus3, name='Trafo2',
                             tap_module=0.98, tap_phase=-0.02, r=0.04, x=0.09, b=0.02)
     grid.add_transformer2w(tr2)
-    tr3 = gce.Transformer2W(bus2, bus5, name='Trafo3', tap_phase_control_mode=TapPhaseControl.fixed,
+    tr3 = gce.Transformer2W(bus2, bus5, name='Trafo3',
                             tap_module=1.02, tap_phase=-0.04, r=0.04, x=0.09, b=0.02)
     grid.add_transformer2w(tr3)
     tr4 = gce.Transformer2W(bus3, bus4, name='Trafo4', tap_phase_control_mode=TapPhaseControl.Pf,
                             tap_module=1.05, tap_phase=0.04, r=0.06, x=0.13, b=0.03)
     grid.add_transformer2w(tr4)
-    tr5 = gce.Transformer2W(bus4, bus5, name='Trafo5', tap_phase_control_mode=TapPhaseControl.fixed,
+    tr5 = gce.Transformer2W(bus4, bus5, name='Trafo5',
                             tap_module=0.97, tap_phase=-0.01, r=0.04, x=0.09, b=0.02)
     grid.add_transformer2w(tr5)
 
@@ -166,8 +165,7 @@ def case14() -> NumericalCircuit:
 
     grid = gce.FileOpen(file_path).open()
     for l in grid.get_transformers2w():
-        l.tap_phase_control_mode = TapPhaseControl.Pt
-        l.tap_module_control_mode = TapModuleControl.Qt
+        l.set_tap_controls(TapPhaseControl.Pt, TapModuleControl.Qt)
 
     nc = gce.compile_numerical_circuit_at(grid)
 
@@ -184,25 +182,18 @@ def case_pegase89() -> NumericalCircuit:
     file_path = os.path.join('data', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
-    grid.get_transformers2w()[3].tap_phase_control_mode = TapPhaseControl.Pt
-    grid.get_transformers2w()[3].tap_module_control_mode = TapModuleControl.Qt
-
-    grid.get_transformers2w()[7].tap_phase_control_mode = TapPhaseControl.Pt
-    grid.get_transformers2w()[7].tap_module_control_mode = TapModuleControl.Qt
-
-    grid.get_transformers2w()[18].tap_module_control_mode = TapModuleControl.Vm
-
-    grid.get_transformers2w()[21].tap_phase_control_mode = TapPhaseControl.Pt
-    grid.get_transformers2w()[21].tap_module_control_mode = TapModuleControl.Qt
-
-    grid.get_transformers2w()[36].tap_phase_control_mode = TapPhaseControl.Pf
+    grid.get_transformers2w()[3].set_tap_controls(TapPhaseControl.Pt, TapModuleControl.Qt)
+    grid.get_transformers2w()[7].set_tap_controls(TapPhaseControl.Pt, TapModuleControl.Qt)
+    grid.get_transformers2w()[18].set_tap_controls(TapPhaseControl.fixed, TapModuleControl.Vm)
+    grid.get_transformers2w()[21].set_tap_controls(TapPhaseControl.Pt, TapModuleControl.Qt)
+    grid.get_transformers2w()[36].set_tap_controls(TapPhaseControl.Pf, TapModuleControl.fixed)
 
     nc = gce.compile_numerical_circuit_at(grid)
 
     return nc
 
 
-def test_case_3bus():
+def test_case_3bus() -> None:
     nc = case_3bus()
 
     A, B, C, D, E, F = compute_analytic_admittances(nc)
@@ -231,7 +222,7 @@ def test_case_3bus():
     assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 
 
-def test_case_5bus():
+def test_case_5bus() -> None:
     nc = case_5bus()
 
     A, B, C, D, E, F = compute_analytic_admittances(nc)
@@ -260,7 +251,7 @@ def test_case_5bus():
     assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 
 
-def test_pegase89():
+def test_pegase89() -> None:
     nc = case_pegase89()
 
     A, B, C, D, E, F = compute_analytic_admittances(nc)
@@ -289,7 +280,7 @@ def test_pegase89():
     assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 
 
-def test_case14():
+def test_case14() -> None:
     nc = case14()
 
     A, B, C, D, E, F = compute_analytic_admittances(nc)
@@ -317,9 +308,3 @@ def test_case14():
     assert np.allclose(Q.toarray(), Q_.toarray(), atol=1e-1)
     assert np.allclose(R.toarray(), R_.toarray(), atol=1e-1)
 # pass
-
-
-# def test_ieee14():
-
-
-# def test_pegase89():

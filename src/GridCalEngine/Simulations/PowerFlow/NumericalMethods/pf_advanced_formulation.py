@@ -204,8 +204,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.m: Vec = np.ones(len(self.idx_dm))
         self.tau: Vec = np.zeros(len(self.idx_dtau))
-        self.beq: Vec = np.zeros(len(self.idx_dbeq))
-        self.beq += 0.001  # some initial value
+        self.beq: Vec = np.full(len(self.idx_dbeq), 0.001)  # some initial value
 
         self.Ys = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
 
