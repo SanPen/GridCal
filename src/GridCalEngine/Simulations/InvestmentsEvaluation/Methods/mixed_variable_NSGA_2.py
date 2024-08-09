@@ -23,6 +23,9 @@ from pymoo.optimize import minimize
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.variable import Real, Integer, Choice, Binary
 
+from GridCalEngine.Utils.acciona_capex import CapexAcciona
+from GridCalEngine.Devices.Aggregation.investment import Investment
+
 
 class MixedVariableProblem(ElementwiseProblem):
     """
@@ -33,22 +36,11 @@ class MixedVariableProblem(ElementwiseProblem):
         :param obj_func:
         :param n_obj:
         """
+        self.templates = Investment().template
         vars = {
-            "react1_bi": Binary(),
-            "react2_bi": Binary(),
-            "react3_bi": Binary(),
-            "react4_bi": Binary(),
-            "react5_bi": Binary(),
-            # "vol_level": Choice(options=["vol132","vol220"]),
-            "vol_level": Choice(options=["vol220"]),
-            # "vol_level": Choice(options=["vol132"]),
-            "n_cables": Integer(bounds=(2, 3)),
-            "S_rtr": Real(bounds=(500e6, 1000e6)),
-            "react1": Real(bounds=(0.0, 1.0)),
-            "react2": Real(bounds=(0.0, 1.0)),
-            "react3": Real(bounds=(0.0, 1.0)),
-            "react4": Real(bounds=(0.0, 1.0)),
-            "react5": Real(bounds=(0.0, 1.0))}
+            "transformer1": Choice(options=[self.templates[0]]),
+            "transformer2": Choice(options=[self.templates[1]]),
+            "n_cables": Integer(bounds=(2, 3))}
         super().__init__(n_obj=n_obj,
                          vars=vars)
         self.obj_func = obj_func
@@ -62,6 +54,10 @@ class MixedVariableProblem(ElementwiseProblem):
         :param kwargs:
         :return:
         """
+
+        capex = CapexAcciona()
+        capex.print_capex()
+
         # Ideally, we want this to be automatically inputted:
         # react1_bi, react2_bi, react3_bi, react4_bi, react5_bi, vol, n_cables, S_rtr, react1, react2, react3, react4,
         #  react5 = x["react1_bi"], x["react2_bi"], x["react3_bi"], x["react4_bi"], x["react5_bi"], x["vol_level"],
