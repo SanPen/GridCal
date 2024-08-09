@@ -28,10 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="New capex scores file to be used later">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/acciona_capex.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/acciona_capex.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Capex class set up Python version">
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1789,7 +1787,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="544" />
+    <option name="localTasksCounter" value="545" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1835,7 +1833,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added logger to the numerical circuit compilation" />
     <MESSAGE value="worked on test_cgmes_ieeee.py" />
     <MESSAGE value="passing test_ieee_grids" />
     <MESSAGE value="passing test_ieee_grids (minimal refactor)" />
@@ -1860,7 +1857,8 @@
     <MESSAGE value="Implementing apply template to associations with 1s" />
     <MESSAGE value="Line implemented properly in investments templates" />
     <MESSAGE value="New capex scores file to be used later" />
-    <option name="LAST_COMMIT_MESSAGE" value="New capex scores file to be used later" />
+    <MESSAGE value="Capex class set up Python version" />
+    <option name="LAST_COMMIT_MESSAGE" value="Capex class set up Python version" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

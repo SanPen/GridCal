@@ -82,8 +82,8 @@ def get_wires_catalogue_df(grid: MultiCircuit):
             'Stranding': elm.stranding,
             'Material': elm.material,
             'Diameter [cm]': elm.diameter,
-            'GMR [m]': elm.gmr,
-            'R [Ohm/km]': elm.r,
+            'GMR [m]': elm.GMR,
+            'R [Ohm/km]': elm.R,
             'Rating [kA]': elm.max_current
         })
     return pd.DataFrame(data)
