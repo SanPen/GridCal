@@ -62,7 +62,7 @@ class ObjectsTableMain(DiagramsMain):
         self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict()))
         self.expand_object_tree_nodes()
 
-        self.ui.simulationDataStructuresListView.setModel(gf.get_list_model(NumericalCircuit.available_structures))
+        self.ui.simulationDataStructuresTreeView.setModel(gf.get_tree_model(NumericalCircuit.available_structures))
 
         # Buttons
         self.ui.filter_pushButton.clicked.connect(self.objects_smart_search)

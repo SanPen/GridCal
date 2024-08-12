@@ -2001,28 +2001,8 @@ QProgressBar::chunk{
                 <property name="rightMargin">
                  <number>0</number>
                 </property>
-                <item row="1" column="0" colspan="4">
-                 <widget class="QListView" name="simulationDataStructuresListView"/>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QPushButton" name="compute_simulation_data_pushButton">
-                  <property name="maximumSize">
-                   <size>
-                    <width>32</width>
-                    <height>16777215</height>
-                   </size>
-                  </property>
-                  <property name="toolTip">
-                   <string>Update the islands dispayed</string>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="icons.qrc">
-                    <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
-                  </property>
-                 </widget>
+                <item row="0" column="2" colspan="2">
+                 <widget class="QComboBox" name="simulation_data_island_comboBox"/>
                 </item>
                 <item row="0" column="1">
                  <widget class="QPushButton" name="exportSimulationDataButton">
@@ -2044,8 +2024,28 @@ QProgressBar::chunk{
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="2" colspan="2">
-                 <widget class="QComboBox" name="simulation_data_island_comboBox"/>
+                <item row="0" column="0">
+                 <widget class="QPushButton" name="compute_simulation_data_pushButton">
+                  <property name="maximumSize">
+                   <size>
+                    <width>32</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Update the islands dispayed</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="icons.qrc">
+                    <normaloff>:/Icons/icons/calculator.svg</normaloff>:/Icons/icons/calculator.svg</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="4">
+                 <widget class="QTreeView" name="simulationDataStructuresTreeView"/>
                 </item>
                </layout>
               </widget>
@@ -5696,15 +5696,6 @@ QProgressBar::chunk{
                       </color>
                      </brush>
                     </colorrole>
-                    <colorrole role="Text">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>0</red>
-                       <green>0</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
                    </active>
                    <inactive>
                     <colorrole role="WindowText">
@@ -5716,27 +5707,9 @@ QProgressBar::chunk{
                       </color>
                      </brush>
                     </colorrole>
-                    <colorrole role="Text">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>0</red>
-                       <green>0</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
                    </inactive>
                    <disabled>
                     <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                    <colorrole role="Text">
                      <brush brushstyle="SolidPattern">
                       <color alpha="255">
                        <red>190</red>
@@ -5850,15 +5823,6 @@ QProgressBar::chunk{
                       </color>
                      </brush>
                     </colorrole>
-                    <colorrole role="Text">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>0</red>
-                       <green>0</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
                    </active>
                    <inactive>
                     <colorrole role="WindowText">
@@ -5870,27 +5834,9 @@ QProgressBar::chunk{
                       </color>
                      </brush>
                     </colorrole>
-                    <colorrole role="Text">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>0</red>
-                       <green>0</green>
-                       <blue>0</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
                    </inactive>
                    <disabled>
                     <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                    <colorrole role="Text">
                      <brush brushstyle="SolidPattern">
                       <color alpha="255">
                        <red>190</red>

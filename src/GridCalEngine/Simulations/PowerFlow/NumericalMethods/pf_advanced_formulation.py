@@ -143,12 +143,12 @@ def adv_jacobian(nbus: int,
 
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
-                        [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__, dP_dbeq__,
-                         dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__, dQ_dbeq__,
-                         dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_, dPf_dbeq_,
-                         dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_, dQf_dbeq_,
-                         dPt_dVa_, dPt_dVm_, dPt_dm_, dPt_dtau_, dPt_dbeq_,
-                         dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_, dQt_dbeq_],
+                        [dP_dVa__, dP_dVm__, dP_dtau__, dP_dbeq__, dP_dm__,
+                         dQ_dVa__, dQ_dVm__, dQ_dtau__, dQ_dbeq__, dQ_dm__,
+                         dPf_dVa_, dPf_dVm_, dPf_dtau_, dPf_dbeq_, dPf_dm_,
+                         dQf_dVa_, dQf_dVm_, dQf_dtau_, dQf_dbeq_, dQf_dm_,
+                         dPt_dVa_, dPt_dVm_, dPt_dtau_, dPt_dbeq_, dPt_dm_,
+                         dQt_dVa_, dQt_dVm_, dQt_dtau_, dQt_dbeq_, dQt_dm_],
                         n_rows=6, n_cols=5)
 
     return J
@@ -195,10 +195,11 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.idx_dm = np.r_[self._indices.k_v_m, self._indices.k_qf_m, self._indices.k_qt_m]
         self.idx_dtau = np.r_[self._indices.k_pf_tau, self._indices.k_pt_tau]
-        self.idx_dbeq = self._indices.k_qf_beq
+        self.idx_dbeq = np.r_[self._indices.k_qf_beq, self._indices.k_v_beq]
 
         self.idx_dPf = self._indices.k_pf_tau
         self.idx_dQf = np.r_[self._indices.k_qf_m, self._indices.k_qf_beq]
+
         self.idx_dPt = self._indices.k_pt_tau
         self.idx_dQt = self._indices.k_qt_m
 
@@ -208,8 +209,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.Ys = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
 
-        if not len(self.pqv) >= len(self._indices.k_v_m):
-            raise ValueError("k_v_m indices must be the same size as pqv indices!")
+        # if not len(self.pqv) >= len(self._indices.k_v_m):
+        #     raise ValueError("k_v_m indices must be the same size as pqv indices!")
 
     @property
     def adm(self) -> AdmittanceMatrices:
@@ -226,9 +227,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         """
         a = len(self.idx_dVa)
         b = a + len(self.idx_dVm)
-        c = b + len(self.idx_dm)
-        d = c + len(self.idx_dtau)
-        e = d + len(self.idx_dbeq)
+        c = b + len(self.idx_dtau)
+        d = c + len(self.idx_dbeq)
+        e = d + len(self.idx_dm)
 
         # update the vectors
         Va = self.Va.copy()
@@ -239,9 +240,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         Va[self.idx_dVa] += x[0:a]
         Vm[self.idx_dVm] += x[a:b]
-        m[self.idx_dm] += x[b:c]
-        tau[self.idx_dtau] += x[c:d]
-        beq[self.idx_dbeq] += x[d:e]
+        tau[self.idx_dtau] += x[b:c]
+        beq[self.idx_dbeq] += x[c:d]
+        m[self.idx_dm] += x[d:e]
 
         # compute the complex voltage
         self.V = polar_to_rect(self.Vm, self.Va)
@@ -254,9 +255,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         return np.r_[
             self.Va[self.idx_dVa],
             self.Vm[self.idx_dVm],
-            self.m,
             self.tau,
-            self.beq
+            self.beq,
+            self.m,
         ]
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec]:
@@ -349,9 +350,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         """
         a = len(self.idx_dVa)
         b = a + len(self.idx_dVm)
-        c = b + len(self.idx_dm)
-        d = c + len(self.idx_dtau)
-        e = d + len(self.idx_dbeq)
+        c = b + len(self.idx_dtau)
+        d = c + len(self.idx_dbeq)
+        e = d + len(self.idx_dm)
 
         # update the vectors
         Va = self.Va.copy()
@@ -362,9 +363,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         Va[self.idx_dVa] += x[0:a]
         Vm[self.idx_dVm] += x[a:b]
-        m[self.idx_dm] += x[b:c]
-        tau[self.idx_dtau] += x[c:d]
-        beq[self.idx_dbeq] += x[d:e]
+        tau[self.idx_dtau] += x[b:c]
+        beq[self.idx_dbeq] += x[c:d]
+        m[self.idx_dm] += x[d:e]
 
         # compute the complex voltage
         V = polar_to_rect(Vm, Va)
@@ -437,8 +438,18 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                                                                    virtual_tap_from=self.nc.branch_data.virtual_tap_f,
                                                                    virtual_tap_to=self.nc.branch_data.virtual_tap_t)
 
-            n_rows = len(self.idx_dP) + len(self.idx_dQ) + len(self.idx_dPf) + len(self.idx_dQf) + len(self.idx_dPt) + len(self.idx_dQt)
-            n_cols = len(self.idx_dVa) + len(self.idx_dVm) + len(self.idx_dm) + len(self.idx_dtau) + len(self.idx_dbeq)
+            n_rows = (len(self.idx_dP)
+                      + len(self.idx_dQ)
+                      + len(self.idx_dPf)
+                      + len(self.idx_dQf)
+                      + len(self.idx_dPt)
+                      + len(self.idx_dQt))
+
+            n_cols = (len(self.idx_dVa)
+                      + len(self.idx_dVm)
+                      + len(self.idx_dm)
+                      + len(self.idx_dtau)
+                      + len(self.idx_dbeq))
 
             if n_cols != n_rows:
                 raise ValueError("Incorrect J indices!")
@@ -495,9 +506,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         cols = [f'dVa {i}' for i in self.idx_dVa]
         cols += [f'dVm {i}' for i in self.idx_dVm]
-        cols += [f'dm {i}' for i in self.idx_dm]
         cols += [f'dtau {i}' for i in self.idx_dtau]
         cols += [f'dBeq {i}' for i in self.idx_dbeq]
+        cols += [f'dm {i}' for i in self.idx_dm]
 
         rows = [f'dP {i}' for i in self.idx_dP]
         rows += [f'dQ {i}' for i in self.idx_dQ]

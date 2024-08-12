@@ -46,6 +46,26 @@ class BusMode(Enum):
         except KeyError:
             return s
 
+    @staticmethod
+    def as_str(val: int) -> str:
+        """
+        Get the string representation of the numeric value
+        :param val:
+        :return:
+        """
+        if val == 1:
+            return "PQ"
+        elif val == 2:
+            return "PV"
+        elif val == 3:
+            return "Slack"
+        elif val == 4:
+            return "PQV"
+        elif val == 5:
+            return "P"
+        else:
+            return ""
+
 
 class CpfStopAt(Enum):
     """
@@ -679,6 +699,7 @@ class TapPhaseControl(Enum):
     fixed = 'Fixed'
     Pf = 'Pf'
     Pt = 'Pt'
+    # Droop = "Droop"
 
     def __str__(self) -> str:
         return str(self.value)
