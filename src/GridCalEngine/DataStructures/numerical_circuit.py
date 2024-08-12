@@ -171,6 +171,17 @@ class NumericalCircuit:
         'k_pf_tau',
         'k_qf_beq',
         'k_v_m',
+        'idx_dPf',
+        'idx_dQf',
+        'idx_dPt',
+        'idx_dQt',
+        'idx_dm',
+        'idx_dtau',
+        'idx_dbeq',
+        'Pf_set',
+        'Qf_set',
+        'Pt_set',
+        'Qt_set',
     ]
 
     def __init__(self,
@@ -1338,6 +1349,17 @@ class NumericalCircuit:
         :return: pandas DataFrame
         """
 
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        idx_dm = np.r_[self.simulation_indices_.k_v_m, self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qt_m]
+        idx_dtau = np.r_[self.simulation_indices_.k_pf_tau, self.simulation_indices_.k_pt_tau]
+        idx_dbeq = self.simulation_indices_.k_qf_beq
+        idx_dPf = self.simulation_indices_.k_pf_tau
+        idx_dQf = np.r_[self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qf_beq]
+        idx_dPt = self.simulation_indices_.k_pt_tau
+        idx_dQt = self.simulation_indices_.k_qt_m
+
         if structure_type == 'Vbus':
             df = pd.DataFrame(
                 data=self.Vbus,
@@ -1583,6 +1605,83 @@ class NumericalCircuit:
                 data=self.k_v_m,
                 columns=['k_v_m'],
                 index=self.branch_data.names[self.k_v_m],
+            )
+
+        elif structure_type == 'idx_dPf':
+            df = pd.DataFrame(
+                data=idx_dPf,
+                columns=['idx_dPf'],
+                index=self.branch_data.names[idx_dPf],
+            )
+
+        elif structure_type == 'idx_dQf':
+            df = pd.DataFrame(
+                data=idx_dQf,
+                columns=['idx_dQf'],
+                index=self.branch_data.names[idx_dQf],
+            )
+
+        elif structure_type == 'idx_dPt':
+            df = pd.DataFrame(
+                data=idx_dPt,
+                columns=['idx_dPt'],
+                index=self.branch_data.names[idx_dPt],
+            )
+
+        elif structure_type == 'idx_dQt':
+            df = pd.DataFrame(
+                data=idx_dQt,
+                columns=['idx_dQt'],
+                index=self.branch_data.names[idx_dQt],
+            )
+
+        elif structure_type == 'idx_dm':
+            df = pd.DataFrame(
+                data=idx_dm,
+                columns=['idx_dm'],
+                index=self.branch_data.names[idx_dm],
+            )
+
+        elif structure_type == 'idx_dtau':
+            df = pd.DataFrame(
+                data=idx_dtau,
+                columns=['idx_dtau'],
+                index=self.branch_data.names[idx_dtau],
+            )
+
+        elif structure_type == 'idx_dbeq':
+            df = pd.DataFrame(
+                data=idx_dbeq,
+                columns=['idx_dbeq'],
+                index=self.branch_data.names[idx_dbeq],
+            )
+
+        elif structure_type == 'Pf_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Pset[idx_dPf],
+                columns=['Pf_set'],
+                index=self.branch_data.names[idx_dPf],
+            )
+
+        elif structure_type == 'Pt_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Pset[idx_dPt],
+                columns=['Pt_set'],
+                index=self.branch_data.names[idx_dPt],
+            )
+
+        elif structure_type == 'Qf_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Pset[idx_dQf],
+                columns=['Qf_set'],
+                index=self.branch_data.names[idx_dQf],
+            )
+
+        elif structure_type == 'Qt_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Qset[idx_dQt],
+                columns=['Qt_set'],
+                index=self.branch_data.names[idx_dQt],
             )
 
         else:

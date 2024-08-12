@@ -825,9 +825,9 @@ def add_vsc_data(circuit: MultiCircuit,
         vsc.phase_max = elm.tap_phase_max
         vsc.phase_min = elm.tap_phase_min
 
-        vsc.setAllPdcSet(elm.Pdc_set)
-        vsc.setAllVacSet(elm.Vac_set)
-        vsc.setAllVdcSet(elm.Vdc_set)
+        vsc.setAllPdcSet(elm.Pset)
+        vsc.setAllVacSet(elm.vset)
+        vsc.setAllVdcSet(elm.vset)
         vsc.k_droop = elm.kdp
 
         vsc.alpha1 = elm.alpha1
@@ -1376,7 +1376,7 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         pf_options=pf_options,
         mode=mode,
         using_srap=con_opt.use_srap,
-        srap_max_loading=con_opt.srap_max_loading,
+        srap_max_loading=1.4,
         srap_max_power=con_opt.srap_max_power
     )
 

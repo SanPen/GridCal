@@ -335,6 +335,16 @@ def parse_branches_data(circuit: MultiCircuit,
             Qset = 0.0
             control_bus = None
 
+            is_transformer = (bus_f.Vnom != bus_t.Vnom or
+                              (table[i, matpower_branches.TAP] != 1.0 and table[i, matpower_branches.TAP] != 0) or
+                              table[i, matpower_branches.SHIFT] != 0.0 or
+                              Pfset != 0.0 or
+                              Ptset != 0.0 or
+                              Qtset != 0.0 or
+                              Qfset != 0.0 or
+                              Vf_set != 0.0 or
+                              Vt_set != 0.0)
+
             # tau based controls
             if Pfset != 0.0:
                 tap_phase_control_mode = TapPhaseControl.Pf
@@ -364,6 +374,29 @@ def parse_branches_data(circuit: MultiCircuit,
                 tap_module_control_mode = TapModuleControl.fixed
 
             if matpower_converter_mode > 0:  # it is a converter
+
+                """
+                FUBM control chart
+                
+                Type I are the ones making Qf = 0, therefore each DC grid must have at least one
+                Type II control the voltage, and DC grids must have at least one
+                Type III are the droop controlled ones, there may be one
+                
+                Control Mode    Constraint1     Constraint2     VSC type
+                1               tau             vac -> Vt       I
+                2               Pf              Qac -> Qt       I   
+                3               Pf              vac -> Vt       I
+                
+                4               vdc -> Vf       Qac -> Qt       II
+                5               vdc -> Vf       vac -> Vt       II
+                
+                6               vdc droop       Qac -> Qt       III
+                7               vdc droop       vac -> Vt       III
+                
+                """
+
+
+
                 # set the from bus as a DC bus
                 # this is by design of the matpower FUBM model,
                 # if it is a converter,
@@ -427,70 +460,65 @@ def parse_branches_data(circuit: MultiCircuit,
 
                 logger.add_info('Branch as converter', 'Branch {}'.format(str(i + 1)))
 
-            else:
+            elif is_transformer:
 
-                if (bus_f.Vnom != bus_t.Vnom or
-                        (table[i, matpower_branches.TAP] != 1.0 and
-                         table[i, matpower_branches.TAP] != 0) or
-                        table[i, matpower_branches.SHIFT] != 0.0):
+                rate = table[i, matpower_branches.RATE_A]
 
-                    rate = table[i, matpower_branches.RATE_A]
-
-                    if rate == 0.0:
-                        # in matpower rate=0 means not limited by rating
-                        rate = 10000
-                        monitor_loading = False
-                    else:
-                        monitor_loading = True
-
-                    branch = dev.Transformer2W(bus_from=bus_f,
-                                               bus_to=bus_t,
-                                               code="{0}_{1}_1".format(f_idx, t_idx),
-                                               name=names[i],
-                                               r=float(table[i, matpower_branches.BR_R]),
-                                               x=float(table[i, matpower_branches.BR_X]),
-                                               g=0.0,
-                                               b=float(table[i, matpower_branches.BR_B]),
-                                               rate=rate,
-                                               active=bool(table[i, matpower_branches.BR_STATUS]),
-                                               monitor_loading=monitor_loading,
-                                               tap_module=m,
-                                               tap_module_max=float(table[i, matpower_branches.MA_MAX]),
-                                               tap_module_min=float(table[i, matpower_branches.MA_MIN]),
-                                               tap_phase=tap_phase,
-                                               tap_phase_max=np.deg2rad(table[i, matpower_branches.SH_MAX]),
-                                               tap_phase_min=np.deg2rad(table[i, matpower_branches.SH_MIN]),
-                                               tap_phase_control_mode=tap_phase_control_mode,
-                                               tap_module_control_mode=tap_module_control_mode,
-                                               Pset=Pset,
-                                               Qset=Qset,
-                                               vset=v_set)
-                    branch.regulation_bus = control_bus
-                    circuit.add_transformer2w(obj=branch)
-                    logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
-
+                if rate == 0.0:
+                    # in matpower rate=0 means not limited by rating
+                    rate = 10000
+                    monitor_loading = False
                 else:
-                    rate = table[i, matpower_branches.RATE_A]
+                    monitor_loading = True
 
-                    if rate == 0.0:
-                        # in matpower rate=0 means not limited by rating
-                        rate = 10000
-                        monitor_loading = False
-                    else:
-                        monitor_loading = True
+                branch = dev.Transformer2W(bus_from=bus_f,
+                                           bus_to=bus_t,
+                                           code="{0}_{1}_1".format(f_idx, t_idx),
+                                           name=names[i],
+                                           r=float(table[i, matpower_branches.BR_R]),
+                                           x=float(table[i, matpower_branches.BR_X]),
+                                           g=0.0,
+                                           b=float(table[i, matpower_branches.BR_B]),
+                                           rate=rate,
+                                           active=bool(table[i, matpower_branches.BR_STATUS]),
+                                           monitor_loading=monitor_loading,
+                                           tap_module=m,
+                                           tap_module_max=float(table[i, matpower_branches.MA_MAX]),
+                                           tap_module_min=float(table[i, matpower_branches.MA_MIN]),
+                                           tap_phase=tap_phase,
+                                           tap_phase_max=np.deg2rad(table[i, matpower_branches.SH_MAX]),
+                                           tap_phase_min=np.deg2rad(table[i, matpower_branches.SH_MIN]),
+                                           tap_phase_control_mode=tap_phase_control_mode,
+                                           tap_module_control_mode=tap_module_control_mode,
+                                           Pset=Pset,
+                                           Qset=Qset,
+                                           vset=v_set)
+                branch.regulation_bus = control_bus
+                circuit.add_transformer2w(obj=branch)
+                logger.add_info('Branch as 2w transformer', 'Branch {}'.format(str(i + 1)))
 
-                    branch = dev.Line(bus_from=bus_f,
-                                      bus_to=bus_t,
-                                      code="{0}_{1}_1".format(f_idx, t_idx),
-                                      name=names[i],
-                                      r=table[i, matpower_branches.BR_R],
-                                      x=table[i, matpower_branches.BR_X],
-                                      b=table[i, matpower_branches.BR_B],
-                                      rate=rate,
-                                      monitor_loading=monitor_loading,
-                                      active=bool(table[i, matpower_branches.BR_STATUS]))
-                    circuit.add_line(obj=branch, logger=logger)
-                    logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
+            else:
+                rate = table[i, matpower_branches.RATE_A]
+
+                if rate == 0.0:
+                    # in matpower rate=0 means not limited by rating
+                    rate = 10000
+                    monitor_loading = False
+                else:
+                    monitor_loading = True
+
+                branch = dev.Line(bus_from=bus_f,
+                                  bus_to=bus_t,
+                                  code="{0}_{1}_1".format(f_idx, t_idx),
+                                  name=names[i],
+                                  r=table[i, matpower_branches.BR_R],
+                                  x=table[i, matpower_branches.BR_X],
+                                  b=table[i, matpower_branches.BR_B],
+                                  rate=rate,
+                                  monitor_loading=monitor_loading,
+                                  active=bool(table[i, matpower_branches.BR_STATUS]))
+                circuit.add_line(obj=branch, logger=logger)
+                logger.add_info('Branch as line', 'Branch {}'.format(str(i + 1)))
 
         else:
 
