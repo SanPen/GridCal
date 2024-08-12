@@ -895,10 +895,11 @@ class IoMain(ConfigurationMain):
 
                 for c, calc_input in enumerate(calculation_inputs):
 
-                    for elm_type in calc_input.available_structures:
-                        name = elm_type + '_' + str(c)
-                        df = calc_input.get_structure(elm_type).astype(str)
-                        df.to_excel(writer, name)
+                    for category, elms_in_category in calc_input.available_structures.items():
+                        for elm_type in elms_in_category:
+                            name = f"{category}_{elm_type}@{c}"
+                            df = calc_input.get_structure(elm_type).astype(str)
+                            df.to_excel(excel_writer=writer, sheet_name=name[:31])  # excel supports 31 chars per sheet name
 
     def load_results_driver(self):
         """
