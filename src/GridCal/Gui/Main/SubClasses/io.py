@@ -36,7 +36,6 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
-from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
@@ -896,10 +895,11 @@ class IoMain(ConfigurationMain):
 
                 for c, calc_input in enumerate(calculation_inputs):
 
-                    for elm_type in calc_input.available_structures:
-                        name = elm_type + '_' + str(c)
-                        df = calc_input.get_structure(elm_type).astype(str)
-                        df.to_excel(writer, name)
+                    for category, elms_in_category in calc_input.available_structures.items():
+                        for elm_type in elms_in_category:
+                            name = f"{category}_{elm_type}@{c}"
+                            df = calc_input.get_structure(elm_type).astype(str)
+                            df.to_excel(excel_writer=writer, sheet_name=name[:31])  # excel supports 31 chars per sheet name
 
     def load_results_driver(self):
         """
