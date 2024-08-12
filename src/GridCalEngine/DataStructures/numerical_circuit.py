@@ -20,11 +20,10 @@ import pandas as pd
 import scipy.sparse as sp
 from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 
-
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.enumerations import BranchImpedanceMode
+from GridCalEngine.enumerations import BranchImpedanceMode, BusMode
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
 
@@ -139,50 +138,66 @@ class NumericalCircuit:
     """
     Class storing the calculation information of the devices
     """
-    available_structures = [
-        'Vbus',
-        'Sbus',
-        'Ibus',
-        'Ybus',
-        'G',
-        'B',
-        'Yf',
-        'Yt',
-        'Bbus',
-        'Bf',
-        'Cf',
-        'Ct',
-        'Yshunt',
-        'Yseries',
-        "B'",
-        "B''",
-        'Types',
-        'Jacobian',
-        'Qmin',
-        'Qmax',
-        'pq',
-        'pqv',
-        'p',
-        'pv',
-        'vd',
-        'pqpv',
-        'tap_f',
-        'tap_t',
-        'k_pf_tau',
-        'k_qf_beq',
-        'k_v_m',
-        'idx_dPf',
-        'idx_dQf',
-        'idx_dPt',
-        'idx_dQt',
-        'idx_dm',
-        'idx_dtau',
-        'idx_dbeq',
-        'Pf_set',
-        'Qf_set',
-        'Pt_set',
-        'Qt_set',
-    ]
+    available_structures = {
+        "Bus arrays": [
+            'V', 'Va', 'Vm',
+            'S', 'P', 'Q',
+            'I',
+            'Y',
+            'Qmin',
+            'Qmax',
+        ],
+        "Bus indices": [
+            'Types',
+            'bus_ctrl',
+            'pq',
+            'pqv',
+            'p',
+            'pv',
+            'vd'
+        ],
+        "Branch arrays": [
+            'tap_f',
+            'tap_t',
+            'Pf_set',
+            'Qf_set',
+            'Pt_set',
+            'Qt_set',
+        ],
+        "Branch indices": [
+            'branch_ctrl',
+            'k_pf_tau',
+            'k_pt_tau',
+            'k_qf_m',
+            'k_qt_m',
+            'k_qf_beq',
+            'k_v_m',
+            'k_v_beq',
+            'idx_dPf',
+            'idx_dQf',
+            'idx_dPt',
+            'idx_dQt',
+            'idx_dm',
+            'idx_dtau',
+            'idx_dbeq',
+        ],
+        "System matrices": [
+            'Ybus',
+            'G',
+            'B',
+            'Yf',
+            'Yt',
+            'Bbus',
+            'Bf',
+            'Cf',
+            'Ct',
+            "B'",
+            "B''",
+            'Yshunt',
+            'Yseries',
+            'Jacobian',
+        ],
+    }
 
     def __init__(self,
                  nbus: int,
@@ -844,6 +859,8 @@ class NumericalCircuit:
                                     tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
                                     tap_controlled_buses=self.branch_data.tap_module_buses,
                                     is_converter=self.branch_data.is_converter,
+                                    F=self.branch_data.F,
+                                    T=self.branch_data.T,
                                     is_dc_bus=self.bus_data.is_dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
@@ -1360,24 +1377,57 @@ class NumericalCircuit:
         idx_dPt = self.simulation_indices_.k_pt_tau
         idx_dQt = self.simulation_indices_.k_qt_m
 
-        if structure_type == 'Vbus':
+        if structure_type == 'V':
             df = pd.DataFrame(
                 data=self.Vbus,
                 columns=['Voltage (p.u.)'],
                 index=self.bus_data.names,
             )
 
-        elif structure_type == 'Sbus':
+        elif structure_type == 'Va':
+            df = pd.DataFrame(
+                data=np.angle(self.Vbus),
+                columns=['Voltage angles (rad)'],
+                index=self.bus_data.names,
+            )
+        elif structure_type == 'Vm':
+            df = pd.DataFrame(
+                data=np.abs(self.Vbus),
+                columns=['Voltage modules (p.u.)'],
+                index=self.bus_data.names,
+            )
+        elif structure_type == 'S':
             df = pd.DataFrame(
                 data=self.Sbus,
                 columns=['Power (p.u.)'],
                 index=self.bus_data.names,
             )
 
-        elif structure_type == 'Ibus':
+        elif structure_type == 'P':
+            df = pd.DataFrame(
+                data=self.Sbus.real,
+                columns=['Power (p.u.)'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'Q':
+            df = pd.DataFrame(
+                data=self.Sbus.imag,
+                columns=['Power (p.u.)'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'I':
             df = pd.DataFrame(
                 data=self.Ibus,
                 columns=['Current (p.u.)'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'Y':
+            df = pd.DataFrame(
+                data=self.YLoadBus,
+                columns=['Admittance (p.u.)'],
                 index=self.bus_data.names,
             )
 
@@ -1514,7 +1564,7 @@ class NumericalCircuit:
                                                 nc=self,
                                                 options=PowerFlowOptions())
 
-            df = formulation.get_jacobian_df(autodiff=True)
+            df = formulation.get_jacobian_df(autodiff=False)
 
         elif structure_type == 'Qmin':
             df = pd.DataFrame(
@@ -1530,44 +1580,70 @@ class NumericalCircuit:
                 index=self.bus_data.names,
             )
 
+        elif structure_type == 'bus_ctrl':
+            data1 = [BusMode.as_str(val) for val in self.bus_data.bus_types]
+
+            df = pd.DataFrame(
+                data=data1,
+                columns=['bus_ctrl'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'branch_ctrl':
+
+            data1 = [val.value if val != 0 else "-" for val in self.branch_data.tap_module_control_mode]
+            data2 = [val.value if val != 0 else "-" for val in self.branch_data.tap_phase_control_mode]
+
+            df = pd.DataFrame(
+                data=np.c_[
+                    self.branch_data.F,
+                    self.branch_data.T,
+                    self.branch_data.tap_module_buses,
+                    data1,
+                    data2
+                ],
+                columns=['bus F', 'bus T', 'V ctrl bus', 'm control', 'tau control'],
+                index=[f"{k}) {name}" for k, name in enumerate(self.branch_data.names)],
+            )
+
         elif structure_type == 'pq':
             df = pd.DataFrame(
-                data=self.pq,
+                data=self.pq.astype(int).astype(str),
                 columns=['pq'],
                 index=self.bus_data.names[self.pq],
             )
 
         elif structure_type == 'pv':
             df = pd.DataFrame(
-                data=self.pv,
+                data=self.pv.astype(int).astype(str),
                 columns=['pv'],
                 index=self.bus_data.names[self.pv],
             )
 
         elif structure_type == 'pqv':
             df = pd.DataFrame(
-                data=self.pqv,
+                data=self.pqv.astype(int).astype(str),
                 columns=['pqv'],
                 index=self.bus_data.names[self.pqv],
             )
 
         elif structure_type == 'p':
             df = pd.DataFrame(
-                data=self.p,
+                data=self.p.astype(int).astype(str),
                 columns=['p'],
                 index=self.bus_data.names[self.p],
             )
 
         elif structure_type == 'vd':
             df = pd.DataFrame(
-                data=self.vd,
+                data=self.vd.astype(int).astype(str),
                 columns=['vd'],
                 index=self.bus_data.names[self.vd],
             )
 
         elif structure_type == 'pqpv':
             df = pd.DataFrame(
-                data=self.pqpv,
+                data=self.pqpv.astype(int).astype(str),
                 columns=['pqpv'],
                 index=self.bus_data.names[self.pqpv],
             )
@@ -1588,70 +1664,96 @@ class NumericalCircuit:
 
         elif structure_type == 'k_pf_tau':
             df = pd.DataFrame(
-                data=self.k_pf_tau,
+                data=self.simulation_indices_.k_pf_tau.astype(int).astype(str),
                 columns=['k_pf_tau'],
-                index=self.branch_data.names[self.k_pf_tau],
+                index=self.branch_data.names[self.simulation_indices_.k_pf_tau],
+            )
+
+        elif structure_type == 'k_pt_tau':
+            df = pd.DataFrame(
+                data=self.simulation_indices_.k_pt_tau.astype(int).astype(str),
+                columns=['k_pt_tau'],
+                index=self.branch_data.names[self.simulation_indices_.k_pt_tau],
+            )
+
+        elif structure_type == 'k_qf_m':
+            df = pd.DataFrame(
+                data=self.simulation_indices_.k_qf_m.astype(int).astype(str),
+                columns=['k_qf_m'],
+                index=self.branch_data.names[self.simulation_indices_.k_qf_m],
+            )
+
+        elif structure_type == 'k_qt_m':
+            df = pd.DataFrame(
+                data=self.simulation_indices_.k_qt_m.astype(int).astype(str),
+                columns=['k_qt_m'],
+                index=self.branch_data.names[self.simulation_indices_.k_qt_m],
             )
 
         elif structure_type == 'k_qf_beq':
             df = pd.DataFrame(
-                data=self.k_qf_beq,
+                data=self.simulation_indices_.k_qf_beq.astype(int).astype(str),
                 columns=['k_qf_beq'],
-                index=self.branch_data.names[self.k_qf_beq],
+                index=self.branch_data.names[self.simulation_indices_.k_qf_beq],
             )
 
         elif structure_type == 'k_v_m':
             df = pd.DataFrame(
-                data=self.k_v_m,
+                data=self.simulation_indices_.k_v_m.astype(int).astype(str),
                 columns=['k_v_m'],
-                index=self.branch_data.names[self.k_v_m],
+                index=self.branch_data.names[self.simulation_indices_.k_v_m],
             )
-
+        elif structure_type == 'k_v_beq':
+            df = pd.DataFrame(
+                data=self.simulation_indices_.k_v_beq.astype(int).astype(str),
+                columns=['k_v_beq'],
+                index=self.branch_data.names[self.simulation_indices_.k_v_beq],
+            )
         elif structure_type == 'idx_dPf':
             df = pd.DataFrame(
-                data=idx_dPf,
+                data=idx_dPf.astype(int).astype(str),
                 columns=['idx_dPf'],
                 index=self.branch_data.names[idx_dPf],
             )
 
         elif structure_type == 'idx_dQf':
             df = pd.DataFrame(
-                data=idx_dQf,
+                data=idx_dQf.astype(int).astype(str),
                 columns=['idx_dQf'],
                 index=self.branch_data.names[idx_dQf],
             )
 
         elif structure_type == 'idx_dPt':
             df = pd.DataFrame(
-                data=idx_dPt,
+                data=idx_dPt.astype(int).astype(str),
                 columns=['idx_dPt'],
                 index=self.branch_data.names[idx_dPt],
             )
 
         elif structure_type == 'idx_dQt':
             df = pd.DataFrame(
-                data=idx_dQt,
+                data=idx_dQt.astype(int).astype(str),
                 columns=['idx_dQt'],
                 index=self.branch_data.names[idx_dQt],
             )
 
         elif structure_type == 'idx_dm':
             df = pd.DataFrame(
-                data=idx_dm,
+                data=idx_dm.astype(int).astype(str),
                 columns=['idx_dm'],
                 index=self.branch_data.names[idx_dm],
             )
 
         elif structure_type == 'idx_dtau':
             df = pd.DataFrame(
-                data=idx_dtau,
+                data=idx_dtau.astype(int).astype(str),
                 columns=['idx_dtau'],
                 index=self.branch_data.names[idx_dtau],
             )
 
         elif structure_type == 'idx_dbeq':
             df = pd.DataFrame(
-                data=idx_dbeq,
+                data=idx_dbeq.astype(int).astype(str),
                 columns=['idx_dbeq'],
                 index=self.branch_data.names[idx_dbeq],
             )

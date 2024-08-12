@@ -1399,10 +1399,17 @@ class Ui_mainWindow(object):
         self.gridLayout_19 = QGridLayout(self.frame_28)
         self.gridLayout_19.setObjectName(u"gridLayout_19")
         self.gridLayout_19.setContentsMargins(-1, -1, 0, -1)
-        self.simulationDataStructuresListView = QListView(self.frame_28)
-        self.simulationDataStructuresListView.setObjectName(u"simulationDataStructuresListView")
+        self.simulation_data_island_comboBox = QComboBox(self.frame_28)
+        self.simulation_data_island_comboBox.setObjectName(u"simulation_data_island_comboBox")
 
-        self.gridLayout_19.addWidget(self.simulationDataStructuresListView, 1, 0, 1, 4)
+        self.gridLayout_19.addWidget(self.simulation_data_island_comboBox, 0, 2, 1, 2)
+
+        self.exportSimulationDataButton = QPushButton(self.frame_28)
+        self.exportSimulationDataButton.setObjectName(u"exportSimulationDataButton")
+        self.exportSimulationDataButton.setMaximumSize(QSize(32, 16777215))
+        self.exportSimulationDataButton.setIcon(icon19)
+
+        self.gridLayout_19.addWidget(self.exportSimulationDataButton, 0, 1, 1, 1)
 
         self.compute_simulation_data_pushButton = QPushButton(self.frame_28)
         self.compute_simulation_data_pushButton.setObjectName(u"compute_simulation_data_pushButton")
@@ -1413,17 +1420,10 @@ class Ui_mainWindow(object):
 
         self.gridLayout_19.addWidget(self.compute_simulation_data_pushButton, 0, 0, 1, 1)
 
-        self.exportSimulationDataButton = QPushButton(self.frame_28)
-        self.exportSimulationDataButton.setObjectName(u"exportSimulationDataButton")
-        self.exportSimulationDataButton.setMaximumSize(QSize(32, 16777215))
-        self.exportSimulationDataButton.setIcon(icon19)
+        self.simulationDataStructuresTreeView = QTreeView(self.frame_28)
+        self.simulationDataStructuresTreeView.setObjectName(u"simulationDataStructuresTreeView")
 
-        self.gridLayout_19.addWidget(self.exportSimulationDataButton, 0, 1, 1, 1)
-
-        self.simulation_data_island_comboBox = QComboBox(self.frame_28)
-        self.simulation_data_island_comboBox.setObjectName(u"simulation_data_island_comboBox")
-
-        self.gridLayout_19.addWidget(self.simulation_data_island_comboBox, 0, 2, 1, 2)
+        self.gridLayout_19.addWidget(self.simulationDataStructuresTreeView, 1, 0, 1, 4)
 
         self.simulationDataSplitter.addWidget(self.frame_28)
         self.frame_29 = QFrame(self.simulationDataSplitter)
@@ -2937,11 +2937,8 @@ class Ui_mainWindow(object):
         palette18.setBrush(QPalette.Active, QPalette.WindowText, brush4)
         brush5 = QBrush(QColor(0, 0, 0, 255))
         brush5.setStyle(Qt.SolidPattern)
-        palette18.setBrush(QPalette.Active, QPalette.Text, brush5)
         palette18.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
-        palette18.setBrush(QPalette.Inactive, QPalette.Text, brush5)
         palette18.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        palette18.setBrush(QPalette.Disabled, QPalette.Text, brush1)
         self.label_105.setPalette(palette18)
         self.label_105.setFont(font6)
 
@@ -2982,11 +2979,8 @@ class Ui_mainWindow(object):
         self.label_64.setObjectName(u"label_64")
         palette19 = QPalette()
         palette19.setBrush(QPalette.Active, QPalette.WindowText, brush4)
-        palette19.setBrush(QPalette.Active, QPalette.Text, brush5)
         palette19.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
-        palette19.setBrush(QPalette.Inactive, QPalette.Text, brush5)
         palette19.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        palette19.setBrush(QPalette.Disabled, QPalette.Text, brush1)
         self.label_64.setPalette(palette19)
         self.label_64.setFont(font6)
 
@@ -5124,13 +5118,13 @@ class Ui_mainWindow(object):
         self.tabWidget_5.setTabText(self.tabWidget_5.indexOf(self.tab_16), QCoreApplication.translate("mainWindow", u"Time series", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.DataTab), QCoreApplication.translate("mainWindow", u"Database", None))
 #if QT_CONFIG(tooltip)
-        self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))
-#endif // QT_CONFIG(tooltip)
-        self.compute_simulation_data_pushButton.setText("")
-#if QT_CONFIG(tooltip)
         self.exportSimulationDataButton.setToolTip(QCoreApplication.translate("mainWindow", u"Export simulation data", None))
 #endif // QT_CONFIG(tooltip)
         self.exportSimulationDataButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.compute_simulation_data_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Update the islands dispayed", None))
+#endif // QT_CONFIG(tooltip)
+        self.compute_simulation_data_pushButton.setText("")
 #if QT_CONFIG(tooltip)
         self.copyArraysToNumpyButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy to data frame to clipboard in array format", None))
 #endif // QT_CONFIG(tooltip)

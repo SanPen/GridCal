@@ -84,6 +84,8 @@ class SimulationIndices:
                  tap_phase_control_mode: List[TapPhaseControl],
                  tap_controlled_buses: IntVec,
                  is_converter: BoolVec,
+                 F: IntVec,
+                 T: IntVec,
                  is_dc_bus: BoolVec):
         """
 
@@ -103,6 +105,8 @@ class SimulationIndices:
         self.tap_controlled_buses = tap_controlled_buses
         self.tap_phase_control_mode = tap_phase_control_mode
         self.is_converter = is_converter
+        self.F = F
+        self.T = T
 
         # AC and DC indices
         self.ac: IntVec = np.where(~is_dc_bus)[0]
@@ -116,8 +120,9 @@ class SimulationIndices:
         self.k_pt_tau: IntVec = np.zeros(0, dtype=int)
         self.k_qf_m: IntVec = np.zeros(0, dtype=int)
         self.k_qt_m: IntVec = np.zeros(0, dtype=int)
-        self.k_qf_beq: IntVec = np.zeros(0, dtype=int)
+        self.k_qf_beq: IntVec = np.zeros(0, dtype=int)  # make Qf = 0 for DC grids
         self.k_v_m: IntVec = np.zeros(0, dtype=int)
+        self.k_v_beq: IntVec = np.zeros(0, dtype=int)
         self.analyze_branch_controls()
 
         # determine the bus indices
@@ -162,61 +167,84 @@ class SimulationIndices:
         k_pt_tau = list()
         k_qf_m = list()
         k_qt_m = list()
-        k_qf_beq = list()
+        k_qfzero_beq = list()
         k_v_m = list()
+        k_v_beq = list()
 
-        # analyze tap-module controls
-        for k, ctrl in enumerate(self.tap_module_control_mode):
-            if ctrl == TapModuleControl.Vm:
+        nbr = len(self.tap_phase_control_mode)
+        for k in range(nbr):
+
+            ctrl_m = self.tap_module_control_mode[k]
+            ctrl_tau = self.tap_phase_control_mode[k]
+            is_conv = self.is_converter[k]
+
+            conv_type = 1 if is_conv else 0
+
+            # analyze tap-module controls
+            if ctrl_m == TapModuleControl.Vm:
+
                 # Every bus controlled by m has to become a PQV bus
                 bus_idx = self.tap_controlled_buses[k]
                 self.bus_types[bus_idx] = BusMode.PQV_tpe.value
-                k_v_m.append(k)
 
-            elif ctrl == TapModuleControl.Qf:
-                k_qf_m.append(k)
+                if is_conv and bus_idx == self.F[k]:
+                    # if this is a converter,
+                    # the voltage can be managed with Beq
+                    # if the control bus is the "From" bus
+                    k_v_beq.append(k)
+                    conv_type = 2
+                else:
+                    # In any other case, the voltage is managed by the tap module
+                    k_v_m.append(k)
 
-            elif ctrl == TapModuleControl.Qt:
+            elif ctrl_m == TapModuleControl.Qf:
+
+                if not is_conv:
+                    k_qf_m.append(k)
+
+            elif ctrl_m == TapModuleControl.Qt:
                 k_qt_m.append(k)
 
-            elif ctrl == TapModuleControl.fixed:
+            elif ctrl_m == TapModuleControl.fixed:
                 pass
 
-            elif ctrl == 0:
+            elif ctrl_m == 0:
                 pass
 
             else:
-                raise Exception(f"Unknown tap phase module mode {ctrl}")
+                raise Exception(f"Unknown tap phase module mode {ctrl_m}")
 
-        # analyze tap-phase controls
-        for k, ctrl in enumerate(self.tap_phase_control_mode):
-            if ctrl == TapPhaseControl.Pf:
+            # analyze tap-phase controls
+            if ctrl_tau == TapPhaseControl.Pf:
                 k_pf_tau.append(k)
 
-            elif ctrl == TapPhaseControl.Pt:
+            elif ctrl_tau == TapPhaseControl.Pt:
                 k_pt_tau.append(k)
 
-            elif ctrl == TapPhaseControl.fixed:
+            elif ctrl_tau == TapPhaseControl.fixed:
                 pass
 
-            elif ctrl == 0:
+            # elif ctrl == TapPhaseControl.Droop:
+            #     pass
+
+            elif ctrl_tau == 0:
                 pass
 
             else:
-                raise Exception(f"Unknown tap phase control mode {ctrl}")
+                raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
 
-        # analyze the converter Qf=0 indices
-        for k, is_conv in enumerate(self.is_converter):
-            if is_conv:
-                k_qf_beq.append(k)
+            # Beq->qf=0
+            if conv_type == 1:
+                k_qfzero_beq.append(k)
 
         # determine if there is any control
-        self.any_control = bool(len(k_pf_tau) + len(k_qf_beq) + len(k_v_m))
+        self.any_control = bool(len(k_pf_tau) + len(k_qfzero_beq) + len(k_v_m))
 
         # convert lists to integer arrays
         self.k_pf_tau = np.array(k_pf_tau, dtype=int)
         self.k_pt_tau = np.array(k_pt_tau, dtype=int)
         self.k_qf_m = np.array(k_qf_m, dtype=int)
         self.k_qt_m = np.array(k_qt_m, dtype=int)
-        self.k_qf_beq = np.array(k_qf_beq, dtype=int)
+        self.k_qf_beq = np.array(k_qfzero_beq, dtype=int)
         self.k_v_m = np.array(k_v_m, dtype=int)
+        self.k_v_beq = np.array(k_v_beq, dtype=int)

@@ -62,10 +62,11 @@ def txt2mat(txt: str, line_splitter=';', to_float=True):
     # preprocess lines (remove the comments)
     lines2 = list()
     for i, line in enumerate(lines):
-        if line.lstrip()[0] == '%':
-            print('skipping', line)
-        else:
+        if line.lstrip()[0] != '%':
             lines2.append(line)
+        else:
+            # print('skipping', line)
+            pass
 
     # convert the lines to data
     nrows = len(lines2)
@@ -394,8 +395,6 @@ def parse_branches_data(circuit: MultiCircuit,
                 7               vdc droop       vac -> Vt       III
                 
                 """
-
-
 
                 # set the from bus as a DC bus
                 # this is by design of the matpower FUBM model,
