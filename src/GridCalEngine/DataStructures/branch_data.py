@@ -50,9 +50,6 @@ class BranchData:
         self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
         self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
 
-        self.ctrl_bus1: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses1
-        self.ctrl_bus2: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses2
-
         # reliabilty
         self.mttf: Vec = np.zeros(self.nelm, dtype=float)
         self.mttr: Vec = np.zeros(self.nelm, dtype=float)
@@ -93,9 +90,9 @@ class BranchData:
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
-        self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the from bus
-        self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the from bus
-        self.vset: Vec = np.ones(nelm, dtype=float)
+        self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
+        self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
+        self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
 
         self.Kdp: Vec = np.ones(self.nelm, dtype=float)
         self.Kdp_va: Vec = np.ones(self.nelm, dtype=float)
@@ -202,13 +199,8 @@ class BranchData:
         # first slice, then remap
         data.F = self.F[elm_idx]
         data.T = self.T[elm_idx]
-        data.ctrl_bus1 = self.ctrl_bus1[elm_idx]
-        data.ctrl_bus2 = self.ctrl_bus2[elm_idx]
         bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
-            if data.ctrl_bus1[k] != 0:
-                data.ctrl_bus1[k] = bus_map[data.ctrl_bus1[k]]
-
             data.F[k] = bus_map[data.F[k]]
             data.T[k] = bus_map[data.T[k]]
 
