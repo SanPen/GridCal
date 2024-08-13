@@ -970,17 +970,17 @@ def dSbus_dm_csc(nbus, bus_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, 
         # from side
         if f_idx >= 0:
             YttB = Ys[k] + 1j * (Bc[k] / 2 + Beq[k])
-            dyff_dma = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))
-            dyft_dma = Ys[k] / (kconv[k] * tap_module[k] * np.conj(tap[k]))
-            Tx[nnz] = V[f] * np.conj(dyff_dma * V[f] + dyft_dma * V[t])
+            dyff_dm = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))
+            dyft_dm = Ys[k] / (kconv[k] * tap_module[k] * np.conj(tap[k]))
+            Tx[nnz] = V[f] * np.conj(dyff_dm * V[f] + dyft_dm * V[t])
             Ti[nnz] = f_idx
             Tj[nnz] = k_counter
             nnz += 1
 
         # to side
         if t_idx >= 0:
-            dytf_dma = Ys[k] / (kconv[k] * tap_module[k] * tap[k])
-            Tx[nnz] = V[t] * np.conj(dytf_dma * V[f])
+            dytf_dm = Ys[k] / (kconv[k] * tap_module[k] * tap[k])
+            Tx[nnz] = V[t] * np.conj(dytf_dm * V[f])
             Ti[nnz] = t_idx
             Tj[nnz] = k_counter
             nnz += 1

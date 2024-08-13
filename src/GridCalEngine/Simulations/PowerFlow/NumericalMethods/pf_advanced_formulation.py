@@ -17,7 +17,8 @@
 from typing import Tuple
 import numpy as np
 import pandas as pd
-from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices, compile_y_acdc
+from numba import njit
+from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices, compile_y_acdc, compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -32,7 +33,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
-# @njit()
+@njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  idx_dva: IntVec,
@@ -143,15 +144,29 @@ def adv_jacobian(nbus: int,
 
     # compose the Jacobian
     J = csc_stack_2d_ff(mats=
-                        [dP_dVa__, dP_dVm__, dP_dtau__, dP_dbeq__, dP_dm__,
-                         dQ_dVa__, dQ_dVm__, dQ_dtau__, dQ_dbeq__, dQ_dm__,
-                         dPf_dVa_, dPf_dVm_, dPf_dtau_, dPf_dbeq_, dPf_dm_,
-                         dQf_dVa_, dQf_dVm_, dQf_dtau_, dQf_dbeq_, dQf_dm_,
-                         dPt_dVa_, dPt_dVm_, dPt_dtau_, dPt_dbeq_, dPt_dm_,
-                         dQt_dVa_, dQt_dVm_, dQt_dtau_, dQt_dbeq_, dQt_dm_],
+                        [dP_dVa__, dP_dVm__, dP_dm__, dP_dtau__, dP_dbeq__,
+                         dQ_dVa__, dQ_dVm__, dQ_dm__, dQ_dtau__, dQ_dbeq__,
+                         dPf_dVa_, dPf_dVm_, dPf_dm_, dPf_dtau_, dPf_dbeq_,
+                         dQf_dVa_, dQf_dVm_, dQf_dm_, dQf_dtau_, dQf_dbeq_,
+                         dPt_dVa_, dPt_dVm_, dPt_dm_, dPt_dtau_, dPt_dbeq_,
+                         dQt_dVa_, dQt_dVm_, dQt_dm_, dQt_dtau_, dQt_dbeq_],
                         n_rows=6, n_cols=5)
 
     return J
+
+
+def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
+    """
+
+    :param n:
+    :param arr:
+    :param idx:
+    :param default:
+    :return:
+    """
+    x = np.full(n, default)
+    x[idx] = arr
+    return x
 
 
 class PfAdvancedFormulation(PfFormulationTemplate):
@@ -203,22 +218,38 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.idx_dPt = self._indices.k_pt_tau
         self.idx_dQt = self._indices.k_qt_m
 
-        self.m: Vec = np.ones(len(self.idx_dm))
-        self.tau: Vec = np.zeros(len(self.idx_dtau))
-        self.beq: Vec = np.full(len(self.idx_dbeq), 0.001)  # some initial value
+        self.m: Vec = self.nc.branch_data.tap_module[self.idx_dm]
+        self.tau: Vec = self.nc.branch_data.tap_angle[self.idx_dtau]
+        self.beq: Vec = self.nc.branch_data.Beq[self.idx_dbeq]
 
         self.Ys = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
 
-        # if not len(self.pqv) >= len(self._indices.k_v_m):
-        #     raise ValueError("k_v_m indices must be the same size as pqv indices!")
+        self.adm = compute_admittances(
+            R=self.nc.branch_data.R,
+            X=self.nc.branch_data.X,
+            G=self.nc.branch_data.G,
+            B=self.nc.branch_data.B,
+            k=self.nc.branch_data.k,
+            tap_module=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
+            vtap_f=self.nc.branch_data.virtual_tap_f,
+            vtap_t=self.nc.branch_data.virtual_tap_t,
+            tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
+            Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
+            Cf=self.nc.Cf,
+            Ct=self.nc.Ct,
+            G0sw=self.nc.branch_data.G0sw,
+            If=np.zeros(len(self.nc.branch_data)),
+            a=self.nc.branch_data.a,
+            b=self.nc.branch_data.b,
+            c=self.nc.branch_data.c,
+            Yshunt_bus=self.nc.Yshunt_from_devices,
+            conn=self.nc.branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
-    @property
-    def adm(self) -> AdmittanceMatrices:
-        """
-
-        :return: AdmittanceMatrices
-        """
-        return self.nc.admittances_
+        if not len(self.pqv) >= len(self._indices.k_v_m):
+            raise ValueError("k_v_m indices must be the same size as pqv indices!")
 
     def x2var(self, x: Vec):
         """
@@ -227,25 +258,48 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         """
         a = len(self.idx_dVa)
         b = a + len(self.idx_dVm)
-        c = b + len(self.idx_dtau)
-        d = c + len(self.idx_dbeq)
-        e = d + len(self.idx_dm)
+        c = b + len(self.idx_dm)
+        d = c + len(self.idx_dtau)
+        e = d + len(self.idx_dbeq)
 
         # update the vectors
         Va = self.Va.copy()
         Vm = self.Vm.copy()
-        m = np.ones(self.nc.nbr, dtype=float)
-        tau = np.zeros(self.nc.nbr, dtype=float)
-        beq = np.zeros(self.nc.nbr, dtype=float)
 
-        Va[self.idx_dVa] += x[0:a]
-        Vm[self.idx_dVm] += x[a:b]
-        tau[self.idx_dtau] += x[b:c]
-        beq[self.idx_dbeq] += x[c:d]
-        m[self.idx_dm] += x[d:e]
+        Va[self.idx_dVa] = x[0:a]
+        Vm[self.idx_dVm] = x[a:b]
+
+        self.m = x[b:c]
+        self.tau = x[c:d]
+        self.beq = x[d:e]
 
         # compute the complex voltage
         self.V = polar_to_rect(self.Vm, self.Va)
+
+        # recompute admittances
+        self.adm = compute_admittances(
+            R=self.nc.branch_data.R,
+            X=self.nc.branch_data.X,
+            G=self.nc.branch_data.G,
+            B=self.nc.branch_data.B,
+            k=self.nc.branch_data.k,
+            tap_module=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
+            vtap_f=self.nc.branch_data.virtual_tap_f,
+            vtap_t=self.nc.branch_data.virtual_tap_t,
+            tap_angle=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
+            Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
+            Cf=self.nc.Cf,
+            Ct=self.nc.Ct,
+            G0sw=self.nc.branch_data.G0sw,
+            If=np.zeros(len(self.nc.branch_data)),
+            a=self.nc.branch_data.a,
+            b=self.nc.branch_data.b,
+            c=self.nc.branch_data.c,
+            Yshunt_bus=self.nc.Yshunt_from_devices,
+            conn=self.nc.branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
     def var2x(self) -> Vec:
         """
@@ -255,9 +309,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         return np.r_[
             self.Va[self.idx_dVa],
             self.Vm[self.idx_dVm],
+            self.m,
             self.tau,
             self.beq,
-            self.m,
         ]
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec]:
@@ -350,9 +404,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         """
         a = len(self.idx_dVa)
         b = a + len(self.idx_dVm)
-        c = b + len(self.idx_dtau)
-        d = c + len(self.idx_dbeq)
-        e = d + len(self.idx_dm)
+        c = b + len(self.idx_dm)
+        d = c + len(self.idx_dtau)
+        e = d + len(self.idx_dbeq)
 
         # update the vectors
         Va = self.Va.copy()
@@ -361,11 +415,11 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         tau = np.zeros(self.nc.nbr, dtype=float)
         beq = np.zeros(self.nc.nbr, dtype=float)
 
-        Va[self.idx_dVa] += x[0:a]
-        Vm[self.idx_dVm] += x[a:b]
-        tau[self.idx_dtau] += x[b:c]
-        beq[self.idx_dbeq] += x[c:d]
-        m[self.idx_dm] += x[d:e]
+        Va[self.idx_dVa] = x[0:a]
+        Vm[self.idx_dVm] = x[a:b]
+        m[self.idx_dm] = x[b:c]
+        tau[self.idx_dtau] = x[c:d]
+        beq[self.idx_dbeq] = x[d:e]
 
         # compute the complex voltage
         V = polar_to_rect(Vm, Va)
@@ -415,28 +469,20 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             return scipy_to_mat(J)
         else:
             # Assumes the internal vars were updated already with self.x2var()
-            m = np.ones(self.nc.nbr, dtype=float)
-            tau = np.zeros(self.nc.nbr, dtype=float)
-            beq = np.zeros(self.nc.nbr, dtype=float)
-
-            tau[self.idx_dtau] = self.tau
-            m[self.idx_dm] = self.m
-            beq[self.idx_dbeq] = self.beq
-
-            Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=self.nc.Cf,
-                                                                   Ct=self.nc.Ct,
-                                                                   C_bus_shunt=self.nc.shunt_data.C_bus_elm.tocsc(),
-                                                                   shunt_admittance=self.nc.shunt_data.Y,
-                                                                   shunt_active=self.nc.shunt_data.active,
-                                                                   ys=self.nc.branch_data.get_series_admittance(),
-                                                                   B=self.nc.branch_data.B,
-                                                                   Sbase=self.nc.Sbase,
-                                                                   tap_module=m,
-                                                                   tap_angle=tau,
-                                                                   Beq=beq,
-                                                                   Gsw=self.nc.branch_data.G0sw,
-                                                                   virtual_tap_from=self.nc.branch_data.virtual_tap_f,
-                                                                   virtual_tap_to=self.nc.branch_data.virtual_tap_t)
+            # Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=self.nc.Cf,
+            #                                                        Ct=self.nc.Ct,
+            #                                                        C_bus_shunt=self.nc.shunt_data.C_bus_elm.tocsc(),
+            #                                                        shunt_admittance=self.nc.shunt_data.Y,
+            #                                                        shunt_active=self.nc.shunt_data.active,
+            #                                                        ys=self.nc.branch_data.get_series_admittance(),
+            #                                                        B=self.nc.branch_data.B,
+            #                                                        Sbase=self.nc.Sbase,
+            #                                                        tap_module=m,
+            #                                                        tap_angle=tau,
+            #                                                        Beq=beq,
+            #                                                        Gsw=self.nc.branch_data.G0sw,
+            #                                                        virtual_tap_from=self.nc.branch_data.virtual_tap_f,
+            #                                                        virtual_tap_to=self.nc.branch_data.virtual_tap_t)
 
             n_rows = (len(self.idx_dP)
                       + len(self.idx_dQ)
@@ -454,15 +500,9 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             if n_cols != n_rows:
                 raise ValueError("Incorrect J indices!")
 
-            # NOTE: beq, m, and tau are not of size nbranch
-            m = np.ones(self.nc.nbr, dtype=float)
-            tau = np.zeros(self.nc.nbr, dtype=float)
-            beq = np.zeros(self.nc.nbr, dtype=float)
-
-            m[self.idx_dm] = self.m
-            tau[self.idx_dtau] = self.tau
-            beq[self.idx_dbeq] = self.beq
-            tap = polar_to_rect(m, tau)
+            tap_modules = expand(self.nc.nbr, self.m, self.idx_dm, 1.0)
+            tap_angles = expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0)
+            tap = polar_to_rect(tap_modules, tap_angles)
 
             J = adv_jacobian(nbus=self.nc.nbus,
                              nbr=self.nc.nbr,
@@ -482,34 +522,39 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                              Ys=self.Ys,
                              kconv=self.nc.branch_data.k,
                              complex_tap=tap,
-                             tap_modules=m,
+                             tap_modules=tap_modules,
                              Bc=self.nc.branch_data.B,
-                             Beq=beq,
+                             Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
                              V=self.V,
                              Vm=self.Vm,
-                             Ybus_x=Ybus.data,
-                             Ybus_p=Ybus.indptr,
-                             Ybus_i=Ybus.indices,
-                             yff=yff,
-                             yft=yft,
-                             ytf=ytf,
-                             ytt=ytt)
+                             Ybus_x=self.adm.Ybus.data,
+                             Ybus_p=self.adm.Ybus.indptr,
+                             Ybus_i=self.adm.Ybus.indices,
+                             yff=self.adm.yff,
+                             yft=self.adm.yft,
+                             ytf=self.adm.ytf,
+                             ytt=self.adm.ytt)
 
             return J
 
-    def get_jacobian_df(self, autodiff=True) -> pd.DataFrame:
+    def get_x_names(self):
         """
-        Get the Jacobian DataFrame
-        :return: DataFrame
+        Names matching x
+        :return:
         """
-        J = self.Jacobian(autodiff=autodiff)
-
         cols = [f'dVa {i}' for i in self.idx_dVa]
         cols += [f'dVm {i}' for i in self.idx_dVm]
+        cols += [f'dm {i}' for i in self.idx_dm]
         cols += [f'dtau {i}' for i in self.idx_dtau]
         cols += [f'dBeq {i}' for i in self.idx_dbeq]
-        cols += [f'dm {i}' for i in self.idx_dm]
 
+        return cols
+
+    def get_fx_names(self):
+        """
+        Names matching fx
+        :return:
+        """
         rows = [f'dP {i}' for i in self.idx_dP]
         rows += [f'dQ {i}' for i in self.idx_dQ]
         rows += [f'dPf {i}' for i in self.idx_dPf]
@@ -517,10 +562,18 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         rows += [f'dPt {i}' for i in self.idx_dPt]
         rows += [f'dQt {i}' for i in self.idx_dQt]
 
+        return rows
+
+    def get_jacobian_df(self, autodiff=True) -> pd.DataFrame:
+        """
+        Get the Jacobian DataFrame
+        :return: DataFrame
+        """
+        J = self.Jacobian(autodiff=autodiff)
         return pd.DataFrame(
             data=J.toarray(),
-            columns=cols,
-            index=rows,
+            columns=self.get_x_names(),
+            index=self.get_fx_names(),
         )
 
     def get_solution(self, elapsed: float, iterations: int) -> NumericPowerFlowResults:

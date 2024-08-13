@@ -294,7 +294,7 @@ class CxCSC:
         A = CSC(self.n_rows, self.n_cols, self.nnz, False)
         A.indptr = self.indptr
         A.indices = self.indices
-        A.data = self.data.real
+        A.data = self.data.imag
         return A
 
     def resize(self, nnz: int32):

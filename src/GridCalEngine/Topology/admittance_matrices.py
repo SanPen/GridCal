@@ -243,10 +243,11 @@ def compute_admittances(R: Vec,
             raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
 
     else:  # original
-        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+        with np.errstate(all='raise'):
+            Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+            Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+            Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+            Ytt = (ys + bc2) / (vtap_t * vtap_t)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct
