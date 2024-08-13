@@ -26,6 +26,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode,
                                         TapModuleControl, HvdcControlType)
 from GridCalEngine.basic_structures import BoolVec
+from GridCalEngine.Devices.types import BRANCH_TYPES
 import GridCalEngine.DataStructures as ds
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -691,8 +692,7 @@ def get_battery_data(circuit: MultiCircuit,
 
 
 def fill_parent_branch(i: int,
-                       elm: Union[dev.Line, dev.DcLine, dev.Transformer2W,
-                       dev.Winding, dev.VSC, dev.UPFC, dev.SeriesReactance],
+                       elm: BRANCH_TYPES,
                        data: ds.BranchData,
                        bus_dict: Dict[Bus, int],
                        apply_temperature: bool,
@@ -783,6 +783,7 @@ def fill_controllable_branch(ii: int,
                              time_series: bool,
                              opf_results: Union[OptimalPowerFlowResults, None],
                              use_stored_guess: bool,
+                             bus_voltage_used: BoolVec,
                              Sbase: float,
                              logger: Logger):
     """
@@ -798,6 +799,7 @@ def fill_controllable_branch(ii: int,
     :param time_series:
     :param opf_results:
     :param use_stored_guess:
+    :param bus_voltage_used:
     :param Sbase:
     :param logger:
     :return:
@@ -870,13 +872,20 @@ def fill_controllable_branch(ii: int,
 
     if not use_stored_guess:
         if elm.tap_module_control_mode == TapModuleControl.Vm:
-            if 0.9 <= elm.vset <= 1.1:
-                bus_data.Vbus[t] = elm.vset
-            else:
-                logger.add_warning("Branch control voltage out of bounds",
-                                   device_class=str(elm.device_type.value),
-                                   device=elm.name,
-                                   value=elm.vset)
+            bus_idx = data.tap_module_buses[ii]
+            if not bus_voltage_used[bus_idx]:
+                if 0.9 <= elm.vset <= 1.1:
+                    bus_data.Vbus[bus_idx] = elm.vset
+                else:
+                    logger.add_warning("Branch control voltage out of bounds",
+                                       device_class=str(elm.device_type.value),
+                                       device=elm.name,
+                                       value=elm.vset)
+            elif elm.vset != bus_data.Vbus[bus_idx]:
+                logger.add_error(msg='Different control voltage set points',
+                                 device=bus_data.names[bus_idx],
+                                 value=elm.vset,
+                                 expected_value=bus_data.Vbus[bus_idx])
 
 
 def get_branch_data(circuit: MultiCircuit,
@@ -958,6 +967,7 @@ def get_branch_data(circuit: MultiCircuit,
                                  time_series=time_series,
                                  opf_results=opf_results,
                                  use_stored_guess=use_stored_guess,
+                                 bus_voltage_used=bus_voltage_used,
                                  Sbase=circuit.Sbase,
                                  logger=logger)
 
@@ -981,6 +991,7 @@ def get_branch_data(circuit: MultiCircuit,
                                      time_series=time_series,
                                      opf_results=opf_results,
                                      use_stored_guess=use_stored_guess,
+                                     bus_voltage_used=bus_voltage_used,
                                      Sbase=circuit.Sbase,
                                      logger=logger)
 
@@ -1005,6 +1016,7 @@ def get_branch_data(circuit: MultiCircuit,
                                  time_series=time_series,
                                  opf_results=opf_results,
                                  use_stored_guess=use_stored_guess,
+                                 bus_voltage_used=bus_voltage_used,
                                  Sbase=circuit.Sbase,
                                  logger=logger)
         data.Kdp[ii] = elm.kdp
