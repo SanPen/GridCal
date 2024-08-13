@@ -211,8 +211,7 @@ def test_controllable_shunt() -> None:
 
 def test_voltage_remote_control_with_generation() -> None:
     """
-
-    :return:
+    Check that a generator can perform remote voltage regulation
     """
     fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
 
@@ -235,3 +234,29 @@ def test_voltage_remote_control_with_generation() -> None:
         assert np.isclose(vm[6], grid.generators[4].Vset, atol=options.tolerance)
 
         print(solver_type)
+
+
+def test_voltage_control_with_ltc() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join('data', 'grids', '5Bus_LTC_FACTS_Fig4.7.gridcal')
+
+    grid = gce.open_file(fname)
+    bus_dict = grid.get_bus_index_dict()
+    ctrl_idx = bus_dict[grid.transformers2w[0].regulation_bus]
+
+    for solver_type in [SolverType.NR]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+
+        vm = np.abs(results.voltage)
+
+        assert results.converged
+
+        # check that the bus voltage module is the the transformer voltage set point
+        assert np.isclose(vm[ctrl_idx], grid.transformers2w[0].vset, atol=options.tolerance)
