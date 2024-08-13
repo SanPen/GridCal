@@ -300,3 +300,5 @@ class VSC(ControllableBranchParent):
 
         if show_fig:
             plt.show()
+
+

@@ -1034,7 +1034,7 @@ def get_branch_data(circuit: MultiCircuit,
         ysh1 = elm.get_ysh1()
         data.Beq[ii] = ysh1.imag
 
-        data.Pset[ii] = elm.Pfset / Sbase
+        data.Pset[ii] = elm.Pfset / circuit.Sbase
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)

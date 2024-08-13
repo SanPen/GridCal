@@ -374,13 +374,13 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                     yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
 
         Qf = get_Sf(k=self.idx_dQf, Vm=self.Vm, V=self.V,
-                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
+                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).imag
 
         Pt = get_St(k=self.idx_dPt, Vm=self.Vm, V=self.V,
                     ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).real
 
         Qt = get_St(k=self.idx_dQt, Vm=self.Vm, V=self.V,
-                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).real
+                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).imag
 
         self._f = np.r_[
             dS[self.idx_dP].real,
