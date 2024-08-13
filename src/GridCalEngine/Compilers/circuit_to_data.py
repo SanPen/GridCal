@@ -781,6 +781,7 @@ def fill_controllable_branch(ii: int,
                              time_series: bool,
                              opf_results: Union[OptimalPowerFlowResults, None],
                              use_stored_guess: bool,
+                             Sbase: float,
                              logger: Logger):
     """
 
@@ -795,6 +796,7 @@ def fill_controllable_branch(ii: int,
     :param time_series:
     :param opf_results:
     :param use_stored_guess:
+    :param Sbase:
     :param logger:
     :return:
     """
@@ -816,8 +818,8 @@ def fill_controllable_branch(ii: int,
         reg_bus = elm.bus_from if elm.regulation_bus is None else elm.regulation_bus
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
-        data.Pset[ii] = elm.Pset_prof[t_idx]
-        data.Qset[ii] = elm.Qset_prof[t_idx]
+        data.Pset[ii] = elm.Pset_prof[t_idx] / Sbase
+        data.Qset[ii] = elm.Qset_prof[t_idx] / Sbase
         data.vset[ii] = elm.vset_prof[t_idx]
 
         if opf_results is not None:
@@ -834,8 +836,8 @@ def fill_controllable_branch(ii: int,
         reg_bus = elm.bus_from if elm.regulation_bus is None else elm.regulation_bus
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
-        data.Pset[ii] = elm.Pset
-        data.Qset[ii] = elm.Qset
+        data.Pset[ii] = elm.Pset / Sbase
+        data.Qset[ii] = elm.Qset / Sbase
         data.vset[ii] = elm.vset
 
         if opf_results is not None:
@@ -936,6 +938,7 @@ def get_branch_data(circuit: MultiCircuit,
                                  time_series=time_series,
                                  opf_results=opf_results,
                                  use_stored_guess=use_stored_guess,
+                                 Sbase=circuit.Sbase,
                                  logger=logger)
 
         data.conn[ii] = elm.conn
@@ -958,6 +961,7 @@ def get_branch_data(circuit: MultiCircuit,
                                      time_series=time_series,
                                      opf_results=opf_results,
                                      use_stored_guess=use_stored_guess,
+                                     Sbase=circuit.Sbase,
                                      logger=logger)
 
             data.conn[ii] = elm.conn
@@ -981,6 +985,7 @@ def get_branch_data(circuit: MultiCircuit,
                                  time_series=time_series,
                                  opf_results=opf_results,
                                  use_stored_guess=use_stored_guess,
+                                 Sbase=circuit.Sbase,
                                  logger=logger)
         data.Kdp[ii] = elm.kdp
         data.is_converter[ii] = True
@@ -1029,7 +1034,7 @@ def get_branch_data(circuit: MultiCircuit,
         ysh1 = elm.get_ysh1()
         data.Beq[ii] = ysh1.imag
 
-        data.Pset[ii] = elm.Pfset
+        data.Pset[ii] = elm.Pfset / Sbase
 
         data.contingency_enabled[ii] = int(elm.contingency_enabled)
         data.monitor_loading[ii] = int(elm.monitor_loading)
