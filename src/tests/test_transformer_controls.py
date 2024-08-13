@@ -14,6 +14,7 @@ def test_v_control_true():
     tr = main_circuit.transformers2w[5]
 
     tr.tap_module_control_mode = TapModuleControl.Vm
+    tr.regulation_bus = tr.bus_to
     tr.vset = 1.0
 
     power_flow = PowerFlowDriver(main_circuit, options)
