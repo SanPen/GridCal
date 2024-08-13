@@ -28,10 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="branch voltage control working">
-      <change afterPath="$PROJECT_DIR$/src/tests/data/grids/5Bus_LTC_FACTS_Fig4.7.gridcal" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added LTC control test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/test_power_flow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tests/test_power_flow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -157,7 +156,7 @@
     "Python tests.pytest in test_topology_processor.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
+    "Python.ExecuteGridCal.executor": "Run",
     "Python.GridCalMain.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
@@ -201,7 +200,7 @@
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest for test_power_flow.test_voltage_control_with_ltc">
+  <component name="RunManager" selected="Python.ExecuteGridCal">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -672,8 +671,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest for test_power_flow.test_voltage_control_with_ltc" />
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python tests.pytest for test_power_flow.test_voltage_control_with_ltc" />
         <item itemvalue="Python.update_gui_file" />
         <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest in test_admittance_tap_derivatives.py" />
@@ -1422,7 +1421,7 @@
       <workItem from="1720613476052" duration="5308000" />
       <workItem from="1722614302096" duration="2135000" />
       <workItem from="1723466580956" duration="19287000" />
-      <workItem from="1723532911193" duration="18194000" />
+      <workItem from="1723532911193" duration="18812000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1767,7 +1766,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="525" />
+    <option name="localTasksCounter" value="526" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1813,7 +1812,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Minor update" />
     <MESSAGE value="Refactor Map elements" />
     <MESSAGE value="Buf fix glitch when selecting nodes in map" />
     <MESSAGE value="Map refactor, move event fixed" />
@@ -1838,7 +1836,8 @@
     <MESSAGE value="Moved the layout algorithm to the diagram settings" />
     <MESSAGE value="Fixed critical bug in the CxCSC matrix imag function" />
     <MESSAGE value="branch voltage control working" />
-    <option name="LAST_COMMIT_MESSAGE" value="branch voltage control working" />
+    <MESSAGE value="Added LTC control test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added LTC control test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2783,7 +2782,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ptdf_test_ptdf_ieee14_definition_ps.coverage" NAME="Nosetests for test_ptdf.test_ptdf_ieee14_definition_ps Coverage Results" MODIFIED="1706268834144" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$newton_equivalence_utils.coverage" NAME="newton_equivalence_utils Coverage Results" MODIFIED="1687725154112" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1696580506087" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1723557465760" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1723560321284" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$MVRSM_mo.coverage" NAME="MVRSM_mo Coverage Results" MODIFIED="1707735080331" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/MVRSM" />
     <SUITE FILE_PATH="coverage/GridCal$graph_save2.coverage" NAME="graph_save2 Coverage Results" MODIFIED="1702996105426" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalEngine/IO/rdf_test" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
