@@ -1807,7 +1807,7 @@ class NumericalCircuit:
 
         elif structure_type == 'Qf_set':
             df = pd.DataFrame(
-                data=self.branch_data.Pset[formulation.idx_dQf],
+                data=self.branch_data.Qset[formulation.idx_dQf],
                 columns=['Qf_set'],
                 index=self.branch_data.names[formulation.idx_dQf],
             )
