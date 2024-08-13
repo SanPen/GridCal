@@ -65,6 +65,23 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         self.units = table.units
 
+        # flag for the headers text wraper: HeaderViewWithWordWrap
+        self._hide_headers_mode = False
+
+    def hideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = True
+
+    def unhideHeaders(self):
+        """
+
+        :return:
+        """
+        self._hide_headers_mode = False
+
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
 
@@ -135,6 +152,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if self._hide_headers_mode is True:
+            return None
+
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 if len(self.table.cols_c) > section:

@@ -173,13 +173,6 @@ class NumericalCircuit:
             'k_qf_beq',
             'k_v_m',
             'k_v_beq',
-            'idx_dPf',
-            'idx_dQf',
-            'idx_dPt',
-            'idx_dQt',
-            'idx_dm',
-            'idx_dtau',
-            'idx_dbeq',
         ],
         "System matrices": [
             'Ybus',
@@ -195,8 +188,21 @@ class NumericalCircuit:
             "B''",
             'Yshunt',
             'Yseries',
-            'Jacobian',
         ],
+        "Power flow arrays": [
+            'idx_dPf',
+            'idx_dQf',
+            'idx_dPt',
+            'idx_dQt',
+            'idx_dVa',
+            'idx_dVm',
+            'idx_dm',
+            'idx_dtau',
+            'idx_dbeq',
+            'x',
+            'f(x)',
+            'Jacobian',
+        ]
     }
 
     def __init__(self,
@@ -1369,13 +1375,30 @@ class NumericalCircuit:
         if self.simulation_indices_ is None:
             self.simulation_indices_ = self.get_simulation_indices()
 
-        idx_dm = np.r_[self.simulation_indices_.k_v_m, self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qt_m]
-        idx_dtau = np.r_[self.simulation_indices_.k_pf_tau, self.simulation_indices_.k_pt_tau]
-        idx_dbeq = self.simulation_indices_.k_qf_beq
-        idx_dPf = self.simulation_indices_.k_pf_tau
-        idx_dQf = np.r_[self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qf_beq]
-        idx_dPt = self.simulation_indices_.k_pt_tau
-        idx_dQt = self.simulation_indices_.k_qt_m
+        # idx_dm = np.r_[self.simulation_indices_.k_v_m, self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qt_m]
+        # idx_dtau = np.r_[self.simulation_indices_.k_pf_tau, self.simulation_indices_.k_pt_tau]
+        # idx_dbeq = self.simulation_indices_.k_qf_beq
+        # idx_dPf = self.simulation_indices_.k_pf_tau
+        # idx_dQf = np.r_[self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qf_beq]
+        # idx_dPt = self.simulation_indices_.k_pt_tau
+        # idx_dQt = self.simulation_indices_.k_qt_m
+
+        from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import (
+            PfAdvancedFormulation)
+        from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+
+        formulation = PfAdvancedFormulation(V0=self.Vbus,
+                                            S0=self.Sbus,
+                                            I0=self.Ibus,
+                                            Y0=self.YLoadBus,
+                                            Qmin=self.Qmin_bus,
+                                            Qmax=self.Qmax_bus,
+                                            pq=self.pq,
+                                            pv=self.pv,
+                                            pqv=self.pqv,
+                                            p=self.p,
+                                            nc=self,
+                                            options=PowerFlowOptions())
 
         if structure_type == 'V':
             df = pd.DataFrame(
@@ -1545,25 +1568,21 @@ class NumericalCircuit:
                 index=self.bus_data.names,
             )
 
+        elif structure_type == 'x':
+            df = pd.DataFrame(
+                data=formulation.var2x(),
+                columns=['x'],
+                index=formulation.get_x_names(),
+            )
+
+        elif structure_type == 'f(x)':
+            df = pd.DataFrame(
+                data=formulation.fx(),
+                columns=['f(x)'],
+                index=formulation.get_fx_names(),
+            )
+
         elif structure_type == 'Jacobian':
-
-            from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import (
-                PfAdvancedFormulation)
-            from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
-
-            formulation = PfAdvancedFormulation(V0=self.Vbus,
-                                                S0=self.Sbus,
-                                                I0=self.Ibus,
-                                                Y0=self.YLoadBus,
-                                                Qmin=self.Qmin_bus,
-                                                Qmax=self.Qmax_bus,
-                                                pq=self.pq,
-                                                pv=self.pv,
-                                                pqv=self.pqv,
-                                                p=self.p,
-                                                nc=self,
-                                                options=PowerFlowOptions())
-
             df = formulation.get_jacobian_df(autodiff=False)
 
         elif structure_type == 'Qmin':
@@ -1711,79 +1730,93 @@ class NumericalCircuit:
             )
         elif structure_type == 'idx_dPf':
             df = pd.DataFrame(
-                data=idx_dPf.astype(int).astype(str),
+                data=formulation.idx_dPf.astype(int).astype(str),
                 columns=['idx_dPf'],
-                index=self.branch_data.names[idx_dPf],
+                index=self.branch_data.names[formulation.idx_dPf],
             )
 
         elif structure_type == 'idx_dQf':
             df = pd.DataFrame(
-                data=idx_dQf.astype(int).astype(str),
+                data=formulation.idx_dQf.astype(int).astype(str),
                 columns=['idx_dQf'],
-                index=self.branch_data.names[idx_dQf],
+                index=self.branch_data.names[formulation.idx_dQf],
             )
 
         elif structure_type == 'idx_dPt':
             df = pd.DataFrame(
-                data=idx_dPt.astype(int).astype(str),
+                data=formulation.idx_dPt.astype(int).astype(str),
                 columns=['idx_dPt'],
-                index=self.branch_data.names[idx_dPt],
+                index=self.branch_data.names[formulation.idx_dPt],
             )
 
         elif structure_type == 'idx_dQt':
             df = pd.DataFrame(
-                data=idx_dQt.astype(int).astype(str),
+                data=formulation.idx_dQt.astype(int).astype(str),
                 columns=['idx_dQt'],
-                index=self.branch_data.names[idx_dQt],
+                index=self.branch_data.names[formulation.idx_dQt],
+            )
+
+        elif structure_type == 'idx_dVa':
+            df = pd.DataFrame(
+                data=formulation.idx_dVa.astype(int).astype(str),
+                columns=['idx_dVa'],
+                index=self.bus_data.names[formulation.idx_dVa],
+            )
+
+        elif structure_type == 'idx_dVm':
+            df = pd.DataFrame(
+                data=formulation.idx_dVm.astype(int).astype(str),
+                columns=['idx_dVm'],
+                index=self.bus_data.names[formulation.idx_dVm],
             )
 
         elif structure_type == 'idx_dm':
             df = pd.DataFrame(
-                data=idx_dm.astype(int).astype(str),
+                data=formulation.idx_dm.astype(int).astype(str),
                 columns=['idx_dm'],
-                index=self.branch_data.names[idx_dm],
+                index=self.branch_data.names[formulation.idx_dm],
             )
 
         elif structure_type == 'idx_dtau':
             df = pd.DataFrame(
-                data=idx_dtau.astype(int).astype(str),
+                data=formulation.idx_dtau.astype(int).astype(str),
                 columns=['idx_dtau'],
-                index=self.branch_data.names[idx_dtau],
+                index=self.branch_data.names[formulation.idx_dtau],
             )
 
         elif structure_type == 'idx_dbeq':
             df = pd.DataFrame(
-                data=idx_dbeq.astype(int).astype(str),
+                data=formulation.idx_dbeq.astype(int).astype(str),
                 columns=['idx_dbeq'],
-                index=self.branch_data.names[idx_dbeq],
+                index=self.branch_data.names[formulation.idx_dbeq],
             )
 
         elif structure_type == 'Pf_set':
             df = pd.DataFrame(
-                data=self.branch_data.Pset[idx_dPf],
+                data=self.branch_data.Pset[formulation.idx_dPf],
                 columns=['Pf_set'],
-                index=self.branch_data.names[idx_dPf],
+                index=self.branch_data.names[formulation.idx_dPf],
             )
 
         elif structure_type == 'Pt_set':
             df = pd.DataFrame(
-                data=self.branch_data.Pset[idx_dPt],
+                data=self.branch_data.Pset[formulation.idx_dPt],
                 columns=['Pt_set'],
-                index=self.branch_data.names[idx_dPt],
+                index=self.branch_data.names[formulation.idx_dPt],
             )
 
         elif structure_type == 'Qf_set':
             df = pd.DataFrame(
-                data=self.branch_data.Pset[idx_dQf],
+                data=self.branch_data.Pset[formulation.idx_dQf],
                 columns=['Qf_set'],
-                index=self.branch_data.names[idx_dQf],
+                index=self.branch_data.names[formulation.idx_dQf],
             )
 
         elif structure_type == 'Qt_set':
             df = pd.DataFrame(
-                data=self.branch_data.Qset[idx_dQt],
+                data=self.branch_data.Qset[formulation.idx_dQt],
                 columns=['Qt_set'],
-                index=self.branch_data.names[idx_dQt],
+                index=self.branch_data.names[formulation.idx_dQt],
             )
 
         else:
