@@ -25,7 +25,6 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls impo
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    compute_fx, polar_to_rect)
-from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC
 
@@ -88,10 +87,10 @@ class PfBasicFormulation(PfFormulationTemplate):
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec]:
         """
-
-        :param x:
+        Update step
+        :param x: Solution vector
         :param update_controls:
-        :return:
+        :return: error, converged?, x
         """
         # set the problem state
         self.x2var(x)

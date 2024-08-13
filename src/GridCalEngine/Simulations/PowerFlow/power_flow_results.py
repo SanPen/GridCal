@@ -173,9 +173,11 @@ class PowerFlowResults(ResultsTemplate):
         self.St: CxVec = np.zeros(m, dtype=complex)
         self.If: CxVec = np.zeros(m, dtype=complex)
         self.It: CxVec = np.zeros(m, dtype=complex)
+
         self.tap_module: Vec = np.zeros(m, dtype=float)
         self.tap_angle: Vec = np.zeros(m, dtype=float)
         self.Beq: Vec = np.zeros(m, dtype=float)
+
         self.Vbranch: CxVec = np.zeros(m, dtype=complex)
         self.loading: CxVec = np.zeros(m, dtype=complex)
         self.losses: CxVec = np.zeros(m, dtype=complex)
@@ -282,19 +284,19 @@ class PowerFlowResults(ResultsTemplate):
             **elm_idx**: branch original indices
         """
         self.Sbus[b_idx] = results.Sbus
-
         self.voltage[b_idx] = results.voltage
 
         self.Sf[br_idx] = results.Sf
-
         self.St[br_idx] = results.St
-
         self.If[br_idx] = results.If
+        self.It[br_idx] = results.It
+
+        self.tap_module[br_idx] = results.tap_module
+        self.tap_angle[br_idx] = results.tap_angle
+        self.Beq[br_idx] = results.Beq
 
         self.Vbranch[br_idx] = results.Vbranch
-
         self.loading[br_idx] = results.loading
-
         self.losses[br_idx] = results.losses
 
         self.convergence_reports += results.convergence_reports
