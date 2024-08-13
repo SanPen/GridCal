@@ -18,7 +18,7 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 from numba import njit
-from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices, compile_y_acdc, compute_admittances
+from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
@@ -157,12 +157,12 @@ def adv_jacobian(nbus: int,
 
 def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
     """
-
-    :param n:
-    :param arr:
-    :param idx:
-    :param default:
-    :return:
+    Expand array
+    :param n: number of elements
+    :param arr: short array
+    :param idx: indices in the longer array
+    :param default: default value for the longuer array
+    :return: longuer array
     """
     x = np.full(n, default)
     x[idx] = arr
@@ -263,12 +263,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         e = d + len(self.idx_dbeq)
 
         # update the vectors
-        Va = self.Va.copy()
-        Vm = self.Vm.copy()
-
-        Va[self.idx_dVa] = x[0:a]
-        Vm[self.idx_dVm] = x[a:b]
-
+        self.Va[self.idx_dVa] = x[0:a]
+        self.Vm[self.idx_dVm] = x[a:b]
         self.m = x[b:c]
         self.tau = x[c:d]
         self.beq = x[d:e]
@@ -316,10 +312,10 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec]:
         """
-
-        :param x:
+        Update step
+        :param x: Solution vector
         :param update_controls:
-        :return:
+        :return: error, converged?, x
         """
         # set the problem state
         self.x2var(x)
@@ -424,30 +420,39 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # compute the complex voltage
         V = polar_to_rect(Vm, Va)
 
-        Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=self.nc.Cf,
-                                                               Ct=self.nc.Ct,
-                                                               C_bus_shunt=self.nc.shunt_data.C_bus_elm.tocsc(),
-                                                               shunt_admittance=self.nc.shunt_data.Y,
-                                                               shunt_active=self.nc.shunt_data.active,
-                                                               ys=self.nc.branch_data.get_series_admittance(),
-                                                               B=self.nc.branch_data.B,
-                                                               Sbase=self.nc.Sbase,
-                                                               tap_module=m,
-                                                               tap_angle=tau,
-                                                               Beq=beq,
-                                                               Gsw=self.nc.branch_data.G0sw,
-                                                               virtual_tap_from=self.nc.branch_data.virtual_tap_f,
-                                                               virtual_tap_to=self.nc.branch_data.virtual_tap_t)
+        adm = compute_admittances(
+            R=self.nc.branch_data.R,
+            X=self.nc.branch_data.X,
+            G=self.nc.branch_data.G,
+            B=self.nc.branch_data.B,
+            k=self.nc.branch_data.k,
+            tap_module=m,
+            vtap_f=self.nc.branch_data.virtual_tap_f,
+            vtap_t=self.nc.branch_data.virtual_tap_t,
+            tap_angle=tau,
+            Beq=beq,
+            Cf=self.nc.Cf,
+            Ct=self.nc.Ct,
+            G0sw=self.nc.branch_data.G0sw,
+            If=np.zeros(len(self.nc.branch_data)),
+            a=self.nc.branch_data.a,
+            b=self.nc.branch_data.b,
+            c=self.nc.branch_data.c,
+            Yshunt_bus=self.nc.Yshunt_from_devices,
+            conn=self.nc.branch_data.conn,
+            seq=1,
+            add_windings_phase=False
+        )
 
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
-        Scalc = compute_power(Ybus, V)
+        Scalc = compute_power(adm.Ybus, V)
 
         dS = Scalc - Sbus  # compute the mismatch
 
-        Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V, yff=yff, yft=yft, F=self.nc.F, T=self.nc.T).real
-        Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V, yff=yff, yft=yft, F=self.nc.F, T=self.nc.T).real
-        Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V, ytf=ytf, ytt=ytt, F=self.nc.F, T=self.nc.T).real
-        Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V, ytf=ytf, ytt=ytt, F=self.nc.F, T=self.nc.T).real
+        Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
+        Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V, yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
+        Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
+        Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
 
         f = np.r_[
             dS[self.idx_dP].real,
@@ -468,22 +473,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x())
             return scipy_to_mat(J)
         else:
-            # Assumes the internal vars were updated already with self.x2var()
-            # Ybus, Yf, Yt, tap, yff, yft, ytf, ytt = compile_y_acdc(Cf=self.nc.Cf,
-            #                                                        Ct=self.nc.Ct,
-            #                                                        C_bus_shunt=self.nc.shunt_data.C_bus_elm.tocsc(),
-            #                                                        shunt_admittance=self.nc.shunt_data.Y,
-            #                                                        shunt_active=self.nc.shunt_data.active,
-            #                                                        ys=self.nc.branch_data.get_series_admittance(),
-            #                                                        B=self.nc.branch_data.B,
-            #                                                        Sbase=self.nc.Sbase,
-            #                                                        tap_module=m,
-            #                                                        tap_angle=tau,
-            #                                                        Beq=beq,
-            #                                                        Gsw=self.nc.branch_data.G0sw,
-            #                                                        virtual_tap_from=self.nc.branch_data.virtual_tap_f,
-            #                                                        virtual_tap_to=self.nc.branch_data.virtual_tap_t)
-
             n_rows = (len(self.idx_dP)
                       + len(self.idx_dQ)
                       + len(self.idx_dPf)
