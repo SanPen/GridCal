@@ -814,8 +814,15 @@ def fill_controllable_branch(ii: int,
 
         data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
         data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
+        if elm.regulation_bus is None:
+            reg_bus = elm.bus_from
+            if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+                logger.add_warning("Unspecified regulation bus",
+                                   device_class=elm.device_type.value,
+                                   device=elm.name)
+        else:
+            reg_bus = elm.regulation_bus
 
-        reg_bus = elm.bus_from if elm.regulation_bus is None else elm.regulation_bus
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset_prof[t_idx] / Sbase
@@ -833,7 +840,14 @@ def fill_controllable_branch(ii: int,
         data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
         data.tap_module_control_mode[ii] = elm.tap_module_control_mode
 
-        reg_bus = elm.bus_from if elm.regulation_bus is None else elm.regulation_bus
+        if elm.regulation_bus is None:
+            reg_bus = elm.bus_from
+            if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+                logger.add_warning("Unspecified regulation bus",
+                                   device_class=elm.device_type.value,
+                                   device=elm.name)
+        else:
+            reg_bus = elm.regulation_bus
         data.tap_module_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset / Sbase
