@@ -238,7 +238,12 @@ class SimulationIndices:
                 k_qfzero_beq.append(k)
 
         # determine if there is any control
-        self.any_control = bool(len(k_pf_tau) + len(k_qfzero_beq) + len(k_v_m))
+        self.any_control = bool(len(k_pf_tau)
+                                + len(k_pt_tau)
+                                + len(k_qf_m)
+                                + len(k_qt_m)
+                                + len(k_qfzero_beq)
+                                + len(k_v_m))
 
         # convert lists to integer arrays
         self.k_pf_tau = np.array(k_pf_tau, dtype=int)

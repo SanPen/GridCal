@@ -282,3 +282,26 @@ def test_power_flow_control_with_pst() -> None:
 
         # check that the bus voltage module is the the transformer voltage set point
         assert np.isclose(results.Sf[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+
+
+def test_power_flow_control_with_pst_pt() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10(Pt).gridcal')
+
+    grid = gce.open_file(fname)
+
+    for solver_type in [SolverType.NR]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   max_iter=80)
+
+        results = gce.power_flow(grid, options)
+
+        assert results.converged
+
+        # check that the bus voltage module is the the transformer voltage set point
+        assert np.isclose(results.St[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
