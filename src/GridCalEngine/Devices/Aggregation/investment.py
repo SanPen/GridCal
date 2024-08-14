@@ -1,6 +1,6 @@
-from typing import Union, Any
+from typing import Union, Any, List
 
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType, SubObjectType
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
 
 
@@ -21,7 +21,7 @@ class Investment(EditableDevice):
                  template: DeviceType.TransformerTypeDevice = None,
                  comment: str = ""):
         """
-        Investment
+        Investment object formed by CAPEX, OPEX, status (on/off) and possible template
         :param idtag: String. Element unique identifier
         :param name: String. Contingency name
         :param code: String. Contingency code name
@@ -29,6 +29,7 @@ class Investment(EditableDevice):
         :param OPEX: Float. Operating expenditures
         :param status: If true the investment activates when applied, otherwise is deactivated
         :param group: InvestmentGroup. Investment group
+        :param template: DeviceType. Possible templates of each component
         :param comment: Comment
         """
 
@@ -54,7 +55,10 @@ class Investment(EditableDevice):
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
-        self.register(key='template', units='', tpe=template, definition='Possible templates of each component')
+        # self.register(key='template', units='', tpe=SubObjectType.ObjectsList,
+        #               definition='Possible templates of each component')
+        self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice,
+                      definition='Possible templates of each component')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
 
     @property
