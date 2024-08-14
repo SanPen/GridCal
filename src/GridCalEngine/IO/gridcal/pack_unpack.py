@@ -735,7 +735,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                         could_not_fix_it = True
 
                                     if could_not_fix_it:
-                                        logger.add_error("Could not locate refference",
+                                        logger.add_error("Could not locate reference",
                                                          device=row.get('idtag', 'not provided'),
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
@@ -986,7 +986,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                             if isinstance(gc_prop.tpe, DeviceType):
 
                                 # this is a hyperlink to another object
-                                # we must look for the refference in elements_dict
+                                # we must look for the reference in elements_dict
                                 collection = elements_dict_by_type.get(gc_prop.tpe, None)
 
                                 if collection is not None:
@@ -1052,6 +1052,12 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                         logger=logger,
                                         elm_name=elm.name
                                     )
+
+                                elif gc_prop.tpe == SubObjectType.ObjectsList:
+                                    prop_name = elm.get_snapshot_value(gc_prop)
+                                    print('xkk')
+                                    if prop_name == 'Investment':
+                                        print('xkk')
 
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
@@ -1321,7 +1327,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     circuit.set_snapshot_time_unix(val=snapshot_unix_time)
 
             else:
-                logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
+                logger.add_error(msg=f'The file must have time data regardless of the profiles existence')
                 circuit.time_profile = None
 
             # for each element type...
