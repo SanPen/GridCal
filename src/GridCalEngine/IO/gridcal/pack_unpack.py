@@ -1133,6 +1133,12 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                         updatable_device_type=update_assoc_type
                                     )
 
+                                elif gc_prop.tpe == SubObjectType.ObjectsList:
+                                    prop_name = elm.get_snapshot_value(gc_prop)
+                                    print('xkk')
+                                    if prop_name == 'Investment':
+                                        print('xkk')
+
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
 
