@@ -23,7 +23,6 @@ from pymoo.optimize import minimize
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.variable import Real, Integer, Choice, Binary
 
-from GridCalEngine.Utils.acciona_capex import CapexAcciona
 from GridCalEngine.Devices.Aggregation.investment import Investment
 
 

@@ -3317,7 +3317,7 @@ class Assets:
         for invst in to_del:
             self.delete_investment(invst)
 
-    def get_investmenst_by_groups(self) -> List[Tuple[dev.InvestmentsGroup, List[dev.Investment]]]:
+    def get_investments_by_groups(self) -> List[Tuple[dev.InvestmentsGroup, List[dev.Investment]]]:
         """
         Get a dictionary of investments goups and their
         :return: list of investment groups and their list of associated investments
