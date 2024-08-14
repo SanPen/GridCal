@@ -1588,7 +1588,7 @@ class DiagramsMain(CompiledArraysMain):
                                                  CAPEX=0.0,
                                                  OPEX=0.0,
                                                  group=group,
-                                                 template=list(elm.possible_transformer_types.data))
+                                                 template_src=list(elm.possible_transformer_types.data))
                             self.circuit.add_investment(con)
                         elif elm.type_name == 'Line':
                             if elm.type_name == 'Sequence line':
@@ -1598,7 +1598,7 @@ class DiagramsMain(CompiledArraysMain):
                                                      CAPEX=0.0,
                                                      OPEX=0.0,
                                                      group=group,
-                                                     template=list(elm.possible_sequence_line_types.data))
+                                                     template_src=list(elm.possible_sequence_line_types.data))
                                 self.circuit.add_investment(con)
                             elif elm.type_name == 'Underground line':
                                 con = dev.Investment(device_idtag=elm.idtag,
@@ -1607,7 +1607,7 @@ class DiagramsMain(CompiledArraysMain):
                                                      CAPEX=0.0,
                                                      OPEX=0.0,
                                                      group=group,
-                                                     template=list(elm.possible_underground_line_types.data))
+                                                     template_src=list(elm.possible_underground_line_types.data))
                                 self.circuit.add_investment(con)
                             elif elm.type_name == 'Tower':
                                 con = dev.Investment(device_idtag=elm.idtag,
@@ -1616,7 +1616,7 @@ class DiagramsMain(CompiledArraysMain):
                                                      CAPEX=0.0,
                                                      OPEX=0.0,
                                                      group=group,
-                                                     template=list(elm.possible_tower_types.data))
+                                                     template_src=list(elm.possible_tower_types.data))
                                 self.circuit.add_investment(con)
                         else:
                             con = dev.Investment(device_idtag=elm.idtag,

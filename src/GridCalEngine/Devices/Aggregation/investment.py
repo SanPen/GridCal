@@ -18,7 +18,7 @@ class Investment(EditableDevice):
                  OPEX=0.0,
                  status: bool = True,
                  group: InvestmentsGroup = None,
-                 template: DeviceType.TransformerTypeDevice = None,
+                 template_src: Union[DeviceType.Transformer2WDevice, DeviceType.LineDevice] = None,
                  comment: str = ""):
         """
         Investment object formed by CAPEX, OPEX, status (on/off) and possible template
@@ -29,7 +29,7 @@ class Investment(EditableDevice):
         :param OPEX: Float. Operating expenditures
         :param status: If true the investment activates when applied, otherwise is deactivated
         :param group: InvestmentGroup. Investment group
-        :param template: DeviceType. Possible templates of each component
+        :param template_src: DeviceType. Possible templates of each component
         :param comment: Comment
         """
 
@@ -46,7 +46,6 @@ class Investment(EditableDevice):
         self.OPEX = OPEX
         self._group: InvestmentsGroup = group
         self.status: bool = status
-        self.template = template
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
         self.register(key='CAPEX', units='M€', tpe=float,
@@ -55,11 +54,18 @@ class Investment(EditableDevice):
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
-        # self.register(key='template', units='', tpe=SubObjectType.ObjectsList,
-        #               definition='Possible templates of each component')
-        self.register(key='template', units='', tpe=DeviceType.TransformerTypeDevice,
-                      definition='Possible templates of each component')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
+
+        if template_src is not None:
+            if template_src.device_type == DeviceType.Transformer2WDevice:
+                self.template = template_src.possible_transformer_types
+            else:
+                raise TypeError(f'Templates for {template_src.type} not recognized')
+        else:
+            self.template = None
+
+        self.register(key='template', units='', tpe=SubObjectType.ObjectsList,
+                          definition='Possible templates of each component')
 
     @property
     def group(self) -> InvestmentsGroup:
