@@ -1586,22 +1586,23 @@ class DiagramsMain(CompiledArraysMain):
                     # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
-                        if elm.device_type in [DeviceType.Transformer2WDevice, DeviceType.SequenceLineDevice,
-                                               DeviceType.UnderGroundLineDevice, DeviceType.OverheadLineTypeDevice]:
-                            con = dev.Investment(device_idtag=elm.idtag,
-                                                 code=elm.code,
-                                                 name=elm.type_name + ": " + elm.name,
-                                                 CAPEX=elm.capex,
-                                                 OPEX=elm.opex,
-                                                 group=group,
-                                                 template_src=elm)
+                        if elm.device_type == DeviceType.Transformer2WDevice:
+                            possible_types = elm.possible_transformer_types.data
+                        elif elm.device_type == DeviceType.SequenceLineDevice:
+                            possible_types = elm.possible_sequence_line_types.data
+                        elif elm.device_type == DeviceType.UnderGroundLineDevice:
+                            possible_types = elm.possible_underground_line_types.data
+                        elif elm.device_type == DeviceType.OverheadLineTypeDevice:
+                            possible_types = elm.possible_tower_types.data
                         else:
-                            con = dev.Investment(device_idtag=elm.idtag,
-                                                 code=elm.code,
-                                                 name=elm.type_name + ": " + elm.name,
-                                                 CAPEX=elm.capex,
-                                                 OPEX=elm.opex,
-                                                 group=group)
+                            possible_types = None
+                        con = dev.Investment(device_idtag=elm.idtag,
+                                             code=elm.code,
+                                             name=elm.type_name + ": " + elm.name,
+                                             CAPEX=elm.capex,
+                                             OPEX=elm.opex,
+                                             group=group,
+                                             template=possible_types)
 
                         self.circuit.add_investment(con)
             else:

@@ -1079,6 +1079,7 @@ class SubObjectType(Enum):
     Array = "Array"
     ObjectsList = "ObjectsList"
     Associations = "AssociationsList"
+    TemplateLinks = "TemplateLinks"
 
     def __str__(self) -> str:
         return str(self.value)
