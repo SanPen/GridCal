@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Tuple
 import numpy as np
+import pandas as pd
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC, spsolve_csc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
@@ -205,6 +206,9 @@ class PfFormulationTemplate:
             print("J:\n", J.toarray())
             print("F:\n", f)
             print("dx:\n", dx)
+            if self.options.verbose > 2:
+                Jdf = pd.DataFrame(J.toarray())
+                Jdf.to_csv('J.csv', index=False, float_format='%.4f')
 
         return dx, ok
 
