@@ -1029,7 +1029,7 @@ def dSf_dm_csc(nbr, sf_indices, m_indices, F: IntVec, T: IntVec, Ys: CxVec, Bc: 
             f = F[k]
             t = T[k]
 
-            YttB = Ys[k] + 1j * (Bc[k] / 2 + Beq[k])
+            YttB = Ys[k] + 1j * ((Bc[k] / 2.0) + Beq[k])
 
             # Partials of Ytt, Yff, Yft and Ytf w.r.t.ma
             dyff_dma = -2 * YttB / (np.power(kconv[k], 2) * np.power(tap_module[k], 3))

@@ -81,11 +81,11 @@ def adv_jacobian(nbus: int,
     :param idx_dQt:
     :param F:
     :param T:
-    :param Ys:
+    :param Ys: Series admittance 1 / (R + jX)
     :param kconv:
     :param complex_tap:
     :param tap_modules:
-    :param Bc:
+    :param Bc: Total changing susceptance
     :param Beq:
     :param V:
     :param Vm:
@@ -208,10 +208,10 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # self.k_v_m: IntVec = nc.k_v_m
         # self.k_qf_beq: IntVec = nc.k_qf_beq
 
-        # self._idx_dVa = np.r_[self.pqv, self.pv, self.pq, self.p]
-        # self._idx_dVm = np.r_[self.pq, self.p]
-        # self._idx_dP = self._idx_dVa
-        # self._idx_dQ = np.r_[self.pq, self.pqv]
+        self._idx_dVa = np.r_[self.pqv, self.pv, self.pq, self.p]
+        self._idx_dVm = np.r_[self.pq, self.p]
+        self._idx_dP = self._idx_dVa
+        self._idx_dQ = np.r_[self.pq, self.pqv]
 
         self.idx_dm = np.r_[self._indices.k_v_m, self._indices.k_qf_m, self._indices.k_qt_m]
         self.idx_dtau = np.r_[self._indices.k_pf_tau, self._indices.k_pt_tau]

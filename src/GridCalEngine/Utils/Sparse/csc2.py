@@ -730,7 +730,7 @@ def csc_stack_2d_ff(mats: List[CSC], n_rows: int = 1, n_cols: int = 1) -> CSC:
                             res.data[cnt] = A.data[k]
                             cnt += 1
 
-                        offset_row += A.n_rows
+                    offset_row += A.n_rows
 
                 res.indptr[offset_col + j + 1] = cnt
             offset_col += n
