@@ -6,7 +6,8 @@ import GridCal.templates as templs
 
 def open_dummy_grid():
     # fname = os.path.join('C:/Users/J/Downloads/temp_tr1.gridcal')
-    fname = os.path.join('C:/Users/J/Downloads/temp_tr1_invested.gridcal')
+    # fname = os.path.join('C:/Users/J/Downloads/temp_tr1_invested.gridcal')
+    fname = os.path.join('C:/Users/J/Downloads/temp_tr2.gridcal')
     main_circuit = gce.open_file(fname)
     results = gce.power_flow(main_circuit)
     print(results.voltage)
@@ -22,7 +23,7 @@ def process_dummy_grid():
     my_tr = main_circuit.transformers2w[0]
 
     inv_group = dev.InvestmentsGroup(name='Ig0')
-    investment1 = dev.Investment(name='Investment 1x', group=inv_group, template_src=my_tr)
+    investment1 = dev.Investment(name='Investment 1x', group=inv_group, template=my_tr)
     main_circuit.add_investment(investment1)
     main_circuit.add_investments_group(inv_group)
     gce.save_file(main_circuit, 'C:/Users/J/Downloads/temp_tr1_invested.gridcal')
@@ -48,6 +49,6 @@ def create_dummy_grid():
 
 
 if __name__ == "__main__":
-    # open_dummy_grid()
-    pp = process_dummy_grid()
+    open_dummy_grid()
+    # pp = process_dummy_grid()
     # gg = create_dummy_grid()

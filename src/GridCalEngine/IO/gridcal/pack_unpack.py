@@ -405,6 +405,9 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
         elif prop.tpe == SubObjectType.Associations:
             data[name] = obj.to_dict()
 
+        elif prop.tpe == SubObjectType.TemplateLinks:
+            data[name] = obj
+
         elif prop.tpe == SubObjectType.Array:
             data[name] = list(obj)
 
