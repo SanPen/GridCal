@@ -28,11 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Still need to unpack correctly">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Check the investment template type inside">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/try_investment_optimization.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/try_investment_optimization.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/try_template_loading.py" beforeDir="false" afterPath="$PROJECT_DIR$/examples/try_template_loading.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/investment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/investment.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1789,7 +1792,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="545" />
+    <option name="localTasksCounter" value="546" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1835,7 +1838,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="worked on test_cgmes_ieeee.py" />
     <MESSAGE value="passing test_ieee_grids" />
     <MESSAGE value="passing test_ieee_grids (minimal refactor)" />
     <MESSAGE value="created numba csc2" />
@@ -1860,7 +1862,8 @@
     <MESSAGE value="Delete an important file" />
     <MESSAGE value="Fix changes previous to pack/unpack" />
     <MESSAGE value="Still need to unpack correctly" />
-    <option name="LAST_COMMIT_MESSAGE" value="Still need to unpack correctly" />
+    <MESSAGE value="Check the investment template type inside" />
+    <option name="LAST_COMMIT_MESSAGE" value="Check the investment template type inside" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2330,48 +2333,43 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1175</line>
+          <line>1178</line>
           <option name="timeStamp" value="1960" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1189</line>
+          <line>1192</line>
           <option name="timeStamp" value="1961" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1203</line>
+          <line>1206</line>
           <option name="timeStamp" value="1962" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1132</line>
+          <line>1135</line>
           <option name="timeStamp" value="1967" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/try_template_loading.py</url>
-          <line>12</line>
+          <line>13</line>
           <option name="timeStamp" value="1972" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/examples/try_template_loading.py</url>
-          <line>28</line>
-          <option name="timeStamp" value="1973" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/examples/try_template_loading.py</url>
-          <line>27</line>
-          <option name="timeStamp" value="1975" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1064</line>
+          <line>1067</line>
           <option name="timeStamp" value="1976" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/examples/try_template_loading.py</url>
-          <line>11</line>
+          <line>12</line>
           <option name="timeStamp" value="1977" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
+          <line>1060</line>
+          <option name="timeStamp" value="1985" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
