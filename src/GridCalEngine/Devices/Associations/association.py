@@ -76,7 +76,7 @@ class Association:
 
 class Associations:
     """
-    GridCal associations object, this handless a set of associations
+    GridCal associations object, this handles a set of associations
     """
 
     def __init__(self, device_type: DeviceType):

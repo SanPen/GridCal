@@ -29,7 +29,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import SimulationTypes, DeviceType
+from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
 import GridCalEngine.Devices as dev
@@ -801,6 +801,7 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
+        print("Colour!")
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
@@ -1120,36 +1121,30 @@ class DiagramsMain(CompiledArraysMain):
 
         self.set_diagrams_list_view()
 
-    def add_map_diagram(self, ask: bool = True) -> None:
+    def add_map_diagram(self) -> None:
         """
         Adds a Map diagram
         """
-        if ask:
-            ok = yes_no_question(text=f"Do you want to add all substations to the map?\nYou can add them later.",
-                                 title="New map")
-        else:
-            ok = True
-
-        if ok:
-            diagram = generate_map_diagram(substations=self.circuit.get_substations(),
-                                           voltage_levels=self.circuit.get_voltage_levels(),
-                                           lines=self.circuit.get_lines(),
-                                           dc_lines=self.circuit.get_dc_lines(),
-                                           hvdc_lines=self.circuit.get_hvdc(),
-                                           fluid_nodes=self.circuit.get_fluid_nodes(),
-                                           fluid_paths=self.circuit.get_fluid_paths(),
-                                           prog_func=None,
-                                           text_func=None,
-                                           name='Map diagram')
-
-            # set other default properties of the diagram
-            diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
-            diagram.start_level = 5
-        else:
-            diagram = dev.MapDiagram(name='Map diagram')
-
         # select the tile source
         tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
+
+        diagram = generate_map_diagram(substations=self.circuit.get_substations(),
+                                       voltage_levels=self.circuit.get_voltage_levels(),
+                                       lines=self.circuit.get_lines(),
+                                       dc_lines=self.circuit.get_dc_lines(),
+                                       hvdc_lines=self.circuit.get_hvdc(),
+                                       fluid_nodes=self.circuit.get_fluid_nodes(),
+                                       fluid_paths=self.circuit.get_fluid_paths(),
+                                       prog_func=None,
+                                       text_func=None,
+                                       name='Map diagram')
+
+        # set other default properties of the diagram
+        diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
+        diagram.start_level = 5
+
+        # diagram.longitude = -15.41
+        # diagram.latitude = 40.11
 
         # create the map widget
         map_widget = GridMapWidget(tile_src=tile_source,
@@ -1586,25 +1581,51 @@ class DiagramsMain(CompiledArraysMain):
                     # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
-                        if elm.device_type == DeviceType.Transformer2WDevice:
-                            possible_types = elm.possible_transformer_types.data
-                        elif elm.device_type == DeviceType.SequenceLineDevice:
-                            possible_types = elm.possible_sequence_line_types.data
-                        elif elm.device_type == DeviceType.UnderGroundLineDevice:
-                            possible_types = elm.possible_underground_line_types.data
-                        elif elm.device_type == DeviceType.OverheadLineTypeDevice:
-                            possible_types = elm.possible_tower_types.data
+                        if elm.type_name == 'Transformer':
+                            con = dev.Investment(device_idtag=elm.idtag,
+                                                 code=elm.code,
+                                                 name=elm.type_name + ": " + elm.name,
+                                                 CAPEX=0.0,
+                                                 OPEX=0.0,
+                                                 group=group,
+                                                 template=elm.possible_transformer_types)
+                            self.circuit.add_investment(con)
+                        elif elm.type_name == 'Line':
+                            if elm.type_name == 'Sequence line':
+                                con = dev.Investment(device_idtag=elm.idtag,
+                                                     code=elm.code,
+                                                     name=elm.type_name + ": " + elm.name,
+                                                     CAPEX=0.0,
+                                                     OPEX=0.0,
+                                                     group=group,
+                                                     template=elm.possible_sequence_line_types)
+                                self.circuit.add_investment(con)
+                            elif elm.type_name == 'Underground line':
+                                con = dev.Investment(device_idtag=elm.idtag,
+                                                     code=elm.code,
+                                                     name=elm.type_name + ": " + elm.name,
+                                                     CAPEX=0.0,
+                                                     OPEX=0.0,
+                                                     group=group,
+                                                     template=elm.possible_underground_line_types)
+                                self.circuit.add_investment(con)
+                            elif elm.type_name == 'Tower':
+                                con = dev.Investment(device_idtag=elm.idtag,
+                                                     code=elm.code,
+                                                     name=elm.type_name + ": " + elm.name,
+                                                     CAPEX=0.0,
+                                                     OPEX=0.0,
+                                                     group=group,
+                                                     template=elm.possible_tower_types)
+                                self.circuit.add_investment(con)
                         else:
-                            possible_types = None
-                        con = dev.Investment(device_idtag=elm.idtag,
-                                             code=elm.code,
-                                             name=elm.type_name + ": " + elm.name,
-                                             CAPEX=elm.capex,
-                                             OPEX=elm.opex,
-                                             group=group,
-                                             template=possible_types)
-
-                        self.circuit.add_investment(con)
+                            con = dev.Investment(device_idtag=elm.idtag,
+                                                 code=elm.code,
+                                                 name=elm.type_name + ": " + elm.name,
+                                                 CAPEX=0.0,
+                                                 OPEX=0.0,
+                                                 group=group)
+                            self.circuit.add_investment(con)
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to investment")
 
@@ -1767,7 +1788,7 @@ class DiagramsMain(CompiledArraysMain):
         gf.add_menu_entry(menu=context_menu,
                           text="New map",
                           icon_path=":/Icons/icons/map (add).svg",
-                          function_ptr=lambda: self.add_map_diagram(True))
+                          function_ptr=self.add_map_diagram)
 
         context_menu.addSeparator()
         gf.add_menu_entry(menu=context_menu,
@@ -1842,14 +1863,6 @@ class DiagramsMain(CompiledArraysMain):
                 cmap_text = self.ui.palette_comboBox.currentText()
                 cmap = self.cmap_dict[cmap_text]
                 diagram_widget.diagram.palette = cmap
-
-                current_study = self.ui.available_results_to_color_comboBox.currentText()
-                val = self.ui.diagram_step_slider.value()
-                t_idx = val if val > -1 else None
-
-                self.grid_colour_function(diagram=diagram_widget,
-                                          current_study=current_study,
-                                          t_idx=t_idx)
 
     def set_diagrams_map_tile_provider(self):
         """

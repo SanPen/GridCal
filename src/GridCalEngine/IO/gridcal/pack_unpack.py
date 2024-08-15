@@ -1101,6 +1101,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                 elif gc_prop.tpe == SubObjectType.Associations:
 
                                     # get the list of associations
+                                    print('Enter associations')
                                     associations = elm.get_snapshot_value(gc_prop)
                                     associations.parse(
                                         data=property_value,
@@ -1108,6 +1109,10 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                         logger=logger,
                                         elm_name=elm.name
                                     )
+                                    print('x')
+
+                                elif gc_prop.tpe == SubObjectType.TemplateLinks:
+                                    print('Stop here')
 
                                 elif gc_prop.tpe == SubObjectType.ObjectsList:
 
