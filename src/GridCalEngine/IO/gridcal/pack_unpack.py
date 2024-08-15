@@ -920,7 +920,7 @@ def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Uni
                                   property_value: Any,
                                   collection: Union[None, Dict[str, Any]] = None) -> None:
     """
-    Search fro the property profiles into the json and apply it
+    Search from the property profiles into the json and apply it
     :param json_entry: Json entry of an object
     :param gc_prop: GCProp
     :param elm: THe device to set the profile into
@@ -1054,10 +1054,27 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     )
 
                                 elif gc_prop.tpe == SubObjectType.ObjectsList:
-                                    prop_name = elm.get_snapshot_value(gc_prop)
-                                    print('xkk')
-                                    if prop_name == 'Investment':
-                                        print('xkk')
+
+                                    val = property_value
+                                    elm.set_snapshot_value(gc_prop.name, val)
+                                    search_and_apply_json_profile(json_entry=json_entry,
+                                                                  gc_prop=gc_prop,
+                                                                  elm=elm,
+                                                                  property_value=val)
+
+                                    print('enter investments unpack')
+
+                                    # if collection is not None:
+                                    #     ref_idtag = str(property_value)
+                                    #     ref_elm = collection.get(ref_idtag, None)
+                                    #
+                                    #     if ref_elm is not None:
+                                    #         elm.set_snapshot_value(gc_prop.name, ref_elm)
+                                    #         search_and_apply_json_profile(json_entry=json_entry,
+                                    #                                       gc_prop=gc_prop,
+                                    #                                       elm=elm,
+                                    #                                       property_value=ref_elm,
+                                    #                                       collection=collection)
 
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")

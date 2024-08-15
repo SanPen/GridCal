@@ -58,9 +58,15 @@ class Investment(EditableDevice):
 
         if template_src is not None:
             if template_src.device_type == DeviceType.Transformer2WDevice:
-                self.template = template_src.possible_transformer_types
+                self.template = template_src.possible_transformer_types.data
+            elif template_src.device_type == DeviceType.SequenceLineDevice:
+                self.template = template_src.possible_sequence_line_types.data
+            elif template_src.device_type == DeviceType.UnderGroundLineDevice:
+                self.template = template_src.possible_underground_line_types.data
+            elif template_src.device_type == DeviceType.OverheadLineTypeDevice:
+                self.template = template_src.possible_tower_types.data
             else:
-                raise TypeError(f'Templates for {template_src.type} not recognized')
+                raise Exception(f'Templates for {template_src.type} not recognized')
         else:
             self.template = None
 
