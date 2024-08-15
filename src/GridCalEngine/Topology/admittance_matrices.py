@@ -146,13 +146,9 @@ def compute_admittances(R: Vec,
                         vtap_t: Vec,
                         tap_angle: Vec,
                         Beq: Vec,
-                        If: CxVec,
                         Cf: sp.csc_matrix,
                         Ct: sp.csc_matrix,
-                        G0sw: Vec,
-                        a: Vec,
-                        b: Vec,
-                        c: Vec,
+                        Gsw: Vec,
                         Yshunt_bus: CxVec,
                         conn: Union[List[WindingsConnection], ObjVec],
                         seq: int,
@@ -170,13 +166,9 @@ def compute_admittances(R: Vec,
     :param vtap_t: array of virtual taps at the "to" side
     :param tap_angle: array of tap angles (for all Branches, regardless of their type)
     :param Beq: Array of equivalent susceptance
-    :param If: Array of currents "from" in all the Branches
     :param Cf: Connectivity branch-bus "from" with the branch states computed
     :param Ct: Connectivity branch-bus "to" with the branch states computed
-    :param G0sw: base converter switch losses
-    :param a: quadratic converter losses coefficient
-    :param b: linear converter losses coefficient
-    :param c: constant converter losses coefficient
+    :param Gsw: converter switch losses
     :param Yshunt_bus: array of shunts equivalent power per bus, from the shunt devices (p.u.)
     :param seq: Sequence [0, 1, 2]
     :param conn: array of windings connections (numpy array of WindingsConnection)
@@ -185,7 +177,7 @@ def compute_admittances(R: Vec,
     """
 
     # compute G-switch
-    Gsw = G0sw + a * np.power(If, 2) + b * If + c
+    # Gsw = G0sw + a * np.power(If, 2) + b * If + c
 
     # form the admittance matrices
     ys = 1.0 / (R + 1.0j * X + 1e-20)  # series admittance

@@ -208,7 +208,7 @@ class PfFormulationTemplate:
             print("dx:\n", dx)
             if self.options.verbose > 2:
                 Jdf = pd.DataFrame(J.toarray())
-                Jdf.to_csv('J.csv', index=False, float_format='%.4f')
+                Jdf.to_csv(f'J.csv', index=False, float_format='%.4f')
 
         return dx, ok
 

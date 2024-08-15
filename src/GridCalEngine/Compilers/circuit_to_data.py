@@ -1015,6 +1015,9 @@ def get_branch_data(circuit: MultiCircuit,
                                  logger=logger)
         data.Kdp[ii] = elm.kdp
         data.is_converter[ii] = True
+        data.alpha1[ii] = elm.alpha1
+        data.alpha2[ii] = elm.alpha2
+        data.alpha3[ii] = elm.alpha3
 
         ii += 1
 
