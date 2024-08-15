@@ -176,6 +176,9 @@ class CSC:
         else:
             raise TypeError
 
+    # def __repr__(self):
+    #     return f"CSC ({self.n_rows}x{self.n_cols}) nnz:{self.nnz}"
+
 
 @jitclass([
     ('n_rows', int32),

@@ -874,7 +874,7 @@ def fill_controllable_branch(ii: int,
         if elm.tap_module_control_mode == TapModuleControl.Vm:
             bus_idx = data.tap_module_buses[ii]
             if not bus_voltage_used[bus_idx]:
-                if 0.9 <= elm.vset <= 1.1:
+                if elm.vset > 0.0:
                     bus_data.Vbus[bus_idx] = elm.vset
                 else:
                     logger.add_warning("Branch control voltage out of bounds",
