@@ -1,6 +1,6 @@
 from typing import Union, Any
 
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType, SubObjectType
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
 
 
@@ -18,7 +18,7 @@ class Investment(EditableDevice):
                  OPEX=0.0,
                  status: bool = True,
                  group: InvestmentsGroup = None,
-                 template: DeviceType.TransformerTypeDevice = None,
+                 template: SubObjectType.Associations = None,
                  comment: str = ""):
         """
         Investment
@@ -54,7 +54,8 @@ class Investment(EditableDevice):
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
-        self.register(key='template', units='', tpe=template, definition='Possible templates of each component')
+        self.register(key='template', units='', tpe=SubObjectType.Associations,
+                      definition='Possible templates of each component')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
 
     @property
