@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 import pandas as pd
 from numba import njit
@@ -29,7 +29,8 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
-                                                                                   polar_to_rect, get_Sf, get_St)
+                                                                                   polar_to_rect, get_Sf, get_St,
+                                                                                   get_It)
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
@@ -208,6 +209,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # self.k_v_m: IntVec = nc.k_v_m
         # self.k_qf_beq: IntVec = nc.k_qf_beq
 
+        self.idx_conv = self._indices.k_vsc
+
         self._idx_dVa = np.r_[self.pqv, self.pv, self.pq, self.p]
         self._idx_dVm = np.r_[self.pq, self.p]
         self._idx_dP = self._idx_dVa
@@ -227,6 +230,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.tau: Vec = self.nc.branch_data.tap_angle[self.idx_dtau]
         self.beq: Vec = self.nc.branch_data.Beq[self.idx_dbeq]
 
+        self.Gsw = self.nc.branch_data.G0sw[self.idx_conv]
+
         self.Ys = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
 
         self.adm = compute_admittances(
@@ -242,11 +247,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
-            G0sw=self.nc.branch_data.G0sw,
-            If=np.zeros(len(self.nc.branch_data)),
-            a=self.nc.branch_data.a,
-            b=self.nc.branch_data.b,
-            c=self.nc.branch_data.c,
+            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
@@ -291,16 +292,17 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
-            G0sw=self.nc.branch_data.G0sw,
-            If=np.zeros(len(self.nc.branch_data)),
-            a=self.nc.branch_data.a,
-            b=self.nc.branch_data.b,
-            c=self.nc.branch_data.c,
+            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
             add_windings_phase=False
         )
+
+        if self.options.verbose > 1:
+            print("V:")
+            for v in self.V:
+                print(v.real, v.imag)
 
     def var2x(self) -> Vec:
         """
@@ -369,6 +371,16 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         :return:
         """
+        # Update converter losses
+        It = get_It(k=self.idx_conv, V=self.V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
+        Itm = np.abs(It)
+        Itm2 = Itm * Itm
+        PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha1[self.idx_conv])
+
+        self.Gsw = PLoss_IEC / np.power(self.Vm[self.nc.F[self.idx_conv]], 2.0)
+
         # Assumes the internal vars were updated already with self.x2var()
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
         self.Scalc = compute_power(self.adm.Ybus, self.V)
@@ -438,11 +450,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Beq=beq,
             Cf=self.nc.Cf,
             Ct=self.nc.Ct,
-            G0sw=self.nc.branch_data.G0sw,
-            If=np.zeros(len(self.nc.branch_data)),
-            a=self.nc.branch_data.a,
-            b=self.nc.branch_data.b,
-            c=self.nc.branch_data.c,
+            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
@@ -531,7 +539,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
             return J
 
-    def get_x_names(self):
+    def get_x_names(self) -> List[str]:
         """
         Names matching x
         :return:
@@ -544,7 +552,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         return cols
 
-    def get_fx_names(self):
+    def get_fx_names(self) -> List[str]:
         """
         Names matching fx
         :return:

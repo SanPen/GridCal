@@ -54,10 +54,10 @@ class BranchData:
         self.mttf: Vec = np.zeros(self.nelm, dtype=float)
         self.mttr: Vec = np.zeros(self.nelm, dtype=float)
 
-        # composite losses curve (a * x^2 + b * x + c)
-        self.a: Vec = np.zeros(self.nelm, dtype=float)
-        self.b: Vec = np.zeros(self.nelm, dtype=float)
-        self.c: Vec = np.zeros(self.nelm, dtype=float)
+        # composite losses curve (c * x^2 + b * x + a)
+        # self.a: Vec = np.zeros(self.nelm, dtype=float)
+        # self.b: Vec = np.zeros(self.nelm, dtype=float)
+        # self.c: Vec = np.zeros(self.nelm, dtype=float)
 
         self.R: Vec = np.zeros(self.nelm, dtype=float)
         self.X: Vec = np.zeros(self.nelm, dtype=float)

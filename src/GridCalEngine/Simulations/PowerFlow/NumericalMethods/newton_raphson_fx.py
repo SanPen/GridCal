@@ -87,33 +87,34 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 print("(newton_raphson_fx.py) Singular Jacobian")
                 return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
-            mu = trust0
-            back_track_condition = True
-            l_iter = 0
-            while back_track_condition and mu > tol:
-
-                x2 = x - mu * dx
-                error2, converged2, _ = problem.update(x2, update_controls=False)
-
-                # change mu for the next iteration
-                mu *= 0.5  # acceleration_parameter
-
-                # keep back-tracking?
-                back_track_condition = error2 > error
-                l_iter += 1
-
-                if not back_track_condition:
-                    # accept the solution
-                    x = x2
-
-            if back_track_condition:
-                # this means that not even the backtracking was able to correct
-                # the solution, so terminate
-                logger.add_warning(f"Newton-Raphson's stagnated @iter {iteration}:")
-                return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
+            # mu = trust0
+            # back_track_condition = True
+            # l_iter = 0
+            # while back_track_condition and mu > tol:
+            #
+            #     x2 = x - mu * dx
+            #     error2, converged2, _ = problem.update(x2, update_controls=False)
+            #
+            #     # change mu for the next iteration
+            #     mu *= 0.5  # acceleration_parameter
+            #
+            #     # keep back-tracking?
+            #     back_track_condition = error2 > error
+            #     l_iter += 1
+            #
+            #     if not back_track_condition:
+            #         # accept the solution
+            #         x = x2
+            #
+            # if back_track_condition:
+            #     # this means that not even the backtracking was able to correct
+            #     # the solution, so terminate
+            #     logger.add_warning(f"Newton-Raphson's stagnated @iter {iteration}:")
+            #     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
             # set the problem state
-            error, converged, x = problem.update(x, update_controls=True)
+
+            error, converged, x = problem.update(x - dx, update_controls=True)
 
             # update iteration counter
             iteration += 1

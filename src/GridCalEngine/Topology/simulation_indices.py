@@ -123,6 +123,8 @@ class SimulationIndices:
         self.k_qf_beq: IntVec = np.zeros(0, dtype=int)  # make Qf = 0 for DC grids
         self.k_v_m: IntVec = np.zeros(0, dtype=int)
         self.k_v_beq: IntVec = np.zeros(0, dtype=int)
+
+        self.k_vsc: IntVec = np.zeros(0, dtype=int)
         self.analyze_branch_controls()
 
         # determine the bus indices
@@ -170,6 +172,7 @@ class SimulationIndices:
         k_qfzero_beq = list()
         k_v_m = list()
         k_v_beq = list()
+        k_vsc = list()
 
         nbr = len(self.tap_phase_control_mode)
         for k in range(nbr):
@@ -237,6 +240,9 @@ class SimulationIndices:
             if conv_type == 1:
                 k_qfzero_beq.append(k)
 
+            if is_conv:
+                k_vsc.append(k)
+
         # determine if there is any control
         self.any_control = bool(len(k_pf_tau)
                                 + len(k_pt_tau)
@@ -253,3 +259,4 @@ class SimulationIndices:
         self.k_qf_beq = np.array(k_qfzero_beq, dtype=int)
         self.k_v_m = np.array(k_v_m, dtype=int)
         self.k_v_beq = np.array(k_v_beq, dtype=int)
+        self.k_vsc = np.array(k_vsc, dtype=int)
