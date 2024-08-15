@@ -201,6 +201,11 @@ class PfFormulationTemplate:
         # Solve the sparse system
         dx, ok = spsolve_csc(J, f)
 
+        if self.options.verbose > 1:
+            print("J:\n", J.toarray())
+            print("F:\n", f)
+            print("dx:\n", dx)
+
         return dx, ok
 
     def solve_step(self) -> Tuple[Vec, bool]:

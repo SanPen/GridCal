@@ -1,11 +1,19 @@
 import GridCalEngine.api as gce
+import numpy as np
 
-fname = '/home/santi/Documentos/Git/GitHub/GridCal/Grids_and_profiles/grids/fubm_caseHVDC_vt.gridcal'
+# Set the printing precision to 4 decimal places
+np.set_printoptions(precision=4)
+
+fname = '/home/santi/Descargas/matpower-fubm-master/data/fubm_caseHVDC_vt.m'
 grid = gce.open_file(fname)
 
-results = gce.power_flow(grid)
+opt = gce.PowerFlowOptions(retry_with_other_methods=False, verbose=2)
+driver = gce.PowerFlowDriver(grid=grid, options=opt)
+driver.run()
+results = driver.results
 
 print(results.get_bus_df())
 print()
 print(results.get_branch_df())
 print("Error:", results.error)
+driver.logger.print()

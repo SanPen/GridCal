@@ -33,7 +33,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
-@njit()
+# @njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  idx_dva: IntVec,
@@ -207,6 +207,11 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # self.k_pf_tau: IntVec = nc.k_pf_tau
         # self.k_v_m: IntVec = nc.k_v_m
         # self.k_qf_beq: IntVec = nc.k_qf_beq
+
+        # self._idx_dVa = np.r_[self.pqv, self.pv, self.pq, self.p]
+        # self._idx_dVm = np.r_[self.pq, self.p]
+        # self._idx_dP = self._idx_dVa
+        # self._idx_dQ = np.r_[self.pq, self.pqv]
 
         self.idx_dm = np.r_[self._indices.k_v_m, self._indices.k_qf_m, self._indices.k_qt_m]
         self.idx_dtau = np.r_[self._indices.k_pf_tau, self._indices.k_pt_tau]
