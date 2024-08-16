@@ -28,13 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Capex class set up Python version">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Templates as associations but still not working">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/investment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Aggregation/investment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Associations/association.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Associations/association.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/enumerations.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +71,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="204_investments_evaluation" />
+        <entry key="$PROJECT_DIR$" value="da64cd0f1e87225a5ff2763c03f92d6eb933f270" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -164,7 +160,7 @@
     "Python tests.pytest in test_topology_processor.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.acciona_capex.executor": "Run",
     "Python.associations_templates.executor": "Debug",
     "Python.cgmes_rdfs_graph.executor": "Run",
@@ -694,18 +690,17 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.tallr_table_headers" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python.multi_select" />
         <item itemvalue="Python.update_gui_file" />
+        <item itemvalue="Python.multi_select" />
+        <item itemvalue="Python.tallr_table_headers" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.18034.82" />
-        <option value="bundled-python-sdk-975db3bf15a3-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.18034.82" />
+        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
       </set>
     </attachedChunks>
   </component>
@@ -1792,7 +1787,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="545" />
+    <option name="localTasksCounter" value="546" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1825,7 +1820,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="devel" />
+                        <option value="204_investments_evaluation" />
                       </list>
                     </value>
                   </entry>
@@ -1838,7 +1833,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="worked on test_cgmes_ieeee.py" />
     <MESSAGE value="passing test_ieee_grids" />
     <MESSAGE value="passing test_ieee_grids (minimal refactor)" />
     <MESSAGE value="created numba csc2" />
@@ -1863,7 +1857,8 @@
     <MESSAGE value="Line implemented properly in investments templates" />
     <MESSAGE value="New capex scores file to be used later" />
     <MESSAGE value="Capex class set up Python version" />
-    <option name="LAST_COMMIT_MESSAGE" value="Capex class set up Python version" />
+    <MESSAGE value="Templates as associations but still not working" />
+    <option name="LAST_COMMIT_MESSAGE" value="Templates as associations but still not working" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2338,28 +2333,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1114</line>
-          <option name="timeStamp" value="1987" />
+          <line>1051</line>
+          <option name="timeStamp" value="1998" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1057</line>
-          <option name="timeStamp" value="1989" />
+          <line>1052</line>
+          <option name="timeStamp" value="1999" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1047</line>
-          <option name="timeStamp" value="1990" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1054</line>
-          <option name="timeStamp" value="1991" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/pack_unpack.py</url>
-          <line>1048</line>
-          <option name="timeStamp" value="1992" />
+          <line>1058</line>
+          <option name="timeStamp" value="2000" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
