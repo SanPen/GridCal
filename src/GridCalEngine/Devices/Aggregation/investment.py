@@ -1,7 +1,8 @@
-from typing import Union, Any
+from typing import Union, Any, Dict
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType, SubObjectType
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
+from GridCalEngine.Devices.Associations.association import Associations
 
 
 class Investment(EditableDevice):
@@ -18,7 +19,8 @@ class Investment(EditableDevice):
                  OPEX: float = 0.0,
                  status: bool = True,
                  group: InvestmentsGroup = None,
-                 template: SubObjectType.Associations = None,
+                 template_data: SubObjectType.Associations = None,
+                 template_type: DeviceType = None,
                  comment: str = ""):
         """
         Investment
@@ -44,8 +46,13 @@ class Investment(EditableDevice):
         self.CAPEX = CAPEX
         self.OPEX = OPEX
         self._group: InvestmentsGroup = group
-        self.status: bool = status
-        self.template = template
+        self.status = status
+        self.group = group
+
+        self.template = Associations(device_type=template_type)
+        if template_data is not None:
+            for vv in template_data:
+                self.template.add(val=vv)
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
         self.register(key='CAPEX', units='M€', tpe=float,
@@ -54,43 +61,50 @@ class Investment(EditableDevice):
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
-        self.register(key='template', units='', tpe=SubObjectType.Associations,
-                      definition='Possible templates of each component')
         self.register(key='group', units='', tpe=DeviceType.InvestmentsGroupDevice, definition='Investment group')
 
-    @property
-    def group(self) -> InvestmentsGroup:
-        """
-        Group of investments
-        :return:
-        """
-        return self._group
+        self.register(key='template', units='', tpe=SubObjectType.Associations,
+                      definition='Possible templates of each component')
 
-    @group.setter
-    def group(self, val: InvestmentsGroup):
-        self._group = val
 
-    @property
-    def category(self):
-        """
-        Display the group category
-        :return:
-        """
-        return self.group.category
+@property
+def group(self) -> InvestmentsGroup:
+    """
+    Group of investments
+    :return:
+    """
+    return self._group
 
-    @category.setter
-    def category(self, val):
-        # The category is set through the group, so no implementation here
-        pass
 
-    # @property
-    # def template(self):
-    #     """
-    #     Template of component
-    #     :return:
-    #     """
-    #     return self.template
-    #
-    # @template.setter
-    # def template(self, val):
-    #     self.template = val
+@group.setter
+
+
+def group(self, val: InvestmentsGroup):
+    self._group = val
+
+
+@property
+def category(self):
+    """
+    Display the group category
+    :return:
+    """
+    return self.group.category
+
+
+@category.setter
+def category(self, val):
+    # The category is set through the group, so no implementation here
+    pass
+
+# @property
+# def template(self):
+#     """
+#     Template of component
+#     :return:
+#     """
+#     return self.template
+#
+# @template.setter
+# def template(self, val):
+#     self.template = val
