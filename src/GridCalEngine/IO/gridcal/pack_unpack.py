@@ -1120,7 +1120,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                                             DeviceType.SequenceLineDevice]
                                                            if key in elements_dict_by_type), {})
                                         update_assoc_type = True
-                                        # or DeviceType.TransformerTypeDevice?
+
                                     # 2. Known association type
                                     else:
                                         type_dicts = elements_dict_by_type.get(associations.device_type, {})
@@ -1132,32 +1132,6 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                         elm_name=elm.name,
                                         updatable_device_type=update_assoc_type
                                     )
-
-                                elif gc_prop.tpe == SubObjectType.TemplateLinks:
-                                    print('Stop here')
-
-                                elif gc_prop.tpe == SubObjectType.ObjectsList:
-
-                                    val = property_value
-                                    elm.set_snapshot_value(gc_prop.name, val)
-                                    search_and_apply_json_profile(json_entry=json_entry,
-                                                                  gc_prop=gc_prop,
-                                                                  elm=elm,
-                                                                  property_value=val)
-
-                                    print('enter investments unpack')
-
-                                    # if collection is not None:
-                                    #     ref_idtag = str(property_value)
-                                    #     ref_elm = collection.get(ref_idtag, None)
-                                    #
-                                    #     if ref_elm is not None:
-                                    #         elm.set_snapshot_value(gc_prop.name, ref_elm)
-                                    #         search_and_apply_json_profile(json_entry=json_entry,
-                                    #                                       gc_prop=gc_prop,
-                                    #                                       elm=elm,
-                                    #                                       property_value=ref_elm,
-                                    #                                       collection=collection)
 
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")
