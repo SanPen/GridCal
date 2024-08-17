@@ -95,6 +95,17 @@ class Associations:
         """
         return self._device_type
 
+    @device_type.setter
+    def device_type(self, value: DeviceType):
+        """
+        Set the device type of the association, as needed in empty investments
+        :param value: DeviceType
+        """
+        if isinstance(value, DeviceType):
+            self._device_type = value
+        else:
+            raise ValueError("value must be an instance of DeviceType")
+
     def add(self, val: Association):
         """
         Add Association
@@ -153,7 +164,8 @@ class Associations:
               data: List[Dict[str, Union[str, float]]],
               elements_dict: Dict[str, ALL_DEV_TYPES],
               logger: Logger,
-              elm_name: str) -> None:
+              elm_name: str,
+              updatable_device_type: bool = False) -> None:
         """
         Parse the data generated with to_dict()
         :param data: Json data
@@ -170,8 +182,15 @@ class Associations:
                 elements_dict=elements_dict
             )
 
+            if updatable_device_type:
+                self._device_type = assoc.api_object.device_type
+
             if assoc.api_object is not None:
-                # add the entry
+                # Update the device type if needed (as in empty investments)
+                if updatable_device_type:
+                    self.device_type = assoc.api_object.device_type  # use the setter
+
+                # Add the entry
                 self.add(assoc)
             else:
                 logger.add_error(f'Association api_object not found',
