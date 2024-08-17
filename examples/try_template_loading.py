@@ -7,7 +7,8 @@ import GridCal.templates as templs
 def open_dummy_grid():
     # fname = os.path.join('C:/Users/J/Downloads/temp_tr1.gridcal')
     # fname = os.path.join('C:/Users/J/Downloads/temp_tr1_invested.gridcal')
-    fname = os.path.join('C:/Users/J/Downloads/temp_tr2.gridcal')
+    # fname = os.path.join('C:/Users/J/Downloads/temp_tr2.gridcal')
+    fname = os.path.join('C:/Users/J/Downloads/jsp2.gridcal')
     main_circuit = gce.open_file(fname)
     results = gce.power_flow(main_circuit)
     print(results.voltage)
