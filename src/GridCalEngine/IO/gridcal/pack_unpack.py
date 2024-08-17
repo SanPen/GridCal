@@ -1102,9 +1102,13 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                     # get the list of associations
                                     associations = elm.get_snapshot_value(gc_prop)
+                                    if associations.device_type is None:
+                                        dictss = elements_dict_by_type.get(DeviceType.TransformerTypeDevice, {})
+                                    else:
+                                        dictss = elements_dict_by_type.get(associations.device_type, {})
                                     associations.parse(
                                         data=property_value,
-                                        elements_dict=elements_dict_by_type.get(associations.device_type, {}),
+                                        elements_dict=dictss,
                                         logger=logger,
                                         elm_name=elm.name
                                     )
