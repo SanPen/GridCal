@@ -1047,17 +1047,37 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                 elif gc_prop.tpe == SubObjectType.Associations:
 
-                                    # get the list of associations
+                                    """
+                                    There is no way a priori to know the template type when initializing an investment
+                                    as its type is not set. Hence, we have to check for two cases:
+                                    1. The investment is empty, in which case we assume all types are possible, and 
+                                    then update the association type depending on which dictionary it was found
+                                    2. The associations are already set, in which case we just parse the data as we
+                                    normally would in the associations of a device
+                                    """
                                     associations = elm.get_snapshot_value(gc_prop)
+                                    update_assoc_type = False
+
+                                    # 1. Empty investment
                                     if associations.device_type is None:
-                                        dictss = elements_dict_by_type.get(DeviceType.TransformerTypeDevice, {})
+                                        type_dicts = next((elements_dict_by_type.get(key) for key in
+                                                           [DeviceType.TransformerTypeDevice,
+                                                            DeviceType.OverheadLineTypeDevice,
+                                                            DeviceType.UnderGroundLineDevice,
+                                                            DeviceType.SequenceLineDevice]
+                                                           if key in elements_dict_by_type), {})
+                                        update_assoc_type = True
+                                        # or DeviceType.TransformerTypeDevice?
+                                    # 2. Known association type
                                     else:
-                                        dictss = elements_dict_by_type.get(associations.device_type, {})
+                                        type_dicts = elements_dict_by_type.get(associations.device_type, {})
+
                                     associations.parse(
                                         data=property_value,
-                                        elements_dict=dictss,
+                                        elements_dict=type_dicts,
                                         logger=logger,
-                                        elm_name=elm.name
+                                        elm_name=elm.name,
+                                        updatable_device_type=update_assoc_type
                                     )
 
                                 elif gc_prop.tpe == SubObjectType.TemplateLinks:
