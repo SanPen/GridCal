@@ -172,6 +172,7 @@ class Associations:
         :param elements_dict: dictionary of elements of the type self.device_type
         :param logger: Logger
         :param elm_name: base element name for reporting
+        :param updatable_device_type: if the device type has to be updated in case of empty investments
         """
 
         for entry in data:
