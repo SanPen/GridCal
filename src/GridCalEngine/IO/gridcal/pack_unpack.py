@@ -1115,9 +1115,9 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                     if associations.device_type is None:
                                         type_dicts = next((elements_dict_by_type.get(key) for key in
                                                            [DeviceType.TransformerTypeDevice,
+                                                            DeviceType.SequenceLineDevice,
                                                             DeviceType.OverheadLineTypeDevice,
-                                                            DeviceType.UnderGroundLineDevice,
-                                                            DeviceType.SequenceLineDevice]
+                                                            DeviceType.UnderGroundLineDevice]
                                                            if key in elements_dict_by_type), {})
                                         update_assoc_type = True
 
