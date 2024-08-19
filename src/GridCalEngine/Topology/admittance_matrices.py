@@ -260,6 +260,9 @@ def compute_admittances(R: Vec,
     Yt = sp.diags(Ytf) * Cf + sp.diags(Ytt) * Ct
     Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
 
+    if verbose > 0:
+        print('Ybus:', Ybus.toarray())
+
     return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw, Beq)
 
 

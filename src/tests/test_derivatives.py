@@ -16,13 +16,53 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 import numpy as np
+from scipy.sparse import csc_matrix
+from GridCalEngine.Topology.admittance_matrices import compute_admittances
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as cscdiff
 import GridCalEngine.Simulations.Derivatives.ac_jacobian as cscjac
 import GridCalEngine.Simulations.Derivatives.matpower_derivatives as mdiff
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand, polar_to_rect
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import compute_branch_power_derivatives
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Utils.Sparse.csc2 import mat_to_scipy
+from GridCalEngine.Utils.Sparse.csc2 import mat_to_scipy, scipy_to_cxmat, CxCSC
 import GridCalEngine.api as gce
+
+
+def test_bus_derivatives():
+    """
+    Test the bus derivatives
+    :return:
+    """
+    Ybus = csc_matrix([[0.1 - 9.999j, - 0.1 + 9.999j, 0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j],
+                       [-0.1 + 9.999j, 1.9574 - 10.5489j, - 1.0852 + 0.1809j, 0. + 0.j, - 0.7763 + 0.3697j, 0. + 0.j],
+                       [0. + 0.j, - 1.0852 + 0.1809j, 1.5797 - 0.2603j, - 0.4878 + 0.j, 0. + 0.j, 0. + 0.j],
+                       [0. + 0.j, 0. + 0.j, - 0.4878 + 0.j, 1.4534 - 0.4252j, - 0.9807 + 0.3326j, 0. + 0.j],
+                       [0. + 0.j, - 0.7763 + 0.3697j, 0. + 0.j, - 0.9477 + 0.4174j, 1.8415 - 10.744j, - 0.1 + 9.999j],
+                       [0. + 0.j, 0. + 0.j, 0. + 0.j, 0. + 0.j, - 0.1 + 9.999j, 0.1 - 9.999j]])
+
+    Vm = np.array([1.1, 1.096, 1.0975, 1.104, 1.1261, 1.12])
+    Va = np.array([0., 0.0004, 0.0656, 0.0656, - 0.0269, - 0.0259])
+    V = polar_to_rect(Vm, Va)
+
+    Ybus_x = Ybus.data
+    Ybus_p = Ybus.indptr
+    Ybus_i = Ybus.indices
+    nbus = 6
+
+    dS_dVm_x, dS_dVa_x = cscdiff.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
+    dS_dVm1 = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x).toarray()
+    dS_dVa1 = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x).toarray()
+
+    dSbus_dVa, dSbus_dVm = mdiff.dSbus_dV_matpower(Ybus, V)
+    dS_dVa2 = scipy_to_cxmat(dSbus_dVa).toarray()
+    dS_dVm2 = scipy_to_cxmat(dSbus_dVm).toarray()
+
+    okVa = np.allclose(dS_dVa1, dS_dVa2)
+    okVm = np.allclose(dS_dVm1, dS_dVm2)
+    assert okVa
+    assert okVm
+
+    print()
 
 
 def check_dSf_dVm(dSf_dVm1, br_idx, bus_idx, nc: NumericalCircuit):

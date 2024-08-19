@@ -64,6 +64,20 @@ def polar_to_rect(Vm, Va) -> CxVec:
     return Vm * np.exp(1.0j * Va)
 
 
+def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
+    """
+    Expand array
+    :param n: number of elements
+    :param arr: short array
+    :param idx: indices in the longer array
+    :param default: default value for the longer array
+    :return: longer array
+    """
+    x = np.full(n, default)
+    x[idx] = arr
+    return x
+
+
 @nb.njit(cache=True, fastmath=True)
 def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
     """
