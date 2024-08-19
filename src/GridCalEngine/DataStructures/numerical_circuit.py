@@ -927,9 +927,9 @@ class NumericalCircuit:
             Ct=self.Ct,
             G0sw=self.branch_data.G0sw,
             If=np.zeros(len(self.branch_data)),
-            a=self.branch_data.a,
-            b=self.branch_data.b,
-            c=self.branch_data.c,
+            a=self.branch_data.alpha1,
+            b=self.branch_data.alpha2,
+            c=self.branch_data.alpha3,
             Yshunt_bus=self.Yshunt_from_devices,
         )
 
