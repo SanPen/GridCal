@@ -55,15 +55,15 @@ class AdmittanceMatrices:
         :param Yshunt_bus: array of shunt admittances per bus
         :param Gsw: Switch losses in the converters
         """
-        self.Ybus = Ybus
+        self.Ybus = Ybus if Ybus.format == 'csc' else Ybus.tocsc()
 
-        self.Yf = Yf
+        self.Yf = Yf if Yf.format == 'csc' else Yf.tocsc()
 
-        self.Yt = Yt
+        self.Yt = Yt if Yt.format == 'csc' else Yt.tocsc()
 
-        self.Cf = Cf
+        self.Cf = Cf if Cf.format == 'csc' else Cf.tocsc()
 
-        self.Ct = Ct
+        self.Ct = Ct if Ct.format == 'csc' else Ct.tocsc()
 
         self.yff = yff
 
@@ -263,7 +263,8 @@ def compute_admittances(R: Vec,
     if verbose > 0:
         print('Ybus:', Ybus.toarray())
 
-    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw, Beq)
+    return AdmittanceMatrices(Ybus.tocsc(), Yf.tocsc(), Yt.tocsc(), Cf.tocsc(), Ct.tocsc(),
+                              Yff, Yft, Ytf, Ytt, Yshunt_bus, Gsw, Beq)
 
 
 def compute_passive_admittances(R: Vec,
@@ -358,7 +359,7 @@ def compute_passive_admittances(R: Vec,
     Yt = sp.diags(ytf) * Cf + sp.diags(ytt) * Ct
     Ybus = Cf.T * Yf + Ct.T * Yt + sp.diags(Yshunt_bus)
 
-    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, yff, yft, ytf, ytt, Yshunt_bus, np.zeros_like(R))
+    return AdmittanceMatrices(Ybus, Yf, Yt, Cf, Ct, yff, yft, ytf, ytt, Yshunt_bus, np.zeros_like(R), np.zeros_like(R))
 
 
 def compute_tap_control_admittances_injectins(
