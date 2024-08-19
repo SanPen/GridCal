@@ -283,6 +283,8 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param update_controls:
         :return: error, converged?, x
         """
+        # set the problem state
+        self.x2var(x)
 
         # recompute admittances
         self.adm = compute_admittances(
@@ -305,9 +307,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             add_windings_phase=False,
             verbose=self.options.verbose,
         )
-
-        # set the problem state
-        self.x2var(x)
 
         # compute the complex voltage
         self.V = polar_to_rect(self.Vm, self.Va)
@@ -356,15 +355,12 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self._converged = self._error < self.options.tolerance
 
         if self.options.verbose > 1:
-            # print("Yf:", pd.DataFrame(self.adm.Yf.toarray()).to_string(index=False))
-            # print("Yt:", pd.DataFrame(self.adm.Yt.toarray()).to_string(index=False))
             print("Vm:", self.Vm)
             print("Va:", self.Va)
             print("tau:", self.tau)
             print("beq:", self.beq)
             print("m:", self.m)
             print("Gsw:", self.Gsw)
-            print()
 
         # review reactive power limits
         # it is only worth checking Q limits with a low error

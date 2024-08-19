@@ -655,6 +655,9 @@ def read_matpower_file(filename: str) -> [MultiCircuit, Logger]:
     # further process the loaded text
     for chunk in chunks:
 
+        if ',' in chunk:
+            chunk = chunk.replace(',', '')
+
         vals = chunk.split('=')
         key = vals[0].strip()
 

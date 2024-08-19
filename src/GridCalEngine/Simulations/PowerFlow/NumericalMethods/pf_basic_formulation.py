@@ -72,9 +72,6 @@ class PfBasicFormulation(PfFormulationTemplate):
         self.Va[self.idx_dVa] = x[0:a]
         self.Vm[self.idx_dVm] = x[a:b]
 
-        # compute the complex voltage
-        self.V = polar_to_rect(self.Vm, self.Va)
-
     def var2x(self) -> Vec:
         """
         Convert the internal decission variables into the vector
@@ -85,7 +82,7 @@ class PfBasicFormulation(PfFormulationTemplate):
             self.Vm[self.idx_dVm]
         ]
 
-    def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec]:
+    def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
         Update step
         :param x: Solution vector
@@ -95,8 +92,19 @@ class PfBasicFormulation(PfFormulationTemplate):
         # set the problem state
         self.x2var(x)
 
+        # compute the complex voltage
+        self.V = polar_to_rect(self.Vm, self.Va)
+
         # compute the function residual
-        self._f = self.fx()
+        # Assumes the internal vars were updated already with self.x2var()
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
+        self.Scalc = compute_power(self.adm.Ybus, self.V)
+        dS = self.Scalc - Sbus  # compute the mismatch
+        self._f = np.r_[
+            dS[self.idx_dP].real,
+            dS[self.idx_dQ].imag
+        ]
+        # self._f = compute_fx(self.Scalc, Sbus, self.idx_dP, self.idx_dQ)
 
         # compute the rror
         self._error = compute_fx_error(self._f)
@@ -132,7 +140,7 @@ class PfBasicFormulation(PfFormulationTemplate):
                     # the composition of x changed, so recompute
                     x = self.var2x()
 
-        return self._error, self._converged, x
+        return self._error, self._converged, x, self.f
 
     def fx(self) -> Vec:
         """

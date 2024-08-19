@@ -113,7 +113,7 @@ def compute_fx(Scalc: CxVec, Sbus: CxVec, idx_dP: IntVec, idx_dQ: IntVec) -> Vec
     :return: error
     """
     # dS = Scalc - Sbus  # compute the mismatch
-    # return np.r_[dS[pvpq].real, dS[pq].imag]
+    # return np.r_[dS[idx_dP].real, dS[idx_dQ].imag]
 
     n = len(idx_dP) + len(idx_dQ)
 
