@@ -26,6 +26,7 @@ import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 import GridCalEngine.Simulations.Derivatives.matpower_derivatives as mderiv
 from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, scipy_to_cxmat
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
@@ -158,20 +159,6 @@ def adv_jacobian(nbus: int,
     return J
 
 
-def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
-    """
-    Expand array
-    :param n: number of elements
-    :param arr: short array
-    :param idx: indices in the longer array
-    :param default: default value for the longuer array
-    :return: longuer array
-    """
-    x = np.full(n, default)
-    x[idx] = arr
-    return x
-
-
 class PfAdvancedFormulation(PfFormulationTemplate):
 
     def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec, Qmin: Vec, Qmax: Vec,
@@ -297,7 +284,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param update_controls:
         :return: error, converged?, x
         """
-
 
         # recompute admittances
         self.adm = compute_admittances(
