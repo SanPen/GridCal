@@ -1161,7 +1161,7 @@ def derivatives_Beq_csc_numba(nbus, nbr, iBeqx, F, V, tap_module, kconv):
     return dSbus_dBeq, dSf_dBeq, dSt_dBeq
 
 
-# @njit()
+@njit()
 def dSbus_dbeq_csc(nbus, bus_indices, beq_indices, F: IntVec, kconv: Vec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
 
@@ -1214,7 +1214,7 @@ def dSbus_dbeq_csc(nbus, bus_indices, beq_indices, F: IntVec, kconv: Vec, tap_mo
     return mat
 
 
-# @njit()
+@njit()
 def dSf_dbeq_csc(nbr, sf_indices, beq_indices, F: IntVec, kconv: Vec, tap_module: Vec, V: CxVec) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)
@@ -1260,7 +1260,7 @@ def dSf_dbeq_csc(nbr, sf_indices, beq_indices, F: IntVec, kconv: Vec, tap_module
     return mat
 
 
-# @njit()
+@njit()
 def dSt_dbeq_csc(sf_indices, beq_indices) -> CxCSC:
     """
     This function computes the derivatives of Sbus, Sf and St w.r.t. the tap angle (tau)

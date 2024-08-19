@@ -36,7 +36,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
 
-# @njit()
+@njit()
 def adv_jacobian(nbus: int,
                  nbr: int,
                  idx_dva: IntVec,
@@ -63,7 +63,6 @@ def adv_jacobian(nbus: int,
                  Ybus_x: CxVec,
                  Ybus_p: IntVec,
                  Ybus_i: IntVec,
-                 Ybus,
                  yff: CxVec,
                  yft: CxVec,
                  ytf: CxVec,
@@ -103,13 +102,13 @@ def adv_jacobian(nbus: int,
     :return:
     """
     # bus-bus derivatives (always needed)
-    # dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
-    # dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x)
-    # dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x)
+    dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
+    dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x)
+    dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x)
 
-    dSbus_dVa, dSbus_dVm = mderiv.dSbus_dV_matpower(Ybus, V)
-    dS_dVa = scipy_to_cxmat(dSbus_dVa)
-    dS_dVm = scipy_to_cxmat(dSbus_dVm)
+    # dSbus_dVa, dSbus_dVm = mderiv.dSbus_dV_matpower(Ybus, V)
+    # dS_dVa = scipy_to_cxmat(dSbus_dVa)
+    # dS_dVm = scipy_to_cxmat(dSbus_dVm)
 
     dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dva)
     dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dva)
@@ -554,7 +553,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                              Ybus_x=self.adm.Ybus.data,
                              Ybus_p=self.adm.Ybus.indptr,
                              Ybus_i=self.adm.Ybus.indices,
-                             Ybus=self.adm.Ybus,
                              yff=self.adm.yff,
                              yft=self.adm.yft,
                              ytf=self.adm.ytf,
