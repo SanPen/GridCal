@@ -22,6 +22,9 @@ from GridCalEngine.Utils.Sparse.csc2 import CSC, spsolve_csc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
+# pd.set_option('display.precision', 4)
+pd.set_option('display.float_format', '{:.4f}'.format)
+
 
 class PfFormulationTemplate:
     """
@@ -167,14 +170,14 @@ class PfFormulationTemplate:
         """
         pass
 
-    def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec]:
+    def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
         Update the problem
         :param x: Solution vector
         :param update_controls: Update controls
         :return: error, converged, x
         """
-        return self.error, self.converged, np.zeros(len(self.V))
+        return self.error, self.converged, np.zeros(len(self.V)), self._f
 
     def fx(self) -> Vec:
         """
@@ -203,9 +206,12 @@ class PfFormulationTemplate:
         dx, ok = spsolve_csc(J, f)
 
         if self.options.verbose > 1:
-            print("J:\n", J.toarray())
-            print("F:\n", f)
-            print("dx:\n", dx)
+            cols = np.array([0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 7])
+            rows = np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 8, 7])
+            # print("J original:\n", pd.DataFrame(J.toarray()))
+            print("J mod:\n", pd.DataFrame(J.toarray()[:, cols][rows, :]).to_string(index=False))
+            print("F:\n", f[rows])
+            print("dx:\n", dx[cols])
             if self.options.verbose > 2:
                 Jdf = pd.DataFrame(J.toarray())
                 Jdf.to_csv(f'J.csv', index=False, float_format='%.4f')

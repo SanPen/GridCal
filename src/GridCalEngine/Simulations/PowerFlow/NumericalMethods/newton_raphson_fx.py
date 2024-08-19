@@ -18,6 +18,7 @@ import time
 import numpy as np
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
+from GridCalEngine.Utils.Sparse.csc2 import CSC, spsolve_csc
 from GridCalEngine.basic_structures import Logger
 
 
@@ -53,7 +54,7 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
         return problem.get_solution(elapsed=time.time() - start, iterations=0)
 
     # set the problem state
-    error, converged, _ = problem.update(x, update_controls=False)
+    error, converged, _, f = problem.update(x, update_controls=False)
 
     iteration = 0
     error_evolution = np.zeros(max_iter + 1)
@@ -72,11 +73,33 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
         while not converged and iteration < max_iter:
 
+            # update iteration counter
+            iteration += 1
+
+            if verbose > 0:
+                print('-' * 200)
+                print(f'Iter: {iteration}')
+                print('-' * 200)
+
             # compute update step
             try:
 
                 # compute update step: J x Δx = Δg
-                dx, ok = problem.solve_step()
+                J: CSC = problem.Jacobian()
+                dx, ok = spsolve_csc(J, -f)
+                # dx, ok = problem.solve_step()
+
+                if verbose > 1:
+                    import pandas as pd
+                    cols = np.array([0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 7])
+                    rows = np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 8, 7])
+                    # print("J original:\n", pd.DataFrame(J.toarray()))
+                    print("J mod:\n", pd.DataFrame(J.toarray()[:, cols][rows, :]).to_string(index=False))
+                    print("F:\n", f[rows])
+                    print("dx:\n", dx[cols])
+                    if verbose > 2:
+                        Jdf = pd.DataFrame(J.toarray())
+                        Jdf.to_csv(f'J.csv', index=False, float_format='%.4f')
 
                 if not ok:
                     logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")
@@ -112,17 +135,18 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
             #     logger.add_warning(f"Newton-Raphson's stagnated @iter {iteration}:")
             #     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
+            x += dx
+
             # set the problem state
-
-            error, converged, x = problem.update(x - dx, update_controls=True)
-
-            # update iteration counter
-            iteration += 1
+            error, converged, x, f = problem.update(x, update_controls=True)
 
             # save the error evolution
             error_evolution[iteration] = error
 
             if verbose > 0:
-                print(f'It {iteration}, error {error}, converged {converged}, x {x}, dx {dx}')
+                if verbose == 1:
+                    print(f'It {iteration}, error {error}, converged {converged}, x {x}, dx {dx}')
+                else:
+                    print(f'error {error}, converged {converged}, x {x}, dx {dx}')
 
     return problem.get_solution(elapsed=time.time() - start, iterations=iteration)

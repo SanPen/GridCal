@@ -152,7 +152,8 @@ def compute_admittances(R: Vec,
                         Yshunt_bus: CxVec,
                         conn: Union[List[WindingsConnection], ObjVec],
                         seq: int,
-                        add_windings_phase: bool = False) -> AdmittanceMatrices:
+                        add_windings_phase: bool = False,
+                        verbose: int = 0) -> AdmittanceMatrices:
     """
     Compute the complete admittance matrices for the general power flow methods (Newton-Raphson based)
 
@@ -173,6 +174,7 @@ def compute_admittances(R: Vec,
     :param seq: Sequence [0, 1, 2]
     :param conn: array of windings connections (numpy array of WindingsConnection)
     :param add_windings_phase: Add the phases of the transformer windings (for short circuits mainly)
+    :param verbose
     :return: Admittance instance
     """
 
@@ -235,11 +237,23 @@ def compute_admittances(R: Vec,
             raise Exception('Unsupported sequence when computing the admittance matrix sequence={}'.format(seq))
 
     else:  # original
-        with np.errstate(all='raise'):
-            Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
-            Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
-            Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
-            Ytt = (ys + bc2) / (vtap_t * vtap_t)
+        # with np.errstate(all='raise'):
+        Yff = Gsw + (ys + bc2 + 1.0j * Beq) / (mp * mp * vtap_f * vtap_f)
+        Yft = -ys / (mp * np.exp(-1.0j * tap_angle) * vtap_f * vtap_t)
+        Ytf = -ys / (mp * np.exp(1.0j * tap_angle) * vtap_t * vtap_f)
+        Ytt = (ys + bc2) / (vtap_t * vtap_t)
+
+        # tap = tap_module * np.exp(1.0j * tap_angle)
+        # Ytt = ys + 1j * bc2
+        # Yff = Gsw + ((Ytt + 1j * Beq) / (k*k * tap * np.conj(tap)))
+        # Yft = - ys / (k * np.conj(tap))
+        # Ytf = - ys / (k * tap)
+
+        if verbose > 0:
+            print('yff:', Yff)
+            print('yft:', Yft)
+            print('ytf:', Ytf)
+            print('ytt:', Ytt)
 
     # compose the matrices
     Yf = sp.diags(Yff) * Cf + sp.diags(Yft) * Ct

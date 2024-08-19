@@ -36,7 +36,7 @@ def dSbus_dV_matpower(Ybus: csc_matrix, V: CxVec) -> Tuple[csc_matrix, csc_matri
     dSbus_dVa = 1j * diagV * np.conj(diagIbus - Ybus * diagV)  # dSbus / dVa
     dSbus_dVm = diagV * np.conj(Ybus * diagE) + np.conj(diagIbus) * diagE  # dSbus / dVm
 
-    return dSbus_dVa, dSbus_dVm
+    return dSbus_dVa.tocsc(), dSbus_dVm.tocsc()
 
 
 def dSbr_dV_matpower(Yf: csc_matrix, Yt: csc_matrix, V: CxVec,
