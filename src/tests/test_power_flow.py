@@ -350,3 +350,20 @@ def test_power_flow_control_with_pst_pt() -> None:
 
         # check that the bus voltage module is the the transformer voltage set point
         assert np.isclose(results.St[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+
+
+def test_fubm():
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.m')
+    grid = gce.open_file(fname)
+
+    opt = gce.PowerFlowOptions(retry_with_other_methods=False, verbose=0)
+    driver = gce.PowerFlowDriver(grid=grid, options=opt)
+    driver.run()
+    results = driver.results
+    vm = np.abs(results.voltage)
+    expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
+    assert np.allclose(vm, expected_vm, rtol=1e-4)
