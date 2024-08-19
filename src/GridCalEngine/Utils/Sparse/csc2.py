@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
+import warnings
 from typing import List
 from numba import njit, int32, float64, complex128
 from numba import types
@@ -218,7 +219,7 @@ class CxCSC:
 
         self.indptr[0] = 0  # always
 
-    def set(self, indices: IntVec, indptr: IntVec, data: CxVec):
+    def set(self, indices: IntVec, indptr: IntVec, data: CxVec) -> "CxCSC":
         """
         Set the internal arrays
         :param indices:
@@ -230,6 +231,8 @@ class CxCSC:
         self.indptr = indptr
         self.data = data
         self.nnz = len(self.data)
+
+        return self
 
     def fill_from_coo(self, Ti: IntVec, Tj: IntVec, Tx: CxVec, nnz: int):
         """
@@ -376,8 +379,29 @@ def scipy_to_mat(mat: csc_matrix) -> CSC:
     :param mat:
     :return:
     """
+    if not mat.format == 'csc':
+        warnings.warn('scipy_to_cxmat: Converting matrix to CSC format...')
+        mat = mat.tocsc()
+
     x = CSC(mat.shape[0], mat.shape[1], mat.nnz, False)
     x.data = mat.data.astype(float)
+    x.indices = mat.indices.astype(np.int32)
+    x.indptr = mat.indptr.astype(np.int32)
+    return x
+
+
+def scipy_to_cxmat(mat: csc_matrix) -> CxCSC:
+    """
+
+    :param mat:
+    :return:
+    """
+    if not mat.format == 'csc':
+        warnings.warn('scipy_to_cxmat: Converting matrix to CSC format...')
+        mat = mat.tocsc()
+
+    x = CxCSC(mat.shape[0], mat.shape[1], mat.nnz, False)
+    x.data = mat.data.astype(np.complex128)
     x.indices = mat.indices.astype(np.int32)
     x.indptr = mat.indptr.astype(np.int32)
     return x

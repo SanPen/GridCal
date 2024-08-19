@@ -28,19 +28,14 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed critical bug in the CSC matrix stacking">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Searching for the bug...WIP">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Compilers/circuit_to_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/branch_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/branch_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/DataStructures/numerical_circuit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/helm_contingencies.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ContingencyAnalysis/Methods/helm_contingencies.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/common_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/matpower_derivatives.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/matpower_derivatives.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_formulation_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_formulation_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/ShortCircuitStudies/short_circuit_worker.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Topology/simulation_indices.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Topology/simulation_indices.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/Sparse/csc2.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,64 +133,64 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
-    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
-    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
-    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
-    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
-    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
-    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
-    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
-    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
-    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.pytest for src.tests.test_cgmes_ieeee.executor": "Run",
-    "Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor": "Debug",
-    "Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_power_flow_control_with_pst.executor": "Debug",
-    "Python tests.pytest for test_power_flow.test_power_flow_control_with_pst_pt.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_qf_control_with_ltc.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_qt_control_with_ltc.executor": "Run",
-    "Python tests.pytest for test_power_flow.test_voltage_control_with_ltc.executor": "Debug",
-    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor": "Debug",
-    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor": "Debug",
-    "Python tests.pytest for test_transformer_controls.test_v_control_true.executor": "Debug",
-    "Python tests.pytest in test_cgmes_ieeee.py.executor": "Run",
-    "Python tests.pytest in test_power_flow.py.executor": "Run",
-    "Python tests.pytest in test_topology_processor.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
-    "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
-    "Python.GridCalMain.executor": "Run",
-    "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.fubm_example.executor": "Debug",
-    "Python.new_circuit_objects.executor": "Run",
-    "Python.pymoo_example.executor": "Debug",
-    "Python.raw_imp_exp_test.executor": "Run",
-    "Python.update_gui_file.executor": "Run",
-    "Python.upload_to_pypi.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "199__finalize__cgmes__import",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_cgmes_ieeee.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_power_flow_control_with_pst.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_power_flow_control_with_pst_pt.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_qf_control_with_ltc.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_qt_control_with_ltc.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_power_flow.test_voltage_control_with_ltc.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for test_transformer_controls.test_v_control_true.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest in test_cgmes_ieeee.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_power_flow.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GridCalMain.executor&quot;: &quot;Run&quot;,
+    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.fubm_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/tests/data/grids&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -1439,7 +1434,9 @@
       <workItem from="1722614302096" duration="2135000" />
       <workItem from="1723466580956" duration="19287000" />
       <workItem from="1723532911193" duration="29516000" />
-      <workItem from="1723713311527" duration="19591000" />
+      <workItem from="1723713311527" duration="20273000" />
+      <workItem from="1723796944764" duration="18053000" />
+      <workItem from="1724061228331" duration="3473000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1784,7 +1781,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="536" />
+    <option name="localTasksCounter" value="537" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1830,7 +1827,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added functions to insert nodes from substations" />
     <MESSAGE value="Added functions to divide segments and to divide lines when there is no node, only substations" />
     <MESSAGE value="Bug fix for segment subdivision" />
     <MESSAGE value="Stopgap solution for zoom problem with maps" />
@@ -1855,7 +1851,8 @@
     <MESSAGE value="Fixed CGMES conversion bug creating rates = None" />
     <MESSAGE value="Fixed vset too strict compilation in control branches&#10;Modified the fubm check script in trunk" />
     <MESSAGE value="Fixed critical bug in the CSC matrix stacking" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed critical bug in the CSC matrix stacking" />
+    <MESSAGE value="Searching for the bug...WIP" />
+    <option name="LAST_COMMIT_MESSAGE" value="Searching for the bug...WIP" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2359,12 +2356,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py</url>
-          <line>86</line>
+          <line>109</line>
           <option name="timeStamp" value="1924" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py</url>
-          <line>82</line>
+          <line>105</line>
           <option name="timeStamp" value="1925" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2417,7 +2414,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Topology/admittance_matrices.py</url>
-          <line>459</line>
+          <line>473</line>
           <option name="timeStamp" value="1976" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2447,14 +2444,24 @@
           <option name="timeStamp" value="2000" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_formulation_template.py</url>
-          <line>212</line>
-          <option name="timeStamp" value="2027" />
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/newton_raphson_fx.py</url>
+          <line>143</line>
+          <option name="timeStamp" value="2038" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/Derivatives/matpower_derivatives.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="2042" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py</url>
-          <line>301</line>
-          <option name="timeStamp" value="2029" />
+          <line>522</line>
+          <option name="timeStamp" value="2043" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py</url>
+          <line>157</line>
+          <option name="timeStamp" value="2044" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2780,7 +2787,7 @@
     <SUITE FILE_PATH="coverage/GridCal$arrillagas_book_grids_to_gridcal.coverage" NAME="arrillagas_book_grids_to_gridcal Coverage Results" MODIFIED="1659437177352" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/experimental_readers" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_transformer_type_py.coverage" NAME="Nosetests in test_transformer_type.py Coverage Results" MODIFIED="1619382550804" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$setup__Engine_.coverage" NAME="setup (Engine) Coverage Results" MODIFIED="1694348240068" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
-    <SUITE FILE_PATH="coverage/GridCal$fubm_example.coverage" NAME="fubm_example Coverage Results" MODIFIED="1723735006721" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acdc_pf" />
+    <SUITE FILE_PATH="coverage/GridCal$fubm_example.coverage" NAME="fubm_example Coverage Results" MODIFIED="1724066026597" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/acdc_pf" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_api_py.coverage" NAME="Nosetests in test_api.py Coverage Results" MODIFIED="1598803532944" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$fuerte_esquivel_acha_ambriz_perez_paper.coverage" NAME="fuerte_esquivel_acha_ambriz_perez_paper Coverage Results" MODIFIED="1607805654887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/upfc" />
     <SUITE FILE_PATH="coverage/GridCal$dc_opf_ts.coverage" NAME="dc_opf_ts Coverage Results" MODIFIED="1602519229272" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/OPF" />

@@ -23,8 +23,9 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
+import GridCalEngine.Simulations.Derivatives.matpower_derivatives as mderiv
 from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, scipy_to_cxmat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
@@ -61,6 +62,7 @@ def adv_jacobian(nbus: int,
                  Ybus_x: CxVec,
                  Ybus_p: IntVec,
                  Ybus_i: IntVec,
+                 Ybus,
                  yff: CxVec,
                  yft: CxVec,
                  ytf: CxVec,
@@ -100,13 +102,13 @@ def adv_jacobian(nbus: int,
     :return:
     """
     # bus-bus derivatives (always needed)
-    dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
+    # dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
+    # dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x)
+    # dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x)
 
-    dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False)
-    dS_dVm.set(Ybus_i, Ybus_p, dS_dVm_x)
-
-    dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False)
-    dS_dVa.set(Ybus_i, Ybus_p, dS_dVa_x)
+    dSbus_dVa, dSbus_dVm = mderiv.dSbus_dV_matpower(Ybus, V)
+    dS_dVa = scipy_to_cxmat(dSbus_dVa)
+    dS_dVm = scipy_to_cxmat(dSbus_dVm)
 
     dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dva)
     dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dva)
@@ -275,8 +277,27 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.tau = x[c:d]
         self.beq = x[d:e]
 
-        # compute the complex voltage
-        self.V = polar_to_rect(self.Vm, self.Va)
+    def var2x(self) -> Vec:
+        """
+        Convert the internal decission variables into the vector
+        :return: Vector
+        """
+        return np.r_[
+            self.Va[self.idx_dVa],
+            self.Vm[self.idx_dVm],
+            self.m,
+            self.tau,
+            self.beq,
+        ]
+
+    def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
+        """
+        Update step
+        :param x: Solution vector
+        :param update_controls:
+        :return: error, converged?, x
+        """
+
 
         # recompute admittances
         self.adm = compute_admittances(
@@ -296,45 +317,69 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             Yshunt_bus=self.nc.Yshunt_from_devices,
             conn=self.nc.branch_data.conn,
             seq=1,
-            add_windings_phase=False
+            add_windings_phase=False,
+            verbose=self.options.verbose,
         )
 
-        if self.options.verbose > 1:
-            print("V:")
-            for v in self.V:
-                print(v.real, v.imag)
-
-    def var2x(self) -> Vec:
-        """
-        Convert the internal decission variables into the vector
-        :return: Vector
-        """
-        return np.r_[
-            self.Va[self.idx_dVa],
-            self.Vm[self.idx_dVm],
-            self.m,
-            self.tau,
-            self.beq,
-        ]
-
-    def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec]:
-        """
-        Update step
-        :param x: Solution vector
-        :param update_controls:
-        :return: error, converged?, x
-        """
         # set the problem state
         self.x2var(x)
 
+        # compute the complex voltage
+        self.V = polar_to_rect(self.Vm, self.Va)
+
+        # Update converter losses
+        It = get_It(k=self.idx_conv, V=self.V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
+        Itm = np.abs(It)
+        Itm2 = Itm * Itm
+        PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha1[self.idx_conv])
+
+        self.Gsw = PLoss_IEC / np.power(self.Vm[self.nc.F[self.idx_conv]], 2.0)
+
         # compute the function residual
-        self._f = self.fx()
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
+        self.Scalc = compute_power(self.adm.Ybus, self.V)
+
+        dS = self.Scalc - Sbus  # compute the mismatch
+
+        Pf = get_Sf(k=self.idx_dPf, Vm=self.Vm, V=self.V,
+                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).real
+
+        Qf = get_Sf(k=self.idx_dQf, Vm=self.Vm, V=self.V,
+                    yff=self.adm.yff, yft=self.adm.yft, F=self.nc.F, T=self.nc.T).imag
+
+        Pt = get_St(k=self.idx_dPt, Vm=self.Vm, V=self.V,
+                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).real
+
+        Qt = get_St(k=self.idx_dQt, Vm=self.Vm, V=self.V,
+                    ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T).imag
+
+        self._f = np.r_[
+            dS[self.idx_dP].real,
+            dS[self.idx_dQ].imag,
+            Pf - self.nc.branch_data.Pset[self.idx_dPf],
+            Qf - self.nc.branch_data.Qset[self.idx_dQf],
+            Pt - self.nc.branch_data.Pset[self.idx_dPt],
+            Qt - self.nc.branch_data.Qset[self.idx_dQt]
+        ]
 
         # compute the rror
         self._error = compute_fx_error(self._f)
 
         # converged?
         self._converged = self._error < self.options.tolerance
+
+        if self.options.verbose > 1:
+            # print("Yf:", pd.DataFrame(self.adm.Yf.toarray()).to_string(index=False))
+            # print("Yt:", pd.DataFrame(self.adm.Yt.toarray()).to_string(index=False))
+            print("Vm:", self.Vm)
+            print("Va:", self.Va)
+            print("tau:", self.tau)
+            print("beq:", self.beq)
+            print("m:", self.m)
+            print("Gsw:", self.Gsw)
+            print()
 
         # review reactive power limits
         # it is only worth checking Q limits with a low error
@@ -364,22 +409,13 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                     # the composition of x changed, so recompute
                     x = self.var2x()
 
-        return self._error, self._converged, x
+        return self._error, self._converged, x, self.f
 
     def fx(self) -> Vec:
         """
 
         :return:
         """
-        # Update converter losses
-        It = get_It(k=self.idx_conv, V=self.V, ytf=self.adm.ytf, ytt=self.adm.ytt, F=self.nc.F, T=self.nc.T)
-        Itm = np.abs(It)
-        Itm2 = Itm * Itm
-        PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
-                     + self.nc.branch_data.alpha1[self.idx_conv])
-
-        self.Gsw = PLoss_IEC / np.power(self.Vm[self.nc.F[self.idx_conv]], 2.0)
 
         # Assumes the internal vars were updated already with self.x2var()
         Sbus = compute_zip_power(self.S0, self.I0, self.Y0, self.Vm)
@@ -483,7 +519,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :return:
         """
         if autodiff:
-            J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x())
+            J = calc_autodiff_jacobian(func=self.fx_diff, x=self.var2x(), h=1e-12)
             return scipy_to_mat(J)
         else:
             n_rows = (len(self.idx_dP)
@@ -532,6 +568,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                              Ybus_x=self.adm.Ybus.data,
                              Ybus_p=self.adm.Ybus.indptr,
                              Ybus_i=self.adm.Ybus.indices,
+                             Ybus=self.adm.Ybus,
                              yff=self.adm.yff,
                              yft=self.adm.yft,
                              ytf=self.adm.ytf,
