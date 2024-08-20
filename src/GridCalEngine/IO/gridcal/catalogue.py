@@ -46,7 +46,7 @@ def get_transformers_catalogue_df(grid: MultiCircuit):
     return pd.DataFrame(data)
 
 
-def get_cables_catalogue_df(grid: MultiCircuit):
+def get_underground_lines_catalogue_df(grid: MultiCircuit):
     """
 
     :param grid:
@@ -61,8 +61,10 @@ def get_cables_catalogue_df(grid: MultiCircuit):
             'Rated voltage [kV]': elm.Vnom,
             'R [Ohm/km AC@20°C]': elm.R,
             'X [Ohm/km]': elm.X,
+            'B [uS/km]':elm.B,
             'R0 (AC) [Ohm/km]': elm.R0,
-            'X0  [Ohm/km]': elm.X0
+            'X0  [Ohm/km]': elm.X0,
+            'B0 [uS/km]': elm.B0
         })
 
     return pd.DataFrame(data)
@@ -136,7 +138,7 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
     return lst
 
 
-def parse_cable_types(df: pd.DataFrame) -> List[UndergroundLineType]:
+def parse_underground_line_types(df: pd.DataFrame) -> List[UndergroundLineType]:
     """
 
     :param df:
@@ -149,10 +151,10 @@ def parse_cable_types(df: pd.DataFrame) -> List[UndergroundLineType]:
                                   Vnom=item['Rated voltage [kV]'],
                                   R=item['R [Ohm/km AC@20°C]'],
                                   X=item['X [Ohm/km]'],
-                                  B=0.0,
+                                  B=item['B [uS/km]'],
                                   R0=item['R0 (AC) [Ohm/km]'],
                                   X0=item['X0  [Ohm/km]'],
-                                  B0=0.0)
+                                  B0=item['B0 [uS/km]'])
         lst.append(tpe)
 
     return lst
@@ -211,8 +213,8 @@ def save_catalogue(fname: str, grid: MultiCircuit):
     with pd.ExcelWriter(fname) as writer:
         df_transformers = get_transformers_catalogue_df(grid)
         df_transformers.to_excel(writer, sheet_name="transformer_types", index=False)
-        df_cables = get_cables_catalogue_df(grid)
-        df_cables.to_excel(writer, sheet_name="cable_types", index=False)
+        df_underground_lines = get_underground_lines_catalogue_df(grid)
+        df_underground_lines.to_excel(writer, sheet_name="underground_line_types", index=False)
         df_wires = get_wires_catalogue_df(grid)
         df_wires.to_excel(writer, sheet_name="wire_types", index=False)
         df_sequence_lines = get_sequence_lines_catalogue_df(grid)
@@ -234,9 +236,9 @@ def load_catalogue(fname: str) -> Tuple[Assets, Logger]:
             data.set_elements_list_by_type(device_type=DeviceType.TransformerTypeDevice,
                                            devices=devices,
                                            logger=logger)
-        if "cable_types" in f.sheet_names:
-            df = pd.read_excel(f, sheet_name="cable_types", index_col=None)
-            devices = parse_cable_types(df)
+        if "underground_line_types" in f.sheet_names:
+            df = pd.read_excel(f, sheet_name="underground_line_types", index_col=None)
+            devices = parse_underground_line_types(df)
             data.set_elements_list_by_type(device_type=DeviceType.UnderGroundLineDevice,
                                            devices=devices,
                                            logger=logger)
