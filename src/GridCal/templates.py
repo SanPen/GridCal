@@ -20,7 +20,7 @@ import pandas as pd
 from GridCalEngine.Devices.Branches.line import SequenceLineType, UndergroundLineType
 from GridCalEngine.Devices.Branches.transformer import TransformerType
 from GridCalEngine.Devices.Branches.wire import Wire
-from GridCalEngine.IO.gridcal.catalogue import parse_transformer_types, parse_cable_types, parse_wire_types, parse_sequence_line_types
+from GridCalEngine.IO.gridcal.catalogue import parse_transformer_types, parse_underground_line_types, parse_wire_types, parse_sequence_line_types
 
 
 def get_transformer_catalogue():
@@ -50,7 +50,7 @@ def get_cables_catalogue():
     if os.path.exists(fname):
         df = pd.read_csv(fname)
 
-        return parse_cable_types(df)
+        return parse_underground_line_types(df)
     else:
         return list()
 
