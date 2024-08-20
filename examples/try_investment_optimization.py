@@ -42,7 +42,7 @@ def add_investments_to_grid(grid):
         grid.add_line(line)
         inv_group = dev.InvestmentsGroup(name='Ig' + str(i))
         investment = dev.Investment(device_idtag=line.idtag, name='Investment' + str(i), CAPEX=1,
-                                    group=inv_group, template=DeviceType.TransformerTypeDevice)  # template=line.possible_tower_types[:]
+                                    group=inv_group)  # template=line.possible_tower_types[:]
         grid.add_investment(investment)
         grid.add_investments_group(inv_group)
 

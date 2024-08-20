@@ -16,8 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING, Tuple
-
-from GridCalEngine.Devices import Associations
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Substation.bus import Bus
