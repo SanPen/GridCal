@@ -40,7 +40,10 @@ def get_transformers_catalogue_df(grid: MultiCircuit):
             'Copper losses (kW)': elm.Pcu,
             'No load losses (kW)': elm.Pfe,
             'No load current (%)': elm.I0,
-            'V short circuit (%)': elm.Vsc
+            'V short circuit (%)': elm.Vsc,
+            'tap module (pu)': elm.tap_mod,
+            'tap module max (pu)': elm.tap_mod_max,
+            'tap module min (pu)': elm.tap_mod_min
         })
 
     return pd.DataFrame(data)
@@ -132,6 +135,9 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
                               short_circuit_voltage=item['V short circuit (%)'],
                               gr_hv1=0.5,
                               gx_hv1=0.5,
+                              tap_module=item['tap module (pu)'],
+                              tap_module_max=item['tap module max (pu)'],
+                              tap_module_min=item['tap module min (pu)'],
                               name=item['Name'])
         lst.append(tpe)
 

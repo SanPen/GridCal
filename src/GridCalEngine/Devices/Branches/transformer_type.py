@@ -33,6 +33,9 @@ class TransformerType(EditableDevice):
                  gr_hv1: float = 0.5,
                  gx_hv1: float = 0.5,
                  name: str = 'TransformerType',
+                 tap_module: float=1.0,
+                 tap_module_max: float=0.8,
+                 tap_module_min: float=1.2,
                  idtag: Union[None, str] = None) -> None:
         """
         Transformer template from the short circuit study
@@ -72,6 +75,10 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
+        self.tap_mod=tap_module
+        self.tap_mod_max = tap_module_max
+        self.tap_mod_min = tap_module_min
+
         self.register(key='HV', units='kV', tpe=float, definition='Nominal voltage al the high voltage side')
         self.register(key='LV', units='kV', tpe=float, definition='Nominal voltage al the low voltage side')
         self.register(key='Sn', units='MVA', tpe=float, definition='Nominal power', old_names=['rating'])
@@ -79,6 +86,9 @@ class TransformerType(EditableDevice):
         self.register(key='Pfe', units='kW', tpe=float, definition='Iron losses')
         self.register(key='I0', units='%', tpe=float, definition='No-load current')
         self.register(key='Vsc', units='%', tpe=float, definition='Short-circuit voltage')
+        self.register(key='tap_mod',units='pu', tpe=float,definition='Tap module')
+        self.register(key='tap_mod_max', units='pu', tpe=float, definition='Maximum tap module value')
+        self.register(key='tap_mod_min', units='pu', tpe=float, definition='Minimum tap module value')
 
     def get_impedances(self, VH, VL, Sbase):
         """

@@ -28,9 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="more refactoring">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Changing name in catalog from &quot;cables&quot; to &quot;underground lines&quot;">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/templates.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/templates.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer_type.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -1787,7 +1787,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="542" />
+    <option name="localTasksCounter" value="543" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1834,7 +1834,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed theme changing on all diagrams" />
     <MESSAGE value="The topology processing happens not without altering the default_bus property of the CN" />
     <MESSAGE value="Added logger to the numerical circuit compilation" />
     <MESSAGE value="worked on test_cgmes_ieeee.py" />
@@ -1859,7 +1858,8 @@
     <MESSAGE value="found the derivatives bug: all in CSC" />
     <MESSAGE value="refactoring to allow device_type optimization" />
     <MESSAGE value="more refactoring" />
-    <option name="LAST_COMMIT_MESSAGE" value="more refactoring" />
+    <MESSAGE value="Changing name in catalog from &quot;cables&quot; to &quot;underground lines&quot;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Changing name in catalog from &quot;cables&quot; to &quot;underground lines&quot;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
