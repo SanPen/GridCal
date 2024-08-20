@@ -82,6 +82,13 @@ class PfBasicFormulation(PfFormulationTemplate):
             self.Vm[self.idx_dVm]
         ]
 
+    def size(self) -> int:
+        """
+        Size of the jacobian matrix
+        :return:
+        """
+        return len(self.idx_dVa) + len(self.idx_dVm)
+
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
         Update step

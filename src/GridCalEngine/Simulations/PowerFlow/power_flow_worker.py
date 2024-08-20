@@ -27,6 +27,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_basic_formulation import PfBasicFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import PfAdvancedFormulation
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
@@ -185,30 +186,48 @@ def solve(circuit: NumericalCircuit,
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
             if circuit.any_control:
-                solution = pflw.LM_ACDC(nc=circuit,
-                                        Vbus=V0,
-                                        S0=S0,
-                                        I0=I0,
-                                        Y0=Y0,
-                                        tolerance=options.tolerance,
-                                        max_iter=options.max_iter)
+                # Solve NR with the AC/DC algorithm
+
+                problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                S0=S0,
+                                                I0=I0,
+                                                Y0=Y0,
+                                                Qmin=Qmin,
+                                                Qmax=Qmax,
+                                                pv=pv,
+                                                pq=pq,
+                                                pqv=pqv,
+                                                p=p,
+                                                nc=circuit,
+                                                options=options)
+
+                solution = levenberg_marquadt_fx(problem=problem,
+                                                 tol=options.tolerance,
+                                                 max_iter=options.max_iter,
+                                                 trust=options.trust_radius,
+                                                 verbose=options.verbose,
+                                                 logger=logger)
             else:
-                solution = pflw.levenberg_marquardt_pf(Ybus=circuit.Ybus,
-                                                       S0=S0,
-                                                       V0=final_solution.V,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       pv_=pv,
-                                                       pq_=pq,
-                                                       pqv_=pqv,
-                                                       p_=p,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       tol=options.tolerance,
-                                                       max_it=options.max_iter,
-                                                       control_q=options.control_Q,
-                                                       verbose=options.verbose,
-                                                       logger=logger)
+                # Solve NR with the AC algorithm
+                problem = PfBasicFormulation(V0=final_solution.V,
+                                             S0=S0,
+                                             I0=I0,
+                                             Y0=Y0,
+                                             Qmin=Qmin,
+                                             Qmax=Qmax,
+                                             pv=pv,
+                                             pq=pq,
+                                             pqv=pqv,
+                                             p=p,
+                                             adm=circuit.admittances_,
+                                             options=options)
+
+                solution = levenberg_marquadt_fx(problem=problem,
+                                                 tol=options.tolerance,
+                                                 max_iter=options.max_iter,
+                                                 trust=options.trust_radius,
+                                                 verbose=options.verbose,
+                                                 logger=logger)
 
         # Fast decoupled
         elif solver_type == SolverType.FASTDECOUPLED:
@@ -253,17 +272,6 @@ def solve(circuit: NumericalCircuit,
                                              trust=options.trust_radius,
                                              verbose=options.verbose,
                                              logger=logger)
-
-                # solution = pflw.NR_LS_ACDC(nc=circuit,
-                #                            V0=V0,
-                #                            S0=S0,
-                #                            I0=I0,
-                #                            Y0=Y0,
-                #                            tolerance=options.tolerance,
-                #                            max_iter=options.max_iter,
-                #                            acceleration_parameter=options.backtracking_parameter,
-                #                            mu_0=options.trust_radius,
-                #                            control_q=options.control_Q)
             else:
                 # Solve NR with the AC algorithm
                 problem = PfBasicFormulation(V0=final_solution.V,
@@ -285,25 +293,6 @@ def solve(circuit: NumericalCircuit,
                                              trust=options.trust_radius,
                                              verbose=options.verbose,
                                              logger=logger)
-
-                # solution = pflw.NR_LS(Ybus=circuit.Ybus,
-                #                       S0=S0,
-                #                       V0=final_solution.V,
-                #                       I0=I0,
-                #                       Y0=Y0,
-                #                       pv_=pv,
-                #                       pq_=pq,
-                #                       pqv_=pqv,
-                #                       p_=p,
-                #                       Qmin=Qmin,
-                #                       Qmax=Qmax,
-                #                       tol=options.tolerance,
-                #                       max_it=options.max_iter,
-                #                       mu_0=options.trust_radius,
-                #                       acceleration_parameter=options.backtracking_parameter,
-                #                       control_q=options.control_Q,
-                #                       verbose=options.verbose,
-                #                       logger=logger)
 
         # Newton-Raphson-Decpupled
         elif solver_type == SolverType.NRD:

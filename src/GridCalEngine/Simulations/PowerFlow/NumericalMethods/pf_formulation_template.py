@@ -175,9 +175,16 @@ class PfFormulationTemplate:
         Update the problem
         :param x: Solution vector
         :param update_controls: Update controls
-        :return: error, converged, x
+        :return: error, converged, x, f
         """
         return self.error, self.converged, np.zeros(len(self.V)), self._f
+
+    def size(self) -> int:
+        """
+        Size of the jacobian matrix
+        :return:
+        """
+        return 0
 
     def fx(self) -> Vec:
         """

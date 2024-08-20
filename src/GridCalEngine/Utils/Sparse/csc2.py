@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import warnings
+import math
 from typing import List
 from numba import njit, int32, float64, complex128
 from numba import types
@@ -65,7 +66,7 @@ class CSC:
 
         self.indptr[0] = 0  # always
 
-    def set(self, indices: IntVec, indptr: IntVec, data: Vec):
+    def set(self, indices: IntVec, indptr: IntVec, data: Vec) -> "CSC":
         """
         Set the internal arrays
         :param indices:
@@ -78,6 +79,7 @@ class CSC:
         self.data = data
         self.nnz = len(self.data)
         self.indptr[0] = 0  # always
+        return self
 
     def fill_from_coo(self, Ti: IntVec, Tj: IntVec, Tx: CxVec, nnz: int):
         """
@@ -164,13 +166,13 @@ class CSC:
         """
         return csc_matvec_ff(self, x)
 
-    @property
-    def T(self) -> "CSC":
-        """
-        Traspose
-        :return:
-        """
-        return sp_transpose(self)
+    # @property
+    # def T(self) -> "CSC":
+    #     """
+    #     Traspose
+    #     :return:
+    #     """
+    #     return sp_transpose(self)
 
     def get_diag_max(self) -> float:
         """
@@ -184,25 +186,30 @@ class CSC:
                     val = self.data[p]
         return val
 
-    def add_val_to_diagonal(self, val: float):
+    def add_val_to_diagonal(self, val: float) -> "CSC":
         """
         Add value to the diagonal in-place
         :param val: some value
-        :return: Nothing
+        :return: copy with modified diagonal
         """
-        for j in range(self.n_cols):
-            for p in range(self.indptr[j], self.indptr[j + 1]):
-                if self.indices[p] == j:
-                    self.data[p] += val
+        A = self.copy()
+        for j in range(A.n_cols):
+            for p in range(A.indptr[j], A.indptr[j + 1]):
+                if A.indices[p] == j:
+                    A.data[p] += val
+        return A
 
     def __matmul__(self, B: "CSC" | np.ndarray) -> "CSC" | np.ndarray:
         """
-
-        :param B:
-        :return:
+        @ operator
+        :param B: CSC matrix or ndarray
+        :return: CSC matrix or ndarray
         """
         if isinstance(B, CSC):
-            return csc_multiply_ff(self, B)
+            # return csc_multiply_ff(self, B)
+            Cm, Cn, Cp, Ci, Cx, Cnz = csc_multiply_ff2(self.n_rows, self.n_cols, self.indptr, self.indices, self.data,
+                                                       B.n_rows, B.n_cols, B.indptr, B.indices, B.data)
+            return CSC(Cm, Cn, Cnz, False).set(Ci, Cp, Cx)
         elif isinstance(B, np.ndarray):
             return csc_matvec_ff(self, B)
         else:
@@ -394,7 +401,7 @@ class CxCSC:
 
 def mat_to_scipy(csc: CSC | CxCSC) -> csc_matrix:
     """
-
+    CSC or CxCSC Matrix to Scipy
     :param csc:
     :return:
     """
@@ -403,9 +410,9 @@ def mat_to_scipy(csc: CSC | CxCSC) -> csc_matrix:
 
 def scipy_to_mat(mat: csc_matrix) -> CSC:
     """
-
-    :param mat:
-    :return:
+    Scipy CSC matrix to CSC marix
+    :param mat: Scipy CSC matrix
+    :return: CSC marix
     """
     if not mat.format == 'csc':
         warnings.warn('scipy_to_cxmat: Converting matrix to CSC format...')
@@ -420,9 +427,9 @@ def scipy_to_mat(mat: csc_matrix) -> CSC:
 
 def scipy_to_cxmat(mat: csc_matrix) -> CxCSC:
     """
-
-    :param mat:
-    :return:
+    Scipy CSC matrix to CxCSC marix
+    :param mat: Scipy CSC matrix
+    :return: CxCSC marix
     """
     if not mat.format == 'csc':
         warnings.warn('scipy_to_cxmat: Converting matrix to CSC format...')
@@ -986,6 +993,93 @@ def csc_multiply_ff(A: CSC, B: CSC) -> CSC:
     C.data = Cx[:Cnzmax]
 
     return C
+
+
+# @nb.njit("Tuple((i8, i8, i4[:], i4[:], f8[:], i8))(i8, i8, i4[:], i4[:], f8[:], i8, i8, i4[:], i4[:], f8[:])",
+#          parallel=False, nogil=True, fastmath=False, cache=True)  # fastmath=True breaks the code
+@njit(cache=True)
+def csc_multiply_ff2(Am, An, Ap, Ai, Ax,
+                     Bm, Bn, Bp, Bi, Bx):
+    """
+    Sparse matrix multiplication, C = A*B where A and B are CSC sparse matrices
+    :param Am: number of rows in A
+    :param An: number of columns in A
+    :param Ap: column pointers of A
+    :param Ai: indices of A
+    :param Ax: data of A
+    :param Bm: number of rows in B
+    :param Bn: number of columns in B
+    :param Bp: column pointers of B
+    :param Bi: indices of B
+    :param Bx: data of B
+    :return: Cm, Cn, Cp, Ci, Cx, Cnzmax
+    """
+    assert An == Bm
+    nz = 0
+    anz = Ap[An]
+    bnz = Bp[Bn]
+    Cm = Am
+    Cn = Bn
+
+    w = np.zeros(Cn, dtype=int32)  # ialloc(m)  # get workspace
+    x = np.empty(Cn, dtype=float64)  # xalloc(m)  # get workspace
+
+    # allocate result
+
+    Cnzmax = int(np.sqrt(Cm)) * anz + bnz  # the trick here is to allocate just enough memory to avoid reallocating
+    Cp = np.empty(Cn + 1, dtype=int32)
+    Ci = np.empty(Cnzmax, dtype=int32)
+    Cx = np.empty(Cnzmax, dtype=float64)
+
+    for j in range(Cn):
+
+        # claim more space
+        if nz + Cm > Cnzmax:
+            # Ci, Cx, Cnzmax = csc_sprealloc_f(Cn, Cp, Ci, Cx, 2 * Cnzmax + m)
+            print('Re-Allocating')
+            Cnzmax = 2 * Cnzmax + Cm
+            if Cnzmax <= 0:
+                Cnzmax = Cp[An]
+
+            length = min(Cnzmax, len(Ci))
+            Cinew = np.empty(Cnzmax, dtype=int32)
+            for i in range(length):
+                Cinew[i] = Ci[i]
+            Ci = Cinew
+
+            length = min(Cnzmax, len(Cx))
+            Cxnew = np.empty(Cnzmax, dtype=float64)
+            for i in range(length):
+                Cxnew[i] = Cx[i]
+            Cx = Cxnew
+
+        # column j of C starts here
+        Cp[j] = nz
+
+        # perform the multiplication
+        for pb in range(Bp[j], Bp[j + 1]):
+            for pa in range(Ap[Bi[pb]], Ap[Bi[pb] + 1]):
+                ia = Ai[pa]
+                if w[ia] < j + 1:
+                    w[ia] = j + 1
+                    Ci[nz] = ia
+                    nz += 1
+                    x[ia] = Bx[pb] * Ax[pa]
+                else:
+                    x[ia] += Bx[pb] * Ax[pa]
+
+        for pc in range(Cp[j], nz):
+            Cx[pc] = x[Ci[pc]]
+
+    Cp[Cn] = nz  # finalize the last column of C
+
+    # cut the arrays to their nominal size nnz
+    # Ci, Cx, Cnzmax = csc_sprealloc_f(Cn, Cp, Ci, Cx, 0)
+    Cnzmax = Cp[Cn]
+    Cinew = Ci[:Cnzmax]
+    Cxnew = Cx[:Cnzmax]
+
+    return Cm, Cn, Cp, Cinew, Cxnew, Cnzmax
 
 
 @njit(cache=True)

@@ -91,15 +91,9 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
 
                 if verbose > 1:
                     import pandas as pd
-                    cols = np.array([0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 7])
-                    rows = np.array([0, 1, 2, 3, 4, 5, 6, 9, 10, 8, 7])
-                    # print("J original:\n", pd.DataFrame(J.toarray()))
-                    print("J mod:\n", pd.DataFrame(J.toarray()[:, cols][rows, :]).to_string(index=False))
-                    print("F:\n", f[rows])
-                    print("dx:\n", dx[cols])
-                    if verbose > 2:
-                        Jdf = pd.DataFrame(J.toarray())
-                        Jdf.to_csv(f'J.csv', index=False, float_format='%.4f')
+                    print("J:\n", pd.DataFrame(J.toarray()).to_string(index=False))
+                    print("F:\n", f)
+                    print("dx:\n", dx)
 
                 if not ok:
                     logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")

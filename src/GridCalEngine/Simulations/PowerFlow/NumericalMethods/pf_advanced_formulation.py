@@ -271,6 +271,17 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             self.beq,
         ]
 
+    def size(self) -> int:
+        """
+        Size of the jacobian matrix
+        :return:
+        """
+        return (len(self.idx_dVa)
+                + len(self.idx_dVm)
+                + len(self.idx_dm)
+                + len(self.idx_dtau)
+                + len(self.idx_dbeq))
+
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
         Update step

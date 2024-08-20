@@ -7,7 +7,7 @@ np.set_printoptions(precision=4)
 fname = './../../tests/data/grids/fubm_caseHVDC_vt.m'
 grid = gce.open_file(fname)
 
-opt = gce.PowerFlowOptions(retry_with_other_methods=False, verbose=3)
+opt = gce.PowerFlowOptions(retry_with_other_methods=False, verbose=3, solver_type=gce.SolverType.LM)
 driver = gce.PowerFlowDriver(grid=grid, options=opt)
 driver.run()
 results = driver.results
