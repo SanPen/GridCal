@@ -16,9 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType, SubObjectType
+from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
-from GridCalEngine.Devices.Associations.association import Associations
 
 
 class Investment(EditableDevice):
@@ -56,12 +55,11 @@ class Investment(EditableDevice):
                                 comment=comment)
 
         # Contingency type
-        self.device_idtag = device_idtag
-        self.CAPEX = CAPEX
-        self.OPEX = OPEX
+        self.device_idtag: str = device_idtag
+        self.CAPEX: float = CAPEX
+        self.OPEX: float = OPEX
         self._group: InvestmentsGroup = group
-        self.status = status
-        self.group = group
+        self.status: bool = status
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
         self.register(key='CAPEX', units='M€', tpe=float,

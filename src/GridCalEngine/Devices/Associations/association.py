@@ -191,15 +191,8 @@ class Associations:
                 elements_dict=elements_dict
             )
 
-            if updatable_device_type:
-                self._device_type = assoc.api_object.device_type
-
             if assoc.api_object is not None:
-                # Update the device type if needed (as in empty investments)
-                if updatable_device_type:
-                    self.device_type = assoc.api_object.device_type  # use the setter
-
-                # Add the entry
+                # add the entry
                 self.add(assoc)
             else:
                 logger.add_error(f'Association api_object not found',

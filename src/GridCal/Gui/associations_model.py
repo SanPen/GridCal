@@ -21,7 +21,6 @@ from typing import Dict, List, Union
 from PySide6 import QtCore, QtWidgets
 
 from GridCal.Gui.GuiFunctions import (FloatDelegate)
-from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.Associations.association import Association, Associations
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.types import ASSOCIATION_TYPES, ALL_DEV_TYPES
@@ -85,7 +84,7 @@ class AssociationsModel(QtCore.QAbstractTableModel):
 
         self._decimals = decimals
 
-        # flag for the headers text wrapper: HeaderViewWithWordWrap
+        # flag for the headers text wraper: HeaderViewWithWordWrap
         self._hide_headers_mode = False
 
     def hideHeaders(self):
