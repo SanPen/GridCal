@@ -23,9 +23,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
-import GridCalEngine.Simulations.Derivatives.matpower_derivatives as mderiv
 from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
-from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat, scipy_to_cxmat
+from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
@@ -105,10 +104,6 @@ def adv_jacobian(nbus: int,
     dS_dVm_x, dS_dVa_x = deriv.dSbus_dV_numba_sparse_csc(Ybus_x, Ybus_p, Ybus_i, V, Vm)
     dS_dVm = CxCSC(nbus, nbus, len(dS_dVm_x), False).set(Ybus_i, Ybus_p, dS_dVm_x)
     dS_dVa = CxCSC(nbus, nbus, len(dS_dVa_x), False).set(Ybus_i, Ybus_p, dS_dVa_x)
-
-    # dSbus_dVa, dSbus_dVm = mderiv.dSbus_dV_matpower(Ybus, V)
-    # dS_dVa = scipy_to_cxmat(dSbus_dVa)
-    # dS_dVm = scipy_to_cxmat(dSbus_dVm)
 
     dP_dVa__ = sp_slice(dS_dVa.real, idx_dP, idx_dva)
     dQ_dVa__ = sp_slice(dS_dVa.imag, idx_dQ, idx_dva)
