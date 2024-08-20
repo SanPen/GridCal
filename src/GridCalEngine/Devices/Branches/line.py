@@ -278,6 +278,20 @@ class Line(BranchParent):
         else:
             logger.add_error('Template not recognised', self.name)
 
+    def get_line_type(self) -> SequenceLineType:
+        """
+        Get the equivalent sequence line type oof this line
+        :return: SequenceLineType
+        """
+        return SequenceLineType(name=f"{self.name}_type",
+                                Imax=1, Vnom=self.get_max_bus_nominal_voltage(),
+                                R=self.R / self.length,
+                                X=self.X / self.length,
+                                B=self.B / self.length,
+                                R0=self.R0 / self.length,
+                                X0=self.X0 / self.length,
+                                B0=self.B0 / self.length)
+
     def get_save_data(self):
         """
         Return the data that matches the edit_headers
