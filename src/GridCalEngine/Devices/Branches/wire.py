@@ -24,7 +24,12 @@ class Wire(EditableDevice):
     This class represents a wire (an actual wire)
     to compose towers
     """
-    def __init__(self, name='', idtag: Union[str, None] = None, gmr=0.01, r=0.01, x=0.0, max_current=1, stranding=0.0, material=0.0, diameter=0.0):
+    def __init__(self, name='', idtag: Union[str, None] = None,
+                 gmr: float = 0.01, r: float = 0.01, x: float = 0.0,
+                 max_current: float = 1.0,
+                 stranding: str = "",
+                 material: str = "",
+                 diameter: float = 0.0):
         """
         Wire definition
         :param name: Name of the wire type
@@ -42,8 +47,8 @@ class Wire(EditableDevice):
                                 device_type=DeviceType.WireDevice)
 
         # self.wire_name = name
-        self.stranding = stranding
-        self.material = material
+        self._stranding = str(stranding)
+        self._material = str(material)
         self.diameter = diameter
         self.R = r
         self.X = x
@@ -58,10 +63,26 @@ class Wire(EditableDevice):
         self.register(key='material', tpe=str, definition='Material of wire')
         self.register(key='diameter', units='cm', tpe=float, definition='Diameter of wire')
 
-    def copy(self):
+    @property
+    def stranding(self) -> str:
         """
-        Copy of the wire
+        Stranding of wire
         :return:
         """
-        # name='', idtag=None, gmr=0.01, r=0.01, x=0.0, max_current=1
-        return Wire(name=self.name, gmr=self.GMR, r=self.R, x=self.X, max_current=self.max_current, stranding=self.stranding, material=self.material, diameter=self.diameter)
+        return self._stranding
+
+    @stranding.setter
+    def stranding(self, value: str):
+        self._stranding = str(value)
+
+    @property
+    def material(self) -> str:
+        """
+        Material of wire
+        :return:
+        """
+        return self._material
+
+    @material.setter
+    def material(self, value: str):
+        self._material = str(value)
