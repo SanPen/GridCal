@@ -248,19 +248,6 @@ class Transformer2W(ControllableBranchParent):
                       definition='Possible transformer types (>1 to denote association), - to denote no association',
                       display=False)
 
-    def apply_templates_to_transformers(self, obj, Sbase, logger=Logger()):
-        """
-        Apply the given template to all possible transformer types in the main circuit.
-
-        :param self: The main circuit containing possible transformer types.
-        :param obj: The template object to apply.
-        :param Sbase: The base power for the template.
-        :param logger: Logger for capturing errors and information.
-        """
-        for transformer_type in self.possible_transformer_types:
-            if transformer_type in self.data:
-                self.data[transformer_type].apply_template(obj, Sbase, logger)
-
     def set_hv_and_lv(self, HV: float, LV: float):
         """
         set the high and low voltage values
@@ -502,48 +489,3 @@ class Transformer2W(ControllableBranchParent):
                               name='type from ' + self.name)
 
         return tpe
-
-
-    # def copy(self, bus_dict=None):
-    #     """
-    #     Returns a copy of the branch
-    #     @return: A new  with the same content as this
-    #     """
-    #
-    #     if bus_dict is None:
-    #         f = self.bus_from
-    #         t = self.bus_to
-    #     else:
-    #         f = bus_dict[self.bus_from]
-    #         t = bus_dict[self.bus_to]
-    #
-    #     # z_series = complex(self.R, self.X)
-    #     # y_shunt = complex(self.G, self.B)
-    #     b = Transformer2W(bus_from=f,
-    #                       bus_to=t,
-    #                       name=self.name,
-    #                       r=self.R,
-    #                       x=self.X,
-    #                       g=self.G,
-    #                       b=self.B,
-    #                       rate=self.rate,
-    #                       tap_module=self.tap_module,
-    #                       tap_phase=self.tap_phase,
-    #                       active=self.active,
-    #                       mttf=self.mttf,
-    #                       mttr=self.mttr,
-    #                       vset=self.vset,
-    #                       temp_base=self.temp_base,
-    #                       temp_oper=self.temp_oper,
-    #                       alpha=self.alpha,
-    #                       template=self.template,
-    #                       opex=self.opex,
-    #                       capex=self.capex)
-    #
-    #     b.regulation_bus = self.regulation_bus
-    #     b.regulation_cn = self.regulation_cn
-    #     b.active_prof = self.active_prof
-    #     b.rate_prof = self.rate_prof
-    #     b.Cost_prof = self.Cost_prof
-    #
-    #     return b

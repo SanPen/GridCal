@@ -1580,55 +1580,13 @@ class DiagramsMain(CompiledArraysMain):
                     # add the selection as investments to the group
                     for i in self.investment_checks_diag.selected_indices:
                         elm = selected[i]
-                        if elm.type_name == 'Transformer':
-                            con = dev.Investment(device_idtag=elm.idtag,
-                                                 code=elm.code,
-                                                 name=elm.type_name + ": " + elm.name,
-                                                 CAPEX=0.0,
-                                                 OPEX=0.0,
-                                                 group=group,
-                                                 template_data=elm.possible_transformer_types,
-                                                 template_type=elm.device_type)
-                            self.circuit.add_investment(con)
-                        elif elm.type_name == 'Line':
-                            if elm.type_name == 'Sequence line':
-                                con = dev.Investment(device_idtag=elm.idtag,
-                                                     code=elm.code,
-                                                     name=elm.type_name + ": " + elm.name,
-                                                     CAPEX=0.0,
-                                                     OPEX=0.0,
-                                                     group=group,
-                                                     template_data=elm.possible_sequence_line_types,
-                                                     template_type=elm.device_type)
-                                self.circuit.add_investment(con)
-                            elif elm.type_name == 'Underground line':
-                                con = dev.Investment(device_idtag=elm.idtag,
-                                                     code=elm.code,
-                                                     name=elm.type_name + ": " + elm.name,
-                                                     CAPEX=0.0,
-                                                     OPEX=0.0,
-                                                     group=group,
-                                                     template_data=elm.possible_underground_line_types,
-                                                     template_type=elm.device_type)
-                                self.circuit.add_investment(con)
-                            elif elm.type_name == 'Tower':
-                                con = dev.Investment(device_idtag=elm.idtag,
-                                                     code=elm.code,
-                                                     name=elm.type_name + ": " + elm.name,
-                                                     CAPEX=0.0,
-                                                     OPEX=0.0,
-                                                     group=group,
-                                                     template_data=elm.possible_tower_types,
-                                                     template_type=elm.device_type)
-                                self.circuit.add_investment(con)
-                        else:
-                            con = dev.Investment(device_idtag=elm.idtag,
-                                                 code=elm.code,
-                                                 name=elm.type_name + ": " + elm.name,
-                                                 CAPEX=0.0,
-                                                 OPEX=0.0,
-                                                 group=group)
-                            self.circuit.add_investment(con)
+                        con = dev.Investment(device_idtag=elm.idtag,
+                                             code=elm.code,
+                                             name=elm.type_name + ": " + elm.name,
+                                             CAPEX=0.0,
+                                             OPEX=0.0,
+                                             group=group)
+                        self.circuit.add_investment(con)
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to investment")
 
