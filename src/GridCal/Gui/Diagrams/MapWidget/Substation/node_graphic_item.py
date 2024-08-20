@@ -172,7 +172,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        selected_items = self.editor.map.view.selectedItems
+        selected_items = self.editor.map.view._scene.selectedItems()
         if len(selected_items) < 2:
             self.setSelected(True)
         if self.enabled:
@@ -189,7 +189,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.updateDiagram()
         self.editor.map.view._scene.update()
 
-        selected_items = self.editor.map.view.selectedItems
+        selected_items = self.editor.map.view._scene.selectedItems()
         if len(selected_items) < 2:
             self.setSelected(True)
 

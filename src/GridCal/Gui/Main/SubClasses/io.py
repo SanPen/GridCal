@@ -988,13 +988,6 @@ class IoMain(ConfigurationMain):
         """
         Open select component window for uploading catalogue data
         """
-        # self.catalogue_dialogue = CatalogueGUI(parent=self)
-        # # self.catalogue_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio, this is what grid generator is set to
-        # self.catalogue_dialogue.resize(int(1.61 * 400), 400)  # golden ratio
-        # self.catalogue_dialogue.exec_()
-        #
-        # filename = self.catalogue_dialogue.selected_file
-        # self.add_data_to_circuit(filename)
 
         files_types = "Catalogue file (*.xlsx)"
 

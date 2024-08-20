@@ -56,6 +56,7 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
+from GridCal.Gui.messages import error_msg
 
 MAP_BRANCH_GRAPHIC_TYPES = Union[
     MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine
@@ -442,56 +443,75 @@ class GridMapWidget(BaseDiagramWidget):
 
         :return:
         """
-        if len(self.map.view.selectedItems) < 2:
+
+        selected_items = self.map.view._scene.selectedItems()
+        selectedItems = []
+        for item in selected_items:
+            selectedItems.append(item)
+
+        if len(selectedItems) < 2:
             return 0
 
-        it1 = self.map.view.selectedItems[0]
-        it2 = self.map.view.selectedItems[1]
+        it1 = selectedItems[0]
+        it2 = selectedItems[1]
 
         if it1 == it2:
             return 0
 
-        newline = Line()
-        newline.copyData(it1.line_container.api_object)
+        new_line = Line()
+        new_line.set_data_from(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
 
-        better_first, better_second, busfrom, busto = compare_options(it1, it2)
+        better_first, better_second, bus_from, bus_to = compare_options(it1, it2)
 
         first_list = better_first.line_container.api_object.locations.data
         second_list = better_second.line_container.api_object.locations.data
 
-        newline.locations.data = first_list + second_list
+        new_line.locations.data = first_list + second_list
 
-        newline.bus_from = busfrom
-        newline.bus_to = busto
+        new_line.bus_from = bus_from
+        new_line.bus_to = bus_to
 
         idx = 0
         for nod in better_first.line_container.nodes_list:
-            newline.locations.data[idx].lat = nod.lat
-            newline.locations.data[idx].long = nod.lon
+            new_line.locations.data[idx].lat = nod.lat
+            new_line.locations.data[idx].long = nod.lon
             idx = idx + 1
 
         for nod in better_second.line_container.nodes_list:
-            newline.locations.data[idx].lat = nod.lat
-            newline.locations.data[idx].long = nod.lon
+            new_line.locations.data[idx].lat = nod.lat
+            new_line.locations.data[idx].long = nod.lon
             idx = idx + 1
 
-        newL = self.add_api_line(newline, original=False)
+        self.add_api_line(new_line, original=False)
+        self.circuit.add_line(new_line)
 
         better_first.line_container.disable_line()
         better_second.line_container.disable_line()
 
-    def createNewLineWizard(self):
+    def get_selected_substations(self) -> List[SubstationGraphicItem]:
+        """
+        Get the selected substations graphics
+        :return: List[SubstationGraphicItem]
+        """
+        return [s for s in self.map.view.selected_items() if isinstance(s, SubstationGraphicItem)]
+
+    def create_new_line_wizard(self):
         """
         Create a new line in the map with dialogues
         """
 
-        if len(self.map.view.selectedItems) < 2:
+        selected_items = self.get_selected_substations()
+
+        if len(selected_items) != 2:
+            error_msg(text="Please select two substations", title="Create new line")
             return None
 
-        it1: SubstationGraphicItem = self.map.view.selectedItems[0]
-        it2: SubstationGraphicItem = self.map.view.selectedItems[1]
+        it1: SubstationGraphicItem = selected_items[0]
+        it2: SubstationGraphicItem = selected_items[1]
+
         if it1 == it2:
+            error_msg(text="Somehow the two substations are the same :(", title="Create new line")
             return None
 
         dialog = NewMapLineDialogue(grid=self.circuit, se_from=it1.api_object, se_to=it2.api_object)
@@ -500,8 +520,12 @@ class GridMapWidget(BaseDiagramWidget):
             bus1 = dialog.bus_from()
             bus2 = dialog.bus_to()
             if bus1 is not None and bus2 is not None:
-                newline = Line(bus_from=bus1, bus_to=bus2)
-                self.add_api_line(newline, original=True)
+                new_line = Line(bus_from=bus1, bus_to=bus2)
+                self.add_api_line(new_line, original=True)
+                self.circuit.add_line(new_line)
+            else:
+                error_msg(text="Some of the buses was None :(", title="Create new line")
+                return None
 
     def removeNode(self, node: NodeGraphicItem):
         """
@@ -558,8 +582,7 @@ class GridMapWidget(BaseDiagramWidget):
         # create the nodes
         line_container.draw_all()
 
-        # there is not need to add to the scene
-
+        # there is nt need to add to the scene
         return line_container
 
     def add_api_dc_line(self, api_object: DcLine, original: bool = True) -> MapDcLine:

@@ -1,5 +1,7 @@
 import os
 import random
+from typing import Union
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +9,7 @@ import matplotlib.pyplot as plt
 from GridCalEngine.IO.file_handler import FileOpen
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
-from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes
+from GridCalEngine.enumerations import InvestmentEvaluationMethod, ResultTypes, DeviceType
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
@@ -40,7 +42,7 @@ def add_investments_to_grid(grid):
         grid.add_line(line)
         inv_group = dev.InvestmentsGroup(name='Ig' + str(i))
         investment = dev.Investment(device_idtag=line.idtag, name='Investment' + str(i), CAPEX=1,
-                                    group=inv_group)
+                                    group=inv_group)  # template=line.possible_tower_types[:]
         grid.add_investment(investment)
         grid.add_investments_group(inv_group)
 

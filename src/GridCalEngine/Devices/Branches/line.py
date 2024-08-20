@@ -104,7 +104,7 @@ class Line(BranchParent):
                               device_type=DeviceType.LineDevice)
 
         # line length in km
-        self.length = length
+        self._length = length
 
         # line impedance tolerance
         self.tolerance = tolerance
@@ -140,7 +140,7 @@ class Line(BranchParent):
 
         # association with various templates
         self.possible_tower_types: Associations = Associations(device_type=DeviceType.OverheadLineTypeDevice)
-        self.possible_undergroud_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
+        self.possible_underground_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
         self.possible_sequence_line_types: Associations = Associations(device_type=DeviceType.SequenceLineDevice)
 
         # Line locations
@@ -183,13 +183,32 @@ class Line(BranchParent):
                       definition='Possible overhead line types (>1 to denote association), - to denote no association',
                       display=False)
 
-        self.register(key='possible_undergroud_line_types', units='', tpe=SubObjectType.Associations,
+        self.register(key='possible_underground_line_types', units='', tpe=SubObjectType.Associations,
                       definition='Possible underground line types (>1 to denote association), - to denote no association',
                       display=False)
 
         self.register(key='possible_sequence_line_types', units='', tpe=SubObjectType.Associations,
                       definition='Possible sequence line types (>1 to denote association), - to denote no association',
                       display=False)
+
+    @property
+    def length(self) -> float:
+        """
+        Line length in km
+        :return: float
+        """
+        return self._length
+
+    @length.setter
+    def length(self, val: float):
+        if isinstance(val, float):
+            if val > 0.0:
+                self._length = val
+            else:
+                print('The length cannot be zero, setting it to 1.0 km')
+                self._length = 1.0
+        else:
+            raise Exception('The length must be a float value')
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -277,6 +296,23 @@ class Line(BranchParent):
 
         else:
             logger.add_error('Template not recognised', self.name)
+
+    def get_line_type(self) -> SequenceLineType:
+        """
+        Get the equivalent sequence line type oof this line
+        :return: SequenceLineType
+        """
+        if self.length == 0.0:
+            raise Exception("Lenght must be greater than 0")
+
+        return SequenceLineType(name=f"{self.name}_type",
+                                Imax=1, Vnom=self.get_max_bus_nominal_voltage(),
+                                R=self.R / self.length,
+                                X=self.X / self.length,
+                                B=self.B / self.length,
+                                R0=self.R0 / self.length,
+                                X0=self.X0 / self.length,
+                                B0=self.B0 / self.length)
 
     def get_save_data(self):
         """

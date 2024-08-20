@@ -735,7 +735,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                         could_not_fix_it = True
 
                                     if could_not_fix_it:
-                                        logger.add_error("Could not locate refference",
+                                        logger.add_error("Could not locate reference",
                                                          device=row.get('idtag', 'not provided'),
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
@@ -973,7 +973,7 @@ def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Uni
                                   property_value: Any,
                                   collection: Union[None, Dict[str, Any]] = None) -> None:
     """
-    Search fro the property profiles into the json and apply it
+    Search from the property profiles into the json and apply it
     :param json_entry: Json entry of an object
     :param gc_prop: GCProp
     :param elm: THe device to set the profile into
@@ -1039,7 +1039,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                             if isinstance(gc_prop.tpe, DeviceType):
 
                                 # this is a hyperlink to another object
-                                # we must look for the refference in elements_dict
+                                # we must look for the reference in elements_dict
                                 collection = elements_dict_by_type.get(gc_prop.tpe, None)
 
                                 if collection is not None:
@@ -1374,7 +1374,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     circuit.set_snapshot_time_unix(val=snapshot_unix_time)
 
             else:
-                logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
+                logger.add_error(msg=f'The file must have time data regardless of the profiles existence')
                 circuit.time_profile = None
 
             # for each element type...

@@ -49,6 +49,13 @@ BRANCH_TYPES = Union[
     SeriesReactance
 ]
 
+BRANCH_TEMPLATE_TYPES = Union[
+    OverheadLineType,
+    UndergroundLineType,
+    SequenceLineType,
+    TransformerType
+]
+
 FLUID_TYPES = Union[
     FluidNode,
     FluidPath,

@@ -18,8 +18,8 @@ from __future__ import annotations
 from typing import List, TYPE_CHECKING, Tuple
 from PySide6 import QtWidgets
 from PySide6.QtWidgets import (QApplication, QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent,
-                               QGraphicsRectItem, QGraphicsEllipseItem)
-from PySide6.QtCore import Qt, QPointF, QPoint
+                               QGraphicsRectItem)
+from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor, QCursor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
 from GridCal.Gui.GuiFunctions import add_menu_entry
@@ -99,7 +99,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.colorBorder = QColor(255, 100, 100, 100)
 
         # Assign color to the node
-        self.itemSelected = False
         self.setDefaultColor()
         self.hovered = False
         self.needsUpdate = False
@@ -139,25 +138,12 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         for i, vl_graphics in enumerate(sorted_objects):
             vl_graphics.setZValue(i)
 
-    def updatePosition(self) -> None:
+    def update_diagram(self):
         """
-
-        :return: 
-        """
-        real_position = self.pos()
-        center_point = self.getPos()
-        # self.x = center_point.x() + real_position.x()
-        # self.y = center_point.y() + real_position.y()
-        self.needsUpdate = True
-
-    def updateDiagram(self):
-        """
-        
+        Updates the element position in the diagram (to save)
         :return: 
         """
         lat, long = self.editor.to_lat_lon(self.rect().x(), self.rect().y())
-
-        # print(f'Updating SE position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
@@ -166,8 +152,8 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
     def get_center_pos(self) -> QPointF:
         """
-
-        :return:
+        Get the center position
+        :return: QPointF
         """
         x = self.rect().x() + self.rect().width() / 2
         y = self.rect().y() + self.rect().height() / 2
@@ -189,20 +175,20 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
 
-            self.updateDiagram()  # always update
+            self.update_diagram()  # always update
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
+        # selected_items = self.editor.map.view.selected_items()
+        # if len(selected_items) < 2:
+        self.setSelected(True)
+
         event.setAccepted(True)
         self.editor.map.view.disableMove = True
 
-        if event.button() == Qt.LeftButton:
-            self.selectItem()
-
-        print("SE mouse press")
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object,
                                          dictionary_of_lists={
@@ -214,31 +200,13 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                                              DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
                                          })
 
-    def selectItem(self):
-        """
-
-        :return:
-        """
-        if not self.itemSelected:
-            self.editor.map.view.selectedItems.append(self)
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        self.itemSelected = True
-
-    def deSelectItem(self):
-        """
-
-        :return:
-        """
-        self.itemSelected = False
-        self.setDefaultColor()
-
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """
         Event handler for mouse release events.
         """
         # super().mouseReleaseEvent(event)
         self.editor.disableMove = True
-        self.updateDiagram()  # always update
+        self.update_diagram()  # always update
         print("SE mouse release")
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
@@ -272,7 +240,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                        function_ptr=self.add_voltage_level)
 
         add_menu_entry(menu=menu,
-                       text="Create line",
+                       text="Create line from here",
                        icon_path="",
                        function_ptr=self.create_new_line)
 
@@ -302,7 +270,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Create a new line in the map wizard
         """
-        self.editor.createNewLineWizard()
+        self.editor.create_new_line_wizard()
 
     def add_function(self):
         """
@@ -420,10 +388,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        if self.itemSelected:
-            self.setNodeColor(QColor(Qt.yellow), QColor(Qt.yellow))
-        else:
-            self.setNodeColor(self.colorInner, self.colorBorder)
+        self.setNodeColor(self.colorInner, self.colorBorder)
 
     def getPos(self) -> QPointF:
         """

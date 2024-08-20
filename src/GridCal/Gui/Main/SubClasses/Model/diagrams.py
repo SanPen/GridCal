@@ -24,6 +24,7 @@ from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
+from GridCalEngine.Devices import TransformerType, OverheadLineType, SequenceLineType, UndergroundLineType
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
