@@ -980,7 +980,6 @@ class DeviceType(Enum):
     LoadLikeDevice = 'Load like'
     BranchGroupDevice = 'Branch group'
     LambdaDevice = r"Loading from the base situation ($\lambda$)"
-    Template = 'Template'
 
     PiMeasurementDevice = 'Pi Measurement'
     QiMeasurementDevice = 'Qi Measurement'
@@ -1079,7 +1078,6 @@ class SubObjectType(Enum):
     Array = "Array"
     ObjectsList = "ObjectsList"
     Associations = "AssociationsList"
-    TemplateLinks = "TemplateLinks"
 
     def __str__(self) -> str:
         return str(self.value)

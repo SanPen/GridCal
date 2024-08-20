@@ -377,13 +377,7 @@ class ObjectsTableMain(DiagramsMain):
 
                 gc_prop = elements[0].get_property_by_name(prop_name=association_prperty_name)
                 associations: dev.Associations = elements[0].get_snapshot_value_by_name(name=association_prperty_name)
-                if elements[0].device_type == DeviceType.InvestmentDevice:
-                    associated_objects = []
-                    for dev_type in [DeviceType.TransformerTypeDevice, DeviceType.OverheadLineTypeDevice,
-                                     DeviceType.UnderGroundLineDevice, DeviceType.SequenceLineDevice]:
-                        associated_objects += self.circuit.get_elements_by_type(device_type=dev_type)
-                else:
-                    associated_objects = self.circuit.get_elements_by_type(device_type=associations.device_type)
+                associated_objects = self.circuit.get_elements_by_type(device_type=associations.device_type)
                 self.ui.association_units_label.setText(gc_prop.units)
 
                 if len(associated_objects) > 0:

@@ -931,10 +931,6 @@ def get_branch_data(circuit: MultiCircuit,
                            time_series=time_series,
                            is_dc_branch=False)
 
-        data.possible_tower_types[i] = elm.possible_tower_types
-        data.possible_underground_line_types[i] = elm.possible_underground_line_types
-        data.possible_sequence_line_types[i] = elm.possible_sequence_line_types
-
         ii += 1
 
     # DC-lines

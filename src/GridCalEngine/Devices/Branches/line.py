@@ -104,7 +104,7 @@ class Line(BranchParent):
                               device_type=DeviceType.LineDevice)
 
         # line length in km
-        self.length = length
+        self._length = length
 
         # line impedance tolerance
         self.tolerance = tolerance
@@ -190,6 +190,25 @@ class Line(BranchParent):
         self.register(key='possible_sequence_line_types', units='', tpe=SubObjectType.Associations,
                       definition='Possible sequence line types (>1 to denote association), - to denote no association',
                       display=False)
+
+    @property
+    def length(self) -> float:
+        """
+        Line length in km
+        :return: float
+        """
+        return self._length
+
+    @length.setter
+    def length(self, val: float):
+        if isinstance(val, float):
+            if val > 0.0:
+                self._length = val
+            else:
+                print('The length cannot be zero, setting it to 1.0 km')
+                self._length = 1.0
+        else:
+            raise Exception('The length must be a float value')
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -283,6 +302,9 @@ class Line(BranchParent):
         Get the equivalent sequence line type oof this line
         :return: SequenceLineType
         """
+        if self.length == 0.0:
+            raise Exception("Lenght must be greater than 0")
+
         return SequenceLineType(name=f"{self.name}_type",
                                 Imax=1, Vnom=self.get_max_bus_nominal_voltage(),
                                 R=self.R / self.length,
