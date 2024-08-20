@@ -405,9 +405,6 @@ def gridcal_object_to_json(elm: ALL_DEV_TYPES) -> Dict[str, str]:
         elif prop.tpe == SubObjectType.Associations:
             data[name] = obj.to_dict()
 
-        elif prop.tpe == SubObjectType.TemplateLinks:
-            data[name] = obj
-
         elif prop.tpe == SubObjectType.Array:
             data[name] = list(obj)
 
@@ -1047,61 +1044,14 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                 elif gc_prop.tpe == SubObjectType.Associations:
 
-                                    """
-                                    There is no way a priori to know the template type when initializing an investment
-                                    as its type is not set. Hence, we have to check for two cases:
-                                    1. The investment is empty, in which case we assume all types are possible, and 
-                                    then update the association type depending on which dictionary it was found
-                                    2. The associations are already set, in which case we just parse the data as we
-                                    normally would in the associations of a device
-                                    """
+                                    # get the list of associations
                                     associations = elm.get_snapshot_value(gc_prop)
-                                    update_assoc_type = False
-
-                                    # 1. Empty investment
-                                    if associations.device_type is None:
-                                        type_dicts = next((elements_dict_by_type.get(key) for key in
-                                                           [DeviceType.TransformerTypeDevice,
-                                                            DeviceType.SequenceLineDevice,
-                                                            DeviceType.OverheadLineTypeDevice,
-                                                            DeviceType.UnderGroundLineDevice]
-                                                           if key in elements_dict_by_type), {})
-                                        update_assoc_type = True
-
-                                    # 2. Known association type
-                                    else:
-                                        type_dicts = elements_dict_by_type.get(associations.device_type, {})
-
                                     associations.parse(
                                         data=property_value,
-                                        elements_dict=type_dicts,
+                                        elements_dict=elements_dict_by_type.get(associations.device_type, {}),
                                         logger=logger,
-                                        elm_name=elm.name,
-                                        updatable_device_type=update_assoc_type
+                                        elm_name=elm.name
                                     )
-
-                                elif gc_prop.tpe == SubObjectType.ObjectsList:
-
-                                    val = property_value
-                                    elm.set_snapshot_value(gc_prop.name, val)
-                                    search_and_apply_json_profile(json_entry=json_entry,
-                                                                  gc_prop=gc_prop,
-                                                                  elm=elm,
-                                                                  property_value=val)
-
-                                    print('enter investments unpack')
-
-                                    # if collection is not None:
-                                    #     ref_idtag = str(property_value)
-                                    #     ref_elm = collection.get(ref_idtag, None)
-                                    #
-                                    #     if ref_elm is not None:
-                                    #         elm.set_snapshot_value(gc_prop.name, ref_elm)
-                                    #         search_and_apply_json_profile(json_entry=json_entry,
-                                    #                                       gc_prop=gc_prop,
-                                    #                                       elm=elm,
-                                    #                                       property_value=ref_elm,
-                                    #                                       collection=collection)
 
                                 else:
                                     raise Exception(f"SubObjectType {gc_prop.tpe} not implemented")

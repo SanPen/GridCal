@@ -228,7 +228,6 @@ class Transformer2W(ControllableBranchParent):
 
         # association with transformer templates
         self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)
-        self.data = Associations(device_type=DeviceType.TransformerTypeDevice)
 
         # register
         self.register(key='HV', units='kV', tpe=float, definition='High voltage rating')
