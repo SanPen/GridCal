@@ -75,6 +75,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
     g = Jt @ ret.f
     Idn = diagc(n=A.shape[0], value=1.0)
     mu = 1e-3 * A.diagonal().max()
+    H = (A + (mu * Idn)).tocsc()
 
     error_evolution = np.zeros(max_iter + 1)
 
@@ -98,7 +99,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
 
             # compute update step
             try:
-                H = (A + (mu * Idn)).tocsc()
+
                 h = linear_solver(H, -g)
 
                 if np.isnan(h).any():
@@ -135,6 +136,7 @@ def levenberg_marquardt(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                 ret = func(x_new, True, *func_args)  # compute f + jacobian
                 Jt = ret.J.T
                 A = Jt @ ret.J
+                H = (A + (mu * Idn)).tocsc()
                 g = Jt @ ret.f
                 converged = f_error < tol  # or g_error < tol
                 rho = dF / dL

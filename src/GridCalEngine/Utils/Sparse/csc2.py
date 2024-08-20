@@ -164,6 +164,37 @@ class CSC:
         """
         return csc_matvec_ff(self, x)
 
+    @property
+    def T(self) -> "CSC":
+        """
+        Traspose
+        :return:
+        """
+        return sp_transpose(self)
+
+    def get_diag_max(self) -> float:
+        """
+        Get the maximum value of the diagonal
+        :return: value
+        """
+        val = -1e20
+        for j in range(self.n_cols):
+            for p in range(self.indptr[j], self.indptr[j + 1]):
+                if self.data[p] > val:
+                    val = self.data[p]
+        return val
+
+    def add_val_to_diagonal(self, val: float):
+        """
+        Add value to the diagonal in-place
+        :param val: some value
+        :return: Nothing
+        """
+        for j in range(self.n_cols):
+            for p in range(self.indptr[j], self.indptr[j + 1]):
+                if self.indices[p] == j:
+                    self.data[p] += val
+
     def __matmul__(self, B: "CSC" | np.ndarray) -> "CSC" | np.ndarray:
         """
 
@@ -176,9 +207,6 @@ class CSC:
             return csc_matvec_ff(self, B)
         else:
             raise TypeError
-
-    # def __repr__(self):
-    #     return f"CSC ({self.n_rows}x{self.n_cols}) nnz:{self.nnz}"
 
 
 @jitclass([
