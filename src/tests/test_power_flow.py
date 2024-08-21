@@ -41,7 +41,8 @@ def test_ieee_grids():
         ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
     ]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
+                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
 
         print(solver_type)
 
@@ -220,7 +221,8 @@ def test_voltage_remote_control_with_generation() -> None:
     # control bus 6 with generator 4
     grid.generators[4].control_bus = grid.buses[6]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
+                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -246,7 +248,7 @@ def test_voltage_control_with_ltc() -> None:
     bus_dict = grid.get_bus_index_dict()
     ctrl_idx = bus_dict[grid.transformers2w[0].regulation_bus]
 
-    for solver_type in [SolverType.NR]:
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -270,7 +272,7 @@ def test_qf_control_with_ltc() -> None:
 
     grid = gce.open_file(fname)
 
-    for solver_type in [SolverType.NR]:
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -293,7 +295,7 @@ def test_qt_control_with_ltc() -> None:
     grid = gce.open_file(fname)
     grid.transformers2w[0].tap_module_control_mode = gce.TapModuleControl.Qt
 
-    for solver_type in [SolverType.NR]:
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -315,7 +317,7 @@ def test_power_flow_control_with_pst_pf() -> None:
 
     grid = gce.open_file(fname)
 
-    for solver_type in [SolverType.NR]:
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -337,7 +339,7 @@ def test_power_flow_control_with_pst_pt() -> None:
 
     grid = gce.open_file(fname)
 
-    for solver_type in [SolverType.NR]:
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -360,10 +362,11 @@ def test_fubm():
     fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.m')
     grid = gce.open_file(fname)
 
-    opt = gce.PowerFlowOptions(retry_with_other_methods=False, verbose=0)
-    driver = gce.PowerFlowDriver(grid=grid, options=opt)
-    driver.run()
-    results = driver.results
-    vm = np.abs(results.voltage)
-    expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
-    assert np.allclose(vm, expected_vm, rtol=1e-4)
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        opt = gce.PowerFlowOptions(solver_type=solver_type, retry_with_other_methods=False, verbose=0)
+        driver = gce.PowerFlowDriver(grid=grid, options=opt)
+        driver.run()
+        results = driver.results
+        vm = np.abs(results.voltage)
+        expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
+        assert np.allclose(vm, expected_vm, rtol=1e-4)

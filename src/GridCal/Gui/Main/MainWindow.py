@@ -670,11 +670,6 @@ class Ui_mainWindow(object):
         self.verticalLayout_2 = QVBoxLayout(self.diagram_selection_frame)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.grid_name_line_edit = QLineEdit(self.diagram_selection_frame)
-        self.grid_name_line_edit.setObjectName(u"grid_name_line_edit")
-
-        self.verticalLayout_2.addWidget(self.grid_name_line_edit)
-
         self.tabWidget_6 = QTabWidget(self.diagram_selection_frame)
         self.tabWidget_6.setObjectName(u"tabWidget_6")
         self.tabWidget_6.setTabPosition(QTabWidget.North)
@@ -1990,6 +1985,17 @@ class Ui_mainWindow(object):
         self.frame_25.setFrameShadow(QFrame.Raised)
         self.verticalLayout_17 = QVBoxLayout(self.frame_25)
         self.verticalLayout_17.setObjectName(u"verticalLayout_17")
+        self.label_82 = QLabel(self.frame_25)
+        self.label_82.setObjectName(u"label_82")
+        self.label_82.setFont(font1)
+
+        self.verticalLayout_17.addWidget(self.label_82)
+
+        self.grid_name_line_edit = QLineEdit(self.frame_25)
+        self.grid_name_line_edit.setObjectName(u"grid_name_line_edit")
+
+        self.verticalLayout_17.addWidget(self.grid_name_line_edit)
+
         self.label_57 = QLabel(self.frame_25)
         self.label_57.setObjectName(u"label_57")
         self.label_57.setFont(font1)
@@ -4899,9 +4905,6 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.cancelButton.setText("")
 #if QT_CONFIG(tooltip)
-        self.grid_name_line_edit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the grid model", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
         self.diagramsListView.setToolTip(QCoreApplication.translate("mainWindow", u"List of available diagrams", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
@@ -5161,6 +5164,10 @@ class Ui_mainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.main_console_tab), QCoreApplication.translate("mainWindow", u"Scripting", None))
         self.label_68.setText("")
         self.label_69.setText(QCoreApplication.translate("mainWindow", u"General settings", None))
+        self.label_82.setText(QCoreApplication.translate("mainWindow", u"Grid name", None))
+#if QT_CONFIG(tooltip)
+        self.grid_name_line_edit.setToolTip(QCoreApplication.translate("mainWindow", u"Name of the grid model", None))
+#endif // QT_CONFIG(tooltip)
         self.label_57.setText(QCoreApplication.translate("mainWindow", u"Base power", None))
 #if QT_CONFIG(tooltip)
         self.sbase_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Base power</span></p><p>Despite all the bibliography, changing this number to anything other than 100 MVA, might change the meaning of what sensible per-unit voltage are.</p><p>This is, 1.0 is no longer the nominal voltage and so on.</p></body></html>", None))

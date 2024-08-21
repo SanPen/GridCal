@@ -15,14 +15,12 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
-import math
 import numpy as np
 import scipy.sparse as sp
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
-from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc, mat_to_scipy
-from GridCalEngine.Utils.Sparse.csc import diagc
+from GridCalEngine.Utils.Sparse.csc2 import mat_to_scipy
 from GridCalEngine.basic_structures import Logger
 
 linear_solver = get_linear_solver()
@@ -35,11 +33,13 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
                           verbose: int = 0,
                           logger: Logger = Logger()) -> NumericPowerFlowResults:
     """
-    Levenberg Marquadt to solve:
+    Levenberg-Marquardt to solve:
 
-        min: error(g(x))
+        min: error(f(x))
         s.t.
-            g(x) = 0
+            f(x) = 0
+
+    From METHODS FOR NON-LINEAR LEAST SQUARES PROBLEMS by K. Madsen, H.B. Nielsen, O. Tingleff
 
     :param problem: PfFormulationTemplate
     :param tol: Error tolerance
@@ -72,7 +72,7 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
     A: sp.csc_matrix = sp.csc_matrix((0, 0))
     error_evolution = np.zeros(max_iter + 1)
 
-    error, converged, x, dz = problem.update(x, update_controls=True)
+    error, converged, x, dz = problem.update(x, update_controls=False)
 
     # save the error evolution
     error_evolution[iter_] = problem.error
@@ -99,7 +99,7 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
                 H = mat_to_scipy(problem.Jacobian())
                 # system matrix
                 # H1 = H^t
-                Ht = H.transpose()  # .tocsr()
+                Ht = H.T  # .tocsr()
 
                 # H2 = H1·H
                 HtH = Ht @ H
@@ -114,7 +114,7 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
 
             # right-hand side
             # H^t·dz
-            rhs = Ht.dot(dz)
+            rhs = Ht @ dz
 
             # compute update step
             try:
@@ -133,24 +133,21 @@ def levenberg_marquadt_fx(problem: PfFormulationTemplate,
                 print("h:\n", dx)
 
             # objective function to minimize
-            f = 0.5 * dz.dot(dz)
+            f = 0.5 * dz @ dz
 
             # decision function
-            val = dx.dot(lbmda * dx + rhs)
-            if val > 0.0:
-                rho = (f_prev - f) / (0.5 * val)
-            else:
-                rho = -1.0
-
-            if rho >= 0:
+            dL = 0.5 * dx @ (lbmda * dx + rhs)
+            dF = f_prev - f
+            if (dL > 0.0) and (dF > 0.0):
                 update_jacobian = True
+                rho = dF / dL
                 lbmda *= max([1.0 / 3.0, 1 - (2 * rho - 1) ** 3])
                 nu = 2.0
 
                 # update x
                 x -= dx
-
                 error, converged, x, dz = problem.update(x, update_controls=True)
+
             else:
                 update_jacobian = False
                 lbmda *= nu

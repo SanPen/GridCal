@@ -296,13 +296,6 @@ QProgressBar::chunk{
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QLineEdit" name="grid_name_line_edit">
-                     <property name="toolTip">
-                      <string>Name of the grid model</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
                     <widget class="QTabWidget" name="tabWidget_6">
                      <property name="tabPosition">
                       <enum>QTabWidget::North</enum>
@@ -3363,6 +3356,25 @@ QProgressBar::chunk{
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_17">
+              <item>
+               <widget class="QLabel" name="label_82">
+                <property name="font">
+                 <font>
+                  <pointsize>9</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Grid name</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="grid_name_line_edit">
+                <property name="toolTip">
+                 <string>Name of the grid model</string>
+                </property>
+               </widget>
+              </item>
               <item>
                <widget class="QLabel" name="label_57">
                 <property name="font">

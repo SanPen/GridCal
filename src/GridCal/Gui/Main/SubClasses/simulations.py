@@ -67,6 +67,7 @@ class SimulationsMain(TimeEventsMain):
         self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
         self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
         self.solvers_dict[SolverType.LM.value] = SolverType.LM
+        self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
         self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
         self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
         self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
@@ -297,6 +298,7 @@ class SimulationsMain(TimeEventsMain):
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
             self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
             self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
@@ -326,6 +328,7 @@ class SimulationsMain(TimeEventsMain):
             self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
             self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
             self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
