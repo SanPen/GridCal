@@ -31,14 +31,10 @@ class PfFormulationTemplate:
     Base Power Flow Formulation class
     """
 
-    def __init__(self, V0: CxVec, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec, options: PowerFlowOptions):
+    def __init__(self, V0: CxVec, options: PowerFlowOptions):
         """
 
         :param V0:
-        :param pq:
-        :param pv:
-        :param pqv:
-        :param p:
         :param options:
         """
         self.V = V0
@@ -50,40 +46,13 @@ class PfFormulationTemplate:
 
         self.options = options
 
-        self.pq = pq
-        self.pv = pv
-        self.pqv = pqv
-        self.p = p
-
-        self._idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
-        self._idx_dVm = np.r_[self.pq, self.p]
-        self._idx_dP = self._idx_dVa
-        self._idx_dQ = np.r_[self.pq, self.pqv]
-
         self._f = np.zeros(0)
 
         self._error: float = 0.0
 
         self._converged: bool = False
 
-    def update_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
-        """
 
-        :param pq:
-        :param pv:
-        :param pqv:
-        :param p:
-        :return:
-        """
-        self.pq = pq
-        self.pv = pv
-        self.pqv = pqv
-        self.p = p
-
-        self._idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
-        self._idx_dVm = np.r_[self.pq, self.p]
-        self._idx_dP = self._idx_dVa
-        self._idx_dQ = np.r_[self.pq, self.pqv]
 
     @property
     def converged(self) -> bool:
@@ -109,37 +78,7 @@ class PfFormulationTemplate:
         """
         return self._f
 
-    @property
-    def idx_dVa(self) -> IntVec:
-        """
-        Indices for the increments of Va
-        :return:
-        """
-        return self._idx_dVa
 
-    @property
-    def idx_dVm(self) -> IntVec:
-        """
-        indices for the increment of Vm
-        :return:
-        """
-        return self._idx_dVm
-
-    @property
-    def idx_dP(self) -> IntVec:
-        """
-        indices for the increment of P
-        :return:
-        """
-        return self._idx_dP
-
-    @property
-    def idx_dQ(self) -> IntVec:
-        """
-        Indices for the increment of Q
-        :return:
-        """
-        return self._idx_dQ
 
     @property
     def Va(self) -> Vec:

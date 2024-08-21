@@ -220,14 +220,17 @@ class SimulationIndices:
             # analyze tap-phase controls
             if ctrl_tau == TapPhaseControl.Pf:
                 k_pf_tau.append(k)
+                conv_type = 1
 
             elif ctrl_tau == TapPhaseControl.Pt:
                 k_pt_tau.append(k)
+                conv_type = 1
 
             elif ctrl_tau == TapPhaseControl.fixed:
-                pass
+                if ctrl_m == TapModuleControl.fixed:
+                    conv_type = 1
 
-            # elif ctrl == TapPhaseControl.Droop:
+            # elif ctrl_tau == TapPhaseControl.Droop:
             #     pass
 
             elif ctrl_tau == 0:

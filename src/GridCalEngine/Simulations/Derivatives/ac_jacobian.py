@@ -296,15 +296,15 @@ def AC_jacobian(Ybus: csc_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> CSC:
 
 @jit(nopython=True)
 def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
-                    idx_dtheta: IntVec, idx_dVm: IntVec, idx_dQ: IntVec) -> CSC:
+                    idx_dtheta: IntVec, idx_dVm: IntVec, idx_dP: IntVec, idx_dQ: IntVec) -> CSC:
     """
     Calculates Jacobian in CSC format.
 
     J has the shape
 
-                  idx_dtheta      idx_dVm
-    idx_dtheta  | dP_dVa        | dP_dVm |
-    idx_dQ      | dQ_dVa        | dQ_dVm |
+              idx_dtheta      idx_dVm
+    idx_dP  | dP_dVa        | dP_dVm |
+    idx_dQ  | dQ_dVa        | dQ_dVm |
 
     :param nbus:
     :param Yx:
@@ -313,6 +313,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     :param V:
     :param idx_dtheta: pv, pq, p, pqv
     :param idx_dVm: pq, p
+    :param idx_dP: pv, pq, p, pqv
     :param idx_dQ: pq, pqv
     :return: Jacobina matrix
     """
@@ -325,7 +326,7 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     J = CSC(nj, nj, nnz_estimate, False)
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
-    lookup_dP = make_lookup(nbus, idx_dtheta)
+    lookup_dP = make_lookup(nbus, idx_dP)
     lookup_dQ = make_lookup(nbus, idx_dQ)
 
     # get length of vectors
@@ -409,6 +410,6 @@ def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, idx_dtheta: IntVec, idx_dVm: IntVe
     nbus = Ybus.shape[0]
 
     # Create J in CSC order
-    J = create_J_vc_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, idx_dtheta, idx_dVm, idx_dQ)
+    J = create_J_vc_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, idx_dtheta, idx_dVm, idx_dtheta, idx_dQ)
 
     return J

@@ -22,7 +22,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode,
-                                        TapModuleControl, HvdcControlType)
+                                        TapModuleControl, TapPhaseControl,HvdcControlType)
 from GridCalEngine.basic_structures import BoolVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
 import GridCalEngine.DataStructures as ds
@@ -825,7 +825,7 @@ def fill_controllable_branch(ii: int,
         else:
             reg_bus = elm.regulation_bus
 
-        data.tap_module_buses[ii] = bus_dict[reg_bus]
+        data.tap_controlled_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset_prof[t_idx] / Sbase
         data.Qset[ii] = elm.Qset_prof[t_idx] / Sbase
@@ -850,7 +850,7 @@ def fill_controllable_branch(ii: int,
                                    device=elm.name)
         else:
             reg_bus = elm.regulation_bus
-        data.tap_module_buses[ii] = bus_dict[reg_bus]
+        data.tap_controlled_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset / Sbase
         data.Qset[ii] = elm.Qset / Sbase
@@ -868,9 +868,14 @@ def fill_controllable_branch(ii: int,
     data.tap_angle_min[ii] = elm.tap_phase_min
     data.tap_angle_max[ii] = elm.tap_phase_max
 
+    if (data.tap_module_control_mode[ii] != TapModuleControl.fixed
+            or data.tap_phase_control_mode[ii] != TapPhaseControl.fixed):
+        data._any_pf_control = True
+
     if not use_stored_guess:
-        if elm.tap_module_control_mode == TapModuleControl.Vm:
-            bus_idx = data.tap_module_buses[ii]
+        if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+            data._any_pf_control = True
+            bus_idx = data.tap_controlled_buses[ii]
             if not bus_voltage_used[bus_idx]:
                 if elm.vset > 0.0:
                     bus_data.Vbus[bus_idx] = elm.vset
@@ -1018,7 +1023,7 @@ def get_branch_data(circuit: MultiCircuit,
         data.alpha1[ii] = elm.alpha1
         data.alpha2[ii] = elm.alpha2
         data.alpha3[ii] = elm.alpha3
-
+        data._any_pf_control = True
         ii += 1
 
     # UPFC
