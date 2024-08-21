@@ -9657,20 +9657,22 @@ QProgressBar::chunk{
     <property name="title">
      <string>Simulations</string>
     </property>
-    <addaction name="actionInputs_analysis"/>
+    <addaction name="actionactivate_time_series"/>
+    <addaction name="actionEdit_simulation_time_limits"/>
+    <addaction name="separator"/>
     <addaction name="actionPower_flow"/>
-    <addaction name="actionPower_Flow_Time_series"/>
-    <addaction name="actionStorage_location_suggestion"/>
-    <addaction name="actionShort_Circuit"/>
-    <addaction name="actionVoltage_stability"/>
+    <addaction name="actionLinearAnalysis"/>
     <addaction name="actionSigma_analysis"/>
     <addaction name="separator"/>
+    <addaction name="actionShort_Circuit"/>
+    <addaction name="actionVoltage_stability"/>
+    <addaction name="separator"/>
     <addaction name="actionOPF"/>
-    <addaction name="actionOPF_time_series"/>
-    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
-    <addaction name="actionOptimal_Net_Transfer_Capacity_Time_Series"/>
     <addaction name="actionOpf_to_Power_flow"/>
     <addaction name="actionSet_OPF_generation_to_profiles"/>
+    <addaction name="separator"/>
+    <addaction name="actionATC"/>
+    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
     <addaction name="separator"/>
     <addaction name="actionClustering"/>
     <addaction name="actionUse_clustering"/>
@@ -9680,14 +9682,13 @@ QProgressBar::chunk{
     <addaction name="actionAdd_selected_as_new_investment"/>
     <addaction name="actionBlackout_cascade"/>
     <addaction name="separator"/>
-    <addaction name="actionLinearAnalysis"/>
-    <addaction name="actionPTDF_time_series"/>
     <addaction name="actionContingency_analysis"/>
-    <addaction name="actionOTDF_time_series"/>
     <addaction name="actionInitialize_contingencies"/>
     <addaction name="actionAdd_selected_to_contingency"/>
-    <addaction name="actionATC"/>
-    <addaction name="actionATC_Time_Series"/>
+    <addaction name="separator"/>
+    <addaction name="actionInputs_analysis"/>
+    <addaction name="actionStorage_location_suggestion"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuModel">
     <property name="font">
@@ -9700,7 +9701,6 @@ QProgressBar::chunk{
     </property>
     <addaction name="actionAuto_rate_branches"/>
     <addaction name="actionDetect_transformers"/>
-    <addaction name="actionEdit_simulation_time_limits"/>
     <addaction name="actionProcess_topology"/>
     <addaction name="actionDetect_substations"/>
     <addaction name="actionFuse_devices"/>

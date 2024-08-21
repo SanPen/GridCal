@@ -10,7 +10,11 @@ npa.findAndActivateLicense()
 
 
 def convert_bus_types(arr: List["npa.BusType"]):
+    """
 
+    :param arr:
+    :return:
+    """
     tpe = np.zeros(len(arr), dtype=int)
     for i, val in enumerate(arr):
         if val == npa.BusType.VD:
