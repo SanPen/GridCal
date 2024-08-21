@@ -17,7 +17,7 @@
 import os
 
 from GridCalEngine.api import *
-from tests.zip_file_mgmt import open_data_frame_from_zip
+from GridCalEngine.Utils.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_time_series():

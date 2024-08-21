@@ -44,10 +44,6 @@ class PfBasicFormulation(PfFormulationTemplate):
         :param Y0:
         :param Qmin:
         :param Qmax:
-        :param pq:
-        :param pv:
-        :param pqv:
-        :param p:
         :param options:
         """
         PfFormulationTemplate.__init__(self, V0=V0, options=options)

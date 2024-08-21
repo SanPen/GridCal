@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 from GridCalEngine.api import *
-from tests.zip_file_mgmt import open_data_frame_from_zip
+from GridCalEngine.Utils.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_cpf():
