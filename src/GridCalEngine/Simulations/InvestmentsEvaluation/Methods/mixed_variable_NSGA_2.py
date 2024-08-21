@@ -104,7 +104,7 @@ class MixedVariableProblem(ElementwiseProblem):
         self.devices = list()  # list of devices in sequential order to match the order of the vars
         self.default_tamplate = list()  # list of templates that represent the devices in their initial state
         for elm, template_list in self.device_template_dict.items():
-            self.variables[elm.idtag] = Integer(bounds=(0, len(template_list) + 1))
+            self.variables[elm.idtag] = Integer(bounds=(0, len(template_list) + 1))  # TODO: check if +1 is needed
             self.devices.append(elm)
 
             if isinstance(elm, Line):

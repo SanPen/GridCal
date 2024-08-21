@@ -465,7 +465,8 @@ class Transformer2W(ControllableBranchParent):
 
     def get_transformer_type(self, Sbase: float = 100.0) -> TransformerType:
         """
-
+        Get the equivalent transformer type of this transformer
+        :return: SequenceLineType
         :param Sbase:
         :return:
         """

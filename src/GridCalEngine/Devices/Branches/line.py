@@ -299,11 +299,11 @@ class Line(BranchParent):
 
     def get_line_type(self) -> SequenceLineType:
         """
-        Get the equivalent sequence line type oof this line
+        Get the equivalent sequence line type of this line
         :return: SequenceLineType
         """
         if self.length == 0.0:
-            raise Exception("Lenght must be greater than 0")
+            raise Exception("Length must be greater than 0")
 
         return SequenceLineType(name=f"{self.name}_type",
                                 Imax=1, Vnom=self.get_max_bus_nominal_voltage(),
