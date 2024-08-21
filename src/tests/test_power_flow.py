@@ -369,4 +369,5 @@ def test_fubm():
         results = driver.results
         vm = np.abs(results.voltage)
         expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
-        assert np.allclose(vm, expected_vm, rtol=1e-4)
+        ok = np.allclose(vm, expected_vm, rtol=1e-4)
+        assert ok

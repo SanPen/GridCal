@@ -23,12 +23,14 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
+from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
+from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    polar_to_rect, get_Sf, get_St,
                                                                                    get_It)
@@ -155,9 +157,10 @@ def adv_jacobian(nbus: int,
 
 class PfAdvancedFormulation(PfFormulationTemplate):
 
-    def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec, Qmin: Vec, Qmax: Vec,
-                 pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec,
-                 nc: NumericalCircuit, options: PowerFlowOptions):
+    def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
+                 Qmin: Vec, Qmax: Vec,
+                 nc: NumericalCircuit,
+                 options: PowerFlowOptions):
         """
 
         :param V0:
@@ -166,14 +169,10 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param Y0:
         :param Qmin:
         :param Qmax:
-        :param pq:
-        :param pv:
-        :param pqv:
-        :param p:
         :param nc:
         :param options:
         """
-        PfFormulationTemplate.__init__(self, V0=V0, pq=pq, pv=pv, pqv=pqv, p=p, options=options)
+        PfFormulationTemplate.__init__(self, V0=V0, options=options)
 
         self.nc: NumericalCircuit = nc
 
@@ -184,30 +183,34 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.Qmin = Qmin
         self.Qmax = Qmax
 
-        self._indices = nc.get_simulation_indices()
+        self.bus_types = self.nc.bus_data.bus_types.copy()
+        self.tap_module_control_mode = self.nc.branch_data.tap_module_control_mode.copy()
+        self.tap_phase_control_mode = self.nc.branch_data.tap_phase_control_mode.copy()
 
-        # self.Pset = nc.branch_data.Pset[nc.k_pf_tau]
+        self.pq = np.array(0, dtype=int)
+        self.pv = np.array(0, dtype=int)
+        self.pqv = np.array(0, dtype=int)
+        self.p = np.array(0, dtype=int)
+        self.idx_conv = np.array(0, dtype=int)
 
-        # self.k_pf_tau: IntVec = nc.k_pf_tau
-        # self.k_v_m: IntVec = nc.k_v_m
-        # self.k_qf_beq: IntVec = nc.k_qf_beq
+        self.idx_dVa = np.array(0, dtype=int)
+        self.idx_dVm = np.array(0, dtype=int)
+        self.idx_dP = np.array(0, dtype=int)
+        self.idx_dQ = np.array(0, dtype=int)
 
-        self.idx_conv = self._indices.k_vsc
+        self.idx_dm = np.array(0, dtype=int)
+        self.idx_dtau = np.array(0, dtype=int)
+        self.idx_dbeq = np.array(0, dtype=int)
 
-        self._idx_dVa = np.r_[self.pqv, self.pv, self.pq, self.p]
-        self._idx_dVm = np.r_[self.pq, self.p]
-        self._idx_dP = self._idx_dVa
-        self._idx_dQ = np.r_[self.pq, self.pqv]
+        self.idx_dPf = np.array(0, dtype=int)
+        self.idx_dQf = np.array(0, dtype=int)
 
-        self.idx_dm = np.r_[self._indices.k_v_m, self._indices.k_qf_m, self._indices.k_qt_m]
-        self.idx_dtau = np.r_[self._indices.k_pf_tau, self._indices.k_pt_tau]
-        self.idx_dbeq = np.r_[self._indices.k_qf_beq, self._indices.k_v_beq]
+        self.idx_dPt = np.array(0, dtype=int)
+        self.idx_dQt = np.array(0, dtype=int)
 
-        self.idx_dPf = self._indices.k_pf_tau
-        self.idx_dQf = np.r_[self._indices.k_qf_m, self._indices.k_qf_beq]
-
-        self.idx_dPt = self._indices.k_pt_tau
-        self.idx_dQt = self._indices.k_qt_m
+        k_v_m = self.analyze_branch_controls()  # this fills the indices above
+        vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.nc.Sbus.real, types=self.bus_types)
+        self.update_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
         self.m: Vec = self.nc.branch_data.tap_module[self.idx_dm]
         self.tau: Vec = self.nc.branch_data.tap_angle[self.idx_dtau]
@@ -237,8 +240,142 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             add_windings_phase=False
         )
 
-        if not len(self.pqv) >= len(self._indices.k_v_m):
+        if not len(self.pqv) >= len(k_v_m):
             raise ValueError("k_v_m indices must be the same size as pqv indices!")
+
+    def update_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
+        """
+
+        :param pq:
+        :param pv:
+        :param pqv:
+        :param p:
+        :return:
+        """
+        self.pq = pq
+        self.pv = pv
+        self.pqv = pqv
+        self.p = p
+
+        self.idx_dVa = np.r_[self.pqv, self.pv, self.pq, self.p]
+        self.idx_dVm = np.r_[self.pq, self.p]
+        self.idx_dP = self.idx_dVa
+        self.idx_dQ = np.r_[self.pq, self.pqv]
+
+    def analyze_branch_controls(self) -> List[int]:
+        """
+        Analyze the control branches and compute the indices
+        :return: k_v_m for later comparison with pqv
+        """
+        k_pf_tau = list()
+        k_pt_tau = list()
+        k_qf_m = list()
+        k_qt_m = list()
+        k_qfzero_beq = list()
+        k_v_m = list()
+        k_v_beq = list()
+        k_vsc = list()
+
+        nbr = len(self.tap_phase_control_mode)
+        for k in range(nbr):
+
+            ctrl_m = self.tap_module_control_mode[k]
+            ctrl_tau = self.tap_phase_control_mode[k]
+            is_conv = self.nc.branch_data.is_converter[k]
+
+            conv_type = 1 if is_conv else 0
+
+            # analyze tap-module controls
+            if ctrl_m == TapModuleControl.Vm:
+
+                # Every bus controlled by m has to become a PQV bus
+                bus_idx = self.nc.branch_data.tap_controlled_buses[k]
+                self.bus_types[bus_idx] = BusMode.PQV_tpe.value
+
+                if is_conv and bus_idx == self.nc.branch_data.F[k]:
+                    # if this is a converter,
+                    # the voltage can be managed with Beq
+                    # if the control bus is the "From" bus
+                    k_v_beq.append(k)
+                    conv_type = 2
+                else:
+                    # In any other case, the voltage is managed by the tap module
+                    k_v_m.append(k)
+
+            elif ctrl_m == TapModuleControl.Qf:
+
+                if not is_conv:
+                    k_qf_m.append(k)
+
+            elif ctrl_m == TapModuleControl.Qt:
+                k_qt_m.append(k)
+
+            elif ctrl_m == TapModuleControl.fixed:
+                pass
+
+            elif ctrl_m == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase module mode {ctrl_m}")
+
+            # analyze tap-phase controls
+            if ctrl_tau == TapPhaseControl.Pf:
+                k_pf_tau.append(k)
+                # conv_type = 1
+
+            elif ctrl_tau == TapPhaseControl.Pt:
+                k_pt_tau.append(k)
+                # conv_type = 1
+
+            elif ctrl_tau == TapPhaseControl.fixed:
+                if ctrl_m == TapModuleControl.fixed:
+                    conv_type = 1
+
+            # elif ctrl_tau == TapPhaseControl.Droop:
+            #     pass
+
+            elif ctrl_tau == 0:
+                pass
+
+            else:
+                raise Exception(f"Unknown tap phase control mode {ctrl_tau}")
+
+            # Beq->qf=0
+            if conv_type == 1:
+                k_qfzero_beq.append(k)
+
+            if is_conv:
+                k_vsc.append(k)
+
+        # convert lists to integer arrays
+        # k_pf_tau = np.array(k_pf_tau, dtype=int)
+        # k_pt_tau = np.array(k_pt_tau, dtype=int)
+        # k_qf_m = np.array(k_qf_m, dtype=int)
+        # k_qt_m = np.array(k_qt_m, dtype=int)
+        # k_qf_beq = np.array(k_qfzero_beq, dtype=int)
+        # k_v_m = np.array(k_v_m, dtype=int)
+        # k_v_beq = np.array(k_v_beq, dtype=int)
+
+        self.idx_conv = np.array(k_vsc, dtype=int)
+
+        self.idx_dm = np.r_[k_v_m, k_qf_m, k_qt_m].astype(int)
+        self.idx_dtau = np.r_[k_pf_tau, k_pt_tau].astype(int)
+        self.idx_dbeq = np.r_[k_qfzero_beq, k_v_beq].astype(int)
+
+        self.idx_dPf = np.array(k_pf_tau, dtype=int)
+        self.idx_dQf = np.r_[k_qf_m, k_qfzero_beq].astype(int)
+
+        self.idx_dPt = np.array(k_pt_tau, dtype=int)
+        self.idx_dQt = np.array(k_qt_m, dtype=int)
+
+        self.m: Vec = self.nc.branch_data.tap_module[self.idx_dm]
+        self.tau: Vec = self.nc.branch_data.tap_angle[self.idx_dtau]
+        self.beq: Vec = self.nc.branch_data.Beq[self.idx_dbeq]
+
+        self.Gsw = self.nc.branch_data.G0sw[self.idx_conv]
+
+        return k_v_m
 
     def x2var(self, x: Vec):
         """
@@ -390,7 +527,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                     # recompute the error based on the new Scalc and S0
                     self._f = self.fx()
 
-                    # compute the rror
+                    # compute the error
                     self._error = compute_fx_error(self._f)
 
                     # the composition of x changed, so recompute

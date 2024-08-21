@@ -16,6 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Tuple
 import numpy as np
+
+from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -25,6 +27,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls impo
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    compute_fx, polar_to_rect)
+from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC
 
@@ -32,8 +35,7 @@ from GridCalEngine.Utils.Sparse.csc2 import CSC
 class PfBasicFormulation(PfFormulationTemplate):
 
     def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec, Qmin: Vec, Qmax: Vec,
-                 pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec,
-                 adm: AdmittanceMatrices, options: PowerFlowOptions):
+                 nc: NumericalCircuit, options: PowerFlowOptions):
         """
 
         :param V0:
@@ -46,12 +48,12 @@ class PfBasicFormulation(PfFormulationTemplate):
         :param pv:
         :param pqv:
         :param p:
-        :param adm:
         :param options:
         """
-        PfFormulationTemplate.__init__(self, V0=V0, pq=pq, pv=pv, pqv=pqv, p=p, options=options)
+        PfFormulationTemplate.__init__(self, V0=V0, options=options)
 
-        self.adm: AdmittanceMatrices = adm
+        self.nc = nc
+        self.adm: AdmittanceMatrices = nc.admittances_
 
         self.S0: CxVec = S0
         self.I0: CxVec = I0
@@ -59,6 +61,14 @@ class PfBasicFormulation(PfFormulationTemplate):
 
         self.Qmin = Qmin
         self.Qmax = Qmax
+
+        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=self.nc.Sbus.real,
+                                                                                   types=self.nc.bus_data.bus_types)
+
+        self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
+        self.idx_dVm = np.r_[self.pq, self.p]
+        self.idx_dP = self.idx_dVa
+        self.idx_dQ = np.r_[self.pq, self.pqv]
 
     def x2var(self, x: Vec):
         """
@@ -81,6 +91,25 @@ class PfBasicFormulation(PfFormulationTemplate):
             self.Va[self.idx_dVa],
             self.Vm[self.idx_dVm]
         ]
+
+    def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
+        """
+
+        :param pq:
+        :param pv:
+        :param pqv:
+        :param p:
+        :return:
+        """
+        self.pq = pq
+        self.pv = pv
+        self.pqv = pqv
+        self.p = p
+
+        self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
+        self.idx_dVm = np.r_[self.pq, self.p]
+        self.idx_dP = self.idx_dVa
+        self.idx_dQ = np.r_[self.pq, self.pqv]
 
     def size(self) -> int:
         """
@@ -136,7 +165,7 @@ class PfBasicFormulation(PfFormulationTemplate):
                                                                   self.Qmax)
 
                 if len(changed) > 0:
-                    self.update_types(pq=pq, pv=pv, pqv=pqv, p=p)
+                    self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
                     # recompute the error based on the new Scalc and S0
                     self._f = self.fx()
@@ -173,7 +202,7 @@ class PfBasicFormulation(PfFormulationTemplate):
 
         # Create J in CSC order
         J = create_J_vc_csc(nbus, self.adm.Ybus.data, self.adm.Ybus.indptr, self.adm.Ybus.indices,
-                            self.V, self.idx_dVa, self.idx_dVm, self.idx_dQ)
+                            self.V, self.idx_dVa, self.idx_dVm, self.idx_dP, self.idx_dQ)
 
         return J
 

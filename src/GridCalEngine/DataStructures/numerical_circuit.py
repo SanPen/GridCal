@@ -863,7 +863,7 @@ class NumericalCircuit:
                                     Pbus=self.Sbus.real,
                                     tap_module_control_mode=self.branch_data.tap_module_control_mode,
                                     tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
-                                    tap_controlled_buses=self.branch_data.tap_module_buses,
+                                    tap_controlled_buses=self.branch_data.tap_controlled_buses,
                                     is_converter=self.branch_data.is_converter,
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
@@ -1162,10 +1162,7 @@ class NumericalCircuit:
 
         :return:
         """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.any_control
+        return self.branch_data._any_pf_control
 
     @property
     def k_pf_tau(self):
@@ -1389,10 +1386,6 @@ class NumericalCircuit:
                                             Y0=self.YLoadBus,
                                             Qmin=self.Qmin_bus,
                                             Qmax=self.Qmax_bus,
-                                            pq=self.pq,
-                                            pv=self.pv,
-                                            pqv=self.pqv,
-                                            p=self.p,
                                             nc=self,
                                             options=PowerFlowOptions())
 
@@ -1613,7 +1606,7 @@ class NumericalCircuit:
                 data=np.c_[
                     self.branch_data.F,
                     self.branch_data.T,
-                    self.branch_data.tap_module_buses,
+                    self.branch_data.tap_controlled_buses,
                     data1,
                     data2
                 ],

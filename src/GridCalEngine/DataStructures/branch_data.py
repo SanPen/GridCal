@@ -102,7 +102,7 @@ class BranchData:
 
         self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
         self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
-        self.tap_module_buses: IntVec = np.zeros(self.nelm, dtype=int)
+        self.tap_controlled_buses: IntVec = np.zeros(self.nelm, dtype=int)
         self.is_converter: BoolVec = np.zeros(self.nelm, dtype=bool)
 
         self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
@@ -116,6 +116,8 @@ class BranchData:
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+
+        self._any_pf_control = False
 
     def size(self) -> int:
         """
@@ -170,7 +172,7 @@ class BranchData:
 
         data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
         data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
-        data.tap_module_buses = self.tap_module_buses[elm_idx]
+        data.tap_controlled_buses = self.tap_controlled_buses[elm_idx]
         data.is_converter = self.is_converter[elm_idx]
 
         data.contingency_enabled = self.contingency_enabled[elm_idx]
@@ -207,6 +209,8 @@ class BranchData:
         data.overload_cost = self.overload_cost[elm_idx]
 
         data.original_idx = elm_idx
+
+        data._any_pf_control = self._any_pf_control
 
         return data
 
@@ -253,7 +257,7 @@ class BranchData:
 
         data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
         data.tap_module_control_mode = self.tap_module_control_mode.copy()
-        data.tap_module_buses = self.tap_module_buses.copy()
+        data.tap_controlled_buses = self.tap_controlled_buses.copy()
         data.is_converter = self.is_converter.copy()
 
         data.contingency_enabled = self.contingency_enabled.copy()
@@ -285,6 +289,8 @@ class BranchData:
         data.overload_cost = self.overload_cost.copy()
 
         data.original_idx = self.original_idx.copy()
+
+        data._any_pf_control = self._any_pf_control
 
         return data
 

@@ -157,17 +157,11 @@ def powell_fx(problem: PfFormulationTemplate,
 
             tol2 = tol * (norm(x) + tol)
 
-            # if norm(hdl) <= tol2:
-            #     converged = True
-            # else:
-            x_new = x + hdl
-
-            f_error_new, converged, x, f = problem.update(x_new, update_controls=True)
+            f_error_new, converged, x, f = problem.update(x + hdl, update_controls=True)
 
             rho = (f_error - f_error_new) / L0_Lhdl if L0_Lhdl > 0 else -1.0
 
-            if rho > 0.0:
-                x = x_new
+            if rho > 0.0 or len(f) != J.shape[0]:
                 J = mat_to_scipy(problem.Jacobian())  # compute the Jacobian too
                 g = J.T @ f
                 f_error = f_error_new
