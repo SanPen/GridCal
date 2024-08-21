@@ -64,6 +64,20 @@ def polar_to_rect(Vm, Va) -> CxVec:
     return Vm * np.exp(1.0j * Va)
 
 
+def expand(n, arr: Vec, idx: IntVec, default: float) -> Vec:
+    """
+    Expand array
+    :param n: number of elements
+    :param arr: short array
+    :param idx: indices in the longer array
+    :param default: default value for the longer array
+    :return: longer array
+    """
+    x = np.full(n, default)
+    x[idx] = arr
+    return x
+
+
 @nb.njit(cache=True, fastmath=True)
 def compute_zip_power(S0: CxVec, I0: CxVec, Y0: CxVec, Vm: Vec) -> CxVec:
     """
@@ -88,31 +102,31 @@ def compute_power(Ybus: csc_matrix, V: CxVec) -> CxVec:
 
 
 @nb.njit(cache=True, fastmath=True)
-def compute_fx(Scalc: CxVec, Sbus: CxVec, pvpq: IntVec, pq: IntVec) -> Vec:
+def compute_fx(Scalc: CxVec, Sbus: CxVec, idx_dP: IntVec, idx_dQ: IntVec) -> Vec:
     """
     Compute the NR-like error function
     f = [∆P(pqpv), ∆Q(pq)]
     :param Scalc: Calculated power injections
     :param Sbus: Specified power injections
-    :param pvpq: Array pf pq and pv node indices
-    :param pq: Array of pq node indices
+    :param idx_dP: Array of node indices updated with dP (pvpq)
+    :param idx_dQ: Array of node indices updated with dQ (pq)
     :return: error
     """
     # dS = Scalc - Sbus  # compute the mismatch
-    # return np.r_[dS[pvpq].real, dS[pq].imag]
+    # return np.r_[dS[idx_dP].real, dS[idx_dQ].imag]
 
-    n = len(pvpq) + len(pq)
+    n = len(idx_dP) + len(idx_dQ)
 
     fx = np.empty(n, dtype=float)
 
     k = 0
-    for i in pvpq:
+    for i in idx_dP:
         # F1(x0) Power balance mismatch - Va
         # fx[k] = mis[i].real
         fx[k] = Scalc[i].real - Sbus[i].real
         k += 1
 
-    for i in pq:
+    for i in idx_dQ:
         # F2(x0) Power balance mismatch - Vm
         # fx[k] = mis[i].imag
         fx[k] = Scalc[i].imag - Sbus[i].imag
@@ -174,6 +188,76 @@ def compute_converter_losses(V: CxVec,
     return Gsw
 
 
+@nb.njit()
+def get_Sf(k: IntVec, Vm: Vec, V: CxVec, yff: CxVec, yft: CxVec, F: IntVec, T: IntVec):
+    """
+
+    :param k:
+    :param Vm:
+    :param V:
+    :param yff:
+    :param yft:
+    :param F:
+    :param T:
+    :return:
+    """
+    f = F[k]
+    t = T[k]
+    return np.power(Vm[f], 2.0) * np.conj(yff[k]) + V[f] * np.conj(V[t]) * np.conj(yft[k])
+
+
+@nb.njit()
+def get_St(k: IntVec, Vm: Vec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
+    """
+
+    :param k:
+    :param Vm:
+    :param V:
+    :param ytf:
+    :param ytt:
+    :param F:
+    :param T:
+    :return:
+    """
+    f = F[k]
+    t = T[k]
+    return np.power(Vm[t], 2.0) * np.conj(ytt[k]) + V[t] * np.conj(V[f]) * np.conj(ytf[k])
+
+
+@nb.njit()
+def get_If(k: IntVec, V: CxVec, yff: CxVec, yft: CxVec, F: IntVec, T: IntVec):
+    """
+
+    :param k:
+    :param V:
+    :param yff:
+    :param yft:
+    :param F:
+    :param T:
+    :return:
+    """
+    f = F[k]
+    t = T[k]
+    return np.conj(V[f]) * np.conj(yff[k]) + np.conj(V[t]) * np.conj(yft[k])
+
+
+@nb.njit()
+def get_It(k: IntVec, V: CxVec, ytf: CxVec, ytt: CxVec, F: IntVec, T: IntVec):
+    """
+
+    :param k:
+    :param V:
+    :param ytf:
+    :param ytt:
+    :param F:
+    :param T:
+    :return:
+    """
+    f = F[k]
+    t = T[k]
+    return np.conj(V[t]) * np.conj(ytt[k]) + np.conj(V[f]) * np.conj(ytf[k])
+
+
 @nb.jit(nopython=True, cache=True, fastmath=True)
 def compute_acdc_fx(Vm: Vec,
                     Sbus: CxVec,
@@ -221,7 +305,8 @@ def compute_acdc_fx(Vm: Vec,
     """
     # mis = Scalc - Sbus  # F1(x0) & F2(x0) Power balance mismatch
 
-    n = len(pvpq) + len(pq) + len(i_vf_beq) + len(i_vt_m) + len(k_pf_tau) + len(k_qf_m) + len(k_zero_beq) + len(k_qt_m) + len(
+    n = len(pvpq) + len(pq) + len(i_vf_beq) + len(i_vt_m) + len(k_pf_tau) + len(k_qf_m) + len(k_zero_beq) + len(
+        k_qt_m) + len(
         k_pf_dp)
 
     fx = np.empty(n)

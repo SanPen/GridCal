@@ -24,11 +24,14 @@ from GridCalEngine.basic_structures import Logger, ConvergenceReport
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_basic_formulation import PfBasicFormulation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import PfAdvancedFormulation
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_fx import newton_raphson_fx
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.powell_fx import powell_fx
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquadt_fx import levenberg_marquadt_fx
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.DataStructures.numerical_circuit import (
-    compile_numerical_circuit_at as compile_numerical_circuit_at_generalised_pf)
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
@@ -111,8 +114,8 @@ def solve(circuit: NumericalCircuit,
                                              converged=False,
                                              norm_f=1e200,
                                              Scalc=S0,
-                                             ma=tap_modules,
-                                             theta=circuit.branch_data.tap_angle,
+                                             m=tap_modules,
+                                             tau=circuit.branch_data.tap_angle,
                                              Beq=Beq,
                                              Ybus=circuit.Ybus,
                                              Yf=circuit.Yf,
@@ -184,30 +187,48 @@ def solve(circuit: NumericalCircuit,
         # Levenberg-Marquardt
         elif solver_type == SolverType.LM:
             if circuit.any_control:
-                solution = pflw.LM_ACDC(nc=circuit,
-                                        Vbus=V0,
-                                        S0=S0,
-                                        I0=I0,
-                                        Y0=Y0,
-                                        tolerance=options.tolerance,
-                                        max_iter=options.max_iter)
+                # Solve NR with the AC/DC algorithm
+
+                problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                S0=S0,
+                                                I0=I0,
+                                                Y0=Y0,
+                                                Qmin=Qmin,
+                                                Qmax=Qmax,
+                                                pv=pv,
+                                                pq=pq,
+                                                pqv=pqv,
+                                                p=p,
+                                                nc=circuit,
+                                                options=options)
+
+                solution = levenberg_marquadt_fx(problem=problem,
+                                                 tol=options.tolerance,
+                                                 max_iter=options.max_iter,
+                                                 trust=options.trust_radius,
+                                                 verbose=options.verbose,
+                                                 logger=logger)
             else:
-                solution = pflw.levenberg_marquardt_pf(Ybus=circuit.Ybus,
-                                                       S0=S0,
-                                                       V0=final_solution.V,
-                                                       I0=I0,
-                                                       Y0=Y0,
-                                                       pv_=pv,
-                                                       pq_=pq,
-                                                       pqv_=pqv,
-                                                       p_=p,
-                                                       Qmin=Qmin,
-                                                       Qmax=Qmax,
-                                                       tol=options.tolerance,
-                                                       max_it=options.max_iter,
-                                                       control_q=options.control_Q,
-                                                       verbose=options.verbose,
-                                                       logger=logger)
+                # Solve NR with the AC algorithm
+                problem = PfBasicFormulation(V0=final_solution.V,
+                                             S0=S0,
+                                             I0=I0,
+                                             Y0=Y0,
+                                             Qmin=Qmin,
+                                             Qmax=Qmax,
+                                             pv=pv,
+                                             pq=pq,
+                                             pqv=pqv,
+                                             p=p,
+                                             adm=circuit.admittances_,
+                                             options=options)
+
+                solution = levenberg_marquadt_fx(problem=problem,
+                                                 tol=options.tolerance,
+                                                 max_iter=options.max_iter,
+                                                 trust=options.trust_radius,
+                                                 verbose=options.verbose,
+                                                 logger=logger)
 
         # Fast decoupled
         elif solver_type == SolverType.FASTDECOUPLED:
@@ -232,36 +253,93 @@ def solve(circuit: NumericalCircuit,
         elif solver_type == SolverType.NR:
             if circuit.any_control:
                 # Solve NR with the AC/DC algorithm
-                solution = pflw.NR_LS_ACDC(nc=circuit,
-                                           V0=V0,
-                                           S0=S0,
-                                           I0=I0,
-                                           Y0=Y0,
-                                           tolerance=options.tolerance,
-                                           max_iter=options.max_iter,
-                                           acceleration_parameter=options.backtracking_parameter,
-                                           mu_0=options.trust_radius,
-                                           control_q=options.control_Q)
+
+                problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                S0=S0,
+                                                I0=I0,
+                                                Y0=Y0,
+                                                Qmin=Qmin,
+                                                Qmax=Qmax,
+                                                pv=pv,
+                                                pq=pq,
+                                                pqv=pqv,
+                                                p=p,
+                                                nc=circuit,
+                                                options=options)
+
+                solution = newton_raphson_fx(problem=problem,
+                                             tol=options.tolerance,
+                                             max_iter=options.max_iter,
+                                             trust=options.trust_radius,
+                                             verbose=options.verbose,
+                                             logger=logger)
             else:
                 # Solve NR with the AC algorithm
-                solution = pflw.NR_LS(Ybus=circuit.Ybus,
-                                      S0=S0,
-                                      V0=final_solution.V,
-                                      I0=I0,
-                                      Y0=Y0,
-                                      pv_=pv,
-                                      pq_=pq,
-                                      pqv_=pqv,
-                                      p_=p,
-                                      Qmin=Qmin,
-                                      Qmax=Qmax,
-                                      tol=options.tolerance,
-                                      max_it=options.max_iter,
-                                      mu_0=options.trust_radius,
-                                      acceleration_parameter=options.backtracking_parameter,
-                                      control_q=options.control_Q,
-                                      verbose=options.verbose,
-                                      logger=logger)
+                problem = PfBasicFormulation(V0=final_solution.V,
+                                             S0=S0,
+                                             I0=I0,
+                                             Y0=Y0,
+                                             Qmin=Qmin,
+                                             Qmax=Qmax,
+                                             pv=pv,
+                                             pq=pq,
+                                             pqv=pqv,
+                                             p=p,
+                                             adm=circuit.admittances_,
+                                             options=options)
+
+                solution = newton_raphson_fx(problem=problem,
+                                             tol=options.tolerance,
+                                             max_iter=options.max_iter,
+                                             trust=options.trust_radius,
+                                             verbose=options.verbose,
+                                             logger=logger)
+
+        # Powell's Dog Leg (full)
+        elif solver_type == SolverType.PowellDogLeg:
+            if circuit.any_control:
+                # Solve NR with the AC/DC algorithm
+
+                problem = PfAdvancedFormulation(V0=final_solution.V,
+                                                S0=S0,
+                                                I0=I0,
+                                                Y0=Y0,
+                                                Qmin=Qmin,
+                                                Qmax=Qmax,
+                                                pv=pv,
+                                                pq=pq,
+                                                pqv=pqv,
+                                                p=p,
+                                                nc=circuit,
+                                                options=options)
+
+                solution = powell_fx(problem=problem,
+                                     tol=options.tolerance,
+                                     max_iter=options.max_iter,
+                                     trust=options.trust_radius,
+                                     verbose=options.verbose,
+                                     logger=logger)
+            else:
+                # Solve NR with the AC algorithm
+                problem = PfBasicFormulation(V0=final_solution.V,
+                                             S0=S0,
+                                             I0=I0,
+                                             Y0=Y0,
+                                             Qmin=Qmin,
+                                             Qmax=Qmax,
+                                             pv=pv,
+                                             pq=pq,
+                                             pqv=pqv,
+                                             p=p,
+                                             adm=circuit.admittances_,
+                                             options=options)
+
+                solution = powell_fx(problem=problem,
+                                     tol=options.tolerance,
+                                     max_iter=options.max_iter,
+                                     trust=options.trust_radius,
+                                     verbose=options.verbose,
+                                     logger=logger)
 
         # Newton-Raphson-Decpupled
         elif solver_type == SolverType.NRD:
@@ -336,8 +414,8 @@ def solve(circuit: NumericalCircuit,
     if final_solution.ma is None:
         final_solution.ma = tap_modules
 
-    if final_solution.theta is None:
-        final_solution.theta = tap_angles
+    if final_solution.tau is None:
+        final_solution.tau = tap_angles
 
     if final_solution.Beq is None:
         final_solution.Beq = Beq
@@ -396,8 +474,8 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
                                        converged=False,
                                        norm_f=1e200,
                                        Scalc=S0,
-                                       ma=tap_modules,
-                                       theta=tap_angles,
+                                       m=tap_modules,
+                                       tau=tap_angles,
                                        Beq=Beq,
                                        Ybus=circuit.Ybus,
                                        Yf=circuit.Yf,
@@ -488,7 +566,7 @@ def single_island_pf(circuit: NumericalCircuit, options: PowerFlowOptions,
     results.If = If  # in p.u.
     results.It = It  # in p.u.
     results.tap_module = solution.ma
-    results.tap_angle = solution.theta
+    results.tap_angle = solution.tau
     results.Beq = solution.Beq
     results.Vbranch = Vbranch
     results.loading = loading
@@ -766,34 +844,17 @@ def multi_island_pf(multi_circuit: MultiCircuit,
     :return: PowerFlowResults instance
     """
 
-    # Generalised PowerFlow
-    if options.generalised_pf:
-        nc = compile_numerical_circuit_at_generalised_pf(
-            circuit=multi_circuit,
-            t_idx=t,
-            apply_temperature=options.apply_temperature_correction,
-            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=options.use_stored_guess,
-            bus_dict=bus_dict,
-            areas_dict=areas_dict
-        )
-        # print("Generalised PowerFlow")
-
-    # Normal PowerFlow
-    else:
-        nc = compile_numerical_circuit_at(
-            circuit=multi_circuit,
-            t_idx=t,
-            apply_temperature=options.apply_temperature_correction,
-            branch_tolerance_mode=options.branch_impedance_tolerance_mode,
-            opf_results=opf_results,
-            use_stored_guess=options.use_stored_guess,
-            bus_dict=bus_dict,
-            areas_dict=areas_dict,
-            logger=logger,
-        )
-        # print("Normal PowerFlow")
+    nc = compile_numerical_circuit_at(
+        circuit=multi_circuit,
+        t_idx=t,
+        apply_temperature=options.apply_temperature_correction,
+        branch_tolerance_mode=options.branch_impedance_tolerance_mode,
+        opf_results=opf_results,
+        use_stored_guess=options.use_stored_guess,
+        bus_dict=bus_dict,
+        areas_dict=areas_dict,
+        logger=logger,
+    )
 
     res = multi_island_pf_nc(nc=nc, options=options, logger=logger)
 

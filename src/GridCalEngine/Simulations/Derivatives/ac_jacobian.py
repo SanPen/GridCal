@@ -1,41 +1,27 @@
-# Copyright 1996-2015 PSERC. All rights reserved.
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file.
-from typing import Any
-
-# Copyright (c) 2016-2020 by University of Kassel and Fraunhofer Institute for for Energy Economics
-# and Energy System Technology (IEE) Kassel and individual contributors (see AUTHORS file for details).
-# All rights reserved.
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
 #
-# Redistribution and use in source and binary forms, with or without modification, are permitted
-# provided that the following conditions are met:
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
 #
-# 1. Redistributions of source code must retain the above copyright notice, this list of conditions
-# and the following disclaimer.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
 #
-# 2. Redistributions in binary form must reproduce the above copyright notice, this list of
-# conditions and the following disclaimer in the documentation and/or other materials provided
-# with the distribution.
-#
-# 3. Neither the name of the copyright holder nor the names of its contributors may be used to
-# endorse or promote products derived from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-# IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-# FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-# WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from numba import jit
 from numpy import float64, int32
 import numpy as np
 from scipy.sparse import csr_matrix, csc_matrix
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import (dSbus_dV_numba_sparse_csc,
-                                                                              dSbus_dV_numba_sparse_csr)
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.Utils.Sparse.csc2 import create_lookup, CSC
+from GridCalEngine.Simulations.Derivatives.csr_derivatives import dSbus_dV_numba_sparse_csr
+from GridCalEngine.Simulations.Derivatives.csc_derivatives import dSbus_dV_numba_sparse_csc
+from GridCalEngine.basic_structures import IntVec, CxVec
+from GridCalEngine.Utils.Sparse.csc2 import make_lookup, CSC
 
 
 @jit(nopython=True, cache=True)
@@ -91,7 +77,7 @@ def create_J_csr(nbus, dS_dVm_x, dS_dVa_x, Yp, Yj, pvpq, pq, Jx, Jj, Jp):  # pra
 
     Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
     """
-    pvpq_lookup = create_lookup(nbus, pvpq)
+    pvpq_lookup = make_lookup(nbus, pvpq)
 
     # get length of vectors
     npvpq = len(pvpq)
@@ -190,7 +176,7 @@ def AC_jacobian_csr(Ybus: csr_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> csc
     return csr_matrix((Jx, Jj, Jp), shape=(nj, nj)).tocsc()
 
 
-@jit(nopython=True, cache=True)
+@jit(nopython=True)
 def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) -> CSC:
     """
     Calculates Jacobian in CSC format.
@@ -220,8 +206,8 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
 
-    lookup_pvpq = create_lookup(nbus, pvpq)
-    lookup_pq = create_lookup(nbus, pq)
+    lookup_dP = make_lookup(nbus, pvpq)
+    lookup_dQ = make_lookup(nbus, pq)
 
     # get length of vectors
     npvpq = len(pvpq)
@@ -229,6 +215,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
     # nonzeros in J
     nnz = 0
     p = 0
+    J.indptr[p] = nnz
 
     # J1 and J3 -----------------------------------------------------------------------------------------
     for j in pvpq:  # columns
@@ -236,7 +223,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J1
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pvpq[i]
+            ii = lookup_dP[i]
 
             if pvpq[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].real
@@ -246,7 +233,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J3
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pq[i]
+            ii = lookup_dQ[i]
 
             if pq[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].imag
@@ -262,7 +249,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J2
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pvpq[i]
+            ii = lookup_dP[i]
 
             if pvpq[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].real
@@ -272,7 +259,7 @@ def create_J_csc(nbus, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, pvpq, pq) ->
         # J4
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_pq[i]
+            ii = lookup_dQ[i]
 
             if pq[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].imag
@@ -309,54 +296,55 @@ def AC_jacobian(Ybus: csc_matrix, V: CxVec, pvpq: IntVec, pq: IntVec) -> CSC:
 
 @jit(nopython=True)
 def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
-                    block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec) -> CSC:
+                    idx_dtheta: IntVec, idx_dVm: IntVec, idx_dQ: IntVec) -> CSC:
     """
     Calculates Jacobian in CSC format.
 
     J has the shape
 
-            bl1      bl2
-    bl1 | dP_dVa | dP_dVm |
-    bl3 | dQ_dVa | dQ_dVm |
+                  idx_dtheta      idx_dVm
+    idx_dtheta  | dP_dVa        | dP_dVm |
+    idx_dQ      | dQ_dVa        | dQ_dVm |
 
     :param nbus:
     :param Yx:
     :param Yp:
     :param Yi:
     :param V:
-    :param block1_idx: pv, pq, p, pqv
-    :param block2_idx: pq, p
-    :param block3_idx: pq, pqv
+    :param idx_dtheta: pv, pq, p, pqv
+    :param idx_dVm: pq, p
+    :param idx_dQ: pq, pqv
     :return: Jacobina matrix
     """
 
     # create Jacobian from fast calc of dS_dV
     dS_dVm_x, dS_dVa_x = dSbus_dV_numba_sparse_csc(Yx, Yp, Yi, V, np.abs(V))
 
-    nj = len(block1_idx) + len(block2_idx)
+    nj = len(idx_dtheta) + len(idx_dVm)
     nnz_estimate = 5 * len(dS_dVm_x)
     J = CSC(nj, nj, nnz_estimate, False)
 
     # Note: The row and column pointer of of dVm and dVa are the same as the one from Ybus
-    lookup_block1 = create_lookup(nbus, block1_idx)
-    lookup_block3 = create_lookup(nbus, block3_idx)
+    lookup_dP = make_lookup(nbus, idx_dtheta)
+    lookup_dQ = make_lookup(nbus, idx_dQ)
 
     # get length of vectors
-    n_no_slack = len(block1_idx)
+    n_no_slack = len(idx_dtheta)
 
     # nonzeros in J
     nnz = 0
     p = 0
+    J.indptr[p] = nnz
 
     # J1 and J3 -----------------------------------------------------------------------------------------
-    for j in block1_idx:  # columns
+    for j in idx_dtheta:  # columns
 
         # J1
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_block1[i]
+            ii = lookup_dP[i]
 
-            if block1_idx[ii] == i:
+            if idx_dtheta[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].real
                 J.indices[nnz] = ii
                 nnz += 1
@@ -364,9 +352,9 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
         # J3
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_block3[i]
+            ii = lookup_dQ[i]
 
-            if block3_idx[ii] == i:
+            if idx_dQ[ii] == i:
                 J.data[nnz] = dS_dVa_x[k].imag
                 J.indices[nnz] = ii + n_no_slack
                 nnz += 1
@@ -375,14 +363,14 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
         J.indptr[p] = nnz
 
     # J2 and J4 -----------------------------------------------------------------------------------------
-    for j in block2_idx:  # columns
+    for j in idx_dVm:  # columns
 
         # J2
-        for k in range(Yp[j], Yp[j + 1]):  # rows
-            i = Yi[k]
-            ii = lookup_block1[i]
+        for k in range(Yp[j], Yp[j + 1]):
+            i = Yi[k]  # row at Y
+            ii = lookup_dP[i]
 
-            if block1_idx[ii] == i:
+            if idx_dtheta[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].real
                 J.indices[nnz] = ii
                 nnz += 1
@@ -390,9 +378,9 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
         # J4
         for k in range(Yp[j], Yp[j + 1]):  # rows
             i = Yi[k]
-            ii = lookup_block3[i]
+            ii = lookup_dQ[i]
 
-            if block3_idx[ii] == i:
+            if idx_dQ[ii] == i:
                 J.data[nnz] = dS_dVm_x[k].imag
                 J.indices[nnz] = ii + n_no_slack
                 nnz += 1
@@ -405,14 +393,14 @@ def create_J_vc_csc(nbus: int, Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec,
     return J
 
 
-def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, block1_idx: IntVec, block2_idx: IntVec, block3_idx: IntVec) -> CSC:
+def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, idx_dtheta: IntVec, idx_dVm: IntVec, idx_dQ: IntVec) -> CSC:
     """
     Create the AC Jacobian function with no embedded controls
     :param Ybus: Ybus matrix in CSC format
     :param V: Voltages vector
-    :param block1_idx: pv, pq, p, pqv
-    :param block2_idx: pq, p
-    :param block3_idx: pq, pqv
+    :param idx_dtheta: pv, pq, p, pqv
+    :param idx_dVm: pq, p
+    :param idx_dQ: pq, pqv
     :return: Jacobian Matrix in CSC format
     """
     if Ybus.format != 'csc':
@@ -421,6 +409,6 @@ def AC_jacobianVc(Ybus: csc_matrix, V: CxVec, block1_idx: IntVec, block2_idx: In
     nbus = Ybus.shape[0]
 
     # Create J in CSC order
-    J = create_J_vc_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, block1_idx, block2_idx, block3_idx)
+    J = create_J_vc_csc(nbus, Ybus.data, Ybus.indptr, Ybus.indices, V, idx_dtheta, idx_dVm, idx_dQ)
 
     return J

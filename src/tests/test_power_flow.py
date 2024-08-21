@@ -20,7 +20,7 @@ import numpy as np
 
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 import GridCalEngine.api as gce
@@ -41,13 +41,14 @@ def test_ieee_grids():
         ('IEEE 118 Bus v2.raw', 'IEEE 118 Bus.sav.xlsx'),
     ]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
+                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
 
         print(solver_type)
 
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
-                                   control_q=ReactivePowerControlMode.NoControl,
+                                   control_q=False,
                                    retry_with_other_methods=False)
 
         for f1, f2 in files:
@@ -93,7 +94,7 @@ def test_dc_pf_ieee14():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               control_q=ReactivePowerControlMode.NoControl,
+                               control_q=False,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14.m')
@@ -134,7 +135,7 @@ def test_dc_pf_ieee14_ps():
     """
     options = PowerFlowOptions(SolverType.DC,
                                verbose=False,
-                               control_q=ReactivePowerControlMode.NoControl,
+                               control_q=False,
                                retry_with_other_methods=False)
 
     fname = os.path.join('data', 'grids', 'case14_ps.m')
@@ -211,8 +212,7 @@ def test_controllable_shunt() -> None:
 
 def test_voltage_remote_control_with_generation() -> None:
     """
-
-    :return:
+    Check that a generator can perform remote voltage regulation
     """
     fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
 
@@ -221,10 +221,11 @@ def test_voltage_remote_control_with_generation() -> None:
     # control bus 6 with generator 4
     grid.generators[4].control_bus = grid.buses[6]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
+                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
-                                   control_q=ReactivePowerControlMode.NoControl,
+                                   control_q=False,
                                    retry_with_other_methods=False)
 
         results = gce.power_flow(grid, options)
@@ -235,3 +236,137 @@ def test_voltage_remote_control_with_generation() -> None:
         assert np.isclose(vm[6], grid.generators[4].Vset, atol=options.tolerance)
 
         print(solver_type)
+
+
+def test_voltage_control_with_ltc() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join('data', 'grids', '5Bus_LTC_FACTS_Fig4.7.gridcal')
+
+    grid = gce.open_file(fname)
+    bus_dict = grid.get_bus_index_dict()
+    ctrl_idx = bus_dict[grid.transformers2w[0].regulation_bus]
+
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+
+        vm = np.abs(results.voltage)
+
+        assert results.converged
+
+        # check that the bus voltage module is the the transformer voltage set point
+        assert np.isclose(vm[ctrl_idx], grid.transformers2w[0].vset, atol=options.tolerance)
+
+
+def test_qf_control_with_ltc() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10(Qf).gridcal')
+
+    grid = gce.open_file(fname)
+
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+
+        assert results.converged
+
+        # check that the bus voltage module is the the transformer voltage set point
+        assert np.isclose(results.Sf[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
+
+
+def test_qt_control_with_ltc() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10(Qf).gridcal')
+
+    grid = gce.open_file(fname)
+    grid.transformers2w[0].tap_module_control_mode = gce.TapModuleControl.Qt
+
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+
+        assert results.converged
+
+        # check that the bus voltage module is the the transformer voltage set point
+        assert np.isclose(results.St[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
+
+
+def test_power_flow_control_with_pst_pf() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10.gridcal')
+
+    grid = gce.open_file(fname)
+
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+
+        assert results.converged
+
+        # check that the bus voltage module is the the transformer voltage set point
+        assert np.isclose(results.Sf[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+
+
+def test_power_flow_control_with_pst_pt() -> None:
+    """
+    Check that a transformer can regulate the voltage at a bus
+    """
+    fname = os.path.join('data', 'grids', '5Bus_PST_FACTS_Fig4.10(Pt).gridcal')
+
+    grid = gce.open_file(fname)
+
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   max_iter=80)
+
+        results = gce.power_flow(grid, options)
+
+        assert results.converged
+
+        # check that the bus voltage module is the the transformer voltage set point
+        assert np.isclose(results.St[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+
+
+def test_fubm():
+    """
+
+    :return:
+    """
+    fname = os.path.join('data', 'grids', 'fubm_caseHVDC_vt.m')
+    grid = gce.open_file(fname)
+
+    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+        opt = gce.PowerFlowOptions(solver_type=solver_type, retry_with_other_methods=False, verbose=0)
+        driver = gce.PowerFlowDriver(grid=grid, options=opt)
+        driver.run()
+        results = driver.results
+        vm = np.abs(results.voltage)
+        expected_vm = np.array([1.1000, 1.0960, 1.0975, 1.1040, 1.1119, 1.1200])
+        assert np.allclose(vm, expected_vm, rtol=1e-4)

@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Union
+from typing import Union, Tuple
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -140,7 +140,7 @@ class Line(BranchParent):
 
         # association with various templates
         self.possible_tower_types: Associations = Associations(device_type=DeviceType.OverheadLineTypeDevice)
-        self.possible_underground_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
+        self.possible_undergroud_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
         self.possible_sequence_line_types: Associations = Associations(device_type=DeviceType.SequenceLineDevice)
 
         # Line locations
@@ -183,7 +183,7 @@ class Line(BranchParent):
                       definition='Possible overhead line types (>1 to denote association), - to denote no association',
                       display=False)
 
-        self.register(key='possible_underground_line_types', units='', tpe=SubObjectType.Associations,
+        self.register(key='possible_undergroud_line_types', units='', tpe=SubObjectType.Associations,
                       definition='Possible underground line types (>1 to denote association), - to denote no association',
                       display=False)
 
@@ -420,6 +420,31 @@ class Line(BranchParent):
         self.B = np.round(B / Ybase, 6)
         self.rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
         self.length = length
+
+    def get_virtual_taps(self) -> Tuple[float, float]:
+        """
+        Get the branch virtual taps
+
+        The virtual taps generate when a line nominal voltage ate the two connection buses differ
+
+        Returns:
+
+            **tap_f** (float, 1.0): Virtual tap at the *from* side
+
+            **tap_t** (float, 1.0): Virtual tap at the *to* side
+
+        """
+        # resolve how the transformer is actually connected and set the virtual taps
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+
+        if bus_f_v == bus_t_v:
+            return 1.0, 1.0
+        else:
+            if bus_f_v > 0.0 and bus_t_v > 0.0:
+                return 1.0, bus_f_v / bus_t_v
+            else:
+                return 1.0, 1.0
 
     def set_data_from(self, second_Line: "Line"):
         """

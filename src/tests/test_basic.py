@@ -21,7 +21,7 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
 from GridCalEngine.Devices.Branches.transformer import TransformerType, Transformer2W
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
@@ -142,7 +142,7 @@ def test_basic():
     options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                use_stored_guess=True,
-                               control_q=ReactivePowerControlMode.Direct,
+                               control_q=True,
                                tolerance=1e-6,
                                max_iter=99)
 
@@ -292,7 +292,7 @@ def test_gridcal_basic_pi():
     options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                use_stored_guess=True,
-                               control_q=ReactivePowerControlMode.Direct,
+                               control_q=True,
                                tolerance=1e-6,
                                max_iter=99)
 

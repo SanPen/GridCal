@@ -23,11 +23,10 @@ from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.enumerations import BranchImpedanceMode
+from GridCalEngine.enumerations import BranchImpedanceMode, BusMode
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
 
-from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type
 import GridCalEngine.Compilers.circuit_to_data as gc_compiler2
 import GridCalEngine.Topology.admittance_matrices as ycalc
 import GridCalEngine.DataStructures as ds
@@ -38,8 +37,6 @@ from GridCalEngine.Devices.Aggregation.contingency import Contingency
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
-
-sparse_type = get_sparse_type()
 
 ALL_STRUCTS = Union[
     ds.BusData,
@@ -141,46 +138,72 @@ class NumericalCircuit:
     """
     Class storing the calculation information of the devices
     """
-    available_structures = [
-        'Vbus',
-        'Sbus',
-        'Ibus',
-        'Ybus',
-        'G',
-        'B',
-        'Yf',
-        'Yt',
-        'Bbus',
-        'Bf',
-        'Cf',
-        'Ct',
-        'Yshunt',
-        'Yseries',
-        "B'",
-        "B''",
-        'Types',
-        'Jacobian',
-        'Qmin',
-        'Qmax',
-        'pq',
-        'pqv',
-        'p',
-        'pv',
-        'vd',
-        'pqpv',
-        'tap_f',
-        'tap_t',
-        'k_pf_tau',
-        'k_qf_m',
-        'k_zero_beq',
-        'k_vf_beq',
-        'k_vt_m',
-        'k_qt_m',
-        'k_pf_dp',
-        'i_vsc',
-        'i_vf_beq',
-        'i_vt_m'
-    ]
+    available_structures = {
+        "Bus arrays": [
+            'V', 'Va', 'Vm',
+            'S', 'P', 'Q',
+            'I',
+            'Y',
+            'Qmin',
+            'Qmax',
+        ],
+        "Bus indices": [
+            'Types',
+            'bus_ctrl',
+            'pq',
+            'pqv',
+            'p',
+            'pv',
+            'vd'
+        ],
+        "Branch arrays": [
+            'tap_f',
+            'tap_t',
+            'Pf_set',
+            'Qf_set',
+            'Pt_set',
+            'Qt_set',
+        ],
+        "Branch indices": [
+            'branch_ctrl',
+            'k_pf_tau',
+            'k_pt_tau',
+            'k_qf_m',
+            'k_qt_m',
+            'k_qf_beq',
+            'k_v_m',
+            'k_v_beq',
+        ],
+        "System matrices": [
+            'Ybus',
+            'G',
+            'B',
+            'Yf',
+            'Yt',
+            'Bbus',
+            'Bf',
+            'Cf',
+            'Ct',
+            "B'",
+            "B''",
+            'Yshunt',
+            'Yseries',
+        ],
+        "Power flow arrays": [
+            'idx_dPf',
+            'idx_dQf',
+            'idx_dPt',
+            'idx_dQt',
+            'idx_dVa',
+            'idx_dVm',
+            'idx_dm',
+            'idx_dtau',
+            'idx_dbeq',
+            'x',
+            'f(x)',
+            'Jacobian',
+        ]
+    }
 
     def __init__(self,
                  nbus: int,
@@ -777,7 +800,7 @@ class NumericalCircuit:
     @property
     def ac_indices(self):
         """
-        Array of indices of the AC Branches
+        Array of indices of the AC buses
         :return: array of indices
         """
         if self.simulation_indices_ is None:
@@ -788,7 +811,7 @@ class NumericalCircuit:
     @property
     def dc_indices(self):
         """
-        Array of indices of the DC Branches
+        Array of indices of the DC buses
         :return: array of indices
         """
         if self.simulation_indices_ is None:
@@ -838,10 +861,13 @@ class NumericalCircuit:
         """
         return si.SimulationIndices(bus_types=self.bus_data.bus_types,
                                     Pbus=self.Sbus.real,
-                                    control_mode=self.branch_data.control_mode,
+                                    tap_module_control_mode=self.branch_data.tap_module_control_mode,
+                                    tap_phase_control_mode=self.branch_data.tap_phase_control_mode,
+                                    tap_controlled_buses=self.branch_data.tap_module_buses,
+                                    is_converter=self.branch_data.is_converter,
                                     F=self.branch_data.F,
                                     T=self.branch_data.T,
-                                    dc=self.bus_data.is_dc)
+                                    is_dc_bus=self.bus_data.is_dc)
 
     def get_connectivity_matrices(self) -> tp.ConnectivityMatrices:
         """
@@ -874,11 +900,7 @@ class NumericalCircuit:
             Beq=self.branch_data.Beq,
             Cf=self.Cf,
             Ct=self.Ct,
-            G0sw=self.branch_data.G0sw,
-            If=np.zeros(len(self.branch_data)),
-            a=self.branch_data.a,
-            b=self.branch_data.b,
-            c=self.branch_data.c,
+            Gsw=self.branch_data.G0sw,
             Yshunt_bus=self.Yshunt_from_devices,
             conn=self.branch_data.conn,
             seq=1,
@@ -905,9 +927,9 @@ class NumericalCircuit:
             Ct=self.Ct,
             G0sw=self.branch_data.G0sw,
             If=np.zeros(len(self.branch_data)),
-            a=self.branch_data.a,
-            b=self.branch_data.b,
-            c=self.branch_data.c,
+            a=self.branch_data.alpha1,
+            b=self.branch_data.alpha2,
+            c=self.branch_data.alpha3,
             Yshunt_bus=self.Yshunt_from_devices,
         )
 
@@ -920,8 +942,8 @@ class NumericalCircuit:
             X=self.branch_data.X,
             B=self.branch_data.B,
             tap_module=self.branch_data.tap_module,
-            vtap_f=self.branch_data.vf_set,
-            vtap_t=self.branch_data.vt_set,
+            vtap_f=self.branch_data.virtual_tap_f,
+            vtap_t=self.branch_data.virtual_tap_t,
             Cf=self.Cf,
             Ct=self.Ct,
         )
@@ -954,7 +976,7 @@ class NumericalCircuit:
         if self.admittances_ is None:
             self.admittances_ = self.get_admittance_matrices()
 
-        return self.admittances_.Ybus
+        return self.admittances_.Ybus.tocsc()
 
     @property
     def Yf(self):
@@ -1157,70 +1179,26 @@ class NumericalCircuit:
         return self.simulation_indices_.k_pf_tau
 
     @property
-    def k_qf_m(self):
+    def k_qf_beq(self):
         """
-        Get k_qf_m
+        Get k_qf_beq
         :return:
         """
         if self.simulation_indices_ is None:
             self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.simulation_indices_.k_qf_m
+        return self.simulation_indices_.k_qf_beq
 
     @property
-    def k_zero_beq(self):
+    def k_v_m(self):
         """
-        Get k_zero_beq
+        Get k_v_m
         :return:
         """
         if self.simulation_indices_ is None:
             self.simulation_indices_ = self.get_simulation_indices()
 
-        return self.simulation_indices_.k_zero_beq
-
-    @property
-    def k_vf_beq(self):
-        """
-        Get k_vf_beq
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_vf_beq
-
-    @property
-    def k_vt_m(self):
-        """
-        Get k_vt_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_vt_m
-
-    @property
-    def k_qt_m(self):
-        """
-        Get k_qt_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_qt_m
-
-    @property
-    def k_pf_dp(self):
-        """
-        Get k_pf_dp
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.k_pf_dp
+        return self.simulation_indices_.k_v_m
 
     @property
     def k_m(self):
@@ -1254,83 +1232,6 @@ class NumericalCircuit:
             self.simulation_indices_ = self.get_simulation_indices()
 
         return self.simulation_indices_.k_mtau
-
-    @property
-    def i_m(self):
-        """
-        Get i_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_m
-
-    @property
-    def i_tau(self):
-        """
-        Get i_tau
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_tau
-
-    @property
-    def i_mtau(self):
-        """
-        Get i_mtau
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_mtau
-
-    @property
-    def iPfdp_va(self):
-        """
-        Get iPfdp_va
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.iPfdp_va
-
-    @property
-    def i_vsc(self):
-        """
-        Get i_vsc
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_vsc
-
-    @property
-    def i_vf_beq(self):
-        """
-        Get i_vf_beq
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_vf_beq
-
-    @property
-    def i_vt_m(self):
-        """
-        Get i_vt_m
-        :return:
-        """
-        if self.simulation_indices_ is None:
-            self.simulation_indices_ = self.get_simulation_indices()
-
-        return self.simulation_indices_.i_vt_m
 
     @property
     def structs_dict(self):
@@ -1467,24 +1368,85 @@ class NumericalCircuit:
         :return: pandas DataFrame
         """
 
-        if structure_type == 'Vbus':
+        if self.simulation_indices_ is None:
+            self.simulation_indices_ = self.get_simulation_indices()
+
+        # idx_dm = np.r_[self.simulation_indices_.k_v_m, self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qt_m]
+        # idx_dtau = np.r_[self.simulation_indices_.k_pf_tau, self.simulation_indices_.k_pt_tau]
+        # idx_dbeq = self.simulation_indices_.k_qf_beq
+        # idx_dPf = self.simulation_indices_.k_pf_tau
+        # idx_dQf = np.r_[self.simulation_indices_.k_qf_m, self.simulation_indices_.k_qf_beq]
+        # idx_dPt = self.simulation_indices_.k_pt_tau
+        # idx_dQt = self.simulation_indices_.k_qt_m
+
+        from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_advanced_formulation import (
+            PfAdvancedFormulation)
+        from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+
+        formulation = PfAdvancedFormulation(V0=self.Vbus,
+                                            S0=self.Sbus,
+                                            I0=self.Ibus,
+                                            Y0=self.YLoadBus,
+                                            Qmin=self.Qmin_bus,
+                                            Qmax=self.Qmax_bus,
+                                            pq=self.pq,
+                                            pv=self.pv,
+                                            pqv=self.pqv,
+                                            p=self.p,
+                                            nc=self,
+                                            options=PowerFlowOptions())
+
+        if structure_type == 'V':
             df = pd.DataFrame(
                 data=self.Vbus,
                 columns=['Voltage (p.u.)'],
                 index=self.bus_data.names,
             )
 
-        elif structure_type == 'Sbus':
+        elif structure_type == 'Va':
+            df = pd.DataFrame(
+                data=np.angle(self.Vbus),
+                columns=['Voltage angles (rad)'],
+                index=self.bus_data.names,
+            )
+        elif structure_type == 'Vm':
+            df = pd.DataFrame(
+                data=np.abs(self.Vbus),
+                columns=['Voltage modules (p.u.)'],
+                index=self.bus_data.names,
+            )
+        elif structure_type == 'S':
             df = pd.DataFrame(
                 data=self.Sbus,
                 columns=['Power (p.u.)'],
                 index=self.bus_data.names,
             )
 
-        elif structure_type == 'Ibus':
+        elif structure_type == 'P':
+            df = pd.DataFrame(
+                data=self.Sbus.real,
+                columns=['Power (p.u.)'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'Q':
+            df = pd.DataFrame(
+                data=self.Sbus.imag,
+                columns=['Power (p.u.)'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'I':
             df = pd.DataFrame(
                 data=self.Ibus,
                 columns=['Current (p.u.)'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'Y':
+            df = pd.DataFrame(
+                data=self.YLoadBus,
+                columns=['Admittance (p.u.)'],
                 index=self.bus_data.names,
             )
 
@@ -1602,87 +1564,22 @@ class NumericalCircuit:
                 index=self.bus_data.names,
             )
 
-        elif structure_type == 'Jacobian':
-
-            from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian
-
-            pvpq = np.r_[self.pv, self.pq]
-
-            cols = ['1) dVa {0}'.format(i) for i in pvpq]
-            cols += ['2) dVm {0}'.format(i) for i in self.pq]
-            cols += ['3) dPfsh {0}'.format(i) for i in self.k_pf_tau]
-            cols += ['4) dQfma {0}'.format(i) for i in self.k_qf_m]
-            cols += ['5) dBeqz {0}'.format(i) for i in self.k_zero_beq]
-            cols += ['6) dBeqv {0}'.format(i) for i in self.k_vf_beq]
-            cols += ['7) dVtma {0}'.format(i) for i in self.k_vt_m]
-            cols += ['8) dQtma {0}'.format(i) for i in self.k_qt_m]
-            cols += ['9) dPfdp {0}'.format(i) for i in self.k_pf_dp]
-
-            rows = ['1) dP {0}'.format(i) for i in pvpq]
-            rows += ['2) dQ {0}'.format(i) for i in self.pq]
-            rows += ['3) dQ {0}'.format(i) for i in self.k_vf_beq]
-            rows += ['4) dQ {0}'.format(i) for i in self.k_vt_m]
-            rows += ['5) dPf {0}'.format(i) for i in self.k_pf_tau]
-            rows += ['6) dQf {0}'.format(i) for i in self.k_qf_m]
-            rows += ['7) dQf {0}'.format(i) for i in self.k_zero_beq]
-            rows += ['8) dQt {0}'.format(i) for i in self.k_qt_m]
-            rows += ['9) dPfdp {0}'.format(i) for i in self.k_pf_dp]
-
-            # compute admittances
-            Ys = 1.0 / (self.branch_data.R + 1j * self.branch_data.X)
-            Ybus, Yf, Yt, tap = ycalc.compile_y_acdc(
-                Cf=self.Cf,
-                Ct=self.Ct,
-                C_bus_shunt=self.shunt_data.C_bus_elm.tocsc(),
-                shunt_admittance=self.shunt_data.Y,
-                shunt_active=self.shunt_data.active,
-                ys=Ys,
-                B=self.branch_data.B,
-                Sbase=self.Sbase,
-                tap_module=self.branch_data.tap_module,
-                tap_angle=self.branch_data.tap_angle,
-                Beq=self.branch_data.Beq,
-                Gsw=self.branch_data.G0sw,
-                virtual_tap_from=self.branch_data.virtual_tap_f,
-                virtual_tap_to=self.branch_data.virtual_tap_t,
-            )
-
-            J = fubm_jacobian(
-                nb=self.nbus,
-                nl=self.nbr,
-                k_pf_tau=self.k_pf_tau,
-                k_pf_dp=self.k_pf_dp,
-                k_qf_m=self.k_qf_m,
-                k_qt_m=self.k_qt_m,
-                k_vt_m=self.k_vt_m,
-                k_zero_beq=self.k_zero_beq,
-                k_vf_beq=self.k_vf_beq,
-                i_vf_beq=self.i_vf_beq,
-                i_vt_m=self.i_vt_m,
-                F=self.F,
-                T=self.T,
-                Ys=Ys,
-                k2=self.branch_data.k,
-                complex_tap=tap,
-                tap_modules=self.branch_data.tap_module,
-                Bc=self.branch_data.B,
-                Beq=self.branch_data.Beq,
-                Kdp=self.branch_data.Kdp,
-                V=self.Vbus,
-                Ybus=Ybus.tocsc(),
-                Yf=Yf.tocsc(),
-                Yt=Yt.tocsc(),
-                Cf=self.Cf.tocsc(),
-                Ct=self.Ct.tocsc(),
-                pvpq=pvpq,
-                pq=self.pq,
-            )
-
+        elif structure_type == 'x':
             df = pd.DataFrame(
-                data=J.toarray(),
-                columns=cols,
-                index=rows,
+                data=formulation.var2x(),
+                columns=['x'],
+                index=formulation.get_x_names(),
             )
+
+        elif structure_type == 'f(x)':
+            df = pd.DataFrame(
+                data=formulation.fx(),
+                columns=['f(x)'],
+                index=formulation.get_fx_names(),
+            )
+
+        elif structure_type == 'Jacobian':
+            df = formulation.get_jacobian_df(autodiff=False)
 
         elif structure_type == 'Qmin':
             df = pd.DataFrame(
@@ -1698,44 +1595,70 @@ class NumericalCircuit:
                 index=self.bus_data.names,
             )
 
+        elif structure_type == 'bus_ctrl':
+            data1 = [BusMode.as_str(val) for val in self.bus_data.bus_types]
+
+            df = pd.DataFrame(
+                data=data1,
+                columns=['bus_ctrl'],
+                index=self.bus_data.names,
+            )
+
+        elif structure_type == 'branch_ctrl':
+
+            data1 = [val.value if val != 0 else "-" for val in self.branch_data.tap_module_control_mode]
+            data2 = [val.value if val != 0 else "-" for val in self.branch_data.tap_phase_control_mode]
+
+            df = pd.DataFrame(
+                data=np.c_[
+                    self.branch_data.F,
+                    self.branch_data.T,
+                    self.branch_data.tap_module_buses,
+                    data1,
+                    data2
+                ],
+                columns=['bus F', 'bus T', 'V ctrl bus', 'm control', 'tau control'],
+                index=[f"{k}) {name}" for k, name in enumerate(self.branch_data.names)],
+            )
+
         elif structure_type == 'pq':
             df = pd.DataFrame(
-                data=self.pq,
+                data=self.pq.astype(int).astype(str),
                 columns=['pq'],
                 index=self.bus_data.names[self.pq],
             )
 
         elif structure_type == 'pv':
             df = pd.DataFrame(
-                data=self.pv,
+                data=self.pv.astype(int).astype(str),
                 columns=['pv'],
                 index=self.bus_data.names[self.pv],
             )
 
         elif structure_type == 'pqv':
             df = pd.DataFrame(
-                data=self.pqv,
+                data=self.pqv.astype(int).astype(str),
                 columns=['pqv'],
                 index=self.bus_data.names[self.pqv],
             )
 
         elif structure_type == 'p':
             df = pd.DataFrame(
-                data=self.p,
+                data=self.p.astype(int).astype(str),
                 columns=['p'],
                 index=self.bus_data.names[self.p],
             )
 
         elif structure_type == 'vd':
             df = pd.DataFrame(
-                data=self.vd,
+                data=self.vd.astype(int).astype(str),
                 columns=['vd'],
                 index=self.bus_data.names[self.vd],
             )
 
         elif structure_type == 'pqpv':
             df = pd.DataFrame(
-                data=self.pqpv,
+                data=self.pqpv.astype(int).astype(str),
                 columns=['pqpv'],
                 index=self.bus_data.names[self.pqpv],
             )
@@ -1756,72 +1679,140 @@ class NumericalCircuit:
 
         elif structure_type == 'k_pf_tau':
             df = pd.DataFrame(
-                data=self.k_pf_tau,
+                data=self.simulation_indices_.k_pf_tau.astype(int).astype(str),
                 columns=['k_pf_tau'],
-                index=self.branch_data.names[self.k_pf_tau],
+                index=self.branch_data.names[self.simulation_indices_.k_pf_tau],
+            )
+
+        elif structure_type == 'k_pt_tau':
+            df = pd.DataFrame(
+                data=self.simulation_indices_.k_pt_tau.astype(int).astype(str),
+                columns=['k_pt_tau'],
+                index=self.branch_data.names[self.simulation_indices_.k_pt_tau],
             )
 
         elif structure_type == 'k_qf_m':
             df = pd.DataFrame(
-                data=self.k_qf_m,
+                data=self.simulation_indices_.k_qf_m.astype(int).astype(str),
                 columns=['k_qf_m'],
-                index=self.branch_data.names[self.k_qf_m],
-            )
-
-        elif structure_type == 'k_zero_beq':
-            df = pd.DataFrame(
-                data=self.k_zero_beq,
-                columns=['k_zero_beq'],
-                index=self.branch_data.names[self.k_zero_beq],
-            )
-
-        elif structure_type == 'k_vf_beq':
-            df = pd.DataFrame(
-                data=self.k_vf_beq,
-                columns=['k_vf_beq'],
-                index=self.branch_data.names[self.k_vf_beq],
-            )
-
-        elif structure_type == 'k_vt_m':
-            df = pd.DataFrame(
-                data=self.k_vt_m,
-                columns=['k_vt_m'],
-                index=self.branch_data.names[self.k_vt_m],
+                index=self.branch_data.names[self.simulation_indices_.k_qf_m],
             )
 
         elif structure_type == 'k_qt_m':
             df = pd.DataFrame(
-                data=self.k_qt_m,
+                data=self.simulation_indices_.k_qt_m.astype(int).astype(str),
                 columns=['k_qt_m'],
-                index=self.branch_data.names[self.k_qt_m],
+                index=self.branch_data.names[self.simulation_indices_.k_qt_m],
             )
 
-        elif structure_type == 'k_pf_dp':
+        elif structure_type == 'k_qf_beq':
             df = pd.DataFrame(
-                data=self.k_pf_dp,
-                columns=['k_pf_dp'],
-                index=self.branch_data.names[self.k_pf_dp],
+                data=self.simulation_indices_.k_qf_beq.astype(int).astype(str),
+                columns=['k_qf_beq'],
+                index=self.branch_data.names[self.simulation_indices_.k_qf_beq],
             )
 
-        elif structure_type == 'i_vsc':
+        elif structure_type == 'k_v_m':
             df = pd.DataFrame(
-                data=self.i_vsc,
-                columns=['i_vsc'],
-                index=self.branch_data.names[self.i_vsc],
+                data=self.simulation_indices_.k_v_m.astype(int).astype(str),
+                columns=['k_v_m'],
+                index=self.branch_data.names[self.simulation_indices_.k_v_m],
+            )
+        elif structure_type == 'k_v_beq':
+            df = pd.DataFrame(
+                data=self.simulation_indices_.k_v_beq.astype(int).astype(str),
+                columns=['k_v_beq'],
+                index=self.branch_data.names[self.simulation_indices_.k_v_beq],
+            )
+        elif structure_type == 'idx_dPf':
+            df = pd.DataFrame(
+                data=formulation.idx_dPf.astype(int).astype(str),
+                columns=['idx_dPf'],
+                index=self.branch_data.names[formulation.idx_dPf],
             )
 
-        elif structure_type == 'i_vf_beq':
+        elif structure_type == 'idx_dQf':
             df = pd.DataFrame(
-                data=self.i_vf_beq,
-                columns=['i_vf_beq'],
-                index=self.bus_data.names[self.i_vf_beq],
+                data=formulation.idx_dQf.astype(int).astype(str),
+                columns=['idx_dQf'],
+                index=self.branch_data.names[formulation.idx_dQf],
             )
 
-        elif structure_type == 'i_vt_m':
+        elif structure_type == 'idx_dPt':
             df = pd.DataFrame(
-                data=self.i_vt_m,
-                columns=['i_vt_m'],
-                index=self.bus_data.names[self.i_vt_m],
+                data=formulation.idx_dPt.astype(int).astype(str),
+                columns=['idx_dPt'],
+                index=self.branch_data.names[formulation.idx_dPt],
+            )
+
+        elif structure_type == 'idx_dQt':
+            df = pd.DataFrame(
+                data=formulation.idx_dQt.astype(int).astype(str),
+                columns=['idx_dQt'],
+                index=self.branch_data.names[formulation.idx_dQt],
+            )
+
+        elif structure_type == 'idx_dVa':
+            df = pd.DataFrame(
+                data=formulation.idx_dVa.astype(int).astype(str),
+                columns=['idx_dVa'],
+                index=self.bus_data.names[formulation.idx_dVa],
+            )
+
+        elif structure_type == 'idx_dVm':
+            df = pd.DataFrame(
+                data=formulation.idx_dVm.astype(int).astype(str),
+                columns=['idx_dVm'],
+                index=self.bus_data.names[formulation.idx_dVm],
+            )
+
+        elif structure_type == 'idx_dm':
+            df = pd.DataFrame(
+                data=formulation.idx_dm.astype(int).astype(str),
+                columns=['idx_dm'],
+                index=self.branch_data.names[formulation.idx_dm],
+            )
+
+        elif structure_type == 'idx_dtau':
+            df = pd.DataFrame(
+                data=formulation.idx_dtau.astype(int).astype(str),
+                columns=['idx_dtau'],
+                index=self.branch_data.names[formulation.idx_dtau],
+            )
+
+        elif structure_type == 'idx_dbeq':
+            df = pd.DataFrame(
+                data=formulation.idx_dbeq.astype(int).astype(str),
+                columns=['idx_dbeq'],
+                index=self.branch_data.names[formulation.idx_dbeq],
+            )
+
+        elif structure_type == 'Pf_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Pset[formulation.idx_dPf],
+                columns=['Pf_set'],
+                index=self.branch_data.names[formulation.idx_dPf],
+            )
+
+        elif structure_type == 'Pt_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Pset[formulation.idx_dPt],
+                columns=['Pt_set'],
+                index=self.branch_data.names[formulation.idx_dPt],
+            )
+
+        elif structure_type == 'Qf_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Qset[formulation.idx_dQf],
+                columns=['Qf_set'],
+                index=self.branch_data.names[formulation.idx_dQf],
+            )
+
+        elif structure_type == 'Qt_set':
+            df = pd.DataFrame(
+                data=self.branch_data.Qset[formulation.idx_dQt],
+                columns=['Qt_set'],
+                index=self.branch_data.names[formulation.idx_dQt],
             )
 
         else:

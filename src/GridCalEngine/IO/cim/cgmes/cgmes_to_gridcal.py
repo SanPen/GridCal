@@ -767,7 +767,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
 
-            rate_mva = rates_dict.get(cgmes_elm.uuid, None)  # min PATL rate in MW/MVA
+            rate_mva = rates_dict.get(cgmes_elm.uuid, 9999.0)  # min PATL rate in MW/MVA
 
             if len(windings) == 2:
                 calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,

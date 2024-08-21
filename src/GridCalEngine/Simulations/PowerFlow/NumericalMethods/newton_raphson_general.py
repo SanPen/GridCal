@@ -20,17 +20,10 @@ import time
 import numpy as np
 
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
-from GridCalEngine.Topology.admittance_matrices import compile_y_acdc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.acdc_jacobian import fubm_jacobian, AcDcSolSlicer
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_acdc_fx,
-                                                                                   compute_converter_losses,
-                                                                                   compute_power, compute_zip_power)
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_power, compute_zip_power)
 from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, ConvexFunctionResult)
 from GridCalEngine.Utils.NumericalMethods.newton_raphson import newton_raphson
-from GridCalEngine.enumerations import ReactivePowerControlMode
-import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
 from scipy.sparse import csr_matrix, csc_matrix
 from GridCalEngine.basic_structures import Vec, CscMat, CxVec, IntVec, Logger
 
@@ -45,7 +38,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
                   mu_0=1.0,
                   acceleration_parameter=0.05,
                   verbose=False,
-                  control_q=ReactivePowerControlMode.NoControl,
+                  control_q=False,
                   pf_options=None) -> NumericPowerFlowResults:
     """
     Newton-Raphson Line search with the FUBM formulation

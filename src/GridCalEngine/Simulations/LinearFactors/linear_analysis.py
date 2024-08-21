@@ -26,8 +26,8 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.Devices.Aggregation.contingency import Contingency
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.derivatives import dSf_dV_csc
+from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.Derivatives.csc_derivatives import dSf_dV_csc
 from GridCalEngine.Utils.Sparse.csc import dense_to_csc
 import GridCalEngine.Utils.Sparse.csc2 as csc
 from GridCalEngine.Utils.MIP.selected_interface import lpDot
@@ -128,14 +128,14 @@ def make_acptdf(Ybus: sp.csc_matrix,
     dS = np.r_[dP[pvpq, :], dQ]
 
     # solve the voltage increments
-    dx = csc.spsolve_csc(J, dS)
+    dx, ok = csc.spsolve_csc(J, dS)
 
     # compute branch derivatives
     dSf_dVm, dSf_dVa = dSf_dV_csc(Yf.tocsc(), V, F, T)
 
     # compose the final AC-PTDF
-    dPf_dVa = dSf_dVa.real[:, pvpq]
-    dPf_dVm = dSf_dVm.real[:, pq]
+    dPf_dVa = csc.mat_to_scipy(dSf_dVa.real)[:, pvpq]
+    dPf_dVm = csc.mat_to_scipy(dSf_dVm.real)[:, pq]
     PTDF = sp.hstack((dPf_dVa, dPf_dVm)) * dx
 
     return PTDF

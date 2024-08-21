@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from GridCalEngine.enumerations import BranchImpedanceMode, ReactivePowerControlMode, SolverType, TapsControlMode
+from GridCalEngine.enumerations import BranchImpedanceMode, SolverType
 from GridCalEngine.Simulations.options_template import OptionsTemplate
 
 
@@ -26,24 +26,23 @@ class PowerFlowOptions(OptionsTemplate):
 
     def __init__(self,
                  solver_type: SolverType = SolverType.NR,
-                 retry_with_other_methods=True,
-                 verbose=0,
-                 initialize_with_existing_solution=False,
-                 tolerance=1e-6,
-                 max_iter=25,
-                 max_outer_loop_iter=100,
-                 control_q=ReactivePowerControlMode.NoControl,
-                 control_taps=TapsControlMode.NoControl,
-                 apply_temperature_correction=False,
+                 retry_with_other_methods: bool = True,
+                 verbose: int = 0,
+                 initialize_with_existing_solution: bool = False,
+                 tolerance: float = 1e-6,
+                 max_iter: int = 25,
+                 max_outer_loop_iter: int = 100,
+                 control_q: bool = False,
+                 control_taps_modules: bool = False,
+                 control_taps_phase: bool = False,
+                 apply_temperature_correction: bool = False,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
-                 distributed_slack=False,
-                 ignore_single_node_islands=False,
-                 trust_radius=1.0,
-                 backtracking_parameter=0.05,
-                 use_stored_guess=False,
-                 override_branch_controls=False,
-                 generate_report=False,
-                 generalised_pf=False):
+                 distributed_slack: bool = False,
+                 ignore_single_node_islands: bool = False,
+                 trust_radius: float = 1.0,
+                 backtracking_parameter: float = 0.05,
+                 use_stored_guess: bool = False,
+                 generate_report: bool = False):
         """
         Power flow options class
         :param solver_type: Solver type
@@ -53,8 +52,6 @@ class PowerFlowOptions(OptionsTemplate):
         :param max_iter: Maximum number of iterations for the power flow numerical method
         :param max_outer_loop_iter: Maximum number of iterations for the controls outer loop
         :param control_q: Control mode for the PV nodes reactive power limits
-        :param control_taps: Control mode for the transformer taps equipped with a voltage regulator
-                             (as part of the outer loop)
         :param apply_temperature_correction: Apply the temperature correction to the resistance of the Branches?
         :param branch_impedance_tolerance_mode: Type of modification of the Branches impedance
         :param distributed_slack: Applies the redistribution of the slack power proportionally among the controlled generators
@@ -62,9 +59,7 @@ class PowerFlowOptions(OptionsTemplate):
         :param trust_radius:
         :param backtracking_parameter: parameter used to correct the "bad" iterations, typically 0.5
         :param use_stored_guess: Use the existing solution from the Bus class (Vm0, Va0)
-        :param override_branch_controls:
-        :param generate_report:
-        :param generalised_pf:
+        :param generate_report: Generate the power flow report after the solution?
         """
         OptionsTemplate.__init__(self, name='PowerFlowOptions')
 
@@ -84,7 +79,9 @@ class PowerFlowOptions(OptionsTemplate):
 
         self.initialize_with_existing_solution = initialize_with_existing_solution
 
-        self.control_taps = control_taps
+        self.control_taps_modules = control_taps_modules
+
+        self.control_taps_phase = control_taps_phase
 
         self.apply_temperature_correction = apply_temperature_correction
 
@@ -100,21 +97,18 @@ class PowerFlowOptions(OptionsTemplate):
 
         self.use_stored_guess = use_stored_guess
 
-        self.override_branch_controls = override_branch_controls
-
         self.generate_report = generate_report
-
-        self.generalised_pf = generalised_pf  # TODO: Remove this
 
         self.register(key="solver_type", tpe=SolverType)
         self.register(key="retry_with_other_methods", tpe=bool)
         self.register(key="tolerance", tpe=float)
         self.register(key="max_iter", tpe=int)
         self.register(key="max_outer_loop_iter", tpe=int)
-        self.register(key="control_Q", tpe=ReactivePowerControlMode)
+        self.register(key="control_Q", tpe=bool)
         self.register(key="verbose", tpe=int)
         self.register(key="initialize_with_existing_solution", tpe=bool)
-        self.register(key="control_taps", tpe=bool)
+        self.register(key="control_taps_modules", tpe=bool)
+        self.register(key="control_taps_phase", tpe=bool)
         self.register(key="apply_temperature_correction", tpe=bool)
         self.register(key="branch_impedance_tolerance_mode", tpe=BranchImpedanceMode)
         self.register(key="distributed_slack", tpe=bool)
@@ -122,6 +116,4 @@ class PowerFlowOptions(OptionsTemplate):
         self.register(key="trust_radius", tpe=float)
         self.register(key="backtracking_parameter", tpe=float)
         self.register(key="use_stored_guess", tpe=bool)
-        self.register(key="override_branch_controls", tpe=bool)
         self.register(key="generate_report", tpe=bool)
-        self.register(key="generalised_pf", tpe=bool)

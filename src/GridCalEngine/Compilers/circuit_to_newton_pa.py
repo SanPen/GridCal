@@ -21,8 +21,8 @@ import numpy as np
 from typing import List, Dict, Union, TYPE_CHECKING
 from GridCalEngine.basic_structures import IntVec, Vec
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import (TransformerControlType, HvdcControlType, SolverType, TimeGrouping,
-                                        ReactivePowerControlMode, ZonalGrouping, MIPSolvers, ContingencyMethod)
+from GridCalEngine.enumerations import (HvdcControlType, SolverType, TimeGrouping,
+                                        ZonalGrouping, MIPSolvers, ContingencyMethod)
 import GridCalEngine.Devices as dev
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -668,14 +668,14 @@ def add_transformer_data(circuit: MultiCircuit,
     :param override_controls: If true the controls are set to Fix
     """
 
-    ctrl_dict = {
-        TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
-        TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
-        TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
-        TransformerControlType.V: npa.BranchControlModes.BranchVt,
-        TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
-    }
+    # ctrl_dict = {
+    #     TransformerControlType.fixed: npa.BranchControlModes.Fixed,
+    #     TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
+    #     TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.V: npa.BranchControlModes.BranchVt,
+    #     TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
+    # }
 
     for i, elm in enumerate(circuit.transformers2w):
         tr2 = npa.Transformer2WFull(uuid=elm.idtag,
@@ -715,7 +715,8 @@ def add_transformer_data(circuit: MultiCircuit,
         if override_controls:
             tr2.setAllControlMode(npa.BranchControlModes.Fixed)
         else:
-            tr2.setAllControlMode(ctrl_dict[elm.control_mode])  # TODO: Warn about this
+            # tr2.setAllControlMode(ctrl_dict[elm.control_mode])  # TODO: implement this in Newton
+            pass
 
         tr2.phase_min = elm.tap_phase_min
         tr2.phase_max = elm.tap_phase_max
@@ -742,14 +743,14 @@ def add_transformer3w_data(circuit: MultiCircuit,
     :param override_controls: If true the controls are set to Fix
     """
 
-    ctrl_dict = {
-        TransformerControlType.fixed: npa.BranchControlModes.Fixed,
-        TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
-        TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
-        TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
-        TransformerControlType.V: npa.BranchControlModes.BranchVt,
-        TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
-    }
+    # ctrl_dict = {
+    #     TransformerControlType.fixed: npa.BranchControlModes.Fixed,
+    #     TransformerControlType.Pf: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.Qt: npa.BranchControlModes.BranchQt,
+    #     TransformerControlType.PtQt: npa.BranchControlModes.BranchPt,
+    #     TransformerControlType.V: npa.BranchControlModes.BranchVt,
+    #     TransformerControlType.PtV: npa.BranchControlModes.BranchPt,
+    # }
 
     for i, elm in enumerate(circuit.transformers3w):
         tr3 = npa.Transformer3W(uuid=elm.idtag,
@@ -824,9 +825,9 @@ def add_vsc_data(circuit: MultiCircuit,
         vsc.phase_max = elm.tap_phase_max
         vsc.phase_min = elm.tap_phase_min
 
-        vsc.setAllPdcSet(elm.Pdc_set)
-        vsc.setAllVacSet(elm.Vac_set)
-        vsc.setAllVdcSet(elm.Vdc_set)
+        vsc.setAllPdcSet(elm.Pset)
+        vsc.setAllVacSet(elm.vset)
+        vsc.setAllVdcSet(elm.vset)
         vsc.k_droop = elm.kdp
 
         vsc.alpha1 = elm.alpha1
@@ -1109,9 +1110,9 @@ def get_snapshots_from_newtonpa(circuit: MultiCircuit, override_branch_controls=
 
         data.k_pf_tau = control_indices.k_pf_tau
         data.k_qf_m = control_indices.k_qf_m
-        data.k_zero_beq = control_indices.k_zero_beq
+        data.k_zero_beq = control_indices.k_qf_beq
         data.k_vf_beq = control_indices.k_vf_beq
-        data.k_vt_m = control_indices.k_vt_m
+        data.k_vt_m = control_indices.k_v_m
         data.k_qt_m = control_indices.k_qt_m
         data.k_pf_dp = control_indices.k_pf_dp
         data.i_vsc = control_indices.i_vsc
@@ -1138,8 +1139,8 @@ def get_newton_pa_pf_options(opt: PowerFlowOptions) -> "npa.PowerFlowOptions":
                    SolverType.FASTDECOUPLED: npa.SolverType.FD
                    }
 
-    q_control_dict = {ReactivePowerControlMode.NoControl: npa.ReactivePowerControlMode.NoControl,
-                      ReactivePowerControlMode.Direct: npa.ReactivePowerControlMode.Direct}
+    q_control_dict = {False: npa.ReactivePowerControlMode.NoControl,
+                      True: npa.ReactivePowerControlMode.Direct}
 
     if opt.solver_type in solver_dict.keys():
         solver_type = solver_dict[opt.solver_type]
@@ -1195,8 +1196,8 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
     :param opf_opt: OptimalPowerFlowOptions instance
     :return: NonlinearOpfOptions
     """
-    q_control_dict = {ReactivePowerControlMode.NoControl: npa.ReactivePowerControlMode.NoControl,
-                      ReactivePowerControlMode.Direct: npa.ReactivePowerControlMode.Direct}
+    q_control_dict = {False: npa.ReactivePowerControlMode.NoControl,
+                      True: npa.ReactivePowerControlMode.Direct}
 
     solver_dict = {MIPSolvers.CBC: npa.LpSolvers.Highs,
                    MIPSolvers.HIGHS: npa.LpSolvers.Highs,
@@ -1279,10 +1280,12 @@ def newton_pa_pf(circuit: MultiCircuit,
     :param opf_results: Instance of
     :return: Newton Power flow results object
     """
+    override_branch_controls = not (pf_opt.control_taps_modules and pf_opt.control_taps_phase)
+
     npa_circuit, _ = to_newton_pa(circuit,
                                   use_time_series=time_series,
                                   time_indices=None,
-                                  override_branch_controls=pf_opt.override_branch_controls,
+                                  override_branch_controls=override_branch_controls,
                                   opf_results=opf_results)
 
     pf_options = get_newton_pa_pf_options(pf_opt)
@@ -1319,10 +1322,13 @@ def newton_pa_contingencies(circuit: MultiCircuit,
     :param time_indices: Array of time indices
     :return: Newton Power flow results object
     """
+
+    override_branch_controls = not (con_opt.pf_options.control_taps_modules and con_opt.pf_options.control_taps_phase)
+
     npa_circuit, _ = to_newton_pa(circuit,
                                   use_time_series=time_series,
                                   time_indices=None,
-                                  override_branch_controls=con_opt.pf_options.override_branch_controls)
+                                  override_branch_controls=override_branch_controls)
 
     pf_options = get_newton_pa_pf_options(con_opt.pf_options)
     lin_opt = get_newton_pa_linear_options(con_opt.lin_options)
@@ -1370,7 +1376,7 @@ def newton_pa_contingencies(circuit: MultiCircuit,
         pf_options=pf_options,
         mode=mode,
         using_srap=con_opt.use_srap,
-        srap_max_loading=con_opt.srap_max_loading,
+        srap_max_loading=1.4,
         srap_max_power=con_opt.srap_max_power
     )
 
