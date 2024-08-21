@@ -102,9 +102,9 @@ class MixedVariableProblem(ElementwiseProblem):
         # integers from 0 to the number of templates of each device (the template position in self.data[device])
         self.variables: Dict[str, Integer] = dict()
         self.devices = list()  # list of devices in sequential order to match the order of the vars
-        self.default_tamplate = list()  # list of templates that represent the devices in their initial state
+        self.default_template = list()  # list of templates that represent the devices in their initial state
         for elm, template_list in self.device_template_dict.items():
-            self.variables[elm.idtag] = Integer(bounds=(0, len(template_list) + 1))  # TODO: check if +1 is needed
+            self.variables[elm.idtag] = Integer(bounds=(0, len(template_list) + 1))
             self.devices.append(elm)
 
             if isinstance(elm, Line):
@@ -115,7 +115,7 @@ class MixedVariableProblem(ElementwiseProblem):
             else:
                 raise Exception('Device not recognized')
 
-            self.default_tamplate.append(default_template)
+            self.default_template.append(default_template)
 
         super().__init__(n_obj=n_obj, vars=self.variables)
         self.obj_func = obj_func
@@ -132,7 +132,7 @@ class MixedVariableProblem(ElementwiseProblem):
 
         for i, xi in enumerate(x):
             device = self.devices[i]
-            if xi > 0:
+            if i > 0:
                 template = self.data[device.idtag][xi]
 
                 if isinstance(device, Line):
@@ -144,9 +144,10 @@ class MixedVariableProblem(ElementwiseProblem):
                 else:
                     raise Exception('Device not recognized')
             else:
-                device.apply_template(self.default_tamplate[i], Sbase=self.grid.Sbase, logger=self.logger)
+                device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
 
         out["F"] = self.obj_func(x)
+        print("Completed eval")
 
 
 def NSGA_2(grid: MultiCircuit,

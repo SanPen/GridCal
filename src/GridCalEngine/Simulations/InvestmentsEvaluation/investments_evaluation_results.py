@@ -164,7 +164,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._voltage_score[eval_idx] = voltage_score
         self._financial[eval_idx] = financial
         self._f_obj[eval_idx] = objective_function_sum
-        self._combinations[eval_idx, :] = combination
+
+        lst_comb = []
+        if isinstance(combination, np.ndarray):
+            lst_comb = combination.tolist()
+        elif isinstance(combination, dict):
+            lst_comb = list(combination.values())
+        else:
+            raise TypeError(f"Invalid type for combination: {type(combination)}")
+
+        self._combinations[eval_idx, :] = lst_comb
+        # self._combinations[eval_idx, :] = combination
         self._index_names[eval_idx] = index_name
 
     def scaling_factor(self, max_magnitude, target_magnitude) -> float:

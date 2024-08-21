@@ -28,10 +28,11 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fix list extension in case the device has more than 1 template">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Basically typos">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/transformer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,73 +124,73 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for test_topology_processor.test_topology_rts.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_derivatives.test_tau_derivatives.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for src.tests.test_generator_q_control.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_power_flow.test_voltage_remote_control_with_generation.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_raw_roundtrip.test_rawx_roundtrip.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_sparse2.test_expand.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_sparse2.test_sp_slice.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_sparse2.test_spsolve.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_sparse2.test_stack_4.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.pytest in test_cgmes_ieeee.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_derivatives.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_power_flow.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_ptdf.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_sparse2.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_topology_processor.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.acciona_capex.executor&quot;: &quot;Run&quot;,
-    &quot;Python.associations_templates.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.multi_select.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
-    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.raw_imp_exp_test.executor&quot;: &quot;Run&quot;,
-    &quot;Python.tallr_table_headers.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.test_derivatives.executor&quot;: &quot;Run&quot;,
-    &quot;Python.try_template_loading.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
-    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;da64cd0f&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/some1/GridCal/Grids_and_profiles/grids&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
+    "Python tests.Nosetests for test_topology_processor.test_topology_rts.executor": "Debug",
+    "Python tests.Nosetests for tests.test_ac_opf.executor": "Run",
+    "Python tests.Nosetests for tests.test_ac_opf.test_pegase89.executor": "Debug",
+    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
+    "Python tests.Nosetests for tests.test_latin_hypercube.test_lhs.executor": "Run",
+    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.test_topology_rts.executor": "Run",
+    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
+    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
+    "Python tests.Nosetests in test_topology_processor.py.executor": "Run",
+    "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.pytest for src.tests.test_cgmes_ieeee.test_ieee_grids.executor": "Debug",
+    "Python tests.pytest for src.tests.test_derivatives.test_tau_derivatives.executor": "Debug",
+    "Python tests.pytest for src.tests.test_generator_q_control.executor": "Debug",
+    "Python tests.pytest for test_cgmes_ieeee.test_ieee_grids.executor": "Run",
+    "Python tests.pytest for test_generator_q_control.test_q_control_true.executor": "Run",
+    "Python tests.pytest for test_power_flow.test_voltage_remote_control_with_generation.executor": "Run",
+    "Python tests.pytest for test_raw_roundtrip.test_rawx_roundtrip.executor": "Run",
+    "Python tests.pytest for test_sparse2.test_expand.executor": "Run",
+    "Python tests.pytest for test_sparse2.test_sp_slice.executor": "Run",
+    "Python tests.pytest for test_sparse2.test_spsolve.executor": "Debug",
+    "Python tests.pytest for test_sparse2.test_stack_4.executor": "Run",
+    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_A.executor": "Debug",
+    "Python tests.pytest for test_topology_processor.test_topology_4_nodes_B.executor": "Debug",
+    "Python tests.pytest in test_cgmes_ieeee.py.executor": "Run",
+    "Python tests.pytest in test_derivatives.py.executor": "Run",
+    "Python tests.pytest in test_power_flow.py.executor": "Run",
+    "Python tests.pytest in test_ptdf.py.executor": "Run",
+    "Python tests.pytest in test_sparse2.py.executor": "Run",
+    "Python tests.pytest in test_topology_processor.py.executor": "Run",
+    "Python tests.pytest in tests.executor": "Run",
+    "Python.AnalysisDialogue.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.acciona_capex.executor": "Run",
+    "Python.associations_templates.executor": "Debug",
+    "Python.cgmes_rdfs_graph.executor": "Run",
+    "Python.multi_select.executor": "Run",
+    "Python.new_circuit_objects.executor": "Run",
+    "Python.pymoo_example.executor": "Debug",
+    "Python.raw_imp_exp_test.executor": "Run",
+    "Python.tallr_table_headers.executor": "Debug",
+    "Python.test_derivatives.executor": "Run",
+    "Python.try_template_loading.executor": "Debug",
+    "Python.update_gui_file.executor": "Run",
+    "Python.upload_to_pypi.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "da64cd0f",
+    "last_opened_file_path": "C:/Users/some1/GridCal/Grids_and_profiles/grids",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -1789,7 +1790,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="549" />
+    <option name="localTasksCounter" value="550" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1835,7 +1836,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="created numba csc2 spsolve and extend&#10;Changed the AC Jacobian to return a CSC matrix built in CSC mode" />
     <MESSAGE value="converted most Jacobian uses to the CSC matrix" />
     <MESSAGE value="Remove voltage control with generators working for NR" />
     <MESSAGE value="Implemented the remote voltage control in NR, LM, IWAMOTO and FD. The Q control fails since it needs to be updated." />
@@ -1860,7 +1860,8 @@
     <MESSAGE value="Clean pack unpack" />
     <MESSAGE value="Fix GUI for investment associations table" />
     <MESSAGE value="Fix list extension in case the device has more than 1 template" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix list extension in case the device has more than 1 template" />
+    <MESSAGE value="Basically typos" />
+    <option name="LAST_COMMIT_MESSAGE" value="Basically typos" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2279,11 +2280,6 @@
           <option name="timeStamp" value="2025" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>107</line>
-          <option name="timeStamp" value="2048" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Devices/multi_circuit.py</url>
           <line>248</line>
           <option name="timeStamp" value="2049" />
@@ -2310,28 +2306,48 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>69</line>
-          <option name="timeStamp" value="2054" />
+          <line>120</line>
+          <option name="timeStamp" value="2059" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>70</line>
-          <option name="timeStamp" value="2055" />
+          <line>119</line>
+          <option name="timeStamp" value="2060" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>71</line>
-          <option name="timeStamp" value="2056" />
+          <line>145</line>
+          <option name="timeStamp" value="2061" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>72</line>
-          <option name="timeStamp" value="2057" />
+          <line>134</line>
+          <option name="timeStamp" value="2062" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>73</line>
-          <option name="timeStamp" value="2058" />
+          <line>135</line>
+          <option name="timeStamp" value="2063" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
+          <line>146</line>
+          <option name="timeStamp" value="2064" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
+          <line>148</line>
+          <option name="timeStamp" value="2065" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
+          <line>149</line>
+          <option name="timeStamp" value="2066" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py</url>
+          <line>177</line>
+          <option name="timeStamp" value="2067" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
