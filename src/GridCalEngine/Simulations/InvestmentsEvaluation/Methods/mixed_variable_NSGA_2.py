@@ -53,7 +53,7 @@ class MixedVariableProblem(ElementwiseProblem):
         all_dict = self.grid.get_all_elements_dict()
         self.device_template_dict: Dict[BRANCH_TYPES, List[BRANCH_TEMPLATE_TYPES]] = dict()
 
-        # create the decission vars
+        # create the decision vars
         for investment_group, investments_list in self.grid.get_investments_by_groups():
 
             if len(investments_list) == 1:
@@ -71,7 +71,7 @@ class MixedVariableProblem(ElementwiseProblem):
                                 if lst is None:
                                     self.device_template_dict[device] = [template]
                                 else:
-                                    lst.extend(template)
+                                    lst.extend([template])
 
                         elif isinstance(device, Line):
 
@@ -85,7 +85,7 @@ class MixedVariableProblem(ElementwiseProblem):
                                     if lst is None:
                                         self.device_template_dict[device] = [template]
                                     else:
-                                        lst.extend(template)
+                                        lst.extend([template])
                         else:
                             self.logger.add_error("Investment device not recognized",
                                                   device=device.name,
@@ -98,7 +98,7 @@ class MixedVariableProblem(ElementwiseProblem):
                                       device=investment_group.name,
                                       device_class=investment_group.device_type.value)
 
-        # convert the data to decission vars: the decission vars are
+        # convert the data to decision vars: the decision vars are
         # integers from 0 to the number of templates of each device (the template position in self.data[device])
         self.variables: Dict[str, Integer] = dict()
         self.devices = list()  # list of devices in sequential order to match the order of the vars
@@ -149,7 +149,8 @@ class MixedVariableProblem(ElementwiseProblem):
         out["F"] = self.obj_func(x)
 
 
-def NSGA_2(obj_func,
+def NSGA_2(grid: MultiCircuit,
+           obj_func,
            n_obj: int = 2,
            max_evals: int = 30,
            pop_size: int = 1,
@@ -168,7 +169,7 @@ def NSGA_2(obj_func,
     # :param eta:
     :return:
     """
-    problem = MixedVariableProblem(obj_func, n_obj)
+    problem = MixedVariableProblem(grid, obj_func, n_obj)
 
     algorithm = MixedVariableGA(pop_size=pop_size,
                                 sampling=MixedVariableSampling(),

@@ -624,6 +624,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
 
         # optimize
         X, obj_values = NSGA_2(
+            grid=self.grid,
             obj_func=self.objective_function,
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
