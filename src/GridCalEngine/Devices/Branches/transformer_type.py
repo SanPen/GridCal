@@ -33,9 +33,9 @@ class TransformerType(EditableDevice):
                  gr_hv1: float = 0.5,
                  gx_hv1: float = 0.5,
                  name: str = 'TransformerType',
-                 tap_module: float=1.0,
-                 tap_module_max: float=0.8,
-                 tap_module_min: float=1.2,
+                 tap_module: float = 1.0,
+                 tap_module_max: float = 0.8,
+                 tap_module_min: float = 1.2,
                  idtag: Union[None, str] = None) -> None:
         """
         Transformer template from the short circuit study
@@ -75,7 +75,7 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
-        self.tap_mod=tap_module
+        self.tap_mod = tap_module
         self.tap_mod_max = tap_module_max
         self.tap_mod_min = tap_module_min
 

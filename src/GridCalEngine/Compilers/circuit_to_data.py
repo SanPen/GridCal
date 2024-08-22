@@ -771,7 +771,6 @@ def get_branch_data(circuit: MultiCircuit,
         data.R2[i] = elm.R2
         data.X2[i] = elm.X2
         data.B2[i] = elm.B2
-
         # data.conn[i] = elm.conn
 
         data.contingency_enabled[i] = int(elm.contingency_enabled)
@@ -901,6 +900,10 @@ def get_branch_data(circuit: MultiCircuit,
         data.tap_module_max[ii] = elm.tap_module_max
         data.tap_angle_min[ii] = elm.tap_phase_min
         data.tap_angle_max[ii] = elm.tap_phase_max
+
+        # data.tap_module[ii] = elm.tap_module
+        # data.tap_module_max[ii] = elm.tap_module_max
+        # data.tap_module_min[ii] = elm.tap_module_min
 
         data.Pfset[ii] = elm.Pset
 
