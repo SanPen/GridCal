@@ -89,6 +89,7 @@ class TransformerEditor(QDialog):
                         I0 = self.current_template.I0  # %
                         Vsc = self.current_template.Vsc  # %
 
+
         # load template
         self.load_template_btn = QPushButton()
         self.load_template_btn.setText('Load template values')
