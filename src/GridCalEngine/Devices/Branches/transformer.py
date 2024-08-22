@@ -351,6 +351,10 @@ class Transformer2W(ControllableBranchParent):
             self.HV = obj.HV
             self.LV = obj.LV
 
+            self.tap_module = obj.tap_mod
+            self.tap_module_max = obj.tap_mod_max
+            self.tap_module_min = obj.tap_mod_min
+
             if self.template is not None:
                 if obj != self.template:
                     self.template = obj
