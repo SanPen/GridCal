@@ -41,7 +41,7 @@ def get_transformer_catalogue():
 
 def get_cables_catalogue():
     """
-
+    Grab the default csv file
     :return:
     """
     here = os.path.dirname(os.path.abspath(__file__))

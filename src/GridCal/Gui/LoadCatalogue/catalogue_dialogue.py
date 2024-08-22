@@ -74,10 +74,10 @@ class CatalogueGUI(QtWidgets.QDialog):
                                       Vnom=item['Rated voltage [kV]'],
                                       R=item['R [Ohm/km AC@20°C]'],
                                       X=item['X [Ohm/km]'],
-                                      B=0.0,
+                                      B=item['B [uS/km]'],
                                       R0=item['R0 (AC) [Ohm/km]'],
                                       X0=item['X0  [Ohm/km]'],
-                                      B0=0.0)
+                                      B0=item['B0 [uS/km]'])
             lst.append(tpe)
 
         return lst
