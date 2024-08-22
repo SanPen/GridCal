@@ -104,7 +104,7 @@ class MixedVariableProblem(ElementwiseProblem):
         self.devices = list()  # list of devices in sequential order to match the order of the vars
         self.default_template = list()  # list of templates that represent the devices in their initial state
         for elm, template_list in self.device_template_dict.items():
-            self.variables[elm.idtag] = Integer(bounds=(0, len(template_list) + 1))
+            self.variables[elm.idtag] = Integer(bounds=(0, len(template_list)))
             self.devices.append(elm)
 
             if isinstance(elm, Line):
@@ -129,11 +129,17 @@ class MixedVariableProblem(ElementwiseProblem):
         :param kwargs:
         :return:
         """
+        xi_to_index = {key: idx for idx, key in enumerate(set(x))}
 
         for i, xi in enumerate(x):
             device = self.devices[i]
+
             if i > 0:
-                template = self.data[device.idtag][xi]
+                if xi in xi_to_index:
+                    index = xi_to_index[xi]
+                    template = self.device_template_dict[device][index]
+                else:
+                    raise KeyError(f"String key {xi} not found.")
 
                 if isinstance(device, Line):
                     device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
@@ -160,7 +166,7 @@ def NSGA_2(grid: MultiCircuit,
            # eta: float = 3.0
            ):
     """
-
+    :param grid:
     :param obj_func:
     :param n_obj:
     :param max_evals:
