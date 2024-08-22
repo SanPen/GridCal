@@ -29,7 +29,10 @@ import xmlrpc.client
 locale.setlocale(locale.LC_ALL, '')
 
 
-class PyPIDownloadAggregator(object):
+class PyPIDownloadAggregator:
+    """
+    PyPIDownloadAggregator
+    """
 
     def __init__(self, package_name, include_hidden=True):
         self.package_name = package_name
@@ -76,26 +79,33 @@ class PyPIDownloadAggregator(object):
 
         return result
 
+    def init_downloads(self):
+        """
+
+        :return:
+        """
+        for release in self.releases:
+            urls = self.proxy.release_urls(self.package_name, release)
+            self._downloads[release] = 0
+            for url in urls:
+                # upload times
+                uptime = url['upload_time']
+                if self.first_upload is None or uptime < self.first_upload:
+                    self.first_upload = uptime
+                    self.first_upload_rel = release
+
+                if self.last_upload is None or uptime > self.last_upload:
+                    self.last_upload = uptime
+                    self.last_upload_rel = release
+
+                self._downloads[release] += url['downloads']
+
     @property
     def downloads(self, force=False):
         """Calculate the total number of downloads for the package"""
 
         if len(self._downloads) == 0 or force:
-            for release in self.releases:
-                urls = self.proxy.release_urls(self.package_name, release)
-                self._downloads[release] = 0
-                for url in urls:
-                    # upload times
-                    uptime = url['upload_time']
-                    if self.first_upload is None or uptime < self.first_upload:
-                        self.first_upload = uptime
-                        self.first_upload_rel = release
-
-                    if self.last_upload is None or uptime > self.last_upload:
-                        self.last_upload = uptime
-                        self.last_upload_rel = release
-
-                    self._downloads[release] += url['downloads']
+            self.init_downloads()
 
         return self._downloads
 
@@ -114,7 +124,7 @@ class PyPIDownloadAggregator(object):
     def stats(self):
         """Prints a nicely formatted list of statistics about the package"""
 
-        self.downloads  # explicitly call, so we have first/last upload data
+        self.init_downloads()
         fmt = locale.nl_langinfo(locale.D_T_FMT)
         sep = lambda s: locale.format_string('%d', s, 3)
         val = lambda dt: dt and dt.strftime(fmt) or '--'

@@ -22,9 +22,9 @@ from scipy.sparse import csc_matrix as csc
 from scipy.sparse import lil_matrix
 
 from GridCalEngine.Utils.Sparse.csc import diags
-from typing import Tuple, Union
+from typing import Tuple
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, csr_matrix, csc_matrix
-from GridCalEngine.enumerations import ReactivePowerControlMode, AcOpfMode
+from GridCalEngine.enumerations import AcOpfMode
 
 
 def x2var(x: Vec,
@@ -51,6 +51,8 @@ def x2var(x: Vec,
     :param ntapm: number of module controlled transformers
     :param ntapt: number of phase controlled transformers
     :param ndc: number of dispatchable DC links
+    :param nslcap:
+    :param acopf_mode: AcOpfMode
     :return: Tuple of sliced variables
     """
     a = 0
@@ -137,6 +139,7 @@ def var2x(Va: Vec,
     :param sl_st: Bound slacks for the 'to' power through a line
     :param sl_vmax: Bound slacks for the maximum voltage of the buses
     :param sl_vmin: Bound slacks for the minimum voltage of the buses
+    :param slcap:
     :param tapm: Tap modules
     :param tapt: Tap phases
     :param Pfdc: From power of the dispatchable DC links
@@ -145,99 +148,104 @@ def var2x(Va: Vec,
     return np.r_[Va, Vm, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, slcap, tapm, tapt, Pfdc]
 
 
-def compute_branch_power_derivatives(alltapm: Vec,
-                                     alltapt: Vec,
+def compute_branch_power_derivatives(all_tap_m: Vec,
+                                     all_tap_tau: Vec,
                                      V: CxVec,
                                      k_m: Vec,
                                      k_tau: Vec,
                                      Cf: csc,
                                      Ct: csc,
+                                     F: IntVec,
+                                     T: IntVec,
                                      R: Vec,
-                                     X: Vec) -> Tuple[csr_matrix, lil_matrix, lil_matrix, csr_matrix, lil_matrix,
-                                                      lil_matrix]:
+                                     X: Vec) -> Tuple[
+    csr_matrix, lil_matrix, lil_matrix, csr_matrix, lil_matrix, lil_matrix]:
     """
 
-    :param alltapm: Vector with all the tap module, including the non-controlled ones
-    :param alltapt: Vector with all the tap phases, including the non-controlled ones
+    :param all_tap_m: Vector with all the tap module, including the non-controlled ones
+    :param all_tap_tau: Vector with all the tap phases, including the non-controlled ones
     :param V: Complex voltages
     :param k_m: List with the index of the module controlled transformers
     :param k_tau: List with the index of the phase controlled transformers
     :param Cf: From connectivity matrix
     :param Ct: To connectivity matrix
+    :param F: Array of "from" buses of each branch
+    :param T: Array of "to" buses of each branch
     :param R: Line resistances
     :param X: Line inductances
-    :return: Power first derivatives with respect to the tap variables [dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt]
+    :return: First power derivatives with respect to the tap variables
+            [dSbusdm, dSfdm, dStdm, dSbusdt, dSfdtau, dStdtau]
     """
     ys = 1.0 / (R + 1.0j * X + 1e-20)
 
-    Vf = Cf @ V
-    Vt = Ct @ V
-    N = len(alltapm)
-    dSfdm = lil_matrix((N, len(k_m)), dtype=complex)
-    dStdm = lil_matrix((N, len(k_m)), dtype=complex)
-    dSfdt = lil_matrix((N, len(k_tau)), dtype=complex)
-    dStdt = lil_matrix((N, len(k_tau)), dtype=complex)
+    nbr = len(all_tap_m)
+    dSfdm = lil_matrix((nbr, len(k_m)), dtype=complex)
+    dStdm = lil_matrix((nbr, len(k_m)), dtype=complex)
+    dSfdtau = lil_matrix((nbr, len(k_tau)), dtype=complex)
+    dStdtau = lil_matrix((nbr, len(k_tau)), dtype=complex)
 
-    for mod, line in enumerate(k_m):
-        Vf_ = Vf[line]
-        Vt_ = Vt[line]
-        mp = alltapm[line]
-        tau = alltapt[line]
-        yk = ys[line]
+    for k_pos, k in enumerate(k_m):
+        Vf = V[F[k]]
+        Vt = V[T[k]]
+        mp = all_tap_m[k]
+        tau = all_tap_tau[k]
+        yk = ys[k]
         mp2 = np.power(mp, 2)
-        # First derivatives with respect to the tap module. Each line is computed individually and stored
-        dSfdm[line, mod] = Vf_ * ((-2 * np.conj(yk * Vf_) / np.power(mp, 3)) + np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau)))
-        dStdm[line, mod] = Vt_ * (np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau)))
 
-    for ang, line in enumerate(k_tau):
-        Vf_ = Vf[line]
-        Vt_ = Vt[line]
-        mp = alltapm[line]
-        tau = alltapt[line]
-        yk = ys[line]
-        # First derivatives with respect to the tap phase. Each line is computed individually and stored
-        dSfdt[line, ang] = Vf_ * 1j * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
-        dStdt[line, ang] = Vt_ * -1j * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        # First derivatives with respect to the tap module.
+        # Each branch is computed individually and stored
+        dSfdm[k, k_pos] = Vf * ((-2 * np.conj(yk * Vf) / np.power(mp, 3)) + np.conj(yk * Vt) / (mp2 * np.exp(1j * tau)))
+        dStdm[k, k_pos] = Vt * (np.conj(yk * Vf) / (mp2 * np.exp(-1j * tau)))
+
+    for k_pos, k in enumerate(k_tau):
+        Vf = V[F[k]]
+        Vt = V[T[k]]
+        mp = all_tap_m[k]
+        tau = all_tap_tau[k]
+        yk = ys[k]
+
+        # First derivatives with respect to the tap phase.
+        # Each branch is computed individually and stored
+        dSfdtau[k, k_pos] = Vf * 1j * np.conj(yk * Vt) / (mp * np.exp(1j * tau))
+        dStdtau[k, k_pos] = Vt * -1j * np.conj(yk * Vf) / (mp * np.exp(-1j * tau))
+
     # Bus power injection is computed using the 'from' and 'to' powers and their connectivity matrices
     dSbusdm = Cf.T @ dSfdm + Ct.T @ dStdm
-    dSbusdt = Cf.T @ dSfdt + Ct.T @ dStdt
+    dSbusdt = Cf.T @ dSfdtau + Ct.T @ dStdtau
 
-    return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdt, dStdt
+    return dSbusdm, dSfdm, dStdm, dSbusdt, dSfdtau, dStdtau
 
 
-def compute_branch_power_second_derivatives(alltapm: Vec,
-                                            alltapt: Vec,
+def compute_branch_power_second_derivatives(all_tap_m: Vec,
+                                            all_tap_tau: Vec,
                                             vm: Vec,
                                             va: Vec,
-                                            k_m: Vec,
-                                            k_tau: Vec,
-                                            il: Vec,
-                                            Cf: csc,
-                                            Ct: csc,
+                                            k_m: IntVec,
+                                            k_tau: IntVec,
+                                            mon_idx: IntVec,
                                             R: Vec,
                                             X: Vec,
-                                            F: Vec,
-                                            T: Vec,
+                                            F: IntVec,
+                                            T: IntVec,
                                             lam: Vec,
                                             mu: Vec,
                                             Sf: CxVec,
-                                            St: CxVec) -> Tuple[lil_matrix, lil_matrix, lil_matrix,
-                                                                lil_matrix, lil_matrix, lil_matrix,
-                                                                lil_matrix, lil_matrix, lil_matrix,
-                                                                lil_matrix, lil_matrix, lil_matrix,
-                                                                lil_matrix, lil_matrix, lil_matrix,
-                                                                lil_matrix, lil_matrix, lil_matrix,
-                                                                lil_matrix, lil_matrix, lil_matrix]:
+                                            St: CxVec) -> Tuple[
+    lil_matrix, lil_matrix, lil_matrix,
+    lil_matrix, lil_matrix, lil_matrix,
+    lil_matrix, lil_matrix, lil_matrix,
+    lil_matrix, lil_matrix, lil_matrix,
+    lil_matrix, lil_matrix, lil_matrix,
+    lil_matrix, lil_matrix, lil_matrix,
+    lil_matrix, lil_matrix, lil_matrix]:
     """
-    :param alltapm: Vector with all the tap module, including the non-controlled ones
-    :param alltapt: Vector with all the tap phase, including the non-controlled ones
+    :param all_tap_m: Vector with all the tap module, including the non-controlled ones
+    :param all_tap_tau: Vector with all the tap phase, including the non-controlled ones
     :param vm: Voltage modules
     :param va: Voltage angles
     :param k_m: List with the index of the module controlled transformers
     :param k_tau: List with the index of the phase controlled transformers
-    :param il: List with the index of the monitored lines
-    :param Cf: From connectivity matrix
-    :param Ct: To connectivity matrix
+    :param mon_idx: List with the index of the monitored lines
     :param R: Line resistances
     :param X: Line inductances
     :param F: Indexes of the 'from' buses
@@ -250,10 +258,9 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
     """
     ys = 1.0 / (R + 1.0j * X + 1e-20)
     V = vm * np.exp(1j * va)
-    Vf = Cf @ V
-    Vt = Ct @ V
+
     N = len(vm)
-    M = len(il)
+    M = len(mon_idx)
     ntapm = len(k_m)
     ntapt = len(k_tau)
 
@@ -285,129 +292,136 @@ def compute_branch_power_second_derivatives(alltapm: Vec,
     dSfdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
     dStdmdt = lil_matrix((ntapt, ntapm), dtype=complex)
 
-    for mod, line in enumerate(k_m):
-        Vf_ = Vf[line]
-        Vt_ = Vt[line]
-        mp = alltapm[line]
-        tau = alltapt[line]
-        yk = ys[line]
+    for k_pos, k in enumerate(k_m):
+        f = F[k]
+        t = T[k]
+        Vf = V[f]
+        Vt = V[t]
+        mp = all_tap_m[k]
+        tau = all_tap_tau[k]
+        yk = ys[k]
+        tap_unit = np.exp(1j * tau)
+        tap_unit_c = np.exp(-1j * tau)
 
-        f = F[line]
-        t = T[line]
         # For each line with a module controlled transformer, compute its second derivatives w.r.t. the tap module and
         # the rest of the variables.
         mp2 = mp * mp
         mp3 = mp2 * mp
         mp4 = mp3 * mp
-        dSfdmdm_ = Vf_ * ((6 * np.conj(yk * Vf_) / mp4) - 2 * np.conj(yk * Vt_) / (mp3 * np.exp(1j * tau)))
-        dStdmdm_ = - Vt_ * 2 * np.conj(yk * Vf_) / (mp3 * np.exp(-1j * tau))
+        dSfdmdm_ = Vf * ((6 * np.conj(yk * Vf) / mp4) - 2 * np.conj(yk * Vt) / (mp3 * tap_unit))
+        dStdmdm_ = - Vt * 2 * np.conj(yk * Vf) / (mp3 * tap_unit_c)
 
-        dSfdmdva_f = Vf_ * 1j * np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau))
-        dSfdmdva_t = - Vf_ * 1j * np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau))
+        dSfdmdva_f = Vf * 1j * np.conj(yk * Vt) / (mp2 * tap_unit)
+        dSfdmdva_t = - Vf * 1j * np.conj(yk * Vt) / (mp2 * tap_unit)
 
-        dStdmdva_f = - Vt_ * 1j * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
-        dStdmdva_t = Vt_ * 1j * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
+        dStdmdva_f = - Vt * 1j * np.conj(yk * Vf) / (mp2 * tap_unit_c)
+        dStdmdva_t = Vt * 1j * np.conj(yk * Vf) / (mp2 * tap_unit_c)
 
-        dSfdmdvm_f = Vf_ * (1 / vm[f]) * ((-4 * np.conj(yk * Vf_) / mp3)
-                                          + np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau)))
-        dSfdmdvm_t = Vf_ * (1 / vm[t]) * np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau))
+        dSfdmdvm_f = Vf * (1 / vm[f]) * ((-4 * np.conj(yk * Vf) / mp3) + np.conj(yk * Vt) / (mp2 * tap_unit))
+        dSfdmdvm_t = Vf * (1 / vm[t]) * np.conj(yk * Vt) / (mp2 * tap_unit)
 
-        dStdmdvm_f = Vt_ * (1 / vm[f]) * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
-        dStdmdvm_t = Vt_ * (1 / vm[t]) * np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau))
+        dStdmdvm_f = Vt * (1 / vm[f]) * np.conj(yk * Vf) / (mp2 * tap_unit_c)
+        dStdmdvm_t = Vt * (1 / vm[t]) * np.conj(yk * Vf) / (mp2 * tap_unit_c)
 
-        lin = np.where(k_tau == line)[0]
+        lin = np.where(k_tau == k)[0]  # TODO: should pass along the control type and check that instead
+
         if len(lin) != 0:
-            ang = lin[0]
+            k_pos = lin[0]
             # If the trafo is controlled for both module and phase, compute these derivatives. Otherwise, they are 0
-            dSfdmdt_ = - Vf_ * 1j * (np.conj(yk * Vt_) / (mp2 * np.exp(1j * tau)))
-            dStdmdt_ = Vt_ * 1j * (np.conj(yk * Vf_) / (mp2 * np.exp(-1j * tau)))
+            dSfdmdt_ = - Vf * 1j * (np.conj(yk * Vt) / (mp2 * tap_unit))
+            dStdmdt_ = Vt * 1j * (np.conj(yk * Vf) / (mp2 * tap_unit_c))
 
-            dSbusdmdt[ang, mod] = ((dSfdmdt_ * lam[f]).real + (dSfdmdt_ * lam[f + N]).imag
-                                   + (dStdmdt_ * lam[t]).real + (dStdmdt_ * lam[t + N]).imag)
-            if line in il:
+            dSbusdmdt[k_pos, k_pos] = ((dSfdmdt_ * lam[f]).real + (dSfdmdt_ * lam[f + N]).imag
+                                       + (dStdmdt_ * lam[t]).real + (dStdmdt_ * lam[t + N]).imag)
+            if k in mon_idx:
                 # This is only included if the branch is monitored.
-                li = np.where(il == line)[0]
-                dSfdmdt[ang, mod] = dSfdmdt_ * Sf[li].conj() * mu[li]
-                dStdmdt[ang, mod] = dStdmdt_ * St[li].conj() * mu[li + M]
+                li = np.where(mon_idx == k)[0]  # TODO: Why is this here?
+                dSfdmdt[k_pos, k_pos] = dSfdmdt_ * Sf[li].conj() * mu[li]
+                dStdmdt[k_pos, k_pos] = dStdmdt_ * St[li].conj() * mu[li + M]
+
         # Compute the hessian terms merging Sf and St into Sbus
-        dSbusdmdm[mod, mod] = ((dSfdmdm_ * lam[f]).real + (dSfdmdm_ * lam[f + N]).imag
-                               + (dStdmdm_ * lam[t]).real + (dStdmdm_ * lam[t + N]).imag)
-        dSbusdmdva[f, mod] = ((dSfdmdva_f * lam[f]).real + (dSfdmdva_f * lam[f + N]).imag
-                              + (dStdmdva_f * lam[t]).real + (dStdmdva_f * lam[t + N]).imag)
-        dSbusdmdva[t, mod] = ((dSfdmdva_t * lam[f]).real + (dSfdmdva_t * lam[f + N]).imag
-                              + (dStdmdva_t * lam[t]).real + (dStdmdva_t * lam[t + N]).imag)
-        dSbusdmdvm[f, mod] = ((dSfdmdvm_f * lam[f]).real + (dSfdmdvm_f * lam[f + N]).imag
-                              + (dStdmdvm_f * lam[t]).real + (dStdmdvm_f * lam[t + N]).imag)
-        dSbusdmdvm[t, mod] = ((dSfdmdvm_t * lam[f]).real + (dSfdmdvm_t * lam[f + N]).imag
-                              + (dStdmdvm_t * lam[t]).real + (dStdmdvm_t * lam[t + N]).imag)
+        dSbusdmdm[k_pos, k_pos] = ((dSfdmdm_ * lam[f]).real + (dSfdmdm_ * lam[f + N]).imag
+                                   + (dStdmdm_ * lam[t]).real + (dStdmdm_ * lam[t + N]).imag)
+        dSbusdmdva[f, k_pos] = ((dSfdmdva_f * lam[f]).real + (dSfdmdva_f * lam[f + N]).imag
+                                + (dStdmdva_f * lam[t]).real + (dStdmdva_f * lam[t + N]).imag)
+        dSbusdmdva[t, k_pos] = ((dSfdmdva_t * lam[f]).real + (dSfdmdva_t * lam[f + N]).imag
+                                + (dStdmdva_t * lam[t]).real + (dStdmdva_t * lam[t + N]).imag)
+        dSbusdmdvm[f, k_pos] = ((dSfdmdvm_f * lam[f]).real + (dSfdmdvm_f * lam[f + N]).imag
+                                + (dStdmdvm_f * lam[t]).real + (dStdmdvm_f * lam[t + N]).imag)
+        dSbusdmdvm[t, k_pos] = ((dSfdmdvm_t * lam[f]).real + (dSfdmdvm_t * lam[f + N]).imag
+                                + (dStdmdvm_t * lam[t]).real + (dStdmdvm_t * lam[t + N]).imag)
 
-        if line in il:
+        if k in mon_idx:
             # Hessian terms, only for monitored lines
-            li = np.where(il == line)[0]
-            dSfdmdm[mod, mod] = dSfdmdm_ * Sf[li].conj() * mu[li]
-            dStdmdm[mod, mod] = dStdmdm_ * St[li].conj() * mu[li + M]
-            dSfdmdva[f, mod] = dSfdmdva_f * Sf[li].conj() * mu[li]
-            dStdmdva[f, mod] = dStdmdva_f * St[li].conj() * mu[li + M]
-            dSfdmdva[t, mod] = dSfdmdva_t * Sf[li].conj() * mu[li]
-            dStdmdva[t, mod] = dStdmdva_t * St[li].conj() * mu[li + M]
-            dSfdmdvm[f, mod] = dSfdmdvm_f * Sf[li].conj() * mu[li]
-            dStdmdvm[f, mod] = dStdmdvm_f * St[li].conj() * mu[li + M]
-            dSfdmdvm[t, mod] = dSfdmdvm_t * Sf[li].conj() * mu[li]
-            dStdmdvm[t, mod] = dStdmdvm_t * St[li].conj() * mu[li + M]
+            li = np.where(mon_idx == k)[0]  # TODO: Why is this here?
+            dSfdmdm[k_pos, k_pos] = dSfdmdm_ * Sf[li].conj() * mu[li]
+            dStdmdm[k_pos, k_pos] = dStdmdm_ * St[li].conj() * mu[li + M]
+            dSfdmdva[f, k_pos] = dSfdmdva_f * Sf[li].conj() * mu[li]
+            dStdmdva[f, k_pos] = dStdmdva_f * St[li].conj() * mu[li + M]
+            dSfdmdva[t, k_pos] = dSfdmdva_t * Sf[li].conj() * mu[li]
+            dStdmdva[t, k_pos] = dStdmdva_t * St[li].conj() * mu[li + M]
+            dSfdmdvm[f, k_pos] = dSfdmdvm_f * Sf[li].conj() * mu[li]
+            dStdmdvm[f, k_pos] = dStdmdvm_f * St[li].conj() * mu[li + M]
+            dSfdmdvm[t, k_pos] = dSfdmdvm_t * Sf[li].conj() * mu[li]
+            dStdmdvm[t, k_pos] = dStdmdvm_t * St[li].conj() * mu[li + M]
 
-    for ang, line in enumerate(k_tau):
-        Vf_ = Vf[line]
-        Vt_ = Vt[line]
-        mp = alltapm[line]
-        tau = alltapt[line]
-        yk = ys[line]
+    for k_pos, k in enumerate(k_tau):
+        f = F[k]
+        t = T[k]
+        Vf = V[f]
+        Vt = V[t]
+        Vmf = abs(Vf)
+        Vmt = abs(Vt)
+        mp = all_tap_m[k]
+        tau = all_tap_tau[k]
+        yk = ys[k]
+        tap = mp * np.exp(1j * tau)
+        tap_c = mp * np.exp(-1j * tau)
 
-        f = F[line]
-        t = T[line]
         # Same procedure for phase controlled transformers
-        dSfdtdt_ = Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
-        dStdtdt_ = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dSfdtdt_ = Vf * np.conj(yk * Vt) / tap
+        dStdtdt_ = Vt * np.conj(yk * Vf) / tap_c
 
-        dSfdtdva_f = - Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
-        dSfdtdva_t = Vf_ * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdva_f = - Vf * np.conj(yk * Vt) / tap
+        dSfdtdva_t = Vf * np.conj(yk * Vt) / tap
 
-        dStdtdva_f = - Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
-        dStdtdva_t = Vt_ * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdva_f = - Vt * np.conj(yk * Vf) / tap_c
+        dStdtdva_t = Vt * np.conj(yk * Vf) / tap_c
 
-        dSfdtdvm_f = 1j * Vf_ / abs(Vf_) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
-        dSfdtdvm_t = 1j * Vf_ / abs(Vt_) * np.conj(yk * Vt_) / (mp * np.exp(1j * tau))
+        dSfdtdvm_f = 1.0j * Vf / Vmf * np.conj(yk * Vt) / tap
+        dSfdtdvm_t = 1.0j * Vf / Vmt * np.conj(yk * Vt) / tap
 
-        dStdtdvm_f = -1j * Vt_ / abs(Vf_) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
-        dStdtdvm_t = -1j * Vt_ / abs(Vt_) * np.conj(yk * Vf_) / (mp * np.exp(-1j * tau))
+        dStdtdvm_f = -1.0j * Vt / Vmf * np.conj(yk * Vf) / tap_c
+        dStdtdvm_t = -1.0j * Vt / Vmt * np.conj(yk * Vf) / tap_c
 
         # Merge Sf and St in Sbus
-        dSbusdtdt[ang, ang] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
-                               + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
-        dSbusdtdva[f, ang] = ((dSfdtdva_f * lam[f]).real + (dSfdtdva_f * lam[f + N]).imag
-                              + (dStdtdva_f * lam[t]).real + (dStdtdva_f * lam[t + N]).imag)
-        dSbusdtdva[t, ang] = ((dSfdtdva_t * lam[f]).real + (dSfdtdva_t * lam[f + N]).imag
-                              + (dStdtdva_t * lam[t]).real + (dStdtdva_t * lam[t + N]).imag)
-        dSbusdtdvm[f, ang] = ((dSfdtdvm_f * lam[f]).real + (dSfdtdvm_f * lam[f + N]).imag
-                              + (dStdtdvm_f * lam[t]).real + (dStdtdvm_f * lam[t + N]).imag)
-        dSbusdtdvm[t, ang] = ((dSfdtdvm_t * lam[f]).real + (dSfdtdvm_t * lam[f + N]).imag
-                              + (dStdtdvm_t * lam[t]).real + (dStdtdvm_t * lam[t + N]).imag)
-        dSbusdtdt[ang, ang] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
-                               + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
+        dSbusdtdt[k_pos, k_pos] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
+                                   + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
+        dSbusdtdva[f, k_pos] = ((dSfdtdva_f * lam[f]).real + (dSfdtdva_f * lam[f + N]).imag
+                                + (dStdtdva_f * lam[t]).real + (dStdtdva_f * lam[t + N]).imag)
+        dSbusdtdva[t, k_pos] = ((dSfdtdva_t * lam[f]).real + (dSfdtdva_t * lam[f + N]).imag
+                                + (dStdtdva_t * lam[t]).real + (dStdtdva_t * lam[t + N]).imag)
+        dSbusdtdvm[f, k_pos] = ((dSfdtdvm_f * lam[f]).real + (dSfdtdvm_f * lam[f + N]).imag
+                                + (dStdtdvm_f * lam[t]).real + (dStdtdvm_f * lam[t + N]).imag)
+        dSbusdtdvm[t, k_pos] = ((dSfdtdvm_t * lam[f]).real + (dSfdtdvm_t * lam[f + N]).imag
+                                + (dStdtdvm_t * lam[t]).real + (dStdtdvm_t * lam[t + N]).imag)
+        dSbusdtdt[k_pos, k_pos] = ((dSfdtdt_ * lam[f]).real + (dSfdtdt_ * lam[f + N]).imag
+                                   + (dStdtdt_ * lam[t]).real + (dStdtdt_ * lam[t + N]).imag)
 
-        if line in il:
-            li = np.where(il == line)[0]
-            dSfdtdt[ang, ang] = dSfdtdt_ * Sf[li].conj() * mu[li]
-            dStdtdt[ang, ang] = dStdtdt_ * St[li].conj() * mu[li + M]
-            dSfdtdva[f, ang] = dSfdtdva_f * Sf[li].conj() * mu[li]
-            dStdtdva[f, ang] = dStdtdva_f * St[li].conj() * mu[li + M]
-            dSfdtdva[t, ang] = dSfdtdva_t * Sf[li].conj() * mu[li]
-            dStdtdva[t, ang] = dStdtdva_t * St[li].conj() * mu[li + M]
-            dSfdtdvm[f, ang] = dSfdtdvm_f * Sf[li].conj() * mu[li]
-            dStdtdvm[f, ang] = dStdtdvm_f * St[li].conj() * mu[li + M]
-            dSfdtdvm[t, ang] = dSfdtdvm_t * Sf[li].conj() * mu[li]
-            dStdtdvm[t, ang] = dStdtdvm_t * St[li].conj() * mu[li + M]
-            dSfdtdt[ang, ang] = dSfdtdt_ * Sf[li].conj() * mu[li]
-            dStdtdt[ang, ang] = dStdtdt_ * St[li].conj() * mu[li + M]
+        if k in mon_idx:
+            li = np.where(mon_idx == k)[0]  # TODO: Why is this here?
+            dSfdtdt[k_pos, k_pos] = dSfdtdt_ * Sf[li].conj() * mu[li]
+            dStdtdt[k_pos, k_pos] = dStdtdt_ * St[li].conj() * mu[li + M]
+            dSfdtdva[f, k_pos] = dSfdtdva_f * Sf[li].conj() * mu[li]
+            dStdtdva[f, k_pos] = dStdtdva_f * St[li].conj() * mu[li + M]
+            dSfdtdva[t, k_pos] = dSfdtdva_t * Sf[li].conj() * mu[li]
+            dStdtdva[t, k_pos] = dStdtdva_t * St[li].conj() * mu[li + M]
+            dSfdtdvm[f, k_pos] = dSfdtdvm_f * Sf[li].conj() * mu[li]
+            dStdtdvm[f, k_pos] = dStdtdvm_f * St[li].conj() * mu[li + M]
+            dSfdtdvm[t, k_pos] = dSfdtdvm_t * Sf[li].conj() * mu[li]
+            dStdtdvm[t, k_pos] = dStdtdvm_t * St[li].conj() * mu[li + M]
+            dSfdtdt[k_pos, k_pos] = dSfdtdt_ * Sf[li].conj() * mu[li]
+            dStdtdt[k_pos, k_pos] = dStdtdt_ * St[li].conj() * mu[li + M]
 
     return (dSbusdmdm, dSfdmdm, dStdmdm,
             dSbusdmdvm, dSfdmdvm, dStdmdvm,
@@ -424,7 +438,7 @@ def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
     """
     Calculates the value of the objective function at the current state (given by x)
     :param x: State vector
-
+    # //////////////////////////////////////////////////////
     :param Cg: Generation connectivity matrix
     :param k_m: List with the index of the module controlled transformers
     :param k_tau: List with the index of the phase controlled transformers
@@ -433,11 +447,14 @@ def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
     :param c1: Linear cost of generators
     :param c2: Quadratic cost of generators
     :param c_s: Cost of overloading a line
+    :param nslcap:
+    :param nodal_capacity_sign:
     :param c_v: Cost of over or undervoltages
     :param ig: Dispatchable generators
     :param npq: Number of pq buses
     :param ndc: Number of dispatchable DC links
     :param Sbase: Base power (per unit reference)
+    :param acopf_mode: AcOpfMode
     :return: Scalar value: Cost of operation (objective function)
     """
     N, _ = Cg.shape  # Check
@@ -446,8 +463,8 @@ def eval_f(x: Vec, Cg: csc_matrix, k_m: Vec, k_tau: Vec, nll: int, c0: Vec, c1: 
     ntapt = len(k_tau)
 
     _, _, Pg, Qg, sl_sf, sl_st, sl_vmax, sl_vmin, slcap, _, _, _ = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng, npq=npq,
-                                                                          M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
-                                                                          nslcap=nslcap, acopf_mode=acopf_mode)
+                                                                         M=nll, ntapm=ntapm, ntapt=ntapt, ndc=ndc,
+                                                                         nslcap=nslcap, acopf_mode=acopf_mode)
     # Obj. function:  Active power generation costs plus overloads and voltage deviation penalties
 
     fval = 1e-4 * (np.sum((c0 + c1 * Pg * Sbase + c2 * np.power(Pg * Sbase, 2)))
@@ -471,20 +488,24 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
     :param ig: indices of dispatchable gens
     :param nig: indices of non dispatchable gens
     :param nll: Number of monitored lines
+    :param nslcap:
+    :param nodal_capacity_sign:
+    :param capacity_nodes_idx:
     :param npq: Number of pq buses
     :param pv: Index of PV buses
     :param f_nd_dc: Index of 'from' buses of non dispatchable DC links
     :param t_nd_dc: Index of 'to' buses of non dispatchable DC links
     :param fdc: Index of 'from' buses of dispatchable DC links
     :param tdc: Index of 'to' buses of dispatchable DC links
+    :param Pf_nondisp:
     :param k_m: Index of module controlled transformers
     :param k_tau: Index of phase controlled transformers
     :param Vm_max: Maximum bound for voltage
     :param Sg_undis: undispatchable complex power
     :param slack: Index of slack buses
-    :param use_bound_slacks: Determine if there will be bound slacks in the optimization model
-    :return: Vector with the value of each equality constraint G = [g1(x), ... gn(x)] s.t. gi(x) = 0. It also
-             returns the value of the power injections S
+    :param acopf_mode:
+    :return: Vector with the value of each equality constraint G = [g1(x), ... gn(x)] s.t. gi(x) = 0.
+             It also returns the value of the power injections S
     """
     M, N = Yf.shape
     Ng = len(ig)
@@ -494,7 +515,8 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
 
     va, vm, Pg_dis, Qg_dis, sl_sf, sl_st, sl_vmax, sl_vmin, slcap, _, _, Pfdc = x2var(x, nVa=N, nVm=N, nPg=Ng, nQg=Ng,
                                                                                       npq=npq, M=nll, ntapm=ntapm,
-                                                                                      ntapt=ntapt, ndc=ndc, nslcap=nslcap,
+                                                                                      ntapt=ntapt, ndc=ndc,
+                                                                                      nslcap=nslcap,
                                                                                       acopf_mode=acopf_mode)
 
     V = vm * np.exp(1j * va)
@@ -503,7 +525,7 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
     S_undispatch = Cg[:, nig] @ Sg_undis  # Fixed generation
     dS = S + Sd - S_dispatch - S_undispatch  # Nodal power balance
     if nslcap != 0:
-        dS[capacity_nodes_idx] -= slcap # Nodal capacity slack generator addition
+        dS[capacity_nodes_idx] -= slcap  # Nodal capacity slack generator addition
 
     for link in range(len(Pfdc)):
         dS[fdc[link]] += Pfdc[link]  # Variable DC links. Lossless model (Pdc_From = Pdc_To)
@@ -517,10 +539,11 @@ def eval_g(x: Vec, Ybus: csc_matrix, Yf: csc_matrix, Cg: csc_matrix, Sd: CxVec, 
     return gval, S
 
 
-def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, nslcap:int, pq: Vec, k_m: Vec, k_tau: Vec,
+def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, nslcap: int,
+           pq: Vec, k_m: Vec, k_tau: Vec,
            Vm_max: Vec, Vm_min: Vec, Pg_max: Vec, Pg_min: Vec, Qg_max: Vec, Qg_min: Vec, tapm_max: Vec,
            tapm_min: Vec, tapt_max: Vec, tapt_min: Vec, Pdcmax: Vec, rates: Vec, il: Vec, ig: Vec,
-           tanmax: Vec, ctQ: ReactivePowerControlMode, acopf_mode: AcOpfMode) -> Tuple[Vec, CxVec, CxVec]:
+           tanmax: Vec, ctQ: bool, acopf_mode: AcOpfMode) -> Tuple[Vec, CxVec, CxVec]:
     """
     Calculates the inequality constraints at the current state (given by x)
     :param x: State vector
@@ -528,15 +551,16 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
     :param Yt: To admittance matrix
     :param from_idx: Vector with the indices of the 'from' buses for each line
     :param to_idx: Vector with the indices of the 'from' buses for each line
+    :param nslcap:
     :param pq: Index of PQ buses
     :param k_m: Index of module controlled transformers
     :param k_tau: Index of phase controlles transformers
     :param Vm_max: upper bound for voltage module per bus
-    :param vm_min: lower bound for voltage module per bus
-    :param pg_max: upper bound for active power generation per generator
-    :param pg_min: lower bound for active power generation per generator
-    :param qg_max: upper bound for reactive power generation per generator
-    :param qg_min: lower bound for reactive power generation per generator
+    :param Vm_min: lower bound for voltage module per bus
+    :param Pg_max: upper bound for active power generation per generator
+    :param Pg_min: lower bound for active power generation per generator
+    :param Qg_max: upper bound for reactive power generation per generator
+    :param Qg_min: lower bound for reactive power generation per generator
     :param tapm_max: Upper bound for tap module per transformer
     :param tapm_min: Lower bound for tap module per transformer
     :param tapt_max: Upper bound for tap phase per transformer
@@ -547,8 +571,10 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
     :param ig: Index of dispatchable generators
     :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
     :param ctQ: Boolean indicating if limits to reactive power generation realted to active generation apply
-    :return: Vector with the value of each inequality constraint H = [h1(x), ... hn(x)] s.t. hi(x) <= 0 and the
-             calculated from and to branch powers.
+    :param acopf_mode: AcOpfMode
+    :return: Vector with the value of each inequality constraint
+             H = [h1(x), ... hn(x)] s.t. hi(x) <= 0
+             and the calculated from and to branch powers.
     """
 
     M, N = Yf.shape
@@ -610,7 +636,7 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
             tapt_min - tapt  # Tap phase lower bound
         ]
 
-    if ctQ != ReactivePowerControlMode.NoControl:
+    if ctQ:  # if reactive power control...
         hval = np.r_[hval, np.power(Qg, 2.0) - np.power(tanmax, 2.0) * np.power(Pg, 2.0)]
 
     if ndc != 0:
@@ -620,13 +646,12 @@ def eval_h(x: Vec, Yf: csc_matrix, Yt: csc_matrix, from_idx: Vec, to_idx: Vec, n
 
 
 def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc_matrix, Cf: csc, Ct: csc,
-                           Yf: csc_matrix, Yt: csc_matrix, Ybus: csc_matrix, Sbase: float, il: Vec, ig: Vec,
-                           slack: Vec, nslcap: int, nodal_capacity_sign: float, capacity_nodes_idx: IntVec, pq: Vec,
-                           pv: Vec, tanmax: Vec, alltapm: Vec, alltapt: Vec, fdc: Vec, tdc: Vec,
-                           k_m: Vec, k_tau: Vec, mu, lmbda, R: Vec, X: Vec, F: Vec, T: Vec,
-                           ctQ: ReactivePowerControlMode, acopf_mode: AcOpfMode, compute_jac: bool,
+                           Yf: csc_matrix, Yt: csc_matrix, Ybus: csc_matrix, Sbase: float, mon_br_idx: IntVec, ig: IntVec,
+                           slack: Vec, nslcap: int, nodal_capacity_sign: float, capacity_nodes_idx: IntVec, pq: IntVec,
+                           pv: IntVec, tanmax: Vec, alltapm: Vec, alltapt: Vec, F_hvdc: IntVec, T_hvdc: IntVec,
+                           k_m: IntVec, k_tau: IntVec, mu, lmbda, R: Vec, X: Vec, F: IntVec, T: IntVec,
+                           ctQ: bool, acopf_mode: AcOpfMode, compute_jac: bool,
                            compute_hess: bool) -> Tuple[Vec, csc, csc, csc, csc, csc, Vec]:
-
     """
     Calculates the jacobians and hessians of the objective function and the equality and inequality constraints
     at the current state given by x
@@ -642,16 +667,19 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
     :param Yt: To admittance matrix
     :param Ybus: Bus admittance matrix
     :param Sbase: Base power
-    :param il: Index of monitored lines
-    :param ig: Index of dispatchable generatora
+    :param mon_br_idx: Index of monitored branches
+    :param ig: Index of dispatchable generators
     :param slack: Index of slack buses
+    :param nslcap:
+    :param nodal_capacity_sign:
+    :param capacity_nodes_idx:
     :param pq: Index of PQ buses
     :param pv: Index of PV buses
     :param tanmax: Maximum value of tan(phi), where phi is the angle of the complex generation, for each generator
     :param alltapm: value of all the tap modules, including the non controlled ones
     :param alltapt: value of all the tap phases, including the non controlled ones
-    :param fdc: Index of the 'from' buses for the dispatchable DC links
-    :param tdc: Index of the 'to' buses for the dispatchable DC links
+    :param F_hvdc: Index of the 'from' buses for the dispatchable DC links
+    :param T_hvdc: Index of the 'to' buses for the dispatchable DC links
     :param k_m: Index of the module controlled transformers
     :param k_tau: Index of the phase controlled transformers
     :param mu: Vector of mu multipliers
@@ -661,20 +689,21 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
     :param F: Index of the 'form' bus for each line
     :param T: Index of the 'to' bus for each line
     :param ctQ: Boolean that indicates if the Reactive control applies
+    :param acopf_mode: AcOpfMode
     :param compute_jac: Boolean that indicates if the Jacobians have to be calculated
     :param compute_hess: Boolean that indicates if the Hessians have to be calculated
     :return: Jacobians and hessians matrices for the objective function and the equality and inequality constraints
     """
     Mm, N = Yf.shape
-    M = len(il)
+    M = len(mon_br_idx)
     Ng = len(ig)
     NV = len(x)
     ntapm = len(k_m)
     ntapt = len(k_tau)
-    ndc = len(fdc)
+    ndc = len(F_hvdc)
     npq = len(pq)
 
-    if ctQ != ReactivePowerControlMode.NoControl:
+    if ctQ:  # if reactive power control...
         nqct = Ng
     else:
         nqct = 0
@@ -775,7 +804,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
             Gvm[i, N + ss] = 1.
 
         (dSbusdm, dSfdm, dStdm,
-         dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, R, X)
+         dSbusdt, dSfdt, dStdt) = compute_branch_power_derivatives(alltapm, alltapt, V, k_m, k_tau, Cf, Ct, F, T, R, X)
 
         if ntapm > 0:
             Gtapm = dSbusdm.copy()
@@ -788,15 +817,15 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
             Gtapt = lil_matrix((N, ntapt), dtype=complex)
 
         GSpfdc = lil_matrix((N, ndc), dtype=complex)
-        for link in range(ndc):
-            GSpfdc[fdc, link] = 1
-            GSpfdc[tdc, link] = -1
+        for k_link in range(ndc):
+            GSpfdc[F_hvdc[k_link], k_link] = 1.0  # TODO: check that this is correct
+            GSpfdc[T_hvdc[k_link], k_link] = -1.0  # TODO: check that this is correct
 
         Gslack = lil_matrix((N, nsl), dtype=complex)
 
         Gslcap = lil_matrix((N, nslcap), dtype=complex)
 
-        if nslcap !=0:
+        if nslcap != 0:
             for idslcap, capbus in enumerate(capacity_nodes_idx):
                 Gslcap[capbus, idslcap] = -1
 
@@ -855,13 +884,13 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         """
         ts_hx = timeit.default_timer()
 
-        Vfmat = diags(Cf[il, :] @ V)
-        Vtmat = diags(Ct[il, :] @ V)
+        Vfmat = diags(Cf[mon_br_idx, :] @ V)
+        Vtmat = diags(Ct[mon_br_idx, :] @ V)
 
-        IfCJmat = np.conj(diags(Yf[il, :] @ V))
-        ItCJmat = np.conj(diags(Yt[il, :] @ V))
-        Sf = Vfmat @ np.conj(Yf[il, :] @ V)
-        St = Vtmat @ np.conj(Yt[il, :] @ V)
+        IfCJmat = np.conj(diags(Yf[mon_br_idx, :] @ V))
+        ItCJmat = np.conj(diags(Yt[mon_br_idx, :] @ V))
+        Sf = Vfmat @ np.conj(Yf[mon_br_idx, :] @ V)
+        St = Vtmat @ np.conj(Yt[mon_br_idx, :] @ V)
 
         allSf = diags(Cf @ V) @ np.conj(Yf @ V)
         allSt = diags(Ct @ V) @ np.conj(Yt @ V)
@@ -869,11 +898,11 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Sfmat = diags(Sf)
         Stmat = diags(St)
 
-        Sfvm = (IfCJmat @ Cf[il, :] @ E + Vfmat @ np.conj(Yf[il, :]) @ np.conj(E))
-        Stvm = (ItCJmat @ Ct[il, :] @ E + Vtmat @ np.conj(Yt[il, :]) @ np.conj(E))
+        Sfvm = (IfCJmat @ Cf[mon_br_idx, :] @ E + Vfmat @ np.conj(Yf[mon_br_idx, :]) @ np.conj(E))
+        Stvm = (ItCJmat @ Ct[mon_br_idx, :] @ E + Vtmat @ np.conj(Yt[mon_br_idx, :]) @ np.conj(E))
 
-        Sfva = (1j * (IfCJmat @ Cf[il, :] @ Vmat - Vfmat @ np.conj(Yf[il, :]) @ np.conj(Vmat)))
-        Stva = (1j * (ItCJmat @ Ct[il, :] @ Vmat - Vtmat @ np.conj(Yt[il, :]) @ np.conj(Vmat)))
+        Sfva = (1j * (IfCJmat @ Cf[mon_br_idx, :] @ Vmat - Vfmat @ np.conj(Yf[mon_br_idx, :]) @ np.conj(Vmat)))
+        Stva = (1j * (ItCJmat @ Ct[mon_br_idx, :] @ Vmat - Vtmat @ np.conj(Yt[mon_br_idx, :]) @ np.conj(Vmat)))
 
         Hpu = sp.hstack([lil_matrix((Ng, 2 * N)), diags(np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - Ng))])
         Hpl = sp.hstack([lil_matrix((Ng, 2 * N)), diags(- np.ones(Ng)), lil_matrix((Ng, NV - 2 * N - Ng))])
@@ -895,7 +924,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                                lil_matrix((M, 2 * npq + nslcap + ntapm + ntapt + ndc))])
 
             Hslvmax = sp.hstack([lil_matrix((npq, npfvar + 2 * M)), diags(- np.ones(npq)),
-                                 lil_matrix((npq,  npq + nslcap + ntapm + ntapt + ndc))])
+                                 lil_matrix((npq, npq + nslcap + ntapm + ntapt + ndc))])
 
             Hslvmin = sp.hstack([lil_matrix((npq, npfvar + 2 * M + npq)), diags(- np.ones(npq)),
                                  lil_matrix((npq, nslcap + ntapm + ntapt + ndc))])
@@ -910,10 +939,10 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
 
         if (ntapm + ntapt) != 0:
 
-            Sftapm = dSfdm[il, :].copy()
-            Sftapt = dSfdt[il, :].copy()
-            Sttapm = dStdm[il, :].copy()
-            Sttapt = dStdt[il, :].copy()
+            Sftapm = dSfdm[mon_br_idx, :].copy()
+            Sftapt = dSfdt[mon_br_idx, :].copy()
+            Sttapm = dStdm[mon_br_idx, :].copy()
+            Sttapt = dStdt[mon_br_idx, :].copy()
 
             SfX = sp.hstack([Sfva, Sfvm, lil_matrix((M, 2 * Ng + nsl + nslcap)), Sftapm, Sftapt, lil_matrix((M, ndc))])
             StX = sp.hstack([Stva, Stvm, lil_matrix((M, 2 * Ng + nsl + nslcap)), Sttapm, Sttapt, lil_matrix((M, ndc))])
@@ -966,7 +995,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                 HSf = 2 * (Sfmat.real @ SfX.real + Sfmat.imag @ SfX.imag)
                 HSt = 2 * (Stmat.real @ StX.real + Stmat.imag @ StX.imag)
 
-        if ctQ != ReactivePowerControlMode.NoControl:
+        if ctQ:  # if reactive power control...
             # tanmax curves (simplified capability curves of generators)
             Hqmaxp = - 2 * np.power(tanmax, 2) * Pg
             Hqmaxq = 2 * Qg
@@ -1023,7 +1052,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
                 np.zeros(2 * N),
                 2 * c2 * (Sbase * Sbase),
                 np.zeros(Ng + nsl + nslcap + ntapm + ntapt + ndc)
-                ]) * 1e-4).tocsc()
+            ]) * 1e-4).tocsc()
         else:
             fxx = csc((NV, NV))
 
@@ -1096,7 +1125,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
          GSdtdt, dSfdtdt, dStdtdt,
          GSdtdvm, dSfdtdvm, dStdtdvm,
          GSdtdva, dSfdtdva, dStdtdva) = compute_branch_power_second_derivatives(alltapm, alltapt, vm, va, k_m,
-                                                                                k_tau, il, Cf, Ct, R, X, F, T,
+                                                                                k_tau, mon_br_idx, R, X, F, T,
                                                                                 lmbda[0: 2 * N], mu[0: 2 * M],
                                                                                 allSf, allSt)
 
@@ -1150,7 +1179,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Smuf_mat = diags(Sfmat.conj() @ muf)
         Smut_mat = diags(Stmat.conj() @ mut)
 
-        Af = np.conj(Yf[il, :]).T @ Smuf_mat @ Cf[il, :]
+        Af = np.conj(Yf[mon_br_idx, :]).T @ Smuf_mat @ Cf[mon_br_idx, :]
         Bf = np.conj(Vmat) @ Af @ Vmat
         Df = diags(Af @ V) @ np.conj(Vmat)
         Ef = diags(Af.T @ np.conj(V)) @ Vmat
@@ -1160,7 +1189,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Sfvavm = Sfvmva.T
         Sfvmvm = vm_inv @ Ff @ vm_inv
 
-        if ctQ != ReactivePowerControlMode.NoControl:
+        if ctQ:  # using reactive power control
             Hqpgpg = diags(-2 * np.power(tanmax, 2) * mu[-Ng:])
             Hqqgqg = diags(np.array([2] * Ng) * mu[-Ng:])
         else:
@@ -1172,7 +1201,7 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         Hfvavm = 2 * (Sfvavm + Sfva.T @ muf_mat @ np.conj(Sfvm)).real
         Hfvmvm = 2 * (Sfvmvm + Sfvm.T @ muf_mat @ np.conj(Sfvm)).real
 
-        At = np.conj(Yt[il, :]).T @ Smut_mat @ Ct[il, :]
+        At = np.conj(Yt[mon_br_idx, :]).T @ Smut_mat @ Ct[mon_br_idx, :]
         Bt = np.conj(Vmat) @ At @ Vmat
         Dt = diags(At @ V) @ np.conj(Vmat)
         Et = diags(At.T @ np.conj(V)) @ Vmat
@@ -1256,12 +1285,11 @@ def jacobians_and_hessians(x: Vec, c1: Vec, c2: Vec, c_s: Vec, c_v: Vec, Cg: csc
         ts_hxx = 0
         te_hxx = 0
 
-
-    der_times= np.array([te_fx - ts_fx,
-                         te_gx - ts_gx,
-                         te_hx - ts_hx,
-                         te_fxx - ts_fxx,
-                         te_gxx - ts_gxx,
-                         te_hxx - ts_hxx])
+    der_times = np.array([te_fx - ts_fx,
+                          te_gx - ts_gx,
+                          te_hx - ts_hx,
+                          te_fxx - ts_fxx,
+                          te_gxx - ts_gxx,
+                          te_hxx - ts_hxx])
 
     return fx, Gx, Hx, fxx, Gxx, Hxx, der_times

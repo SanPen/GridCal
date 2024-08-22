@@ -18,6 +18,7 @@
 
 from typing import Dict, Any, Union
 import numpy as np
+from enum import Enum
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 
@@ -39,6 +40,8 @@ def check_type(dtype: PROFILE_TYPES, value: Any) -> bool:
         assert dtype == int or dtype == float
     elif tpe in [float, np.float32, np.float64]:
         assert dtype == float
+    elif issubclass(tpe, Enum):
+        assert tpe == dtype  # check that the enyum type is the same
     else:
         assert isinstance(dtype, DeviceType)
 
@@ -87,8 +90,12 @@ class SparseArray:
                 val2 = None
             else:
                 val2 = val
+        elif issubclass(self._dtype, Enum):
+            # if it is an Enum type, cast the value to the Enum
+            val2 = self._dtype(val)
         else:
             val2 = val
+
         check_type(dtype=self.dtype, value=val2)
         self._default_value = val2
 

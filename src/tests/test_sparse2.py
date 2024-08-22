@@ -14,13 +14,41 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 from time import time
 import numpy as np
 import numba as nb
 from scipy.sparse import csc_matrix, random, hstack, vstack
 from scipy.sparse import rand
 from scipy.sparse.linalg import spsolve as spsolve_scipy
-from GridCalEngine.Utils.Sparse.csc2 import (sp_slice, sp_slice_rows, csc_stack_2d_ff, scipy_to_mat, spsolve_csc, extend)
+from GridCalEngine.Utils.Sparse.csc2 import (sp_slice, sp_slice_rows, csc_stack_2d_ff, scipy_to_mat, spsolve_csc,
+                                             extend, CSC, csc_multiply_ff)
+
+
+def get_scipy_random_matrix(m: int | None = None, n: int | None = None) -> csc_matrix:
+    """
+
+    :param m: number or rows (if None, random)
+    :param n: number or cols (if None, random)
+    :return:
+    """
+    if m is None:
+        m = np.random.randint(1, 1000)
+
+    if n is None:
+        n = np.random.randint(1, 1000)
+
+    return rand(m, n, density=0.25, format="csc", random_state=42)
+
+
+def get_csc_random_matrix(m: int | None = None, n: int | None = None) -> CSC:
+    """
+
+    :param m: number or rows (if None, random)
+    :param n: number or cols (if None, random)
+    :return:
+    """
+    return scipy_to_mat(get_scipy_random_matrix(m, n))
 
 
 def test_sp_slice():
@@ -103,8 +131,7 @@ def test_spsolve() -> None:
             ok_a = not np.isnan(a).any()
 
             try:
-                b = spsolve_csc(scipy_to_mat(matrix), rhs)
-                ok_b = True
+                b, ok_b = spsolve_csc(scipy_to_mat(matrix), rhs)
 
                 assert ok_a == ok_b
                 if ok_a and ok_b:
@@ -135,3 +162,24 @@ def test_extend():
         B = extend(scipy_to_mat(matrix), last_col, last_row, val)
 
         assert np.allclose(A.todense(), B.todense())
+
+
+# def test_mat_mat_mult():
+#     for i in range(100):
+#         m = np.random.randint(1, 1000)
+#         n = np.random.randint(1, 1000)
+#         o = np.random.randint(1, 1000)
+#
+#         A1 = get_scipy_random_matrix(m, n)
+#         B1 = get_scipy_random_matrix(n, o)
+#         C1 = A1 @ B1
+#
+#         A2 = get_csc_random_matrix(m, n)
+#         B2 = get_csc_random_matrix(n, o)
+#         C2 = A2 @ B2
+#
+#         assert np.allclose(C1.toarray(), C2.toarray())
+#
+#
+# def test_mat_vec_mult():
+#     pass

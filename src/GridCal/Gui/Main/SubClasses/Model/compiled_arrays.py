@@ -18,9 +18,11 @@ import numpy as np
 from PySide6 import QtCore
 from matplotlib import pyplot as plt
 
-from GridCalEngine.enumerations import EngineType
 from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.Main.SubClasses.Server.server import ServerMain
+import GridCal.Gui.GuiFunctions as gf
+
+from GridCalEngine.enumerations import EngineType
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
@@ -50,24 +52,37 @@ class CompiledArraysMain(ServerMain):
         self.ui.copyArraysButton.clicked.connect(self.copy_simulation_objects_data)
         self.ui.copyArraysToNumpyButton.clicked.connect(self.copy_simulation_objects_data_to_numpy)
 
-        # list clicks
-        self.ui.simulationDataStructuresListView.clicked.connect(self.view_simulation_objects_data)
+        # tree clicks
+        self.ui.simulationDataStructuresTreeView.clicked.connect(self.view_simulation_objects_data)
 
-    def view_simulation_objects_data(self):
+    def view_simulation_objects_data(self, index):
         """
         Simulation data structure clicked
         """
 
-        i = self.ui.simulation_data_island_comboBox.currentIndex()
+        tree_mdl = self.ui.simulationDataStructuresTreeView.model()
+        item = tree_mdl.itemFromIndex(index)
+        path = gf.get_tree_item_path(item)
 
-        if i > -1 and self.circuit.valid_for_simulation():
-            elm_type = self.ui.simulationDataStructuresListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
+        if len(path) == 2:
+            group_name = path[0]
+            elm_type = path[1]
 
-            df = self.calculation_inputs_to_display[i].get_structure(elm_type)
+            island_idx = self.ui.simulation_data_island_comboBox.currentIndex()
 
-            mdl = PandasModel(df)
+            if island_idx > -1 and self.circuit.valid_for_simulation():
+                # elm_type = self.ui.simulationDataStructuresTreeView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-            self.ui.simulationDataStructureTableView.setModel(mdl)
+                df = self.calculation_inputs_to_display[island_idx].get_structure(elm_type)
+
+                mdl = PandasModel(df)
+
+                self.ui.simulationDataStructureTableView.setModel(mdl)
+
+            else:
+                self.ui.simulationDataStructureTableView.setModel(None)
+        else:
+            self.ui.simulationDataStructureTableView.setModel(None)
 
     def copy_simulation_objects_data(self):
         """

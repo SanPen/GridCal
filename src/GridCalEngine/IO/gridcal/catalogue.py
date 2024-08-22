@@ -16,7 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import List, Tuple
 import pandas as pd
-from GridCalEngine.Devices.Branches import TransformerType, SequenceLineType, UndergroundLineType, Wire
+from GridCalEngine.Devices.Branches.transformer_type import TransformerType
+from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
+from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLineType
+from GridCalEngine.Devices.Branches.wire import Wire
 from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import DeviceType

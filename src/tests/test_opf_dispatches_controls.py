@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 from GridCalEngine.api import *
-from GridCalEngine.enumerations import HvdcControlType, TransformerControlType, TapAngleControl
+from GridCalEngine.enumerations import HvdcControlType, TapModuleControl, TapPhaseControl
 
 
 def test_opf_hvdc():
@@ -26,7 +26,7 @@ def test_opf_hvdc():
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
                                           verbose=0,
-                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_q=False,
                                           retry_with_other_methods=False)
 
     opf_options = OptimalPowerFlowOptions(verbose=0,
@@ -66,7 +66,7 @@ def test_opf_gen():
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
                                           verbose=0,
-                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_q=False,
                                           retry_with_other_methods=False)
 
     opf_options = OptimalPowerFlowOptions(verbose=0,
@@ -108,7 +108,7 @@ def test_opf_line_monitoring():
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
                                           verbose=0,
-                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_q=False,
                                           retry_with_other_methods=False)
 
     opf_options = OptimalPowerFlowOptions(verbose=0,
@@ -152,7 +152,7 @@ def test_opf_hvdc_controls():
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
                                           verbose=0,
-                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_q=False,
                                           retry_with_other_methods=False)
 
     opf_options = OptimalPowerFlowOptions(verbose=0,
@@ -198,7 +198,7 @@ def test_opf_trafo_controls():
 
     power_flow_options = PowerFlowOptions(SolverType.NR,
                                           verbose=0,
-                                          control_q=ReactivePowerControlMode.NoControl,
+                                          control_q=False,
                                           retry_with_other_methods=False)
 
     opf_options = OptimalPowerFlowOptions(verbose=0,
@@ -208,22 +208,22 @@ def test_opf_trafo_controls():
                                           generate_report=True)
 
     # trafo fixed
-    main_circuit.transformers2w[0].control_mode = TransformerControlType.fixed
+    main_circuit.transformers2w[0].tap_phase_control_mode = TapPhaseControl.fixed
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf1 = opf.results.Sf[48]
 
     # trafo controlling
-    main_circuit.transformers2w[0].control_mode = TransformerControlType.Pf
-    main_circuit.transformers2w[0].tap_angle_control_mode = TapAngleControl.Pf
+    main_circuit.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pf
+    main_circuit.transformers2w[0].tap_phase_control_mode = TapPhaseControl.Pf
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()
     pf2 = opf.results.Sf[48]
 
     # trafo back to fixed
-    main_circuit.transformers2w[0].control_mode = TransformerControlType.fixed
+    main_circuit.transformers2w[0].tap_phase_control_mode = TapPhaseControl.fixed
     opf = OptimalPowerFlowDriver(grid=main_circuit,
                                  options=opf_options)
     opf.run()

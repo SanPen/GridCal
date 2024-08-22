@@ -267,10 +267,9 @@ class Bus(EditableDevice):
 
         return BusMode.PQ_tpe
 
-    def get_voltage_guess(self, logger=None, use_stored_guess=False):
+    def get_voltage_guess(self, use_stored_guess=False) -> complex:
         """
         Determine the voltage initial guess
-        :param logger: Logger object
         :param use_stored_guess: use the stored guess or get one from the devices
         :return: voltage guess
         """
