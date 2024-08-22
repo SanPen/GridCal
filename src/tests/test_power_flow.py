@@ -210,6 +210,51 @@ def test_controllable_shunt() -> None:
     assert np.allclose(Vm_test, Vm, atol=1e-3)
 
 
+def test_voltage_local_control_with_generation() -> None:
+    """
+    Check that a generator can perform remote voltage regulation
+    """
+    fname = os.path.join('data', 'grids', 'RAW', 'IEEE 14 bus.raw')
+
+    grid = gce.open_file(fname)
+
+    # control local bus with generator 4
+    gen = grid.generators[4]
+    gen.is_controlled = True
+    bus_dict = grid.get_bus_index_dict()
+    bus_i = bus_dict[gen.bus]
+
+    # run power flow with the local voltage control enabled
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
+                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
+
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+        vm = np.abs(results.voltage)
+
+        assert results.converged
+        assert np.isclose(vm[bus_i], gen.Vset, atol=options.tolerance)
+
+    # run power flow with the local voltage control disabled
+    gen.is_controlled = False
+    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
+                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
+        options = PowerFlowOptions(solver_type,
+                                   verbose=0,
+                                   control_q=False,
+                                   retry_with_other_methods=False)
+
+        results = gce.power_flow(grid, options)
+        vm = np.abs(results.voltage)
+
+        assert results.converged
+        assert not np.isclose(vm[bus_i], gen.Vset, atol=options.tolerance)
+
+
 def test_voltage_remote_control_with_generation() -> None:
     """
     Check that a generator can perform remote voltage regulation
