@@ -227,7 +227,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
                  This means that [0, 1, 2, 3, 4] are represented by the topology of 0
                  and that [5, 6, 7, 8] are represented by the topology of 5
         """
-
+        abc = self.grid.get_branch_active_time_array()
         return tp.find_different_states(
             states_array=self.grid.get_branch_active_time_array()[self.time_indices]
         )

@@ -17,7 +17,6 @@
 
 import numpy as np
 
-from GridCalEngine.IO.file_handler import FileSave
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices import Bus
 from GridCalEngine.Devices import Generator
@@ -25,11 +24,9 @@ from GridCalEngine.Devices import Load
 from GridCalEngine.Devices import Line
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
-from tests.print_power_flow_results import print_power_flow_results
-from tests.conftest import ROOT_PATH
 
 
-def test_demo_5_node(root_path=ROOT_PATH):
+def test_demo_5_node():
 
     grid = MultiCircuit()
 
@@ -73,11 +70,8 @@ def test_demo_5_node(root_path=ROOT_PATH):
     power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
-    print_power_flow_results(power_flow=power_flow)
     v = np.array([1., 0.9553, 0.9548, 0.9334, 0.9534])
     all_ok = np.isclose(np.abs(power_flow.results.voltage), v, atol=1e-3)
     return all_ok
 
 
-if __name__ == '__main__':
-    test_demo_5_node(root_path=ROOT_PATH)

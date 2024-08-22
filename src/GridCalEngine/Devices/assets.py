@@ -3304,7 +3304,7 @@ class Assets:
 
     def get_investments_by_groups(self) -> List[Tuple[dev.InvestmentsGroup, List[dev.Investment]]]:
         """
-        Get a dictionary of investments goups and their
+        Get a dictionary of investments groups and their
         :return: list of investment groups and their list of associated investments
         """
         d = {e: list() for e in self._investments_groups}

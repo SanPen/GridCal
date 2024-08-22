@@ -94,7 +94,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
 
     # return NumericPowerFlowResults(V, True, norm_f, Scalc, None, None, None, None, None, None, 1, elapsed)
     return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=1, elapsed=elapsed)
 
@@ -148,7 +148,7 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
             V = V0
             # Calculate the error and check the convergence
             Scalc = cf.compute_power(Ybus, V)
-            mismatch = cf.compute_fx(Scalc=Scalc, Sbus=S0, pvpq=pvpq, pq=pq)
+            mismatch = cf.compute_fx(Scalc=Scalc, Sbus=S0, idx_dP=pvpq, idx_dQ=pq)
             norm_f = cf.compute_fx_error(mismatch)
 
             # check for convergence
@@ -157,7 +157,7 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
             # return NumericPowerFlowResults(V, False, norm_f, Scalc,
             #                                None, None, None, None, None, None, 1, elapsed)
             return NumericPowerFlowResults(V=V, converged=False, norm_f=norm_f,
-                                           Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                           Scalc=Scalc, m=None, tau=None, Beq=None,
                                            Ybus=None, Yf=None, Yt=None,
                                            iterations=1, elapsed=elapsed)
 
@@ -189,7 +189,7 @@ def lacpf(Ybus, Ys, S0: CxVec, I0: CxVec, V0: CxVec, pq: IntVec, pv: IntVec) -> 
     # return NumericPowerFlowResults(V, True, norm_f, Scalc,
     #                                None, None, None, None, None, None, 1, elapsed)
     return NumericPowerFlowResults(V=V, converged=True, norm_f=norm_f,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=1, elapsed=elapsed)
 

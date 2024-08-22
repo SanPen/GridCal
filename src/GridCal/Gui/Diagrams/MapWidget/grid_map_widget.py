@@ -763,24 +763,16 @@ class GridMapWidget(BaseDiagramWidget):
         for idtag, graphic_object in dev_dict.items():
             graphic_object.sort_voltage_levels()
 
-    def add_object_to_the_schematic(
-            self,
-            elm: ALL_DEV_TYPES,
-            injections_by_bus: Union[None, Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]] = None,
-            injections_by_fluid_node: Union[None, Dict[FluidNode, Dict[DeviceType, List[FLUID_TYPES]]]] = None,
-            injections_by_cn: Union[None, Dict[Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]] = None,
-            logger: Logger = Logger()):
+    def add_object_to_the_schematic(self, elm: ALL_DEV_TYPES, logger: Logger = Logger()):
         """
 
         :param elm:
-        :param injections_by_bus:
-        :param injections_by_fluid_node:
-        :param injections_by_cn:
         :param logger:
         :return:
         """
+        graphic_obj = self.graphics_manager.query(elm=elm)
 
-        if self.graphics_manager.query(elm=elm) is None:
+        if graphic_obj is None:
 
             if isinstance(elm, Substation):
                 self.add_api_substation(api_object=elm,
@@ -808,31 +800,35 @@ class GridMapWidget(BaseDiagramWidget):
                                             lon=substation_graphics.lon,
                                             lat=substation_graphics.lat)
 
-            elif isinstance(elm, FluidNode):
-
-                if injections_by_fluid_node is None:
-                    injections_by_fluid_node = self.circuit.get_injection_devices_grouped_by_fluid_node()
-
-                # TODO: maybe new thing?
-                self.add_api_fluid_node(node=elm,
-                                        injections_by_tpe=injections_by_fluid_node.get(elm, dict()))
-
             elif isinstance(elm, Line):
-                self.add_api_line(elm)
+                line_container = self.add_api_line(elm)
+                for segment in line_container.segments_list:
+                    self.add_to_scene(graphic_object=segment)
 
             elif isinstance(elm, DcLine):
-                self.add_api_dc_line(elm)
+                line_container = self.add_api_dc_line(elm)
+                for segment in line_container.segments_list:
+                    self.add_to_scene(graphic_object=segment)
 
             elif isinstance(elm, HvdcLine):
-                self.add_api_hvdc_line(elm)
+                line_container = self.add_api_hvdc_line(elm)
+                for segment in line_container.segments_list:
+                    self.add_to_scene(graphic_object=segment)
 
             elif isinstance(elm, FluidPath):
-                self.add_api_fluid_path(elm)
+                line_container = self.add_api_fluid_path(elm)
+                for segment in line_container.segments_list:
+                    self.add_to_scene(graphic_object=segment)
 
             else:
-                pass
+                logger.add_warning("Unsupported device class",
+                                   device_class=elm.device_type.value,
+                                   device=elm.name)
 
         else:
+
+            self.add_to_scene(graphic_obj)
+
             logger.add_warning("Device already added", device_class=elm.device_type.value, device=elm.name)
 
     def dropEvent(self, event: QDropEvent):
@@ -853,7 +849,6 @@ class GridMapWidget(BaseDiagramWidget):
             # print(f"Dropped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
 
             if obj_type == self.library_model.get_substation_mime_data():
-
                 api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}",
                                         latitude=lat,
                                         longitude=lon)

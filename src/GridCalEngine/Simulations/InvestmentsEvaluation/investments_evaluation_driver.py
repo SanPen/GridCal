@@ -624,6 +624,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
 
         # optimize
         X, obj_values = NSGA_2(
+            grid=self.grid,
             obj_func=self.objective_function,
             n_obj=len(ret),
             max_evals=self.options.max_eval,  # termination
@@ -633,7 +634,16 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
             # eta=30,
         )
 
-        self.results.set_best_combination(combination=X[:, 0])
+        res_x = []
+        for i, v in enumerate(X):
+            if isinstance(v, dict):
+                vall = list(v.values())[0]
+                res_x.append(vall)
+            else:
+                res_x.append(v)
+
+        self.results.set_best_combination(combination=np.array(res_x))
+        # self.results.set_best_combination(combination=X[:, 0])
 
         self.results.trim()
 

@@ -22,31 +22,58 @@ from typing import List, Tuple
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import ConverterControlType, BuildStatus
-from GridCalEngine.Devices.Parents.branch_parent import BranchParent
+from GridCalEngine.enumerations import BuildStatus, TapModuleControl, TapPhaseControl
+from GridCalEngine.Devices.Parents.controllable_branch_parent import ControllableBranchParent
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 
 
-class VSC(BranchParent):
+class VSC(ControllableBranchParent):
 
     def __init__(self,
-                 bus_from: Bus = None, bus_to: Bus = None,
+                 bus_from: Bus = None,
+                 bus_to: Bus = None,
                  cn_from: ConnectivityNode = None,
                  cn_to: ConnectivityNode = None,
-                 name='VSC', idtag=None, code='', active=True,
-                 r=0.0001, x=0.05,
-                 tap_module=1.0, tap_module_max=1.1, tap_module_min=0.8,
-                 tap_phase=0.1, tap_phase_max=6.28, tap_phase_min=-6.28,
-                 Beq=0.001, Beq_min=-0.1, Beq_max=0.1,
-                 G0sw=1e-5, rate=1e-9, kdp=-0.05, k=1.0,
-                 control_mode: ConverterControlType = ConverterControlType.type_0_free,
-                 Pfset=0.0, Qfset=0.0, Vac_set=1.0, Vdc_set=1.0,
-                 alpha1=0.0001, alpha2=0.015, alpha3=0.2,
-                 mttf=0, mttr=0, cost=100, contingency_factor=1.0,
+                 name='VSC',
+                 idtag=None,
+                 code='',
+                 active=True,
+                 r=0.0001,
+                 x=0.05,
+                 tap_module=1.0,
+                 tap_module_max=1.1,
+                 tap_module_min=0.8,
+                 tap_phase=0.1,
+                 tap_phase_max=6.28,
+                 tap_phase_min=-6.28,
+                 Beq=0.001,
+                 Beq_min=-0.1,
+                 Beq_max=0.1,
+                 G0sw=1e-5,
+                 rate=1e-9,
+                 kdp=-0.05,
+                 k=1.0,
+                 alpha1=0.0001,
+                 alpha2=0.015,
+                 alpha3=0.2,
+                 mttf=0.0,
+                 mttr=0.0,
+                 tap_module_control_mode: TapModuleControl = TapModuleControl.fixed,
+                 tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed,
+                 vset: float = 1.0,
+                 Pset: float = 0.0,
+                 Qset: float = 0.0,
+                 cost=100,
+                 contingency_factor=1.0,
                  protection_rating_factor: float = 1.4,
-                 contingency_enabled=True, monitor_loading=True,
-                 r0=0.0001, x0=0.05, r2=0.0001, x2=0.05,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
+                 contingency_enabled=True,
+                 monitor_loading=True,
+                 r0=0.0001,
+                 x0=0.05,
+                 r2=0.0001,
+                 x2=0.05,
+                 capex=0,
+                 opex=0, build_status: BuildStatus = BuildStatus.Commissioned):
         """
         Voltage source converter (VSC)
         :param bus_from:
@@ -70,11 +97,6 @@ class VSC(BranchParent):
         :param rate:
         :param kdp:
         :param k:
-        :param control_mode:
-        :param Pfset:
-        :param Qfset:
-        :param Vac_set:
-        :param Vdc_set:
         :param alpha1:
         :param alpha2:
         :param alpha3:
@@ -93,27 +115,58 @@ class VSC(BranchParent):
         :param build_status:
         """
 
-        BranchParent.__init__(self,
-                              name=name,
-                              idtag=idtag,
-                              code=code,
-                              bus_from=bus_from,
-                              bus_to=bus_to,
-                              cn_from=cn_from,
-                              cn_to=cn_to,
-                              active=active,
-                              rate=rate,
-                              contingency_factor=contingency_factor,
-                              protection_rating_factor=protection_rating_factor,
-                              contingency_enabled=contingency_enabled,
-                              monitor_loading=monitor_loading,
-                              mttf=mttf,
-                              mttr=mttr,
-                              build_status=build_status,
-                              capex=capex,
-                              opex=opex,
-                              Cost=cost,
-                              device_type=DeviceType.VscDevice)
+        ControllableBranchParent.__init__(self,
+                                          name=name,
+                                          idtag=idtag,
+                                          code=code,
+                                          bus_from=bus_from,
+                                          bus_to=bus_to,
+                                          cn_from=cn_from,
+                                          cn_to=cn_to,
+                                          active=active,
+                                          rate=rate,
+                                          r=r,
+                                          x=x,
+                                          g=0.0,
+                                          b=0.0,
+                                          tap_module=tap_module,
+                                          tap_module_max=tap_module_max,
+                                          tap_module_min=tap_module_min,
+                                          tap_phase=tap_phase,
+                                          tap_phase_max=tap_phase_max,
+                                          tap_phase_min=tap_phase_min,
+                                          tolerance=0.0,
+                                          Cost=cost,
+                                          mttf=mttf,
+                                          mttr=mttr,
+                                          vset=vset,
+                                          Pset=Pset,
+                                          Qset=Qset,
+                                          regulation_branch=None,
+                                          regulation_bus=None,
+                                          regulation_cn=None,
+                                          temp_base=20.0,
+                                          temp_oper=20.0,
+                                          alpha=0.00330,
+                                          # control_mode=control_mode,
+                                          tap_module_control_mode=tap_module_control_mode,
+                                          tap_phase_control_mode=tap_phase_control_mode,
+                                          contingency_factor=contingency_factor,
+                                          protection_rating_factor=protection_rating_factor,
+                                          contingency_enabled=contingency_enabled,
+                                          monitor_loading=monitor_loading,
+                                          r0=r0,
+                                          x0=x0,
+                                          g0=0.0,
+                                          b0=0.0,
+                                          r2=r2,
+                                          x2=x2,
+                                          g2=0.0,
+                                          b2=0.0,
+                                          capex=capex,
+                                          opex=opex,
+                                          build_status=build_status,
+                                          device_type=DeviceType.VscDevice)
 
         # the VSC must only connect from an DC to a AC bus
         # this connectivity sense is done to keep track with the articles that set it
@@ -137,19 +190,6 @@ class VSC(BranchParent):
             self.bus_from = None
             self.bus_to = None
 
-        # List of measurements
-        self.measurements = list()
-
-        # total impedance and admittance in p.u.
-        self.R = r
-        self.X = x
-
-        self.R0 = r0
-        self.X0 = x0
-
-        self.R2 = r2
-        self.X2 = x2
-
         self.G0sw = G0sw
         self.Beq = Beq
         self.tap_module = tap_module
@@ -163,66 +203,26 @@ class VSC(BranchParent):
         self.Beq_min = Beq_min
         self.Beq_max = Beq_max
 
-        self.Pdc_set = Pfset
-        self.Qac_set = Qfset
-        self.Vac_set = Vac_set
-        self.Vdc_set = Vdc_set
-        self.control_mode = control_mode
-
         self.kdp = kdp
         self.alpha1 = alpha1
         self.alpha2 = alpha2
         self.alpha3 = alpha3
-
-        self.register(key='R', units='p.u.', tpe=float, definition='Resistive positive sequence losses.',
-                      old_names=['R1'])
-        self.register(key='X', units='p.u.', tpe=float, definition='Magnetic positive sequence losses.',
-                      old_names=['X1'])
-        self.register(key='R0', units='p.u.', tpe=float, definition='Resistive zero sequence losses.')
-        self.register(key='X0', units='p.u.', tpe=float, definition='Magnetic zero sequence losses.')
-        self.register(key='R2', units='p.u.', tpe=float, definition='Resistive negative sequence losses.')
-        self.register(key='X2', units='p.u.', tpe=float, definition='Magnetic negative sequence losses.')
 
         self.register(key='G0sw', units='p.u.', tpe=float, definition='Inverter losses.')
         self.register(key='Beq', units='p.u.', tpe=float, definition='Total shunt susceptance.')
         self.register(key='Beq_max', units='p.u.', tpe=float, definition='Max total shunt susceptance.')
         self.register(key='Beq_min', units='p.u.', tpe=float, definition='Min total shunt susceptance.')
 
-        self.register(key='tap_module', units='', tpe=float, definition='Tap changer module, it a value close to 1.0',
-                      old_names=['m'])
-        self.register(key='tap_module_max', units='', tpe=float, definition='Max tap changer module',
-                      old_names=['m_max'])
-        self.register(key='tap_module_min', units='', tpe=float, definition='Min tap changer module',
-                      old_names=['m_min'])
-
-        self.register(key='tap_phase', units='rad', tpe=float, definition='Converter firing angle.',
-                      old_names=['theta'])
-        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max converter firing angle.',
-                      old_names=['theta_max'])
-        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min converter firing angle.',
-                      old_names=['theta_min'])
-
         self.register(key='alpha1', units='', tpe=float,
-                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+                      definition='Losses constant parameter (IEC 62751-2 loss Correction).')
         self.register(key='alpha2', units='', tpe=float,
-                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
+                      definition='Losses linear parameter (IEC 62751-2 loss Correction).')
         self.register(key='alpha3', units='', tpe=float,
-                      definition='Converter losses curve parameter (IEC 62751-2 loss Correction).')
-        self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
-        self.register(key='control_mode', units='', tpe=ConverterControlType, definition='Converter control mode')
-        self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
-        self.register(key='Pdc_set', units='MW', tpe=float, definition='DC power set point.')
-        self.register(key='Qac_set', units='MVAr', tpe=float, definition='AC Reactive power set point.')
-        self.register(key='Vac_set', units='p.u.', tpe=float, definition='AC voltage set point.')
-        self.register(key='Vdc_set', units='p.u.', tpe=float, definition='DC voltage set point.')
+                      definition='Losses quadratic parameter (IEC 62751-2 loss Correction).')
 
-    def get_weight(self):
-        """
-        Get a weight of this line for graph porpuses
-        the weight is the impedance moudule (sqrt(r^2 + x^2))
-        :return: weight value
-        """
-        return np.sqrt(self.R * self.R + self.X * self.X)
+        self.register(key='k', units='p.u./p.u.', tpe=float, definition='Converter factor, typically 0.866.')
+
+        self.register(key='kdp', units='p.u./p.u.', tpe=float, definition='Droop Power/Voltage slope.')
 
     def change_base(self, Sbase_old: float, Sbase_new: float):
         """
@@ -230,10 +230,8 @@ class VSC(BranchParent):
         :param Sbase_old: old base (MVA)
         :param Sbase_new: new base (MVA)
         """
+        super().change_base(Sbase_old, Sbase_new)
         b = Sbase_new / Sbase_old
-
-        self.R *= b
-        self.X *= b
         self.G0sw *= b
         self.Beq *= b
 
@@ -302,3 +300,5 @@ class VSC(BranchParent):
 
         if show_fig:
             plt.show()
+
+

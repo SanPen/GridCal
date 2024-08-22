@@ -20,10 +20,9 @@ import scipy
 import numpy as np
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
 from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobianVc, CSC
+from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobianVc, CSC
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
@@ -70,8 +69,7 @@ def mu(Ybus, J: CSC, incS: Vec, dV: CxVec, dx: Vec, block1_idx: IntVec, block2_i
 
 
 def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=15,
-              control_q=ReactivePowerControlMode.NoControl, robust=False,
-              logger: Logger = None) -> NumericPowerFlowResults:
+              control_q=False, robust=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow using a full Newton's method with the Iwamoto optimal step factor.
     :param Ybus: Admittance matrix
@@ -87,8 +85,9 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
     :param Qmax: Array of nodal maximum reactive power injections
     :param tol: Tolerance
     :param max_it: Maximum number of iterations
-    :param control_q: ReactivePowerControlMode
+    :param control_q: Control reactive power?
     :param robust: use of the Iwamoto optimal step factor?.
+    :param logger: Logger
     :return: Voltage solution, converged?, error, calculated power Injections
     """
     start = time.time()
@@ -133,15 +132,15 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
 
             # compute update step
             try:
-                dx = spsolve_csc(J, f)
+                dx, ok = spsolve_csc(J, f)
 
-                if np.isnan(dx).any():
+                if not ok:
                     end = time.time()
                     elapsed = end - start
                     logger.add_error('NR Singular matrix @iter:'.format(iter_))
 
                     return NumericPowerFlowResults(V=V0, converged=converged, norm_f=norm_f,
-                                                   Scalc=S0, ma=None, theta=None, Beq=None,
+                                                   Scalc=S0, m=None, tau=None, Beq=None,
                                                    Ybus=None, Yf=None, Yt=None,
                                                    iterations=iter_, elapsed=elapsed)
 
@@ -152,7 +151,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
                 end = time.time()
                 elapsed = end - start
                 return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                               Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                               Scalc=Scalc, m=None, tau=None, Beq=None,
                                                Ybus=None, Yf=None, Yt=None,
                                                iterations=iter_, elapsed=elapsed)
 
@@ -189,7 +188,7 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and norm_f < 1e-2 and (len(pv) + len(p)) > 0:
+            if control_q and norm_f < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
@@ -225,6 +224,6 @@ def IwamotoNR(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc, None, None, None, None, None, None, iter_, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)

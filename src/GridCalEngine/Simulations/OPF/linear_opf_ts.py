@@ -40,7 +40,7 @@ from GridCalEngine.DataStructures.fluid_pump_data import FluidPumpData
 from GridCalEngine.DataStructures.fluid_p2x_data import FluidP2XData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
-from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, ZonalGrouping, MIPSolvers
+from GridCalEngine.enumerations import HvdcControlType, ZonalGrouping, MIPSolvers, TapPhaseControl
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import (LinearAnalysis, LinearMultiContingency,
                                                                      LinearMultiContingencies)
 
@@ -1115,7 +1115,7 @@ def add_linear_branches_formulation(t: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.control_mode[m] == TransformerControlType.Pf:
+            if branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
 
                 # add angle
                 branch_vars.tap_angles[t, m] = prob.add_var(lb=branch_data_t.tap_angle_min[m],

@@ -24,7 +24,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
-from GridCalEngine.enumerations import ReactivePowerControlMode, AcOpfMode
+from GridCalEngine.enumerations import AcOpfMode
 from typing import Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_derivatives import (x2var, var2x, eval_f,
@@ -252,9 +252,9 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
                        rates=rates, il=il, ig=ig, tanmax=tanmax, ctQ=ctQ, acopf_mode=acopf_mode)
 
     fx, Gx, Hx, fxx, Gxx, Hxx = jacobians_and_hessians(x=x, c1=c1, c2=c2, c_s=c_s, c_v=c_v, Cg=Cg, Cf=Cf, Ct=Ct, Yf=Yf,
-                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, il=il, ig=ig, slack=slack, pq=pq,
-                                                       pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, fdc=fdc,
-                                                       tdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
+                                                       Yt=Yt, Ybus=Ybus, Sbase=Sbase, mon_br_idx=il, ig=ig, slack=slack, pq=pq,
+                                                       pv=pv, tanmax=tanmax, alltapm=alltapm, alltapt=alltapt, F_hvdc=fdc,
+                                                       T_hvdc=tdc, k_m=k_m, k_tau=k_tau, mu=mu, lmbda=lmbda, R=R, X=X,
                                                        F=from_idx, T=to_idx, ctQ=ctQ, acopf_mode=acopf_mode,
                                                        compute_jac=compute_jac, compute_hess=compute_hess)
 
@@ -577,7 +577,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Number of inequalities: Line ratings, max and min angle of buses, voltage module range and
 
-    if pf_options.control_Q == ReactivePowerControlMode.NoControl:
+    if not pf_options.control_Q:
         NI = 2 * n_br_mon + 2 * npq + 4 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl  # No Reactive constraint (power curve)
     else:
         NI = 2 * n_br_mon + 2 * npq + 5 * n_gen_disp + 2 * ntapm + 2 * ntapt + 2 * n_disp_hvdc + nsl

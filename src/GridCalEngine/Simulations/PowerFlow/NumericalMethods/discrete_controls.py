@@ -354,7 +354,9 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
 
 @nb.njit(cache=True)
-def control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax):
+def control_q_inside_method(Scalc: CxVec, S0: CxVec,
+                            pv: IntVec, pq: IntVec, pqv: IntVec, p: IntVec,
+                            Qmin: Vec, Qmax: Vec):
     """
     Control of reactive power within the numerical method
     :param Scalc: Calculated power array (changed inside)
