@@ -86,7 +86,7 @@ class TransformerType(EditableDevice):
         self.register(key='Pfe', units='kW', tpe=float, definition='Iron losses')
         self.register(key='I0', units='%', tpe=float, definition='No-load current')
         self.register(key='Vsc', units='%', tpe=float, definition='Short-circuit voltage')
-        self.register(key='tap_mod',units='pu', tpe=float,definition='Tap module')
+        self.register(key='tap_mod', units='pu', tpe=float, definition='Tap module')
         self.register(key='tap_mod_max', units='pu', tpe=float, definition='Maximum tap module value')
         self.register(key='tap_mod_min', units='pu', tpe=float, definition='Minimum tap module value')
 
