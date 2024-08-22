@@ -887,7 +887,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding1.X0 = x0
                     gcdev_elm.winding1.G0 = g0
                     gcdev_elm.winding1.B0 = b0
-                    gcdev_elm.winding1.rate = windings[0].ratedS
+                    gcdev_elm.winding1.rate = float(windings[0].ratedS)
                     gcdev_elm.winding1.cn_from = cn_1
                     gcdev_elm.winding1.cn_to = cn_2
 
@@ -900,7 +900,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding2.X0 = x0
                     gcdev_elm.winding2.G0 = g0
                     gcdev_elm.winding2.B0 = b0
-                    gcdev_elm.winding2.rate = windings[1].ratedS
+                    gcdev_elm.winding2.rate = float(windings[1].ratedS)
                     gcdev_elm.winding2.cn_from = cn_2
                     gcdev_elm.winding2.cn_to = cn_3
 
@@ -913,7 +913,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.X0 = x0
                     gcdev_elm.winding3.G0 = g0
                     gcdev_elm.winding3.B0 = b0
-                    gcdev_elm.winding3.rate = windings[2].ratedS
+                    gcdev_elm.winding3.rate = float(windings[2].ratedS)
                     gcdev_elm.winding3.cn_from = cn_3
                     gcdev_elm.winding3.cn_to = cn_1
 
