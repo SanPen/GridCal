@@ -503,22 +503,23 @@ def get_generator_data(circuit: MultiCircuit,
                 if elm.srap_enabled and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
-                if elm.control_bus is not None:
-                    remote_control = True
-                    j = bus_dict[elm.control_bus]
-                else:
-                    remote_control = False
-                    j = -1
+                if elm.is_controlled:
+                    if elm.control_bus is not None:
+                        remote_control = True
+                        j = bus_dict[elm.control_bus]
+                    else:
+                        remote_control = False
+                        j = -1
 
-                set_bus_control_voltage(i=i,
-                                        j=j,
-                                        remote_control=remote_control,
-                                        bus_name=elm.bus.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset,
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                    set_bus_control_voltage(i=i,
+                                            j=j,
+                                            remote_control=remote_control,
+                                            bus_name=elm.bus.name,
+                                            bus_data=bus_data,
+                                            bus_voltage_used=bus_voltage_used,
+                                            candidate_Vm=elm.Vset,
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
