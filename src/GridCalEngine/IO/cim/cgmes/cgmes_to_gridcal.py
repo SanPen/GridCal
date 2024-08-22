@@ -1203,6 +1203,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
         gcdev_model.add_voltage_level(gcdev_elm)
         volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
     else:
+        # TODO: this is very weird and cgmes_elm might not be defined
         logger.add_error(msg='Base voltage not found', device=str(cgmes_elm.BaseVoltage))
 
     return volt_lev_dict
