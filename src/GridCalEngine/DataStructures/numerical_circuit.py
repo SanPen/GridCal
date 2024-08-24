@@ -2018,6 +2018,10 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
                                  areas_dict: Union[Dict[Area, int], None] = None,
+                                 control_q: bool = True,
+                                 control_taps_modules: bool = True,
+                                 control_taps_phase: bool = True,
+                                 control_remote_voltage: bool = True,
                                  logger=Logger()) -> NumericalCircuit:
     """
     Compile a NumericalCircuit from a MultiCircuit
@@ -2029,6 +2033,10 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param use_stored_guess: use the storage voltage guess?
     :param bus_dict (optional) Dict[Bus, int] dictionary
     :param areas_dict (optional) Dict[Area, int] dictionary
+    :param control_q: control q?
+    :param control_taps_modules: control taps modules?
+    :param control_taps_phase: control taps phase?
+    :param control_remote_voltage: control remote voltage?
     :param logger: Logger instance
     :return: NumericalCircuit instance
     """
@@ -2043,20 +2051,22 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     bus_voltage_used = np.zeros(circuit.get_bus_number(), dtype=bool)
 
     # declare the numerical circuit
-    nc = NumericalCircuit(nbus=0,
-                          nbr=0,
-                          nhvdc=0,
-                          nload=0,
-                          ngen=0,
-                          nbatt=0,
-                          nshunt=0,
-                          nfluidnode=0,
-                          nfluidturbine=0,
-                          nfluidpump=0,
-                          nfluidp2x=0,
-                          nfluidpath=0,
-                          sbase=circuit.Sbase,
-                          t_idx=t_idx)
+    nc = NumericalCircuit(
+        nbus=0,
+        nbr=0,
+        nhvdc=0,
+        nload=0,
+        ngen=0,
+        nbatt=0,
+        nshunt=0,
+        nfluidnode=0,
+        nfluidturbine=0,
+        nfluidpump=0,
+        nfluidp2x=0,
+        nfluidpath=0,
+        sbase=circuit.Sbase,
+        t_idx=t_idx
+    )
 
     if bus_dict is None:
         bus_dict = {bus: i for i, bus in enumerate(circuit.buses)}
@@ -2064,96 +2074,126 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     if areas_dict is None:
         areas_dict = {elm: i for i, elm in enumerate(circuit.areas)}
 
-    nc.bus_data = gc_compiler2.get_bus_data(circuit=circuit,
-                                            t_idx=t_idx,
-                                            time_series=time_series,
-                                            areas_dict=areas_dict,
-                                            use_stored_guess=use_stored_guess)
+    nc.bus_data = gc_compiler2.get_bus_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=time_series,
+        areas_dict=areas_dict,
+        use_stored_guess=use_stored_guess
+    )
 
-    nc.generator_data, gen_dict = gc_compiler2.get_generator_data(circuit=circuit,
-                                                                  bus_dict=bus_dict,
-                                                                  bus_data=nc.bus_data,
-                                                                  t_idx=t_idx,
-                                                                  time_series=time_series,
-                                                                  bus_voltage_used=bus_voltage_used,
-                                                                  logger=logger,
-                                                                  opf_results=opf_results,
-                                                                  use_stored_guess=use_stored_guess)
+    nc.generator_data, gen_dict = gc_compiler2.get_generator_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        bus_data=nc.bus_data,
+        t_idx=t_idx,
+        time_series=time_series,
+        bus_voltage_used=bus_voltage_used,
+        logger=logger,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+        control_remote_voltage=control_remote_voltage
+    )
 
-    nc.battery_data = gc_compiler2.get_battery_data(circuit=circuit,
-                                                    bus_dict=bus_dict,
-                                                    bus_data=nc.bus_data,
-                                                    t_idx=t_idx,
-                                                    time_series=time_series,
-                                                    bus_voltage_used=bus_voltage_used,
-                                                    logger=logger,
-                                                    opf_results=opf_results,
-                                                    use_stored_guess=use_stored_guess)
+    nc.battery_data = gc_compiler2.get_battery_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        bus_data=nc.bus_data,
+        t_idx=t_idx,
+        time_series=time_series,
+        bus_voltage_used=bus_voltage_used,
+        logger=logger,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+        control_remote_voltage=control_remote_voltage
+    )
 
-    nc.shunt_data = gc_compiler2.get_shunt_data(circuit=circuit,
-                                                bus_dict=bus_dict,
-                                                bus_voltage_used=bus_voltage_used,
-                                                bus_data=nc.bus_data,
-                                                t_idx=t_idx,
-                                                time_series=time_series,
-                                                logger=logger,
-                                                use_stored_guess=use_stored_guess)
+    nc.shunt_data = gc_compiler2.get_shunt_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        bus_voltage_used=bus_voltage_used,
+        bus_data=nc.bus_data,
+        t_idx=t_idx,
+        time_series=time_series,
+        logger=logger,
+        use_stored_guess=use_stored_guess,
+        control_remote_voltage=control_remote_voltage
+    )
 
-    nc.load_data = gc_compiler2.get_load_data(circuit=circuit,
-                                              bus_dict=bus_dict,
-                                              bus_voltage_used=bus_voltage_used,
-                                              bus_data=nc.bus_data,
-                                              logger=logger,
-                                              t_idx=t_idx,
-                                              time_series=time_series,
-                                              opf_results=opf_results,
-                                              use_stored_guess=use_stored_guess)
+    nc.load_data = gc_compiler2.get_load_data(
+        circuit=circuit,
+        bus_dict=bus_dict,
+        bus_voltage_used=bus_voltage_used,
+        bus_data=nc.bus_data,
+        logger=logger,
+        t_idx=t_idx,
+        time_series=time_series,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess
+    )
 
-    nc.branch_data = gc_compiler2.get_branch_data(circuit=circuit,
-                                                  t_idx=t_idx,
-                                                  time_series=time_series,
-                                                  bus_dict=bus_dict,
-                                                  bus_data=nc.bus_data,
-                                                  bus_voltage_used=bus_voltage_used,
-                                                  apply_temperature=apply_temperature,
-                                                  branch_tolerance_mode=branch_tolerance_mode,
-                                                  opf_results=opf_results,
-                                                  use_stored_guess=use_stored_guess)
+    nc.branch_data = gc_compiler2.get_branch_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=time_series,
+        bus_dict=bus_dict,
+        bus_data=nc.bus_data,
+        bus_voltage_used=bus_voltage_used,
+        apply_temperature=apply_temperature,
+        branch_tolerance_mode=branch_tolerance_mode,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+        control_taps_modules=control_taps_modules,
+        control_taps_phase=control_taps_phase,
+        control_remote_voltage=control_remote_voltage,
+    )
 
-    nc.hvdc_data = gc_compiler2.get_hvdc_data(circuit=circuit,
-                                              t_idx=t_idx,
-                                              time_series=time_series,
-                                              bus_dict=bus_dict,
-                                              bus_types=nc.bus_data.bus_types,
-                                              bus_data=nc.bus_data,
-                                              bus_voltage_used=bus_voltage_used,
-                                              opf_results=opf_results,
-                                              use_stored_guess=use_stored_guess,
-                                              logger=logger)
+    nc.hvdc_data = gc_compiler2.get_hvdc_data(
+        circuit=circuit,
+        t_idx=t_idx,
+        time_series=time_series,
+        bus_dict=bus_dict,
+        bus_types=nc.bus_data.bus_types,
+        bus_data=nc.bus_data,
+        bus_voltage_used=bus_voltage_used,
+        opf_results=opf_results,
+        use_stored_guess=use_stored_guess,
+        logger=logger
+    )
 
     if len(circuit.fluid_nodes) > 0:
-        nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(circuit=circuit,
-                                                                          t_idx=t_idx,
-                                                                          time_series=time_series)
+        nc.fluid_node_data, plant_dict = gc_compiler2.get_fluid_node_data(
+            circuit=circuit,
+            t_idx=t_idx,
+            time_series=time_series
+        )
 
-        nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(circuit=circuit,
-                                                                    plant_dict=plant_dict,
-                                                                    gen_dict=gen_dict,
-                                                                    t_idx=t_idx)
+        nc.fluid_turbine_data = gc_compiler2.get_fluid_turbine_data(
+            circuit=circuit,
+            plant_dict=plant_dict,
+            gen_dict=gen_dict,
+            t_idx=t_idx
+        )
 
-        nc.fluid_pump_data = gc_compiler2.get_fluid_pump_data(circuit=circuit,
-                                                              plant_dict=plant_dict,
-                                                              gen_dict=gen_dict,
-                                                              t_idx=t_idx)
+        nc.fluid_pump_data = gc_compiler2.get_fluid_pump_data(
+            circuit=circuit,
+            plant_dict=plant_dict,
+            gen_dict=gen_dict,
+            t_idx=t_idx
+        )
 
-        nc.fluid_p2x_data = gc_compiler2.get_fluid_p2x_data(circuit=circuit,
-                                                            plant_dict=plant_dict,
-                                                            gen_dict=gen_dict,
-                                                            t_idx=t_idx)
+        nc.fluid_p2x_data = gc_compiler2.get_fluid_p2x_data(
+            circuit=circuit,
+            plant_dict=plant_dict,
+            gen_dict=gen_dict,
+            t_idx=t_idx
+        )
 
-        nc.fluid_path_data = gc_compiler2.get_fluid_path_data(circuit=circuit,
-                                                              plant_dict=plant_dict,
-                                                              t_idx=t_idx)
+        nc.fluid_path_data = gc_compiler2.get_fluid_path_data(
+            circuit=circuit,
+            plant_dict=plant_dict,
+            t_idx=t_idx
+        )
 
     nc.consolidate_information()
 

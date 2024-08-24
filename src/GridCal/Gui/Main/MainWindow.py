@@ -2465,6 +2465,12 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.control_tap_phase_checkBox)
 
+        self.control_remote_voltage_checkBox = QCheckBox(self.frame_36)
+        self.control_remote_voltage_checkBox.setObjectName(u"control_remote_voltage_checkBox")
+        self.control_remote_voltage_checkBox.setFont(font1)
+
+        self.verticalLayout_4.addWidget(self.control_remote_voltage_checkBox)
+
         self.label_54 = QLabel(self.frame_36)
         self.label_54.setObjectName(u"label_54")
 
@@ -5255,17 +5261,21 @@ class Ui_mainWindow(object):
         self.distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
         self.label_50.setText("")
 #if QT_CONFIG(tooltip)
-        self.control_q_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, the generators, abtteries, controllable shunts, etc control their reactive power to be within limits.", None))
+        self.control_q_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for reactive power limits control", None))
 #endif // QT_CONFIG(tooltip)
         self.control_q_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control generators Q", None))
 #if QT_CONFIG(tooltip)
-        self.control_tap_modules_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active the branches with tap module control such as transformers or VSC converters control some voltage with their tap module", None))
+        self.control_tap_modules_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for branches tap module control", None))
 #endif // QT_CONFIG(tooltip)
         self.control_tap_modules_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control tap module", None))
 #if QT_CONFIG(tooltip)
-        self.control_tap_phase_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active the branches with tap phase control such as transformers or VSC converters control their \"from\" active power flow", None))
+        self.control_tap_phase_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for branches tap phase control", None))
 #endif // QT_CONFIG(tooltip)
         self.control_tap_phase_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control tap phase", None))
+#if QT_CONFIG(tooltip)
+        self.control_remote_voltage_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for generators remote voltage control", None))
+#endif // QT_CONFIG(tooltip)
+        self.control_remote_voltage_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control remote voltage", None))
         self.label_54.setText("")
 #if QT_CONFIG(tooltip)
         self.temperature_correction_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Correct the branches resistance using the temperature", None))

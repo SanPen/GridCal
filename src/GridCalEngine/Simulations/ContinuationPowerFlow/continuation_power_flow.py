@@ -540,7 +540,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
                     vd: IntVec, pv: IntVec, pq: IntVec, pqv: IntVec, p: IntVec,
                     step: float, approximation_order: CpfParametrization,
                     adapt_step, step_min, step_max, error_tol=1e-3, tol=1e-6, max_it=20,
-                    stop_at=CpfStopAt.Nose, control_q=False,
+                    stop_at=CpfStopAt.Nose, control_q=False, control_remote_voltage: bool = True,
                     qmax_bus=None, qmin_bus=None, original_bus_types=None, base_overload_number=0,
                     verbose=False, call_back_fx=None) -> CpfNumericResults:
     """
@@ -573,6 +573,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
     :param max_it: Maximum iterations
     :param stop_at:  Value of Lambda to stop at. It can be a number or {'NOSE', 'FULL'}
     :param control_q: Type of reactive power control
+    :param control_remote_voltage: Apply remote voltage controls?
     :param qmax_bus: Array of maximum reactive power per node
     :param qmin_bus: Array of minimum reactive power per node
     :param original_bus_types: array of bus types
@@ -746,7 +747,7 @@ def continuation_nr(Ybus, Cf, Ct, Yf, Yt, branch_rates, Sbase, Sbus_base, Sbus_t
 
                 Sxfr = Sbus_target - Sbus
 
-                vd, pq, pv, pqv, p, pqpv = compile_types(Pbus=Sbus.real, types=types_new)
+                vd, pq, pv, pqv, p, pqpv = compile_types(Pbus=Sbus.real, types=types_new,)
             else:
                 if verbose:
                     print('Q controls Ok')

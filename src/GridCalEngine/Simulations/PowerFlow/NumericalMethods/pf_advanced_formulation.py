@@ -28,7 +28,8 @@ from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
+                                                                                    compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleControl
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
@@ -209,8 +210,11 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.idx_dQt = np.array(0, dtype=int)
 
         k_v_m = self.analyze_branch_controls()  # this fills the indices above
-        vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.nc.Sbus.real, types=self.bus_types)
-        self.update_types(pq=pq, pv=pv, pqv=pqv, p=p)
+        vd, pq, pv, pqv, p, self.no_slack = compile_types(
+            Pbus=self.nc.Sbus.real,
+            types=self.bus_types
+        )
+        self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
         self.m: Vec = self.nc.branch_data.tap_module[self.idx_dm]
         self.tau: Vec = self.nc.branch_data.tap_angle[self.idx_dtau]
@@ -243,7 +247,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         if not len(self.pqv) >= len(k_v_m):
             raise ValueError("k_v_m indices must be the same size as pqv indices!")
 
-    def update_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
+    def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
         """
 
         :param pq:
@@ -348,15 +352,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             if is_conv:
                 k_vsc.append(k)
 
-        # convert lists to integer arrays
-        # k_pf_tau = np.array(k_pf_tau, dtype=int)
-        # k_pt_tau = np.array(k_pt_tau, dtype=int)
-        # k_qf_m = np.array(k_qf_m, dtype=int)
-        # k_qt_m = np.array(k_qt_m, dtype=int)
-        # k_qf_beq = np.array(k_qfzero_beq, dtype=int)
-        # k_v_m = np.array(k_v_m, dtype=int)
-        # k_v_beq = np.array(k_v_beq, dtype=int)
-
+        # turn the lists into the final arrays
         self.idx_conv = np.array(k_vsc, dtype=int)
 
         self.idx_dm = np.r_[k_v_m, k_qf_m, k_qt_m].astype(int)
@@ -509,8 +505,11 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # it is only worth checking Q limits with a low error
         # since with higher errors, the Q values may be far from realistic
         # finally, the Q control only makes sense if there are pv nodes
-        if update_controls:
-            if self.options.control_Q and self._error < 1e-2 and (len(self.pv) + len(self.p)) > 0:
+        if update_controls and self._error < 1e-2:
+            any_change = False
+
+            # update Q limits control
+            if self.options.control_Q and (len(self.pv) + len(self.p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
@@ -522,16 +521,30 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                                                                   self.Qmax)
 
                 if len(changed) > 0:
-                    self.update_types(pq=pq, pv=pv, pqv=pqv, p=p)
+                    any_change = True
 
-                    # recompute the error based on the new Scalc and S0
-                    self._f = self.fx()
+                    # update the bus type lists
+                    self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
-                    # compute the error
-                    self._error = compute_fx_error(self._f)
-
-                    # the composition of x changed, so recompute
+                    # the composition of x may have changed, so recompute
                     x = self.var2x()
+
+            # update Slack control
+            if self.options.distributed_slack:
+                ok, delta = compute_slack_distribution(Scalc=self.Scalc,
+                                                       vd=self.vd,
+                                                       bus_installed_power=self.nc.bus_installed_power)
+                if ok:
+                    any_change = True
+                    # Update the objective power to reflect the slack distribution
+                    self.S0 += delta
+
+            if any_change:
+                # recompute the error based on the new Scalc and S0
+                self._f = self.fx()
+
+                # compute the rror
+                self._error = compute_fx_error(self._f)
 
         return self._error, self._converged, x, self.f
 

@@ -16,14 +16,14 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Tuple
 import numpy as np
-
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 from GridCalEngine.Topology.admittance_matrices import AdmittanceMatrices
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.Derivatives.ac_jacobian import create_J_vc_csc
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
+                                                                                    compute_slack_distribution)
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.pf_formulation_template import PfFormulationTemplate
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    compute_fx, polar_to_rect)
@@ -58,8 +58,10 @@ class PfBasicFormulation(PfFormulationTemplate):
         self.Qmin = Qmin
         self.Qmax = Qmax
 
-        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=self.nc.Sbus.real,
-                                                                                   types=self.nc.bus_data.bus_types)
+        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(
+            Pbus=self.nc.Sbus.real,
+            types=self.nc.bus_data.bus_types
+        )
 
         self.idx_dVa = np.r_[self.pv, self.pq, self.pqv, self.p]
         self.idx_dVm = np.r_[self.pq, self.p]
@@ -148,8 +150,11 @@ class PfBasicFormulation(PfFormulationTemplate):
         # it is only worth checking Q limits with a low error
         # since with higher errors, the Q values may be far from realistic
         # finally, the Q control only makes sense if there are pv nodes
-        if update_controls:
-            if self.options.control_Q and self._error < 1e-2 and (len(self.pv) + len(self.p)) > 0:
+        if update_controls and self._error < 1e-2:
+            any_change = False
+
+            # update Q limits control
+            if self.options.control_Q and (len(self.pv) + len(self.p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
@@ -161,16 +166,30 @@ class PfBasicFormulation(PfFormulationTemplate):
                                                                   self.Qmax)
 
                 if len(changed) > 0:
+                    any_change = True
+
+                    # update the bus type lists
                     self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
 
-                    # recompute the error based on the new Scalc and S0
-                    self._f = self.fx()
-
-                    # compute the rror
-                    self._error = compute_fx_error(self._f)
-
-                    # the composition of x changed, so recompute
+                    # the composition of x may have changed, so recompute
                     x = self.var2x()
+
+            # update Slack control
+            if self.options.distributed_slack:
+                ok, delta = compute_slack_distribution(Scalc=self.Scalc,
+                                                       vd=self.vd,
+                                                       bus_installed_power=self.nc.bus_installed_power)
+                if ok:
+                    any_change = True
+                    # Update the objective power to reflect the slack distribution
+                    self.S0 += delta
+
+            if any_change:
+                # recompute the error based on the new Scalc and S0
+                self._f = self.fx()
+
+                # compute the rror
+                self._error = compute_fx_error(self._f)
 
         return self._error, self._converged, x, self.f
 

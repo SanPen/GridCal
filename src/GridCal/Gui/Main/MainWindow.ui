@@ -4548,7 +4548,7 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>If active, the generators, abtteries, controllable shunts, etc control their reactive power to be within limits.</string>
+                  <string>General switch for reactive power limits control</string>
                  </property>
                  <property name="text">
                   <string>Control generators Q</string>
@@ -4563,7 +4563,7 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>If active the branches with tap module control such as transformers or VSC converters control some voltage with their tap module</string>
+                  <string>General switch for branches tap module control</string>
                  </property>
                  <property name="text">
                   <string>Control tap module</string>
@@ -4578,10 +4578,25 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>If active the branches with tap phase control such as transformers or VSC converters control their &quot;from&quot; active power flow</string>
+                  <string>General switch for branches tap phase control</string>
                  </property>
                  <property name="text">
                   <string>Control tap phase</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="control_remote_voltage_checkBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>General switch for generators remote voltage control</string>
+                 </property>
+                 <property name="text">
+                  <string>Control remote voltage</string>
                  </property>
                 </widget>
                </item>

@@ -130,6 +130,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           max_it=self.options.max_it,
                                           stop_at=self.options.stop_at,
                                           control_q=self.pf_options.control_Q,
+                                          control_remote_voltage=self.pf_options.control_remote_voltage,
                                           qmax_bus=island.Qmax_bus,
                                           qmin_bus=island.Qmin_bus,
                                           original_bus_types=island.bus_types,

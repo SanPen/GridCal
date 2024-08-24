@@ -197,10 +197,10 @@ def test_controllable_shunt() -> None:
     """
     This tests that the controllable shunt is indeed controlling voltage at 1.02 at the third bus
     """
-    options = PowerFlowOptions()
 
     fname = os.path.join('data', 'grids', 'Controllable_shunt_example.gridcal')
     main_circuit = FileOpen(fname).open()
+    options = PowerFlowOptions(control_q=False)
     power_flow = PowerFlowDriver(main_circuit, options)
     power_flow.run()
 
@@ -227,7 +227,6 @@ def test_voltage_local_control_with_generation() -> None:
     # run power flow with the local voltage control enabled
     for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
                         SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
-
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
                                    control_q=False,
@@ -266,21 +265,29 @@ def test_voltage_remote_control_with_generation() -> None:
     # control bus 6 with generator 4
     grid.generators[4].control_bus = grid.buses[6]
 
-    for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
-                        SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
-        options = PowerFlowOptions(solver_type,
-                                   verbose=0,
-                                   control_q=False,
-                                   retry_with_other_methods=False)
+    for control_remote_voltage in [True, False]:
+        for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM,
+                            SolverType.FASTDECOUPLED, SolverType.PowellDogLeg]:
 
-        results = gce.power_flow(grid, options)
+            options = PowerFlowOptions(solver_type=solver_type,
+                                       verbose=0,
+                                       control_q=False,
+                                       retry_with_other_methods=False,
+                                       control_remote_voltage=control_remote_voltage)
 
-        vm = np.abs(results.voltage)
+            results = gce.power_flow(grid, options)
 
-        assert results.converged
-        assert np.isclose(vm[6], grid.generators[4].Vset, atol=options.tolerance)
+            vm = np.abs(results.voltage)
 
-        print(solver_type)
+            assert results.converged
+
+            # is the control voltage equal to the desired set point?
+            ok = np.isclose(vm[6], grid.generators[4].Vset, atol=options.tolerance)
+
+            if control_remote_voltage:
+                assert ok
+            else:
+                assert not ok
 
 
 def test_voltage_control_with_ltc() -> None:
@@ -293,20 +300,30 @@ def test_voltage_control_with_ltc() -> None:
     bus_dict = grid.get_bus_index_dict()
     ctrl_idx = bus_dict[grid.transformers2w[0].regulation_bus]
 
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        options = PowerFlowOptions(solver_type,
-                                   verbose=0,
-                                   control_q=False,
-                                   retry_with_other_methods=False)
+    for control_taps_modules in [True, False]:
+        for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+            options = PowerFlowOptions(solver_type,
+                                       verbose=0,
+                                       control_q=False,
+                                       retry_with_other_methods=False,
+                                       control_taps_modules=control_taps_modules,
+                                       control_taps_phase=False,
+                                       control_remote_voltage=False,
+                                       apply_temperature_correction=False)
 
-        results = gce.power_flow(grid, options)
+            results = gce.power_flow(grid, options)
 
-        vm = np.abs(results.voltage)
+            vm = np.abs(results.voltage)
 
-        assert results.converged
+            assert results.converged
 
-        # check that the bus voltage module is the the transformer voltage set point
-        assert np.isclose(vm[ctrl_idx], grid.transformers2w[0].vset, atol=options.tolerance)
+            # check that the bus voltage module is the the transformer voltage set point
+            ok = np.isclose(vm[ctrl_idx], grid.transformers2w[0].vset, atol=options.tolerance)
+
+            if control_taps_modules:
+                assert ok
+            else:
+                assert not ok
 
 
 def test_qf_control_with_ltc() -> None:
@@ -317,18 +334,25 @@ def test_qf_control_with_ltc() -> None:
 
     grid = gce.open_file(fname)
 
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        options = PowerFlowOptions(solver_type,
-                                   verbose=0,
-                                   control_q=False,
-                                   retry_with_other_methods=False)
+    for control_taps_modules in [True, False]:
+        for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+            options = PowerFlowOptions(solver_type,
+                                       verbose=0,
+                                       control_q=False,
+                                       retry_with_other_methods=False,
+                                       control_taps_modules=control_taps_modules)
 
-        results = gce.power_flow(grid, options)
+            results = gce.power_flow(grid, options)
 
-        assert results.converged
+            assert results.converged
 
-        # check that the bus voltage module is the the transformer voltage set point
-        assert np.isclose(results.Sf[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
+            # check that the bus voltage module is the the transformer voltage set point
+            ok = np.isclose(results.Sf[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
+
+            if control_taps_modules:
+                assert ok
+            else:
+                assert not ok
 
 
 def test_qt_control_with_ltc() -> None:
@@ -340,18 +364,25 @@ def test_qt_control_with_ltc() -> None:
     grid = gce.open_file(fname)
     grid.transformers2w[0].tap_module_control_mode = gce.TapModuleControl.Qt
 
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        options = PowerFlowOptions(solver_type,
-                                   verbose=0,
-                                   control_q=False,
-                                   retry_with_other_methods=False)
+    for control_taps_modules in [True, False]:
+        for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+            options = PowerFlowOptions(solver_type,
+                                       verbose=0,
+                                       control_q=False,
+                                       retry_with_other_methods=False,
+                                       control_taps_modules=control_taps_modules)
 
-        results = gce.power_flow(grid, options)
+            results = gce.power_flow(grid, options)
 
-        assert results.converged
+            assert results.converged
 
-        # check that the bus voltage module is the the transformer voltage set point
-        assert np.isclose(results.St[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
+            # check that the bus voltage module is the the transformer voltage set point
+            ok = np.isclose(results.St[7].imag, grid.transformers2w[0].Qset, atol=options.tolerance)
+
+            if control_taps_modules:
+                assert ok
+            else:
+                assert not ok
 
 
 def test_power_flow_control_with_pst_pf() -> None:
@@ -362,18 +393,25 @@ def test_power_flow_control_with_pst_pf() -> None:
 
     grid = gce.open_file(fname)
 
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        options = PowerFlowOptions(solver_type,
-                                   verbose=0,
-                                   control_q=False,
-                                   retry_with_other_methods=False)
+    for control_taps_phase in [True, False]:
+        for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+            options = PowerFlowOptions(solver_type,
+                                       verbose=0,
+                                       control_q=False,
+                                       retry_with_other_methods=False,
+                                       control_taps_phase=control_taps_phase)
 
-        results = gce.power_flow(grid, options)
+            results = gce.power_flow(grid, options)
 
-        assert results.converged
+            assert results.converged
 
-        # check that the bus voltage module is the the transformer voltage set point
-        assert np.isclose(results.Sf[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+            # check that the bus voltage module is the the transformer voltage set point
+            ok = np.isclose(results.Sf[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+
+            if control_taps_phase:
+                assert ok
+            else:
+                assert not ok
 
 
 def test_power_flow_control_with_pst_pt() -> None:
@@ -384,22 +422,29 @@ def test_power_flow_control_with_pst_pt() -> None:
 
     grid = gce.open_file(fname)
 
-    for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        options = PowerFlowOptions(solver_type,
-                                   verbose=0,
-                                   control_q=False,
-                                   retry_with_other_methods=False,
-                                   max_iter=80)
+    for control_taps_phase in [True, False]:
+        for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
+            options = PowerFlowOptions(solver_type,
+                                       verbose=0,
+                                       control_q=False,
+                                       retry_with_other_methods=False,
+                                       control_taps_phase=control_taps_phase,
+                                       max_iter=80)
 
-        results = gce.power_flow(grid, options)
+            results = gce.power_flow(grid, options)
 
-        assert results.converged
+            assert results.converged
 
-        # check that the bus voltage module is the the transformer voltage set point
-        assert np.isclose(results.St[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+            # check that the bus voltage module is the the transformer voltage set point
+            ok = np.isclose(results.St[7].real, grid.transformers2w[0].Pset, atol=options.tolerance)
+
+            if control_taps_phase:
+                assert ok
+            else:
+                assert not ok
 
 
-def test_fubm():
+def test_fubm() -> None:
     """
 
     :return:
@@ -408,7 +453,13 @@ def test_fubm():
     grid = gce.open_file(fname)
 
     for solver_type in [SolverType.NR, SolverType.LM, SolverType.PowellDogLeg]:
-        opt = gce.PowerFlowOptions(solver_type=solver_type, retry_with_other_methods=False, verbose=0)
+        opt = gce.PowerFlowOptions(solver_type=solver_type,
+                                   control_q=False,
+                                   retry_with_other_methods=False,
+                                   control_taps_modules=True,
+                                   control_taps_phase=True,
+                                   control_remote_voltage=True,
+                                   verbose=0)
         driver = gce.PowerFlowDriver(grid=grid, options=opt)
         driver.run()
         results = driver.results

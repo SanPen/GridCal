@@ -176,7 +176,6 @@ class SolverType(Enum):
     """
 
     NR = 'Newton Raphson'
-    NRD = 'Newton Raphson Decoupled'
     NRFD_XB = 'Fast decoupled XB'
     NRFD_BX = 'Fast decoupled BX'
     GAUSS = 'Gauss-Seidel'
@@ -194,7 +193,6 @@ class SolverType(Enum):
     NONLINEAR_OPF = 'Nonlinear OPF'
     SIMPLE_OPF = 'Simple dispatch'
     Proportional_OPF = 'Proportional OPF'
-    NRI = 'Newton-Raphson in current'
     DYCORS_OPF = 'DYCORS OPF'
     GA_OPF = 'Genetic Algorithm OPF'
     NELDER_MEAD_OPF = 'Nelder Mead OPF'
