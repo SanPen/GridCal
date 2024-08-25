@@ -839,7 +839,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                                        norm_f=self.error,
                                        Scalc=self.Scalc,
                                        m=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
-                                       tau=expand(self.nc.nbr, self.tau, self.idx_tau, 0.0),
+                                       tau=expand(self.nc.nbr, self.tau, self.idx_dtau, 0.0),
                                        Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
                                        Ybus=self.adm.Ybus,
                                        Yf=self.adm.Yf,
