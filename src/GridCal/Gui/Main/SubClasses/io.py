@@ -340,6 +340,10 @@ class IoMain(ConfigurationMain):
                     # create the diagrams that came with the file
                     self.create_circuit_stored_diagrams()
 
+                    if len(self.diagram_widgets_list) > 0:
+                        diagram = self.diagram_widgets_list[0]
+                        self.set_diagram_widget(diagram)
+
                 else:
                     if self.circuit.get_bus_number() > 1500:
                         quit_msg = ("The grid is quite large, hence the schematic might be slow.\n"

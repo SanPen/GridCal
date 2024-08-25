@@ -143,14 +143,11 @@ class PfBasicFormulation(PfFormulationTemplate):
         # compute the rror
         self._error = compute_fx_error(self._f)
 
-        # converged?
-        self._converged = self._error < self.options.tolerance
-
         # review reactive power limits
         # it is only worth checking Q limits with a low error
         # since with higher errors, the Q values may be far from realistic
         # finally, the Q control only makes sense if there are pv nodes
-        if update_controls and self._error < 1e-2:
+        if update_controls and self._error < self._controls_tol:
             any_change = False
 
             # update Q limits control
@@ -190,6 +187,9 @@ class PfBasicFormulation(PfFormulationTemplate):
 
                 # compute the rror
                 self._error = compute_fx_error(self._f)
+
+        # converged?
+        self._converged = self._error < self.options.tolerance
 
         return self._error, self._converged, x, self.f
 

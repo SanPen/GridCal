@@ -14,17 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 import numpy as np
 import pandas as pd
 from numba import njit
+from scipy.sparse import lil_matrix, csc_matrix
 from GridCalEngine.Topology.admittance_matrices import compute_admittances
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Topology.simulation_indices import compile_types
-from GridCalEngine.Utils.NumericalMethods.autodiff import calc_autodiff_jacobian
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
@@ -35,7 +35,7 @@ from GridCalEngine.enumerations import BusMode, TapPhaseControl, TapModuleContro
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (compute_zip_power, compute_power,
                                                                                    polar_to_rect, get_Sf, get_St,
                                                                                    get_It)
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.basic_structures import Vec, IntVec, CxVec, Logger
 
 
 @njit()
@@ -70,7 +70,7 @@ def adv_jacobian(nbus: int,
                  ytf: CxVec,
                  ytt: CxVec) -> CSC:
     """
-
+    Compute the advanced jacobian
     :param nbus:
     :param nbr:
     :param idx_dva:
@@ -156,26 +156,59 @@ def adv_jacobian(nbus: int,
     return J
 
 
+def calc_autodiff_jacobian(func: Callable[[Vec], Vec], x: Vec, h=1e-8) -> csc_matrix:
+    """
+    Compute the Jacobian matrix of `func` at `x` using finite differences.
+
+    :param func: function accepting a vector x and args, and returning either a vector or a
+                 tuple where the first argument is a vector and the second.
+    :param x: Point at which to evaluate the Jacobian (numpy array).
+    :param h: Small step for finite difference.
+    :return: Jacobian matrix as a CSC matrix.
+    """
+    nx = len(x)
+    f0 = func(x)
+
+    n_rows = len(f0)
+
+    jac = lil_matrix((n_rows, nx))
+
+    for j in range(nx):
+        x_plus_h = np.copy(x)
+        x_plus_h[j] += h
+        f_plus_h = func(x_plus_h)
+        row = (f_plus_h - f0) / h
+        for i in range(n_rows):
+            if row[i] != 0.0:
+                jac[i, j] = row[i]
+
+    return jac.tocsc()
+
+
 class PfAdvancedFormulation(PfFormulationTemplate):
 
     def __init__(self, V0: CxVec, S0: CxVec, I0: CxVec, Y0: CxVec,
                  Qmin: Vec, Qmax: Vec,
                  nc: NumericalCircuit,
-                 options: PowerFlowOptions):
+                 options: PowerFlowOptions,
+                 logger: Logger):
         """
-
-        :param V0:
-        :param S0:
-        :param I0:
-        :param Y0:
-        :param Qmin:
-        :param Qmax:
-        :param nc:
-        :param options:
+        Constructor
+        :param V0: Initial voltage solution
+        :param S0: Set power injections
+        :param I0: Set current injections
+        :param Y0: Set admittance injections
+        :param Qmin: Minimum reactive power per bus
+        :param Qmax: Maximum reactive power per bus
+        :param nc: NumericalCircuit
+        :param options: PowerFlowOptions
+        :param logger: Logger (modified in-place)
         """
         PfFormulationTemplate.__init__(self, V0=V0, options=options)
 
         self.nc: NumericalCircuit = nc
+
+        self.logger: Logger = logger
 
         self.S0: CxVec = S0
         self.I0: CxVec = I0
@@ -247,14 +280,13 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         if not len(self.pqv) >= len(k_v_m):
             raise ValueError("k_v_m indices must be the same size as pqv indices!")
 
-    def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec):
+    def update_bus_types(self, pq: IntVec, pv: IntVec, pqv: IntVec, p: IntVec) -> None:
         """
-
-        :param pq:
-        :param pv:
-        :param pqv:
-        :param p:
-        :return:
+        Update the bus types
+        :param pq: Array of PQ indices
+        :param pv: Array of PV indices
+        :param pqv: Array of PQV indices
+        :param p: Array of P indices
         """
         self.pq = pq
         self.pv = pv
@@ -373,7 +405,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         return k_v_m
 
-    def x2var(self, x: Vec):
+    def x2var(self, x: Vec) -> None:
         """
         Convert X to decission variables
         :param x: solution vector
@@ -420,7 +452,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         Update step
         :param x: Solution vector
         :param update_controls:
-        :return: error, converged?, x
+        :return: error, converged?, x, fx
         """
         # set the problem state
         self.x2var(x)
@@ -490,9 +522,6 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         # compute the rror
         self._error = compute_fx_error(self._f)
 
-        # converged?
-        self._converged = self._error < self.options.tolerance
-
         if self.options.verbose > 1:
             print("Vm:", self.Vm)
             print("Va:", self.Va)
@@ -501,14 +530,15 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             print("m:", self.m)
             print("Gsw:", self.Gsw)
 
-        # review reactive power limits
-        # it is only worth checking Q limits with a low error
-        # since with higher errors, the Q values may be far from realistic
-        # finally, the Q control only makes sense if there are pv nodes
-        if update_controls and self._error < 1e-2:
+        # Update controls only below a certain error
+        if update_controls and self._error < self._controls_tol:
             any_change = False
+            branch_ctrl_change = False
 
-            # update Q limits control
+            # review reactive power limits
+            # it is only worth checking Q limits with a low error
+            # since with higher errors, the Q values may be far from realistic
+            # finally, the Q control only makes sense if there are pv nodes
             if self.options.control_Q and (len(self.pv) + len(self.p)) > 0:
 
                 # check and adjust the reactive power
@@ -539,12 +569,58 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                     # Update the objective power to reflect the slack distribution
                     self.S0 += delta
 
-            if any_change:
+            # update the tap module control
+            if self.options.control_taps_modules:
+                for i, k in enumerate(self.idx_dm):
+                    if self.m[i] < self.nc.branch_data.tap_module_min[k]:
+                        self.m[i] = self.nc.branch_data.tap_module_min[k]
+                        self.tap_module_control_mode[k] = TapModuleControl.fixed
+                        branch_ctrl_change = True
+                        self.logger.add_info("Min tap module reached",
+                                             device=self.nc.branch_data.names[k],
+                                             value=self.m[i])
+
+                    if self.m[i] > self.nc.branch_data.tap_module_max[k]:
+                        self.m[i] = self.nc.branch_data.tap_module_max[k]
+                        self.tap_module_control_mode[k] = TapModuleControl.fixed
+                        branch_ctrl_change = True
+                        self.logger.add_info("Max tap module reached",
+                                             device=self.nc.branch_data.names[k],
+                                             value=self.m[i])
+
+            # update the tap phase control
+            if self.options.control_taps_phase:
+                for i, k in enumerate(self.idx_dtau):
+                    if self.tau[i] < self.nc.branch_data.tap_angle_min[k]:
+                        self.tau[i] = self.nc.branch_data.tap_angle_min[k]
+                        self.tap_phase_control_mode[k] = TapPhaseControl.fixed
+                        branch_ctrl_change = True
+                        self.logger.add_info("Min tap phase reached",
+                                             device=self.nc.branch_data.names[k],
+                                             value=self.tau[i])
+
+                    if self.tau[i] > self.nc.branch_data.tap_angle_max[k]:
+                        self.tau[i] = self.nc.branch_data.tap_angle_max[k]
+                        self.tap_phase_control_mode[k] = TapPhaseControl.fixed
+                        branch_ctrl_change = True
+                        self.logger.add_info("Max tap phase reached",
+                                             device=self.nc.branch_data.names[k],
+                                             value=self.tau[i])
+
+            if branch_ctrl_change:
+                k_v_m = self.analyze_branch_controls()
+                vd, pq, pv, pqv, p, self.no_slack = compile_types(Pbus=self.nc.Sbus.real, types=self.bus_types)
+                self.update_bus_types(pq=pq, pv=pv, pqv=pqv, p=p)
+
+            if any_change or branch_ctrl_change:
                 # recompute the error based on the new Scalc and S0
                 self._f = self.fx()
 
                 # compute the rror
                 self._error = compute_fx_error(self._f)
+
+        # converged?
+        self._converged = self._error < self.options.tolerance
 
         return self._error, self._converged, x, self.f
 
@@ -582,7 +658,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         ]
         return self._f
 
-    def fx_diff(self, x: Vec):
+    def fx_diff(self, x: Vec) -> Vec:
         """
         Fx for autodiff
         :param x: solutions vector
@@ -758,21 +834,13 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         :param iterations: Iteration number
         :return: NumericPowerFlowResults
         """
-        m = np.ones(self.nc.nbr, dtype=float)
-        tau = np.zeros(self.nc.nbr, dtype=float)
-        beq = np.zeros(self.nc.nbr, dtype=float)
-
-        m[self.idx_dm] = self.m
-        tau[self.idx_dtau] = self.tau
-        beq[self.idx_dbeq] = self.beq
-
         return NumericPowerFlowResults(V=self.V,
                                        converged=self.converged,
                                        norm_f=self.error,
                                        Scalc=self.Scalc,
-                                       m=m,
-                                       tau=tau,
-                                       Beq=beq,
+                                       m=expand(self.nc.nbr, self.m, self.idx_dm, 1.0),
+                                       tau=expand(self.nc.nbr, self.tau, self.idx_tau, 0.0),
+                                       Beq=expand(self.nc.nbr, self.beq, self.idx_dbeq, 0.0),
                                        Ybus=self.adm.Ybus,
                                        Yf=self.adm.Yf,
                                        Yt=self.adm.Yt,

@@ -17,12 +17,11 @@
 from typing import Tuple
 import numpy as np
 import pandas as pd
-from GridCalEngine.basic_structures import Vec, IntVec, CxVec
+from GridCalEngine.basic_structures import Vec, CxVec
 from GridCalEngine.Utils.Sparse.csc2 import CSC, spsolve_csc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 
-# pd.set_option('display.precision', 4)
 pd.set_option('display.float_format', '{:.4f}'.format)
 
 
@@ -42,17 +41,17 @@ class PfFormulationTemplate:
         self._Vm = np.abs(V0)
         self._Va = np.angle(V0)
 
-        self.Scalc = np.zeros(len(V0), dtype=complex)
+        self.Scalc: CxVec = np.zeros(len(V0), dtype=complex)
 
-        self.options = options
+        self.options: PowerFlowOptions = options
 
-        self._f = np.zeros(0)
+        self._f: Vec = np.zeros(0)
 
         self._error: float = 0.0
 
         self._converged: bool = False
 
-
+        self._controls_tol: float = 1.0e-2  # min(1e-2, self.options.tolerance * 100.0)
 
     @property
     def converged(self) -> bool:
@@ -77,8 +76,6 @@ class PfFormulationTemplate:
         :return:
         """
         return self._f
-
-
 
     @property
     def Va(self) -> Vec:
@@ -116,7 +113,7 @@ class PfFormulationTemplate:
         :param update_controls: Update controls
         :return: error, converged, x, f
         """
-        return self.error, self.converged, np.zeros(len(self.V)), self._f
+        return self.error, self.converged, self.var2x(), self._f
 
     def size(self) -> int:
         """

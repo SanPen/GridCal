@@ -257,7 +257,8 @@ def solve(nc: NumericalCircuit,
                                                     Qmin=Qmin,
                                                     Qmax=Qmax,
                                                     nc=nc,
-                                                    options=options)
+                                                    options=options,
+                                                    logger=logger)
 
                     solution = levenberg_marquadt_fx(problem=problem,
                                                      tol=options.tolerance,
@@ -317,7 +318,8 @@ def solve(nc: NumericalCircuit,
                                                     Qmin=Qmin,
                                                     Qmax=Qmax,
                                                     nc=nc,
-                                                    options=options)
+                                                    options=options,
+                                                    logger=logger)
 
                     solution = newton_raphson_fx(problem=problem,
                                                  tol=options.tolerance,
@@ -355,7 +357,8 @@ def solve(nc: NumericalCircuit,
                                                     Qmin=Qmin,
                                                     Qmax=Qmax,
                                                     nc=nc,
-                                                    options=options)
+                                                    options=options,
+                                                    logger=logger)
 
                     solution = powell_fx(problem=problem,
                                          tol=options.tolerance,
@@ -771,7 +774,6 @@ def multi_island_pf(multi_circuit: MultiCircuit,
         use_stored_guess=options.use_stored_guess,
         bus_dict=bus_dict,
         areas_dict=areas_dict,
-        control_q=options.control_Q,
         control_taps_modules=options.control_taps_modules,
         control_taps_phase=options.control_taps_phase,
         control_remote_voltage=options.control_remote_voltage,

@@ -1387,7 +1387,8 @@ class NumericalCircuit:
                                             Qmin=self.Qmin_bus,
                                             Qmax=self.Qmax_bus,
                                             nc=self,
-                                            options=PowerFlowOptions())
+                                            options=PowerFlowOptions(),
+                                            logger=Logger())
 
         if structure_type == 'V':
             df = pd.DataFrame(
@@ -2018,7 +2019,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  use_stored_guess=False,
                                  bus_dict: Union[Dict[Bus, int], None] = None,
                                  areas_dict: Union[Dict[Area, int], None] = None,
-                                 control_q: bool = True,
                                  control_taps_modules: bool = True,
                                  control_taps_phase: bool = True,
                                  control_remote_voltage: bool = True,
@@ -2033,7 +2033,6 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
     :param use_stored_guess: use the storage voltage guess?
     :param bus_dict (optional) Dict[Bus, int] dictionary
     :param areas_dict (optional) Dict[Area, int] dictionary
-    :param control_q: control q?
     :param control_taps_modules: control taps modules?
     :param control_taps_phase: control taps phase?
     :param control_remote_voltage: control remote voltage?
