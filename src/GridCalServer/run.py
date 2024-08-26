@@ -21,16 +21,23 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 from GridCalServer.__version__ import about_msg
 from GridCalServer.endpoints import app
+from GridCalServer.generate_ssl_key import generate_ssl_certificate
 
 
-
-def start_server():
+def start_server(key_fname: str = "key.pem", cert_fname: str = "cert.pem", host: str = "0.0.0.0", port: int = 8000):
     """
 
+    :param key_fname:
+    :param cert_fname:
+    :param host:
+    :param port:
     :return:
     """
 
-    uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="key.pem", ssl_certfile="cert.pem")
+    if not os.path.exists(key_fname) or not os.path.exists(cert_fname):
+        generate_ssl_certificate(key_fname=key_fname, cert_fname=cert_fname)
+
+    uvicorn.run(app, host=host, port=port, ssl_keyfile=key_fname, ssl_certfile=cert_fname)
 
 
 if __name__ == "__main__":

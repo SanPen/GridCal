@@ -14,17 +14,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+import os
 import time
 import requests
 import asyncio
+from urllib3 import disable_warnings, exceptions
 from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
 from PySide6 import QtCore
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.IO.gridcal.remote import gather_model_as_jsons_for_communication, RemoteInstruction, RemoteJob
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
+disable_warnings(exceptions.InsecureRequestWarning)
 
 async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]], endpoint_url: str):
     """
@@ -38,6 +41,14 @@ async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str
 
     # return server response
     return response.json()
+
+
+def get_certificate_path() -> str:
+    """
+
+    :return:
+    """
+    return os.path.join(get_create_gridcal_folder(), "server_cert.pem")
 
 
 class JobsModel(QtCore.QAbstractTableModel):
@@ -186,6 +197,9 @@ class ServerDriver(QThread):
 
         self.data_model = JobsModel()
 
+        self._loaded_certificate = False
+        self._certificate_path = os.path.join(get_create_gridcal_folder(), "server_cert.pem")
+
         self.__cancel__ = False
         self.__pause__ = False
 
@@ -220,7 +234,7 @@ class ServerDriver(QThread):
         Base URL of the service
         :return:
         """
-        return f"http://{self.url}:{self.port}"
+        return f"https://{self.url}:{self.port}"
 
     def is_running(self) -> bool:
         """
@@ -229,17 +243,55 @@ class ServerDriver(QThread):
         """
         return self.__running__
 
-    def server_connect(self) -> bool:
+    def get_certificate(self) -> bool:
         """
         Try connecting to the server
         :return: ok?
         """
         # Make a GET request to the root endpoint
         try:
+            response = requests.get(f"{self.base_url()}/get_cert",
+                                    headers={"API-Key": self.pwd},
+                                    verify=False,
+                                    timeout=2)
+
+            # Save the certificate to a file
+
+            with open(self._certificate_path, "wb") as cert_file:
+                cert_file.write(response.content)
+
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Print the response body
+                # print("Response Body:", response.json())
+                # self.data_model.parse_data(data=response.json())
+                return True
+            else:
+                # Print error message
+                self.logger.add_error(msg=f"Response error", value=response.text)
+                return False
+        except ConnectionError as e:
+            self.logger.add_error(msg=f"Connection error", value=str(e))
+            return False
+        except Exception as e:
+            self.logger.add_error(msg=f"General exception error", value=str(e))
+            return False
+
+    def server_connect(self) -> bool:
+        """
+        Try connecting to the server
+        :return: ok?
+        """
+
+        # get the SSL certificate (only once per class instance)
+        if not self._loaded_certificate:
+            self._loaded_certificate = self.get_certificate()
+
+        # Make a GET request to the root endpoint
+        try:
             response = requests.get(f"{self.base_url()}/",
-                                    headers={
-                                        "API-Key": self.pwd
-                                    },
+                                    headers={"API-Key": self.pwd},
+                                    verify=self._certificate_path,
                                     timeout=2)
 
             # Check if the request was successful
@@ -266,9 +318,8 @@ class ServerDriver(QThread):
         # Make a GET request to the root endpoint
         try:
             response = requests.get(f"{self.base_url()}/jobs_list",
-                                    headers={
-                                        "API-Key": self.pwd
-                                    },
+                                    headers={"API-Key": self.pwd},
+                                    verify=self._certificate_path,
                                     timeout=2)
 
             # Check if the request was successful
@@ -348,7 +399,7 @@ class ServerDriver(QThread):
         chunk_size = 1024 * 1024  # 1 MB
         sent = 0
         # Stream the download to avoid loading the entire file into memory
-        with requests.get(url, headers=headers, stream=True) as response:
+        with requests.get(url, headers=headers, stream=True, verify=self._certificate_path) as response:
 
             if response.status_code == 200:
 
@@ -395,6 +446,7 @@ class ServerDriver(QThread):
         self.__pause__ = False
 
         self.report_status("Trying to connect")
+        self._loaded_certificate = False  # set to false, so that we force re-download
         ok = self.server_connect()
 
         if ok:

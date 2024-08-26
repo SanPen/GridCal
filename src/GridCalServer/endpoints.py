@@ -71,6 +71,16 @@ def verify_api_key(api_key: str = Header(None)):
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
 
+@app.get("/get_cert")
+def get_cert():
+    """
+    Get the certificate from the server
+    :return:
+    """
+    # Serve the certificate file
+    return FileResponse("cert.pem", media_type="application/x-pem-file", filename="cert.pem")
+
+
 @app.get("/")
 async def read_root():
     """
@@ -260,6 +270,17 @@ async def download_large_file(job_id: str):
 
 if __name__ == "__main__":
     import uvicorn
+    from GridCalServer.generate_ssl_key import generate_ssl_certificate
 
     # uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="key.pem", ssl_certfile="cert.pem")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    key_fname = "key.pem"
+    cert_fname = "cert.pem"
+    host = "0.0.0.0"
+    port = 8080
+
+    if not os.path.exists(key_fname) or not os.path.exists(cert_fname):
+        generate_ssl_certificate(key_fname=key_fname, cert_fname=cert_fname)
+
+    uvicorn.run(app, host=host, port=port, ssl_keyfile=key_fname, ssl_certfile=cert_fname)
