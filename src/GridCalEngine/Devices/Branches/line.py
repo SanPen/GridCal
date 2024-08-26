@@ -183,7 +183,7 @@ class Line(BranchParent):
                       definition='Possible overhead line types (>1 to denote association), - to denote no association',
                       display=False)
 
-        self.register(key='possible_undergroud_line_types', units='', tpe=SubObjectType.Associations,
+        self.register(key='possible_underground_line_types', units='', tpe=SubObjectType.Associations,
                       definition='Possible underground line types (>1 to denote association), - to denote no association',
                       display=False)
 
