@@ -29,15 +29,17 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 disable_warnings(exceptions.InsecureRequestWarning)
 
-async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]], endpoint_url: str):
+
+async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]], endpoint_url: str, certificate: str):
     """
     Send a file along with instructions about the file
     :param json_data: Json with te model
     :param endpoint_url: Web socket URL to connect to
+    :param certificate: SSL certificate path
     :return service response
     """
 
-    response = requests.post(endpoint_url, json=json_data, stream=True)
+    response = requests.post(endpoint_url, json=json_data, stream=True, verify=certificate)
 
     # return server response
     return response.json()
@@ -353,7 +355,8 @@ class ServerDriver(QThread):
             model_data = gather_model_as_jsons_for_communication(circuit=circuit, instruction=instruction)
 
             response = asyncio.get_event_loop().run_until_complete(send_json_data(json_data=model_data,
-                                                                                  endpoint_url=websocket_url))
+                                                                                  endpoint_url=websocket_url,
+                                                                                  certificate=self._certificate_path))
 
             self.get_jobs()
 
@@ -370,7 +373,7 @@ class ServerDriver(QThread):
             "accept": "application/json",
             "API-Key": api_key
         }
-        response = requests.delete(url, headers=headers)
+        response = requests.delete(url, headers=headers, verify=self._certificate_path)
 
         if response.status_code == 200:
             return response.json()
@@ -429,7 +432,7 @@ class ServerDriver(QThread):
             "accept": "application/json",
             "API-Key": api_key
         }
-        response = requests.post(url, headers=headers)
+        response = requests.post(url, headers=headers, verify=self._certificate_path)
 
         if response.status_code == 200:
             return response.json()
@@ -472,6 +475,10 @@ class ServerDriver(QThread):
 
                 # check if alive
                 ok = self.server_connect()
+
+                if not ok:
+                    # set to false, so that we force re-download on reconnection
+                    self._loaded_certificate = False
 
         else:
             # bad connection
