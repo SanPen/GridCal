@@ -88,7 +88,7 @@ class DriverTemplate:
 
         if not skip_logger:
             self.logger.add_info(msg="Elapsed total (s)",
-                                 device="Started")
+                                 device_property="Started")
 
     def toc(self, skip_logger=False):
         """
@@ -99,8 +99,8 @@ class DriverTemplate:
 
         if not skip_logger:
             self.logger.add_info(msg="Elapsed total (s)",
-                                 device="Ended",
-                                 value=self.elapsed)
+                                 device_property="Ended (s)",
+                                 value='{:.4f}'.format(self.elapsed))
 
     def get_steps(self):
         """
@@ -227,7 +227,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
                  This means that [0, 1, 2, 3, 4] are represented by the topology of 0
                  and that [5, 6, 7, 8] are represented by the topology of 5
         """
-        abc = self.grid.get_branch_active_time_array()
+
         return tp.find_different_states(
             states_array=self.grid.get_branch_active_time_array()[self.time_indices]
         )

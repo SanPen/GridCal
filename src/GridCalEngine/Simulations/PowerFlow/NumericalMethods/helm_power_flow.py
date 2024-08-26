@@ -667,7 +667,7 @@ def helm_coefficients_dY(dY, sys_mat_factorization, Uini, Xini, Yslack, Ysh, Ybu
     return U, V, iter_, norm_f
 
 
-def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, max_coefficients=30, use_pade=True,
+def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, vd, no_slack, tolerance=1e-6, max_coefficients=30, use_pade=True,
                verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Holomorphic Embedding LoadFlow Method as formulated by Josep Fanals Batllori in 2020
@@ -678,8 +678,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     :param Ysh0: vector of shunt admittances (including the shunt "legs" of the pi Branches)
     :param pq: list of pq nodes
     :param pv: list of pv nodes
-    :param sl: list of slack nodes
-    :param pqpv: sorted list of pq and pv nodes
+    :param vd: list of slack nodes
+    :param no_slack: sorted list of pq and pv nodes
     :param tolerance: target error (or tolerance)
     :param max_coefficients: maximum number of coefficients
     :param use_pade: Use the Padè approximation? otherwise, a simple summation is done
@@ -706,8 +706,8 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
                                                            Ysh0=Ysh0,
                                                            pq=pq,
                                                            pv=pv,
-                                                           sl=sl,
-                                                           pqpv=pqpv,
+                                                           sl=vd,
+                                                           pqpv=no_slack,
                                                            tolerance=tolerance,
                                                            max_coeff=max_coefficients,
                                                            verbose=verbose,
@@ -721,14 +721,14 @@ def helm_josep(Ybus, Yseries, V0, S0, Ysh0, pq, pv, sl, pqpv, tolerance=1e-6, ma
     if use_pade:
         V = V0.copy()
         try:
-            V[pqpv] = pade4all(max_coefficients - 1, U, 1)
+            V[no_slack] = pade4all(max_coefficients - 1, U, 1)
         except:
             warn('Padè failed :(, using coefficients summation')
-            V[pqpv] = U.sum(axis=0)
+            V[no_slack] = U.sum(axis=0)
 
     # compute power mismatch
     Scalc = cf.compute_power(Ybus, V)
-    norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, pqpv, pq))
+    norm_f = cf.compute_fx_error(cf.compute_fx(Scalc, S0, no_slack, pq))
 
     # check convergence
     converged = norm_f < tolerance

@@ -32,10 +32,11 @@ class PowerFlowOptions(OptionsTemplate):
                  tolerance: float = 1e-6,
                  max_iter: int = 25,
                  max_outer_loop_iter: int = 100,
-                 control_q: bool = False,
-                 control_taps_modules: bool = False,
-                 control_taps_phase: bool = False,
-                 apply_temperature_correction: bool = False,
+                 control_q: bool = True,
+                 control_taps_modules: bool = True,
+                 control_taps_phase: bool = True,
+                 control_remote_voltage: bool = True,
+                 apply_temperature_correction: bool = True,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  distributed_slack: bool = False,
                  ignore_single_node_islands: bool = False,
@@ -83,6 +84,8 @@ class PowerFlowOptions(OptionsTemplate):
 
         self.control_taps_phase = control_taps_phase
 
+        self.control_remote_voltage = control_remote_voltage
+
         self.apply_temperature_correction = apply_temperature_correction
 
         self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
@@ -109,6 +112,7 @@ class PowerFlowOptions(OptionsTemplate):
         self.register(key="initialize_with_existing_solution", tpe=bool)
         self.register(key="control_taps_modules", tpe=bool)
         self.register(key="control_taps_phase", tpe=bool)
+        self.register(key="control_remote_voltage", tpe=bool)
         self.register(key="apply_temperature_correction", tpe=bool)
         self.register(key="branch_impedance_tolerance_mode", tpe=BranchImpedanceMode)
         self.register(key="distributed_slack", tpe=bool)

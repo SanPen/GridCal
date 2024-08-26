@@ -24,7 +24,8 @@ from GridCalEngine.basic_structures import Vec, IntVec, BoolVec
 
 
 @nb.njit(cache=True)
-def compile_types(Pbus: Vec, types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec, IntVec, IntVec]:
+def compile_types(Pbus: Vec,
+                  types: IntVec) -> Tuple[IntVec, IntVec, IntVec, IntVec, IntVec, IntVec]:
     """
     Compile the types.
     :param Pbus: array of real power Injections per node used to choose the slack as
@@ -134,7 +135,10 @@ class SimulationIndices:
         self.pqv: IntVec = np.zeros(0, dtype=int)  # PV-remote pair
         self.vd: IntVec = np.zeros(0, dtype=int)  # slack
         self.no_slack: IntVec = np.zeros(0, dtype=int)  # all bus indices that are not slack, sorted
-        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(Pbus=Pbus, types=self.bus_types)
+        self.vd, self.pq, self.pv, self.pqv, self.p, self.no_slack = compile_types(
+            Pbus=Pbus,
+            types=self.bus_types
+        )
 
     @property
     def k_m(self):

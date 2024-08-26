@@ -22,7 +22,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode,
-                                        TapModuleControl, TapPhaseControl,HvdcControlType)
+                                        TapModuleControl, TapPhaseControl, HvdcControlType)
 from GridCalEngine.basic_structures import BoolVec
 from GridCalEngine.Devices.types import BRANCH_TYPES
 import GridCalEngine.DataStructures as ds
@@ -272,14 +272,17 @@ def get_load_data(circuit: MultiCircuit,
     return data
 
 
-def get_shunt_data(circuit: MultiCircuit,
-                   bus_dict,
-                   bus_voltage_used: BoolVec,
-                   bus_data: ds.BusData,
-                   logger: Logger,
-                   t_idx=-1,
-                   time_series=False,
-                   use_stored_guess=False) -> ds.ShuntData:
+def get_shunt_data(
+        circuit: MultiCircuit,
+        bus_dict,
+        bus_voltage_used: BoolVec,
+        bus_data: ds.BusData,
+        logger: Logger,
+        t_idx=-1,
+        time_series=False,
+        use_stored_guess=False,
+        control_remote_voltage: bool = True,
+) -> ds.ShuntData:
     """
 
     :param circuit:
@@ -348,7 +351,7 @@ def get_shunt_data(circuit: MultiCircuit,
 
                 set_bus_control_voltage(i=i,
                                         j=j,
-                                        remote_control=remote_control,
+                                        remote_control=remote_control and control_remote_voltage,
                                         bus_name=elm.bus.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -371,7 +374,7 @@ def get_shunt_data(circuit: MultiCircuit,
 
                 set_bus_control_voltage(i=i,
                                         j=j,
-                                        remote_control=remote_control,
+                                        remote_control=remote_control and control_remote_voltage,
                                         bus_name=elm.bus.name,
                                         bus_data=bus_data,
                                         bus_voltage_used=bus_voltage_used,
@@ -385,15 +388,18 @@ def get_shunt_data(circuit: MultiCircuit,
     return data
 
 
-def get_generator_data(circuit: MultiCircuit,
-                       bus_dict,
-                       bus_voltage_used: BoolVec,
-                       logger: Logger,
-                       bus_data: ds.BusData,
-                       opf_results: Union[OptimalPowerFlowResults, None] = None,
-                       t_idx=-1,
-                       time_series=False,
-                       use_stored_guess=False) -> Tuple[ds.GeneratorData, Dict[str, int]]:
+def get_generator_data(
+        circuit: MultiCircuit,
+        bus_dict,
+        bus_voltage_used: BoolVec,
+        logger: Logger,
+        bus_data: ds.BusData,
+        opf_results: Union[OptimalPowerFlowResults, None] = None,
+        t_idx=-1,
+        time_series=False,
+        use_stored_guess=False,
+        control_remote_voltage: bool = True,
+) -> Tuple[ds.GeneratorData, Dict[str, int]]:
     """
 
     :param circuit:
@@ -405,6 +411,7 @@ def get_generator_data(circuit: MultiCircuit,
     :param t_idx:
     :param time_series:
     :param use_stored_guess:
+    :param control_remote_voltage:
     :return:
     """
     devices = circuit.get_generators()
@@ -476,7 +483,7 @@ def get_generator_data(circuit: MultiCircuit,
 
                     set_bus_control_voltage(i=i,
                                             j=j,
-                                            remote_control=remote_control,
+                                            remote_control=remote_control and control_remote_voltage,
                                             bus_name=elm.bus.name,
                                             bus_data=bus_data,
                                             bus_voltage_used=bus_voltage_used,
@@ -503,22 +510,23 @@ def get_generator_data(circuit: MultiCircuit,
                 if elm.srap_enabled and data.p[k] > 0.0:
                     bus_data.srap_availbale_power[i] += data.p[k]
 
-                if elm.control_bus is not None:
-                    remote_control = True
-                    j = bus_dict[elm.control_bus]
-                else:
-                    remote_control = False
-                    j = -1
+                if elm.is_controlled:
+                    if elm.control_bus is not None:
+                        remote_control = True
+                        j = bus_dict[elm.control_bus]
+                    else:
+                        remote_control = False
+                        j = -1
 
-                set_bus_control_voltage(i=i,
-                                        j=j,
-                                        remote_control=remote_control,
-                                        bus_name=elm.bus.name,
-                                        bus_data=bus_data,
-                                        bus_voltage_used=bus_voltage_used,
-                                        candidate_Vm=elm.Vset,
-                                        use_stored_guess=use_stored_guess,
-                                        logger=logger)
+                    set_bus_control_voltage(i=i,
+                                            j=j,
+                                            remote_control=remote_control and control_remote_voltage,
+                                            bus_name=elm.bus.name,
+                                            bus_data=bus_data,
+                                            bus_voltage_used=bus_voltage_used,
+                                            candidate_Vm=elm.Vset,
+                                            use_stored_guess=use_stored_guess,
+                                            logger=logger)
 
         # reactive power limits, for the given power value
         if elm.use_reactive_power_curve:
@@ -533,15 +541,18 @@ def get_generator_data(circuit: MultiCircuit,
     return data, gen_index_dict
 
 
-def get_battery_data(circuit: MultiCircuit,
-                     bus_dict: Dict[Bus, int],
-                     bus_voltage_used: BoolVec,
-                     logger: Logger,
-                     bus_data: ds.BusData,
-                     opf_results: Union[OptimalPowerFlowResults, None] = None,
-                     t_idx=-1,
-                     time_series=False,
-                     use_stored_guess=False) -> ds.BatteryData:
+def get_battery_data(
+        circuit: MultiCircuit,
+        bus_dict: Dict[Bus, int],
+        bus_voltage_used: BoolVec,
+        logger: Logger,
+        bus_data: ds.BusData,
+        opf_results: Union[OptimalPowerFlowResults, None] = None,
+        t_idx=-1,
+        time_series=False,
+        use_stored_guess=False,
+        control_remote_voltage: bool = True,
+) -> ds.BatteryData:
     """
 
     :param circuit:
@@ -553,6 +564,7 @@ def get_battery_data(circuit: MultiCircuit,
     :param t_idx:
     :param time_series:
     :param use_stored_guess:
+    :param control_remote_voltage:
     :return:
     """
     devices = circuit.get_batteries()
@@ -630,7 +642,7 @@ def get_battery_data(circuit: MultiCircuit,
 
                     set_bus_control_voltage(i=i,
                                             j=j,
-                                            remote_control=remote_control,
+                                            remote_control=remote_control and control_remote_voltage,
                                             bus_name=elm.bus.name,
                                             bus_data=bus_data,
                                             bus_voltage_used=bus_voltage_used,
@@ -668,7 +680,7 @@ def get_battery_data(circuit: MultiCircuit,
 
                     set_bus_control_voltage(i=i,
                                             j=j,
-                                            remote_control=remote_control,
+                                            remote_control=remote_control and control_remote_voltage,
                                             bus_name=elm.bus.name,
                                             bus_data=bus_data,
                                             bus_voltage_used=bus_voltage_used,
@@ -770,20 +782,24 @@ def fill_parent_branch(i: int,
     return f, t
 
 
-def fill_controllable_branch(ii: int,
-                             elm: Union[dev.Transformer2W, dev.Winding, dev.VSC, dev.UPFC],
-                             data: ds.BranchData,
-                             bus_data: ds.BusData,
-                             bus_dict: Dict[Bus, int],
-                             apply_temperature: bool,
-                             branch_tolerance_mode: BranchImpedanceMode,
-                             t_idx: int,
-                             time_series: bool,
-                             opf_results: Union[OptimalPowerFlowResults, None],
-                             use_stored_guess: bool,
-                             bus_voltage_used: BoolVec,
-                             Sbase: float,
-                             logger: Logger):
+def fill_controllable_branch(
+        ii: int,
+        elm: Union[dev.Transformer2W, dev.Winding, dev.VSC, dev.UPFC],
+        data: ds.BranchData,
+        bus_data: ds.BusData,
+        bus_dict: Dict[Bus, int],
+        apply_temperature: bool,
+        branch_tolerance_mode: BranchImpedanceMode,
+        t_idx: int,
+        time_series: bool,
+        opf_results: Union[OptimalPowerFlowResults, None],
+        use_stored_guess: bool,
+        bus_voltage_used: BoolVec,
+        Sbase: float,
+        control_taps_modules: bool,
+        control_taps_phase: bool,
+        control_remote_voltage: bool,
+        logger: Logger):
     """
 
     :param ii:
@@ -799,6 +815,9 @@ def fill_controllable_branch(ii: int,
     :param use_stored_guess:
     :param bus_voltage_used:
     :param Sbase:
+    :param control_taps_modules:
+    :param control_taps_phase:
+    :param control_remote_voltage:
     :param logger:
     :return:
     """
@@ -814,18 +833,21 @@ def fill_controllable_branch(ii: int,
 
     if time_series:
 
-        data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
-        data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
-        if elm.regulation_bus is None:
-            reg_bus = elm.bus_from
-            if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
-                logger.add_warning("Unspecified regulation bus",
-                                   device_class=elm.device_type.value,
-                                   device=elm.name)
-        else:
-            reg_bus = elm.regulation_bus
+        if control_taps_phase:
+            data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode_prof[t_idx]
 
-        data.tap_controlled_buses[ii] = bus_dict[reg_bus]
+        if control_taps_modules:
+            data.tap_module_control_mode[ii] = elm.tap_module_control_mode_prof[t_idx]
+            if elm.regulation_bus is None:
+                reg_bus = elm.bus_from
+                if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+                    logger.add_warning("Unspecified regulation bus",
+                                       device_class=elm.device_type.value,
+                                       device=elm.name)
+            else:
+                reg_bus = elm.regulation_bus
+
+            data.tap_controlled_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset_prof[t_idx] / Sbase
         data.Qset[ii] = elm.Qset_prof[t_idx] / Sbase
@@ -839,18 +861,21 @@ def fill_controllable_branch(ii: int,
             data.tap_angle[ii] = elm.tap_phase_prof[t_idx]
     else:
 
-        data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
-        data.tap_module_control_mode[ii] = elm.tap_module_control_mode
+        if control_taps_phase:
+            data.tap_phase_control_mode[ii] = elm.tap_phase_control_mode
 
-        if elm.regulation_bus is None:
-            reg_bus = elm.bus_from
-            if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
-                logger.add_warning("Unspecified regulation bus",
-                                   device_class=elm.device_type.value,
-                                   device=elm.name)
-        else:
-            reg_bus = elm.regulation_bus
-        data.tap_controlled_buses[ii] = bus_dict[reg_bus]
+        if control_taps_modules:
+            data.tap_module_control_mode[ii] = elm.tap_module_control_mode
+
+            if elm.regulation_bus is None:
+                reg_bus = elm.bus_from
+                if data.tap_module_control_mode[ii] == TapModuleControl.Vm:
+                    logger.add_warning("Unspecified regulation bus",
+                                       device_class=elm.device_type.value,
+                                       device=elm.name)
+            else:
+                reg_bus = elm.regulation_bus
+            data.tap_controlled_buses[ii] = bus_dict[reg_bus]
 
         data.Pset[ii] = elm.Pset / Sbase
         data.Qset[ii] = elm.Qset / Sbase
@@ -891,17 +916,22 @@ def fill_controllable_branch(ii: int,
                                  expected_value=bus_data.Vbus[bus_idx])
 
 
-def get_branch_data(circuit: MultiCircuit,
-                    bus_dict: Dict[Bus, int],
-                    bus_data: ds.BusData,
-                    bus_voltage_used: BoolVec,
-                    apply_temperature: bool,
-                    branch_tolerance_mode: BranchImpedanceMode,
-                    t_idx: int = -1,
-                    time_series: bool = False,
-                    opf_results: Union[OptimalPowerFlowResults, None] = None,
-                    use_stored_guess: bool = False,
-                    logger: Logger = Logger()) -> ds.BranchData:
+def get_branch_data(
+        circuit: MultiCircuit,
+        bus_dict: Dict[Bus, int],
+        bus_data: ds.BusData,
+        bus_voltage_used: BoolVec,
+        apply_temperature: bool,
+        branch_tolerance_mode: BranchImpedanceMode,
+        t_idx: int = -1,
+        time_series: bool = False,
+        opf_results: Union[OptimalPowerFlowResults, None] = None,
+        use_stored_guess: bool = False,
+        control_taps_modules: bool = True,
+        control_taps_phase: bool = True,
+        control_remote_voltage: bool = True,
+        logger: Logger = Logger()
+) -> ds.BranchData:
     """
     Compile BranchData for a time step or the snapshot
     :param circuit: MultiCircuit
@@ -914,6 +944,9 @@ def get_branch_data(circuit: MultiCircuit,
     :param time_series: compile time series? else the sanpshot is compiled
     :param opf_results: OptimalPowerFlowResults
     :param use_stored_guess: use the stored voltage ?
+    :param control_taps_modules: Control TapsModules
+    :param control_taps_phase: Control TapsPhase
+    :param control_remote_voltage: Control RemoteVoltage
     :param logger: Logger
     :return: BranchData
     """
@@ -968,6 +1001,9 @@ def get_branch_data(circuit: MultiCircuit,
                                  use_stored_guess=use_stored_guess,
                                  bus_voltage_used=bus_voltage_used,
                                  Sbase=circuit.Sbase,
+                                 control_taps_modules=control_taps_modules,
+                                 control_taps_phase=control_taps_phase,
+                                 control_remote_voltage=control_remote_voltage,
                                  logger=logger)
 
         data.conn[ii] = elm.conn
@@ -992,6 +1028,9 @@ def get_branch_data(circuit: MultiCircuit,
                                      use_stored_guess=use_stored_guess,
                                      bus_voltage_used=bus_voltage_used,
                                      Sbase=circuit.Sbase,
+                                     control_taps_modules=control_taps_modules,
+                                     control_taps_phase=control_taps_phase,
+                                     control_remote_voltage=control_remote_voltage,
                                      logger=logger)
 
             data.conn[ii] = elm.conn
@@ -1017,6 +1056,9 @@ def get_branch_data(circuit: MultiCircuit,
                                  use_stored_guess=use_stored_guess,
                                  bus_voltage_used=bus_voltage_used,
                                  Sbase=circuit.Sbase,
+                                 control_taps_modules=control_taps_modules,
+                                 control_taps_phase=control_taps_phase,
+                                 control_remote_voltage=control_remote_voltage,
                                  logger=logger)
         data.Kdp[ii] = elm.kdp
         data.is_converter[ii] = True

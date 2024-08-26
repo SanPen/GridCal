@@ -64,8 +64,8 @@ class NumericPowerFlowResults:
         self.converged = converged
         self.norm_f = norm_f
         self.Scalc = Scalc
-        self.ma = m
-        self.tau = tau
+        self.tap_module = m
+        self.tap_angle = tau
         self.Beq = Beq
         self.Ybus = Ybus
         self.Yf = Yf

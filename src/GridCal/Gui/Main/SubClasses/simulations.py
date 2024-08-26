@@ -64,7 +64,6 @@ class SimulationsMain(TimeEventsMain):
         # Power Flow Methods
         self.solvers_dict = OrderedDict()
         self.solvers_dict[SolverType.NR.value] = SolverType.NR
-        self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
         self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
         self.solvers_dict[SolverType.LM.value] = SolverType.LM
         self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
@@ -296,7 +295,6 @@ class SimulationsMain(TimeEventsMain):
 
             # Power Flow Methods
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
 
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
@@ -325,7 +323,6 @@ class SimulationsMain(TimeEventsMain):
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
             self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
@@ -354,7 +351,6 @@ class SimulationsMain(TimeEventsMain):
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
@@ -617,66 +613,38 @@ class SimulationsMain(TimeEventsMain):
         lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
         return True, lst_from, lst_to, lst_br, lst_br_hvdc, areas_from, areas_to
 
-    def get_selected_power_flow_options(self):
+    def get_selected_power_flow_options(self) -> sim.PowerFlowOptions:
         """
         Gather power flow run options
-        :return:
+        :return: sim.PowerFlowOptions
         """
-        solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        control_q = self.ui.control_q_checkBox.isChecked()
-
-        control_taps_modules = self.ui.control_tap_modules_checkBox.isChecked()
-
-        control_taps_phase = self.ui.control_tap_phase_checkBox.isChecked()
-
-        verbose = self.ui.verbositySpinBox.value()
-
-        exponent = self.ui.tolerance_spinBox.value()
-        tolerance = 1.0 / (10.0 ** exponent)
-
-        max_iter = self.ui.max_iterations_spinBox.value()
-
-        max_outer_iter = 1000  # not used anymore
-
-        mu = self.ui.muSpinBox.value()
-
-        if self.ui.helm_retry_checkBox.isChecked():
-            retry_with_other_methods = True  # to set a value
-        else:
-            retry_with_other_methods = False
+        tolerance = 1.0 / (10.0 ** self.ui.tolerance_spinBox.value())
 
         if self.ui.apply_impedance_tolerances_checkBox.isChecked():
             branch_impedance_tolerance_mode = BranchImpedanceMode.Upper
         else:
             branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
 
-        temp_correction = self.ui.temperature_correction_checkBox.isChecked()
-
-        distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-
-        ignore_single_node_islands = self.ui.ignore_single_node_islands_checkBox.isChecked()
-
-        use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
-
-        generate_report = self.ui.addPowerFlowReportCheckBox.isChecked()
-
-        ops = sim.PowerFlowOptions(solver_type=solver_type,
-                                   retry_with_other_methods=retry_with_other_methods,
-                                   verbose=verbose,
-                                   tolerance=tolerance,
-                                   max_iter=max_iter,
-                                   max_outer_loop_iter=max_outer_iter,
-                                   control_q=control_q,
-                                   control_taps_phase=control_taps_phase,
-                                   control_taps_modules=control_taps_modules,
-                                   apply_temperature_correction=temp_correction,
-                                   branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
-                                   distributed_slack=distributed_slack,
-                                   ignore_single_node_islands=ignore_single_node_islands,
-                                   trust_radius=mu,
-                                   use_stored_guess=use_stored_guess,
-                                   generate_report=generate_report)
+        ops = sim.PowerFlowOptions(
+            solver_type=self.solvers_dict[self.ui.solver_comboBox.currentText()],
+            retry_with_other_methods=self.ui.helm_retry_checkBox.isChecked(),
+            verbose=self.ui.verbositySpinBox.value(),
+            tolerance=tolerance,
+            max_iter=self.ui.max_iterations_spinBox.value(),
+            max_outer_loop_iter=1000,
+            control_q=self.ui.control_q_checkBox.isChecked(),
+            control_taps_phase=self.ui.control_tap_phase_checkBox.isChecked(),
+            control_taps_modules=self.ui.control_tap_modules_checkBox.isChecked(),
+            control_remote_voltage=self.ui.control_remote_voltage_checkBox.isChecked(),
+            apply_temperature_correction=self.ui.temperature_correction_checkBox.isChecked(),
+            branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
+            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+            ignore_single_node_islands=self.ui.ignore_single_node_islands_checkBox.isChecked(),
+            trust_radius=self.ui.muSpinBox.value(),
+            use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
+            generate_report=self.ui.addPowerFlowReportCheckBox.isChecked()
+        )
 
         return ops
 
@@ -975,8 +943,7 @@ class SimulationsMain(TimeEventsMain):
 
                         # get the power flow options from the GUI
                         sc_options = sim.ShortCircuitOptions(bus_index=sel_buses[0],
-                                                             fault_type=self_short_circuit_types[0],
-                                                             branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
+                                                             fault_type=self_short_circuit_types[0])
 
                         pf_options = self.get_selected_power_flow_options()
 

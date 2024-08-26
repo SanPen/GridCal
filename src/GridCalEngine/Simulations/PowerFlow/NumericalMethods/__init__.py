@@ -16,12 +16,6 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.fast_decoupled import FDPF
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.iwamoto_newton_raphson import IwamotoNR
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.levenberg_marquardt import levenberg_marquardt_pf
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson import NR_LS
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_current import NR_I_LS
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_ode import ContinuousNR
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.gauss_power_flow import gausspf
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.helm_power_flow import helm_josep, helm_coefficients_josep, helm_coefficients_dY, helm_preparation_dY
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_general import NR_LS_GENERAL
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.newton_raphson_decoupled import NRD_LS
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.linearized_power_flow import dcpf, lacpf

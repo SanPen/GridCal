@@ -30,7 +30,7 @@ sparse = get_sparse_type()
 
 def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.csc_matrix,
          S0: CxVec, I0: CxVec, Y0: CxVec, V0: CxVec, tau: Vec,
-         vd: IntVec, pvpq: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
+         vd: IntVec, no_slack: IntVec, pq: IntVec, pv: IntVec) -> NumericPowerFlowResults:
     """
     Solves a linear-DC power flow.
     :param Ybus: Normal circuit admittance matrix
@@ -43,7 +43,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
     :param V0: Array of complex seed voltage (it contains the ref voltages)
     :param tau: Array of branch angles
     :param vd: array of the indices of the slack nodes
-    :param pvpq: array of the indices of the non-slack nodes
+    :param no_slack: array of the indices of the non-slack nodes
     :param pq: array of the indices of the pq nodes
     :param pv: array of the indices of the pv nodes
     :return: NumericPowerFlowResults instance
@@ -67,10 +67,10 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
         # Since we have removed the slack nodes, we must account their influence as Injections Bref * Va_ref
         # We also need to account for the effect of the phase shifters (Pps)
         Pps = Bf.T @ tau
-        Pinj = Sbus[pvpq].real - (Bref @ Va_ref) * Vm[pvpq] + Pps[pvpq]  # TODO: add G from shunts
+        Pinj = Sbus[no_slack].real - (Bref @ Va_ref) * Vm[no_slack] + Pps[no_slack]  # TODO: add G from shunts
 
         # update angles for non-reference buses
-        Va[pvpq] = linear_solver(Bpqpv, Pinj)
+        Va[no_slack] = linear_solver(Bpqpv, Pinj)
         Va[vd] = Va_ref
 
         # re assemble the voltage
@@ -80,7 +80,7 @@ def dcpf(Ybus: sp.csc_matrix, Bpqpv: sp.csc_matrix, Bref: sp.csc_matrix, Bf: sp.
         Scalc = cf.compute_power(Ybus, V)
 
         # compute the power mismatch between the specified power Sbus and the calculated power Scalc
-        mismatch = cf.compute_fx(Scalc, S0, pvpq, pq)
+        mismatch = cf.compute_fx(Scalc, S0, no_slack, pq)
 
         # check for convergence
         norm_f = np.linalg.norm(mismatch, np.Inf)

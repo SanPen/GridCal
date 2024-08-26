@@ -33,6 +33,7 @@ fastapi
 starlette
 uvicorn
 websockets
+cryptography
 opencv-python
 setuptools
 packaging
