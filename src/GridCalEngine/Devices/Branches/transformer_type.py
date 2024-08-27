@@ -78,18 +78,12 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
-        self._total_positions: int = total_positions
-        self._neutral_position: int = neutral_position
-        self._dV: float = dV
-        self._asymmetry_angle: float = asymmetry_angle
-        self._tc_type: TapChangerTypes = tc_type
-
-        self._tap_module_min = 0.0
-        self._tap_module_max = 0.0
-        self._tap_phase_min = 0.0
-        self._tap_phase_max = 0.0
-
-        self.recalc_taps()
+        # The tap changer parameters are stored and used with the help of the TapChanger object
+        self._tap_changer = TapChanger(total_positions=total_positions,
+                                       neutral_position=neutral_position,
+                                       dV=dV,
+                                       asymmetry_angle=asymmetry_angle,
+                                       tc_type=tc_type)
 
         self.register(key='HV', units='kV', tpe=float, definition='Nominal voltage al the high voltage side')
         self.register(key='LV', units='kV', tpe=float, definition='Nominal voltage al the low voltage side')
@@ -111,145 +105,132 @@ class TransformerType(EditableDevice):
         self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max tap phase', editable=False)
 
     @property
-    def tap_module_min(self):
+    def tap_module_min(self) -> float:
         """
-
-        :return:
+        Min tap module, computed on the fly
+        :return: float
         """
-        return self._tap_module_min
+        return self._tap_changer.get_tap_module_min()
 
     @tap_module_min.setter
     def tap_module_min(self, val: float):
-        if isinstance(val, float):
-            self._tap_module_min = val
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+        # this is a read only property
+        pass
 
     @property
-    def tap_module_max(self):
+    def tap_module_max(self) -> float:
         """
-
-        :return:
+        Max tap module, computed on the fly
+        :return: float
         """
-        return self._tap_module_max
+        return self._tap_changer.get_tap_module_max()
 
     @tap_module_max.setter
     def tap_module_max(self, val: float):
-        if isinstance(val, float):
-            self._tap_module_max = val
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+        # this is a read only property
+        pass
 
     @property
-    def tap_phase_min(self):
+    def tap_phase_min(self) -> float:
         """
-
-        :return:
+        Min tap phase, cputed on the fly
+        :return: float
         """
-        return self._tap_phase_min
+        return self._tap_changer.get_tap_phase_min()
 
     @tap_phase_min.setter
     def tap_phase_min(self, val: float):
-        if isinstance(val, float):
-            self._tap_phase_min = val
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+        # this is a read only property
+        pass
 
     @property
-    def tap_phase_max(self):
+    def tap_phase_max(self) -> float:
         """
-
-        :return:
+        Maximum tap phase (calculated)
+        :return: float
         """
-        return self._tap_phase_max
+        return self._tap_changer.get_tap_phase_max()
 
     @tap_phase_max.setter
     def tap_phase_max(self, val: float):
-        if isinstance(val, float):
-            self._tap_phase_max = val
-        else:
-            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+        # this is a read only property
+        pass
 
     @property
-    def total_positions(self):
+    def total_positions(self) -> int:
         """
-
-        :return:
+        Tap changer total number of positions
+        :return: int
         """
-        return self._total_positions
+        return self._tap_changer.total_positions
 
     @total_positions.setter
     def total_positions(self, value: int):
         if isinstance(value, int):
-            self._total_positions = value
-            self.recalc_taps()
+            self._tap_changer.total_positions = value
         else:
             raise TypeError(f'Expected int but got {type(value)}')
 
     @property
-    def neutral_position(self):
+    def neutral_position(self) -> int:
         """
-
-        :return:
+        Tap changer neutral position
+        :return: int
         """
-        return self._neutral_position
+        return self._tap_changer.neutral_position
 
     @neutral_position.setter
     def neutral_position(self, value: int):
         if isinstance(value, int):
-            if 0 <= value < self._total_positions:
-                self._neutral_position = value
-                self.recalc_taps()
+            if 0 <= value < self._tap_changer.total_positions:
+                self._tap_changer.neutral_position = value
             else:
                 pass
         else:
             raise TypeError(f'Expected int but got {type(value)}')
 
     @property
-    def dV(self):
+    def dV(self) -> float:
         """
-
-        :return:
+        Tap changer Voltage increment per step (p.u.)
+        :return: float
         """
-        return self._total_positions
+        return self._tap_changer.dV
 
     @dV.setter
     def dV(self, value: float):
         if isinstance(value, float):
-            self._dV = value
-            self.recalc_taps()
+            self._tap_changer.dV = value
         else:
             raise TypeError(f'Expected int but got {type(value)}')
 
     @property
-    def asymmetry_angle(self):
+    def asymmetry_angle(self) -> float:
         """
-
-        :return:
+        Tap changer assymetry angle (deg)
+        :return: float
         """
-        return self._asymmetry_angle
+        return self._tap_changer.asymmetry_angle
 
     @asymmetry_angle.setter
     def asymmetry_angle(self, value: float):
         if isinstance(value, float):
-            self._asymmetry_angle = value
-            self.recalc_taps()
+            self._tap_changer.asymmetry_angle = value
         else:
             raise TypeError(f'Expected float but got {type(value)}')
 
     @property
-    def tc_type(self):
+    def tc_type(self) -> TapChangerTypes:
         """
-
-        :return:
+        Get the tap changer type
+        :return: TapChangerTypes
         """
-        return self._tc_type
+        return self._tap_changer.tc_type
 
     @tc_type.setter
     def tc_type(self, value: TapChangerTypes):
         if isinstance(value, TapChangerTypes):
-            self._tc_type = value
-            self.recalc_taps()
+            self._tap_changer.tc_type = value
         else:
             raise TypeError(f'Expected TapChangerTypes but got {type(value)}')
 
@@ -287,22 +268,6 @@ class TransformerType(EditableDevice):
                           dV=self.dV,
                           asymmetry_angle=self.asymmetry_angle,
                           tc_type=self.tc_type)
-
-    def recalc_taps(self):
-        """
-
-        :return:
-        """
-        tc = TapChanger(total_positions=self.total_positions,
-                        neutral_position=self._neutral_position,
-                        dV=self._dV,
-                        asymmetry_angle=self._asymmetry_angle,
-                        tc_type=self._tc_type)
-
-        self._tap_module_min = tc.get_tap_module_min()
-        self._tap_module_max = tc.get_tap_module_max()
-        self._tap_phase_min = tc.get_tap_phase_min()
-        self._tap_phase_max = tc.get_tap_phase_max()
 
 
 def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float,

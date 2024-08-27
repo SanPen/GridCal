@@ -2436,16 +2436,16 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.ignore_single_node_islands_checkBox)
 
+        self.label_50 = QLabel(self.frame_36)
+        self.label_50.setObjectName(u"label_50")
+
+        self.verticalLayout_4.addWidget(self.label_50)
+
         self.distributed_slack_checkBox = QCheckBox(self.frame_36)
         self.distributed_slack_checkBox.setObjectName(u"distributed_slack_checkBox")
         self.distributed_slack_checkBox.setFont(font1)
 
         self.verticalLayout_4.addWidget(self.distributed_slack_checkBox)
-
-        self.label_50 = QLabel(self.frame_36)
-        self.label_50.setObjectName(u"label_50")
-
-        self.verticalLayout_4.addWidget(self.label_50)
 
         self.control_q_checkBox = QCheckBox(self.frame_36)
         self.control_q_checkBox.setObjectName(u"control_q_checkBox")
@@ -5255,11 +5255,11 @@ class Ui_mainWindow(object):
         self.ignore_single_node_islands_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, the islands of a single node are ignored.", None))
 #endif // QT_CONFIG(tooltip)
         self.ignore_single_node_islands_checkBox.setText(QCoreApplication.translate("mainWindow", u"Ignore single node islands", None))
+        self.label_50.setText("")
 #if QT_CONFIG(tooltip)
         self.distributed_slack_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active, the slack power is distributed among the generators according to their installed power &quot;Snom&quot;</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.distributed_slack_checkBox.setText(QCoreApplication.translate("mainWindow", u"Distributed slack", None))
-        self.label_50.setText("")
 #if QT_CONFIG(tooltip)
         self.control_q_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for reactive power limits control", None))
 #endif // QT_CONFIG(tooltip)

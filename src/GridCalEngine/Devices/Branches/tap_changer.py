@@ -63,7 +63,7 @@ class TapChanger:
         """
 
         self.asymmetry_angle = asymmetry_angle  # assymetry angle (Theta)
-        self.total_positions = total_positions  # total number of positions
+        self._total_positions = total_positions  # total number of positions
         self.dV = dV  # voltage increment in p.u.
         self.neutral_position = neutral_position  # neutral position
         self._tap_position = neutral_position  # index with respect to the neutral position
@@ -74,6 +74,22 @@ class TapChanger:
         self._tau_array = np.zeros(total_positions)
         self._m_array = np.zeros(total_positions)
         self.recalc()
+
+    @property
+    def total_positions(self) -> int:
+        """
+        Tap changer total number of positions
+        :return: int
+        """
+        return self._total_positions
+
+    @total_positions.setter
+    def total_positions(self, value: int):
+        if isinstance(value, int):
+            self._total_positions = value
+            self.resize()
+        else:
+            raise TypeError(f'Expected int but got {type(value)}')
 
     @property
     def tap_position(self) -> int:
@@ -90,6 +106,15 @@ class TapChanger:
         :param val: tap value
         """
         self._tap_position = val
+
+    def resize(self) -> None:
+        """
+        Resize and recalc the tap positions array
+        """
+        self._ndv = np.zeros(self.total_positions)
+        self._tau_array = np.zeros(self.total_positions)
+        self._m_array = np.zeros(self.total_positions)
+        self.recalc()
 
     def recalc(self) -> None:
         """

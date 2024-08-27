@@ -4519,6 +4519,13 @@ QProgressBar::chunk{
                 </widget>
                </item>
                <item>
+                <widget class="QLabel" name="label_50">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QCheckBox" name="distributed_slack_checkBox">
                  <property name="font">
                   <font>
@@ -4530,13 +4537,6 @@ QProgressBar::chunk{
                  </property>
                  <property name="text">
                   <string>Distributed slack</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="label_50">
-                 <property name="text">
-                  <string/>
                  </property>
                 </widget>
                </item>
