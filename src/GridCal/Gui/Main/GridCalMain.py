@@ -101,6 +101,7 @@ class MainGUI(ScriptingMain):
         """
         self.load_gui_config()
         self.load_server_config()
+        self.process_plugins()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """
