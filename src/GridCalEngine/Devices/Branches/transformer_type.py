@@ -51,6 +51,11 @@ class TransformerType(EditableDevice):
         :param short_circuit_voltage: Short circuit voltage in %
         :param gr_hv1: proportion of the resistance in the HV side (i.e. 0.5)
         :param gx_hv1: proportion of the reactance in the HV side (i.e. 0.5)
+        :param total_positions: Total number of positions
+        :param neutral_position: Neutral position
+        :param dV: per unit of voltage increment
+        :param asymmetry_angle: Asymmetry angle (deg)
+        :param tc_type: Tap changer type
         :param name: Name of the device template
         :param idtag: device UUID
         """
