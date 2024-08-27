@@ -161,8 +161,8 @@ class BaseMainGui(QMainWindow):
         self.file_sync_thread = syncdrv.FileSyncThread(self.circuit, None, None)
 
         # simulation start end
-        self.simulation_start_index: int = 0
-        self.simulation_end_index: int = 0
+        self.simulation_start_index: int = -1
+        self.simulation_end_index: int = -1
 
         # window pointers ------------------------------------------------------------------------------------------
         self.file_sync_window: Union[SyncDialogueWindow, None] = None
@@ -581,6 +581,7 @@ class BaseMainGui(QMainWindow):
 
         else:
             mdl = QtGui.QStandardItemModel()
+            self.setup_sim_indices(-1, -1)
         self.ui.vs_departure_comboBox.setModel(mdl)
         self.ui.vs_target_comboBox.setModel(mdl)
         self.setup_time_sliders()

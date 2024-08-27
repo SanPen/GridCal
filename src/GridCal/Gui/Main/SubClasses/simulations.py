@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import os
 import datetime
 import numpy as np
@@ -265,10 +267,10 @@ class SimulationsMain(TimeEventsMain):
 
         return lst
 
-    def get_time_indices(self) -> Union[np.ndarray | None]:
+    def get_time_indices(self) -> np.ndarray | None:
         """
         Get an array of indices of the time steps selected within the start-end interval
-        :return: np.array[int] or None if empty profile
+        :return: np.array[int]
         """
 
         if self.circuit.time_profile is None:
@@ -276,6 +278,7 @@ class SimulationsMain(TimeEventsMain):
         else:
             start = self.get_simulation_start()
             end = self.get_simulation_end()
+
             return np.arange(start, end + 1)
 
     def modify_ui_options_according_to_the_engine(self) -> None:
