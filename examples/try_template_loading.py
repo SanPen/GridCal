@@ -2,16 +2,21 @@ import os
 import GridCalEngine.api as gce
 import GridCalEngine.Devices as dev
 import GridCal.templates as templs
+import GridCalEngine.Topology.topology as tp
 
 
 def open_dummy_grid():
     # fname = os.path.join('C:/Users/J/Downloads/temp_tr1.gridcal')
     # fname = os.path.join('C:/Users/J/Downloads/temp_tr1_invested.gridcal')
     # fname = os.path.join('C:/Users/J/Downloads/temp_tr2.gridcal')
-    fname = os.path.join('C:/Users/J/Downloads/jsp2.gridcal')
+    fname = os.path.join('C:/Users/J/Downloads/vg1.gridcal')
     main_circuit = gce.open_file(fname)
     results = gce.power_flow(main_circuit)
     print(results.voltage)
+
+    abc = main_circuit.get_branch_active_time_array()
+    # tp.find_different_states(states_array=abc[main_circuit.time_indices])
+
     return main_circuit
 
 
@@ -53,3 +58,4 @@ if __name__ == "__main__":
     open_dummy_grid()
     # pp = process_dummy_grid()
     # gg = create_dummy_grid()
+
