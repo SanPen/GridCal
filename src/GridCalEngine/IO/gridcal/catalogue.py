@@ -138,9 +138,6 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
                               short_circuit_voltage=item['V short circuit (%)'],
                               gr_hv1=0.5,
                               gx_hv1=0.5,
-                              tap_module=item['tap module (pu)'],
-                              tap_module_max=item['tap module max (pu)'],
-                              tap_module_min=item['tap module min (pu)'],
                               name=item['Name'])
         lst.append(tpe)
 
