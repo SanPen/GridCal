@@ -201,7 +201,7 @@ class TimeSeriesDriverTemplate(DriverTemplate):
                 self.time_indices = None
                 self.sampled_probabilities = None
             else:
-                if len(time_indices) == 0:
+                if len(time_indices) == 0:  # time_indices = [0]
                     self.time_indices = None
                     self.sampled_probabilities = None
                 else:

@@ -265,16 +265,18 @@ class SimulationsMain(TimeEventsMain):
 
         return lst
 
-    def get_time_indices(self) -> np.ndarray:
+    def get_time_indices(self) -> Union[np.ndarray | None]:
         """
         Get an array of indices of the time steps selected within the start-end interval
-        :return: np.array[int]
+        :return: np.array[int] or None if empty profile
         """
 
-        start = self.get_simulation_start()
-        end = self.get_simulation_end()
-
-        return np.arange(start, end + 1)
+        if self.circuit.time_profile is None:
+            return None
+        else:
+            start = self.get_simulation_start()
+            end = self.get_simulation_end()
+            return np.arange(start, end + 1)
 
     def modify_ui_options_according_to_the_engine(self) -> None:
         """

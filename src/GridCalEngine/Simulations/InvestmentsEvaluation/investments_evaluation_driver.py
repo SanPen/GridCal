@@ -216,8 +216,8 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         :param clustering_results: Clustering results
         """
 
-        if len(time_indices) == 1:  # Single snapshot with a [0] by default:
-            time_indices = None
+        # if len(time_indices) == 1:  # Single snapshot with a [0] by default:
+        #     time_indices = None
 
         TimeSeriesDriverTemplate.__init__(self,
                                           grid=grid,
