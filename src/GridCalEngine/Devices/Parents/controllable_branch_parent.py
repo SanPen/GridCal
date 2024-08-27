@@ -199,8 +199,8 @@ class ControllableBranchParent(BranchParent):
 
         self._tap_module_prof = Profile(default_value=tap_module, data_type=float)
 
-        self.tap_module_max = tap_module_max
-        self.tap_module_min = tap_module_min
+        self._tap_module_max = tap_module_max
+        self._tap_module_min = tap_module_min
 
         self._tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
         self._tap_phase_control_mode_prof = Profile(default_value=tap_phase_control_mode, data_type=TapPhaseControl)
@@ -215,8 +215,8 @@ class ControllableBranchParent(BranchParent):
         self.tap_phase = tap_phase
         self._tap_phase_prof = Profile(default_value=tap_phase, data_type=float)
 
-        self.tap_phase_max = tap_phase_max
-        self.tap_phase_min = tap_phase_min
+        self._tap_phase_max = tap_phase_max
+        self._tap_phase_min = tap_phase_min
 
         self._tap_module_control_mode: TapModuleControl = tap_module_control_mode
         self._tap_module_control_mode_prof = Profile(default_value=tap_module_control_mode, data_type=TapModuleControl)
@@ -439,6 +439,66 @@ class ControllableBranchParent(BranchParent):
             raise Exception(str(type(val)) + 'not supported to be set into a temp_oper_prof')
 
     @property
+    def tap_module_min(self):
+        """
+
+        :return:
+        """
+        return self._tap_module_min
+
+    @tap_module_min.setter
+    def tap_module_min(self, val: float):
+        if isinstance(val, float):
+            self._tap_module_min = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+
+    @property
+    def tap_module_max(self):
+        """
+
+        :return:
+        """
+        return self._tap_module_max
+
+    @tap_module_max.setter
+    def tap_module_max(self, val: float):
+        if isinstance(val, float):
+            self._tap_module_max = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+
+    @property
+    def tap_phase_min(self):
+        """
+
+        :return:
+        """
+        return self._tap_phase_min
+
+    @tap_phase_min.setter
+    def tap_phase_min(self, val: float):
+        if isinstance(val, float):
+            self._tap_phase_min = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+
+    @property
+    def tap_phase_max(self):
+        """
+
+        :return:
+        """
+        return self._tap_phase_max
+
+    @tap_phase_max.setter
+    def tap_phase_max(self, val: float):
+        if isinstance(val, float):
+            self._tap_phase_max = val
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a tap_module_min')
+
+    @property
     def tap_changer(self) -> TapChanger:
         """
         Cost profile
@@ -450,6 +510,10 @@ class ControllableBranchParent(BranchParent):
     def tap_changer(self, val: TapChanger):
         if isinstance(val, TapChanger):
             self._tap_changer = val
+            self.tap_module_min = val.get_tap_module_min()
+            self.tap_module_max = val.get_tap_module_max()
+            self.tap_phase_min = val.get_tap_phase_min()
+            self.tap_phase_max = val.get_tap_phase_max()
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a tap_changer')
 

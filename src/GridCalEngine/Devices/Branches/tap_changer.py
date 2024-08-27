@@ -256,6 +256,34 @@ class TapChanger:
         if self.tc_type != TapChangerTypes.NoRegulation:
             return find_closest_number(arr=self._tau_array, target=tap_module)
 
+    def get_tap_module_min(self) -> float:
+        """
+
+        :return:
+        """
+        return self.get_tap_module2(tap_position=0)
+
+    def get_tap_module_max(self) -> float:
+        """
+
+        :return:
+        """
+        return self.get_tap_module2(tap_position=self.total_positions - 1)
+
+    def get_tap_phase_min(self) -> float:
+        """
+
+        :return:
+        """
+        return self.get_tap_phase2(tap_position=0)
+
+    def get_tap_phase_max(self) -> float:
+        """
+
+        :return:
+        """
+        return self.get_tap_phase2(tap_position=self.total_positions - 1)
+
     def __eq__(self, other: "TapChanger") -> bool:
         """
         Equality check

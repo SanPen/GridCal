@@ -351,6 +351,8 @@ class Transformer2W(ControllableBranchParent):
             self.HV = obj.HV
             self.LV = obj.LV
 
+            self.tap_changer = obj.get_tap_changer()
+
             if self.template is not None:
                 if obj != self.template:
                     self.template = obj
