@@ -4416,6 +4416,8 @@ class Ui_mainWindow(object):
         self.menuDiagrams.setObjectName(u"menuDiagrams")
         self.menuBus_Branch_options = QMenu(self.menuDiagrams)
         self.menuBus_Branch_options.setObjectName(u"menuBus_Branch_options")
+        self.menuplugins = QMenu(self.menuBar)
+        self.menuplugins.setObjectName(u"menuplugins")
         mainWindow.setMenuBar(self.menuBar)
         self.toolBar = QToolBar(mainWindow)
         self.toolBar.setObjectName(u"toolBar")
@@ -4431,6 +4433,7 @@ class Ui_mainWindow(object):
         self.menuBar.addAction(self.menuDiagrams.menuAction())
         self.menuBar.addAction(self.menuModel.menuAction())
         self.menuBar.addAction(self.menuSimulations.menuAction())
+        self.menuBar.addAction(self.menuplugins.menuAction())
         self.menuBar.addAction(self.menuAbout.menuAction())
         self.menuProject.addAction(self.actionNew_project)
         self.menuProject.addAction(self.actiongrid_Generator)
@@ -5671,6 +5674,7 @@ class Ui_mainWindow(object):
         self.menuModel.setTitle(QCoreApplication.translate("mainWindow", u"Model", None))
         self.menuDiagrams.setTitle(QCoreApplication.translate("mainWindow", u"Diagram", None))
         self.menuBus_Branch_options.setTitle(QCoreApplication.translate("mainWindow", u"Current schematic", None))
+        self.menuplugins.setTitle(QCoreApplication.translate("mainWindow", u"plugins", None))
         self.toolBar.setWindowTitle(QCoreApplication.translate("mainWindow", u"toolBar", None))
     # retranslateUi
 

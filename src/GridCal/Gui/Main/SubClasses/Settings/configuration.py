@@ -23,8 +23,9 @@ import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
-from GridCal.Gui.plugins import PluginsInfo, load_function_from_file_path
 from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.Gui.plugins import PluginsInfo, load_function_from_file_path
+from GridCal.Gui.GuiFunctions import add_menu_entry
 
 
 def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],
@@ -92,8 +93,7 @@ class ConfigurationMain(ResultsMain):
         ResultsMain.__init__(self, parent)
 
         # plugins
-        plugins_path = self.plugins_path()
-        self.plugins_info = PluginsInfo(index_fname=os.path.join(plugins_path, 'plugins.json'))
+        self.plugins_info = PluginsInfo()
 
         # check boxes
         self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
@@ -165,19 +165,6 @@ class ConfigurationMain(ResultsMain):
         :return: config file path
         """
         pth = os.path.join(get_create_gridcal_folder(), 'scripts')
-
-        if not os.path.exists(pth):
-            os.makedirs(pth)
-
-        return pth
-
-    @staticmethod
-    def plugins_path() -> str:
-        """
-        get the config file path
-        :return: config file path
-        """
-        pth = os.path.join(get_create_gridcal_folder(), 'plugins')
 
         if not os.path.exists(pth):
             os.makedirs(pth)
@@ -445,37 +432,25 @@ class ConfigurationMain(ResultsMain):
 
         self.circuit.snapshot_time = date_time_value
 
-    def process_plugins(self):
+    def add_plugins(self):
         """
-        
-        :return: 
+        Add the plugins information and create the menu entries
         """
+        self.ui.menuplugins.clear()
 
-        base_path = self.plugins_path()
+        add_menu_entry(menu=self.ui.menuplugins,
+                       text="Reload",
+                       icon_path=":/Icons/icons/undo.svg",
+                       function_ptr=self.add_plugins)
 
         for plugin_info in self.plugins_info.plugins:
 
-            plugin_path = os.path.join(base_path, plugin_info.path)
+            if plugin_info.function_ptr is not None:
 
-            if os.path.exists(plugin_path):
+                add_menu_entry(menu=self.ui.menuplugins,
+                               text=plugin_info.name,
+                               icon_path=":/Icons/icons/plugin.svg",
+                               function_ptr=lambda: plugin_info.function_ptr(self))
 
-                if plugin_path.endswith('.py'):
-
-                    # hot read python file
-                    try:
-                        fcn = load_function_from_file_path(file_path=plugin_path,
-                                                           function_name=plugin_info.function_name)
-
-                        # call the function pointer with myself
-                        fcn(self)
-                    except ImportError as e:
-                        print(e)
-                    except AttributeError as e:
-                        print(e)
-                    except TypeError as e:
-                        print(e)
-
-                else:
-                    print(f"Plugin {plugin_info.name}: Path {plugin_path} not a python file :(")
             else:
-                print(f"Plugin {plugin_info.name}: Path {plugin_path} not found :/")
+                print(f"{plugin_info.name} has no function_ptr, see trace for errors :/")

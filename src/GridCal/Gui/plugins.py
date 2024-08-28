@@ -20,6 +20,20 @@ import importlib.util
 import hashlib
 from typing import List, Dict
 import json
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
+
+
+def plugins_path() -> str:
+    """
+    get the config file path
+    :return: config file path
+    """
+    pth = os.path.join(get_create_gridcal_folder(), 'plugins')
+
+    if not os.path.exists(pth):
+        os.makedirs(pth)
+
+    return pth
 
 
 class PluginInfo:
@@ -27,7 +41,7 @@ class PluginInfo:
     Plugin information
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
 
         """
@@ -35,6 +49,8 @@ class PluginInfo:
         self.path = ""
         self.icon = ""
         self.function_name = ""
+
+        self.function_ptr = None
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -59,18 +75,46 @@ class PluginInfo:
         self.icon = data.get('icon', '')
         self.function_name = data.get('function_name', '')
 
+    def read_plugin(self):
+        """
+
+        :return: 
+        """
+        base_path = plugins_path()
+        plugin_path = os.path.join(base_path, self.path)
+
+        if os.path.exists(plugin_path):
+
+            if plugin_path.endswith('.py'):
+
+                # hot read python file
+                try:
+                    self.function_ptr = load_function_from_file_path(file_path=plugin_path,
+                                                                     function_name=self.function_name)
+
+                except ImportError as e:
+                    print(e)
+                except AttributeError as e:
+                    print(e)
+                except TypeError as e:
+                    print(e)
+
+            else:
+                print(f"Plugin {self.name}: Path {plugin_path} not a python file :(")
+        else:
+            print(f"Plugin {self.name}: Path {plugin_path} not found :/")
+
 
 class PluginsInfo:
     """
     Plugins information
     """
 
-    def __init__(self, index_fname: str):
+    def __init__(self) -> None:
         """
 
-        :param index_fname:
         """
-        self.index_fname = index_fname
+        self.index_fname = os.path.join(plugins_path(), 'plugins.json')
 
         self.plugins: List[PluginInfo] = list()
 
@@ -88,18 +132,19 @@ class PluginsInfo:
 
     def parse(self, data: List[Dict[str, str]]):
         """
-        Parse data
+        Parse data: Create the plugins information
         :param data:
         :return:
         """
         for entry in data:
             pl = PluginInfo()
             pl.parse(entry)
+            pl.read_plugin()
             self.plugins.append(pl)
 
-    def read(self):
+    def read(self) -> None:
         """
-
+        Thead the plugins info file
         :return:
         """
         # Open the JSON file

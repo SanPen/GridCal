@@ -9768,11 +9768,17 @@ QProgressBar::chunk{
     <addaction name="actionTakePicture"/>
     <addaction name="actionRecord_video"/>
    </widget>
+   <widget class="QMenu" name="menuplugins">
+    <property name="title">
+     <string>plugins</string>
+    </property>
+   </widget>
    <addaction name="menuProject"/>
    <addaction name="menuActions"/>
    <addaction name="menuDiagrams"/>
    <addaction name="menuModel"/>
    <addaction name="menuSimulations"/>
+   <addaction name="menuplugins"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QToolBar" name="toolBar">

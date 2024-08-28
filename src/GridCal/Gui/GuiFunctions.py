@@ -922,6 +922,7 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
 def add_menu_entry(menu: QtWidgets.QMenu,
                    text: str,
                    icon_path: str = "",
+                   icon_pixmap: QtGui.QPixmap = None,
                    function_ptr=None,
                    checkeable=False,
                    checked_value=False) -> QtGui.QAction:
@@ -930,6 +931,7 @@ def add_menu_entry(menu: QtWidgets.QMenu,
     :param menu:
     :param text:
     :param icon_path:
+    :param icon_pixmap:
     :param function_ptr:
     :param checkeable:
     :param checked_value:
@@ -945,6 +947,10 @@ def add_menu_entry(menu: QtWidgets.QMenu,
     if len(icon_path) > 0:
         edit_icon = QtGui.QIcon()
         edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+        entry.setIcon(edit_icon)
+    elif icon_pixmap is not None:
+        edit_icon = QtGui.QIcon()
+        edit_icon.addPixmap(icon_pixmap)
         entry.setIcon(edit_icon)
 
     if function_ptr is not None:
