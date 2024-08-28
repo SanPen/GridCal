@@ -237,6 +237,9 @@ class SimulationsMain(TimeEventsMain):
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
         self.ui.contingency_filter_by_comboBox.currentTextChanged.connect(self.modify_contingency_filter_mode)
 
+        # button
+        self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precission)
+
     def get_simulations(self) -> List[DRIVER_OBJECTS]:
         """
         Get all threads that have to do with simulation
@@ -848,16 +851,6 @@ class SimulationsMain(TimeEventsMain):
 
                 # get the power flow options from the GUI
                 options = self.get_selected_power_flow_options()
-
-                # compute the automatic precision
-                if self.ui.auto_precision_checkBox.isChecked():
-
-                    options.tolerance, tol_idx = self.circuit.get_automatic_precision()
-
-                    if tol_idx > 12:
-                        tol_idx = 12
-
-                    self.ui.tolerance_spinBox.setValue(tol_idx)
 
                 opf_results = self.get_opf_results(use_opf=self.ui.actionOpf_to_Power_flow.isChecked())
 
@@ -2774,3 +2767,15 @@ class SimulationsMain(TimeEventsMain):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
+
+    def automatic_pf_precission(self):
+        """
+        Find the automatic tolerance
+        :return:
+        """
+        tolerance, tol_idx = self.circuit.get_automatic_precision()
+
+        if tol_idx > 12:
+            tol_idx = 12
+
+        self.ui.tolerance_spinBox.setValue(tol_idx)

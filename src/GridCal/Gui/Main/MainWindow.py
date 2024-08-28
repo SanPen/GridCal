@@ -2199,6 +2199,27 @@ class Ui_mainWindow(object):
         self.frame_19.setFrameShadow(QFrame.Raised)
         self.gridLayout_22 = QGridLayout(self.frame_19)
         self.gridLayout_22.setObjectName(u"gridLayout_22")
+        self.label_2 = QLabel(self.frame_19)
+        self.label_2.setObjectName(u"label_2")
+        self.label_2.setFont(font1)
+
+        self.gridLayout_22.addWidget(self.label_2, 0, 0, 1, 1)
+
+        self.verticalSpacer_10 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_22.addItem(self.verticalSpacer_10, 13, 0, 1, 1)
+
+        self.label_22 = QLabel(self.frame_19)
+        self.label_22.setObjectName(u"label_22")
+
+        self.gridLayout_22.addWidget(self.label_22, 12, 0, 1, 2)
+
+        self.label_23 = QLabel(self.frame_19)
+        self.label_23.setObjectName(u"label_23")
+        self.label_23.setFont(font1)
+
+        self.gridLayout_22.addWidget(self.label_23, 11, 0, 1, 1)
+
         self.tolerance_spinBox = QSpinBox(self.frame_19)
         self.tolerance_spinBox.setObjectName(u"tolerance_spinBox")
         self.tolerance_spinBox.setFont(font1)
@@ -2208,48 +2229,29 @@ class Ui_mainWindow(object):
 
         self.gridLayout_22.addWidget(self.tolerance_spinBox, 8, 1, 1, 1)
 
-        self.label_2 = QLabel(self.frame_19)
-        self.label_2.setObjectName(u"label_2")
-        self.label_2.setFont(font1)
-
-        self.gridLayout_22.addWidget(self.label_2, 0, 0, 1, 1)
-
-        self.label_22 = QLabel(self.frame_19)
-        self.label_22.setObjectName(u"label_22")
-
-        self.gridLayout_22.addWidget(self.label_22, 12, 0, 1, 2)
-
-        self.max_iterations_spinBox = QSpinBox(self.frame_19)
-        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
-        self.max_iterations_spinBox.setFont(font1)
-        self.max_iterations_spinBox.setMinimum(1)
-        self.max_iterations_spinBox.setMaximum(1000)
-        self.max_iterations_spinBox.setValue(40)
-
-        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 10, 1, 1, 1)
-
-        self.verticalSpacer_10 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_22.addItem(self.verticalSpacer_10, 13, 0, 1, 1)
-
         self.label_6 = QLabel(self.frame_19)
         self.label_6.setObjectName(u"label_6")
         self.label_6.setFont(font1)
 
         self.gridLayout_22.addWidget(self.label_6, 10, 0, 1, 1)
 
-        self.solver_comboBox = QComboBox(self.frame_19)
-        self.solver_comboBox.setObjectName(u"solver_comboBox")
-        self.solver_comboBox.setMinimumSize(QSize(200, 0))
-        self.solver_comboBox.setFont(font1)
+        self.label_11 = QLabel(self.frame_19)
+        self.label_11.setObjectName(u"label_11")
+        self.label_11.setFont(font1)
 
-        self.gridLayout_22.addWidget(self.solver_comboBox, 0, 1, 1, 1)
+        self.gridLayout_22.addWidget(self.label_11, 9, 0, 1, 1)
 
         self.label_5 = QLabel(self.frame_19)
         self.label_5.setObjectName(u"label_5")
         self.label_5.setFont(font1)
 
         self.gridLayout_22.addWidget(self.label_5, 8, 0, 1, 1)
+
+        self.find_automatic_precission_Button = QPushButton(self.frame_19)
+        self.find_automatic_precission_Button.setObjectName(u"find_automatic_precission_Button")
+        self.find_automatic_precission_Button.setMaximumSize(QSize(50, 16777215))
+
+        self.gridLayout_22.addWidget(self.find_automatic_precission_Button, 8, 2, 1, 1)
 
         self.muSpinBox = QDoubleSpinBox(self.frame_19)
         self.muSpinBox.setObjectName(u"muSpinBox")
@@ -2260,26 +2262,30 @@ class Ui_mainWindow(object):
         self.muSpinBox.setSingleStep(0.100000000000000)
         self.muSpinBox.setValue(1.000000000000000)
 
-        self.gridLayout_22.addWidget(self.muSpinBox, 9, 1, 1, 1)
+        self.gridLayout_22.addWidget(self.muSpinBox, 9, 1, 1, 2)
 
-        self.label_23 = QLabel(self.frame_19)
-        self.label_23.setObjectName(u"label_23")
-        self.label_23.setFont(font1)
+        self.solver_comboBox = QComboBox(self.frame_19)
+        self.solver_comboBox.setObjectName(u"solver_comboBox")
+        self.solver_comboBox.setMinimumSize(QSize(200, 0))
+        self.solver_comboBox.setFont(font1)
 
-        self.gridLayout_22.addWidget(self.label_23, 11, 0, 1, 1)
+        self.gridLayout_22.addWidget(self.solver_comboBox, 0, 1, 1, 2)
+
+        self.max_iterations_spinBox = QSpinBox(self.frame_19)
+        self.max_iterations_spinBox.setObjectName(u"max_iterations_spinBox")
+        self.max_iterations_spinBox.setFont(font1)
+        self.max_iterations_spinBox.setMinimum(1)
+        self.max_iterations_spinBox.setMaximum(1000)
+        self.max_iterations_spinBox.setValue(40)
+
+        self.gridLayout_22.addWidget(self.max_iterations_spinBox, 10, 1, 1, 2)
 
         self.verbositySpinBox = QSpinBox(self.frame_19)
         self.verbositySpinBox.setObjectName(u"verbositySpinBox")
         self.verbositySpinBox.setFont(font1)
         self.verbositySpinBox.setMaximum(2)
 
-        self.gridLayout_22.addWidget(self.verbositySpinBox, 11, 1, 1, 1)
-
-        self.label_11 = QLabel(self.frame_19)
-        self.label_11.setObjectName(u"label_11")
-        self.label_11.setFont(font1)
-
-        self.gridLayout_22.addWidget(self.label_11, 9, 0, 1, 1)
+        self.gridLayout_22.addWidget(self.verbositySpinBox, 11, 1, 1, 2)
 
 
         self.gridLayout_24.addWidget(self.frame_19, 2, 0, 1, 3)
@@ -2423,12 +2429,6 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_4.addWidget(self.use_voltage_guess_checkBox)
 
-        self.auto_precision_checkBox = QCheckBox(self.frame_36)
-        self.auto_precision_checkBox.setObjectName(u"auto_precision_checkBox")
-        self.auto_precision_checkBox.setFont(font1)
-
-        self.verticalLayout_4.addWidget(self.auto_precision_checkBox)
-
         self.ignore_single_node_islands_checkBox = QCheckBox(self.frame_36)
         self.ignore_single_node_islands_checkBox.setObjectName(u"ignore_single_node_islands_checkBox")
         self.ignore_single_node_islands_checkBox.setFont(font1)
@@ -2470,6 +2470,12 @@ class Ui_mainWindow(object):
         self.control_remote_voltage_checkBox.setFont(font1)
 
         self.verticalLayout_4.addWidget(self.control_remote_voltage_checkBox)
+
+        self.orthogonalize_pf_controls_checkBox = QCheckBox(self.frame_36)
+        self.orthogonalize_pf_controls_checkBox.setObjectName(u"orthogonalize_pf_controls_checkBox")
+        self.orthogonalize_pf_controls_checkBox.setFont(font1)
+
+        self.verticalLayout_4.addWidget(self.orthogonalize_pf_controls_checkBox)
 
         self.label_54 = QLabel(self.frame_36)
         self.label_54.setObjectName(u"label_54")
@@ -5209,25 +5215,29 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_63.setText("")
         self.label_17.setText(QCoreApplication.translate("mainWindow", u"Power flow", None))
+        self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
+        self.label_22.setText("")
+        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Verbosity", None))
 #if QT_CONFIG(tooltip)
         self.tolerance_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Error tolerance of the method</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.tolerance_spinBox.setPrefix(QCoreApplication.translate("mainWindow", u"1e-", None))
-        self.label_2.setText(QCoreApplication.translate("mainWindow", u"Solver", None))
-        self.label_22.setText("")
-#if QT_CONFIG(tooltip)
-        self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
         self.label_6.setText(QCoreApplication.translate("mainWindow", u"Max. iterations", None))
+        self.label_11.setText(QCoreApplication.translate("mainWindow", u"Trust radius", None))
         self.label_5.setText(QCoreApplication.translate("mainWindow", u"Tolerance", None))
+#if QT_CONFIG(tooltip)
+        self.find_automatic_precission_Button.setToolTip(QCoreApplication.translate("mainWindow", u"Find the tolerance that best represents the load values for power flow", None))
+#endif // QT_CONFIG(tooltip)
+        self.find_automatic_precission_Button.setText(QCoreApplication.translate("mainWindow", u"Find", None))
 #if QT_CONFIG(tooltip)
         self.muSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Factor that multiplies each increment solution. </p><p>In practice this is used to slow down troublesome solutions.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_23.setText(QCoreApplication.translate("mainWindow", u"Verbosity", None))
+#if QT_CONFIG(tooltip)
+        self.max_iterations_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Maximum numberof iterations to use.</p><p><br/></p><p>Tipical values: </p><p>Newton Raphson: 5</p><p>Levenberg-Marquards: 20</p><p>Fast decoupled: 10</p><p>Others: 20</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.verbositySpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"Level of console information. 0: None, 1: some information, 2: all the information", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_11.setText(QCoreApplication.translate("mainWindow", u"Trust radius", None))
         self.label_70.setText("")
         self.label_71.setText(QCoreApplication.translate("mainWindow", u"PTDF / LODF", None))
         self.ptdf_correct_nonsense_values_checkBox.setText(QCoreApplication.translate("mainWindow", u"Correct nonsense values", None))
@@ -5250,10 +5260,6 @@ class Ui_mainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.helm_retry_checkBox.setText(QCoreApplication.translate("mainWindow", u"Retry with other methods if failed", None))
         self.use_voltage_guess_checkBox.setText(QCoreApplication.translate("mainWindow", u"Use voltage guess", None))
-#if QT_CONFIG(tooltip)
-        self.auto_precision_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, GridCal finds a precission that suits the magnitude of the power injections so that the power flow is meaningful", None))
-#endif // QT_CONFIG(tooltip)
-        self.auto_precision_checkBox.setText(QCoreApplication.translate("mainWindow", u"Automatic precision", None))
 #if QT_CONFIG(tooltip)
         self.ignore_single_node_islands_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If active, the islands of a single node are ignored.", None))
 #endif // QT_CONFIG(tooltip)
@@ -5279,6 +5285,10 @@ class Ui_mainWindow(object):
         self.control_remote_voltage_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"General switch for generators remote voltage control", None))
 #endif // QT_CONFIG(tooltip)
         self.control_remote_voltage_checkBox.setText(QCoreApplication.translate("mainWindow", u"Control remote voltage", None))
+#if QT_CONFIG(tooltip)
+        self.orthogonalize_pf_controls_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"If checked, the controls are adjusted to their closest tap", None))
+#endif // QT_CONFIG(tooltip)
+        self.orthogonalize_pf_controls_checkBox.setText(QCoreApplication.translate("mainWindow", u"Orthogonalize controls", None))
         self.label_54.setText("")
 #if QT_CONFIG(tooltip)
         self.temperature_correction_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Correct the branches resistance using the temperature", None))
