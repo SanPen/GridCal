@@ -22,8 +22,9 @@ from GridCalEngine.Devices.Branches.underground_line_type import UndergroundLine
 from GridCalEngine.Devices.Branches.wire import Wire
 from GridCalEngine.Devices.assets import Assets
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, TapChangerTypes
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 
 
 def get_transformers_catalogue_df(grid: MultiCircuit):
@@ -44,9 +45,14 @@ def get_transformers_catalogue_df(grid: MultiCircuit):
             'No load losses (kW)': elm.Pfe,
             'No load current (%)': elm.I0,
             'V short circuit (%)': elm.Vsc,
-            'tap module (pu)': elm.tap_mod,
-            'tap module max (pu)': elm.tap_mod_max,
-            'tap module min (pu)': elm.tap_mod_min
+            'tc type': elm.tc_type,
+            'total positions': elm.total_positions,
+            'dV [p.u.]': elm.dV,
+            'neutral position': elm.neutral_position,
+            'assymmetry angle [deg]': elm.asymmetry_angle,
+            'tap module min [p.u.]': elm.tap_module_min,
+            'tap module max [p.u.]': elm.tap_module_max,
+            'tap phase max [p.u.]': elm.tap_phase_max,
         })
 
     return pd.DataFrame(data)
@@ -129,7 +135,9 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
     """
     lst = list()
     for i, item in df.iterrows():
-        tpe = TransformerType(hv_nominal_voltage=item['HV (kV)'],
+        tc_type = TapChangerTypes.argparse(item['tc type'])
+        tpe = TransformerType(name=item['Name'],
+                              hv_nominal_voltage=item['HV (kV)'],
                               lv_nominal_voltage=item['LV (kV)'],
                               nominal_power=item['Rate (MVA)'],
                               copper_losses=item['Copper losses (kW)'],
@@ -138,7 +146,12 @@ def parse_transformer_types(df: pd.DataFrame) -> List[TransformerType]:
                               short_circuit_voltage=item['V short circuit (%)'],
                               gr_hv1=0.5,
                               gx_hv1=0.5,
-                              name=item['Name'])
+                              total_positions=item['total positions'],
+                              dV=item['dV [p.u.]'],
+                              neutral_position=item['neutral position'],
+                              asymmetry_angle=item['asymmetry angle [deg]'],
+                              tc_type=tc_type
+                              )
         lst.append(tpe)
 
     return lst
