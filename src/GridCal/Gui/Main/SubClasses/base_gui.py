@@ -40,7 +40,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, com
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
-
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Session.synchronization_driver as syncdrv
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
@@ -277,7 +277,8 @@ class BaseMainGui(QMainWindow):
                                                   "pd: pandas\n"
                                                   "plt: matplotlib\n"
                                                   "app: This instance of GridCal\n"
-                                                  "circuit: The current grid\n\n")
+                                                  "circuit: The current grid\n"
+                                                  "user_folder: path to the user folder\n")
 
         self.console.buffer_size = 10000
 
@@ -285,13 +286,17 @@ class BaseMainGui(QMainWindow):
         self.ui.pythonConsoleTab.layout().addWidget(self.console)
 
         # push some variables to the console
-        self.console.push_vars({"hlp": self.print_console_help,
-                                "np": np,
-                                "pd": pd,
-                                "plt": plt,
-                                "clc": self.clc,
-                                'app': self,
-                                'circuit': self.circuit})
+        self.console.push_vars(
+            {"hlp": self.print_console_help,
+             "np": np,
+             "pd": pd,
+             "plt": plt,
+             "clc": self.clc,
+             'app': self,
+             'circuit': self.circuit,
+             'user_folder': get_create_gridcal_folder,
+             }
+        )
 
         if IS_DARK:
             self.console.set_dark_theme()

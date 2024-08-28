@@ -23,6 +23,7 @@ import hashlib
 from typing import List, Dict
 import json
 from PySide6.QtGui import QPixmap
+
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 
 
@@ -59,7 +60,7 @@ class PluginInfo:
     def to_dict(self) -> Dict[str, str]:
         """
         To dict
-        :return:
+        :return: string, strig dictionary to save in json format
         """
         return {
             'name': self.name,
@@ -68,21 +69,19 @@ class PluginInfo:
             'function_name': self.function_name,
         }
 
-    def parse(self, data: Dict[str, str]):
+    def parse(self, data: Dict[str, str]) -> None:
         """
         Parse data
-        :param data:
-        :return:
+        :param data: Data like the one saved
         """
         self.name = data.get('name', '')
         self.path = data.get('path', '')
         self.icon_path = data.get('icon_path', '')
         self.function_name = data.get('function_name', '')
 
-    def read_plugin(self):
+    def read_plugin(self) -> None:
         """
-
-        :return: 
+        Read the pointed plugin
         """
         base_path = plugins_path()
         plugin_path = os.path.join(base_path, self.path)
@@ -175,7 +174,7 @@ class PluginsInfo:
             json.dump(data, json_file)
 
 
-def load_function_from_file_path(file_path, function_name):
+def load_function_from_file_path(file_path: str, function_name: str):
     """
     Dynamically load a function from a Python file at a given file path.
 
