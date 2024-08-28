@@ -944,11 +944,13 @@ def add_menu_entry(menu: QtWidgets.QMenu,
         entry.setCheckable(checkeable)
         entry.setChecked(checked_value)
 
-    if len(icon_path) > 0:
-        edit_icon = QtGui.QIcon()
-        edit_icon.addPixmap(QtGui.QPixmap(icon_path))
-        entry.setIcon(edit_icon)
-    elif icon_pixmap is not None:
+    if icon_pixmap is None:
+        if len(icon_path) > 0:
+            edit_icon = QtGui.QIcon()
+            edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+            entry.setIcon(edit_icon)
+    else:
+        # prefer the icon pixmap if provided
         edit_icon = QtGui.QIcon()
         edit_icon.addPixmap(icon_pixmap)
         entry.setIcon(edit_icon)

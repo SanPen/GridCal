@@ -24,7 +24,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
-from GridCal.Gui.plugins import PluginsInfo, load_function_from_file_path
+from GridCal.Gui.plugins import PluginsInfo
 from GridCal.Gui.GuiFunctions import add_menu_entry
 
 
@@ -443,6 +443,8 @@ class ConfigurationMain(ResultsMain):
                        icon_path=":/Icons/icons/undo.svg",
                        function_ptr=self.add_plugins)
 
+        self.plugins_info.read()  # force refresh
+
         for plugin_info in self.plugins_info.plugins:
 
             if plugin_info.function_ptr is not None:
@@ -450,6 +452,7 @@ class ConfigurationMain(ResultsMain):
                 add_menu_entry(menu=self.ui.menuplugins,
                                text=plugin_info.name,
                                icon_path=":/Icons/icons/plugin.svg",
+                               icon_pixmap=plugin_info.icon,
                                function_ptr=lambda: plugin_info.function_ptr(self))
 
             else:

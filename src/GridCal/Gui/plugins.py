@@ -14,12 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import os
 import importlib
 import importlib.util
 import hashlib
 from typing import List, Dict
 import json
+from PySide6.QtGui import QPixmap
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 
 
@@ -47,10 +50,11 @@ class PluginInfo:
         """
         self.name = ""
         self.path = ""
-        self.icon = ""
+        self.icon_path = ""
         self.function_name = ""
 
         self.function_ptr = None
+        self.icon: QPixmap | None = None
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -60,7 +64,7 @@ class PluginInfo:
         return {
             'name': self.name,
             'path': self.path,
-            'icon': self.icon,
+            'icon_path': self.icon_path,
             'function_name': self.function_name,
         }
 
@@ -72,7 +76,7 @@ class PluginInfo:
         """
         self.name = data.get('name', '')
         self.path = data.get('path', '')
-        self.icon = data.get('icon', '')
+        self.icon_path = data.get('icon_path', '')
         self.function_name = data.get('function_name', '')
 
     def read_plugin(self):
@@ -103,6 +107,12 @@ class PluginInfo:
                 print(f"Plugin {self.name}: Path {plugin_path} not a python file :(")
         else:
             print(f"Plugin {self.name}: Path {plugin_path} not found :/")
+
+        icon_path = os.path.join(base_path, self.icon_path)
+        if os.path.exists(icon_path):
+            self.icon = QPixmap(icon_path)
+        else:
+            print(f"Plugin {self.name}: Path {icon_path} not found :/")
 
 
 class PluginsInfo:
@@ -136,6 +146,7 @@ class PluginsInfo:
         :param data:
         :return:
         """
+        self.plugins.clear()
         for entry in data:
             pl = PluginInfo()
             pl.parse(entry)
