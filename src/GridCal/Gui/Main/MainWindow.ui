@@ -3189,6 +3189,18 @@ QProgressBar::chunk{
        <layout class="QGridLayout" name="gridLayout_8">
         <item row="0" column="0">
          <widget class="QFrame" name="frame_7">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>250</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>

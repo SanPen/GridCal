@@ -1927,6 +1927,8 @@ class Ui_mainWindow(object):
         self.gridLayout_8.setObjectName(u"gridLayout_8")
         self.frame_7 = QFrame(self.SettingsTab)
         self.frame_7.setObjectName(u"frame_7")
+        self.frame_7.setMinimumSize(QSize(0, 0))
+        self.frame_7.setMaximumSize(QSize(250, 16777215))
         self.frame_7.setFrameShape(QFrame.NoFrame)
         self.frame_7.setFrameShadow(QFrame.Raised)
         self.verticalLayout_12 = QVBoxLayout(self.frame_7)
