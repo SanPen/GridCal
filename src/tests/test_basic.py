@@ -21,7 +21,7 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Injections.static_generator import StaticGenerator
 from GridCalEngine.Devices.Branches.transformer import TransformerType, Transformer2W
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptions
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
 
@@ -31,9 +31,9 @@ def complex_impedance(z, XR):
     """
     z = float(abs(z))
     XR = float(abs(XR))
-    real = (z**2/(1+XR**2))**0.5
+    real = (z ** 2 / (1 + XR ** 2)) ** 0.5
     try:
-        imag = (z**2/(1+1/XR**2))**0.5
+        imag = (z ** 2 / (1 + 1 / XR ** 2)) ** 0.5
     except ZeroDivisionError:
         imag = 0.0
     return complex(real, imag)
@@ -80,7 +80,7 @@ def test_basic():
     # Create static generators (with fixed power factor)
     M32 = StaticGenerator(name="M32",
                           P=4.2,  # MW
-                          Q=0.0j)  # MVAr
+                          Q=0.0)  # MVAr
     M32.bus = B_LV_M32
     grid.add_static_generator(B_LV_M32, M32)
 
@@ -142,7 +142,7 @@ def test_basic():
     options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                use_stored_guess=True,
-                               control_q=ReactivePowerControlMode.Direct,
+                               control_q=True,
                                tolerance=1e-6,
                                max_iter=99)
 
@@ -169,7 +169,7 @@ def test_basic():
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
-        print(f"   X/R = {round(b.X/b.R, 1)}")
+        print(f"   X/R = {round(b.X / b.R, 1)}")
         print(f"   G = {round(b.G, 4)} pu")
         print(f"   B = {round(b.B, 4)} pu")
     print()
@@ -181,7 +181,7 @@ def test_basic():
 
     print("Losses:")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: losses={1000*round(power_flow.results.losses[i], 3)} kVA")
+        print(f" - {branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True
@@ -230,7 +230,7 @@ def test_gridcal_basic_pi():
     # Create static generators (with fixed power factor)
     M32 = StaticGenerator(name="M32",
                           P=4.2,  # MW
-                          Q=0.0j)  # MVAR
+                          Q=0.0)  # MVAR
     M32.bus = B_LV_M32
     grid.add_static_generator(B_LV_M32, M32)
 
@@ -242,7 +242,7 @@ def test_gridcal_basic_pi():
                          hv_nominal_voltage=100,  # kV
                          lv_nominal_voltage=10,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z, xr).real*s*1000/Sbase,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000 / Sbase,
                          iron_losses=6.25,  # kW
                          no_load_current=0.5,  # %
                          short_circuit_voltage=z)
@@ -255,7 +255,7 @@ def test_gridcal_basic_pi():
                          hv_nominal_voltage=10,  # kV
                          lv_nominal_voltage=0.6,  # kV
                          nominal_power=s,
-                         copper_losses=complex_impedance(z, xr).real*s*1000/Sbase,
+                         copper_losses=complex_impedance(z, xr).real * s * 1000 / Sbase,
                          iron_losses=6.25,  # kW
                          no_load_current=0.5,  # %
                          short_circuit_voltage=z)
@@ -292,14 +292,14 @@ def test_gridcal_basic_pi():
     options = PowerFlowOptions(SolverType.NR,
                                verbose=True,
                                use_stored_guess=True,
-                               control_q=ReactivePowerControlMode.Direct,
+                               control_q=True,
                                tolerance=1e-6,
                                max_iter=99)
 
     power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
 
-    approx_volt = [round(100*abs(v), 1) for v in power_flow.results.voltage]
+    approx_volt = [round(100 * abs(v), 1) for v in power_flow.results.voltage]
     solution = [100.0, 99.5, 102.7, 102.8]  # Expected solution from GridCal
     etap_sol = [100.0, 99.6, 102.7, 102.9]  # ETAP 16.1.0, for reference (ignores magnetizing branch)
 
@@ -320,7 +320,7 @@ def test_gridcal_basic_pi():
         print(f" - {b}:")
         print(f"   R = {round(b.R, 4)} pu")
         print(f"   X = {round(b.X, 4)} pu")
-        print(f"   X/R = {round(b.X/b.R, 1)}")
+        print(f"   X/R = {round(b.X / b.R, 1)}")
         print(f"   G = {round(b.G, 4)} pu")
         print(f"   B = {round(b.B, 4)} pu")
     print()
@@ -332,7 +332,7 @@ def test_gridcal_basic_pi():
 
     print("Losses:")
     for i in range(len(branches)):
-        print(f" - {branches[i]}: losses={1000*round(power_flow.results.losses[i], 3)} kVA")
+        print(f" - {branches[i]}: losses={1000 * round(power_flow.results.losses[i], 3)} kVA")
     print()
 
     equal = True
@@ -344,7 +344,6 @@ def test_gridcal_basic_pi():
 
 
 if __name__ == '__main__':
-
     test_basic()
 
     test_gridcal_basic_pi()

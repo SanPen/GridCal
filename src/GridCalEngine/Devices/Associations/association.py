@@ -76,7 +76,7 @@ class Association:
 
 class Associations:
     """
-    GridCal associations object, this handless a set of associations
+    GridCal associations object, this handles a set of associations
     """
 
     def __init__(self, device_type: DeviceType):
@@ -85,32 +85,51 @@ class Associations:
         :param device_type: DeviceType
         """
         self._data: Dict[str, Association] = dict()
-
         self._device_type = device_type
+
+    @property
+    def data(self):
+        """
+
+        :return:
+        """
+        return self._data
 
     @property
     def device_type(self) -> DeviceType:
         """
         Device Type
-        :return:
+        :return: DeviceType
         """
         return self._device_type
+
+    @device_type.setter
+    def device_type(self, value: DeviceType):
+        """
+        Set the device type of the association, as needed in empty investments
+        :param value: DeviceType
+        """
+        if isinstance(value, DeviceType):
+            self._device_type = value
+        else:
+            raise ValueError("value must be an instance of DeviceType")
 
     def add(self, val: Association):
         """
         Add Association
-        :param val:
-        :return:
+        :param val: Association
+        :return: None
         """
+
         if val.api_object is not None:
             self._data[val.api_object.idtag] = val
 
     def add_object(self, api_object: ASSOCIATION_TYPES, val: float) -> Association:
         """
         Add association
-        :param api_object:
-        :param val:
-        :return:
+        :param api_object: ASSOCIATION_TYPES
+        :param val: float
+        :return: Association
         """
         assoc = Association(api_object=api_object, value=val)
         self.add(assoc)
@@ -119,8 +138,8 @@ class Associations:
     def remove(self, val: Association):
         """
         Remove Association
-        :param val:
-        :return:
+        :param val: Association
+        :return: None
         """
         if val.api_object is not None:
             del self._data[val.api_object.idtag]
@@ -153,13 +172,15 @@ class Associations:
               data: List[Dict[str, Union[str, float]]],
               elements_dict: Dict[str, ALL_DEV_TYPES],
               logger: Logger,
-              elm_name: str) -> None:
+              elm_name: str,
+              updatable_device_type: bool = False) -> None:
         """
         Parse the data generated with to_dict()
         :param data: Json data
         :param elements_dict: dictionary of elements of the type self.device_type
         :param logger: Logger
         :param elm_name: base element name for reporting
+        :param updatable_device_type: if the device type has to be updated in case of empty investments
         """
 
         for entry in data:
@@ -227,8 +248,3 @@ class Associations:
                     return False
 
         return True
-
-
-
-
-

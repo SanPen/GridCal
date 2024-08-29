@@ -26,7 +26,7 @@ import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TransformerControlType)
+from GridCalEngine.enumerations import (DiagramType, DeviceType, SubObjectType, TapPhaseControl, TapModuleControl)
 
 
 def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
@@ -735,7 +735,7 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                         could_not_fix_it = True
 
                                     if could_not_fix_it:
-                                        logger.add_error("Could not locate refference",
+                                        logger.add_error("Could not locate reference",
                                                          device=row.get('idtag', 'not provided'),
                                                          device_class=template_elm.device_type.value,
                                                          device_property=gc_prop.name,
@@ -820,16 +820,9 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                                     prof.fill(val)
 
                             except ValueError:
-                                skip = False
-                                if property_name == 'control_mode':
-                                    if property_value == "1:Pt":
-                                        elm.set_snapshot_value(gc_prop.name, TransformerControlType.Pf)
-                                        skip = True
-
-                                if not skip:
-                                    logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
-                                                     device=elm.name,
-                                                     value=property_value)
+                                logger.add_error(f'Cannot cast value to {gc_prop.tpe}',
+                                                 device=elm.name,
+                                                 value=property_value)
 
                         else:
                             raise Exception(f'Unsupported property type: {gc_prop.tpe}')
@@ -865,10 +858,70 @@ def parse_object_type_from_dataframe(main_df: pd.DataFrame,
                         if property_name in ['is_controlled', 'Bmin', 'Bmax', 'Vset']:
                             skip = True
 
+                    if template_elm.device_type == DeviceType.VscDevice:
+                        if property_name == 'control_mode':
+                            if "Pdc" in property_value:
+                                elm.tap_phase_control_mode = TapPhaseControl.Pf
+                                skip = True
+                            if "Qac" in property_value:
+                                elm.tap_phase_module_mode = TapModuleControl.Qf
+                                skip = True
+                            if "Vac" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Vm
+                                elm.regulation_bus = elm.bus_to
+                                skip = True
+                            if "Vdc" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Vm
+                                elm.regulation_bus = elm.bus_from
+                                skip = True
+
+                            if "fixed" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.fixed
+                                elm.tap_phase_control_mode = TapPhaseControl.fixed
+                                skip = True
+
+                        elif property_name == 'Vac_set':
+                            if property_value > 0.0:
+                                elm.vset = property_value
+                            skip = True
+
+                        elif property_name == 'Vdc_set':
+                            if property_value > 0.0:
+                                elm.vset = property_value
+                            skip = True
+
+                        elif property_name == 'Qac_set':
+                            elm.Qset = property_value
+                            skip = True
+
+                    if template_elm.device_type == DeviceType.Transformer2WDevice:
+                        if property_name == 'control_mode':
+                            if "Pf" in property_value:
+                                elm.tap_phase_control_mode = TapPhaseControl.Pf
+                                skip = True
+                            if "Pt" in property_value:
+                                elm.tap_phase_control_mode = TapPhaseControl.Pt
+                                skip = True
+                            if "V" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Vm
+                                elm.regulation_bus = elm.bus_to
+                                skip = True
+                            if "Qf" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Qf
+                                skip = True
+                            if "Qt" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.Qt
+                                skip = True
+                            if "fixed" in property_value:
+                                elm.tap_module_control_mode = TapModuleControl.fixed
+                                elm.tap_phase_control_mode = TapPhaseControl.fixed
+                                skip = True
+
                     if property_name == 'contingency_enabled':
                         # this is a branch with the legacy property "contingency_enabled", hence, create a contingency
                         on_the_fly.create_contingency(elm=elm)
                         skip = True
+
                     elif property_name == 'technology':
                         on_the_fly.create_technology(elm=elm, tech_name=property_value)
                         skip = True
@@ -920,7 +973,7 @@ def search_and_apply_json_profile(json_entry: Dict[str, Dict[str, Union[str, Uni
                                   property_value: Any,
                                   collection: Union[None, Dict[str, Any]] = None) -> None:
     """
-    Search fro the property profiles into the json and apply it
+    Search from the property profiles into the json and apply it
     :param json_entry: Json entry of an object
     :param gc_prop: GCProp
     :param elm: THe device to set the profile into
@@ -986,7 +1039,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                             if isinstance(gc_prop.tpe, DeviceType):
 
                                 # this is a hyperlink to another object
-                                # we must look for the refference in elements_dict
+                                # we must look for the reference in elements_dict
                                 collection = elements_dict_by_type.get(gc_prop.tpe, None)
 
                                 if collection is not None:
@@ -1321,7 +1374,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                     circuit.set_snapshot_time_unix(val=snapshot_unix_time)
 
             else:
-                logger.add_error(msg=f'The file must have time data regardless of the profiles existance')
+                logger.add_error(msg=f'The file must have time data regardless of the profiles existence')
                 circuit.time_profile = None
 
             # for each element type...

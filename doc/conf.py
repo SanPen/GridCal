@@ -14,6 +14,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../src'))
 sys.path.append("..")
 from doc.auto_document_models import write_models_to_rst
@@ -22,14 +23,16 @@ from GridCalEngine.__version__ import __GridCalEngine_VERSION__
 # -- Project information -----------------------------------------------------
 
 project = 'GridCal'
-copyright = '2023, Santiago Peñate Vera'
+copyright = '2024, Santiago Peñate Vera'
 author = 'Santiago Peñate Vera'
 
 # The full version, including alpha/beta/rc tags
 release = __GridCalEngine_VERSION__
 
+
 def setup(app):
     app.add_css_file('style.css')
+
 
 # -- General configuration ---------------------------------------------------
 
@@ -86,7 +89,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -122,7 +124,6 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'GridCaldoc'
 
-
 # -- Options for LaTeX output ------------------------------------------------
 
 fh = open('latex_preamble.tex', 'r+')
@@ -145,14 +146,12 @@ latex_elements = {
     'preamble': PREAMBLE,
 }
 
-
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'GridCal.tex', 'GridCal Documentation', 'Santiago Pe\~nate Vera', 'manual'),
 ]
-
 
 # -- Options for manual page output ------------------------------------------
 
@@ -162,7 +161,6 @@ man_pages = [
     (master_doc, 'gridcal', 'GridCal Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -174,7 +172,6 @@ texinfo_documents = [
      author, 'GridCal', 'One line description of project.',
      'Miscellaneous'),
 ]
-
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -192,6 +189,5 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
-
 
 # -- Extension configuration -------------------------------------------------

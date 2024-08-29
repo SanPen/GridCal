@@ -98,9 +98,9 @@ class ContinuationPowerFlowDriver(DriverTemplate):
 
         result_series = list()
 
-        for island in islands:
+        for is_idx, island in enumerate(islands):
 
-            self.report_text('Running voltage collapse at circuit ' + str(nc) + '...')
+            self.report_text(f'Running voltage collapse at circuit island {is_idx + 1}...')
 
             if len(island.vd) > 0 and len(island.pqpv) > 0:
                 results = continuation_nr(Ybus=island.Ybus,
@@ -118,6 +118,8 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           vd=island.vd,
                                           pv=island.pv,
                                           pq=island.pq,
+                                          pqv=island.pqv,
+                                          p=island.p,
                                           step=self.options.step,
                                           approximation_order=self.options.approximation_order,
                                           adapt_step=self.options.adapt_step,
@@ -128,6 +130,7 @@ class ContinuationPowerFlowDriver(DriverTemplate):
                                           max_it=self.options.max_it,
                                           stop_at=self.options.stop_at,
                                           control_q=self.pf_options.control_Q,
+                                          control_remote_voltage=self.pf_options.control_remote_voltage,
                                           qmax_bus=island.Qmax_bus,
                                           qmin_bus=island.Qmin_bus,
                                           original_bus_types=island.bus_types,

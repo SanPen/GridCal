@@ -23,6 +23,7 @@ from GridCal.Gui.Diagrams.MapWidget.Tiles.tile_worker import TileWorker
 def log(val: str):
     print(val)
 
+
 # # set how old disk-cache tiles can be before we re-request them from the
 # # server.  this is the number of days old a tile is before we re-request.
 # # if 'None', never re-request tiles after first satisfied request.

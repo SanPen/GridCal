@@ -20,7 +20,7 @@ import scipy
 import numpy as np
 
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobian
+from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobian
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
 from GridCalEngine.Utils.Sparse.csc2 import spsolve_csc
 
@@ -86,7 +86,8 @@ def compute_fx(x, Ybus, S, I, pq, pv, pvpq, j1, j2, j3, j4, j5, j6, Va, Vm):
     gx = AC_jacobian(Ybus, V, pvpq, pq)
 
     # return the increment of x
-    return spsolve_csc(gx, g)
+    dx, ok = spsolve_csc(gx, g)
+    return dx
 
 
 def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFlowResults:
@@ -194,6 +195,6 @@ def ContinuousNR(Ybus, Sbus, V0, Ibus, pv, pq, tol, max_it=15) -> NumericPowerFl
 
     # return NumericPowerFlowResults(V, converged, normF, Scalc, None, None, None, None, None, None, iter_, elapsed)
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)

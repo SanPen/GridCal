@@ -129,7 +129,7 @@ class ComboDelegate(QtWidgets.QItemDelegate):
         self.object_names = object_names
 
     @QtCore.Slot()
-    def currentIndexChanged(self):
+    def currentIndexChanged(self) -> None:
         """
         currentIndexChanged
         """
@@ -186,7 +186,7 @@ class TextDelegate(QtWidgets.QItemDelegate):
 
     commitData = QtCore.Signal(object)
 
-    def __init__(self, parent):
+    def __init__(self, parent: QtWidgets.QTableView) -> None:
         """
         Constructor
         :param parent: QTableView parent object
@@ -200,7 +200,9 @@ class TextDelegate(QtWidgets.QItemDelegate):
         """
         self.commitData.emit(self.sender())
 
-    def createEditor(self, parent, option, index):
+    def createEditor(self, parent: QtWidgets.QWidget, 
+                     option: QtWidgets.QStyleOptionViewItem, 
+                     index: QtCore.QModelIndex) -> QtWidgets.QLineEdit:
         """
 
         :param parent:
@@ -256,13 +258,15 @@ class FloatDelegate(QtWidgets.QItemDelegate):
         self.decimals = decimals
 
     @QtCore.Slot()
-    def returnPressed(self):
+    def returnPressed(self) -> None:
         """
         returnPressed
         """
         self.commitData.emit(self.sender())
 
-    def createEditor(self, parent, option, index):
+    def createEditor(self, parent: QtWidgets.QWidget, 
+                     option: QtWidgets.QStyleOptionViewItem, 
+                     index: QtCore.QModelIndex) -> QtWidgets.QDoubleSpinBox:
         """
 
         :param parent:
@@ -922,29 +926,43 @@ def get_cim_tree_model(cim_model: CgmesCircuit):
 def add_menu_entry(menu: QtWidgets.QMenu,
                    text: str,
                    icon_path: str = "",
+                   icon_pixmap: QtGui.QPixmap = None,
                    function_ptr=None,
                    checkeable=False,
-                   checked_value=False) -> QtGui.QAction:
+                   checked_value=False,
+                   font_size: int = 9) -> QtGui.QAction:
     """
     Add a context menu entry
     :param menu:
     :param text:
     :param icon_path:
+    :param icon_pixmap:
     :param function_ptr:
     :param checkeable:
     :param checked_value:
+    :param font_size:
     :return:
     """
 
-    entry = menu.addAction(text)
+    entry: QtGui.QAction = menu.addAction(text)
+
+    font = QtGui.QFont()
+    font.setPointSize(font_size)
+    entry.setFont(font)
 
     if checkeable:
         entry.setCheckable(checkeable)
         entry.setChecked(checked_value)
 
-    if len(icon_path) > 0:
+    if icon_pixmap is None:
+        if len(icon_path) > 0:
+            edit_icon = QtGui.QIcon()
+            edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+            entry.setIcon(edit_icon)
+    else:
+        # prefer the icon pixmap if provided
         edit_icon = QtGui.QIcon()
-        edit_icon.addPixmap(QtGui.QPixmap(icon_path))
+        edit_icon.addPixmap(icon_pixmap)
         entry.setIcon(edit_icon)
 
     if function_ptr is not None:

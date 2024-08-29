@@ -51,11 +51,11 @@ class ScriptingMain(IoMain):
 
         self.ui.sourceCodeTextEdit.highlighter = PythonHighlighter(self.ui.sourceCodeTextEdit.document())
 
-        # tree view
-        root_path = self.scripts_path()
+        # scripts tree view
+        scripts_path = self.scripts_path()
         self.python_fs_model = CustomFileSystemModel(root_path=self.scripts_path(), ext_filter=['*.py'])
         self.ui.sourceCodeTreeView.setModel(self.python_fs_model)
-        self.ui.sourceCodeTreeView.setRootIndex(self.python_fs_model.index(root_path))
+        self.ui.sourceCodeTreeView.setRootIndex(self.python_fs_model.index(scripts_path))
 
         # actions ------------------------------------------------------------------------------------------------------
         self.ui.actionReset_console.triggered.connect(self.create_console)

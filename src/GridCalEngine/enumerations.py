@@ -46,6 +46,26 @@ class BusMode(Enum):
         except KeyError:
             return s
 
+    @staticmethod
+    def as_str(val: int) -> str:
+        """
+        Get the string representation of the numeric value
+        :param val:
+        :return:
+        """
+        if val == 1:
+            return "PQ"
+        elif val == 2:
+            return "PV"
+        elif val == 3:
+            return "Slack"
+        elif val == 4:
+            return "PQV"
+        elif val == 5:
+            return "P"
+        else:
+            return ""
+
 
 class CpfStopAt(Enum):
     """
@@ -156,7 +176,6 @@ class SolverType(Enum):
     """
 
     NR = 'Newton Raphson'
-    NRD = 'Newton Raphson Decoupled'
     NRFD_XB = 'Fast decoupled XB'
     NRFD_BX = 'Fast decoupled BX'
     GAUSS = 'Gauss-Seidel'
@@ -174,7 +193,6 @@ class SolverType(Enum):
     NONLINEAR_OPF = 'Nonlinear OPF'
     SIMPLE_OPF = 'Simple dispatch'
     Proportional_OPF = 'Proportional OPF'
-    NRI = 'Newton-Raphson in current'
     DYCORS_OPF = 'DYCORS OPF'
     GA_OPF = 'Genetic Algorithm OPF'
     NELDER_MEAD_OPF = 'Nelder Mead OPF'
@@ -206,157 +224,157 @@ class SolverType(Enum):
             return s
 
 
-class ReactivePowerControlMode(Enum):
-    """
-    The :ref:`ReactivePowerControlMode<q_control>` offers 3 modes to control how
-    :ref:`Generator<generator>` objects supply reactive power:
-
-    **NoControl**: In this mode, the :ref:`generators<generator>` don't try to regulate
-    the voltage at their :ref:`bus<bus>`.
-
-    **Direct**: In this mode, the :ref:`generators<generator>` try to regulate the
-    voltage at their :ref:`bus<bus>`. **GridCal** does so by applying the following
-    algorithm in an outer control loop. For grids with numerous
-    :ref:`generators<generator>` tied to the same system, for example wind farms, this
-    control method sometimes fails with some :ref:`generators<generator>` not trying
-    hard enough*. In this case, the simulation converges but the voltage controlled
-    :ref:`buses<bus>` do not reach their target voltage, while their
-    :ref:`generator(s)<generator>` haven't reached their reactive power limit. In this
-    case, the slower **Iterative** control mode may be used (see below).
-
-        ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
-        Jinquan Zhao
-
-        1) Bus i is a PQ bus in the previous iteration and its
-           reactive power was fixed at its lower limit:
-
-            If its voltage magnitude Vi >= Viset, then
-
-                it is still a PQ bus at current iteration and set Qi = Qimin .
-
-                If Vi < Viset , then
-
-                    compare Qi with the upper and lower limits.
-
-                    If Qi >= Qimax , then
-                        it is still a PQ bus but set Qi = Qimax .
-                    If Qi <= Qimin , then
-                        it is still a PQ bus and set Qi = Qimin .
-                    If Qimin < Qi < Qi max , then
-                        it is switched to PV bus, set Vinew = Viset.
-
-        2) Bus i is a PQ bus in the previous iteration and
-           its reactive power was fixed at its upper limit:
-
-            If its voltage magnitude Vi <= Viset , then:
-                bus i still a PQ bus and set Q i = Q i max.
-
-                If Vi > Viset , then
-
-                    Compare between Qi and its upper/lower limits
-
-                    If Qi >= Qimax , then
-                        it is still a PQ bus and set Q i = Qimax .
-                    If Qi <= Qimin , then
-                        it is still a PQ bus but let Qi = Qimin in current iteration.
-                    If Qimin < Qi < Qimax , then
-                        it is switched to PV bus and set Vinew = Viset
-
-        3) Bus i is a PV bus in the previous iteration.
-
-            Compare Q i with its upper and lower limits.
-
-            If Qi >= Qimax , then
-                it is switched to PQ and set Qi = Qimax .
-            If Qi <= Qimin , then
-                it is switched to PQ and set Qi = Qimin .
-            If Qi min < Qi < Qimax , then
-                it is still a PV bus.
-
-    **Iterative**: As mentioned above, the **Direct** control mode may not yield
-    satisfying results in some isolated cases. The **Direct** control mode tries to
-    jump to the final solution in a single or few iterations, but in grids where a
-    significant change in reactive power at one :ref:`generator<generator>` has a
-    significant impact on other :ref:`generators<generator>`, additional iterations may
-    be required to reach a satisfying solution.
-
-    Instead of trying to jump to the final solution, the **Iterative** mode raises or
-    lowers each :ref:`generator's<generator>` reactive power incrementally. The
-    increment is determined using a logistic function based on the difference between
-    the current :ref:`bus<bus>` voltage its target voltage. The steepness factor
-    :code:`k` of the logistic function was determined through trial and error, with the
-    intent of reducing the number of iterations while avoiding instability. Other
-    values may be specified in :ref:`PowerFlowOptions<pf_options>`.
-
-    The :math:`Q_{Increment}` in per unit is determined by:
-
-    .. math::
-
-        Q_{Increment} = 2 * \\left[\\frac{1}{1 + e^{-k|V_2 - V_1|}}-0.5\\right]
-
-    Where:
-
-        k = 30 (by default)
-
-    """
-    NoControl = "NoControl"
-    Direct = "Direct"
-    Iterative = "Iterative"
-
-
-class TapsControlMode(Enum):
-    """
-    The :ref:`TapsControlMode<taps_control>` offers 3 modes to control how
-    :ref:`transformers<transformer>`' :ref:`tap changer<tap_changer>` regulate
-    voltage on their regulated :ref:`bus<bus>`:
-
-    **NoControl**: In this mode, the :ref:`transformers<transformer>` don't try to
-    regulate the voltage at their :ref:`bus<bus>`.
-
-    **Direct**: In this mode, the :ref:`transformers<transformer>` try to regulate
-    the voltage at their bus. **GridCal** does so by jumping straight to the tap that
-    corresponds to the desired transformation ratio, or the highest or lowest tap if
-    the desired ratio is outside of the tap range.
-
-    This behavior may fail in certain cases, especially if both the
-    :ref:`TapControlMode<taps_control>` and :ref:`ReactivePowerControlMode<q_control>`
-    are set to **Direct**. In this case, the simulation converges but the voltage
-    controlled :ref:`buses<bus>` do not reach their target voltage, while their
-    :ref:`generator(s)<generator>` haven't reached their reactive power limit. When
-    this happens, the slower **Iterative** control mode may be used (see below).
-
-    **Iterative**: As mentioned above, the **Direct** control mode may not yield
-    satisfying results in some isolated cases. The **Direct** control mode tries to
-    jump to the final solution in a single or few iterations, but in grids where a
-    significant change of tap at one :ref:`transformer<transformer>` has a
-    significant impact on other :ref:`transformers<transformer>`, additional
-    iterations may be required to reach a satisfying solution.
-
-    Instead of trying to jump to the final solution, the **Iterative** mode raises or
-    lowers each :ref:`transformer's<transformer>` tap incrementally.
-    """
-
-    NoControl = "NoControl"
-    Direct = "Direct"
-    Iterative = "Iterative"
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        """
-
-        :param s:
-        :return:
-        """
-        try:
-            return TapsControlMode[s]
-        except KeyError:
-            return s
+# class ReactivePowerControlMode(Enum):
+#     """
+#     The :ref:`ReactivePowerControlMode<q_control>` offers 3 modes to control how
+#     :ref:`Generator<generator>` objects supply reactive power:
+#
+#     **NoControl**: In this mode, the :ref:`generators<generator>` don't try to regulate
+#     the voltage at their :ref:`bus<bus>`.
+#
+#     **Direct**: In this mode, the :ref:`generators<generator>` try to regulate the
+#     voltage at their :ref:`bus<bus>`. **GridCal** does so by applying the following
+#     algorithm in an outer control loop. For grids with numerous
+#     :ref:`generators<generator>` tied to the same system, for example wind farms, this
+#     control method sometimes fails with some :ref:`generators<generator>` not trying
+#     hard enough*. In this case, the simulation converges but the voltage controlled
+#     :ref:`buses<bus>` do not reach their target voltage, while their
+#     :ref:`generator(s)<generator>` haven't reached their reactive power limit. In this
+#     case, the slower **Iterative** control mode may be used (see below).
+#
+#         ON PV-PQ BUS TYPE SWITCHING LOGIC IN POWER FLOW COMPUTATION
+#         Jinquan Zhao
+#
+#         1) Bus i is a PQ bus in the previous iteration and its
+#            reactive power was fixed at its lower limit:
+#
+#             If its voltage magnitude Vi >= Viset, then
+#
+#                 it is still a PQ bus at current iteration and set Qi = Qimin .
+#
+#                 If Vi < Viset , then
+#
+#                     compare Qi with the upper and lower limits.
+#
+#                     If Qi >= Qimax , then
+#                         it is still a PQ bus but set Qi = Qimax .
+#                     If Qi <= Qimin , then
+#                         it is still a PQ bus and set Qi = Qimin .
+#                     If Qimin < Qi < Qi max , then
+#                         it is switched to PV bus, set Vinew = Viset.
+#
+#         2) Bus i is a PQ bus in the previous iteration and
+#            its reactive power was fixed at its upper limit:
+#
+#             If its voltage magnitude Vi <= Viset , then:
+#                 bus i still a PQ bus and set Q i = Q i max.
+#
+#                 If Vi > Viset , then
+#
+#                     Compare between Qi and its upper/lower limits
+#
+#                     If Qi >= Qimax , then
+#                         it is still a PQ bus and set Q i = Qimax .
+#                     If Qi <= Qimin , then
+#                         it is still a PQ bus but let Qi = Qimin in current iteration.
+#                     If Qimin < Qi < Qimax , then
+#                         it is switched to PV bus and set Vinew = Viset
+#
+#         3) Bus i is a PV bus in the previous iteration.
+#
+#             Compare Q i with its upper and lower limits.
+#
+#             If Qi >= Qimax , then
+#                 it is switched to PQ and set Qi = Qimax .
+#             If Qi <= Qimin , then
+#                 it is switched to PQ and set Qi = Qimin .
+#             If Qi min < Qi < Qimax , then
+#                 it is still a PV bus.
+#
+#     **Iterative**: As mentioned above, the **Direct** control mode may not yield
+#     satisfying results in some isolated cases. The **Direct** control mode tries to
+#     jump to the final solution in a single or few iterations, but in grids where a
+#     significant change in reactive power at one :ref:`generator<generator>` has a
+#     significant impact on other :ref:`generators<generator>`, additional iterations may
+#     be required to reach a satisfying solution.
+#
+#     Instead of trying to jump to the final solution, the **Iterative** mode raises or
+#     lowers each :ref:`generator's<generator>` reactive power incrementally. The
+#     increment is determined using a logistic function based on the difference between
+#     the current :ref:`bus<bus>` voltage its target voltage. The steepness factor
+#     :code:`k` of the logistic function was determined through trial and error, with the
+#     intent of reducing the number of iterations while avoiding instability. Other
+#     values may be specified in :ref:`PowerFlowOptions<pf_options>`.
+#
+#     The :math:`Q_{Increment}` in per unit is determined by:
+#
+#     .. math::
+#
+#         Q_{Increment} = 2 * \\left[\\frac{1}{1 + e^{-k|V_2 - V_1|}}-0.5\\right]
+#
+#     Where:
+#
+#         k = 30 (by default)
+#
+#     """
+#     NoControl = "NoControl"
+#     Direct = "Direct"
+#     Iterative = "Iterative"
+#
+#
+# class TapsControlMode(Enum):
+#     """
+#     The :ref:`TapsControlMode<taps_control>` offers 3 modes to control how
+#     :ref:`transformers<transformer>`' :ref:`tap changer<tap_changer>` regulate
+#     voltage on their regulated :ref:`bus<bus>`:
+#
+#     **NoControl**: In this mode, the :ref:`transformers<transformer>` don't try to
+#     regulate the voltage at their :ref:`bus<bus>`.
+#
+#     **Direct**: In this mode, the :ref:`transformers<transformer>` try to regulate
+#     the voltage at their bus. **GridCal** does so by jumping straight to the tap that
+#     corresponds to the desired transformation ratio, or the highest or lowest tap if
+#     the desired ratio is outside of the tap range.
+#
+#     This behavior may fail in certain cases, especially if both the
+#     :ref:`TapControlMode<taps_control>` and :ref:`ReactivePowerControlMode<q_control>`
+#     are set to **Direct**. In this case, the simulation converges but the voltage
+#     controlled :ref:`buses<bus>` do not reach their target voltage, while their
+#     :ref:`generator(s)<generator>` haven't reached their reactive power limit. When
+#     this happens, the slower **Iterative** control mode may be used (see below).
+#
+#     **Iterative**: As mentioned above, the **Direct** control mode may not yield
+#     satisfying results in some isolated cases. The **Direct** control mode tries to
+#     jump to the final solution in a single or few iterations, but in grids where a
+#     significant change of tap at one :ref:`transformer<transformer>` has a
+#     significant impact on other :ref:`transformers<transformer>`, additional
+#     iterations may be required to reach a satisfying solution.
+#
+#     Instead of trying to jump to the final solution, the **Iterative** mode raises or
+#     lowers each :ref:`transformer's<transformer>` tap incrementally.
+#     """
+#
+#     NoControl = "NoControl"
+#     Direct = "Direct"
+#     Iterative = "Iterative"
+#
+#     def __str__(self):
+#         return self.value
+#
+#     def __repr__(self):
+#         return str(self)
+#
+#     @staticmethod
+#     def argparse(s):
+#         """
+#
+#         :param s:
+#         :return:
+#         """
+#         try:
+#             return TapsControlMode[s]
+#         except KeyError:
+#             return s
 
 
 class SyncIssueType(Enum):
@@ -598,42 +616,42 @@ class AcOpfMode(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class TransformerControlType(Enum):
-    """
-    Transformer control types
-    """
-    fixed = '0:Fixed'
-    Pf = '1:Pf'
-    Qt = '2:Qt'
-    PtQt = '3:Pt+Qt'
-    V = '4:V'
-    PtV = '5:Pt+V'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        """
-
-        :param s:
-        :return:
-        """
-        try:
-            return TransformerControlType[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        """
-
-        :return:
-        """
-        return list(map(lambda c: c.value, cls))
+# class TransformerControlType(Enum):
+#     """
+#     Transformer control types
+#     """
+#     fixed = '0:Fixed'
+#     Pf = '1:Pf'
+#     Qt = '2:Qt'
+#     PtQt = '3:Pt+Qt'
+#     V = '4:V'
+#     PtV = '5:Pt+V'
+#
+#     def __str__(self) -> str:
+#         return str(self.value)
+#
+#     def __repr__(self):
+#         return str(self)
+#
+#     @staticmethod
+#     def argparse(s):
+#         """
+#
+#         :param s:
+#         :return:
+#         """
+#         try:
+#             return TransformerControlType[s]
+#         except KeyError:
+#             return s
+#
+#     @classmethod
+#     def list(cls):
+#         """
+#
+#         :return:
+#         """
+#         return list(map(lambda c: c.value, cls))
 
 
 class TapModuleControl(Enum):
@@ -672,13 +690,14 @@ class TapModuleControl(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class TapAngleControl(Enum):
+class TapPhaseControl(Enum):
     """
     Tap angle control types
     """
     fixed = 'Fixed'
     Pf = 'Pf'
     Pt = 'Pt'
+    # Droop = "Droop"
 
     def __str__(self) -> str:
         return str(self.value)
@@ -694,7 +713,7 @@ class TapAngleControl(Enum):
         :return:
         """
         try:
-            return TapAngleControl[s]
+            return TapPhaseControl[s]
         except KeyError:
             return s
 
@@ -707,63 +726,63 @@ class TapAngleControl(Enum):
         return list(map(lambda c: c.value, cls))
 
 
-class ConverterControlType(Enum):
-    """
-    Converter control types
-    """
-    # Type I
-    # theta_vac = '1:Angle+Vac'
-    # pf_qac = '2:Pflow + Qflow'
-    # pf_vac = '3:Pflow + Vac'
-    #
-    # # Type II
-    # vdc_qac = '4:Vdc+Qflow'
-    # vdc_vac = '5:Vdc+Vac'
-    #
-    # # type III
-    # vdc_droop_qac = '6:VdcDroop+Qac'
-    # vdc_droop_vac = '7:VdcDroop+Vac'
-
-    type_0_free = '0:Free'
-
-    type_I_1 = '1:Vac'
-    type_I_2 = '2:Pdc+Qac'
-    type_I_3 = '3:Pdc+Vac'
-
-    type_II_4 = '4:Vdc+Qac'
-    type_II_5 = '5:Vdc+Vac'
-
-    type_III_6 = '6:Droop+Qac'
-    type_III_7 = '7:Droop+Vac'
-
-    type_IV_I = '8:Vdc'
-    type_IV_II = '9:Pdc'
-
-    def __str__(self) -> str:
-        return str(self.value)
-
-    def __repr__(self):
-        return str(self)
-
-    @staticmethod
-    def argparse(s):
-        """
-
-        :param s:
-        :return:
-        """
-        try:
-            return ConverterControlType[s]
-        except KeyError:
-            return s
-
-    @classmethod
-    def list(cls):
-        """
-
-        :return:
-        """
-        return list(map(lambda c: c.value, cls))
+# class ConverterControlType(Enum):
+#     """
+#     Converter control types
+#     """
+#     # Type I
+#     # theta_vac = '1:Angle+Vac'
+#     # pf_qac = '2:Pflow + Qflow'
+#     # pf_vac = '3:Pflow + Vac'
+#     #
+#     # # Type II
+#     # vdc_qac = '4:Vdc+Qflow'
+#     # vdc_vac = '5:Vdc+Vac'
+#     #
+#     # # type III
+#     # vdc_droop_qac = '6:VdcDroop+Qac'
+#     # vdc_droop_vac = '7:VdcDroop+Vac'
+#
+#     type_0_free = '0:Free'
+#
+#     type_I_1 = '1:Vac'
+#     type_I_2 = '2:Pdc+Qac'
+#     type_I_3 = '3:Pdc+Vac'
+#
+#     type_II_4 = '4:Vdc+Qac'
+#     type_II_5 = '5:Vdc+Vac'
+#
+#     type_III_6 = '6:Droop+Qac'
+#     type_III_7 = '7:Droop+Vac'
+#
+#     type_IV_I = '8:Vdc'
+#     type_IV_II = '9:Pdc'
+#
+#     def __str__(self) -> str:
+#         return str(self.value)
+#
+#     def __repr__(self):
+#         return str(self)
+#
+#     @staticmethod
+#     def argparse(s):
+#         """
+#
+#         :param s:
+#         :return:
+#         """
+#         try:
+#             return ConverterControlType[s]
+#         except KeyError:
+#             return s
+#
+#     @classmethod
+#     def list(cls):
+#         """
+#
+#         :return:
+#         """
+#         return list(map(lambda c: c.value, cls))
 
 
 class HvdcControlType(Enum):
@@ -787,7 +806,7 @@ class HvdcControlType(Enum):
         :return:
         """
         try:
-            return ConverterControlType[s]
+            return HvdcControlType[s]
         except KeyError:
             return s
 
@@ -932,8 +951,8 @@ class DeviceType(Enum):
     """
     Device types
     """
-    NoDevice = "NoDevice"
-    TimeDevice = "Time"
+    NoDevice = 'NoDevice'
+    TimeDevice = 'Time'
     CircuitDevice = 'Circuit'
     BusDevice = 'Bus'
     BranchDevice = 'Branch'

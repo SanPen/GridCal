@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import os
 import datetime
 import numpy as np
@@ -41,8 +43,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
-                                        ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
+from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
                                         ContingencyFilteringMethods, InvestmentsEvaluationObjectives)
@@ -65,9 +66,9 @@ class SimulationsMain(TimeEventsMain):
         # Power Flow Methods
         self.solvers_dict = OrderedDict()
         self.solvers_dict[SolverType.NR.value] = SolverType.NR
-        self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
         self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
         self.solvers_dict[SolverType.LM.value] = SolverType.LM
+        self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
         self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
         self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
         self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
@@ -76,20 +77,6 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
         self.ui.solver_comboBox.setCurrentIndex(0)
-
-        # reactive power controls
-        self.q_control_modes_dict = OrderedDict()
-        self.q_control_modes_dict['No control'] = ReactivePowerControlMode.NoControl
-        self.q_control_modes_dict['Direct'] = ReactivePowerControlMode.Direct
-        lst = list(self.q_control_modes_dict.keys())
-        self.ui.reactive_power_control_mode_comboBox.setModel(gf.get_list_model(lst))
-
-        # taps controls (transformer voltage regulator)
-        self.taps_control_modes_dict = OrderedDict()
-        self.taps_control_modes_dict['No control'] = TapsControlMode.NoControl
-        self.taps_control_modes_dict['Direct'] = TapsControlMode.Direct
-        lst = list(self.taps_control_modes_dict.keys())
-        self.ui.taps_control_mode_comboBox.setModel(gf.get_list_model(lst))
 
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
@@ -250,6 +237,9 @@ class SimulationsMain(TimeEventsMain):
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
         self.ui.contingency_filter_by_comboBox.currentTextChanged.connect(self.modify_contingency_filter_mode)
 
+        # button
+        self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precission)
+
     def get_simulations(self) -> List[DRIVER_OBJECTS]:
         """
         Get all threads that have to do with simulation
@@ -280,16 +270,19 @@ class SimulationsMain(TimeEventsMain):
 
         return lst
 
-    def get_time_indices(self) -> np.ndarray:
+    def get_time_indices(self) -> np.ndarray | None:
         """
         Get an array of indices of the time steps selected within the start-end interval
         :return: np.array[int]
         """
 
-        start = self.get_simulation_start()
-        end = self.get_simulation_end()
+        if self.circuit.time_profile is None:
+            return None
+        else:
+            start = self.get_simulation_start()
+            end = self.get_simulation_end()
 
-        return np.arange(start, end + 1)
+            return np.arange(start, end + 1)
 
     def modify_ui_options_according_to_the_engine(self) -> None:
         """
@@ -310,8 +303,8 @@ class SimulationsMain(TimeEventsMain):
 
             # Power Flow Methods
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
             self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
@@ -338,9 +331,9 @@ class SimulationsMain(TimeEventsMain):
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
             self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
             self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
@@ -366,7 +359,6 @@ class SimulationsMain(TimeEventsMain):
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
@@ -629,66 +621,38 @@ class SimulationsMain(TimeEventsMain):
         lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
         return True, lst_from, lst_to, lst_br, lst_br_hvdc, areas_from, areas_to
 
-    def get_selected_power_flow_options(self):
+    def get_selected_power_flow_options(self) -> sim.PowerFlowOptions:
         """
         Gather power flow run options
-        :return:
+        :return: sim.PowerFlowOptions
         """
-        solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        q_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
-
-        taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
-
-        verbose = self.ui.verbositySpinBox.value()
-
-        exponent = self.ui.tolerance_spinBox.value()
-        tolerance = 1.0 / (10.0 ** exponent)
-
-        max_iter = self.ui.max_iterations_spinBox.value()
-
-        max_outer_iter = 1000  # not used anymore
-
-        mu = self.ui.muSpinBox.value()
-
-        if self.ui.helm_retry_checkBox.isChecked():
-            retry_with_other_methods = True  # to set a value
-        else:
-            retry_with_other_methods = False
+        tolerance = 1.0 / (10.0 ** self.ui.tolerance_spinBox.value())
 
         if self.ui.apply_impedance_tolerances_checkBox.isChecked():
             branch_impedance_tolerance_mode = BranchImpedanceMode.Upper
         else:
             branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
 
-        temp_correction = self.ui.temperature_correction_checkBox.isChecked()
-
-        distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-
-        ignore_single_node_islands = self.ui.ignore_single_node_islands_checkBox.isChecked()
-
-        use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
-
-        override_branch_controls = self.ui.override_branch_controls_checkBox.isChecked()
-
-        generate_report = self.ui.addPowerFlowReportCheckBox.isChecked()
-
-        ops = sim.PowerFlowOptions(solver_type=solver_type,
-                                   retry_with_other_methods=retry_with_other_methods,
-                                   verbose=verbose,
-                                   tolerance=tolerance,
-                                   max_iter=max_iter,
-                                   max_outer_loop_iter=max_outer_iter,
-                                   control_q=q_control_mode,
-                                   control_taps=taps_control_mode,
-                                   apply_temperature_correction=temp_correction,
-                                   branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
-                                   distributed_slack=distributed_slack,
-                                   ignore_single_node_islands=ignore_single_node_islands,
-                                   trust_radius=mu,
-                                   use_stored_guess=use_stored_guess,
-                                   override_branch_controls=override_branch_controls,
-                                   generate_report=generate_report)
+        ops = sim.PowerFlowOptions(
+            solver_type=self.solvers_dict[self.ui.solver_comboBox.currentText()],
+            retry_with_other_methods=self.ui.helm_retry_checkBox.isChecked(),
+            verbose=self.ui.verbositySpinBox.value(),
+            tolerance=tolerance,
+            max_iter=self.ui.max_iterations_spinBox.value(),
+            max_outer_loop_iter=1000,
+            control_q=self.ui.control_q_checkBox.isChecked(),
+            control_taps_phase=self.ui.control_tap_phase_checkBox.isChecked(),
+            control_taps_modules=self.ui.control_tap_modules_checkBox.isChecked(),
+            control_remote_voltage=self.ui.control_remote_voltage_checkBox.isChecked(),
+            apply_temperature_correction=self.ui.temperature_correction_checkBox.isChecked(),
+            branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
+            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+            ignore_single_node_islands=self.ui.ignore_single_node_islands_checkBox.isChecked(),
+            trust_radius=self.ui.muSpinBox.value(),
+            use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
+            generate_report=self.ui.addPowerFlowReportCheckBox.isChecked()
+        )
 
         return ops
 
@@ -888,16 +852,6 @@ class SimulationsMain(TimeEventsMain):
                 # get the power flow options from the GUI
                 options = self.get_selected_power_flow_options()
 
-                # compute the automatic precision
-                if self.ui.auto_precision_checkBox.isChecked():
-
-                    options.tolerance, tol_idx = self.circuit.get_automatic_precision()
-
-                    if tol_idx > 12:
-                        tol_idx = 12
-
-                    self.ui.tolerance_spinBox.setValue(tol_idx)
-
                 opf_results = self.get_opf_results(use_opf=self.ui.actionOpf_to_Power_flow.isChecked())
 
                 self.ui.progress_label.setText('Running power flow...')
@@ -987,8 +941,7 @@ class SimulationsMain(TimeEventsMain):
 
                         # get the power flow options from the GUI
                         sc_options = sim.ShortCircuitOptions(bus_index=sel_buses[0],
-                                                             fault_type=self_short_circuit_types[0],
-                                                             branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
+                                                             fault_type=self_short_circuit_types[0])
 
                         pf_options = self.get_selected_power_flow_options()
 
@@ -2814,3 +2767,15 @@ class SimulationsMain(TimeEventsMain):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
+
+    def automatic_pf_precission(self):
+        """
+        Find the automatic tolerance
+        :return:
+        """
+        tolerance, tol_idx = self.circuit.get_automatic_precision()
+
+        if tol_idx > 12:
+            tol_idx = 12
+
+        self.ui.tolerance_spinBox.setValue(tol_idx)

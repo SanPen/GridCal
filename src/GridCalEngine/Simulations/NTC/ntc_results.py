@@ -19,7 +19,7 @@ import numpy as np
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxMat
-from GridCalEngine.enumerations import StudyResultsType, TransformerControlType, ResultTypes, DeviceType
+from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
 def add_shifter_data(y, columns, controlled_shifters, phase_shift):
@@ -1014,13 +1014,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         if save_memory:
             self.alpha_n1 = None
-
-    def get_controlled_shifters_as_pt(self):
-        shifter_idx = np.where(self.branch_control_modes == TransformerControlType.Pf)
-        shifter_names = self.branch_names[shifter_idx]
-
-        return shifter_idx, shifter_names
-
 
     def make_report(self, path_out=None):
         """

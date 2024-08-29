@@ -767,7 +767,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
             # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
 
-            rate_mva = rates_dict.get(cgmes_elm.uuid, None)  # min PATL rate in MW/MVA
+            rate_mva = rates_dict.get(cgmes_elm.uuid, 9999.0)  # min PATL rate in MW/MVA
 
             if len(windings) == 2:
                 calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
@@ -887,7 +887,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding1.X0 = x0
                     gcdev_elm.winding1.G0 = g0
                     gcdev_elm.winding1.B0 = b0
-                    gcdev_elm.winding1.rate = windings[0].ratedS
+                    gcdev_elm.winding1.rate = float(windings[0].ratedS)
                     gcdev_elm.winding1.cn_from = cn_1
                     gcdev_elm.winding1.cn_to = cn_2
 
@@ -900,7 +900,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding2.X0 = x0
                     gcdev_elm.winding2.G0 = g0
                     gcdev_elm.winding2.B0 = b0
-                    gcdev_elm.winding2.rate = windings[1].ratedS
+                    gcdev_elm.winding2.rate = float(windings[1].ratedS)
                     gcdev_elm.winding2.cn_from = cn_2
                     gcdev_elm.winding2.cn_to = cn_3
 
@@ -913,7 +913,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.X0 = x0
                     gcdev_elm.winding3.G0 = g0
                     gcdev_elm.winding3.B0 = b0
-                    gcdev_elm.winding3.rate = windings[2].ratedS
+                    gcdev_elm.winding3.rate = float(windings[2].ratedS)
                     gcdev_elm.winding3.cn_from = cn_3
                     gcdev_elm.winding3.cn_to = cn_1
 
@@ -1203,6 +1203,7 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
         gcdev_model.add_voltage_level(gcdev_elm)
         volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
     else:
+        # TODO: this is very weird and cgmes_elm might not be defined
         logger.add_error(msg='Base voltage not found', device=str(cgmes_elm.BaseVoltage))
 
     return volt_lev_dict

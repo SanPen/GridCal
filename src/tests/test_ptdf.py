@@ -219,7 +219,7 @@ def test_dcpowerflow():
 
         pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
                                           verbose=0,
-                                          control_q=gce.ReactivePowerControlMode.NoControl)
+                                          control_q=False)
         options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                               linear_multiple_contingencies=None)
@@ -420,9 +420,7 @@ def test_mlodf() -> None:
         Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)
 
         # Theoretical method
-        pf_options = gce.PowerFlowOptions(gce.SolverType.NR,
-                                          verbose=0,
-                                          control_q=gce.ReactivePowerControlMode.NoControl)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=0, control_q=False)
 
         options = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PTDF)
         cont_analysis_driver = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options,
@@ -446,9 +444,7 @@ def test_mlodf_sanpen():
         main_circuit = gce.FileOpen(fname).open()
 
         # DC power flow method
-        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
-                                          verbose=0,
-                                          control_q=gce.ReactivePowerControlMode.NoControl)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC, verbose=0, control_q=False)
         options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
                                                               linear_multiple_contingencies=None)
@@ -490,9 +486,7 @@ def test_ptdf_generation_contingencies():
     ]:
         main_circuit = gce.FileOpen(fname).open()
 
-        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
-                                          verbose=0,
-                                          control_q=gce.ReactivePowerControlMode.NoControl)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC, verbose=0, control_q=False)
         # DC power flow method
 
         options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
@@ -532,9 +526,7 @@ def test_lodf_single_contingencies():
         main_circuit = gce.FileOpen(fname).open()
 
         # DC power flow method
-        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
-                                          verbose=0,
-                                          control_q=gce.ReactivePowerControlMode.NoControl)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC, verbose=0, control_q=False)
 
         options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options,
                                                   contingency_method=gce.ContingencyMethod.PowerFlow)
@@ -585,14 +577,10 @@ def test_generation_contingencies_powerflow():
     ]:
         main_circuit = gce.FileOpen(case['conti']).open()
 
-        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
-                                          verbose=0,
-                                          control_q=gce.ReactivePowerControlMode.NoControl)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC, verbose=0, control_q=False)
 
         # DC power flow method with ContingencyAnalysisDriver
-        pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
-                                          verbose=0,
-                                          control_q=gce.ReactivePowerControlMode.NoControl)
+        pf_options = gce.PowerFlowOptions(gce.SolverType.DC, verbose=0, control_q=False)
 
         options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
         cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
@@ -710,9 +698,7 @@ def test_ptdf_contingencies_powerflow():
             linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
 
             # DC power flow method with ContingencyAnalysisDriver
-            pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
-                                              verbose=0,
-                                              control_q=gce.ReactivePowerControlMode.NoControl)
+            pf_options = gce.PowerFlowOptions(gce.SolverType.DC, verbose=0, control_q=False)
 
             options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PTDF)
             cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,
@@ -743,9 +729,7 @@ def test_ptdf_contingencies_powerflow():
 
         else:
             # DC power flow method with ContingencyAnalysisDriver
-            pf_options = gce.PowerFlowOptions(gce.SolverType.DC,
-                                              verbose=0,
-                                              control_q=gce.ReactivePowerControlMode.NoControl)
+            pf_options = gce.PowerFlowOptions(gce.SolverType.DC, verbose=0, control_q=False)
 
             options1 = gce.ContingencyAnalysisOptions(pf_options=pf_options, contingency_method=gce.ContingencyMethod.PowerFlow)
             cont_analysis_driver1 = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options1,

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/plugin.svg</file>
     <file>icons/picture.svg</file>
     <file>icons/CataloguePrivate.svg</file>
     <file>icons/record.svg</file>

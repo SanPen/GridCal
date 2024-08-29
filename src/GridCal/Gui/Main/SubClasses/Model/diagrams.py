@@ -24,6 +24,7 @@ from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
+from GridCalEngine.Devices import TransformerType, OverheadLineType, SequenceLineType, UndergroundLineType
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                           InputNumberDialogue)
@@ -800,7 +801,6 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
-        print("Colour!")
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
@@ -1120,30 +1120,36 @@ class DiagramsMain(CompiledArraysMain):
 
         self.set_diagrams_list_view()
 
-    def add_map_diagram(self) -> None:
+    def add_map_diagram(self, ask: bool = True) -> None:
         """
         Adds a Map diagram
         """
+        if ask:
+            ok = yes_no_question(text=f"Do you want to add all substations to the map?\nYou can add them later.",
+                                 title="New map")
+        else:
+            ok = True
+
+        if ok:
+            diagram = generate_map_diagram(substations=self.circuit.get_substations(),
+                                           voltage_levels=self.circuit.get_voltage_levels(),
+                                           lines=self.circuit.get_lines(),
+                                           dc_lines=self.circuit.get_dc_lines(),
+                                           hvdc_lines=self.circuit.get_hvdc(),
+                                           fluid_nodes=self.circuit.get_fluid_nodes(),
+                                           fluid_paths=self.circuit.get_fluid_paths(),
+                                           prog_func=None,
+                                           text_func=None,
+                                           name='Map diagram')
+
+            # set other default properties of the diagram
+            diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
+            diagram.start_level = 5
+        else:
+            diagram = dev.MapDiagram(name='Map diagram')
+
         # select the tile source
         tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
-
-        diagram = generate_map_diagram(substations=self.circuit.get_substations(),
-                                       voltage_levels=self.circuit.get_voltage_levels(),
-                                       lines=self.circuit.get_lines(),
-                                       dc_lines=self.circuit.get_dc_lines(),
-                                       hvdc_lines=self.circuit.get_hvdc(),
-                                       fluid_nodes=self.circuit.get_fluid_nodes(),
-                                       fluid_paths=self.circuit.get_fluid_paths(),
-                                       prog_func=None,
-                                       text_func=None,
-                                       name='Map diagram')
-
-        # set other default properties of the diagram
-        diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
-        diagram.start_level = 5
-
-        # diagram.longitude = -15.41
-        # diagram.latitude = 40.11
 
         # create the map widget
         map_widget = GridMapWidget(tile_src=tile_source,
@@ -1749,7 +1755,7 @@ class DiagramsMain(CompiledArraysMain):
         gf.add_menu_entry(menu=context_menu,
                           text="New map",
                           icon_path=":/Icons/icons/map (add).svg",
-                          function_ptr=self.add_map_diagram)
+                          function_ptr=lambda: self.add_map_diagram(True))
 
         context_menu.addSeparator()
         gf.add_menu_entry(menu=context_menu,
@@ -1824,6 +1830,14 @@ class DiagramsMain(CompiledArraysMain):
                 cmap_text = self.ui.palette_comboBox.currentText()
                 cmap = self.cmap_dict[cmap_text]
                 diagram_widget.diagram.palette = cmap
+
+                current_study = self.ui.available_results_to_color_comboBox.currentText()
+                val = self.ui.diagram_step_slider.value()
+                t_idx = val if val > -1 else None
+
+                self.grid_colour_function(diagram=diagram_widget,
+                                          current_study=current_study,
+                                          t_idx=t_idx)
 
     def set_diagrams_map_tile_provider(self):
         """

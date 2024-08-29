@@ -77,6 +77,7 @@ dependencies = ['setuptools>=41.0.1',
                 "fastapi",
                 "uvicorn",
                 "websockets",
+                "cryptography",
                 "GridCalEngine==" + __GridCalServer_VERSION__,  # the GridCalEngine version must be exactly the same
                 ]
 

@@ -19,13 +19,13 @@ import uuid
 import numpy as np
 from GridCalEngine.Devices.profile import Profile
 from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
-from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
+from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection,
+                                        TapModuleControl, TapPhaseControl, SubObjectType,
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
                                         CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
-                                        ZonalGrouping, MIPSolvers, AcOpfMode, ReactivePowerControlMode,
-                                        BranchImpedanceMode, FaultType)
+                                        ZonalGrouping, MIPSolvers, AcOpfMode,
+                                        BranchImpedanceMode, FaultType, TapChangerTypes)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -38,10 +38,8 @@ GCPROP_TYPES = Union[
     Type[HvdcControlType],
     Type[BuildStatus],
     Type[WindingsConnection],
-    Type[TransformerControlType],
-    Type[ConverterControlType],
     Type[TapModuleControl],
-    Type[TapAngleControl],
+    Type[TapPhaseControl],
     Type[ActionType],
     Type[AvailableTransferMode],
     Type[ContingencyMethod],
@@ -55,9 +53,9 @@ GCPROP_TYPES = Union[
     Type[ZonalGrouping],
     Type[MIPSolvers],
     Type[AcOpfMode],
-    Type[ReactivePowerControlMode],
     Type[BranchImpedanceMode],
-    Type[FaultType]
+    Type[FaultType],
+    Type[TapChangerTypes]
 ]
 
 
@@ -662,14 +660,13 @@ class EditableDevice:
         """
         # get the value of the magnitude
         snapshot_value = getattr(self, magnitude)
-        # val = Profile(default_value=snapshot_value)
 
-        val = self.get_profile(magnitude=magnitude)
+        prof = self.get_profile(magnitude=magnitude)
 
-        val.create_sparse(size=len(index), default_value=snapshot_value)
+        prof.create_sparse(size=len(index), default_value=snapshot_value)
 
         # set the profile variable associated with the magnitude
-        setattr(self, self.properties_with_profile[magnitude], val)
+        setattr(self, self.properties_with_profile[magnitude], prof)
 
     def ensure_profiles_exist(self, index):
         """

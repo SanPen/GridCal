@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from dataclasses import dataclass
-from typing import Callable, List, Tuple
+from typing import Callable, Tuple
 import numpy as np
 import numba as nb
 from matplotlib import pyplot as plt
@@ -82,7 +82,7 @@ class ConvexFunctionResult:
     """
     Result of the convex function evaluated iterativelly for a given method
     """
-    f: Vec      # function increment of the equalities
+    f: Vec  # function increment of the equalities
     J: CscMat  # Jacobian matrix
 
     def compute_f_error(self):
@@ -99,12 +99,12 @@ class ConvexMethodResult:
     """
     Iterative convex method result
     """
-    x: Vec              # x solution
-    error: float        # method error
-    converged: bool     # converged?
-    iterations: int     # number of iterations
-    elapsed: float      # time elapsed in seconds
-    error_evolution: Vec    # array of errors to plot
+    x: Vec  # x solution
+    error: float  # method error
+    converged: bool  # converged?
+    iterations: int  # number of iterations
+    elapsed: float  # time elapsed in seconds
+    error_evolution: Vec  # array of errors to plot
 
     def plot_error(self) -> None:
         """
@@ -116,7 +116,7 @@ class ConvexMethodResult:
         plt.ylabel("Error")
         plt.yscale('log')
         plt.show()
-    
+
     def print_info(self):
         """
         Print information about the ConvexMethodResult
@@ -126,3 +126,23 @@ class ConvexMethodResult:
         print("Converged:\t", self.converged)
         print("Error:\t", self.error)
         print("Elapsed:\t", self.elapsed, 's')
+
+
+def find_closest_number(arr: Vec, target: float) -> float:
+    """
+    Find the closest number that exists in array
+    :param arr: Array to be searched
+    :param target: Value to search for
+    :return: Closes adjusted or truncated value
+    """
+    idx = np.searchsorted(arr, target)
+    if idx == 0:
+        return arr[0]
+    if idx == len(arr):
+        return arr[-1]
+    before = arr[idx - 1]
+    after = arr[idx]
+    if after - target < target - before:
+        return after
+    else:
+        return before

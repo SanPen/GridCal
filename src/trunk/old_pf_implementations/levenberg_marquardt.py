@@ -20,10 +20,9 @@ import scipy
 import numpy as np
 import scipy.sparse as sp
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_sparse_type, get_linear_solver
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.ac_jacobian import AC_jacobianVc
+from GridCalEngine.Simulations.Derivatives.ac_jacobian import AC_jacobianVc
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Utils.Sparse.csc2 as csc
@@ -35,8 +34,7 @@ np.set_printoptions(precision=8, suppress=True, linewidth=320)
 
 
 def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax, tol, max_it=50,
-                           control_q=ReactivePowerControlMode.NoControl,
-                           verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
+                           control_q=False, verbose=False, logger: Logger = None) -> NumericPowerFlowResults:
     """
     Solves the power flow problem by the Levenberg-Marquardt power flow algorithm.
     It is usually better than Newton-Raphson, but it takes an order of magnitude more time to converge.
@@ -190,7 +188,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax,
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and normF < 1e-2 and (len(pv) + len(p)) > 0:
+            if control_q and normF < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
@@ -227,7 +225,7 @@ def levenberg_marquardt_pf(Ybus, S0, V0, I0, Y0, pv_, pq_, pqv_, p_, Qmin, Qmax,
     elapsed = end - start
 
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=normF,
-                                   Scalc=Scalc, ma=None, theta=None, Beq=None,
+                                   Scalc=Scalc, m=None, tau=None, Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_, elapsed=elapsed)
 

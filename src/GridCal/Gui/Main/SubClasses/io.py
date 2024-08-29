@@ -208,7 +208,7 @@ class IoMain(ConfigurationMain):
 
         if create_default_diagrams:
             self.add_complete_bus_branch_diagram()
-            self.add_map_diagram()
+            self.add_map_diagram(ask=False)
             self.set_diagram_widget(self.diagram_widgets_list[0])
 
         self.collect_memory()
@@ -339,6 +339,10 @@ class IoMain(ConfigurationMain):
                 if self.circuit.has_diagrams():
                     # create the diagrams that came with the file
                     self.create_circuit_stored_diagrams()
+
+                    if len(self.diagram_widgets_list) > 0:
+                        diagram = self.diagram_widgets_list[0]
+                        self.set_diagram_widget(diagram)
 
                 else:
                     if self.circuit.get_bus_number() > 1500:
@@ -895,10 +899,11 @@ class IoMain(ConfigurationMain):
 
                 for c, calc_input in enumerate(calculation_inputs):
 
-                    for elm_type in calc_input.available_structures:
-                        name = elm_type + '_' + str(c)
-                        df = calc_input.get_structure(elm_type).astype(str)
-                        df.to_excel(writer, name)
+                    for category, elms_in_category in calc_input.available_structures.items():
+                        for elm_type in elms_in_category:
+                            name = f"{category}_{elm_type}@{c}"
+                            df = calc_input.get_structure(elm_type).astype(str)
+                            df.to_excel(excel_writer=writer, sheet_name=name[:31])  # excel supports 31 chars per sheet name
 
     def load_results_driver(self):
         """
