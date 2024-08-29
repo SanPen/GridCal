@@ -28,10 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Correct transformer type arguments to grab modules from the tap changer">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fix the export and import of catalogues with tap changers">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/data/transformers.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/data/transformers.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1797,7 +1797,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="554" />
+    <option name="localTasksCounter" value="555" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1844,7 +1844,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed issue with dQf and dQt, now Qf and Qt controls work" />
     <MESSAGE value="Added Qf and Qt control tests&#10;All pf tests passing" />
     <MESSAGE value="Added missing regulation bus warning" />
     <MESSAGE value="Included bus_voltage_used at the controlled branch compiler" />
@@ -1869,7 +1868,8 @@
     <MESSAGE value="Update NSGA working with time indices" />
     <MESSAGE value="Fix no time indices error" />
     <MESSAGE value="Correct transformer type arguments to grab modules from the tap changer" />
-    <option name="LAST_COMMIT_MESSAGE" value="Correct transformer type arguments to grab modules from the tap changer" />
+    <MESSAGE value="Fix the export and import of catalogues with tap changers" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix the export and import of catalogues with tap changers" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2396,13 +2396,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_driver.py</url>
-          <line>218</line>
-          <option name="timeStamp" value="2057" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py</url>
-          <line>138</line>
-          <option name="timeStamp" value="2060" />
+          <line>650</line>
+          <option name="timeStamp" value="2061" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

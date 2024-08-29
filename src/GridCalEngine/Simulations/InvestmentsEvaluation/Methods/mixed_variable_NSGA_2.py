@@ -129,6 +129,8 @@ class MixedVariableProblem(ElementwiseProblem):
         :param kwargs:
         :return:
         """
+        # x maps the device idtag with the index of its template
+        # xi_to_index maps the device idtag to a given index, from 0 to n-1
         xi_to_index = {key: idx for idx, key in enumerate(set(x))}
 
         for i, xi in enumerate(x):

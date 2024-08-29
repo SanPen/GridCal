@@ -635,13 +635,11 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
             # eta=30,
         )
 
-        res_x = []
-        for i, v in enumerate(X):
-            if isinstance(v, dict):
-                vall = list(v.values())[0]
-                res_x.append(vall)
-            else:
-                res_x.append(v)
+        row0 = X[0]
+        if isinstance(row0, dict):
+            res_x = np.array(list(row0.values()))
+        else:
+            res_x = row0
 
         self.results.set_best_combination(combination=np.array(res_x))
         # self.results.set_best_combination(combination=X[:, 0])
