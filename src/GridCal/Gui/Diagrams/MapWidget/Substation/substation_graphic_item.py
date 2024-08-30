@@ -145,6 +145,9 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         lat, long = self.editor.to_lat_lon(self.rect().x(), self.rect().y())
 
+        self.lat = lat
+        self.lon = long
+
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
                                            longitude=long,
