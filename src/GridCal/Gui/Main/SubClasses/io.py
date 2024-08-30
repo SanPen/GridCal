@@ -251,7 +251,9 @@ class IoMain(ConfigurationMain):
         else:
             warning_msg('There is a file being processed now.')
 
-    def open_file_threaded(self, post_function=None, allow_diff_file_format: bool = False, title: str = 'Open file'):
+    def open_file_threaded(self, post_function=None,
+                           allow_diff_file_format: bool = False,
+                           title: str = 'Open file'):
         """
         Open file from a Qt thread to remain responsive
         :param post_function: Any function to run after
@@ -422,7 +424,7 @@ class IoMain(ConfigurationMain):
         self.collect_memory()
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
-
+        self.change_theme_mode()
 
     def select_csv_file(self, caption='Open CSV file'):
         """
@@ -466,60 +468,60 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                if not new_circuit.valid_for_simulation():
-                    # load the circuit right away
-                    self.stuff_running_now.append('file_open')
-                    self.post_open_file()
+                # if not new_circuit.valid_for_simulation():
+                #     # load the circuit right away
+                #     self.stuff_running_now.append('file_open')
+                #     self.post_open_file()
+                # else:
+                # add the circuit
+                logger = self.circuit.add_circuit(new_circuit)
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('File merge logger', logger)
+                    dlg.exec_()
+
+                dlg2 = CustomQuestionDialogue(title="Grid differential",
+                                              question="How do you want to represent the loaded grid?",
+                                              answer1="Create new diagram",
+                                              answer2="Add to current diagram")
+                dlg2.exec_()
+
+                if dlg2.accepted_answer == 1:
+                    # Create a blank diagram and add to it
+                    diagram_widget = self.create_blank_schematic_diagram(name=new_circuit.name)
+
+                elif dlg2.accepted_answer == 2:
+                    diagram_widget = self.get_selected_diagram_widget()
+
                 else:
-                    # add the circuit
-                    logger = self.circuit.add_circuit(new_circuit)
+                    return
 
-                    if len(logger) > 0:
-                        dlg = LogsDialogue('File merge logger', logger)
-                        dlg.exec_()
-
-                    dlg2 = CustomQuestionDialogue(title="Grid differential",
-                                                  question="How do you want to represent the loaded grid?",
-                                                  answer1="Create new diagram",
-                                                  answer2="Add to current diagram")
-                    dlg2.exec_()
-
-                    if dlg2.accepted_answer == 1:
-                        # Create a blank diagram and add to it
-                        diagram_widget = self.create_blank_schematic_diagram(name=new_circuit.name)
-
-                    elif dlg2.accepted_answer == 2:
-                        diagram_widget = self.get_selected_diagram_widget()
-
-                    else:
-                        return
-
-                    if diagram_widget is not None:
-                        injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
-                        injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
-                        injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
-                        diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
-                                                                 connectivity_nodes=new_circuit.connectivity_nodes,
-                                                                 busbars=new_circuit.bus_bars,
-                                                                 lines=new_circuit.lines,
-                                                                 dc_lines=new_circuit.dc_lines,
-                                                                 transformers2w=new_circuit.transformers2w,
-                                                                 transformers3w=new_circuit.transformers3w,
-                                                                 hvdc_lines=new_circuit.hvdc_lines,
-                                                                 vsc_devices=new_circuit.vsc_devices,
-                                                                 upfc_devices=new_circuit.upfc_devices,
-                                                                 switches=new_circuit.switch_devices,
-                                                                 fluid_nodes=new_circuit.fluid_nodes,
-                                                                 fluid_paths=new_circuit.fluid_paths,
-                                                                 injections_by_bus=injections_by_bus,
-                                                                 injections_by_fluid_node=injections_by_fluid_node,
-                                                                 injections_by_cn=injections_by_cn,
-                                                                 explode_factor=1.0,
-                                                                 prog_func=None,
-                                                                 text_func=None)
-                        diagram_widget.set_selected_buses(buses=new_circuit.buses)
-                    else:
-                        info_msg("No diagram was selected...", title="Add to current diagram")
+                if diagram_widget is not None:
+                    injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
+                    injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
+                    injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
+                    diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                             connectivity_nodes=new_circuit.connectivity_nodes,
+                                                             busbars=new_circuit.bus_bars,
+                                                             lines=new_circuit.lines,
+                                                             dc_lines=new_circuit.dc_lines,
+                                                             transformers2w=new_circuit.transformers2w,
+                                                             transformers3w=new_circuit.transformers3w,
+                                                             hvdc_lines=new_circuit.hvdc_lines,
+                                                             vsc_devices=new_circuit.vsc_devices,
+                                                             upfc_devices=new_circuit.upfc_devices,
+                                                             switches=new_circuit.switch_devices,
+                                                             fluid_nodes=new_circuit.fluid_nodes,
+                                                             fluid_paths=new_circuit.fluid_paths,
+                                                             injections_by_bus=injections_by_bus,
+                                                             injections_by_fluid_node=injections_by_fluid_node,
+                                                             injections_by_cn=injections_by_cn,
+                                                             explode_factor=1.0,
+                                                             prog_func=None,
+                                                             text_func=None)
+                    diagram_widget.set_selected_buses(buses=new_circuit.buses)
+                else:
+                    info_msg("No diagram was selected...", title="Add to current diagram")
 
     def export_circuit_differential(self):
         """
@@ -903,7 +905,8 @@ class IoMain(ConfigurationMain):
                         for elm_type in elms_in_category:
                             name = f"{category}_{elm_type}@{c}"
                             df = calc_input.get_structure(elm_type).astype(str)
-                            df.to_excel(excel_writer=writer, sheet_name=name[:31])  # excel supports 31 chars per sheet name
+                            df.to_excel(excel_writer=writer,
+                                        sheet_name=name[:31])  # excel supports 31 chars per sheet name
 
     def load_results_driver(self):
         """
