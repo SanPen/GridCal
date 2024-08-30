@@ -122,9 +122,12 @@ class MixedVariableProblem(ElementwiseProblem):
 
     def _evaluate(self, x, out, *args, **kwargs):
         """
-
-        :param x:
-        :param out:
+        Set the templates of the devices according to the decision variables
+        to eventually evaluate the objective function.
+        If the captured index is 0, the default template is applied.
+        If the captured index is >0, the associated template at that index is applied.
+        :param x: dictionary linking device_idtag with the index of the template
+        :param out: cost values to output
         :param args:
         :param kwargs:
         :return:
@@ -136,23 +139,26 @@ class MixedVariableProblem(ElementwiseProblem):
         for i, xi in enumerate(x):
             device = self.devices[i]
 
-            if i > 0:
-                if xi in xi_to_index:
-                    index = xi_to_index[xi]
-                    template = self.device_template_dict[device][index]
+            if xi in xi_to_index:
+                index = x[xi]
+
+                if index > 0:
+                    # Reduce index by 1 as the first template is the default one
+                    template = self.device_template_dict[device][index - 1]
+
+                    if isinstance(device, Line):
+                        device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
+
+                    elif isinstance(device, Transformer2W):
+                        device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
+
+                    else:
+                        raise Exception('Device not recognized')
                 else:
-                    raise KeyError(f"String key {xi} not found.")
-
-                if isinstance(device, Line):
-                    device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
-
-                elif isinstance(device, Transformer2W):
-                    device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
-
-                else:
-                    raise Exception('Device not recognized')
+                    # Default values introduced in the device
+                    device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
             else:
-                device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
+                raise KeyError(f"String key {xi} not found.")
 
         out["F"] = self.obj_func(x)
         print("Completed eval")

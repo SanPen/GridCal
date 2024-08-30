@@ -12,13 +12,15 @@ import cProfile
 import pstats
 
 
-
 if __name__ == "__main__":
     # absolute_path = os.path.abspath(
     #   os.path.join(os.getcwd(), 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal'))
 
-    fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
+    # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
     # fname = os.path.join('final_edited_118_bus_grid.gridcal')
+    # fname = 'C:/Users/J/Downloads/claudia_v2.gridcal'
+    # fname = 'C:/Users/J/Downloads/claudia_v4.gridcal'
+    fname = 'C:/Users/J/Downloads/jm1.gridcal'
     grid = FileOpen(fname).open()
 
     pf_options = sim.PowerFlowOptions()
@@ -31,9 +33,13 @@ if __name__ == "__main__":
     #                                            max_eval=1 * len(grid.investments),
     #                                            pf_options=pf_options)
 
-    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Independent,
+    options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.MixedVariableGA,
                                                max_eval=1 * len(grid.investments),
                                                pf_options=pf_options)
+
+    # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Independent,
+    #                                            max_eval=1 * len(grid.investments),
+    #                                            pf_options=pf_options)
 
     # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Random,
     #                                            max_eval=1 * len(grid.investments),

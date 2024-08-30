@@ -276,8 +276,10 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
             if active == 1:
                 inv_list += self.investments_by_group[i]
             if active == 0:
+                inv_list += self.investments_by_group[i]
                 pass
             else:
+                inv_list += self.investments_by_group[i]
                 # raise Exception('Value different from 0 and 1!')
                 # print('Value different from 0 and 1!', active)
                 pass
