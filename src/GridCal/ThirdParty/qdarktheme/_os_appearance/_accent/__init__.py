@@ -19,7 +19,7 @@ def _dummy_accent_detector() -> None:
 def _select_accent_detector():
     if platform.system() == "Darwin":
         if _check_macos_supported_version():
-            from qdarktheme._os_appearance._accent._mac_detect import get_mac_accent
+            from GridCal.ThirdParty.qdarktheme._os_appearance._accent._mac_detect import get_mac_accent
 
             return get_mac_accent
         return _dummy_accent_detector
