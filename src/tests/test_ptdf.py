@@ -414,7 +414,7 @@ def test_mlodf() -> None:
         linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
                                                                 contingency_groups_used=main_circuit.get_contingency_groups())
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.A  # TODO: Suponemos que son los MLODF
+        mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.toarray()  # TODO: Suponemos que son los MLODF
 
         # Power flow per branches after multicontingency using MLODF method
         Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)

@@ -103,6 +103,9 @@ class MainGUI(ScriptingMain):
         self.load_server_config()
         self.add_plugins()
 
+        # apply the theme selected by the settings
+        self.change_theme_mode()
+
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """
         Close event
