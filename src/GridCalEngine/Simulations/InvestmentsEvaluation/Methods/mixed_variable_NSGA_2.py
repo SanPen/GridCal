@@ -161,7 +161,7 @@ class MixedVariableProblem(ElementwiseProblem):
                 raise KeyError(f"String key {xi} not found.")
 
         out["F"] = self.obj_func(x)
-        print("Completed eval")
+        #print("Completed eval")
 
 
 def NSGA_2(grid: MultiCircuit,

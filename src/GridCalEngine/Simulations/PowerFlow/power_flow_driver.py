@@ -128,6 +128,11 @@ class PowerFlowDriver(DriverTemplate):
                                            options=self.options,
                                            opf_results=self.opf_results,
                                            logger=self.logger)
+            #if self.results.converged==True:
+            #    print("Resultado converge")
+
+            #print("converged PF: {}".format(self.results.converged))
+
             self.convergence_reports = self.results.convergence_reports
 
         elif self.engine == EngineType.NewtonPA:
@@ -141,6 +146,7 @@ class PowerFlowDriver(DriverTemplate):
                                             branch_names=res.branch_names,
                                             hvdc_names=res.hvdc_names,
                                             bus_types=res.bus_types)
+
 
             self.results = translate_newton_pa_pf_results(self.grid, res)
             self.results.area_names = [a.name for a in self.grid.areas]
