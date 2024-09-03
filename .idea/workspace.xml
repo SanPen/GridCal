@@ -28,16 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Various fixes in the NSGA2 object handling">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="crowding distance &quot;mnn&quot;, updating cables.csv file with cable cross-section and catalogue.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/data/cables.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/data/cables.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/data/sequence_lines.csv" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/data/sequence_lines.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/line.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/sequence_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/sequence_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/underground_line_type.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/underground_line_type.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -193,7 +186,7 @@
     "Python.pruning_cd.executor": "Debug",
     "Python.pymoo_example.executor": "Debug",
     "Python.raw_imp_exp_test.executor": "Run",
-    "Python.try_multiobj_nsga.executor": "Debug",
+    "Python.try_multiobj_nsga.executor": "Run",
     "Python.try_template_loading.executor": "Run",
     "Python.update_gui_file.executor": "Run",
     "Python.upload_to_pypi.executor": "Run",
@@ -1805,7 +1798,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="557" />
+    <option name="localTasksCounter" value="558" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1852,7 +1845,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Included bus_voltage_used at the controlled branch compiler" />
     <MESSAGE value="Fixed CGMES conversion bug creating rates = None" />
     <MESSAGE value="Fixed vset too strict compilation in control branches&#10;Modified the fubm check script in trunk" />
     <MESSAGE value="Fixed critical bug in the CSC matrix stacking" />
@@ -1877,7 +1869,8 @@
     <MESSAGE value="Fix the export and import of catalogues with tap changers" />
     <MESSAGE value="Fix the passing of the last combination result" />
     <MESSAGE value="Various fixes in the NSGA2 object handling" />
-    <option name="LAST_COMMIT_MESSAGE" value="Various fixes in the NSGA2 object handling" />
+    <MESSAGE value="crowding distance &quot;mnn&quot;, updating cables.csv file with cable cross-section and catalogue." />
+    <option name="LAST_COMMIT_MESSAGE" value="crowding distance &quot;mnn&quot;, updating cables.csv file with cable cross-section and catalogue." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2409,23 +2402,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>212</line>
+          <line>223</line>
           <option name="timeStamp" value="2082" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py</url>
-          <line>213</line>
-          <option name="timeStamp" value="2084" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py</url>
-          <line>224</line>
-          <option name="timeStamp" value="2085" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/catalogue.py</url>
           <line>275</line>
           <option name="timeStamp" value="2086" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="2087" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

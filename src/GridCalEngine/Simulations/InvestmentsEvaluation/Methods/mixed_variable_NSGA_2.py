@@ -188,8 +188,8 @@ def NSGA_2(grid: MultiCircuit,
 
     algorithm = MixedVariableGA(pop_size=pop_size,
                                 sampling=MixedVariableSampling(),
-                                survival=RankAndCrowding(crowding_func="mnn")
-                                #survival = RankAndCrowding(crowding_func="pcd")
+                                survival=RankAndCrowding(crowding_func="mnn") #mnn , 2nn for multi-obj
+                                #survival = RankAndCrowding(crowding_func="pcd") #for bi-objective
                                 )
 
     # In terms of setting probability parameters, you have to look quite far deep into MixedVariableGA
