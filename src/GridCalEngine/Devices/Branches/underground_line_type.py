@@ -21,7 +21,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 
 class UndergroundLineType(EditableDevice):
 
-    def __init__(self, name='UndergroundLine', idtag=None, Imax=1, Vnom=1, R=0, X=0, B=0, R0=0, X0=0, B0=0):
+    def __init__(self, name='UndergroundLine', idtag=None, Imax=1, Vnom=1, R=0, X=0, B=0, R0=0, X0=0, B0=0, Area = 0):
         """
         Constructor
         :param name: name of the device
@@ -41,6 +41,7 @@ class UndergroundLineType(EditableDevice):
 
         self.Imax = Imax
         self.Vnom = Vnom
+        self.Area = Area #NEW
 
         # impudence and admittance per unit of length
         self.R = R
@@ -53,6 +54,8 @@ class UndergroundLineType(EditableDevice):
 
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the line', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
+        self.register(key='Area', units= 'mm2', tpe=float, definition= 'Cross-section Area of the cable') #NEW
+
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance per km')
         self.register(key='X', units='Ohm/km', tpe=float, definition='Positive-sequence reactance per km')
         self.register(key='B', units='uS/km', tpe=float, definition='Positive-sequence shunt susceptance per km')
