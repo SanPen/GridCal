@@ -759,6 +759,8 @@ class MultiCircuit(Assets):
         """
         Set the profiles state at the index t as the default values.
         """
+        self.ensure_profiles_exist()
+
         for device in self.items_declared():
             device.set_profile_values(t)
 
