@@ -503,10 +503,13 @@ class Assets:
         if self.time_profile is None:
             raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
 
-        for key, tpe in self.device_type_name_dict.items():
-            elements = self.get_elements_by_type(device_type=tpe)
-            for elm in elements:
-                elm.ensure_profiles_exist(self.time_profile)
+        # for key, tpe in self.device_type_name_dict.items():
+        #     elements = self.get_elements_by_type(device_type=tpe)
+        #     for elm in elements:
+        #         elm.ensure_profiles_exist(self.time_profile)
+
+        for elm in self.items_declared():
+            elm.ensure_profiles_exist(self.time_profile)
 
     def delete_profiles(self):
         """
