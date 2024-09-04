@@ -255,7 +255,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.Gsw = self.nc.branch_data.G0sw[self.idx_conv]
 
-        self.Ys = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
+        self.Ys = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X+ 1e-20) #NEW
 
         self.adm = compute_admittances(
             R=self.nc.branch_data.R,

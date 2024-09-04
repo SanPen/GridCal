@@ -32,6 +32,12 @@ class Association:
 
         self.api_object: ASSOCIATION_TYPES = api_object
 
+        #new - not working
+        # if self.api_object.HV == 66 & self.api_object.LV==132:
+        #     print("possible to do association")
+        # else:
+        #     print("not possible to create association")
+
         self.value = value
 
     def to_dict(self) -> Dict[str, Union[str, float]]:

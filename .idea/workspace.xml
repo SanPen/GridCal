@@ -28,9 +28,15 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="crowding distance &quot;mnn&quot;, updating cables.csv file with cable cross-section and catalogue.">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Update default catalogue (in cables.csv &quot;unknown&quot; values to '0' - Area parameter)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/associations_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/associations_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Associations/association.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Associations/association.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/editable_device.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Parents/editable_device.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/PowerFlow/NumericalMethods/pf_advanced_formulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -176,7 +182,7 @@
     "Python tests.pytest in test_topology_processor.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.download_stats.executor": "Run",
@@ -707,7 +713,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-d68999036c7f-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.14475.56" />
+        <option value="bundled-python-sdk-babbdf50b680-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.15989.155" />
       </set>
     </attachedChunks>
   </component>
@@ -1798,7 +1804,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="558" />
+    <option name="localTasksCounter" value="559" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1832,7 +1838,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/204_investments_evaluation" />
+                        <option value="204_investments_evaluation" />
                       </list>
                     </value>
                   </entry>
@@ -1845,7 +1851,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed CGMES conversion bug creating rates = None" />
     <MESSAGE value="Fixed vset too strict compilation in control branches&#10;Modified the fubm check script in trunk" />
     <MESSAGE value="Fixed critical bug in the CSC matrix stacking" />
     <MESSAGE value="Searching for the bug...WIP" />
@@ -1870,7 +1875,8 @@
     <MESSAGE value="Fix the passing of the last combination result" />
     <MESSAGE value="Various fixes in the NSGA2 object handling" />
     <MESSAGE value="crowding distance &quot;mnn&quot;, updating cables.csv file with cable cross-section and catalogue." />
-    <option name="LAST_COMMIT_MESSAGE" value="crowding distance &quot;mnn&quot;, updating cables.csv file with cable cross-section and catalogue." />
+    <MESSAGE value="Update default catalogue (in cables.csv &quot;unknown&quot; values to '0' - Area parameter)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update default catalogue (in cables.csv &quot;unknown&quot; values to '0' - Area parameter)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2402,7 +2408,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>223</line>
+          <line>212</line>
           <option name="timeStamp" value="2082" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2411,15 +2417,26 @@
           <option name="timeStamp" value="2086" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
-          <line>208</line>
-          <option name="timeStamp" value="2087" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/associations_model.py</url>
+          <line>77</line>
+          <option name="timeStamp" value="2092" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/pymoo/core/algorithm.py</url>
+          <line>137</line>
+          <option name="timeStamp" value="2093" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/pymoo/core/algorithm.py</url>
+          <line>227</line>
+          <option name="timeStamp" value="2094" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
         <watch expression="self" />
+        <watch expression="index" />
       </configuration>
     </watches-manager>
   </component>

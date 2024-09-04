@@ -212,6 +212,11 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         if isinstance(value2, (float, int)):
             association = self.get_association(i=index.row(), j=index.column())
             if association is None:
+
+                # #NEW:
+                # if x is in self._objects[index.row()].possible_sequence_line_types:
+                # self._objects[index.column()].name
+
                 # create an association
                 self.create_association(i=index.row(), j=index.column(), value=float(value2))
                 print(f"Created association {self._objects[index.row()]} "

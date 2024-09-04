@@ -199,7 +199,7 @@ def NSGA_2(grid: MultiCircuit,
                    termination=('n_eval', max_evals),
                    seed=1,
                    verbose=True,
-                   save_history=True,
+                   save_history=False,
                    return_least_infeasible = True)
 
     # Do they want opex or capex to have more weight?
