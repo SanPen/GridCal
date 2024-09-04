@@ -675,6 +675,9 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         elif self.options.solver == InvestmentEvaluationMethod.MixedVariableGA:
             self.optimized_evaluation_mixed_nsga2()
 
+        elif self.options.solver == InvestmentEvaluationMethod.FromPlugin:
+            self.options.plugin_fcn_ptr(self)
+
         else:
             raise Exception('Unsupported method')
 
@@ -684,6 +687,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
             self.logger.add_info(msg=f"Best combination", device=inv.idtag, value=inv.name)
 
         # this stores the pareto indices in the solution object for later usage
-        self.results.get_pareto_indices()
+        if self.results.current_evaluation > 0:
+            self.results.get_pareto_indices()
 
         self.toc()

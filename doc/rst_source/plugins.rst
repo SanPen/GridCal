@@ -22,14 +22,24 @@ The content of `plugins.json` is:
         {
             "name": "my_plugin1",
             "path": "plugin1.py",
-            "function_name": "main",
-            "icon_path": "icon1.svg"
+            "icon_path": "icon1.svg",
+            "main_fcn": {
+                            "name": "main",
+                            "alias": "my function 1"
+                        },
+            "investments_fcn": {
+                            "name": "investments",
+                            "alias": "investments function 1"
+                        }
         },
         {
             "name": "my_plugin2",
             "path": "plugin2.py",
-            "function_name": "main",
-            "icon_path": "icon2.svg"
+            "icon_path": "icon2.svg",
+            "main_fcn": {
+                            "name": "main",
+                            "alias": "my function 2"
+                        },
         }
     ]
 
@@ -47,6 +57,7 @@ The content of `plugin1.py` is:
 .. code-block:: python
 
     from GridCal.Gui.Main.GridCalMain import MainGUI
+    from GridCalEngine.api import InvestmentsEvaluationDriver
 
 
     def main(gui_instance: MainGUI):
@@ -62,8 +73,16 @@ The content of `plugin1.py` is:
             print(bus.name)
 
 
+    def investments(driver: InvestmentsEvaluationDriver):
+        """
+        Implement the logic that launches for my custom investment
+        """
+        print("Investments driver name: " + driver.name)
+
+
+
 
 This is a very simple example. However the function that you set as the starting point of your plugin must accept only
 one argument of type `MainGUI`. See the function `main` in the code above. This is because GridCal will pass "itself"
-into the plugin so that you can aquire total control and access to do whatever you want to do from the plugin.
-Of course, with great power comes great responsability.
+into the plugin so that you can acquire total control and access to do whatever you want to do from the plugin.
+Of course, with great power comes great responsibility.

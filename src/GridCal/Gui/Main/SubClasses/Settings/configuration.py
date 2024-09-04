@@ -25,6 +25,7 @@ from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
 from GridCal.Gui.plugins import PluginsInfo
+import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.GuiFunctions import add_menu_entry
 
 
@@ -448,15 +449,27 @@ class ConfigurationMain(ResultsMain):
 
         self.plugins_info.read()  # force refresh
 
-        for plugin_info in self.plugins_info.plugins:
+        self.plugins_investment_evaluation_method_dict = dict()
 
-            if plugin_info.function_ptr is not None:
+        # for every plugin...
+        for key, plugin_info in self.plugins_info.plugins.items():
+
+            # maybe add the main function
+            if plugin_info.main_fcn.function_ptr is not None:
 
                 add_menu_entry(menu=self.ui.menuplugins,
                                text=plugin_info.name,
                                icon_path=":/Icons/icons/plugin.svg",
                                icon_pixmap=plugin_info.icon,
-                               function_ptr=lambda: plugin_info.function_ptr(self))
+                               function_ptr=lambda: plugin_info.main_fcn.function_ptr(self))
 
             else:
                 print(f"{plugin_info.name} has no function_ptr, see trace for errors :/")
+
+            # maybe add the investments function
+            if plugin_info.investments_fcn.function_ptr is not None:
+                self.plugins_investment_evaluation_method_dict[plugin_info.investments_fcn.name] = plugin_info.investments_fcn.function_ptr
+
+        # create combobox model for the plugin investments
+        lst = list(self.plugins_investment_evaluation_method_dict.keys())
+        self.ui.plugins_investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))

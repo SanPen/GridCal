@@ -171,6 +171,7 @@ class SimulationsMain(TimeEventsMain):
             InvestmentEvaluationMethod.MixedVariableGA,
         ]
         self.investment_evaluation_method_dict = OrderedDict()
+        self.plugins_investment_evaluation_method_dict = OrderedDict()
         lst = list()
         for method in investment_methods:
             self.investment_evaluation_method_dict[method.value] = method
@@ -2442,23 +2443,38 @@ class SimulationsMain(TimeEventsMain):
 
                 if not self.session.is_this_running(SimulationTypes.InvestmentsEvaluation_run):
 
-                    # evaluation method
-                    method = self.investment_evaluation_method_dict[
-                        self.ui.investment_evaluation_method_ComboBox.currentText()
-                    ]
+                    if self.ui.internal_investment_methods_radioButton.isChecked():
+                        # evaluation method
+                        method = self.investment_evaluation_method_dict[
+                            self.ui.investment_evaluation_method_ComboBox.currentText()
+                        ]
 
-                    # maximum number of function evalñuations as a factor of the number of investments
+                        obj_fn_tpe = self.investment_evaluation_objfunc_dict[
+                            self.ui.investment_evaluation_objfunc_ComboBox.currentText()
+                        ]
+
+                        fn_ptr = None
+
+                    elif self.ui.plugins_investment_methods_radioButton.isChecked():
+
+                        method = InvestmentEvaluationMethod.FromPlugin
+                        obj_fn_tpe = InvestmentsEvaluationObjectives.FromPlugin
+                        fn_ptr = self.plugins_investment_evaluation_method_dict[
+                            self.ui.plugins_investment_evaluation_method_ComboBox.currentText()
+                        ]
+                    else:
+                        raise Exception("Unrecognized investment simulation mode")
+
+                    # maximum number of function evaluations as a factor of the number of investments
                     max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
                         self.circuit.investments_groups)
 
-                    objf_tpe = self.investment_evaluation_objfunc_dict[
-                        self.ui.investment_evaluation_objfunc_ComboBox.currentText()
-                    ]
-
+                    # compose the options
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
                                                                pf_options=self.get_selected_power_flow_options(),
-                                                               objf_tpe=objf_tpe
+                                                               objf_tpe=obj_fn_tpe,
+                                                               plugin_fcn_ptr=fn_ptr
                                                                )
 
                     opf_time_series_results = self.get_opf_ts_results(
