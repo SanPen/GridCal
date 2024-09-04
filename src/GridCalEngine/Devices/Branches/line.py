@@ -106,8 +106,6 @@ class Line(BranchParent):
         # line length in km
         self._length = length
 
-        #self.Area = Area #NEW
-
         # line impedance tolerance
         self.tolerance = tolerance
 

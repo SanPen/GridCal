@@ -161,7 +161,7 @@ class MixedVariableProblem(ElementwiseProblem):
                 raise KeyError(f"String key {xi} not found.")
 
         out["F"] = self.obj_func(x)
-        #print("Completed eval")
+        # print("Completed eval")
 
 
 def NSGA_2(grid: MultiCircuit,
@@ -200,14 +200,14 @@ def NSGA_2(grid: MultiCircuit,
                    seed=1,
                    verbose=True,
                    save_history=True,
-                   return_least_infeasible = True)
+                   return_least_infeasible=True)
 
     # Do they want opex or capex to have more weight?
     # weights = np.array([0.5, 0.5])
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()
 
-    hist=res.history
+    hist = res.history
     print(len(hist))
 
     import pandas as pd

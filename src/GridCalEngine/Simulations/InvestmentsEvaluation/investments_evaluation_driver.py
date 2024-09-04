@@ -105,10 +105,7 @@ def power_flow_function(inv_list: List[Investment],
     """
 
     driver = PowerFlowDriver(grid=grid, options=pf_options)
-    st = timeit.default_timer()
     driver.run()
-    et = timeit.default_timer()
-    #print(f"Time taken to run power flow: {et - st}")
 
     scores = InvestmentScores()
 
