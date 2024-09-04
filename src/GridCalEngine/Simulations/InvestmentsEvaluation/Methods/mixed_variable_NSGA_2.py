@@ -161,7 +161,7 @@ class MixedVariableProblem(ElementwiseProblem):
                 raise KeyError(f"String key {xi} not found.")
 
         out["F"] = self.obj_func(x)
-        print("Completed eval")
+        #print("Completed eval")
 
 
 def NSGA_2(grid: MultiCircuit,
@@ -188,7 +188,9 @@ def NSGA_2(grid: MultiCircuit,
 
     algorithm = MixedVariableGA(pop_size=pop_size,
                                 sampling=MixedVariableSampling(),
-                                survival=RankAndCrowding(crowding_func="pcd"))
+                                survival=RankAndCrowding(crowding_func="mnn") #mnn , 2nn for multi-obj
+                                #survival = RankAndCrowding(crowding_func="pcd") #for bi-objective
+                                )
 
     # In terms of setting probability parameters, you have to look quite far deep into MixedVariableGA
 
@@ -197,12 +199,16 @@ def NSGA_2(grid: MultiCircuit,
                    termination=('n_eval', max_evals),
                    seed=1,
                    verbose=True,
-                   save_history=False)
+                   save_history=True,
+                   return_least_infeasible = True)
 
     # Do they want opex or capex to have more weight?
     # weights = np.array([0.5, 0.5])
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()
+
+    hist=res.history
+    print(len(hist))
 
     import pandas as pd
     dff = pd.DataFrame(res.F)

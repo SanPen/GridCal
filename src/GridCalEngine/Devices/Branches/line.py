@@ -106,6 +106,8 @@ class Line(BranchParent):
         # line length in km
         self._length = length
 
+        #self.Area = Area #NEW
+
         # line impedance tolerance
         self.tolerance = tolerance
 
@@ -287,7 +289,6 @@ class Line(BranchParent):
 
             self.R, self.X, self.B, self.R0, self.X0, self.B0, self.rate = obj.get_values(Sbase=Sbase,
                                                                                           length=self.length)
-
             if self.template is not None:
                 if obj != self.template:
                     self.template = obj

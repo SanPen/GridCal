@@ -19,7 +19,7 @@ if __name__ == "__main__":
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
     # fname = os.path.join('final_edited_118_bus_grid.gridcal')
     # fname = 'C:/Users/J/Downloads/claudia_v2.gridcal'
-    fname = 'C:/Users/J/Downloads/claudia_v4.gridcal'
+    
     # fname = 'C:/Users/J/Downloads/jm1.gridcal'
     grid = FileOpen(fname).open()
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     #                                            pf_options=pf_options)
 
     options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.MixedVariableGA,
-                                               max_eval=1 * len(grid.investments),
+                                               max_eval=5 * len(grid.investments),
                                                pf_options=pf_options)
 
     # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Independent,
