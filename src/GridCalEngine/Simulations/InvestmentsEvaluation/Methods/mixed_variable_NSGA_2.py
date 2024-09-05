@@ -207,8 +207,8 @@ def NSGA_2(grid: MultiCircuit,
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()
 
-    hist=res.history
-    print(len(hist))
+    #hist=res.history
+    #print(len(hist))
 
     import pandas as pd
     dff = pd.DataFrame(res.F)

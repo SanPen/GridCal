@@ -34,7 +34,7 @@ if __name__ == "__main__":
     #                                            pf_options=pf_options)
 
     options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.MixedVariableGA,
-                                               max_eval=10 * len(grid.investments),
+                                               max_eval=6 * len(grid.investments),
                                                pf_options=pf_options)
 
     # options = sim.InvestmentsEvaluationOptions(solver=InvestmentEvaluationMethod.Independent,
