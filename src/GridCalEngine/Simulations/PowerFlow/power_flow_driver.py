@@ -128,10 +128,6 @@ class PowerFlowDriver(DriverTemplate):
                                            options=self.options,
                                            opf_results=self.opf_results,
                                            logger=self.logger)
-            #if self.results.converged==True:
-            #    print("Resultado converge")
-
-            #print("converged PF: {}".format(self.results.converged))
 
             self.convergence_reports = self.results.convergence_reports
 

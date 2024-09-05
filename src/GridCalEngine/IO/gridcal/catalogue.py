@@ -71,7 +71,7 @@ def get_underground_lines_catalogue_df(grid: MultiCircuit):
             'Name': elm.name,
             'Rated current [kA]': elm.Imax,
             'Rated voltage [kV]': elm.Vnom,
-            'Section [mm2]': elm.Area, #NEW
+            'Section [mm2]': elm.Area,
             'R [Ohm/km AC@20°C]': elm.R,
             'X [Ohm/km]': elm.X,
             'B [uS/km]':elm.B,
@@ -117,7 +117,6 @@ def get_sequence_lines_catalogue_df(grid: MultiCircuit):
             'Name': elm.name,
             'Vnom (kV)': elm.Vnom,
             'Imax (kA)': elm.Imax,
-            #'Section [mm2]': elm.Area,  # not necessary
             'r (ohm/km)': elm.R,
             'x (ohm/km)': elm.X,
             'b (uS/km)': elm.B,
@@ -215,7 +214,6 @@ def parse_sequence_line_types(df: pd.DataFrame) -> List[SequenceLineType]:
         tpe = SequenceLineType(name=item['Name'],
                                Vnom=item['Vnom (kV)'],
                                Imax=item['Imax (kA)'],
-                               #Area=item['Section [mm2]'], #not necessary
                                R=item['r (ohm/km)'],
                                X=item['x (ohm/km)'],
                                B=item['b (uS/km)'],
