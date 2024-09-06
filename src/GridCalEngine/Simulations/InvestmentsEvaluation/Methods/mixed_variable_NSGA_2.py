@@ -28,6 +28,7 @@ from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine.Devices.Injections.shunt import Shunt
 from GridCalEngine.Devices.types import BRANCH_TYPES, BRANCH_TEMPLATE_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
@@ -99,8 +100,9 @@ class MixedVariableProblem(ElementwiseProblem):
                                       device_class=investment_group.device_type.value)
 
         # convert the data to decision vars: the decision vars are
-        # integers from 0 to the number of templates of each device (the template position in self.data[device])
-        self.variables: Dict[str, Integer] = dict()
+        # integers from 0 to the number of templates of each device (the template position in self.data[device]) --> int type
+        #self.variables: Dict[str, Integer] = dict()
+        self.variables: Dict[str, Union[int, float]] = dict()
         self.devices = list()  # list of devices in sequential order to match the order of the vars
         self.default_template = list()  # list of templates that represent the devices in their initial state
         for elm, template_list in self.device_template_dict.items():
@@ -116,6 +118,15 @@ class MixedVariableProblem(ElementwiseProblem):
                 raise Exception('Device not recognized')
 
             self.default_template.append(default_template)
+
+        #new: ADD CONTINUOS VARIABLES (SHUNTS Q)
+        #para cada elemento tipo shunt, hacer un bucle para crear una variable self.variable[elm.idtag] que sea continua
+        for elm in grid.shunts:
+            self.variables[elm.idtag] = Real(bounds=(0, elm.B)) #Qmax=elm.B in [MVAr] #elm.B
+            print(elm.B)
+            self.devices.append(elm)
+            #print(self.variables[elm.idtag])
+
 
         super().__init__(n_obj=n_obj, vars=self.variables)
         self.obj_func = obj_func
@@ -141,6 +152,9 @@ class MixedVariableProblem(ElementwiseProblem):
 
             if xi in xi_to_index:
                 index = x[xi]
+                #if device.device_type.name=="ShuntDevice": index=0 #OLD
+                if isinstance(device, Shunt):
+                    index=0
 
                 if index > 0:
                     # Reduce index by 1 as the first template is the default one
@@ -152,11 +166,18 @@ class MixedVariableProblem(ElementwiseProblem):
                     elif isinstance(device, Transformer2W):
                         device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
 
+                    #elif isinstance(device, Shunt):
+                    #    print("no template to apply")
+                        #pass
                     else:
                         raise Exception('Device not recognized')
                 else:
                     # Default values introduced in the device
-                    device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
+                    if isinstance(device, Shunt):
+                        #device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
+                        pass
+
+                    else: device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
             else:
                 raise KeyError(f"String key {xi} not found.")
 
@@ -199,7 +220,7 @@ def NSGA_2(grid: MultiCircuit,
                    termination=('n_eval', max_evals),
                    seed=1,
                    verbose=True,
-                   save_history=True,
+                   save_history=False,
                    return_least_infeasible=True)
 
     # Do they want opex or capex to have more weight?
@@ -207,8 +228,7 @@ def NSGA_2(grid: MultiCircuit,
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()
 
-    hist = res.history
-    print(len(hist))
+    print("End")
 
     import pandas as pd
     dff = pd.DataFrame(res.F)

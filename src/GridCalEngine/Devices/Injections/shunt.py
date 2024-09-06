@@ -19,6 +19,7 @@ from GridCalEngine.enumerations import BuildStatus
 from GridCalEngine.Devices.Parents.shunt_parent import ShuntParent
 
 
+
 class Shunt(ShuntParent):
 
     def __init__(self, name='shunt', idtag=None, code='',
@@ -62,3 +63,17 @@ class Shunt(ShuntParent):
                              opex=opex,
                              build_status=build_status,
                              device_type=DeviceType.ShuntDevice)
+
+    # def get_shunt_type(self, Sbase: float = 100.0) -> Shunt_type:
+    #     """
+    #     Get the equivalent transformer type of this transformer
+    #     :return: SequenceLineType
+    #     :param Sbase:
+    #     :return:
+    #     """
+    #
+    #     tpe = Shunt(
+    #
+    #     )
+    #
+    #     return tpe

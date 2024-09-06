@@ -278,7 +278,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             self._combinations = self._combinations[:self.__eval_index]
             self._index_names = self._index_names[:self.__eval_index]
 
-    def set_best_combination(self, combination: IntVec) -> None:
+    def set_best_combination(self, combination: IntVec) -> None: #combination: IntVec
         """
         Set the best combination of investment groups
         :param combination: Vector of integers (0/1)
