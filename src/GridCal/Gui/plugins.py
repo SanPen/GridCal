@@ -40,6 +40,55 @@ def plugins_path() -> str:
     return pth
 
 
+class PluginFunction:
+
+    def __init__(self):
+
+        self.name = ""
+        self.alias = ""
+        self.function_ptr = None
+
+    def to_dict(self) -> Dict[str, str]:
+        """
+        To dict
+        :return: string, string dictionary to save in json format
+        """
+        return {
+            "name": self.name,
+            "alias": self.alias,
+        }
+
+    def parse(self, data: Dict[str, str]) -> None:
+        """
+        Parse data
+        :param data: Data like the one saved
+        """
+        self.name = data.get('name', '')
+        self.alias = data.get('alias', '')
+
+    def read_plugin(self, plugin_path: str) -> None:
+        """
+        Read the pointed plugin
+        :param plugin_path: plugin file path
+        """
+
+        # hot read python file˘
+        try:
+
+            # read the main function (the one launched upon click on the plugin)
+            self.function_ptr = load_function_from_file_path(
+                file_path=plugin_path,
+                function_name=self.name
+            )
+
+        except ImportError as e:
+            print(e)
+        except AttributeError as e:
+            print(e)
+        except TypeError as e:
+            print(e)
+
+
 class PluginInfo:
     """
     Plugin information
@@ -52,24 +101,27 @@ class PluginInfo:
         self.name = ""
         self.path = ""
         self.icon_path = ""
-        self.function_name = ""
 
-        self.function_ptr = None
+        self.main_fcn: PluginFunction = PluginFunction()
+
+        self.investments_fcn: PluginFunction = PluginFunction()
+
         self.icon: QPixmap | None = None
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> Dict[str, str | Dict[str, str]]:
         """
         To dict
-        :return: string, strig dictionary to save in json format
+        :return: string, string dictionary to save in json format
         """
         return {
-            'name': self.name,
-            'path': self.path,
-            'icon_path': self.icon_path,
-            'function_name': self.function_name,
+            "name": self.name,
+            "path": self.path,
+            "icon_path": self.icon_path,
+            "main_fcn": self.main_fcn.to_dict(),
+            "investments_fcn": self.investments_fcn.to_dict(),
         }
 
-    def parse(self, data: Dict[str, str]) -> None:
+    def parse(self, data: Dict[str, str | Dict[str, str]]) -> None:
         """
         Parse data
         :param data: Data like the one saved
@@ -77,7 +129,13 @@ class PluginInfo:
         self.name = data.get('name', '')
         self.path = data.get('path', '')
         self.icon_path = data.get('icon_path', '')
-        self.function_name = data.get('function_name', '')
+
+        if 'main_fcn' in data.keys():
+            self.main_fcn.parse(data['main_fcn'])
+
+        if 'investments_fcn' in data.keys():
+            self.investments_fcn.parse(data['investments_fcn'])
+
 
     def read_plugin(self) -> None:
         """
@@ -90,23 +148,16 @@ class PluginInfo:
 
             if plugin_path.endswith('.py'):
 
-                # hot read python file
-                try:
-                    self.function_ptr = load_function_from_file_path(file_path=plugin_path,
-                                                                     function_name=self.function_name)
-
-                except ImportError as e:
-                    print(e)
-                except AttributeError as e:
-                    print(e)
-                except TypeError as e:
-                    print(e)
+                # hot read python file searching for the functions declared
+                self.main_fcn.read_plugin(plugin_path)
+                self.investments_fcn.read_plugin(plugin_path)
 
             else:
                 print(f"Plugin {self.name}: Path {plugin_path} not a python file :(")
         else:
             print(f"Plugin {self.name}: Path {plugin_path} not found :/")
 
+        # Read the icon file if available
         icon_path = os.path.join(base_path, self.icon_path)
         if os.path.exists(icon_path):
             self.icon = QPixmap(icon_path)
@@ -123,11 +174,11 @@ class PluginsInfo:
         """
 
         """
-        self.index_fname = os.path.join(plugins_path(), 'plugins.json')
+        self.index_file_name = os.path.join(plugins_path(), 'plugins.json')
 
-        self.plugins: List[PluginInfo] = list()
+        self.plugins: Dict[str, PluginInfo] = dict()
 
-        if os.path.exists(self.index_fname):
+        if os.path.exists(self.index_file_name):
             self.read()
         else:
             self.save()
@@ -137,7 +188,7 @@ class PluginsInfo:
         Get dictionary of plugin data
         :return:
         """
-        return [pl.to_dict() for pl in self.plugins]
+        return [pl.to_dict() for key, pl in self.plugins.items()]
 
     def parse(self, data: List[Dict[str, str]]):
         """
@@ -150,7 +201,7 @@ class PluginsInfo:
             pl = PluginInfo()
             pl.parse(entry)
             pl.read_plugin()
-            self.plugins.append(pl)
+            self.plugins[pl.name] = pl
 
     def read(self) -> None:
         """
@@ -158,10 +209,13 @@ class PluginsInfo:
         :return:
         """
         # Open the JSON file
-        with open(self.index_fname, 'r') as file:
-            # Load the JSON data into a dictionary
-            data = json.load(file)
-            self.parse(data)
+        try:
+            with open(self.index_file_name, 'r') as file:
+                # Load the JSON data into a dictionary
+                data = json.load(file)
+                self.parse(data)
+        except json.JSONDecodeError as e:
+            print("Error reading the plugins index", e)
 
     def save(self):
         """
@@ -169,7 +223,7 @@ class PluginsInfo:
         :return:
         """
         # Write the dictionary to a JSON file
-        with open(self.index_fname, 'w') as json_file:
+        with open(self.index_file_name, 'w') as json_file:
             data = self.to_data()
             json.dump(data, json_file)
 

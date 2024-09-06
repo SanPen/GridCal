@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'excel_sheet_selection.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -44,7 +44,6 @@ class Ui_ExcelSelectionDialog(object):
 
         self.retranslateUi(ExcelSelectionDialog)
         self.buttonBox.accepted.connect(ExcelSelectionDialog.accept)
-        self.butonBox.accepted.connect(ExcelSelectionDialog.accept)
         self.buttonBox.rejected.connect(ExcelSelectionDialog.reject)
 
         QMetaObject.connectSlotsByName(ExcelSelectionDialog)
