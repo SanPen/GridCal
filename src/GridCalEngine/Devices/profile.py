@@ -21,7 +21,7 @@ import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.sparse_array import SparseArray, PROFILE_TYPES, check_type
+from GridCalEngine.Utils.Sparse.sparse_array import SparseArray, PROFILE_TYPES, check_type
 
 
 @nb.njit()
