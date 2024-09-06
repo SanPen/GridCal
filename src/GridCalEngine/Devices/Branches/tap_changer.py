@@ -87,6 +87,14 @@ class TapChanger:
         """
         self._tap_position = val
 
+    @property
+    def tap_modules_array(self):
+        return self._m_array
+
+    @property
+    def tap_angles_array(self):
+        return self._tau_array
+
     def resize(self) -> None:
         """
         Resize and recalc the tap positions array

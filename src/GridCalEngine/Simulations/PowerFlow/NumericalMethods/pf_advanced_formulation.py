@@ -26,6 +26,7 @@ from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit
 import GridCalEngine.Simulations.Derivatives.csc_derivatives as deriv
 from GridCalEngine.Topology.simulation_indices import compile_types
 from GridCalEngine.Utils.Sparse.csc2 import CSC, CxCSC, sp_slice, csc_stack_2d_ff, scipy_to_mat
+from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import expand
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_fx_error
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
@@ -255,7 +256,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.Gsw = self.nc.branch_data.G0sw[self.idx_conv]
 
-        self.Ys = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
+        self.Ys: CxVec = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
 
         self.adm = compute_admittances(
             R=self.nc.branch_data.R,
@@ -547,8 +548,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                 changed, pv, pq, pqv, p = control_q_inside_method(self.Scalc, self.S0,
                                                                   self.pv, self.pq,
                                                                   self.pqv, self.p,
-                                                                  self.Qmin,
-                                                                  self.Qmax)
+                                                                  self.Qmin, self.Qmax)
 
                 if len(changed) > 0:
                     any_change = True
@@ -572,6 +572,12 @@ class PfAdvancedFormulation(PfFormulationTemplate):
             # update the tap module control
             if self.options.control_taps_modules:
                 for i, k in enumerate(self.idx_dm):
+
+                    m_taps = self.nc.branch_data.m_taps[i]
+
+                    if self.options.orthogonalize_controls and m_taps is not None:
+                        self.m[i] = find_closest_number(arr=m_taps, target=self.m[i])
+
                     if self.m[i] < self.nc.branch_data.tap_module_min[k]:
                         self.m[i] = self.nc.branch_data.tap_module_min[k]
                         self.tap_module_control_mode[k] = TapModuleControl.fixed
@@ -590,7 +596,14 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
             # update the tap phase control
             if self.options.control_taps_phase:
+
                 for i, k in enumerate(self.idx_dtau):
+
+                    tau_taps = self.nc.branch_data.tau_taps[i]
+
+                    if self.options.orthogonalize_controls and tau_taps is not None:
+                        self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
+
                     if self.tau[i] < self.nc.branch_data.tap_angle_min[k]:
                         self.tau[i] = self.nc.branch_data.tap_angle_min[k]
                         self.tap_phase_control_mode[k] = TapPhaseControl.fixed
