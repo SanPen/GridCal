@@ -92,8 +92,8 @@ def build_rates_dict(cgmes_model, device_type, logger):
             if isinstance(cl.OperationalLimitSet, list):
                 for ols in cl.OperationalLimitSet:
                     volt = get_voltage_terminal(ols.Terminal, logger)
-                    rate_mva = np.round(cl.value * volt * 1.73205080756888 / 1000, 4)
-
+                    rate_mva = np.round(cl.value * volt / 1000, 4)
+                    # TODO rate in MVA = kA * kV * sqrt(3), is sqrt(3) needed?
                     # TODO type check: put min PATL to the dict
                     if isinstance(ols.Terminal.ConductingEquipment,
                                   device_type):
@@ -108,7 +108,7 @@ def build_rates_dict(cgmes_model, device_type, logger):
                               device_type):
                     volt = get_voltage_terminal(cl.OperationalLimitSet.Terminal,
                                                 logger)
-                    rate_mva = np.round(cl.value * volt * 1.73205080756888 / 1000, 4)
+                    rate_mva = np.round(cl.value * volt / 1000, 4)
 
                     branch_id = cl.OperationalLimitSet.Terminal.ConductingEquipment.uuid
                     act_lim = rates_dict.get(branch_id, None)

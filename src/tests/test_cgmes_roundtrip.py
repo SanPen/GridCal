@@ -119,17 +119,12 @@ def test_cgmes_roundtrip():
     script_path = os.path.abspath(__file__)
 
     cgmes_files_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'micro_grid_NL_T1.zip')
-    # cgmes_files_relative_path = os.path.join(
-    #     'data', 'grids', 'CGMES_2_4_15', 'TestConfigurations_packageCASv2.0',
-    #     'MicroGrid', 'Type1_T1',
-    #     'CGMES_v2.4.15_MicroGridTestConfiguration_T1_BE_Complete_v2.zip')
     cgmes_path = os.path.abspath(os.path.join(os.path.dirname(script_path), cgmes_files_relative_path))
 
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'micro_grid_BD.zip')
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
     export_relative_path = os.path.join('data/output/cgmes_export_result', 'micro_grid_NL_T1.zip')
-    # export_relative_path = os.path.join('data/output/cgmes_export_result', 'micro_grid_BE_T1.zip')
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))

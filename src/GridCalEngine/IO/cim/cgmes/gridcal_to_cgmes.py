@@ -1007,10 +1007,6 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.endNumber = 2
 
         # TODO: where are the taps? that is making the round trip fail...
-        object_template = cgmes_model.get_class_type("RatioTapChanger")
-        tap_changer = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        tap_changer.uuid = mc_elm.idtag
-        # tap_changer.total_pos = mc_elm.tap_changer.tap_position
 
         cm_transformer.PowerTransformerEnd.append(pte1)
         cgmes_model.add(pte1)
