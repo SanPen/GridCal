@@ -128,21 +128,69 @@ class ConvexMethodResult:
         print("Elapsed:\t", self.elapsed, 's')
 
 
-def find_closest_number(arr: Vec, target: float) -> float:
+# def find_closest_number(arr: Vec, target: float) -> Tuple[int, float]:
+#     """
+#     Find the closest number that exists in array
+#     :param arr: Array to be searched
+#     :param target: Value to search for
+#     :return: index in the array, Closes adjusted or truncated value
+#     """
+#     idx: int = np.searchsorted(a=arr, v=target, side='left')
+#     if idx == 0:
+#         return idx, arr[0]
+#     if idx == len(arr):
+#         return idx, arr[-1]
+#     before = arr[idx - 1]
+#     after = arr[idx]
+#     if after - target < target - before:
+#         return idx, after
+#     else:
+#         return idx - 1, before
+
+
+@nb.njit(cache=True)
+def find_closest_number(arr: Vec, target: float) -> Tuple[int, float]:
     """
     Find the closest number that exists in array
-    :param arr: Array to be searched
+    :param arr: Array to be searched (must be sorted from min to max)
     :param target: Value to search for
-    :return: Closes adjusted or truncated value
+    :return: index in the array, Closes adjusted or truncated value
     """
-    idx = np.searchsorted(arr, target)
-    if idx == 0:
-        return arr[0]
-    if idx == len(arr):
-        return arr[-1]
-    before = arr[idx - 1]
-    after = arr[idx]
-    if after - target < target - before:
-        return after
-    else:
-        return before
+    if len(arr) == 0:
+        # nothing to do
+        return -1, target
+
+    prev: float = arr[0]
+
+    if target <= prev:
+        return 0, prev
+
+    last: float = arr[-1]
+    if target >= last:
+        return len(arr) - 1, last
+
+    for i in range(1, len(arr)):
+        val: float = arr[i]
+
+        if val <= prev:
+            # test that the values strictly increase
+            raise Exception("The array must be monotonically increasing")
+
+        if prev < target <= val:
+            # the value is within the interval
+
+            d_prev = target - prev
+            d_post = val - target
+
+            if abs(d_prev - d_post) < 1e-10:
+                return i, val
+            else:
+                if d_prev < d_post:
+                    return i - 1, prev
+                else:
+                    return i, val
+
+        prev = val
+
+    # if we reached here, something went wrong...
+    return 0, arr[0]

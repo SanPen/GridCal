@@ -256,7 +256,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
 
         self.Gsw = self.nc.branch_data.G0sw[self.idx_conv]
 
-        self.Ys: CxVec = 1.0 / (self.nc.branch_data.R + 1j * self.nc.branch_data.X)
+        self.Ys: CxVec = self.nc.branch_data.get_series_admittance()
 
         self.adm = compute_admittances(
             R=self.nc.branch_data.R,
@@ -576,7 +576,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                     m_taps = self.nc.branch_data.m_taps[i]
 
                     if self.options.orthogonalize_controls and m_taps is not None:
-                        self.m[i] = find_closest_number(arr=m_taps, target=self.m[i])
+                        _, self.m[i] = find_closest_number(arr=m_taps, target=self.m[i])
 
                     if self.m[i] < self.nc.branch_data.tap_module_min[k]:
                         self.m[i] = self.nc.branch_data.tap_module_min[k]
@@ -602,7 +602,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                     tau_taps = self.nc.branch_data.tau_taps[i]
 
                     if self.options.orthogonalize_controls and tau_taps is not None:
-                        self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
+                        _, self.tau[i] = find_closest_number(arr=tau_taps, target=self.tau[i])
 
                     if self.tau[i] < self.nc.branch_data.tap_angle_min[k]:
                         self.tau[i] = self.nc.branch_data.tap_angle_min[k]

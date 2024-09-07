@@ -297,6 +297,13 @@ class BranchData:
 
         return data
 
+    def get_series_admittance(self) -> CxVec:
+        """
+        Get the series admittance of the branches
+        :return: complex vector
+        """
+        return 1.0 / (self.R + 1j * self.X)
+
     def get_island(self, bus_idx: Vec) -> IntVec:
         """
         Get the array of branch indices that belong to the islands given by the bus indices
