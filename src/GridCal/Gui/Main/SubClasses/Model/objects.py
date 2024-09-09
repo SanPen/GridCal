@@ -59,7 +59,7 @@ class ObjectsTableMain(DiagramsMain):
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
 
-        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict()))
+        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_template_objects_str_dict()))
         self.expand_object_tree_nodes()
 
         self.ui.simulationDataStructuresTreeView.setModel(gf.get_tree_model(NumericalCircuit.available_structures))

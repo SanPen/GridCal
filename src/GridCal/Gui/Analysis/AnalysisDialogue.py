@@ -40,7 +40,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         # set the circuit
         self.circuit = circuit
 
-        self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
+        self.object_types = [dev.device_type.value for dev in circuit.get_template_objects_list()]
 
         # declare logs
         self.log = GridErrorLog()

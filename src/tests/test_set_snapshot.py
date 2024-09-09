@@ -34,7 +34,7 @@ def test_set_snapshot():
         main_circuit.set_state(t=t_idx)
 
         # check that indeed the snapshot values match the profile at t_idx
-        for elm in main_circuit.items_declared():
+        for elm in main_circuit.items():
             for prop_name, prop in elm.registered_properties.items():
                 if prop.has_profile():
                     # get the snapshot
