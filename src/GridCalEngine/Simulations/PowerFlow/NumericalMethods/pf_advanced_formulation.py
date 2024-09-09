@@ -244,7 +244,7 @@ class PfAdvancedFormulation(PfFormulationTemplate):
         self.idx_dQt = np.array(0, dtype=int)
 
         k_v_m = self.analyze_branch_controls()  # this fills the indices above
-        vd, pq, pv, pqv, p, self.no_slack = compile_types(
+        self.vd, pq, pv, pqv, p, self.no_slack = compile_types(
             Pbus=self.nc.Sbus.real,
             types=self.bus_types
         )
