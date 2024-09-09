@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>769</width>
+    <width>853</width>
     <height>420</height>
    </rect>
   </property>
@@ -20,98 +20,6 @@
    <property name="bottomMargin">
     <number>9</number>
    </property>
-   <item>
-    <widget class="QFrame" name="frame">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>40</height>
-      </size>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <property name="spacing">
-       <number>1</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item>
-       <widget class="QPushButton" name="open_button">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Import file</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="icons.qrc">
-          <normaloff>:/Icons/icons/import_profiles.svg</normaloff>:/Icons/icons/import_profiles.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="refreshButton">
-        <property name="toolTip">
-         <string>Refresh assignation table</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="icons.qrc">
-          <normaloff>:/Icons/icons/transform.svg</normaloff>:/Icons/icons/transform.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
@@ -145,51 +53,44 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QFormLayout" name="formLayout">
+         <layout class="QGridLayout" name="gridLayout_2">
           <property name="topMargin">
            <number>0</number>
           </property>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="xComboBox"/>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>2</number>
+          </property>
+          <item row="5" column="1" colspan="2">
+           <widget class="QComboBox" name="nameComboBox"/>
           </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="yComboBox"/>
-          </item>
-          <item row="4" column="1">
-           <widget class="QComboBox" name="latitudeComboBox"/>
-          </item>
-          <item row="5" column="1">
-           <widget class="QComboBox" name="longitudeComboBox"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="xCheckBox">
-            <property name="text">
-             <string>Bus x position</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="yCheckBox">
-            <property name="text">
-             <string>Bus y position</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="latitudeCheckBox">
-            <property name="text">
-             <string>Bus latitude</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
+          <item row="15" column="0" rowspan="2">
            <widget class="QCheckBox" name="longitudeCheckBox">
             <property name="text">
              <string>Bus longitude</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
+          <item row="14" column="1" colspan="2">
+           <widget class="QComboBox" name="latitudeComboBox"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="open_button">
+            <property name="text">
+             <string>Load file</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/Icons/icons/import_profiles.svg</normaloff>:/Icons/icons/import_profiles.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="16" column="1" colspan="2">
+           <widget class="QComboBox" name="longitudeComboBox"/>
+          </item>
+          <item row="5" column="0">
            <widget class="QRadioButton" name="nameRadioButton">
             <property name="text">
              <string>Name</string>
@@ -199,34 +100,93 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1" colspan="2">
+           <widget class="QComboBox" name="codeComboBox"/>
+          </item>
+          <item row="11" column="0" rowspan="2">
+           <widget class="QCheckBox" name="yCheckBox">
+            <property name="text">
+             <string>Bus y position</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1" colspan="2">
+           <widget class="QComboBox" name="xComboBox"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="1" colspan="2">
+           <widget class="QComboBox" name="yComboBox"/>
+          </item>
+          <item row="17" column="0" colspan="3">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="6" column="0">
            <widget class="QRadioButton" name="codeRadioButton">
             <property name="text">
              <string>Code</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="nameComboBox"/>
+          <item row="13" column="0" rowspan="2">
+           <widget class="QCheckBox" name="latitudeCheckBox">
+            <property name="text">
+             <string>Bus latitude</string>
+            </property>
+           </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QComboBox" name="codeComboBox"/>
+          <item row="9" column="0" rowspan="2">
+           <widget class="QCheckBox" name="xCheckBox">
+            <property name="text">
+             <string>Bus x position</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="3">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Match mathod:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0" colspan="3">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Assigning magnitudes</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -238,6 +198,9 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -263,6 +226,9 @@
          </property>
          <layout class="QGridLayout" name="gridLayout">
           <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
            <number>0</number>
           </property>
           <property name="rightMargin">
@@ -298,6 +264,17 @@
             <property name="icon">
              <iconset resource="icons.qrc">
               <normaloff>:/Icons/icons/gear.svg</normaloff>:/Icons/icons/gear.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="refreshButton">
+            <property name="text">
+             <string>Match</string>
+            </property>
+            <property name="icon">
+             <iconset resource="icons.qrc">
+              <normaloff>:/Icons/icons/transform.svg</normaloff>:/Icons/icons/transform.svg</iconset>
             </property>
            </widget>
           </item>

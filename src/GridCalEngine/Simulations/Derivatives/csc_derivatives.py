@@ -58,7 +58,8 @@ def dSbus_dV_numba_sparse_csc(Yx: CxVec, Yp: IntVec, Yi: IntVec, V: CxVec, Vm: C
     for j in range(n):  # for each column ...
 
         # compute the unitary vector of the voltage
-        E[j] /= Vm[j]
+        if Vm[j] > 0.0:
+            E[j] /= Vm[j]
 
         for k in range(Yp[j], Yp[j + 1]):  # for each row ...
             # row index

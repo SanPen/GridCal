@@ -36,6 +36,7 @@ class PowerFlowOptions(OptionsTemplate):
                  control_taps_modules: bool = True,
                  control_taps_phase: bool = True,
                  control_remote_voltage: bool = True,
+                 orthogonalize_controls: bool = True,
                  apply_temperature_correction: bool = True,
                  branch_impedance_tolerance_mode=BranchImpedanceMode.Specified,
                  distributed_slack: bool = False,
@@ -86,6 +87,8 @@ class PowerFlowOptions(OptionsTemplate):
 
         self.control_remote_voltage = control_remote_voltage
 
+        self.orthogonalize_controls = orthogonalize_controls
+
         self.apply_temperature_correction = apply_temperature_correction
 
         self.branch_impedance_tolerance_mode = branch_impedance_tolerance_mode
@@ -113,6 +116,7 @@ class PowerFlowOptions(OptionsTemplate):
         self.register(key="control_taps_modules", tpe=bool)
         self.register(key="control_taps_phase", tpe=bool)
         self.register(key="control_remote_voltage", tpe=bool)
+        self.register(key="orthogonalize_controls", tpe=bool)
         self.register(key="apply_temperature_correction", tpe=bool)
         self.register(key="branch_impedance_tolerance_mode", tpe=BranchImpedanceMode)
         self.register(key="distributed_slack", tpe=bool)

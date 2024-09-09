@@ -207,7 +207,7 @@ class Assets:
         self._diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
 
         # objects with profiles
-        self.objects_with_profiles = {
+        self.template_objects_dict = {
             "Regions": [
                 dev.Country(),
                 dev.Community(),
@@ -286,7 +286,7 @@ class Assets:
 
         self.properties_with_profile = ['Y']
         '''
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             for elm in elm_list:
                 if elm.properties_with_profile is not None:
                     key = str(elm.device_type.value)
@@ -308,11 +308,12 @@ class Assets:
         for key, tpe in self.device_type_name_dict.items():
             yield tpe
 
-    def items_declared(self) -> Generator[ALL_DEV_TYPES, None, None]:
+    def template_items(self) -> Generator[ALL_DEV_TYPES, None, None]:
         """
-        Iterator of the declared objects in the MultiCircuit
+        Iterator of the declared objects in the MultiCircuit.
+        These are the object types that you see in the App DataBase tree
         """
-        for key, elm_type_list in self.objects_with_profiles.items():
+        for key, elm_type_list in self.template_objects_dict.items():
             for elm in elm_type_list:
                 yield elm
 
@@ -508,7 +509,7 @@ class Assets:
         #     for elm in elements:
         #         elm.ensure_profiles_exist(self.time_profile)
 
-        for elm in self.items_declared():
+        for elm in self.items():
             elm.ensure_profiles_exist(self.time_profile)
 
     def delete_profiles(self):
@@ -5322,6 +5323,6 @@ class Assets:
         Clear the multi-circuit (remove the bus and branch objects)
         """
 
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             for elm in elm_list:
                 self.get_elements_by_type(device_type=elm.device_type).clear()

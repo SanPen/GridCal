@@ -19,6 +19,7 @@ import pandas as pd
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection
+from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec, BoolVec
 from typing import List, Tuple, Dict
 
@@ -50,14 +51,9 @@ class BranchData:
         self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
         self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
 
-        # reliabilty
+        # reliability
         self.mttf: Vec = np.zeros(self.nelm, dtype=float)
         self.mttr: Vec = np.zeros(self.nelm, dtype=float)
-
-        # composite losses curve (c * x^2 + b * x + a)
-        # self.a: Vec = np.zeros(self.nelm, dtype=float)
-        # self.b: Vec = np.zeros(self.nelm, dtype=float)
-        # self.c: Vec = np.zeros(self.nelm, dtype=float)
 
         self.R: Vec = np.zeros(self.nelm, dtype=float)
         self.X: Vec = np.zeros(self.nelm, dtype=float)
@@ -74,7 +70,10 @@ class BranchData:
         self.G2: Vec = np.zeros(self.nelm, dtype=float)
         self.B2: Vec = np.zeros(self.nelm, dtype=float)
 
-        self.conn: ObjVec = np.array([WindingsConnection.GG] * self.nelm)
+        self.conn: ObjVec = np.full(self.nelm, fill_value=WindingsConnection.GG, dtype=object)
+
+        self.m_taps = SparseObjectArray(n=self.nelm)
+        self.tau_taps = SparseObjectArray(n=self.nelm)
 
         self.k: Vec = np.ones(nelm, dtype=float)
 
@@ -169,6 +168,8 @@ class BranchData:
         data.alpha3 = self.alpha3[elm_idx]
 
         data.conn = self.conn[elm_idx]  # winding connection
+        data.m_taps = self.m_taps.slice(elm_idx)
+        data.tau_taps = self.tau_taps.slice(elm_idx)
 
         data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
         data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
@@ -254,6 +255,8 @@ class BranchData:
         data.alpha3 = self.alpha3.copy()
 
         data.conn = self.conn.copy()  # winding connection
+        data.m_taps = self.m_taps.copy()
+        data.tau_taps = self.tau_taps.copy()
 
         data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
         data.tap_module_control_mode = self.tap_module_control_mode.copy()
@@ -293,6 +296,13 @@ class BranchData:
         data._any_pf_control = self._any_pf_control
 
         return data
+
+    def get_series_admittance(self) -> CxVec:
+        """
+        Get the series admittance of the branches
+        :return: complex vector
+        """
+        return 1.0 / (self.R + 1j * self.X)
 
     def get_island(self, bus_idx: Vec) -> IntVec:
         """

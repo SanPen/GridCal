@@ -225,7 +225,8 @@ class EditableDevice:
         # list of properties that cannot be edited
         self.non_editable_properties: List[str] = list()
 
-        self.properties_with_profile: Dict[str, Optional[Any]] = dict()
+        # dictionary with property name -> profile name
+        self.properties_with_profile: Dict[str, str] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
@@ -342,6 +343,7 @@ class EditableDevice:
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
+        # create GCProp object
         prop = GCProp(prop_name=key,
                       units=units,
                       tpe=tpe,
@@ -360,7 +362,7 @@ class EditableDevice:
 
         if profile_name != '':
             assert (hasattr(self, profile_name))  # the profile property must exist, this avoids bugs in registering
-            assert (isinstance(getattr(self, profile_name), Profile))
+            assert (isinstance(getattr(self, profile_name), Profile))  # the profile must be of type "Profile"
             self.properties_with_profile[key] = profile_name
 
         if not editable:
@@ -708,9 +710,9 @@ class EditableDevice:
         Set the profile values at t
         :param t: time index (integer)
         """
-        for magnitude in self.properties_with_profile.keys():
-            profile: Profile = getattr(self, self.properties_with_profile[magnitude])
-            setattr(self, magnitude, profile[t])
+        for property_name, profile_name in self.properties_with_profile.items():
+            profile: Profile = getattr(self, profile_name)
+            setattr(self, property_name, profile[t])
 
     def get_profile(self, magnitude: str) -> Union[Profile, None]:
         """

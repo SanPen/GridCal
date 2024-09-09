@@ -464,7 +464,8 @@ class ConfigurationMain(ResultsMain):
                                function_ptr=lambda: plugin_info.main_fcn.function_ptr(self))
 
             else:
-                print(f"{plugin_info.name} has no function_ptr, see trace for errors :/")
+                pass
+                # print(f"{plugin_info.name} has no function_ptr, see trace for errors :/")
 
             # maybe add the investments function
             if plugin_info.investments_fcn.function_ptr is not None:

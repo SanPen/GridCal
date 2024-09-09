@@ -17,6 +17,7 @@
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
+from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, StrVec, BoolVec
 
 
@@ -48,7 +49,9 @@ class ShuntData:
 
         self.cost: Vec = np.zeros(nelm, dtype=float)
 
-        # reliabilty
+        self.taps = SparseObjectArray(n=self.nelm)
+
+        # reliability
         self.mttf: Vec = np.zeros(nelm, dtype=float)
         self.mttr: Vec = np.zeros(nelm, dtype=float)
 
@@ -88,6 +91,8 @@ class ShuntData:
 
         data.cost = self.cost[elm_idx]
 
+        data.taps = self.taps.slice(elm_idx)
+
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
 
@@ -116,6 +121,8 @@ class ShuntData:
         data.qmin = self.qmin.copy()
 
         data.cost = self.cost.copy()
+
+        data.taps = self.taps.copy()
 
         data.mttf = self.mttf.copy()
         data.mttr = self.mttr.copy()

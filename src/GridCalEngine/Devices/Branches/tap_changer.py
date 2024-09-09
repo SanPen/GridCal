@@ -87,6 +87,14 @@ class TapChanger:
         """
         self._tap_position = val
 
+    @property
+    def tap_modules_array(self):
+        return self._m_array
+
+    @property
+    def tap_angles_array(self):
+        return self._tau_array
+
     def resize(self) -> None:
         """
         Resize and recalc the tap positions array
@@ -252,7 +260,8 @@ class TapChanger:
         :param tap_module: float value of the tap module
         """
         if self.tc_type != TapChangerTypes.NoRegulation:
-            return find_closest_number(arr=self._tau_array, target=tap_module)
+            _, val = find_closest_number(arr=self._tau_array, target=tap_module)
+            return val
 
     def get_tap_module_min(self) -> float:
         """

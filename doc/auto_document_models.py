@@ -65,7 +65,7 @@ def get_gridcal_data_frames():
     obj_dict = get_objects_dictionary()
 
     circuit = MultiCircuit()
-    d = circuit.objects_with_profiles.copy()
+    d = circuit.template_objects_dict.copy()
     categories = {elm.device_type.value: cat for cat, elms in d.items() for elm in elms}
     for obj_type_name, obj in obj_dict.items():
 
@@ -90,7 +90,7 @@ def get_gridcal_data_frames_per_category():
     obj_dict = get_objects_dictionary()
 
     circuit = MultiCircuit()
-    d = circuit.objects_with_profiles.copy()
+    d = circuit.template_objects_dict.copy()
     categories = {elm.device_type.value: cat for cat, elms in d.items() for elm in elms}
 
     for obj_type_name, obj in obj_dict.items():

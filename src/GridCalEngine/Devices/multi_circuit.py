@@ -206,24 +206,24 @@ class MultiCircuit(Assets):
         """
         return (self.get_bus_number() + self.get_connectivity_nodes_number()) > 0
 
-    def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
+    def get_template_objects_list(self) -> List[ALL_DEV_TYPES]:
         """
         get objects_with_profiles in the form of list
         :return: List[dev.EditableDevice]
         """
         lst = list()
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             for elm in elm_list:
                 lst.append(elm)
         return lst
 
-    def get_objects_with_profiles_str_dict(self) -> Dict[str, List[str]]:
+    def get_template_objects_str_dict(self) -> Dict[str, List[str]]:
         """
         get objects_with_profiles as a strings dictionary
         :return:
         """
         d = dict()
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             d[key] = [o.device_type.value for o in elm_list]
         return d
 
@@ -761,7 +761,7 @@ class MultiCircuit(Assets):
         """
         self.ensure_profiles_exist()
 
-        for device in self.items_declared():
+        for device in self.items():
             device.set_profile_values(t)
 
         self.snapshot_time = self.time_profile[t]
@@ -1706,89 +1706,89 @@ class MultiCircuit(Assets):
                              expected_value=self.get_snapshot_time_unix())
 
         # for each category
-        for key, template_elms_list in self.objects_with_profiles.items():
+        # for key, template_elms_list in self.categorized_template_objects_dict.items():
 
             # for each object type
-            for template_elm in template_elms_list:
+        for template_elm in self.template_items():
 
-                # get all objects of the type
-                elms1 = self.get_elements_by_type(device_type=template_elm.device_type)
-                elms2 = grid2.get_elements_by_type(device_type=template_elm.device_type)
+            # get all objects of the type
+            elms1 = self.get_elements_by_type(device_type=template_elm.device_type)
+            elms2 = grid2.get_elements_by_type(device_type=template_elm.device_type)
 
-                if len(elms1) != len(elms2):
-                    logger.add_error(msg="Different number of elements",
-                                     device_class=template_elm.device_type.value,
-                                     value=len(elms2),
-                                     expected_value=len(elms1))
+            if len(elms1) != len(elms2):
+                logger.add_error(msg="Different number of elements",
+                                 device_class=template_elm.device_type.value,
+                                 value=len(elms2),
+                                 expected_value=len(elms1))
 
-                # for every property
-                for prop_name, prop in template_elm.registered_properties.items():
+            # for every property
+            for prop_name, prop in template_elm.registered_properties.items():
 
-                    if skip_internals:
-                        analyze = prop.display
-                    else:
-                        analyze = True
+                if skip_internals:
+                    analyze = prop.display
+                else:
+                    analyze = True
 
-                    if analyze:
-                        # for every pair of elements:
-                        for elm1, elm2 in zip(elms1, elms2):
+                if analyze:
+                    # for every pair of elements:
+                    for elm1, elm2 in zip(elms1, elms2):
 
-                            # compare the snapshot values
-                            v1 = elm1.get_property_value(prop=prop, t_idx=None)
-                            v2 = elm2.get_property_value(prop=prop, t_idx=None)
+                        # compare the snapshot values
+                        v1 = elm1.get_property_value(prop=prop, t_idx=None)
+                        v2 = elm2.get_property_value(prop=prop, t_idx=None)
 
-                            if v1 != v2:
-                                logger.add_error(msg="Different snapshot values",
+                        if v1 != v2:
+                            logger.add_error(msg="Different snapshot values",
+                                             device_class=template_elm.device_type.value,
+                                             device_property=prop.name,
+                                             value=v2,
+                                             expected_value=v1)
+
+                        if prop.has_profile():
+                            p1 = elm1.get_profile_by_prop(prop=prop)
+                            p2 = elm1.get_profile_by_prop(prop=prop)
+
+                            if p1 != p2:
+                                logger.add_error(msg="Different profile values",
                                                  device_class=template_elm.device_type.value,
                                                  device_property=prop.name,
-                                                 value=v2,
-                                                 expected_value=v1)
+                                                 object_value=p2,
+                                                 expected_object_value=p1)
 
-                            if prop.has_profile():
-                                p1 = elm1.get_profile_by_prop(prop=prop)
-                                p2 = elm1.get_profile_by_prop(prop=prop)
+                            if detailed_profile_comparison:
+                                for t_idx in range(nt):
 
-                                if p1 != p2:
-                                    logger.add_error(msg="Different profile values",
-                                                     device_class=template_elm.device_type.value,
-                                                     device_property=prop.name,
-                                                     object_value=p2,
-                                                     expected_object_value=p1)
+                                    v1 = p1[t_idx]
+                                    v2 = p2[t_idx]
 
-                                if detailed_profile_comparison:
-                                    for t_idx in range(nt):
+                                    if v1 != v2:
+                                        logger.add_error(msg="Different time series values",
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=prop.name,
+                                                         device=str(elm1),
+                                                         value=v2,
+                                                         expected_value=v1)
 
-                                        v1 = p1[t_idx]
-                                        v2 = p2[t_idx]
+                                    v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                                    v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
 
-                                        if v1 != v2:
-                                            logger.add_error(msg="Different time series values",
-                                                             device_class=template_elm.device_type.value,
-                                                             device_property=prop.name,
-                                                             device=str(elm1),
-                                                             value=v2,
-                                                             expected_value=v1)
+                                    if v1 != v1b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
 
-                                        v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
-                                        v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
-
-                                        if v1 != v1b:
-                                            logger.add_error(
-                                                msg="Profile getting values differ with different getter methods!",
-                                                device_class=template_elm.device_type.value,
-                                                device_property=prop.name,
-                                                device=str(elm1),
-                                                value=v1b,
-                                                expected_value=v1)
-
-                                        if v2 != v2b:
-                                            logger.add_error(
-                                                msg="Profile getting values differ with different getter methods!",
-                                                device_class=template_elm.device_type.value,
-                                                device_property=prop.name,
-                                                device=str(elm1),
-                                                value=v1b,
-                                                expected_value=v1)
+                                    if v2 != v2b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger

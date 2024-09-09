@@ -41,6 +41,9 @@ def plugins_path() -> str:
 
 
 class PluginFunction:
+    """
+    Class to handle external funtion pointers
+    """
 
     def __init__(self):
 
@@ -63,8 +66,8 @@ class PluginFunction:
         Parse data
         :param data: Data like the one saved
         """
-        self.name = data.get('name', '')
-        self.alias = data.get('alias', '')
+        self.name = data.get('name', '').strip()
+        self.alias = data.get('alias', '').strip()
 
     def read_plugin(self, plugin_path: str) -> None:
         """
@@ -73,20 +76,21 @@ class PluginFunction:
         """
 
         # hot read python file˘
-        try:
+        if self.name != "":
+            try:
 
-            # read the main function (the one launched upon click on the plugin)
-            self.function_ptr = load_function_from_file_path(
-                file_path=plugin_path,
-                function_name=self.name
-            )
+                # read the main function (the one launched upon click on the plugin)
+                self.function_ptr = load_function_from_file_path(
+                    file_path=plugin_path,
+                    function_name=self.name
+                )
 
-        except ImportError as e:
-            print(e)
-        except AttributeError as e:
-            print(e)
-        except TypeError as e:
-            print(e)
+            except ImportError as e:
+                print(e)
+            except AttributeError as e:
+                print(e)
+            except TypeError as e:
+                print(e)
 
 
 class PluginInfo:

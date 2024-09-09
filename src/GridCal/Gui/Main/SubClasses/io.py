@@ -182,7 +182,7 @@ class IoMain(ConfigurationMain):
 
         self.remove_all_diagrams()
 
-        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict(),
+        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_template_objects_str_dict(),
                                                                   top='Objects'))
         self.expand_object_tree_nodes()
 
