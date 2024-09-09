@@ -84,6 +84,7 @@ def convert_ui_file(source, uic_cmd='pyside6-uic'):
     :param uic_cmd:
     :return:
     """
+    print(f"Converting {source}...")
     folder = os.path.dirname(sys.executable)
     f1 = folder.split(os.sep)[-1]
 
