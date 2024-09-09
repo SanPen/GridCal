@@ -402,7 +402,7 @@ def get_gcdev_loads(cgmes_model: CgmesCircuit,
                 if cgmes_elm.LoadResponse is not None:
 
                     if cgmes_elm.LoadResponse.exponentModel:
-                        print(f'Exponent model True at {cgmes_elm.name}')
+                        # print(f'Exponent model True at {cgmes_elm.name}')
                         pass  # TODO convert exponent to ZIP
                     else:  # ZIP model
                         # TODO check all attributes
