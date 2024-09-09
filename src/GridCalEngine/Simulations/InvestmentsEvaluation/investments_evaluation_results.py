@@ -25,6 +25,7 @@ from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
+from typing import List, Union
 
 
 class InvestmentsEvaluationResults(ResultsTemplate):
@@ -62,7 +63,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         n_groups = len(investment_groups_names)
 
         self.investment_groups_names: StrVec = investment_groups_names
-        self._combinations: IntVec = np.zeros((max_eval, n_groups), dtype=int)
+        self._combinations: Vec = np.zeros((max_eval, n_groups), dtype=float)
         self._capex: Vec = np.zeros(max_eval, dtype=float)
         self._opex: Vec = np.zeros(max_eval, dtype=float)
         self._losses: Vec = np.zeros(max_eval, dtype=float)
@@ -72,6 +73,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
         self._best_combination: IntVec = np.zeros(max_eval, dtype=int)
+        self._best_combination: Vec = np.zeros(max_eval, dtype=float)
 
         self._sorting_indices: IntVec = np.zeros(0, dtype=int)
 
@@ -82,7 +84,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.overload_majority_magnitude = None
         self.losses_majority_magnitude = None
         self.voltage_majority_magnitude = None
-        self.calculate_magnitude(value=0)
+        # self.calculate_magnitude(value=0)
         self.calculate_tech_score_magnitudes()
 
         self.losses_scale = 1.0
@@ -99,7 +101,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='_financial', tpe=Vec)
         self.register(name='_f_obj', tpe=Vec)
         self.register(name='_index_names', tpe=Vec)
-        self.register(name='_best_combination', tpe=IntVec)
+        self.register(name='_best_combination', tpe=Vec)
         self.register(name='_sorting_indices', tpe=IntVec)
 
         self.__eval_index: int = 0
@@ -142,7 +144,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                voltage_score: float,
                financial: float,
                objective_function_sum: float,
-               combination: IntVec,
+               combination: Vec,
                index_name: str) -> None:
         """
         Set the results at an investment group
@@ -198,7 +200,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
         return self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude
 
-    def calculate_magnitude(self, value):
+    @staticmethod
+    def calculate_magnitude(value):
         return int(np.floor(np.log10(np.abs(value)))) if value != 0 else 0
 
     def get_objectives(self) -> Mat:
@@ -242,9 +245,9 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param combination:
         :return:
         """
-        self.overload_mag.append(self.calculate_magnitude(overload_score))
-        self.losses_mag.append(self.calculate_magnitude(losses))
-        self.voltage_mag.append(self.calculate_magnitude(voltage_score))
+        self.overload_mag.append(InvestmentsEvaluationResults.calculate_magnitude(overload_score))
+        self.losses_mag.append(InvestmentsEvaluationResults.calculate_magnitude(losses))
+        self.voltage_mag.append(InvestmentsEvaluationResults.calculate_magnitude(voltage_score))
 
         if self.__eval_index < self.max_eval:
             self.set_at(eval_idx=self.__eval_index,
@@ -458,7 +461,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             columns = ["Investment cost (M€)", "Technical cost (M€)", "Losses (M€)", "Overload cost (M€)",
                        "Voltage cost (M€)"]
             data = np.c_[
-                self._financial, self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score, self._losses, self._overload_score, self._voltage_score]
+                self._financial, self._losses + self._voltage_score + self._overload_score, self._losses,
+                self._overload_score, self._voltage_score]
             y_label = ''
             title = ''
 
@@ -471,7 +475,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             max_x_order_of_magnitude = 2  # set to 2 so that costs are in the hundreds of millions
             print(self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude,
                   self.overload_scale, self.losses_scale, self.voltage_scale)
-            max_y_order_of_magnitude = self.calculate_magnitude(max(technical_score))
+            max_y_order_of_magnitude = InvestmentsEvaluationResults.calculate_magnitude(max(technical_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
             scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
             scaled_financial_score = self._financial * 10 ** -2
@@ -652,7 +656,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
             max_x_order_of_magnitude = 2
-            max_y_order_of_magnitude = self.calculate_magnitude(max(technical_score))
+            max_y_order_of_magnitude = InvestmentsEvaluationResults.calculate_magnitude(max(technical_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
             scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
             scaled_financial_score = self._financial * 10 ** -2
