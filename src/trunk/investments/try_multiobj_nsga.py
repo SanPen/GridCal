@@ -18,8 +18,8 @@ if __name__ == "__main__":
 
     # fname = os.path.join('..', '..', '..', 'Grids_and_profiles', 'grids', 'ding0_test_network_2_mvlv.gridcal')
     # fname = os.path.join('final_edited_118_bus_grid.gridcal')
-    # fname = 'C:/Users/J/Downloads/claudia_v2.gridcal'
-    fname = r'C:\Users\cmach\Documents\Acciona\Model\claudia_v4.1_shunttest.gridcal'
+      fname = 'C:/Users/J/Downloads/claudia_v2.gridcal'
+   
     # fname = 'C:/Users/J/Downloads/jm1.gridcal'
     grid = FileOpen(fname).open()
 
