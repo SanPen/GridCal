@@ -123,7 +123,7 @@ class MixedVariableProblem(ElementwiseProblem):
         #para cada elemento tipo shunt, hacer un bucle para crear una variable self.variable[elm.idtag] que sea continua
         for elm in grid.shunts:
             self.variables[elm.idtag] = Real(bounds=(0, elm.B)) #Qmax=elm.B in [MVAr] #elm.B
-            print(elm.B)
+            #print(elm.B)
             self.devices.append(elm)
             #print(self.variables[elm.idtag])
 

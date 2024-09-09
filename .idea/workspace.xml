@@ -28,13 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Minor changes, comenting few lines">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Branches/shunt_type.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Add continuos variables to mixed NSGA2 (pending updating results variable type)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections/shunt.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Injections/shunt.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/investments/try_multiobj_nsga.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,7 +177,7 @@
     "Python tests.pytest in test_topology_processor.py.executor": "Run",
     "Python tests.pytest in tests.executor": "Run",
     "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Debug",
     "Python.GridCalMain.executor": "Run",
     "Python.cgmes_rdfs_graph.executor": "Run",
     "Python.download_stats.executor": "Run",
@@ -1801,7 +1798,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="558" />
+    <option name="localTasksCounter" value="559" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1835,7 +1832,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/204_investments_evaluation" />
+                        <option value="204_investments_evaluation" />
                       </list>
                     </value>
                   </entry>
@@ -1848,7 +1845,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed CGMES conversion bug creating rates = None" />
     <MESSAGE value="Fixed vset too strict compilation in control branches&#10;Modified the fubm check script in trunk" />
     <MESSAGE value="Fixed critical bug in the CSC matrix stacking" />
     <MESSAGE value="Searching for the bug...WIP" />
@@ -1873,7 +1869,8 @@
     <MESSAGE value="Fix the passing of the last combination result" />
     <MESSAGE value="Various fixes in the NSGA2 object handling" />
     <MESSAGE value="Add 1e-20 to admittance calc to avoid div by 0" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add 1e-20 to admittance calc to avoid div by 0" />
+    <MESSAGE value="Add continuos variables to mixed NSGA2 (pending updating results variable type)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add continuos variables to mixed NSGA2 (pending updating results variable type)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2454,14 +2451,29 @@
           <option name="timeStamp" value="2118" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/pymoo/core/mixed.py</url>
-          <line>124</line>
-          <option name="timeStamp" value="2120" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/Methods/mixed_variable_NSGA_2.py</url>
           <line>125</line>
           <option name="timeStamp" value="2123" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py</url>
+          <line>75</line>
+          <option name="timeStamp" value="2124" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/venv/Lib/site-packages/pymoo/core/mixed.py</url>
+          <line>124</line>
+          <option name="timeStamp" value="2126" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py</url>
+          <line>394</line>
+          <option name="timeStamp" value="2129" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/investments_evaluation_results.py</url>
+          <line>552</line>
+          <option name="timeStamp" value="2130" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

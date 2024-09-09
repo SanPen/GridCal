@@ -26,6 +26,7 @@ from GridCalEngine.basic_structures import IntVec, Vec, StrVec, Mat
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 from GridCalEngine.Utils.NumericalMethods.MVRSM_mo_pareto import non_dominated_sorting
 
+from typing import List, Union
 
 class InvestmentsEvaluationResults(ResultsTemplate):
     tpe = 'Investments Evaluation Results'
@@ -62,7 +63,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         n_groups = len(investment_groups_names)
 
         self.investment_groups_names: StrVec = investment_groups_names
-        self._combinations: IntVec = np.zeros((max_eval, n_groups), dtype=int)
+        #self._combinations: IntVec = np.zeros((max_eval, n_groups), dtype=int)
+        self._combinations: Vec = np.zeros((max_eval, n_groups), dtype=float)
         self._capex: Vec = np.zeros(max_eval, dtype=float)
         self._opex: Vec = np.zeros(max_eval, dtype=float)
         self._losses: Vec = np.zeros(max_eval, dtype=float)
@@ -71,7 +73,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._financial: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
-        self._best_combination: IntVec = np.zeros(max_eval, dtype=int)
+        #self._best_combination: IntVec = np.zeros(max_eval, dtype=int)
+        self._best_combination: np.ndarray = np.zeros(max_eval, dtype=float)
 
         self._sorting_indices: IntVec = np.zeros(0, dtype=int)
 
@@ -99,7 +102,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self.register(name='_financial', tpe=Vec)
         self.register(name='_f_obj', tpe=Vec)
         self.register(name='_index_names', tpe=Vec)
-        self.register(name='_best_combination', tpe=IntVec)
+        #self.register(name='_best_combination', tpe=IntVec)
+        self.register(name='_best_combination', tpe=Vec)
         self.register(name='_sorting_indices', tpe=IntVec)
 
         self.__eval_index: int = 0
@@ -113,7 +117,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         return self.__eval_index
 
     @property
-    def n_groups(self) -> int:
+    def n_groups(self) -> int: #int
         """
 
         :return:
@@ -142,7 +146,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                voltage_score: float,
                financial: float,
                objective_function_sum: float,
-               combination: IntVec,
+               combination: Vec, #IntVec,
                index_name: str) -> None:
         """
         Set the results at an investment group
@@ -229,7 +233,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             voltage_score: float,
             financial: float,
             objective_function_sum: float,
-            combination: IntVec) -> None:
+            combination: Vec) -> None: #IntVec
         """
 
         :param capex:
@@ -278,7 +282,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             self._combinations = self._combinations[:self.__eval_index]
             self._index_names = self._index_names[:self.__eval_index]
 
-    def set_best_combination(self, combination: IntVec) -> None: #combination: IntVec
+    def set_best_combination(self, combination: Vec) -> None: #combination: IntVec
         """
         Set the best combination of investment groups
         :param combination: Vector of integers (0/1)
@@ -286,7 +290,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._best_combination = combination
 
     @property
-    def best_combination(self) -> IntVec:
+    def best_combination(self) -> Vec: #IntVec
         return self._best_combination
 
     def mdl(self, result_type) -> "ResultsTable":
