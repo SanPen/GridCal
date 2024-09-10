@@ -24,7 +24,7 @@ from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
-from typing import List, Dict
+from typing import List
 from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.GuiFunctions import get_list_model
 from GridCal.Gui.ProfilesInput.profiles_from_data_gui import Ui_Dialog
