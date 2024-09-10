@@ -7391,52 +7391,60 @@ QProgressBar::chunk{
                <property name="topMargin">
                 <number>0</number>
                </property>
-               <item row="24" column="2">
-                <widget class="QComboBox" name="investment_evaluation_method_ComboBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>Select the investment evaluation method</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0">
-                <widget class="QLabel" name="label_94">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
+               <item row="20" column="0">
+                <widget class="QLabel" name="label_31">
                  <property name="text">
                   <string/>
                  </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/clustering.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
                 </widget>
                </item>
-               <item row="17" column="0" colspan="2">
-                <widget class="QLabel" name="label_61">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
+               <item row="14" column="0" colspan="3">
+                <widget class="Line" name="line_24">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
                  </property>
-                 <property name="text">
-                  <string>Min. group size</string>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
@@ -7492,6 +7500,83 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
+               <item row="9" column="0" colspan="3">
+                <widget class="Line" name="line_29">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="17" column="2">
+                <widget class="QSpinBox" name="node_distances_elements_spinBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Minimum size of the group</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
+                 </property>
+                 <property name="suffix">
+                  <string> elements</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>99999</number>
+                 </property>
+                 <property name="value">
+                  <number>2</number>
+                 </property>
+                </widget>
+               </item>
                <item row="13" column="1" colspan="2">
                 <widget class="QLabel" name="label_89">
                  <property name="palette">
@@ -7544,6 +7629,117 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
+               <item row="25" column="0" colspan="3">
+                <widget class="QRadioButton" name="internal_investment_methods_radioButton">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Internal method</string>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="13" column="0">
+                <widget class="QLabel" name="label_88">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/color_grid.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="2">
+                <widget class="QSpinBox" name="cluster_number_spinBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of clusters, this affects all the simulations that deal with clustering&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="suffix">
+                  <string> Clusters</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>999999</number>
+                 </property>
+                 <property name="value">
+                  <number>200</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="18" column="0" colspan="2">
+                <widget class="QLabel" name="label_44">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="29" column="0" colspan="3">
+                <widget class="QRadioButton" name="plugins_investment_methods_radioButton">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Plugin method</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0" colspan="2">
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="28" column="0" colspan="2">
+                <widget class="QLabel" name="label_153">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Objective function</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="30" column="2">
+                <widget class="QComboBox" name="plugins_investment_evaluation_method_ComboBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                </widget>
+               </item>
                <item row="10" column="0" colspan="2">
                 <widget class="QLabel" name="label_33">
                  <property name="font">
@@ -7556,168 +7752,14 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="24" column="0" colspan="2">
-                <widget class="QLabel" name="label_3">
+               <item row="28" column="2">
+                <widget class="QComboBox" name="investment_evaluation_objfunc_ComboBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
-                 <property name="text">
-                  <string>Method</string>
-                 </property>
                 </widget>
-               </item>
-               <item row="9" column="0" colspan="3">
-                <widget class="Line" name="line_29">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="18" column="0" colspan="2">
-                <widget class="QLabel" name="label_44">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="22" column="0" colspan="3">
-                <widget class="Line" name="line_30">
-                 <property name="palette">
-                  <palette>
-                   <active>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </active>
-                   <inactive>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>186</red>
-                       <green>189</green>
-                       <blue>182</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </inactive>
-                   <disabled>
-                    <colorrole role="WindowText">
-                     <brush brushstyle="SolidPattern">
-                      <color alpha="255">
-                       <red>190</red>
-                       <green>190</green>
-                       <blue>190</blue>
-                      </color>
-                     </brush>
-                    </colorrole>
-                   </disabled>
-                  </palette>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <property name="lineWidth">
-                  <number>4</number>
-                 </property>
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                </widget>
-               </item>
-               <item row="20" column="0">
-                <widget class="QLabel" name="label_31">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="16" column="2">
-                <widget class="QDoubleSpinBox" name="node_distances_sigma_doubleSpinBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>Máximum standard deviation to determine the groups</string>
-                 </property>
-                 <property name="suffix">
-                  <string> σ</string>
-                 </property>
-                 <property name="decimals">
-                  <number>6</number>
-                 </property>
-                 <property name="singleStep">
-                  <double>0.010000000000000</double>
-                 </property>
-                 <property name="value">
-                  <double>0.750000000000000</double>
-                 </property>
-                </widget>
-               </item>
-               <item row="31" column="1">
-                <spacer name="verticalSpacer_16">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>250</height>
-                  </size>
-                 </property>
-                </spacer>
                </item>
                <item row="8" column="1">
                 <widget class="QFrame" name="frame_59">
@@ -7795,54 +7837,118 @@ QProgressBar::chunk{
                  </layout>
                 </widget>
                </item>
-               <item row="17" column="2">
-                <widget class="QSpinBox" name="node_distances_elements_spinBox">
+               <item row="16" column="2">
+                <widget class="QDoubleSpinBox" name="node_distances_sigma_doubleSpinBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Minimum size of the group</string>
-                 </property>
-                 <property name="statusTip">
-                  <string/>
+                  <string>Máximum standard deviation to determine the groups</string>
                  </property>
                  <property name="suffix">
-                  <string> elements</string>
+                  <string> σ</string>
                  </property>
-                 <property name="minimum">
-                  <number>1</number>
+                 <property name="decimals">
+                  <number>6</number>
                  </property>
-                 <property name="maximum">
-                  <number>99999</number>
+                 <property name="singleStep">
+                  <double>0.010000000000000</double>
                  </property>
                  <property name="value">
-                  <number>2</number>
+                  <double>0.750000000000000</double>
                  </property>
                 </widget>
                </item>
-               <item row="16" column="0" colspan="2">
-                <widget class="QLabel" name="label_38">
+               <item row="17" column="0" colspan="2">
+                <widget class="QLabel" name="label_61">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Nodal distances</string>
+                  <string>Min. group size</string>
                  </property>
                 </widget>
                </item>
-               <item row="12" column="0" colspan="2">
-                <widget class="QLabel" name="label_7">
+               <item row="23" column="2">
+                <widget class="QSpinBox" name="max_investments_evluation_number_spinBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Number of maximum evaluations for the optimization methods</string>
+                 </property>
+                 <property name="suffix">
+                  <string> x number of investments</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>999999999</number>
+                 </property>
+                 <property name="value">
+                  <number>4</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_94">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
                  <property name="text">
                   <string/>
                  </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/clustering.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
-               <item row="14" column="0" colspan="3">
-                <widget class="Line" name="line_24">
+               <item row="33" column="1">
+                <spacer name="verticalSpacer_16">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>250</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="30" column="0" colspan="2">
+                <widget class="QLabel" name="label_83">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Method</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="22" column="0" colspan="3">
+                <widget class="Line" name="line_30">
                  <property name="palette">
                   <palette>
                    <active>
@@ -7891,75 +7997,15 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="26" column="2">
-                <widget class="QComboBox" name="investment_evaluation_objfunc_ComboBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="2">
-                <widget class="QSpinBox" name="cluster_number_spinBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of clusters, this affects all the simulations that deal with clustering&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="suffix">
-                  <string> Clusters</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>999999</number>
-                 </property>
-                 <property name="value">
-                  <number>200</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="29" column="0" colspan="2">
-                <widget class="QLabel" name="label_51">
+               <item row="16" column="0" colspan="2">
+                <widget class="QLabel" name="label_38">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Maximum evaluations</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="23" column="0" colspan="3">
-                <widget class="QRadioButton" name="internal_investment_methods_radioButton">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Internal method</string>
-                 </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="26" column="0" colspan="2">
-                <widget class="QLabel" name="label_153">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Objective function</string>
+                  <string>Nodal distances</string>
                  </property>
                 </widget>
                </item>
@@ -7988,85 +8034,46 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="29" column="2">
-                <widget class="QSpinBox" name="max_investments_evluation_number_spinBox">
+               <item row="26" column="0" colspan="2">
+                <widget class="QLabel" name="label_3">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Method</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="26" column="2">
+                <widget class="QComboBox" name="investment_evaluation_method_ComboBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="toolTip">
-                  <string>Number of maximum evaluations for the optimization methods</string>
-                 </property>
-                 <property name="suffix">
-                  <string> x number of investments</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>999999999</number>
-                 </property>
-                 <property name="value">
-                  <number>4</number>
+                  <string>Select the investment evaluation method</string>
                  </property>
                 </widget>
                </item>
-               <item row="13" column="0">
-                <widget class="QLabel" name="label_88">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
+               <item row="24" column="0" colspan="2">
+                <widget class="QLabel" name="label_87">
                  <property name="text">
                   <string/>
                  </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/color_grid.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
                 </widget>
                </item>
-               <item row="27" column="0" colspan="3">
-                <widget class="QRadioButton" name="plugins_investment_methods_radioButton">
+               <item row="23" column="0" colspan="2">
+                <widget class="QLabel" name="label_51">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
                  <property name="text">
-                  <string>Plugin method</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="28" column="0" colspan="2">
-                <widget class="QLabel" name="label_83">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Plugin</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="28" column="2">
-                <widget class="QComboBox" name="plugins_investment_evaluation_method_ComboBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
+                  <string>Maximum evaluations</string>
                  </property>
                 </widget>
                </item>
