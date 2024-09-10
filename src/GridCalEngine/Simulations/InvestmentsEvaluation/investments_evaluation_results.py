@@ -232,7 +232,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             voltage_score: float,
             financial: float,
             objective_function_sum: float,
-            combination: IntVec) -> None:
+            combination: Vec) -> None:
         """
 
         :param capex:
@@ -289,7 +289,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._best_combination = combination
 
     @property
-    def best_combination(self) -> IntVec:
+    def best_combination(self) -> Vec:
         return self._best_combination
 
     def mdl(self, result_type) -> "ResultsTable":
