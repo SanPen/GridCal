@@ -573,6 +573,20 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     Qg_max = nc.generator_data.qmax / Sbase
     Qg_min = nc.generator_data.qmin / Sbase
+
+    # Shunt elements are treated as generators with fixed P.
+    # As such, their limits are added in the generator limits array.
+
+    # nsh = nc.nshunt
+    # Qsh_max = nc.shunt_data.qmax
+    # Qsh_min = nc.shunt_data.qmin
+    #
+    # Pg_max = np.r_[Pg_max, np.zeros(nsh)]
+    # Pg_min = np.r_[Pg_min, np.zeros(nsh)]
+    #
+    # Qg_max = np.r_[Qg_max, Qsh_max]
+    # Qg_min = np.r_[Qg_min, Qsh_min]
+
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
     pf = nc.generator_data.pf
@@ -636,14 +650,13 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     n_disp_hvdc = len(hvdc_disp_idx)
     f_disp_hvdc = nc.hvdc_data.F[hvdc_disp_idx]
     t_disp_hvdc = nc.hvdc_data.T[hvdc_disp_idx]
-    P_hvdc_max = nc.hvdc_data.rate[hvdc_disp_idx]
+    P_hvdc_max = 100 + nc.hvdc_data.rate[hvdc_disp_idx]
 
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = 1 * np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
-                           1.0)  # Cost squared since the slack is also squared
-        c_v = 1 * (nc.bus_data.cost_v[pq] + 0.1)
+        c_s = np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
+        c_v = nc.bus_data.cost_v[pq] + 0.1
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
         sl_vmax0 = np.ones(npq)
@@ -955,7 +968,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
                                        value=str(sl_vmin[i]),
                                        expected_value=f'> {opf_options.ips_tolerance}')
 
-    if opf_options.verbose:
+    if opf_options.verbose > 0:
         if len(logger):
             logger.print()
 

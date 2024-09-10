@@ -105,7 +105,7 @@ def case_pegase89() -> NonlinearOPFResults:
     # pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, tolerance=1e-8)
     # return ac_optimal_power_flow(nc=nc, pf_options=pf_options)
     pf_options = gce.PowerFlowOptions(control_q=False)
-    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-10,
+    opf_options = gce.OptimalPowerFlowOptions(ips_method=gce.SolverType.NR, ips_tolerance=1e-8,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd)
     return ac_optimal_power_flow(nc=nc, pf_options=pf_options, opf_options=opf_options)
 
