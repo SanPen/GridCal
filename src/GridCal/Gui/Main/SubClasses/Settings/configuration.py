@@ -16,8 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import json
 import os
-from typing import Dict, Union, Any, Callable
-from PySide6 import QtWidgets, QtGui, QtCore
+from typing import Dict, Union, Any
+from PySide6 import QtWidgets
 
 import GridCal.ThirdParty.qdarktheme as qdarktheme
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
@@ -472,15 +472,15 @@ class ConfigurationMain(ResultsMain):
                   during the iteration and not after the loop
                 - func(self) is then what I wanted to lambda in the first place                
                 """
-                func = plugin_info.main_fcn.function_ptr
-                lmbd = lambda e, func=func: func(self)  # This is not an error, it is correct
+                # func = plugin_info.main_fcn.function_ptr
+                # lmbd = lambda e, func=func: func(self)  # This is not an error, it is correct
 
                 action = add_menu_entry(
                     menu=self.ui.menuplugins,
                     text=plugin_info.name,
                     icon_path=":/Icons/icons/plugin.svg",
                     icon_pixmap=plugin_info.icon,
-                    function_ptr=lmbd
+                    function_ptr=plugin_info.main_fcn.get_pointer_lambda(gui_instance=self)
                 )
 
             # maybe add the investments function

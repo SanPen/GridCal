@@ -51,6 +51,21 @@ class PluginFunction:
         self.alias = ""
         self.function_ptr = None
 
+    def get_pointer_lambda(self, gui_instance):
+        """
+        Really hard core magic to avoid lambdas shadow each other due to late binding
+
+        lambda e, func=func: func(self)
+
+        explanation:
+        - e is a bool parameter that the QAction sends when triggered
+        - func=func is there for the lambda to force the usage of the value of func
+          during the iteration and not after the loop
+        - func(self) is then what I wanted to lambda in the first place
+        """
+        func = self.function_ptr
+        return lambda e, func=func: func(gui_instance)  # This is not an error, it is correct
+
     def to_dict(self) -> Dict[str, str]:
         """
         To dict
