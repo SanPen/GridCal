@@ -342,9 +342,9 @@ def case_simple():
     # nc = compile_numerical_circuit_at(grid)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd, ips_tolerance=1e-7)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, control_q=False)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, control_q=True)
     # ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
     grid.get_bus_branch_connectivity_matrix()
     nc = compile_numerical_circuit_at(grid)
     print('')
@@ -411,7 +411,7 @@ def casepegase13k():
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-6,
                                               ips_iterations=70)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 def caseinvest():
     """
@@ -537,7 +537,7 @@ def caseREE():
 
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=gce.AcOpfMode.ACOPFslacks,
                                               verbose=1, ips_iterations=100, ips_tolerance=1e-8)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
@@ -567,7 +567,7 @@ def case_nodalcap():
 
 if __name__ == '__main__':
     # example_3bus_acopf()
-    case_simple()
+    # case_simple()
     #case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
@@ -576,10 +576,10 @@ if __name__ == '__main__':
     # case14()
     # case_gb()
     # case6ww()
-    #case_pegase89()
+    # case_pegase89()
     #case300()
     # casepegase13k()
     # casehvdc()
-    # caseREE()
+    caseREE()
     # case_nodalcap()
     # caseinvest()

@@ -26,6 +26,7 @@ from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Compilers.circuit_to_newton_pa import newton_pa_linear_opf, newton_pa_nonlinear_opf
+from GridCalEngine.basic_structures import Logger
 
 
 class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
@@ -214,6 +215,37 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_Pf = res.hvdc_Pf
             self.results.hvdc_loading = res.hvdc_loading
             self.results.converged = res.converged
+
+            if res.converged == False and self.pf_options.control_Q == True:
+                self.report_progress(0.0)
+                self.report_text('Running non linear optimization with Q control deactivated...')
+                self.pf_options.control_Q = False
+                self.logger = Logger()
+                res = run_nonlinear_opf(grid=self.grid,
+                                        opf_options=self.options,
+                                        pf_options=self.pf_options,
+                                        t_idx=None,
+                                        pf_init=self.options.ips_init_with_pf,
+                                        logger=self.logger)
+                Sbase = self.grid.Sbase
+                self.results.voltage = res.V
+                self.results.Sbus = res.S * Sbase
+                self.results.bus_shadow_prices = res.lam_p
+                # self.results.load_shedding = npa_res.load_shedding[0, :]
+                # self.results.battery_power = npa_res.battery_p[0, :]
+                # self.results.battery_energy = npa_res.battery_energy[0, :]
+                self.results.generator_power = res.Pg * Sbase
+                self.results.Sf = res.Sf * Sbase
+                self.results.St = res.St * Sbase
+                self.results.overloads = (res.sl_sf - res.sl_st) * Sbase
+                self.results.loading = res.loading
+                self.results.phase_shift = res.tap_phase
+
+                self.results.hvdc_Pf = res.hvdc_Pf
+                self.results.hvdc_loading = res.hvdc_loading
+                self.results.converged = res.converged
+            else:
+                pass
 
             msg = "Interior point solver"
             self.logger.add_info(msg=msg, device="Error", value=res.error, expected_value=self.options.ips_tolerance)
