@@ -608,7 +608,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         mult = self.get_multiplier()
         threshold = self.ui.autolink_slider.value() / 100.0
-        profile_names = self.profile_names.copy()
+        profile_names = list(self.profile_names.copy())
 
         for idx_o, elm in enumerate(self.objects):
 
@@ -621,7 +621,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             # assign the string with the closest match profile
             if idx is not None:
                 # remove the already associated one so that the search space is smaller every time
-                profile_names.pop(idx)
+                # profile_names.pop(idx)
 
                 # make the association
                 self.make_association(idx, idx_o, mult)
