@@ -436,6 +436,10 @@ class ConfigurationMain(ResultsMain):
 
         self.circuit.snapshot_time = date_time_value
 
+    def plugin_main_function_triggered(self, arg):
+
+        print(arg)
+
     def add_plugins(self):
         """
         Add the plugins information and create the menu entries
@@ -457,19 +461,33 @@ class ConfigurationMain(ResultsMain):
             # maybe add the main function
             if plugin_info.main_fcn.function_ptr is not None:
 
-                add_menu_entry(menu=self.ui.menuplugins,
-                               text=plugin_info.name,
-                               icon_path=":/Icons/icons/plugin.svg",
-                               icon_pixmap=plugin_info.icon,
-                               function_ptr=lambda: plugin_info.main_fcn.function_ptr(self))
+                """
+                Really hard core magic to avoid lambdas shadow each other due to late binding
+                
+                lambda e, func=func: func(self)
+                
+                explanation:
+                - e is a bool parameter that the QAction sends when triggered
+                - func=func is there for the lambda to force the usage of the value of func 
+                  during the iteration and not after the loop
+                - func(self) is then what I wanted to lambda in the first place                
+                """
+                # func = plugin_info.main_fcn.function_ptr
+                # lmbd = lambda e, func=func: func(self)  # This is not an error, it is correct
 
-            else:
-                pass
-                # print(f"{plugin_info.name} has no function_ptr, see trace for errors :/")
+                action = add_menu_entry(
+                    menu=self.ui.menuplugins,
+                    text=plugin_info.name,
+                    icon_path=":/Icons/icons/plugin.svg",
+                    icon_pixmap=plugin_info.icon,
+                    function_ptr=plugin_info.main_fcn.get_pointer_lambda(gui_instance=self)
+                )
 
             # maybe add the investments function
             if plugin_info.investments_fcn.function_ptr is not None:
-                self.plugins_investment_evaluation_method_dict[plugin_info.investments_fcn.name] = plugin_info.investments_fcn.function_ptr
+                self.plugins_investment_evaluation_method_dict[
+                    plugin_info.investments_fcn.alias
+                ] = plugin_info.investments_fcn.function_ptr
 
         # create combobox model for the plugin investments
         lst = list(self.plugins_investment_evaluation_method_dict.keys())

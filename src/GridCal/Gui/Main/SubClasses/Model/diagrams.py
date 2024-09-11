@@ -1025,6 +1025,12 @@ class DiagramsMain(CompiledArraysMain):
                     elif isinstance(sel_obj, dev.UPFC):
                         root_bus = sel_obj.bus_from
 
+                    elif isinstance(sel_obj, dev.Switch):
+                        root_bus = sel_obj.bus_from
+
+                    else:
+                        root_bus = None
+
                     if root_bus is not None:
 
                         dlg = InputNumberDialogue(min_value=1, max_value=99,

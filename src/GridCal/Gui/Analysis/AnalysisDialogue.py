@@ -27,7 +27,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
     GridAnalysisGUI
     """
-    def __init__(self, circuit: MultiCircuit = None):
+    def __init__(self, circuit: MultiCircuit):
         """
 
         :param circuit: MultiCircuit
@@ -72,7 +72,8 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
             min_vcc=self.ui.transformerVccMinSpinBox.value(),
             max_vcc=self.ui.transformerVccMaxSpinBox.value(),
-            logger=self.log)
+            logger=self.log
+        )
 
         # set logs
         self.ui.logsTreeView.setModel(self.log.get_model())
@@ -82,7 +83,6 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         Fix all detected fixable errors
         :return:
         """
-        print('Fixing issues...')
         logger = Logger()
         for fixable_err in self.fixable_errors:
             fixable_err.fix(logger=logger,

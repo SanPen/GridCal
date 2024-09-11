@@ -45,11 +45,26 @@ class PluginFunction:
     Class to handle external funtion pointers
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         self.name = ""
         self.alias = ""
         self.function_ptr = None
+
+    def get_pointer_lambda(self, gui_instance):
+        """
+        Really hard core magic to avoid lambdas shadow each other due to late binding
+
+        lambda e, func=func: func(self)
+
+        explanation:
+        - e is a bool parameter that the QAction sends when triggered
+        - func=func is there for the lambda to force the usage of the value of func
+          during the iteration and not after the loop
+        - func(self) is then what I wanted to lambda in the first place
+        """
+        func = self.function_ptr
+        return lambda e, func=func: func(gui_instance)  # This is not an error, it is correct
 
     def to_dict(self) -> Dict[str, str]:
         """
@@ -112,6 +127,12 @@ class PluginInfo:
 
         self.icon: QPixmap | None = None
 
+    def __repr__(self) -> str:
+        return self.name
+
+    def __str__(self) -> str:
+        return self.name
+
     def to_dict(self) -> Dict[str, str | Dict[str, str]]:
         """
         To dict
@@ -139,7 +160,6 @@ class PluginInfo:
 
         if 'investments_fcn' in data.keys():
             self.investments_fcn.parse(data['investments_fcn'])
-
 
     def read_plugin(self) -> None:
         """
@@ -178,14 +198,8 @@ class PluginsInfo:
         """
 
         """
-        self.index_file_name = os.path.join(plugins_path(), 'plugins.json')
-
         self.plugins: Dict[str, PluginInfo] = dict()
-
-        if os.path.exists(self.index_file_name):
-            self.read()
-        else:
-            self.save()
+        self.read()
 
     def to_data(self) -> List[Dict[str, str]]:
         """
@@ -194,42 +208,30 @@ class PluginsInfo:
         """
         return [pl.to_dict() for key, pl in self.plugins.items()]
 
-    def parse(self, data: List[Dict[str, str]]):
-        """
-        Parse data: Create the plugins information
-        :param data:
-        :return:
-        """
-        self.plugins.clear()
-        for entry in data:
-            pl = PluginInfo()
-            pl.parse(entry)
-            pl.read_plugin()
-            self.plugins[pl.name] = pl
-
     def read(self) -> None:
         """
         Thead the plugins info file
         :return:
         """
-        # Open the JSON file
-        try:
-            with open(self.index_file_name, 'r') as file:
-                # Load the JSON data into a dictionary
-                data = json.load(file)
-                self.parse(data)
-        except json.JSONDecodeError as e:
-            print("Error reading the plugins index", e)
+        self.plugins.clear()
 
-    def save(self):
-        """
-        Save the plugins information
-        :return:
-        """
-        # Write the dictionary to a JSON file
-        with open(self.index_file_name, 'w') as json_file:
-            data = self.to_data()
-            json.dump(data, json_file)
+        # List all JSON files in the folder
+        folder = plugins_path()
+        for file in os.listdir(folder):
+            if file.endswith('.plugin.json'):
+                file_path = os.path.join(folder, file)
+
+                try:
+                    with open(file_path, 'r') as f:
+                        data = json.load(f)
+
+                        pl = PluginInfo()
+                        pl.parse(data)
+                        pl.read_plugin()
+                        self.plugins[pl.name] = pl
+
+                except json.JSONDecodeError as e:
+                    print("Error reading the plugins index", e)
 
 
 def load_function_from_file_path(file_path: str, function_name: str):

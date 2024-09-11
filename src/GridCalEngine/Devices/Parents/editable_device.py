@@ -18,7 +18,7 @@ import random
 import uuid
 import numpy as np
 from GridCalEngine.Devices.profile import Profile
-from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
+from typing import List, Dict, AnyStr, Any, Union, Type, Tuple
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection,
                                         TapModuleControl, TapPhaseControl, SubObjectType,
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
@@ -59,6 +59,15 @@ GCPROP_TYPES = Union[
 ]
 
 
+def uuid2idtag(val: str):
+    """
+    Remove the useless characters and format as a proper 32-char UID
+    :param val: value that looks like a UUID
+    :return: proper UUID
+    """
+    return val.replace('_', '').replace('-', '')
+
+
 def parse_idtag(val: Union[str, None]) -> str:
     """
     idtag setter
@@ -72,7 +81,7 @@ def parse_idtag(val: Union[str, None]) -> str:
         elif len(val) == 0:
             return uuid.uuid4().hex  # generate a proper UUIDv4 string
         else:
-            candidate_val = val.replace('_', '').replace('-', '')
+            candidate_val = uuid2idtag(val)
             if len(candidate_val) == 32:
                 return candidate_val  # if the string passed can be a UUID, set it
             else:
@@ -235,6 +244,19 @@ class EditableDevice:
                       definition='Object action to perform.\nOnly used for model merging.',
                       display=False)
         self.register(key='comment', units='', tpe=str, definition='User comment')
+
+    def get_uuid(self) -> str:
+        """
+        If the idtag property looks like a UUID, it adds the dashes
+        :return: UUID with dashes
+        """
+        if isinstance(self._idtag, str):
+            if len(self.idtag) == 32:
+                return str(uuid.UUID(self.idtag))
+            else:
+                raise Exception("The idtag is not a proper UUID")
+        else:
+            raise Exception("The idtag is not a proper UUID string")
 
     def __str__(self) -> str:
         """

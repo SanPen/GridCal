@@ -117,7 +117,6 @@ def build_rates_dict(cgmes_model, device_type, logger):
                     elif cl.value < act_lim:
                         rates_dict[branch_id] = rate_mva
 
-
     # TODO ActivePowerLimit_list, ApparentPowerLimit_list
     # for al in [cgmes_model.cgmes_assets.ActivePowerLimit_list,
     #            cgmes_model.cgmes_assets.ApparentPowerLimit_list]:
@@ -680,6 +679,7 @@ def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):
         if obj.uuid == target_uuid:
             return obj
     return None
+
 
 def find_tn_by_name(cgmes_model: CgmesCircuit, target_name):
     """
