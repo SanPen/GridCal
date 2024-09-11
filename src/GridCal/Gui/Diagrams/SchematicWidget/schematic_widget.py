@@ -4386,21 +4386,6 @@ def generate_schematic_diagram(buses: List[Bus],
     add_devices_list(cls="fluid_paths", dev_lst=fluid_paths)
 
     # --------------------------------------------------------------------------------------------------------------
-    # if text_func is not None:
-    #     text_func('Creating schematic transformer3w devices')
-    #
-    # nn = len(transformers3w)
-    # for i, elm in enumerate(transformers3w):
-    #
-    #     if prog_func is not None:
-    #         prog_func((i + 1) / nn * 100.0)
-    #
-    #     x = int(elm.x * explode_factor)
-    #     y = int(elm.y * explode_factor)
-    #     diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
-    #     diagram.set_point(device=elm.winding1, location=GraphicLocation())
-    #     diagram.set_point(device=elm.winding2, location=GraphicLocation())
-    #     diagram.set_point(device=elm.winding3, location=GraphicLocation())
 
     return diagram
 
@@ -4434,7 +4419,7 @@ List[FluidPath]]:
     bus_dict = circuit.get_bus_index_dict()
 
     # get all Branches
-    all_branches = circuit.get_branches()
+    all_branches = circuit.get_branches() + circuit.get_switches()
     branch_dict = {b: i for i, b in enumerate(all_branches)}
 
     # create a pool of buses
@@ -4519,7 +4504,7 @@ List[FluidPath]]:
             switches.append(obj)
 
         else:
-            raise Exception('Unrecognized branch type ' + obj.device_type.value)
+            raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
     return (list(buses), list(busbars), list(cns), lines, dc_lines, transformers2w, transformers3w,
             windings, hvdc_lines, vsc_converters, upfc_devices, series_reactances, switches,

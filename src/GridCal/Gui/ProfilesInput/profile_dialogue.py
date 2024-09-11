@@ -494,8 +494,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                         try:
                             a = float(self.original_data_frame.values[i, j])
                         except Exception as e2:
-                            print(str(e2) + ': not a float value (', i, j,
-                                  '):{}'.format(self.original_data_frame.values[i, j]))
+                            print(f"{e2}: not a float value ({i}, {j}: {self.original_data_frame.values[i, j]})")
 
                 error_msg('The format of the data is not recognized. Only int or float values are allowed')
                 return
@@ -620,9 +619,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             # assign the string with the closest match profile
             if idx is not None:
-                # remove the already associated one so that the search space is smaller every time
-                # profile_names.pop(idx)
-
                 # make the association
                 self.make_association(idx, idx_o, mult)
 
