@@ -59,6 +59,13 @@ GCPROP_TYPES = Union[
 ]
 
 
+def uuid2idtag(val: str):
+    """
+    Remove the useless characters and format as a proper 32-char UID
+    :param val: value that looks like a UUID
+    :return: proper UUID
+    """
+    return val.replace('_', '').replace('-', '')
 
 
 def parse_idtag(val: Union[str, None]) -> str:
@@ -74,7 +81,7 @@ def parse_idtag(val: Union[str, None]) -> str:
         elif len(val) == 0:
             return uuid.uuid4().hex  # generate a proper UUIDv4 string
         else:
-            candidate_val = val.replace('_', '').replace('-', '')
+            candidate_val = uuid2idtag(val)
             if len(candidate_val) == 32:
                 return candidate_val  # if the string passed can be a UUID, set it
             else:
