@@ -18,7 +18,7 @@ import random
 import uuid
 import numpy as np
 from GridCalEngine.Devices.profile import Profile
-from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
+from typing import List, Dict, AnyStr, Any, Union, Type, Tuple
 from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection,
                                         TapModuleControl, TapPhaseControl, SubObjectType,
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
@@ -57,6 +57,8 @@ GCPROP_TYPES = Union[
     Type[FaultType],
     Type[TapChangerTypes]
 ]
+
+
 
 
 def parse_idtag(val: Union[str, None]) -> str:
@@ -235,6 +237,19 @@ class EditableDevice:
                       definition='Object action to perform.\nOnly used for model merging.',
                       display=False)
         self.register(key='comment', units='', tpe=str, definition='User comment')
+
+    def get_uuid(self) -> str:
+        """
+        If the idtag property looks like a UUID, it adds the dashes
+        :return: UUID with dashes
+        """
+        if isinstance(self._idtag, str):
+            if len(self.idtag) == 32:
+                return str(uuid.UUID(self.idtag))
+            else:
+                raise Exception("The idtag is not a proper UUID")
+        else:
+            raise Exception("The idtag is not a proper UUID string")
 
     def __str__(self) -> str:
         """

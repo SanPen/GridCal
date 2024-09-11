@@ -379,6 +379,14 @@ def analyze_lines(elements: List[Line],
                        propty="bus_to",
                        message="The bus to is None")
 
+        if elm.bus_to == elm.bus_from:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from, bus_to",
+                       message="Branch connected in loop (bus_from = bus_to)")
+
         if V1 > 0 and V2 > 0:
             per = V1 / V2
             if per < (1.0 - branch_connection_voltage_tolerance):
@@ -529,6 +537,14 @@ def analyze_transformers(elements: List[Transformer2W],
                        severity=LogSeverity.Error,
                        propty="bus_to",
                        message="The bus to is None")
+
+        if elm.bus_to == elm.bus_from:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from, bus_to",
+                       message="Branch connected in loop (bus_from = bus_to)")
 
         if elm.name == '':
             logger.add(object_type=object_type.value,
@@ -1158,6 +1174,18 @@ def grid_analysis(circuit: MultiCircuit,
 
     analyze_transformers(elements=circuit.get_transformers2w(),
                          object_type=DeviceType.Transformer2WDevice,
+                         transformer_virtual_tap_tolerance=transformer_virtual_tap_tolerance,
+                         eps_min=eps_min,
+                         eps_max=eps_max,
+                         min_vcc=min_vcc,
+                         max_vcc=max_vcc,
+                         tap_min=tap_min,
+                         tap_max=tap_max,
+                         logger=logger,
+                         fixable_errors=fixable_errors)
+
+    analyze_transformers(elements=circuit.get_windings(),
+                         object_type=DeviceType.WindingDevice,
                          transformer_virtual_tap_tolerance=transformer_virtual_tap_tolerance,
                          eps_min=eps_min,
                          eps_max=eps_max,
