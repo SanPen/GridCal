@@ -503,6 +503,9 @@ class ProfileInputGUI(QtWidgets.QDialog):
             cols = [str(x).strip() for x in self.original_data_frame.columns.values]
             self.original_data_frame.columns = cols
 
+            # replace NaN
+            self.original_data_frame.fillna(0, inplace=True)
+
             # set the profile names list
             self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values],
                                           dtype=object)
