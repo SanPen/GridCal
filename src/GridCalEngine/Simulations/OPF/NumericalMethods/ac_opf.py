@@ -17,6 +17,7 @@
 import numpy as np
 import timeit
 import pandas as pd
+from scipy import sparse as sp
 from typing import Tuple
 from dataclasses import dataclass
 from GridCalEngine.Utils.NumericalMethods.ips import interior_point_solver, IpsFunctionReturn
@@ -550,14 +551,14 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Compute the admittance elements, including the Ybus, Yf, Yt and connectivity matrices
     admittances = nc.get_admittance_matrices()
-    Cg = nc.generator_data.C_bus_elm
+    Cgen = nc.generator_data.C_bus_elm
     from_idx = nc.F
     to_idx = nc.T
 
     # PV buses are identified by those who have the same upper and lower limits for the voltage. Slack obtained from nc
 
     slack = nc.vd
-    slackgens = np.where(Cg[slack, :].toarray() == 1)[1]
+    slackgens = np.where(Cgen[slack, :].toarray() == 1)[1]
     # Bus and line parameters
     Sd = - nc.load_data.get_injections_per_bus() / Sbase
 
@@ -574,18 +575,28 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Qg_max = nc.generator_data.qmax / Sbase
     Qg_min = nc.generator_data.qmin / Sbase
 
+    ngen = len(Pg_max)
     # Shunt elements are treated as generators with fixed P.
     # As such, their limits are added in the generator limits array.
 
-    # nsh = nc.nshunt
-    # Qsh_max = nc.shunt_data.qmax
-    # Qsh_min = nc.shunt_data.qmin
-    #
-    # Pg_max = np.r_[Pg_max, np.zeros(nsh)]
-    # Pg_min = np.r_[Pg_min, np.zeros(nsh)]
-    #
-    # Qg_max = np.r_[Qg_max, Qsh_max]
-    # Qg_min = np.r_[Qg_min, Qsh_min]
+    id_sh = np.where(nc.shunt_data.controllable == True)[0]
+    nsh = len(id_sh)
+    if nsh == 0:
+        nshid = None  # This is needed to slice the gen_idx when there are no shunts
+    else:
+        nshid = -nsh
+
+    Csh = nc.shunt_data.C_bus_elm[:, id_sh]
+    Cg = sp.hstack([Cgen, Csh])
+
+    Qsh_max = nc.shunt_data.qmax[id_sh]
+    Qsh_min = nc.shunt_data.qmin[id_sh]
+
+    Pg_max = np.r_[Pg_max, np.zeros(nsh)]
+    Pg_min = np.r_[Pg_min, np.zeros(nsh)]
+
+    Qg_max = np.r_[Qg_max, Qsh_max]
+    Qg_min = np.r_[Qg_min, Qsh_min]
 
     Vm_max = nc.bus_data.Vmax
     Vm_min = nc.bus_data.Vmin
@@ -597,7 +608,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Check the active elements and their operational limits.
     br_mon_idx = nc.branch_data.get_monitor_enabled_indices()
-    gen_disp_idx = nc.generator_data.get_dispatchable_active_indices()
+    gen_disp_idx = np.r_[nc.generator_data.get_dispatchable_active_indices(), np.array([*range(ngen, ngen + nsh)], dtype=int)]
     ind_gens = np.arange(len(Pg_max))
     gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[gen_nondisp_idx]
@@ -612,9 +623,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     R = nc.branch_data.R
     X = nc.branch_data.X
 
-    c0 = nc.generator_data.cost_0[gen_disp_idx]
-    c1 = nc.generator_data.cost_1[gen_disp_idx]
-    c2 = nc.generator_data.cost_2[gen_disp_idx]
+    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:nshid]], np.zeros(nsh)]
+    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:nshid]], np.zeros(nsh)]
+    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:nshid]], np.zeros(nsh)]
 
     c0n = nc.generator_data.cost_0[gen_nondisp_idx]
     c1n = nc.generator_data.cost_1[gen_nondisp_idx]
@@ -699,8 +710,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         allPgen = nc.generator_data.C_bus_elm.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
         allQgen = nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
         Sg_undis = allPgen[gen_nondisp_idx] + 1j * allQgen[gen_nondisp_idx]
-        p0gen = allPgen[gen_disp_idx]
-        q0gen = allQgen[gen_disp_idx]
+        p0gen = np.r_[allPgen[gen_disp_idx[:nshid]], np.zeros(nsh)]
+        q0gen = np.r_[allQgen[gen_disp_idx[:nshid]], np.zeros(nsh)]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -708,8 +719,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
     else:
-        p0gen = (nc.generator_data.pmax[gen_disp_idx] + nc.generator_data.pmin[gen_disp_idx]) / (2 * nc.Sbase)
-        q0gen = (nc.generator_data.qmax[gen_disp_idx] + nc.generator_data.qmin[gen_disp_idx]) / (2 * nc.Sbase)
+        p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:nshid]] +
+                       nc.generator_data.pmin[gen_disp_idx[:nshid]]) / (2 * nc.Sbase), np.zeros(nsh)]
+        q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:nshid]] +
+                       nc.generator_data.qmin[gen_disp_idx[:nshid]]) / (2 * nc.Sbase), np.zeros(nsh)]
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -835,7 +848,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     tap_phase = np.zeros(nc.nbr)
     tap_module[k_m] = tapm
     tap_phase[k_tau] = tapt
-    Pcost = np.zeros(nc.ngen)
+    Pcost = np.zeros(ngen + nsh)
     Pcost[gen_disp_idx] = c0 + c1 * Pg[gen_disp_idx] + c2 * np.power(Pg[gen_disp_idx], 2.0)
     Pcost[gen_nondisp_idx] = c0n + c1n * np.real(Sg_undis) + c2n * np.power(np.real(Sg_undis), 2.0)
     nodal_capacity = slcap * Sbase

@@ -362,6 +362,9 @@ def case_pegase89():
     file_path = os.path.join(new_directory, 'Grids_and_profiles', 'grids', 'case89pegase.m')
 
     grid = gce.FileOpen(file_path).open()
+
+    sh1 = gce.ControllableShunt(number_of_steps=2,step=1, b_per_step=0.05)
+    grid.add_controllable_shunt(grid.buses[20], sh1)
     # nc = compile_numerical_circuit_at(grid)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_iterations=100,
                                               acopf_mode=gce.AcOpfMode.ACOPFstd, ips_tolerance=1e-7)
@@ -422,8 +425,8 @@ def caseinvest():
 
     grid = gce.FileOpen(file_path).open()
 
-    sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=5.0)
-    grid.add_controllable_shunt(grid.buses[3], sh1)
+    # sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=5.0)
+    # grid.add_controllable_shunt(grid.buses[3], sh1)
 
     nc = compile_numerical_circuit_at(grid)
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -568,7 +571,7 @@ def case_nodalcap():
 if __name__ == '__main__':
     # example_3bus_acopf()
     # case_simple()
-    #case_3bus()
+    # case_3bus()
     # linn5bus_example()
     # two_grids_of_3bus()
     # case9()
@@ -577,9 +580,9 @@ if __name__ == '__main__':
     # case_gb()
     # case6ww()
     # case_pegase89()
-    #case300()
+    # case300()
     # casepegase13k()
     # casehvdc()
-    caseREE()
+    # caseREE()
     # case_nodalcap()
-    # caseinvest()
+    caseinvest()
