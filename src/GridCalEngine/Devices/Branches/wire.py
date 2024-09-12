@@ -29,7 +29,8 @@ class Wire(EditableDevice):
                  max_current: float = 1.0,
                  stranding: str = "",
                  material: str = "",
-                 diameter: float = 0.0):
+                 diameter: float = 0.0,
+                 code: str = ""):
         """
         Wire definition
         :param name: Name of the wire type
@@ -37,13 +38,16 @@ class Wire(EditableDevice):
         :param r: Resistance per unit length (Ohm / km)
         :param x: Reactance per unit length (Ohm / km)
         :param max_current: Maximum current of the conductor in (kA)
-
+        :param stranding: Stranding of the wire type
+        :param material: Material of the wire type
+        :param diameter: Diameter of the wire type
+        :param code: Code of the wire type
         """
 
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
-                                code='',
+                                code=code,
                                 device_type=DeviceType.WireDevice)
 
         # self.wire_name = name

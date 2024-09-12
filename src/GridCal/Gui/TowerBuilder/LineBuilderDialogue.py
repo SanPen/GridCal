@@ -136,7 +136,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
-            selected_wire = self.wires_table.wires[sel_idx].copy()
+            selected_wire: Wire = self.wires_table.wires[sel_idx].copy()
             self.tower_driver.add(WireInTower(selected_wire))
         else:
             self.msg('Select a wire in the wires catalogue')
