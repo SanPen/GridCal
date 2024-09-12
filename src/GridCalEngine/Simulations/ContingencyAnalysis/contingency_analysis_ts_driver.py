@@ -21,7 +21,6 @@ from typing import Union
 from GridCalEngine.basic_structures import IntVec, StrVec
 from GridCalEngine.enumerations import EngineType, ContingencyMethod
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearMultiContingencies
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_options import LinearAnalysisOptions
 from GridCalEngine.Simulations.LinearFactors.linear_analysis_ts_driver import LinearAnalysisTimeSeriesDriver
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import (ContingencyAnalysisOptions,
@@ -106,8 +105,6 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
             con_names=con_names,
             clustering_results=self.clustering_results
         )
-
-        # linear_multiple_contingencies = LinearMultiContingencies(grid=self.grid)
 
         cdriver = ContingencyAnalysisDriver(grid=self.grid,
                                             options=self.options,
