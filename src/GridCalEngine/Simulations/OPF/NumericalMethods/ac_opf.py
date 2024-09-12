@@ -591,8 +591,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     Csh = nc.shunt_data.C_bus_elm[:, id_sh]
     Cg = sp.hstack([Cgen, Csh])
 
-    Qsh_max = nc.shunt_data.qmax[id_sh]
-    Qsh_min = nc.shunt_data.qmin[id_sh]
+    Qsh_max = nc.shunt_data.qmax[id_sh] / Sbase
+    Qsh_min = nc.shunt_data.qmin[id_sh] / Sbase
 
     Pg_max = np.r_[Pg_max, np.zeros(nsh)]
     Pg_min = np.r_[Pg_min, np.zeros(nsh)]
