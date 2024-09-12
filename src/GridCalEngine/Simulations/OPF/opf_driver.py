@@ -64,6 +64,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             generator_names=self.grid.get_generator_names(),
             battery_names=self.grid.get_battery_names(),
             hvdc_names=self.grid.get_hvdc_names(),
+            contshunt_names=self.grid.get_controllable_shunt_names(),
             bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
             area_names=self.grid.get_area_names(),
             F=F,
@@ -206,6 +207,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             # self.results.battery_power = npa_res.battery_p[0, :]
             # self.results.battery_energy = npa_res.battery_energy[0, :]
             self.results.generator_power = res.Pg * Sbase
+            self.results.contshunt_power = res.Qsh * Sbase
             self.results.Sf = res.Sf * Sbase
             self.results.St = res.St * Sbase
             self.results.overloads = (res.sl_sf - res.sl_st) * Sbase

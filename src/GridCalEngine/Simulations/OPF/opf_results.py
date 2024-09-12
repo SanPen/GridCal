@@ -32,6 +32,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  generator_names: StrVec,
                  battery_names: StrVec,
                  hvdc_names: StrVec,
+                 contshunt_names: StrVec,
                  bus_types: IntVec,
                  area_names: StrVec,
                  F: IntVec,
@@ -65,7 +66,8 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                                                              ResultTypes.BusReactivePower],
 
                                                     ResultTypes.GeneratorResults: [ResultTypes.GeneratorPower,
-                                                                                   ResultTypes.GeneratorShedding],
+                                                                                   ResultTypes.GeneratorShedding,
+                                                                                   ResultTypes.ContShuntsPower],
 
                                                     ResultTypes.BatteryResults: [ResultTypes.BatteryPower],
 
@@ -97,6 +99,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         m = len(branch_names)
         ngen = len(generator_names)
         nbat = len(battery_names)
+        nctsh = len(contshunt_names)
         nload = len(load_names)
         nhvdc = len(hvdc_names)
 
@@ -105,6 +108,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.load_names = load_names
         self.generator_names = generator_names
         self.battery_names = battery_names
+        self.contshunt_names = contshunt_names
         self.hvdc_names = hvdc_names
         self.bus_types = bus_types
 
@@ -130,6 +134,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.generator_shedding = np.zeros(ngen, dtype=float)
         self.generator_power = np.zeros(ngen, dtype=float)
         self.battery_power = np.zeros(nbat, dtype=float)
+        self.contshunt_power = np.zeros(nctsh, dtype=float)
 
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(t, m, c), ...]
@@ -150,6 +155,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.register(name='load_names', tpe=StrVec)
         self.register(name='generator_names', tpe=StrVec)
         self.register(name='battery_names', tpe=StrVec)
+        self.register(name='contshunt_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
         self.register(name='bus_types', tpe=IntVec)
 
@@ -175,6 +181,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.register(name='generator_power', tpe=Vec)
         self.register(name='generator_shedding', tpe=Vec)
         self.register(name='battery_power', tpe=Vec)
+        self.register(name='contshunt_power', tpe=Vec)
 
         self.register(name='converged', tpe=bool)
         self.register(name='contingency_flows_list', tpe=list)
@@ -227,6 +234,14 @@ class OptimalPowerFlowResults(ResultsTemplate):
         """
         return pd.DataFrame(data={'P': self.generator_power},
                             index=self.battery_power)
+
+    def get_contshunt_df(self) -> pd.DataFrame:
+        """
+        Get a DataFrame with the controllable shunts results
+        :return: DataFrame
+        """
+        return pd.DataFrame(data={'Q': self.contshunt_power},
+                            index=self.contshunt_names)
 
     def get_hvdc_df(self) -> pd.DataFrame:
         """
@@ -422,6 +437,18 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
+
+        elif result_type == ResultTypes.ContShuntsPower:
+
+            return ResultsTable(data=self.contshunt_power,
+                                index=self.contshunt_names,
+                                idx_device_type=DeviceType.ControllableShuntDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=str(result_type.value),
+                                ylabel='(MVAr)',
+                                xlabel='',
+                                units='(MVAr)')
 
         elif result_type == ResultTypes.HvdcPowerFrom:
 

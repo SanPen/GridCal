@@ -407,6 +407,7 @@ class NonlinearOPFResults:
     loading: Vec = None
     Pg: Vec = None
     Qg: Vec = None
+    Qsh: Vec = None
     Pcost: Vec = None
     tap_module: Vec = None
     tap_phase: Vec = None
@@ -423,11 +424,12 @@ class NonlinearOPFResults:
     converged: bool = None
     iterations: int = None
 
-    def initialize(self, nbus: int, nbr: int, ng: int, nhvdc: int, ncap: int):
+    def initialize(self, nbus: int, nbr: int, nsh: int, ng: int, nhvdc: int, ncap: int):
         """
         Initialize the arrays
         :param nbus: number of buses
         :param nbr: number of branches
+        :param nsh: number of controllable shunt elements
         :param ng: number of generators
         :param nhvdc: number of HVDC
         :param ncap: Number of nodal capacity nodes
@@ -440,6 +442,7 @@ class NonlinearOPFResults:
         self.loading: Vec = np.zeros(nbr)
         self.Pg: Vec = np.zeros(ng)
         self.Qg: Vec = np.zeros(ng)
+        self.Qsh: Vec = np.zeros(nsh)
         self.Pcost: Vec = np.zeros(ng)
         self.tap_module: Vec = np.zeros(nbr)
         self.tap_phase: Vec = np.zeros(nbr)
@@ -464,6 +467,7 @@ class NonlinearOPFResults:
               gen_idx: IntVec,
               hvdc_idx: IntVec,
               ncap_idx: IntVec,
+              contshunt_idx: IntVec,
               acopf_mode):
         """
 
@@ -474,6 +478,7 @@ class NonlinearOPFResults:
         :param gen_idx:
         :param hvdc_idx:
         :param ncap_idx:
+        :param ngen:
         :param acopf_mode:
         :return:
         """
@@ -485,6 +490,7 @@ class NonlinearOPFResults:
         self.loading[br_idx] = other.loading
         self.Pg[gen_idx] = other.Pg
         self.Qg[gen_idx] = other.Qg
+        self.Qsh[contshunt_idx] = other.Qsh
         self.Pcost[gen_idx] = other.Pcost
         self.tap_module[br_idx] = other.tap_module
         self.tap_phase[br_idx] = other.tap_phase
@@ -581,10 +587,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     id_sh = np.where(nc.shunt_data.controllable == True)[0]
     nsh = len(id_sh)
-    if nsh == 0:
-        nshid = None  # This is needed to slice the gen_idx when there are no shunts
-    else:
-        nshid = -nsh
 
     Csh = nc.shunt_data.C_bus_elm[:, id_sh]
     Cg = sp.hstack([Cgen, Csh])
@@ -623,9 +625,9 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     R = nc.branch_data.R
     X = nc.branch_data.X
 
-    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:nshid]], np.zeros(nsh)]
-    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:nshid]], np.zeros(nsh)]
-    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:nshid]], np.zeros(nsh)]
+    c0 = np.r_[nc.generator_data.cost_0[gen_disp_idx[:ngen]], np.zeros(nsh)]
+    c1 = np.r_[nc.generator_data.cost_1[gen_disp_idx[:ngen]], np.zeros(nsh)]
+    c2 = np.r_[nc.generator_data.cost_2[gen_disp_idx[:ngen]], np.zeros(nsh)]
 
     c0n = nc.generator_data.cost_0[gen_nondisp_idx]
     c1n = nc.generator_data.cost_1[gen_nondisp_idx]
@@ -710,8 +712,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         allPgen = nc.generator_data.C_bus_elm.T @ np.real(Sbus_pf / nc.Sbase) / ngenforgen
         allQgen = nc.generator_data.C_bus_elm.T @ np.imag(Sbus_pf / nc.Sbase) / ngenforgen
         Sg_undis = allPgen[gen_nondisp_idx] + 1j * allQgen[gen_nondisp_idx]
-        p0gen = np.r_[allPgen[gen_disp_idx[:nshid]], np.zeros(nsh)]
-        q0gen = np.r_[allQgen[gen_disp_idx[:nshid]], np.zeros(nsh)]
+        p0gen = np.r_[allPgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
+        q0gen = np.r_[allQgen[gen_disp_idx[:ngen]], np.zeros(nsh)]
         vm0 = np.abs(voltage_pf)
         va0 = np.angle(voltage_pf)
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -719,10 +721,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         Pf0_hvdc = nc.hvdc_data.Pset[hvdc_disp_idx]
 
     else:
-        p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:nshid]] +
-                       nc.generator_data.pmin[gen_disp_idx[:nshid]]) / (2 * nc.Sbase), np.zeros(nsh)]
-        q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:nshid]] +
-                       nc.generator_data.qmin[gen_disp_idx[:nshid]]) / (2 * nc.Sbase), np.zeros(nsh)]
+        p0gen = np.r_[(nc.generator_data.pmax[gen_disp_idx[:ngen]] +
+                       nc.generator_data.pmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
+        q0gen = np.r_[(nc.generator_data.qmax[gen_disp_idx[:ngen]] +
+                       nc.generator_data.qmin[gen_disp_idx[:ngen]]) / (2 * nc.Sbase), np.zeros(nsh)]
         va0 = np.angle(nc.bus_data.Vbus)
         vm0 = (Vm_max + Vm_min) / 2
         tapm0 = nc.branch_data.tap_module[k_m]
@@ -987,7 +989,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     return NonlinearOPFResults(Va=Va, Vm=Vm, S=S,
                                Sf=Sf, St=St, loading=loading,
-                               Pg=Pg, Qg=Qg, Pcost=Pcost,
+                               Pg=Pg[:ngen], Qg=Qg[:ngen], Qsh=Qg[ngen:], Pcost=Pcost[:ngen],
                                tap_module=tap_module, tap_phase=tap_phase,
                                hvdc_Pf=hvdc_power, hvdc_loading=hvdc_loading,
                                lam_p=lam_p, lam_q=lam_q,
@@ -1055,8 +1057,8 @@ def run_nonlinear_opf(grid: MultiCircuit,
 
     # create and initialize results
     results = NonlinearOPFResults()
-    results.initialize(nbus=nc.nbus, nbr=nc.nbr, ng=nc.ngen, nhvdc=nc.nhvdc,
-                       ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
+    results.initialize(nbus=nc.nbus, nbr=nc.nbr, nsh=nc.nshunt, ng=nc.ngen,
+                       nhvdc=nc.nhvdc, ncap=len(capacity_nodes_idx) if capacity_nodes_idx is not None else 0)
 
     for i, island in enumerate(islands):
 
@@ -1090,6 +1092,7 @@ def run_nonlinear_opf(grid: MultiCircuit,
                       gen_idx=island.generator_data.original_idx,
                       hvdc_idx=island.hvdc_data.original_idx,
                       ncap_idx=capacity_nodes_idx_org,
+                      contshunt_idx=np.where(island.shunt_data.controllable == True)[0],
                       acopf_mode=opf_options.acopf_mode)
         if i > 0:
             results.error = max(results.error, island_res.error)

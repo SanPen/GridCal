@@ -421,12 +421,19 @@ def caseinvest():
     Solves for pf_init=False in about a minute and 130 iterations.
     """
 
-    file_path = 'C:/Users/eroot/Downloads/claudia_v4.1.gridcal'
+    file_path = 'C:/Users/eroot/Downloads/claudia_v4.1_OPF_test.gridcal'
 
     grid = gce.FileOpen(file_path).open()
 
-    # sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=5.0)
-    # grid.add_controllable_shunt(grid.buses[3], sh1)
+    # grid.generators.
+    sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=0.15)
+    grid.add_controllable_shunt(grid.buses[2], sh1)
+
+    sh2 = gce.ControllableShunt(number_of_steps=2, b_per_step=0.05)
+    grid.add_controllable_shunt(grid.buses[5], sh2)
+
+    sh3 = gce.ControllableShunt(number_of_steps=2, b_per_step=0.1)
+    grid.add_controllable_shunt(grid.buses[7], sh3)
 
     nc = compile_numerical_circuit_at(grid)
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)
@@ -434,9 +441,9 @@ def caseinvest():
     power_flow.run()
 
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-6,
-                                              ips_iterations=70)
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
-    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=False)
+                                              ips_iterations=70, ips_init_with_pf=True)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=0)
+    run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
 
 
 def casehvdc():
