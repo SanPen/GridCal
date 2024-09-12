@@ -41,7 +41,7 @@ class WireInTower:
     Wire -> Tower association
     """
 
-    def __init__(self, wire: Wire, xpos=0, ypos=0, phase=1):
+    def __init__(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
         """
         Wire in a tower
         :param wire: Wire instance
@@ -132,12 +132,15 @@ class OverheadLineType(EditableDevice):
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
 
-    def add_wire(self, w: WireInTower):
+    def add_wire_relationship(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
         """
-
-        :param w:
-        :return:
+        Wire in a tower
+        :param wire: Wire instance
+        :param xpos: x position in m
+        :param ypos: y position in m
+        :param phase: 0->Neutral, 1->A, 2->B, 3->C
         """
+        w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
         self.wires_in_tower.append(w)
 
     def z_series(self):

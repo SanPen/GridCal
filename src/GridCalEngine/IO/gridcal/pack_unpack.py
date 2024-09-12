@@ -1436,9 +1436,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                 xpos = df['xpos'].values[i]
                 ypos = df['ypos'].values[i]
                 phase = df['phase'].values[i]
-
-                w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
-                tower.add_wire(w)
+                tower.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
 
     # create diagrams --------------------------------------------------------------------------------------------------
     if text_func is not None:
