@@ -527,7 +527,7 @@ class ObjectsTableMain(DiagramsMain):
 
                 # update the view
                 self.view_objects_data()
-                self.update_area_combos()
+                self.update_from_to_list_views()
                 self.update_date_dependent_combos()
 
     def add_objects_to_current_diagram(self):
@@ -573,45 +573,45 @@ class ObjectsTableMain(DiagramsMain):
 
             if elm_type == DeviceType.SubstationDevice.value:
                 self.circuit.add_substation(dev.Substation(name=f'SE {self.circuit.get_substation_number() + 1}'))
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.VoltageLevelDevice.value:
                 self.circuit.add_voltage_level(dev.VoltageLevel(
                     name=f'VL {self.circuit.get_voltage_levels_number() + 1}')
                 )
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.BusBarDevice.value:
                 self.circuit.add_bus_bar(dev.BusBar(name=f'BB {self.circuit.get_bus_bars_number() + 1}'))
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.ZoneDevice.value:
                 self.circuit.add_zone(dev.Zone(name=f'Zone {self.circuit.get_zone_number() + 1}'))
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.AreaDevice.value:
                 self.circuit.add_area(dev.Area(name=f'Area {self.circuit.get_area_number() + 1}'))
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.CountryDevice.value:
                 self.circuit.add_country(dev.Country(name=f'Country {self.circuit.get_country_number() + 1}'))
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.CommunityDevice.value:
                 self.circuit.add_community(dev.Community(
                     name=f'Community {self.circuit.get_communities_number() + 1}')
                 )
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.RegionDevice.value:
                 self.circuit.add_region(dev.Region(name=f'Region {self.circuit.get_regions_number() + 1}'))
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.MunicipalityDevice.value:
                 self.circuit.add_municipality(dev.Municipality(
                     name=f'Municipalities {self.circuit.get_municipalities_number() + 1}')
                 )
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
             elif elm_type == DeviceType.BusDevice.value:
                 self.circuit.add_bus(dev.Bus(name=f'Bus {self.circuit.get_bus_number() + 1}'))

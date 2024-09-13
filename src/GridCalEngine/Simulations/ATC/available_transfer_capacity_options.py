@@ -102,7 +102,6 @@ class AvailableTransferCapacityOptions(OptionsTemplate):
         self.register(key="inter_area_branch_sense", tpe=SubObjectType.Array)
         self.register(key="Pf", tpe=SubObjectType.Array)
         self.register(key="idx_hvdc_br", tpe=SubObjectType.Array)
-        self.register(key="use_provided_flows", tpe=SubObjectType.Array)
         self.register(key="inter_area_hvdc_branch_sense", tpe=SubObjectType.Array)
         self.register(key="Pf_hvdc", tpe=SubObjectType.Array)
 

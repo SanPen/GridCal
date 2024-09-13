@@ -376,7 +376,7 @@ class IoMain(ConfigurationMain):
 
                 # update the drop-down menus that display dates
                 self.update_date_dependent_combos()
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
                 # get the session tree structure
                 session_data_dict = self.open_file_thread_object.get_session_tree()
@@ -793,7 +793,7 @@ class IoMain(ConfigurationMain):
 
             # update the drop down menus that display dates
             self.update_date_dependent_combos()
-            self.update_area_combos()
+            self.update_from_to_list_views()
 
             # clear the results
             self.clear_results()

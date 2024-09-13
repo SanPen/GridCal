@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1346</width>
+    <width>1249</width>
     <height>820</height>
    </rect>
   </property>
@@ -6806,8 +6806,8 @@ QProgressBar::chunk{
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_29">
-                   <item>
+                  <layout class="QGridLayout" name="gridLayout_9">
+                   <item row="0" column="0">
                     <widget class="QLabel" name="label_41">
                      <property name="font">
                       <font>
@@ -6819,8 +6819,11 @@ QProgressBar::chunk{
                      </property>
                     </widget>
                    </item>
-                   <item>
-                    <widget class="QListView" name="areaFromListView">
+                   <item row="0" column="1">
+                    <widget class="QComboBox" name="fromComboBox"/>
+                   </item>
+                   <item row="1" column="0" colspan="2">
+                    <widget class="QListView" name="fromListView">
                      <property name="font">
                       <font>
                        <pointsize>9</pointsize>
@@ -6837,8 +6840,8 @@ QProgressBar::chunk{
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
                   </property>
-                  <layout class="QVBoxLayout" name="verticalLayout_19">
-                   <item>
+                  <layout class="QGridLayout" name="gridLayout_30">
+                   <item row="0" column="0">
                     <widget class="QLabel" name="label_21">
                      <property name="font">
                       <font>
@@ -6850,8 +6853,11 @@ QProgressBar::chunk{
                      </property>
                     </widget>
                    </item>
-                   <item>
-                    <widget class="QListView" name="areaToListView">
+                   <item row="0" column="1">
+                    <widget class="QComboBox" name="toComboBox"/>
+                   </item>
+                   <item row="1" column="0" colspan="2">
+                    <widget class="QListView" name="toListView">
                      <property name="font">
                       <font>
                        <pointsize>9</pointsize>
@@ -9677,7 +9683,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1346</width>
+     <width>1249</width>
      <height>21</height>
     </rect>
    </property>

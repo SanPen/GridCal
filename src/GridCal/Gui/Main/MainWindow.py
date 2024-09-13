@@ -31,7 +31,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1346, 820)
+        mainWindow.resize(1249, 820)
         mainWindow.setBaseSize(QSize(0, 0))
         font = QFont()
         font.setPointSize(10)
@@ -3326,38 +3326,48 @@ class Ui_mainWindow(object):
         self.frame_34.setObjectName(u"frame_34")
         self.frame_34.setFrameShape(QFrame.NoFrame)
         self.frame_34.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_29 = QVBoxLayout(self.frame_34)
-        self.verticalLayout_29.setObjectName(u"verticalLayout_29")
+        self.gridLayout_9 = QGridLayout(self.frame_34)
+        self.gridLayout_9.setObjectName(u"gridLayout_9")
         self.label_41 = QLabel(self.frame_34)
         self.label_41.setObjectName(u"label_41")
         self.label_41.setFont(font1)
 
-        self.verticalLayout_29.addWidget(self.label_41)
+        self.gridLayout_9.addWidget(self.label_41, 0, 0, 1, 1)
 
-        self.areaFromListView = QListView(self.frame_34)
-        self.areaFromListView.setObjectName(u"areaFromListView")
-        self.areaFromListView.setFont(font1)
+        self.fromComboBox = QComboBox(self.frame_34)
+        self.fromComboBox.setObjectName(u"fromComboBox")
 
-        self.verticalLayout_29.addWidget(self.areaFromListView)
+        self.gridLayout_9.addWidget(self.fromComboBox, 0, 1, 1, 1)
+
+        self.fromListView = QListView(self.frame_34)
+        self.fromListView.setObjectName(u"fromListView")
+        self.fromListView.setFont(font1)
+
+        self.gridLayout_9.addWidget(self.fromListView, 1, 0, 1, 2)
 
         self.splitter_2.addWidget(self.frame_34)
         self.frame_35 = QFrame(self.splitter_2)
         self.frame_35.setObjectName(u"frame_35")
         self.frame_35.setFrameShape(QFrame.NoFrame)
         self.frame_35.setFrameShadow(QFrame.Raised)
-        self.verticalLayout_19 = QVBoxLayout(self.frame_35)
-        self.verticalLayout_19.setObjectName(u"verticalLayout_19")
+        self.gridLayout_30 = QGridLayout(self.frame_35)
+        self.gridLayout_30.setObjectName(u"gridLayout_30")
         self.label_21 = QLabel(self.frame_35)
         self.label_21.setObjectName(u"label_21")
         self.label_21.setFont(font1)
 
-        self.verticalLayout_19.addWidget(self.label_21)
+        self.gridLayout_30.addWidget(self.label_21, 0, 0, 1, 1)
 
-        self.areaToListView = QListView(self.frame_35)
-        self.areaToListView.setObjectName(u"areaToListView")
-        self.areaToListView.setFont(font1)
+        self.toComboBox = QComboBox(self.frame_35)
+        self.toComboBox.setObjectName(u"toComboBox")
 
-        self.verticalLayout_19.addWidget(self.areaToListView)
+        self.gridLayout_30.addWidget(self.toComboBox, 0, 1, 1, 1)
+
+        self.toListView = QListView(self.frame_35)
+        self.toListView.setObjectName(u"toListView")
+        self.toListView.setFont(font1)
+
+        self.gridLayout_30.addWidget(self.toListView, 1, 0, 1, 2)
 
         self.splitter_2.addWidget(self.frame_35)
 
@@ -4427,7 +4437,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1346, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1249, 21))
         self.menuBar.setFont(font)
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")

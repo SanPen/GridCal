@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import os
 import cmath
@@ -1047,17 +1048,6 @@ class MultiCircuit(Assets):
                 lst[k] = 0
         return lst
 
-    def get_area_buses(self, area: dev.Area) -> List[Tuple[int, dev.Bus]]:
-        """
-        Get the selected buses
-        :return:
-        """
-        lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self._buses):
-            if bus.area == area:
-                lst.append((k, bus))
-        return lst
-
     def get_areas_buses(self, areas: List[dev.Area]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
@@ -1069,31 +1059,47 @@ class MultiCircuit(Assets):
                 lst.append((k, bus))
         return lst
 
-    def get_zone_buses(self, zone: dev.Zone) -> List[Tuple[int, dev.Bus]]:
+    def get_zone_buses(self, zones: List[dev.Zone]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
         :return:
         """
         lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self._buses):
-            if bus.zone == zone:
+            if bus.zone in zones:
                 lst.append((k, bus))
         return lst
 
-    def get_inter_area_branches(self, a1: dev.Area, a2: dev.Area):
+    def get_country_buses(self, countries: List[dev.Country]) -> List[Tuple[int, dev.Bus]]:
         """
-        Get the inter-area Branches
-        :param a1: Area from
-        :param a2: Area to
-        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        Get the selected buses
+        :return:
         """
-        lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.get_branches()):
-            if branch.bus_from.area == a1 and branch.bus_to.area == a2:
-                lst.append((k, branch, 1.0))
-            elif branch.bus_from.area == a2 and branch.bus_to.area == a1:
-                lst.append((k, branch, -1.0))
+        lst: List[Tuple[int, dev.Bus]] = list()
+        for k, bus in enumerate(self._buses):
+            if bus.country in countries:
+                lst.append((k, bus))
         return lst
+
+    def get_aggregation_buses(self, aggregations: List[dev.Country] | List[dev.Area] | List[dev.Zone]) -> List[Tuple[int, dev.Bus]]:
+        """
+        Get the selected buses
+        :param aggregations:
+        :return:
+        """
+        if len(aggregations) == 0:
+            return list()
+
+        if isinstance(aggregations[0], dev.Area):
+            return self.get_areas_buses(aggregations)
+
+        if isinstance(aggregations[0], dev.Zone):
+            return self.get_zone_buses(aggregations)
+
+        if isinstance(aggregations[0], dev.Country):
+            return self.get_country_buses(aggregations)
+
+        raise TypeError("Aggregation type not supported")
 
     def get_inter_areas_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
@@ -1110,6 +1116,21 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, -1.0))
         return lst
 
+    def get_inter_buses_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-buese Branches. HVDC Branches are not considered
+        :param a1: Group of Buses 1
+        :param a2: Group of Buses 1
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.get_branches_wo_hvdc()):
+            if branch.bus_from in a1 and branch.bus_to in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from in a2 and branch.bus_to in a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
     def get_inter_areas_hvdc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area Branches
@@ -1122,6 +1143,21 @@ class MultiCircuit(Assets):
             if branch.bus_from.area in a1 and branch.bus_to.area in a2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
+    def get_inter_buses_hvdc_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-area Branches
+        :param a1: Group of Buses 1
+        :param a2: Group of Buses 1
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self._hvdc_lines):
+            if branch.bus_from in a1 and branch.bus_to in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from in a2 and branch.bus_to in a1:
                 lst.append((k, branch, -1.0))
         return lst
 
