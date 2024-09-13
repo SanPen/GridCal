@@ -124,11 +124,14 @@ class MixedVariableProblem(ElementwiseProblem):
             self.default_template.append(default_template)
 
         # Iterate over shunts with B as a design variable
-        for elm in grid.shunts or grid.controllable_shunts:
-            self.variables[elm.idtag] = Real(bounds=(elm.B, 0.0))  # Qmax = elm.B
+        for elm in grid.shunts:
+            if elm.B >= 0:
+                self.variables[elm.idtag] = Real(bounds=(0.0, elm.B))  # Capacitor
+            else:
+                self.variables[elm.idtag] = Real(bounds=(elm.B, 0.0))  # Reactor
             self.devices.append(elm)
         for elm in grid.controllable_shunts:
-            self.variables[elm.idtag] = Real(bounds=(elm.B, 0.0))  # Qmax = elm.B
+            self.variables[elm.idtag] = Real(bounds=(elm.Bmin, elm.Bmax))  # Bounded by Bmin and Bmax
             self.devices.append(elm)
 
         super().__init__(n_obj=n_obj, vars=self.variables)
@@ -176,7 +179,7 @@ class MixedVariableProblem(ElementwiseProblem):
                 else:
                     if isinstance(device, Shunt):
                         pass
-                    elif isinstance (device, ControllableShunt):
+                    elif isinstance(device, ControllableShunt):
                         pass
                     else:
                         # Default values introduced in the device
@@ -212,8 +215,7 @@ def NSGA_2(grid: MultiCircuit,
 
     algorithm = MixedVariableGA(pop_size=pop_size,
                                 sampling=MixedVariableSampling(),
-                                #mating=MixedVariableMating(),
-                                survival=RankAndCrowding(crowding_func="mnn") #mnn , 2nn for multi-obj
+                                survival=RankAndCrowding(crowding_func="mnn")  # mnn, 2nn for multi-obj
                                 )
 
     # In terms of setting probability parameters, you have to look quite far deep into MixedVariableGA
@@ -230,7 +232,6 @@ def NSGA_2(grid: MultiCircuit,
     # weights = np.array([0.5, 0.5])
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()
-
 
     import pandas as pd
     dff = pd.DataFrame(res.F)

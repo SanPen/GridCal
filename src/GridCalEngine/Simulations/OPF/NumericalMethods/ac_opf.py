@@ -239,7 +239,7 @@ def compute_analytic_structures(x, mu, lmbda, compute_jac: bool, compute_hess: b
     alltapm[k_m] = tapm
     alltapt[k_tau] = tapt
 
-    if ntapm + ntapt !=0:
+    if ntapm + ntapt != 0:
         admittances.modify_taps(m=alltapm0, m2=alltapm, tau=alltapt0, tau2=alltapt)
     else:
         pass
@@ -610,7 +610,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     # Check the active elements and their operational limits.
     br_mon_idx = nc.branch_data.get_monitor_enabled_indices()
-    gen_disp_idx = np.r_[nc.generator_data.get_dispatchable_active_indices(), np.array([*range(ngen, ngen + nsh)], dtype=int)]
+    gen_disp_idx = np.r_[
+        nc.generator_data.get_dispatchable_active_indices(), np.array([*range(ngen, ngen + nsh)], dtype=int)]
     ind_gens = np.arange(len(Pg_max))
     gen_nondisp_idx = nc.generator_data.get_non_dispatchable_indices()
     Sg_undis = (nc.generator_data.get_injections() / nc.Sbase)[gen_nondisp_idx]
@@ -668,7 +669,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
         nsl = 2 * npq + 2 * n_br_mon
         # Slack relaxations for constraints
-        c_s = np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1, 1.0)  # Cost squared since the slack is also squared
+        c_s = np.power(nc.branch_data.overload_cost[br_mon_idx] + 0.1,
+                       1.0)  # Cost squared since the slack is also squared
         c_v = nc.bus_data.cost_v[pq] + 0.1
         sl_sf0 = np.ones(n_br_mon)
         sl_st0 = np.ones(n_br_mon)
@@ -750,7 +752,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     loadtimeEnd = timeit.default_timer()
     times = np.array([])
-    #print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
+    # print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
 
     if opf_options.verbose > 0:
         print("x0:", x0)
@@ -889,9 +891,10 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Gamma", result.gamma)
         print("Sf", result.structs.Sf)
         print('Times:\n', df_times)
-        print('Relative times:\n', 100*df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
-                                         't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
-                                         't_mult', 't_steps', 't_cond', 't_iter']].div(df_times['t_iter'], axis=0))
+        print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+                                                   't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+                                                   't_mult', 't_steps', 't_cond', 't_iter']].div(df_times['t_iter'],
+                                                                                                 axis=0))
 
     if plot_error:
         result.plot_error()

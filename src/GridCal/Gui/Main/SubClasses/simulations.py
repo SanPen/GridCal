@@ -2466,7 +2466,7 @@ class SimulationsMain(TimeEventsMain):
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
                                                                pf_options=self.get_selected_power_flow_options(),
-                                                               objf_tpe=objf_tpe
+                                                               obj_tpe=objf_tpe
                                                                )
 
                     opf_time_series_results = self.get_opf_ts_results(
