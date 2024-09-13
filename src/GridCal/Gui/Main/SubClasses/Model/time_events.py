@@ -115,7 +115,7 @@ class TimeEventsMain(ObjectsTableMain):
                 self.circuit.delete_profiles()
                 self.ui.profiles_tableView.setModel(None)
                 self.update_date_dependent_combos()
-                self.update_area_combos()
+                self.update_from_to_list_views()
             else:
                 pass
         else:

@@ -27,6 +27,7 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 import GridCal.Gui.GuiFunctions as gf
 import GridCal.Gui.Visualization.visualization as viz
+from GridCal.Gui.GeneralDialogues import LogsDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
@@ -43,6 +44,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
@@ -583,13 +585,13 @@ class SimulationsMain(TimeEventsMain):
         self.ui.resultsTableView.setModel(None)
         self.ui.resultsLogsTreeView.setModel(None)
 
-    def get_compatible_areas_from_to(self) -> Tuple[
+    def get_compatible_from_to_buses_and_inter_branches(self) -> Tuple[
         bool,
         List[Tuple[int, dev.Bus]],
         List[Tuple[int, dev.Bus]],
         List[Tuple[int, object, float]],
         List[Tuple[int, object, float]],
-        List[dev.Area], List[dev.Area]]:
+        List[dev.Area | dev.Zone | dev.Country], List[dev.Area | dev.Zone | dev.Country]]:
         """
         Get the lists that help defining the inter area objects
         :return: success?,
@@ -600,27 +602,40 @@ class SimulationsMain(TimeEventsMain):
                  List of areas from,
                  List of areas to
         """
-        areas_from_idx = gf.get_checked_indices(self.ui.areaFromListView.model())
-        areas_to_idx = gf.get_checked_indices(self.ui.areaToListView.model())
-        areas_from = [self.circuit.areas[i] for i in areas_from_idx]
-        areas_to = [self.circuit.areas[i] for i in areas_to_idx]
+        dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
+        devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
+        from_idx = gf.get_checked_indices(self.ui.fromListView.model())
+        objects_from = [devs_from[i] for i in from_idx]
+        lst_from = self.circuit.get_aggregation_buses(objects_from)
+        buses_from_set = {x[1] for x in lst_from}
 
-        for a1 in areas_from:
-            if a1 in areas_to:
-                error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name),
-                          'Incompatible areas')
-                return False, [], [], [], [], [], []
-        for a2 in areas_to:
-            if a2 in areas_from:
-                error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name),
-                          'Incompatible areas')
-                return False, [], [], [], [], [], []
+        dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
+        devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
+        to_idx = gf.get_checked_indices(self.ui.toListView.model())
+        objects_to = [devs_to[i] for i in to_idx]
+        lst_to = self.circuit.get_aggregation_buses(objects_to)
+        buses_to_set = {x[1] for x in lst_to}
 
-        lst_from = self.circuit.get_areas_buses(areas_from)
-        lst_to = self.circuit.get_areas_buses(areas_to)
-        lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
-        lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
-        return True, lst_from, lst_to, lst_br, lst_br_hvdc, areas_from, areas_to
+        buses_intersection = buses_from_set & buses_to_set
+
+        if len(buses_intersection) > 0:
+            logger = Logger()
+            for bus in buses_intersection:
+                logger.add_error(msg=f'Bus in both selected {dev_tpe_from.value} to {dev_tpe_to.value}',
+                                 device_class=bus.device_type.value,
+                                 device=bus.name)
+
+            # Show dialogue
+            dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=logger)
+            dlg.setModal(True)
+            dlg.exec()
+
+            return False, [], [], [], [], [], []
+
+        lst_br = self.circuit.get_inter_buses_branches(buses_from_set, buses_to_set)
+        lst_br_hvdc = self.circuit.get_inter_buses_hvdc_branches(buses_from_set, buses_to_set)
+
+        return True, lst_from, lst_to, lst_br, lst_br_hvdc, objects_from, objects_to
 
     def get_selected_power_flow_options(self) -> sim.PowerFlowOptions:
         """
@@ -1272,7 +1287,7 @@ class SimulationsMain(TimeEventsMain):
                 max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
                 (compatible_areas, lst_from, lst_to, lst_br,
-                 lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+                 lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
 
                 if not compatible_areas:
                     return
@@ -1388,7 +1403,7 @@ class SimulationsMain(TimeEventsMain):
                     # available transfer capacity inter areas
                     (compatible_areas,
                      lst_from, lst_to, lst_br,
-                     lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+                     lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
 
                     if not compatible_areas:
                         return
@@ -1520,7 +1535,7 @@ class SimulationsMain(TimeEventsMain):
 
                     if self.ui.atcRadioButton.isChecked():
                         use_alpha = True
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
+                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_from_to_buses_and_inter_branches()
 
                         if compatible_areas:
                             idx_from = [i for i, bus in lst_from]
@@ -1883,7 +1898,7 @@ class SimulationsMain(TimeEventsMain):
         # available transfer capacity inter areas
         if maximize_flows:
             (compatible_areas, lst_from, lst_to,
-             lst_br, lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+             lst_br, lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
             idx_from = np.array([i for i, bus in lst_from])
             idx_to = np.array([i for i, bus in lst_to])
 
@@ -2098,7 +2113,7 @@ class SimulationsMain(TimeEventsMain):
 
         # available transfer capacity inter areas
         (compatible_areas, lst_from, lst_to, lst_br,
-         lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+         lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
 
         if not compatible_areas:
             error_msg('There are no compatible areas')

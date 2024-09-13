@@ -452,7 +452,7 @@ class AvailableTransferCapacityResults(ResultsTemplate):
         if result_type == ResultTypes.AvailableTransferCapacityReport:
             data = np.array(self.report)
             y_label = ''
-            title, _ = result_type.value
+            title = result_type.value
 
             return ResultsTable(data=np.array(self.report),
                                 index=self.report_indices,
