@@ -131,6 +131,8 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
         return list(), list()
 
 
+
+
 class MultiCircuit(Assets):
     """
     The concept of circuit should be easy enough to understand. It represents a set of

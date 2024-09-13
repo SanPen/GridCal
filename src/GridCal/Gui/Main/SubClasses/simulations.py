@@ -585,22 +585,10 @@ class SimulationsMain(TimeEventsMain):
         self.ui.resultsTableView.setModel(None)
         self.ui.resultsLogsTreeView.setModel(None)
 
-    def get_compatible_from_to_buses_and_inter_branches(self) -> Tuple[
-        bool,
-        List[Tuple[int, dev.Bus]],
-        List[Tuple[int, dev.Bus]],
-        List[Tuple[int, object, float]],
-        List[Tuple[int, object, float]],
-        List[dev.Area | dev.Zone | dev.Country], List[dev.Area | dev.Zone | dev.Country]]:
+    def get_compatible_from_to_buses_and_inter_branches(self) -> dev.InterAggregationInfo:
         """
         Get the lists that help defining the inter area objects
-        :return: success?,
-                 list of tuples bus idx, Bus in the areas from,
-                 list of tuples bus idx, Bus in the areas to,
-                 List of inter area Branches (branch index, branch object, flow sense w.r.t the area exchange),
-                 List of inter area HVDC (branch index, branch object, flow sense w.r.t the area exchange),
-                 List of areas from,
-                 List of areas to
+        :return: InterAggregationInfo
         """
         dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
         devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
@@ -630,12 +618,12 @@ class SimulationsMain(TimeEventsMain):
             dlg.setModal(True)
             dlg.exec()
 
-            return False, [], [], [], [], [], []
+            return dev.InterAggregationInfo(False, [], [], [], [], [], [])
 
         lst_br = self.circuit.get_inter_buses_branches(buses_from_set, buses_to_set)
         lst_br_hvdc = self.circuit.get_inter_buses_hvdc_branches(buses_from_set, buses_to_set)
 
-        return True, lst_from, lst_to, lst_br, lst_br_hvdc, objects_from, objects_to
+        return dev.InterAggregationInfo(True, lst_from, lst_to, lst_br, lst_br_hvdc, objects_from, objects_to)
 
     def get_selected_power_flow_options(self) -> sim.PowerFlowOptions:
         """
@@ -1286,20 +1274,19 @@ class SimulationsMain(TimeEventsMain):
                 threshold = self.ui.atcThresholdSpinBox.value()
                 max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
-                (compatible_areas, lst_from, lst_to, lst_br,
-                 lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
+                info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-                if not compatible_areas:
+                if not info.valid:
                     return
 
-                idx_from = np.array([i for i, bus in lst_from])
-                idx_to = np.array([i for i, bus in lst_to])
-                idx_br = np.array([i for i, bus, sense in lst_br])
-                sense_br = np.array([sense for i, bus, sense in lst_br])
+                idx_from = info.idx_bus_from
+                idx_to = info.idx_bus_to
+                idx_br = info.idx_branches
+                sense_br = info.sense_branches
 
                 # HVDC
-                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+                idx_hvdc_br = info.idx_hvdc
+                sense_hvdc_br = info.sense_hvdc
 
                 if self.ui.usePfValuesForAtcCheckBox.isChecked():
                     pf_results = self.session.power_flow
@@ -1401,21 +1388,19 @@ class SimulationsMain(TimeEventsMain):
                     max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
-                    (compatible_areas,
-                     lst_from, lst_to, lst_br,
-                     lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
+                    info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-                    if not compatible_areas:
+                    if not info.valid:
                         return
 
-                    idx_from = np.array([i for i, bus in lst_from])
-                    idx_to = np.array([i for i, bus in lst_to])
-                    idx_br = np.array([i for i, bus, sense in lst_br])
-                    sense_br = np.array([sense for i, bus, sense in lst_br])
+                    idx_from = info.idx_bus_from
+                    idx_to = info.idx_bus_to
+                    idx_br = info.idx_branches
+                    sense_br = info.sense_branches
 
                     # HVDC
-                    idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                    sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+                    idx_hvdc_br = info.idx_hvdc
+                    sense_hvdc_br = info.sense_hvdc
 
                     if self.ui.usePfValuesForAtcCheckBox.isChecked():
                         pf_results = self.session.power_flow_ts
@@ -1535,19 +1520,19 @@ class SimulationsMain(TimeEventsMain):
 
                     if self.ui.atcRadioButton.isChecked():
                         use_alpha = True
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_from_to_buses_and_inter_branches()
+                        info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-                        if compatible_areas:
-                            idx_from = [i for i, bus in lst_from]
-                            idx_to = [i for i, bus in lst_to]
+                        if info.valid:
+                            idx_from = info.idx_bus_from
+                            idx_to = info.idx_bus_to
 
                             alpha_vec[idx_from] *= 2
                             alpha_vec[idx_to] *= -2
                             sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
 
                             # HVDC
-                            idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                            sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+                            idx_hvdc_br = info.idx_hvdc
+                            sense_hvdc_br = info.sense_hvdc
                         else:
                             sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
                             # incompatible areas...exit
@@ -1897,23 +1882,17 @@ class SimulationsMain(TimeEventsMain):
 
         # available transfer capacity inter areas
         if maximize_flows:
-            (compatible_areas, lst_from, lst_to,
-             lst_br, lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
-            idx_from = np.array([i for i, bus in lst_from])
-            idx_to = np.array([i for i, bus in lst_to])
+            inter_aggregation_info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-            if len(idx_from) == 0:
+            if len(inter_aggregation_info.lst_from) == 0:
                 error_msg('The area "from" has no buses!')
                 return None
 
-            if len(idx_to) == 0:
+            if len(inter_aggregation_info.lst_to) == 0:
                 error_msg('The area "to" has no buses!')
                 return None
         else:
-            idx_from = None
-            idx_to = None
-            areas_from = None
-            areas_to = None
+            inter_aggregation_info = None
 
         ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
         ips_tolerance = 1.0 / (10.0 ** self.ui.ips_tolerance_spinBox.value())
@@ -1932,10 +1911,7 @@ class SimulationsMain(TimeEventsMain):
                                               skip_generation_limits=skip_generation_limits,
                                               lodf_tolerance=lodf_tolerance,
                                               maximize_flows=maximize_flows,
-                                              area_from_bus_idx=idx_from,
-                                              area_to_bus_idx=idx_to,
-                                              areas_from=areas_from,
-                                              areas_to=areas_to,
+                                              inter_aggregation_info=inter_aggregation_info,
                                               unit_commitment=unit_commitment,
                                               export_model_fname=export_model_fname,
                                               generate_report=generate_report,
@@ -2112,16 +2088,15 @@ class SimulationsMain(TimeEventsMain):
         """
 
         # available transfer capacity inter areas
-        (compatible_areas, lst_from, lst_to, lst_br,
-         lst_hvdc_br, areas_from, areas_to) = self.get_compatible_from_to_buses_and_inter_branches()
+        info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-        if not compatible_areas:
+        if not info.valid:
             error_msg('There are no compatible areas')
             return None
 
-        idx_from = np.array([i for i, bus in lst_from])
-        idx_to = np.array([i for i, bus in lst_to])
-        idx_br = np.array([i for i, bus, sense in lst_br])
+        idx_from = info.idx_bus_from
+        idx_to = info.idx_bus_to
+        idx_br = info.idx_branches
 
         if len(idx_from) == 0:
             error_msg('The area "from" has no buses!')

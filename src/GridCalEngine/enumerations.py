@@ -1039,6 +1039,8 @@ class DeviceType(Enum):
 
     SimulationOptionsDevice = "SimulationOptionsDevice"
 
+    InterAggregationInfo = "InterAggregationInfo"
+
     def __str__(self) -> str:
         return str(self.value)
 
