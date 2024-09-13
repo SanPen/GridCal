@@ -1257,11 +1257,11 @@ def get_newton_pa_linear_opf_options(opf_opt: OptimalPowerFlowOptions,
     opt.use_ramp_constraints = False
     opt.lodf_threshold = opf_opt.lodf_tolerance
 
-    if opf_opt.areas_from is not None:
-        opt.areas_from = [area_dict[e] for e in opf_opt.areas_from]
+    if opf_opt.aggregations_from is not None:
+        opt.areas_from = [area_dict[e] for e in opf_opt.aggregations_from]
 
-    if opf_opt.areas_to is not None:
-        opt.areas_to = [area_dict[e] for e in opf_opt.areas_to]
+    if opf_opt.aggregations_to is not None:
+        opt.areas_to = [area_dict[e] for e in opf_opt.aggregations_to]
 
     return opt
 

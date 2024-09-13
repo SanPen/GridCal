@@ -14,15 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 from typing import List, Union
 from GridCalEngine.enumerations import (SolverType, MIPSolvers, ZonalGrouping, TimeGrouping, AcOpfMode, DeviceType,
                                         SubObjectType)
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
-from GridCalEngine.Devices.Aggregation.area import Area
+from GridCalEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo
 from GridCalEngine.Simulations.options_template import OptionsTemplate
-from GridCalEngine.basic_structures import IntVec
 
 
 class OptimalPowerFlowOptions(OptionsTemplate):
@@ -42,10 +42,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
                  skip_generation_limits=False,
                  lodf_tolerance=0.001,
                  maximize_flows=False,
-                 area_from_bus_idx: IntVec = None,
-                 area_to_bus_idx: IntVec = None,
-                 areas_from: List[Area] = None,
-                 areas_to: List[Area] = None,
+                 inter_aggregation_info: InterAggregationInfo | None = None,
                  unit_commitment=False,
                  export_model_fname: Union[None, str] = None,
                  generate_report=False,
@@ -68,10 +65,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
         :param skip_generation_limits:
         :param lodf_tolerance:
         :param maximize_flows:
-        :param area_from_bus_idx:
-        :param area_to_bus_idx:
-        :param areas_from:
-        :param areas_to:
+        :param inter_aggregation_info:
         :param unit_commitment:
         :param export_model_fname:
         :param generate_report:
@@ -106,13 +100,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
 
         self.maximize_flows = maximize_flows
 
-        self.area_from_bus_idx = area_from_bus_idx
-
-        self.area_to_bus_idx = area_to_bus_idx
-
-        self.areas_from = areas_from
-
-        self.areas_to = areas_to
+        self.inter_aggregation_info = inter_aggregation_info
 
         self.unit_commitment = unit_commitment
 
@@ -144,10 +132,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
         self.register(key="contingency_groups_used", tpe=SubObjectType.Array)
         self.register(key="lodf_tolerance", tpe=float)
         self.register(key="maximize_flows", tpe=bool)
-        self.register(key="area_from_bus_idx", tpe=SubObjectType.Array)
-        self.register(key="area_to_bus_idx", tpe=SubObjectType.Array)
-        self.register(key="areas_from", tpe=SubObjectType.Array)
-        self.register(key="areas_to", tpe=SubObjectType.Array)
+        self.register(key="inter_aggregation_info", tpe=DeviceType.InterAggregationInfo)
         self.register(key="unit_commitment", tpe=bool)
         self.register(key="export_model_fname", tpe=str)
         self.register(key="generate_report", tpe=bool)
