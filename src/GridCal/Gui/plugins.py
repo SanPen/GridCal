@@ -64,7 +64,7 @@ class PluginFunction:
         - func(self) is then what I wanted to lambda in the first place
         """
         func = self.function_ptr
-        return lambda e, func=func: func(gui_instance)  # This is not an error, it is correct
+        return lambda e=True, func=func: func(gui_instance)  # This is not an error, it is correct
 
     def to_dict(self) -> Dict[str, str]:
         """

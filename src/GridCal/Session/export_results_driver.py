@@ -14,97 +14,57 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import os
-from io import StringIO
-import zipfile
-from PySide6.QtCore import QThread, Signal
 
+from typing import List
+from PySide6.QtCore import QThread, Signal
+from GridCalEngine.IO.gridcal.results_export import export_drivers
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.basic_structures import Logger
 
 
 class ExportAllThread(QThread):
+    """
+    ExportAllThread
+    """
     progress_signal = Signal(float)
     progress_text = Signal(str)
     done_signal = Signal()
 
-    def __init__(self, circuit, simulations_list, file_name):
+    def __init__(self, circuit: MultiCircuit, drivers_list: List[DRIVER_OBJECTS], file_name: str):
         """
         Constructor
-        :param simulations_list: list of GridCal simulation drivers
+        :param circuit: Grid circuit
+        :param drivers_list: list of GridCal simulation drivers
         :param file_name: name of the file where to save (.zip)
         """
         QThread.__init__(self)
 
-        self.circuit = circuit
+        self.circuit: MultiCircuit = circuit
 
-        self.simulations_list = simulations_list
+        self.drivers_list: List[DRIVER_OBJECTS] = drivers_list
 
-        self.file_name = file_name
+        self.file_name: str = file_name
 
-        self.valid = False
+        self.valid: bool = False
 
         self.logger = Logger()
 
-        self.error_msg = ''
+        self.error_msg: str = ""
 
         self.__cancel__ = False
 
-    def run(self):
+    def run(self) -> None:
         """
         run the file save procedure
         """
 
         # try:
-        path, fname = os.path.split(self.file_name)
-
-        self.progress_text.emit('Flushing ' + fname + ' into ' + fname + '...')
-
-        self.logger = Logger()
-
-        # names_dict = {DeviceType.BusDevice: self.circuit.get_bus_names(),
-        #               DeviceType.BranchDevice: self.circuit.get_branch_names(),
-        #               DeviceType.BusDevice.LoadDevice: self.circuit.get_load_names(),
-        #               DeviceType.BusDevice.GeneratorDevice: self.circuit.get_controlled_generator_names(),
-        #               DeviceType.BusDevice.BatteryDevice: self.circuit.get_battery_names()}
-
-        # open zip file for writing
-        try:
-            with zipfile.ZipFile(self.file_name, 'w', zipfile.ZIP_DEFLATED) as myzip:
-
-                n = len(self.simulations_list)
-
-                for k, driver in enumerate(self.simulations_list):
-
-                    self.progress_signal.emit((k + 1) / n * 100.0)
-
-                    if isinstance(driver.results.available_results, dict):
-                        available_res = [e for tpe, lst in driver.results.available_results.items() for e in lst]
-                    else:
-                        available_res = driver.results.available_results
-
-                    for available_result in available_res:
-
-                        # ge the result type definition
-                        result_name, device_type = available_result.value
-
-                        self.progress_text.emit('flushing ' + driver.results.name + ' ' + result_name)
-
-                        # save the DataFrame to the buffer
-                        mdl = driver.results.mdl(result_type=available_result)
-
-                        if mdl is not None:
-                            with StringIO() as buffer:
-                                filename = driver.results.name + ' ' + result_name + '.csv'
-                                try:
-                                    mdl.save_to_csv(buffer)
-                                    myzip.writestr(filename, buffer.getvalue())
-                                except ValueError:
-                                    self.logger.add_error('Value error', filename)
-                        else:
-                            self.logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
-
-        except PermissionError:
-            self.logger.add('Permission error.\nDo you have the file open?')
+        export_drivers(drivers_list=self.drivers_list,
+                       file_name=self.file_name,
+                       text_func=self.progress_text.emit,
+                       progress_func=self.progress_signal.emit,
+                       logger=self.logger)
 
         self.valid = True
 
@@ -114,4 +74,7 @@ class ExportAllThread(QThread):
         self.done_signal.emit()
 
     def cancel(self):
+        """
+        Cancel progress
+        """
         self.__cancel__ = True

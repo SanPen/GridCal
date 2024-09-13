@@ -59,9 +59,9 @@ class Wire(EditableDevice):
         self.GMR = gmr
         self.max_current = max_current
 
-        self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor')
-        self.register(key='X', units='Ohm/km', tpe=float, definition='reactance of the conductor')
-        self.register(key='GMR', units='m', tpe=float, definition='Geometric Mean Radius of the conductor')
+        self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor', old_names=['r'])
+        self.register(key='X', units='Ohm/km', tpe=float, definition='reactance of the conductor', old_names=['x'])
+        self.register(key='GMR', units='m', tpe=float, definition='Geometric Mean Radius of the conductor', old_names=['gmr'])
         self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
         self.register(key='stranding', tpe=str, definition='Stranding of wire')
         self.register(key='material', tpe=str, definition='Material of wire')

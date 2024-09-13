@@ -256,7 +256,7 @@ class SimulationsMain(TimeEventsMain):
 
         return all_threads
 
-    def get_available_results(self):
+    def get_available_drivers(self) -> List[DRIVER_OBJECTS]:
         """
         Get a list of all the available results' objects
         :return: list[object]
@@ -539,7 +539,7 @@ class SimulationsMain(TimeEventsMain):
         # clear results lists
         self.ui.results_treeView.setModel(None)
 
-        available_results = self.get_available_results()
+        available_results = self.get_available_drivers()
         max_steps = 0
         d = dict()
         lst = list()

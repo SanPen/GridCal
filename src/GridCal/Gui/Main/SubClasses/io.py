@@ -837,7 +837,7 @@ class IoMain(ConfigurationMain):
         :return:
         """
 
-        available_results = self.get_available_results()
+        available_results = self.get_available_drivers()
 
         if len(available_results) > 0:
 
@@ -851,7 +851,7 @@ class IoMain(ConfigurationMain):
 
                 self.stuff_running_now.append('export_all')
                 self.export_all_thread_object = exprtdrv.ExportAllThread(circuit=self.circuit,
-                                                                         simulations_list=available_results,
+                                                                         drivers_list=available_results,
                                                                          file_name=filename)
 
                 self.export_all_thread_object.progress_signal.connect(self.ui.progressBar.setValue)

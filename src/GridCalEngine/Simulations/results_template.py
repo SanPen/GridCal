@@ -78,7 +78,7 @@ class ResultsTemplate:
 
         self.data_variables: Dict[str, ResultsProperty] = dict()
 
-        self.time_array: Union[DateVec, None] = time_array
+        self._time_array: Union[DateVec, None] = time_array
 
         if clustering_results:
             self.clustering_results = clustering_results
@@ -100,6 +100,41 @@ class ResultsTemplate:
         self.hvdc_T: IntVec = None
         self.bus_area_indices: IntVec = None
         self.area_names: StrVec = None
+
+        self.__show_plot = True
+
+    @property
+    def time_array(self) -> DateVec:
+        """
+        Array of time steps
+        :return:
+        """
+        return self._time_array
+
+    @time_array.setter
+    def time_array(self, time_array: DateVec):
+        self._time_array = time_array
+
+    def plotting_allowed(self) -> bool:
+        """
+
+        :return:
+        """
+        return self.__show_plot
+
+    def activate_plotting(self):
+        """
+
+        :return:
+        """
+        self.__show_plot = True
+
+    def deactivate_plotting(self):
+        """
+
+        :return:
+        """
+        self.__show_plot = False
 
     def register(self, name: str, tpe: Union[Vec, Mat, CxVec, CxMat], old_names: Union[None, List[str]] = None):
         """

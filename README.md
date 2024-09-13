@@ -959,6 +959,45 @@ Br2  117.102446  66.761871  0.0  0.0  66.761871
 Br3   38.591163  22.775597  0.0  0.0  22.775597
 ```
 
+### Export the results
+
+A simple function is available to export the results of a driver.
+
+```python
+import GridCalEngine.api as gce
+
+fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
+grid = gce.open_file(fname)
+
+# create the driver
+pf_driver = gce.PowerFlowTimeSeriesDriver(grid=grid,
+                                          options=gce.PowerFlowOptions(),
+                                          time_indices=grid.get_all_time_indices())
+# run
+pf_driver.run()
+
+# Save the driver results in a zip file with CSV files inside
+gce.export_drivers(drivers_list=[pf_driver], file_name="IEEE39_1W_results.zip")
+```
+
+You could save many drivers in the same zip file passing then into the list `drivers_list`.
+
+Also there is a function to save from the results objects themselves:
+
+```python
+import GridCalEngine.api as gce
+
+fname = os.path.join("data", "grids", "IEEE39_1W.gridcal")
+grid = gce.open_file(fname)
+
+# run with the API shortcut functions
+pf_results = gce.power_flow(grid)
+pf_ts_results = gce.power_flow_ts(grid)
+
+# Save the driver results in a zip file with CSV files inside
+gce.export_results(results_list=[pf_results, pf_ts_results], file_name="IEEE39_1W_results.zip")
+```
+
 ## Contact
 
 - Join the [Discord GridCal channel](https://discord.com/invite/dzxctaNbvu) for a friendly chat, or quick question.
