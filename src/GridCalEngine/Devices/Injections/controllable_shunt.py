@@ -140,10 +140,8 @@ class ControllableShunt(ShuntParent):
 
         :return:
         """
-        if self._b_steps[-1] >= 0:
-            return self._b_steps[0]
-        else:
-            return self._b_steps[-1]
+        return self._b_steps[0]
+
 
     @property
     def Bmax(self):
@@ -151,10 +149,7 @@ class ControllableShunt(ShuntParent):
 
         :return:
         """
-        if self._b_steps[-1] >= 0:
-            return self._b_steps[-1]
-        else:
-            return self._b_steps[0]
+        return self._b_steps[-1]
 
     @property
     def g_steps(self):
