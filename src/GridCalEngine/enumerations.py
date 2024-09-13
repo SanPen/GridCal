@@ -1449,6 +1449,7 @@ class ResultTypes(Enum):
     BranchActiveLossesPercentage = 'Pl: Active losses (%)'
     BatteryPower = 'Battery power'
     BatteryEnergy = 'Battery energy'
+    ContShuntsPower = 'Controllable Shunts power'
 
     HvdcLosses = 'HVDC losses'
     HvdcPowerFrom = 'HVDC power "from"'
