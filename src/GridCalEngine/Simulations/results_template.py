@@ -101,6 +101,29 @@ class ResultsTemplate:
         self.bus_area_indices: IntVec = None
         self.area_names: StrVec = None
 
+        self.__show_plot = True
+
+    def plotting_allowed(self) -> bool:
+        """
+
+        :return:
+        """
+        return self.__show_plot
+
+    def activate_plotting(self):
+        """
+
+        :return:
+        """
+        self.__show_plot = True
+
+    def deactivate_plotting(self):
+        """
+
+        :return:
+        """
+        self.__show_plot = False
+
     def register(self, name: str, tpe: Union[Vec, Mat, CxVec, CxMat], old_names: Union[None, List[str]] = None):
         """
         Register a results variable for disk persistence
