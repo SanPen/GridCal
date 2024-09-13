@@ -72,7 +72,6 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         self._financial: Vec = np.zeros(max_eval, dtype=float)
         self._f_obj: Vec = np.zeros(max_eval, dtype=float)
         self._index_names: Vec = np.zeros(max_eval, dtype=object)
-        self._best_combination: IntVec = np.zeros(max_eval, dtype=int)
         self._best_combination: Vec = np.zeros(max_eval, dtype=float)
 
         self._sorting_indices: IntVec = np.zeros(0, dtype=int)
@@ -245,6 +244,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
         :param combination:
         :return:
         """
+        #calculates magnitues of each score to scale them after (plots). 10^x being x the self.overload_mag.
         self.overload_mag.append(InvestmentsEvaluationResults.calculate_magnitude(overload_score))
         self.losses_mag.append(InvestmentsEvaluationResults.calculate_magnitude(losses))
         self.voltage_mag.append(InvestmentsEvaluationResults.calculate_magnitude(voltage_score))
@@ -281,7 +281,7 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             self._combinations = self._combinations[:self.__eval_index]
             self._index_names = self._index_names[:self.__eval_index]
 
-    def set_best_combination(self, combination: IntVec) -> None:
+    def set_best_combination(self, combination: Vec) -> None:
         """
         Set the best combination of investment groups
         :param combination: Vector of integers (0/1)

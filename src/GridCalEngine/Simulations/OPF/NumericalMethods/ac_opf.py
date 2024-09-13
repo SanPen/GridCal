@@ -750,7 +750,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     loadtimeEnd = timeit.default_timer()
     times = np.array([])
-    print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
+    #print(f'\tLoad time (s): {loadtimeEnd - loadtimeStart}')
 
     if opf_options.verbose > 0:
         print("x0:", x0)

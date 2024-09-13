@@ -195,7 +195,8 @@ class SimulationsMain(TimeEventsMain):
         self.investment_evaluation_objfunc_dict = OrderedDict()
         lst = list()
         for method in [InvestmentsEvaluationObjectives.PowerFlow,
-                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow]:
+                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow,
+                       InvestmentsEvaluationObjectives.OptimalPowerFlow]:
             self.investment_evaluation_objfunc_dict[method.value] = method
             lst.append(method.value)
         self.ui.investment_evaluation_objfunc_ComboBox.setModel(gf.get_list_model(lst))
