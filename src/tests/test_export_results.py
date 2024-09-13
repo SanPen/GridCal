@@ -36,5 +36,5 @@ def test_export_results():
                                                          time_indices=grid.get_all_time_indices())
     opf_ts_driver.run()
 
-    gce.export_results(drivers_list=[pf_driver, opf_ts_driver],
+    gce.export_drivers(drivers_list=[pf_driver, opf_ts_driver],
                        file_name="IEEE39_1W_results.zip")

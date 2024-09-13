@@ -78,7 +78,7 @@ class ResultsTemplate:
 
         self.data_variables: Dict[str, ResultsProperty] = dict()
 
-        self.time_array: Union[DateVec, None] = time_array
+        self._time_array: Union[DateVec, None] = time_array
 
         if clustering_results:
             self.clustering_results = clustering_results
@@ -102,6 +102,18 @@ class ResultsTemplate:
         self.area_names: StrVec = None
 
         self.__show_plot = True
+
+    @property
+    def time_array(self) -> DateVec:
+        """
+        Array of time steps
+        :return:
+        """
+        return self._time_array
+
+    @time_array.setter
+    def time_array(self, time_array: DateVec):
+        self._time_array = time_array
 
     def plotting_allowed(self) -> bool:
         """

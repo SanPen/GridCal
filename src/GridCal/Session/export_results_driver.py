@@ -17,7 +17,7 @@
 
 from typing import List
 from PySide6.QtCore import QThread, Signal
-from GridCalEngine.IO.gridcal.results_export import export_results
+from GridCalEngine.IO.gridcal.results_export import export_drivers
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.basic_structures import Logger
@@ -60,7 +60,7 @@ class ExportAllThread(QThread):
         """
 
         # try:
-        export_results(drivers_list=self.drivers_list,
+        export_drivers(drivers_list=self.drivers_list,
                        file_name=self.file_name,
                        text_func=self.progress_text.emit,
                        progress_func=self.progress_signal.emit,

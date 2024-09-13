@@ -23,17 +23,17 @@ import zipfile
 from GridCalEngine.basic_structures import Logger
 
 if TYPE_CHECKING:
-    from GridCalEngine.Simulations.types import DRIVER_OBJECTS
+    from GridCalEngine.Simulations.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 
 
-def export_results(drivers_list: List[DRIVER_OBJECTS],
+def export_results(results_list: List[RESULTS_OBJECTS],
                    file_name: str,
                    text_func: Union[Callable[[str], None], None] = None,
                    progress_func: Union[Callable[[float], None], None] = None,
                    logger: Logger = Logger()):
     """
     Constructor
-    :param drivers_list: list of GridCal simulation drivers
+    :param results_list: list of GridCal simulation results
     :param file_name: name of the file where to save (.zip)
     :param text_func: text function
     :param progress_func: progress function
@@ -50,20 +50,20 @@ def export_results(drivers_list: List[DRIVER_OBJECTS],
     try:
         with zipfile.ZipFile(file_name, 'w', zipfile.ZIP_DEFLATED) as myzip:
 
-            n = len(drivers_list)
+            n = len(results_list)
 
-            for k, driver in enumerate(drivers_list):
+            for k, results in enumerate(results_list):
 
                 # deactivate plotting
-                driver.results.deactivate_plotting()
+                results.deactivate_plotting()
 
                 if progress_func is not None:
                     progress_func((k + 1) / n * 100.0)
 
-                if isinstance(driver.results.available_results, dict):
-                    available_res = [e for tpe, lst in driver.results.available_results.items() for e in lst]
+                if isinstance(results.available_results, dict):
+                    available_res = [e for tpe, lst in results.available_results.items() for e in lst]
                 else:
-                    available_res = driver.results.available_results
+                    available_res = results.available_results
 
                 for available_result in available_res:
 
@@ -71,24 +71,24 @@ def export_results(drivers_list: List[DRIVER_OBJECTS],
                     result_name = str(available_result.value)
 
                     if text_func is not None:
-                        text_func('flushing ' + driver.results.name + ' ' + result_name)
+                        text_func('flushing ' + results.name + ' ' + result_name)
 
                     # save the DataFrame to the buffer
-                    mdl = driver.results.mdl(result_type=available_result)
+                    mdl = results.mdl(result_type=available_result)
 
                     if mdl is not None:
                         with StringIO() as buffer:
-                            filename = driver.results.name + ' ' + result_name + '.csv'
+                            filename = results.name + ' ' + result_name + '.csv'
                             try:
                                 mdl.save_to_csv(buffer)
                                 myzip.writestr(filename, buffer.getvalue())
                             except ValueError:
                                 logger.add_error('Value error', filename)
                     else:
-                        logger.add_info('No results for ' + driver.results.name + ' - ' + result_name)
+                        logger.add_info('No results for ' + results.name + ' - ' + result_name)
 
                 # reactivate plotting
-                driver.results.activate_plotting()
+                results.activate_plotting()
 
     except PermissionError:
         logger.add('Permission error.\nDo you have the file open?')
@@ -96,3 +96,26 @@ def export_results(drivers_list: List[DRIVER_OBJECTS],
     # post events
     if text_func is not None:
         text_func('Done!')
+
+
+def export_drivers(drivers_list: List[DRIVER_OBJECTS],
+                   file_name: str,
+                   text_func: Union[Callable[[str], None], None] = None,
+                   progress_func: Union[Callable[[float], None], None] = None,
+                   logger: Logger = Logger()):
+    """
+    Constructor
+    :param drivers_list: list of GridCal simulation drivers
+    :param file_name: name of the file where to save (.zip)
+    :param text_func: text function
+    :param progress_func: progress function
+    :param logger: logging object
+    """
+
+    results_list = [drv.results for drv in drivers_list]
+
+    export_results(results_list=results_list,
+                   file_name=file_name,
+                   text_func=text_func,
+                   progress_func=progress_func,
+                   logger=logger)
