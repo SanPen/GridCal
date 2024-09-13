@@ -22,6 +22,11 @@ from typing import List, Dict, Union
 from GridCalEngine.Simulations.driver_template import TimeSeriesDriverTemplate
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
+
+from GridCalEngine.Simulations.OPF.opf_driver import OptimalPowerFlowDriver
+from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
+from GridCalEngine.enumerations import SolverType
+
 from GridCalEngine.Simulations.PowerFlow.power_flow_ts_driver import PowerFlowTimeSeriesDriver
 from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
 from GridCalEngine.Simulations.Clustering.clustering_results import ClusteringResults
@@ -107,6 +112,7 @@ def power_flow_function(inv_list: List[Investment],
     driver = PowerFlowDriver(grid=grid, options=pf_options)
     driver.run()
 
+
     scores = InvestmentScores()
 
     # compute scores
@@ -129,6 +135,62 @@ def power_flow_function(inv_list: List[Investment],
 
     return scores
 
+
+def optimal_power_flow_function(inv_list: List[Investment],
+                        grid: MultiCircuit,
+                        #pf_options: PowerFlowOptions,
+                        pf_options: OptimalPowerFlowOptions,
+                        branches_cost,
+                        vm_cost: Vec,
+                        vm_max: Vec,
+                        vm_min: Vec,
+                        va_cost: Vec,
+                        va_max: Vec,
+                        va_min: Vec) -> InvestmentScores:
+    """
+    Compute the optimal power flow of the grid given an investments group
+    :param inv_list: list of Investments
+    :param grid: MultiCircuit grid
+    :param pf_options: Power flow options
+    :param branches_cost: Array with all overloading cost for the branches
+    :param vm_cost: Array with all the bus voltage module violation costs
+    :param vm_max: Array with the Vm min values
+    :param vm_min: Array with the Vm max values
+    :param va_cost: Array with all the bus voltage angles violation costs
+    :param va_max: Array with the Va max values
+    :param va_min: Array with the Va min values
+    :return: InvestmentScores
+    """
+
+    #driver = PowerFlowDriver(grid=grid, options=pf_options)
+    #driver.run()
+    opf_options = OptimalPowerFlowOptions(solver=SolverType.NONLINEAR_OPF, verbose=0, ips_init_with_pf=True)
+    #driver = OptimalPowerFlowDriver(grid=grid, options=pf_options)
+    driver = OptimalPowerFlowDriver(grid=grid, options=opf_options)
+    driver.run()
+
+    scores = InvestmentScores()
+
+    # compute scores
+    scores.losses_score = np.sum(driver.results.losses.real)
+    if np.isnan(scores.losses_score) == True: scores.losses_score = 0.0
+    scores.overload_score = get_overload_score(loading=driver.results.loading,
+                                               branches_cost=branches_cost)
+    # scores.overload_score = 0
+    scores.voltage_module_score = get_voltage_module_score(voltage=driver.results.voltage,
+                                                           vm_cost=vm_cost,
+                                                           vm_max=vm_max,
+                                                           vm_min=vm_min)
+
+    scores.voltage_angle_score = get_voltage_phase_score(voltage=driver.results.voltage,
+                                                         va_cost=va_cost,
+                                                         va_max=va_max,
+                                                         va_min=va_min)
+
+    scores.capex_score = sum([inv.CAPEX for inv in inv_list])
+    scores.opex_score = sum([inv.OPEX for inv in inv_list])
+
+    return scores
 
 def power_flow_ts_function(inv_list: List[Investment],
                            grid: MultiCircuit,
@@ -291,7 +353,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         """
 
         inv_list: List[Investment] = self.get_investments_for_combination(combination)
-        # print(f"Combination: {combination}, Investments: {inv_list}")
+        #print(f"Combination: {combination}, Investments: {inv_list}")
 
         # enable the investment
         self.grid.set_investments_status(investments_list=inv_list,
@@ -303,6 +365,19 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
             scores = power_flow_function(inv_list=inv_list,
                                          grid=self.grid,
                                          pf_options=self.options.pf_options,
+                                         branches_cost=self.branches_cost,
+                                         vm_cost=self.vm_cost,
+                                         vm_max=self.vm_max,
+                                         vm_min=self.vm_min,
+                                         va_cost=self.va_cost,
+                                         va_max=self.va_max,
+                                         va_min=self.va_min)
+
+        elif self.options.objf_tpe == InvestmentsEvaluationObjectives.OptimalPowerFlow:
+
+            scores = optimal_power_flow_function(inv_list=inv_list,
+                                         grid=self.grid,
+                                         pf_options= self.options.pf_options, #pf_options can be PF or OPF
                                          branches_cost=self.branches_cost,
                                          vm_cost=self.vm_cost,
                                          vm_max=self.vm_max,

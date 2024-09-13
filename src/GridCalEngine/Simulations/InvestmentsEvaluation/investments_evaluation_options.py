@@ -16,7 +16,10 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from GridCalEngine.enumerations import InvestmentsEvaluationObjectives, InvestmentEvaluationMethod, DeviceType
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
+from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.options_template import OptionsTemplate
+from GridCalEngine.enumerations import SolverType
+from typing import Union
 
 
 class InvestmentsEvaluationOptions(OptionsTemplate):
@@ -25,7 +28,7 @@ class InvestmentsEvaluationOptions(OptionsTemplate):
     """
 
     def __init__(self, max_eval: int,
-                 pf_options: PowerFlowOptions,
+                 pf_options: Union[PowerFlowOptions, OptimalPowerFlowOptions] = OptimalPowerFlowOptions,
                  solver: InvestmentEvaluationMethod = InvestmentEvaluationMethod.NSGA3,
                  objf_tpe: InvestmentsEvaluationObjectives = InvestmentsEvaluationObjectives.PowerFlow):
         """

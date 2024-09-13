@@ -17,6 +17,8 @@
 from typing import List, Dict, Union
 from pymoo.core.mixed import MixedVariableGA
 from pymoo.algorithms.moo.nsga2 import RankAndCrowding
+from pymoo.algorithms.moo.nsga2 import RankAndCrowdingSurvival
+from pymoo.core.mixed import MixedVariableMating
 # from pymoo.decomposition.asf import ASF
 # import matplotlib.pyplot as plt  # this is going to be in results, here for now to show we need to include plots
 from pymoo.core.mixed import MixedVariableSampling
@@ -29,6 +31,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Injections.shunt import Shunt
+from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt
 from GridCalEngine.Devices.types import BRANCH_TYPES, BRANCH_TEMPLATE_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
@@ -121,8 +124,11 @@ class MixedVariableProblem(ElementwiseProblem):
             self.default_template.append(default_template)
 
         # Iterate over shunts with B as a design variable
-        for elm in grid.shunts:
-            self.variables[elm.idtag] = Real(bounds=(-elm.B, 0))  # Qmax = elm.B
+        for elm in grid.shunts or grid.controllable_shunts:
+            self.variables[elm.idtag] = Real(bounds=(elm.B, 0.0))  # Qmax = elm.B
+            self.devices.append(elm)
+        for elm in grid.controllable_shunts:
+            self.variables[elm.idtag] = Real(bounds=(elm.B, 0.0))  # Qmax = elm.B
             self.devices.append(elm)
 
         super().__init__(n_obj=n_obj, vars=self.variables)
@@ -152,6 +158,8 @@ class MixedVariableProblem(ElementwiseProblem):
 
                 if isinstance(device, Shunt):
                     index = 0
+                elif isinstance(device, ControllableShunt):
+                    index = 0
 
                 if index > 0:
                     # Reduce index by 1 as the first template is the default one
@@ -167,6 +175,8 @@ class MixedVariableProblem(ElementwiseProblem):
                         raise Exception('Device not recognized')
                 else:
                     if isinstance(device, Shunt):
+                        pass
+                    elif isinstance (device, ControllableShunt):
                         pass
                     else:
                         # Default values introduced in the device
@@ -202,8 +212,8 @@ def NSGA_2(grid: MultiCircuit,
 
     algorithm = MixedVariableGA(pop_size=pop_size,
                                 sampling=MixedVariableSampling(),
+                                #mating=MixedVariableMating(),
                                 survival=RankAndCrowding(crowding_func="mnn") #mnn , 2nn for multi-obj
-                                #survival = RankAndCrowding(crowding_func="pcd") #for bi-objective
                                 )
 
     # In terms of setting probability parameters, you have to look quite far deep into MixedVariableGA
@@ -221,8 +231,6 @@ def NSGA_2(grid: MultiCircuit,
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()
 
-    hist = res.history
-    print(len(hist))
 
     import pandas as pd
     dff = pd.DataFrame(res.F)
