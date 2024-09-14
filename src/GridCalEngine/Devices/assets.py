@@ -605,7 +605,7 @@ class Assets:
                                device=obj.idtag)
         else:
             if self.time_profile is not None:
-                obj.create_profiles(self.time_profile)
+                obj.ensure_profiles_exist(self.time_profile)
             self._lines.append(obj)
 
         return obj

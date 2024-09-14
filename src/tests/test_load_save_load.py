@@ -30,15 +30,15 @@ def test_load_save_load() -> None:
 
     """
     folder = os.path.join('data', 'grids')
-    
+
     for name in ['IEEE39_1W.gridcal',
                  'hydro_grid_IEEE39.gridcal',
                  'IEEE57.gridcal',
                  'fubm_caseHVDC_vt.gridcal',
                  'Test_SRAP.gridcal']:
-        
+
         fname = os.path.join(folder, name)
-        
+
         # open the main grid
         grid1 = gce.open_file(fname)
 
@@ -60,3 +60,31 @@ def test_load_save_load() -> None:
 
         # if all ok, we can remove the test file
         os.remove(fname2)
+
+
+def test_load_save_load2() -> None:
+    """
+    This test checks if the saving and load process is correct with sparse profile changing.
+    This is according to issue #309
+    :return:
+    """
+    grid1 = gce.MultiCircuit()
+    grid1.set_unix_time([0, 3600])
+    b1 = grid1.add_bus()
+    b2 = grid1.add_bus()
+    b3 = grid1.add_bus()
+    l1 = grid1.add_line(gce.Line(name='l1', bus_from=b1, bus_to=b2, rate=10.0))
+    l2 = grid1.add_line(gce.Line(name='l2', bus_from=b2, bus_to=b3, rate=10.0))
+    l3 = grid1.add_line(gce.Line(name='l3', bus_from=b3, bus_to=b1, rate=10.0))
+
+    l1.rate_prof[1] = 20.0
+    l2.rate_prof[1] = 30.0
+    l3.rate_prof[1] = 40.0
+
+    gce.save_file(grid=grid1, filename='test_load_save_load2.gridcal')
+
+    grid2 = gce.open_file('test_load_save_load2.gridcal')
+
+    equal, logger = grid2.compare_circuits(grid1, detailed_profile_comparison=True)
+
+    assert equal
