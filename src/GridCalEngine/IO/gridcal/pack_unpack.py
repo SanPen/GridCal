@@ -373,6 +373,8 @@ def get_profile_from_dict(profile: Profile,
         else:
             arr = [collection.get(i, default_value) for i in data['dense_data']]
         profile.set(np.array(arr))
+
+    # mark as initialized
     profile.set_initialized()
 
 
@@ -1126,6 +1128,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                                               gc_prop=gc_prop,
                                                               elm=elm,
                                                               property_value=val)
+                                print()
 
                             elif gc_prop.tpe == int:
                                 # set the value directly

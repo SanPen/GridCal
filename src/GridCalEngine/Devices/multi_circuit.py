@@ -32,7 +32,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMat
 
 import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.Topology.topology_processor import TopologyProcessorInfo, process_grid_topology_at
@@ -129,8 +129,6 @@ def get_fused_device_lst(elm_list: List[INJECTION_DEVICE_TYPES], property_names:
     else:
         # the list is empty
         return list(), list()
-
-
 
 
 class MultiCircuit(Assets):
@@ -1002,7 +1000,7 @@ class MultiCircuit(Assets):
 
         return logger
 
-    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col) -> Logger:
+    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col: str, lat_col: str, lon_col: str) -> Logger:
         """
         Import the buses' latitude and longitude
         :param df: Pandas DataFrame with the information
@@ -1053,7 +1051,7 @@ class MultiCircuit(Assets):
     def get_areas_buses(self, areas: List[dev.Area]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
-        :return:
+        :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self._buses):
@@ -1064,7 +1062,7 @@ class MultiCircuit(Assets):
     def get_zone_buses(self, zones: List[dev.Zone]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
-        :return:
+        :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self._buses):
@@ -1075,7 +1073,7 @@ class MultiCircuit(Assets):
     def get_country_buses(self, countries: List[dev.Country]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
-        :return:
+        :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self._buses):
@@ -1083,11 +1081,11 @@ class MultiCircuit(Assets):
                 lst.append((k, bus))
         return lst
 
-    def get_aggregation_buses(self, aggregations: List[dev.Country] | List[dev.Area] | List[dev.Zone]) -> List[Tuple[int, dev.Bus]]:
+    def get_aggregation_buses(self, aggregations: List[AREA_TYPES]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
         :param aggregations:
-        :return:
+        :return: list of bus indices and bus ptr
         """
         if len(aggregations) == 0:
             return list()
@@ -1235,6 +1233,57 @@ class MultiCircuit(Assets):
             hvdc_T[k] = bus_dict[elm.bus_to]
 
         return area_names, bus_area_indices, F, T, hvdc_F, hvdc_T
+
+    def get_inter_aggregation_info(self,
+                                   objects_from: List[AREA_TYPES],
+                                   objects_to: List[AREA_TYPES]) -> dev.InterAggregationInfo:
+        """
+        Get the lists that help defining the inter area objects
+        :param objects_from: list of objects from
+        :param objects_to: list of objects to
+        :return: InterAggregationInfo
+        """
+        logger = Logger()
+
+        if len(objects_from) == 0 or len(objects_to) == 0:
+            logger.add_error(msg=f'One of the lists has no elements')
+            return dev.InterAggregationInfo(valid=False, lst_from=[], lst_to=[], lst_br=[], lst_br_hvdc=[],
+                                            objects_from=[], objects_to=[], logger=logger)
+
+        # find the buses in the aggregation from
+        lst_from = self.get_aggregation_buses(objects_from)
+        buses_from_set = {x[1] for x in lst_from}
+
+        # find the buses in the aggregation to
+        lst_to = self.get_aggregation_buses(objects_to)
+        buses_to_set = {x[1] for x in lst_to}
+
+        buses_intersection = buses_from_set & buses_to_set
+
+        if len(buses_intersection) > 0:
+            dev_tpe_from = objects_from[0].device_type
+            dev_tpe_to = objects_to[0].device_type
+
+            for bus in buses_intersection:
+                logger.add_error(msg=f'Bus in both selected {dev_tpe_from.value} to {dev_tpe_to.value}',
+                                 device_class=bus.device_type.value,
+                                 device=bus.name)
+
+            return dev.InterAggregationInfo(valid=False, lst_from=[], lst_to=[], lst_br=[], lst_br_hvdc=[],
+                                            objects_from=[], objects_to=[], logger=logger)
+
+        # find the tie branches
+        lst_br = self.get_inter_buses_branches(buses_from_set, buses_to_set)
+        lst_br_hvdc = self.get_inter_buses_hvdc_branches(buses_from_set, buses_to_set)
+
+        return dev.InterAggregationInfo(valid=True,
+                                        lst_from=lst_from,
+                                        lst_to=lst_to,
+                                        lst_br=lst_br,
+                                        lst_br_hvdc=lst_br_hvdc,
+                                        objects_from=objects_from,
+                                        objects_to=objects_to,
+                                        logger=logger)
 
     def change_base(self, Sbase_new: float):
         """
@@ -1746,7 +1795,7 @@ class MultiCircuit(Assets):
         # for each category
         # for key, template_elms_list in self.categorized_template_objects_dict.items():
 
-            # for each object type
+        # for each object type
         for template_elm in self.template_items():
 
             # get all objects of the type

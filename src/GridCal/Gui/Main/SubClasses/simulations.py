@@ -594,36 +594,22 @@ class SimulationsMain(TimeEventsMain):
         devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
         from_idx = gf.get_checked_indices(self.ui.fromListView.model())
         objects_from = [devs_from[i] for i in from_idx]
-        lst_from = self.circuit.get_aggregation_buses(objects_from)
-        buses_from_set = {x[1] for x in lst_from}
 
         dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
         devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
         to_idx = gf.get_checked_indices(self.ui.toListView.model())
         objects_to = [devs_to[i] for i in to_idx]
-        lst_to = self.circuit.get_aggregation_buses(objects_to)
-        buses_to_set = {x[1] for x in lst_to}
 
-        buses_intersection = buses_from_set & buses_to_set
+        info: dev.InterAggregationInfo = self.circuit.get_inter_aggregation_info(objects_from=objects_from,
+                                                                                 objects_to=objects_to)
 
-        if len(buses_intersection) > 0:
-            logger = Logger()
-            for bus in buses_intersection:
-                logger.add_error(msg=f'Bus in both selected {dev_tpe_from.value} to {dev_tpe_to.value}',
-                                 device_class=bus.device_type.value,
-                                 device=bus.name)
-
+        if info.logger.has_logs():
             # Show dialogue
-            dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=logger)
+            dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=info.logger)
             dlg.setModal(True)
             dlg.exec()
 
-            return dev.InterAggregationInfo(False, [], [], [], [], [], [])
-
-        lst_br = self.circuit.get_inter_buses_branches(buses_from_set, buses_to_set)
-        lst_br_hvdc = self.circuit.get_inter_buses_hvdc_branches(buses_from_set, buses_to_set)
-
-        return dev.InterAggregationInfo(True, lst_from, lst_to, lst_br, lst_br_hvdc, objects_from, objects_to)
+        return info
 
     def get_selected_power_flow_options(self) -> sim.PowerFlowOptions:
         """
