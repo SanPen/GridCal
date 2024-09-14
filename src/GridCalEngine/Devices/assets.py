@@ -471,7 +471,7 @@ class Assets:
 
     def format_profiles(self, index: pd.DatetimeIndex):
         """
-        Format the pandas profiles in place using a time index.
+        Format the profiles in place using a time index.
         :param index: Time profile
         """
 
@@ -480,7 +480,7 @@ class Assets:
         for key, tpe in self.device_type_name_dict.items():
             elements = self.get_elements_by_type(device_type=tpe)
             for elm in elements:
-                elm.create_profiles(index)
+                elm.ensure_profiles_exist(index)
 
     def set_time_profile(self, unix_data: IntVec):
         """
@@ -647,7 +647,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._dc_lines.append(obj)
 
     def delete_dc_line(self, obj: dev.DcLine):
@@ -701,7 +701,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._transformers2w.append(obj)
 
     def delete_transformer2w(self, obj: dev.Transformer2W):
@@ -755,7 +755,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._hvdc_lines.append(obj)
 
     def delete_hvdc_line(self, obj: dev.HvdcLine):
@@ -802,7 +802,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._vsc_devices.append(obj)
 
     def delete_vsc_converter(self, obj: dev.VSC):
@@ -842,7 +842,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._upfc_devices.append(obj)
 
     def delete_upfc_converter(self, obj: dev.UPFC):
@@ -889,7 +889,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._switch_devices.append(obj)
 
         return obj
@@ -946,7 +946,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._transformers3w.append(obj)
         if add_middle_bus:
             self.add_bus(obj.bus0)  # add the middle transformer
@@ -1009,7 +1009,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._windings.append(obj)
 
     def delete_winding(self, obj: dev.Winding):
@@ -1091,7 +1091,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._series_reactances.append(obj)
 
     def delete_series_reactance(self, obj: dev.SeriesReactance) -> None:
@@ -1176,7 +1176,7 @@ class Assets:
             obj = dev.Bus()
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
 
         self._buses.append(obj)
 
@@ -1392,7 +1392,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._voltage_levels.append(obj)
 
     def delete_voltage_level(self, obj: dev.VoltageLevel) -> None:
@@ -2039,7 +2039,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._pi_measurements.append(obj)
 
     def delete_pi_measurement(self, obj: dev.PiMeasurement) -> None:
@@ -2101,7 +2101,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._qi_measurements.append(obj)
 
     def delete_qi_measurement(self, obj: dev.QiMeasurement) -> None:
@@ -2164,7 +2164,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._vm_measurements.append(obj)
 
     def delete_vm_measurement(self, obj: dev.VmMeasurement) -> None:
@@ -2227,7 +2227,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._pf_measurements.append(obj)
 
     def delete_pf_measurement(self, obj: dev.PfMeasurement) -> None:
@@ -2290,7 +2290,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._qf_measurements.append(obj)
 
     def delete_qf_measurement(self, obj: dev.QfMeasurement) -> None:
@@ -2353,7 +2353,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._if_measurements.append(obj)
 
     def delete_if_measurement(self, obj: dev.IfMeasurement) -> None:
@@ -2617,7 +2617,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._branch_groups.append(obj)
 
     def delete_branch_group(self, obj: dev.BranchGroup) -> None:
@@ -2902,7 +2902,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._communities.append(obj)
 
     def delete_community(self, obj: dev.Community) -> None:
@@ -2973,7 +2973,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._regions.append(obj)
 
     def delete_region(self, obj: dev.Region) -> None:
@@ -3040,7 +3040,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._municipalities.append(obj)
 
     def delete_municipality(self, obj: dev.Municipality) -> None:
@@ -3453,7 +3453,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._modelling_authorities.append(obj)
 
     def delete_modelling_authority(self, obj: dev.ModellingAuthority) -> None:
@@ -3745,7 +3745,7 @@ class Assets:
         self._fluid_nodes.append(obj)
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
 
     def delete_fluid_node(self, obj: dev.FluidNode):
         """
@@ -3804,7 +3804,7 @@ class Assets:
         self._fluid_paths.append(obj)
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
 
     def delete_fluid_path(self, obj: dev.FluidPath):
         """
