@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from typing import Union, List, Tuple, Dict
+from typing import Union, List, Tuple
 import numpy as np
 import math
 from PySide6.QtWidgets import QGraphicsItem
@@ -39,7 +39,7 @@ from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.basic_structures import Logger
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
@@ -50,7 +50,7 @@ from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGrap
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
-from GridCal.Gui.Diagrams.MapWidget.new_line_dialogue import NewMapLineDialogue
+from GridCal.Gui.Diagrams.MapWidget.Branches.new_line_dialogue import NewMapLineDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
@@ -212,14 +212,16 @@ class GridMapWidget(BaseDiagramWidget):
                  call_delete_db_element_func: Callable[["GridMapWidget", ALL_DEV_TYPES], None] = None,
                  call_new_substation_diagram_func: Callable[[Substation], None] = None, ):
         """
-
-        :param tile_src:
-        :param start_level:
-        :param longitude:
-        :param latitude:
-        :param name:
-        :param diagram:
-        :param call_delete_db_element_func:
+        GridMapWidget
+        :param tile_src: Tiles instance
+        :param start_level: starting level
+        :param longitude: Center point Longitude (deg)
+        :param latitude: Center point Latitude (deg)
+        :param name: Name of the diagram
+        :param circuit: MultiCircuit instance
+        :param diagram: Diagram instance (optional)
+        :param call_delete_db_element_func: function pointer to call on delete (optional)
+        :param call_new_substation_diagram_func: function pointer to call on new_substation (optional)
         """
 
         BaseDiagramWidget.__init__(self,
