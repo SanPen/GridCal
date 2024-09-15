@@ -34,7 +34,8 @@ class StamenTransportTiles(Tiles):
                          max_server_requests=2,
                          max_lru=10000,
                          tiles_dir=tiles_dir,
-                         http_proxy=http_proxy)
+                         http_proxy=http_proxy,
+                         attribution="Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.")
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.

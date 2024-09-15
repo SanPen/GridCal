@@ -29,7 +29,8 @@ class MapboxTiles(Tiles):
                                   ],
                          url_path='/v3/examples.map-szwdot65/{Z}/{X}/{Y}.png',
                          max_server_requests=2,
-                         http_proxy=http_proxy)
+                         http_proxy=http_proxy,
+                         attribution="© Mapbox © OpenStreetMap contributors")
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.

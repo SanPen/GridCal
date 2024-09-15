@@ -32,7 +32,8 @@ class MapquestTiles(Tiles):
                          max_server_requests=2,
                          max_lru=10000,
                          tiles_dir=tiles_dir,
-                         http_proxy=http_proxy)
+                         http_proxy=http_proxy,
+                         attribution="© MapQuest, © OpenStreetMap contributors")
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """

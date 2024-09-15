@@ -366,7 +366,9 @@ class NoticeWidget(QWidget):
         # add a label to display copyright stuff
         self.notice_label = QLabel("some notice")
         self.notice_label.setAlignment(Qt.AlignLeft | Qt.AlignBottom)
-        self.notice_label.setStyleSheet("background-color: rgba(255, 255, 255, 150);font-size: 8pt;")
+        self.notice_label.setStyleSheet("background-color: rgba(255, 255, 255, 0);"
+                                        "font-size: 8pt;"
+                                        "color: rgba(100, 100, 100, 255);")
 
         # Create a container for the label and position it at the bottom-left
         self.label_container = QWidget()
@@ -530,6 +532,7 @@ class MapWidget(QWidget):
         # remember the tile source object
         self._tile_src: Tiles = tile_src
         self._tile_src.setCallback(self.on_tile_available)
+        self.notice_widget.set_notice(val=self._tile_src.attribution_string)
 
         # the tile coordinates
         self.level: int = start_level
@@ -613,6 +616,7 @@ class MapWidget(QWidget):
         if tile_src.TilesetName != self._tile_src.TilesetName:  # avoid changing tilesets to themselves
             self._tile_src: Tiles = tile_src
             self._tile_src.setCallback(self.on_tile_available)
+            self.notice_widget.set_notice(val=self._tile_src.attribution_string)
 
             if self.GotoLevel(level):
                 self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)

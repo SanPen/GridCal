@@ -34,7 +34,8 @@ class BlueMarbleTiles(Tiles):
                        servers=['https://s3.amazonaws.com', ],
                        url_path='/com.modestmaps.bluemarble/{Z}-r{Y}-c{X}.jpg',
                        max_server_requests=2,
-                       http_proxy=http_proxy)
+                       http_proxy=http_proxy,
+                       attribution="© NASA Blue Marble, © OpenStreetMap contributors")
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
         """Convert geo to tile fractional coordinates for level in use.
