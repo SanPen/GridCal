@@ -239,8 +239,6 @@ class GridMapWidget(BaseDiagramWidget):
         self.map = MapWidget(parent=self,
                              tile_src=tile_src,
                              start_level=start_level,
-                             startLat=latitude,
-                             startLon=longitude,
                              editor=self,
                              zoom_callback=self.zoom_callback,
                              position_callback=self.position_callback)

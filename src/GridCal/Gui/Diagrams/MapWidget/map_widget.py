@@ -34,8 +34,8 @@ from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
-from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QVBoxLayout,
-                               QGraphicsSceneMouseEvent, QGraphicsItem)
+from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout, QVBoxLayout,
+                               QGraphicsSceneMouseEvent, QGraphicsItem, QLabel)
 
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
@@ -349,6 +349,137 @@ class MapView(QGraphicsView):
         self.map_widget.view.centerOn(point)
 
 
+class NoticeWidget(QWidget):
+    """
+    MapView
+    """
+
+    def __init__(self, map_widget: "MapWidget"):
+        """
+
+        :param map_widget:
+        """
+        QWidget.__init__(self)
+
+        self.map_widget = map_widget
+
+        # add a label to display copyright stuff
+        self.notice_label = QLabel("some notice")
+        self.notice_label.setAlignment(Qt.AlignLeft | Qt.AlignBottom)
+        self.notice_label.setStyleSheet("background-color: rgba(255, 255, 255, 150);font-size: 8pt;")
+
+        # Create a container for the label and position it at the bottom-left
+        self.label_container = QWidget()
+        self.label_layout = QVBoxLayout(self.label_container)
+        self.label_layout.addWidget(self.notice_label)
+        self.label_layout.setAlignment(Qt.AlignLeft | Qt.AlignBottom)
+        self.label_layout.setContentsMargins(1, 1, 1, 1)  # Optional margin
+
+        self.setLayout(self.label_layout)
+
+    def set_notice(self, val: str) -> None:
+        """
+        Set the notification text
+        :param val: some text
+        """
+        self.notice_label.setText(val)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        self.map_widget.view.mousePressEvent(event)
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        self.map_widget.view.mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        self.map_widget.view.mouseDoubleClickEvent(event)
+        super().mouseDoubleClickEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        self.map_widget.view.mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        self.map_widget.view.keyPressEvent(event)
+
+    def keyReleaseEvent(self, event: QKeyEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        self.map_widget.view.keyReleaseEvent(event)
+
+    def wheelEvent(self, event: QWheelEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        super().wheelEvent(event)
+        self.map_widget.view.wheelEvent(event)
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        super().dragEnterEvent(event)
+        self.map_widget.view.dragEnterEvent(event)
+
+    def dragMoveEvent(self, event: QDragMoveEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        super().dragMoveEvent(event)
+        self.map_widget.view.dragMoveEvent(event)
+
+    def dropEvent(self, event: QDropEvent):
+        """
+
+        :param event:
+        :return:
+        """
+        super().dropEvent(event)
+        self.map_widget.view.dropEvent(event)
+
+    def resizeEvent(self, event: QResizeEvent = None):
+        """
+        Widget resized, recompute some state.
+        """
+        super().resizeEvent(event)
+        self.map_widget.view.resizeEvent(event=event)
+
+
 class MapWidget(QWidget):
     """
     Map widget
@@ -358,8 +489,6 @@ class MapWidget(QWidget):
                  parent: Union[None, QWidget],
                  tile_src: Tiles,
                  start_level: int,
-                 startLat: float,
-                 startLon: float,
                  editor: GridMapWidget,
                  zoom_callback: Callable[[int], None],
                  position_callback: Callable[[float, float, int, int], None]):
@@ -368,10 +497,8 @@ class MapWidget(QWidget):
         :param parent: the GUI parent widget
         :param tile_src: a Tiles object, source of tiles
         :param start_level: level to initially display
-        :param startLat:
-        :param startLon:
-        :param zoom_callback:
-        :param position_callback:
+        :param zoom_callback: zoom change callback function
+        :param position_callback: position change change callback function
         """
 
         QWidget.__init__(self, parent)  # inherit all parent object setup
@@ -381,28 +508,21 @@ class MapWidget(QWidget):
         # -------------------------------------------------------------------------
         self.diagram_scene = MapScene(self)
 
+        # pointer to the editor
         self.editor: GridMapWidget = editor
 
-        self.view = MapView(scene=self.diagram_scene, map_widget=self)
-
-        self.view.setBackgroundBrush(Qt.transparent)
-
-        # re-map events, because otherwise the view shadows the base widget events
-        # self.view.mousePressEvent = self.mousePressEvent
-        # self.view.mouseReleaseEvent = self.mouseReleaseEvent
-        # self.view.mouseDoubleClickEvent = self.mouseDoubleClickEvent
-        # self.view.mouseMoveEvent = self.mouseMoveEvent
-        # self.view.wheelEvent = self.wheelEvent
-        # self.view.keyPressEvent = self.keyPressEvent
-        # self.view.keyReleaseEvent = self.keyReleaseEvent
-
         # Create a layout for the view
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
-        self.setLayout(self.layout)  # Set the layout for the MapWidget
+        self.layout = QStackedLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.setStyleSheet("background-color: transparent;")
+
+        # the view is the transparent layer used to draw stuff
+        self.view = MapView(scene=self.diagram_scene, map_widget=self)
+        self.view.setBackgroundBrush(Qt.transparent)
+
+        # notification widget
+        self.notice_widget = NoticeWidget(map_widget=self)
 
         # -------------------------------------------------------------------------
         # Internal vars
@@ -467,6 +587,11 @@ class MapWidget(QWidget):
         self.GotoLevelAndPosition(level=6,
                                   longitude=0,
                                   latitude=40)
+
+        # add the widgets in a leyered manner
+        self.layout.addWidget(self.notice_widget)
+        self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
+        self.setLayout(self.layout)  # Set the layout for the MapWidget
 
     @property
     def tile_src(self) -> Tiles:
