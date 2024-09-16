@@ -555,8 +555,6 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     # Grab the base power and the costs associated to generation
     Sbase = nc.Sbase
 
-    # Compute the admittance elements, including the Ybus, Yf, Yt and connectivity matrices
-    admittances = nc.get_admittance_matrices()
     Cgen = nc.generator_data.C_bus_elm
     from_idx = nc.F
     to_idx = nc.T
@@ -587,6 +585,13 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
 
     id_sh = np.where(nc.shunt_data.controllable == True)[0]
     nsh = len(id_sh)
+
+    # Since controllable shunts will be treated as generators, we deactivate them to avoid its computation in the
+    # Admittance matrix. Then, the admittance elements are stored.
+
+    nc.shunt_data.Y[id_sh] = 0 + 0j
+    admittances = nc.get_admittance_matrices()
+
 
     Csh = nc.shunt_data.C_bus_elm[:, id_sh]
     Cg = sp.hstack([Cgen, Csh])
