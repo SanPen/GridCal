@@ -201,7 +201,10 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
     @staticmethod
     def calculate_magnitude(value):
-        return int(np.floor(np.log10(np.abs(value)))) if value != 0 else 0
+        if value > 0.0:
+            return int(np.floor(np.log10(value)))
+        else:
+            return 0.0
 
     def get_objectives(self) -> Mat:
         """

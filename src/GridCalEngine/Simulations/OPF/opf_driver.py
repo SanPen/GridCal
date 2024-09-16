@@ -213,8 +213,7 @@ class OptimalPowerFlowDriver(TimeSeriesDriverTemplate):
             self.results.overloads = (res.sl_sf - res.sl_st) * Sbase
             self.results.loading = res.loading
             self.results.phase_shift = res.tap_phase
-            self.results.losses = np.real(res.Sf * Sbase) + np.real(res.St * Sbase) #active MW
-            #self.results.losses[self.results.losses < 0] = 0 #corrects small values E-22 that are <0
+            self.results.losses = np.real(res.Sf * Sbase) + np.real(res.St * Sbase)  # active MW
 
             self.results.hvdc_Pf = res.hvdc_Pf
             self.results.hvdc_loading = res.hvdc_loading
