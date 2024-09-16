@@ -300,7 +300,7 @@ class ResultsMain(SimulationsMain):
         """
         Copy the results from the OPF time series to the profiles
         """
-        results = self.session.optimal_power_flow_ts
+        _, results = self.session.optimal_power_flow_ts
 
         if results is not None:
 

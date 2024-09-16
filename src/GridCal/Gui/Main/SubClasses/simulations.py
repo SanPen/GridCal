@@ -239,6 +239,7 @@ class SimulationsMain(TimeEventsMain):
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
         self.ui.contingency_filter_by_comboBox.currentTextChanged.connect(self.modify_contingency_filter_mode)
+        self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.changed_study)
 
         # button
         self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precission)
@@ -530,6 +531,25 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.units_label.setText("")
 
+    def changed_study(self):
+        """
+
+        :return:
+        """
+        current_study_name = self.ui.available_results_to_color_comboBox.currentText()
+        drv_dict = {driver.tpe.value: driver for driver in self.get_available_drivers()}
+        drv = drv_dict.get(current_study_name, None)
+        if drv is not None and hasattr(drv, 'time_indices'):
+            if len(drv.time_indices):
+                a = drv.time_indices[0]
+                b = drv.time_indices[-1]
+                self.ui.diagram_step_slider.setRange(a, b)
+                self.ui.diagram_step_slider.setValue(a)
+            else:
+                self.setup_time_sliders()
+        else:
+            self.setup_time_sliders()
+
     def update_available_results(self) -> None:
         """
         Update the results that are displayed in the results tab
@@ -544,7 +564,7 @@ class SimulationsMain(TimeEventsMain):
         available_results = self.get_available_drivers()
         max_steps = 0
         d = dict()
-        lst = list()
+        lst = [SimulationTypes.DesignView.value]
         for driver in available_results:
             name = driver.tpe.value
             lst.append(name)
@@ -584,6 +604,7 @@ class SimulationsMain(TimeEventsMain):
         self.ui.available_results_to_color_comboBox.setModel(mdl)
         self.ui.resultsTableView.setModel(None)
         self.ui.resultsLogsTreeView.setModel(None)
+        self.changed_study()
 
     def get_compatible_from_to_buses_and_inter_branches(self) -> dev.InterAggregationInfo:
         """
@@ -696,7 +717,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if use_opf:
 
-            opf_time_series_results = self.session.optimal_power_flow_ts
+            _, opf_time_series_results = self.session.optimal_power_flow_ts
 
             if opf_time_series_results is None:
                 if use_opf:
@@ -869,7 +890,7 @@ class SimulationsMain(TimeEventsMain):
         """
         # update the results in the circuit structures
 
-        results = self.session.power_flow
+        _, results = self.session.power_flow
 
         if results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
@@ -893,7 +914,7 @@ class SimulationsMain(TimeEventsMain):
         if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.ShortCircuit_run):
 
-                pf_results = self.session.power_flow
+                _, pf_results = self.session.power_flow
 
                 if pf_results is not None:
 
@@ -960,7 +981,7 @@ class SimulationsMain(TimeEventsMain):
 
         """
         # update the results in the circuit structures
-        results = self.session.short_circuit
+        _, results = self.session.short_circuit
 
         if results is not None:
 
@@ -1027,7 +1048,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.LinearAnalysis_run)
 
         # update the results in the circuit structures
-        results = self.session.linear_power_flow
+        _, results = self.session.linear_power_flow
         if results is not None:
 
             self.ui.progress_label.setText('Colouring PTDF results in the grid...')
@@ -1080,7 +1101,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.LinearAnalysis_TS_run)
 
         # update the results in the circuit structures
-        results = self.session.linear_power_flow_ts
+        _, results = self.session.linear_power_flow_ts
         if results is not None:
 
             # expand the clusters
@@ -1168,7 +1189,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.ContingencyAnalysis_run)
 
         # update the results in the circuit structures
-        results = self.session.contingency
+        _, results = self.session.contingency
         if results is not None:
 
             self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
@@ -1229,7 +1250,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.ContingencyAnalysisTS_run)
 
         # update the results in the circuit structures
-        results = self.session.contingency_ts
+        _, results = self.session.contingency_ts
         if results is not None:
 
             # expand the clusters
@@ -1275,7 +1296,7 @@ class SimulationsMain(TimeEventsMain):
                 sense_hvdc_br = info.sense_hvdc
 
                 if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                    pf_results = self.session.power_flow
+                    _, pf_results = self.session.power_flow
                     if pf_results is not None:
                         Pf = pf_results.Sf.real
                         Pf_hvdc = pf_results.hvdc_Pf.real
@@ -1342,7 +1363,7 @@ class SimulationsMain(TimeEventsMain):
 
         """
         self.remove_simulation(SimulationTypes.NetTransferCapacity_run)
-        results = self.session.net_transfer_capacity
+        _, results = self.session.net_transfer_capacity
 
         # update the results in the circuit structures
         if results is not None:
@@ -1389,7 +1410,7 @@ class SimulationsMain(TimeEventsMain):
                     sense_hvdc_br = info.sense_hvdc
 
                     if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                        pf_results = self.session.power_flow_ts
+                        _, pf_results = self.session.power_flow_ts
                         if pf_results is not None:
                             Pf = pf_results.Sf.real
                             Pf_hvdc = pf_results.hvdc_Pf.real
@@ -1463,7 +1484,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.NetTransferCapacityTS_run)
 
         # update the results in the circuit structures
-        results = self.session.net_transfer_capacity_ts
+        _, results = self.session.net_transfer_capacity_ts
         if results is not None:
 
             # expand the clusters
@@ -1488,7 +1509,7 @@ class SimulationsMain(TimeEventsMain):
 
         if self.circuit.valid_for_simulation():
 
-            pf_drv, pf_results = self.session.power_flow_driver_and_results
+            pf_drv, pf_results = self.session.power_flow
 
             if pf_results is not None:
 
@@ -1644,7 +1665,7 @@ class SimulationsMain(TimeEventsMain):
         Actions performed after the voltage stability. Launched by the thread after its execution
         :return:
         """
-        results = self.session.continuation_power_flow
+        _, results = self.session.continuation_power_flow
 
         if results is not None:
 
@@ -1709,7 +1730,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        results = self.session.power_flow_ts
+        _, results = self.session.power_flow_ts
 
         if results is not None:
 
@@ -1779,7 +1800,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        results = self.session.stochastic_power_flow
+        _, results = self.session.stochastic_power_flow
 
         if results is not None:
 
@@ -1803,7 +1824,7 @@ class SimulationsMain(TimeEventsMain):
         # update the results in the circuit structures
         self.remove_simulation(SimulationTypes.Cascade_run)
 
-        results = self.session.cascade
+        _, results = self.session.cascade
         n = len(results.events)
 
         if n > 0:
@@ -1885,7 +1906,6 @@ class SimulationsMain(TimeEventsMain):
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
-        # pf_results = self.session.power_flow
 
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
@@ -1943,7 +1963,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        results = self.session.optimal_power_flow
+        _, results = self.session.optimal_power_flow
 
         if results is not None:
 
@@ -2012,7 +2032,7 @@ class SimulationsMain(TimeEventsMain):
         Post OPF Time Series
         """
 
-        results = self.session.optimal_power_flow_ts
+        _, results = self.session.optimal_power_flow_ts
 
         if results is not None:
 
@@ -2041,7 +2061,7 @@ class SimulationsMain(TimeEventsMain):
 
             if self.circuit.time_profile is not None:
 
-                results = self.session.optimal_power_flow_ts
+                _, results = self.session.optimal_power_flow_ts
 
                 if results is not None:
 
@@ -2151,7 +2171,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        results = self.session.optimal_net_transfer_capacity
+        _, results = self.session.optimal_net_transfer_capacity
 
         if results is not None:
             self.remove_simulation(SimulationTypes.OPF_NTC_run)
@@ -2203,7 +2223,7 @@ class SimulationsMain(TimeEventsMain):
         Actions to run after the optimal net transfer capacity time series simulation
         """
 
-        results = self.session.optimal_net_transfer_capacity_ts
+        _, results = self.session.optimal_net_transfer_capacity_ts
 
         if results is not None:
 
@@ -2230,7 +2250,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.ui.actionFind_node_groups.isChecked():
 
-            ptdf_results = self.session.linear_power_flow
+            _, ptdf_results = self.session.linear_power_flow
 
             if ptdf_results is not None:
 
@@ -2315,7 +2335,7 @@ class SimulationsMain(TimeEventsMain):
 
         :return:
         """
-        results = self.session.inputs_analysis
+        _, results = self.session.inputs_analysis
 
         if results is not None:
             self.remove_simulation(SimulationTypes.InputsAnalysis_run)
@@ -2334,7 +2354,7 @@ class SimulationsMain(TimeEventsMain):
 
             if self.ui.actionStorage_location_suggestion.isChecked():
 
-                ts_results = self.session.power_flow_ts
+                _, ts_results = self.session.power_flow_ts
 
                 if ts_results is not None:
 
@@ -2486,7 +2506,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Post investments evaluation
         """
-        results = self.session.investments_evaluation
+        _, results = self.session.investments_evaluation
 
         # update the results in the circuit structures
         if results is not None:
@@ -2509,7 +2529,7 @@ class SimulationsMain(TimeEventsMain):
         :return: ClusteringResults or None
         """
         if self.ui.actionUse_clustering.isChecked():
-            clustering_results = self.session.clustering
+            _, clustering_results = self.session.clustering
 
             if clustering_results is not None:
                 n = len(clustering_results.time_indices)
@@ -2577,7 +2597,7 @@ class SimulationsMain(TimeEventsMain):
         # update the results in the circuit structures
         self.remove_simulation(SimulationTypes.ClusteringAnalysis_run)
 
-        results = self.session.clustering
+        _, results = self.session.clustering
         if results is not None:
 
             self.update_available_results()
@@ -2644,7 +2664,7 @@ class SimulationsMain(TimeEventsMain):
         if self.ui.actionUse_clustering.isChecked():
 
             # check if there are clustering results yet
-            clustering_results = self.session.clustering
+            _, clustering_results = self.session.clustering
 
             if clustering_results is not None:
                 n = len(clustering_results.time_indices)
@@ -2740,7 +2760,7 @@ class SimulationsMain(TimeEventsMain):
         Post OPF Time Series
         """
 
-        results = self.session.nodal_capacity_optimization_ts
+        _, results = self.session.nodal_capacity_optimization_ts
 
         if results is not None:
 

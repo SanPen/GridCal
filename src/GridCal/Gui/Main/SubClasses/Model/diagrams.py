@@ -405,8 +405,8 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
-                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(
-                    SimulationTypes.PowerFlowTimeSeries_run)
+                drv, results = self.session.power_flow_ts
+
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -609,7 +609,7 @@ class DiagramsMain(CompiledArraysMain):
 
             t_idx2 = 0 if t_idx is None else t_idx
 
-            results: sim.NodalCapacityTimeSeriesResults = self.session.nodal_capacity_optimization_ts
+            _, results = self.session.nodal_capacity_optimization_ts
             bus_active = [bus.active_prof[t_idx2] for bus in self.circuit.buses]
             br_active = [br.active_prof[t_idx2] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.hvdc_lines]
@@ -655,6 +655,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.Sf,
                                               loadings=results.loading,
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               loading_label='Loading',
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
@@ -685,6 +686,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.Sf[t_idx],
                                               loadings=np.abs(results.loading[t_idx]),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -715,6 +717,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.Sf[con_idx, :],
                                               loadings=np.abs(results.loading[con_idx, :]),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -745,6 +748,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.max_flows[t_idx, :],
                                               loadings=np.abs(results.max_loading[t_idx]),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -763,7 +767,7 @@ class DiagramsMain(CompiledArraysMain):
                 nbr = self.circuit.get_branch_number()
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
                                               hvdc_lines=hvdc_lines,
@@ -774,6 +778,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=np.zeros(nbr, dtype=complex),
                                               loadings=np.zeros(nbr, dtype=complex),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -790,6 +795,30 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.AvailableTransferCapacityDriver.tpe.value:
             pass
 
+        elif current_study == SimulationTypes.DesignView.value.tpe.value:
+            nbus = self.circuit.get_bus_number()
+            nbr = self.circuit.get_branch_number()
+            bus_active = [bus.active for bus in self.circuit.buses]
+            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+            return diagram.colour_results(buses=buses,
+                                          branches=branches,
+                                          hvdc_lines=hvdc_lines,
+                                          Sbus=np.zeros(nbus, dtype=complex),
+                                          voltages=np.ones(nbus, dtype=complex),
+                                          bus_active=bus_active,
+                                          Sf=np.zeros(nbr, dtype=complex),
+                                          St=np.zeros(nbr, dtype=complex),
+                                          loadings=np.zeros(nbr, dtype=complex),
+                                          br_active=br_active,
+                                          hvdc_active=hvdc_active,
+                                          use_flow_based_width=use_flow_based_width,
+                                          min_branch_width=min_branch_width,
+                                          max_branch_width=max_branch_width,
+                                          min_bus_width=min_bus_width,
+                                          max_bus_width=max_bus_width,
+                                          cmap=cmap)
+
         elif current_study == 'Transient stability':
             raise Exception('Not implemented :(')
 
@@ -803,7 +832,12 @@ class DiagramsMain(CompiledArraysMain):
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
-            val = self.ui.diagram_step_slider.value()
+
+            offset = self.ui.diagram_step_slider.minimum()
+            if offset == -1:
+                offset = 0
+            val = self.ui.diagram_step_slider.value() - offset
+
             t_idx = val if val > -1 else None
 
             for diagram in self.diagram_widgets_list:
