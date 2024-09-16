@@ -19,6 +19,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOpti
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
 from GridCalEngine.Simulations.options_template import OptionsTemplate
 from typing import Union
+from GridCalEngine.enumerations import SolverType
+
 
 
 class InvestmentsEvaluationOptions(OptionsTemplate):
@@ -45,7 +47,7 @@ class InvestmentsEvaluationOptions(OptionsTemplate):
 
         self.pf_options: PowerFlowOptions = pf_options if pf_options else PowerFlowOptions()
 
-        self.opf_options: OptimalPowerFlowOptions = opf_options if opf_options else OptimalPowerFlowOptions()
+        self.opf_options: OptimalPowerFlowOptions = opf_options if opf_options else OptimalPowerFlowOptions(solver=SolverType.NONLINEAR_OPF)
 
         self.solver = solver
 
