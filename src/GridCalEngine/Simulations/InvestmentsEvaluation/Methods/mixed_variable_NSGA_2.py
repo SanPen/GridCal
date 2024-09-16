@@ -124,12 +124,12 @@ class MixedVariableProblem(ElementwiseProblem):
             self.default_template.append(default_template)
 
         # Iterate over shunts with B as a design variable
-        for elm in grid.shunts:
-            if elm.B >= 0:
-                self.variables[elm.idtag] = Real(bounds=(0.0, elm.B))  # Capacitor
-            else:
-                self.variables[elm.idtag] = Real(bounds=(elm.B, 0.0))  # Reactor
-            self.devices.append(elm)
+        # for elm in grid.shunts:
+        #     if elm.B >= 0:
+        #         self.variables[elm.idtag] = Real(bounds=(0.0, elm.B))  # Capacitor
+        #     else:
+        #         self.variables[elm.idtag] = Real(bounds=(elm.B, 0.0))  # Reactor
+        #     self.devices.append(elm)
         for elm in grid.controllable_shunts:
             self.variables[elm.idtag] = Real(bounds=(elm.Bmin, elm.Bmax))  # Bounded by Bmin and Bmax
             self.devices.append(elm)
