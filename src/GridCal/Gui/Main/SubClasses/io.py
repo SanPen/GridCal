@@ -468,12 +468,6 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                # if not new_circuit.valid_for_simulation():
-                #     # load the circuit right away
-                #     self.stuff_running_now.append('file_open')
-                #     self.post_open_file()
-                # else:
-                # add the circuit
                 logger = self.circuit.add_circuit(new_circuit)
 
                 if len(logger) > 0:
@@ -496,7 +490,7 @@ class IoMain(ConfigurationMain):
                 else:
                     return
 
-                if diagram_widget is not None:
+                if isinstance(diagram_widget, SchematicWidget):
                     injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
                     injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
                     injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
@@ -521,7 +515,7 @@ class IoMain(ConfigurationMain):
                                                              text_func=None)
                     diagram_widget.set_selected_buses(buses=new_circuit.buses)
                 else:
-                    info_msg("No diagram was selected...", title="Add to current diagram")
+                    info_msg("No schematic diagram was selected...", title="Add to current diagram")
 
     def export_circuit_differential(self):
         """

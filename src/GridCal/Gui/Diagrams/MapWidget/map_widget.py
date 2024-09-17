@@ -35,7 +35,7 @@ from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout, QVBoxLayout,
-                               QGraphicsSceneMouseEvent, QGraphicsItem, QLabel)
+                               QGraphicsSceneMouseEvent, QGraphicsItem, QLabel, QGraphicsProxyWidget)
 
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
@@ -113,6 +113,19 @@ class MapView(QGraphicsView):
         self._scene = scene
 
         self.map_widget = map_widget
+
+        # Create a QLabel
+        self.label = QLabel("Bottom Left Label")
+        self.label.setStyleSheet("background-color: rgba(255, 255, 0, 150);")  # Semi-transparent yellow
+
+        # Create a QGraphicsProxyWidget for the QLabel
+        self.proxy_widget = QGraphicsProxyWidget()
+        self.proxy_widget.setWidget(self.label)
+        # Position the QLabel within the scene
+        self.proxy_widget.setPos(0, scene.sceneRect().height() - self.label.height())  # Bottom-left position
+
+        # Add the proxy widget to the scene
+        self._scene.addItem(self.proxy_widget)
 
         self.mouse_x = None
         self.mouse_y = None
@@ -269,6 +282,8 @@ class MapView(QGraphicsView):
 
         self.map_widget.resizeEvent(event=event)
 
+        self.proxy_widget.setPos(0, self._scene.sceneRect().height() - self.label.height())  # Bottom-left position
+
     def setSizeDiagram(self) -> None:
         """
 
@@ -360,6 +375,9 @@ class NoticeWidget(QWidget):
         :param map_widget:
         """
         QWidget.__init__(self)
+
+        # Enable drop functionality
+        self.setAcceptDrops(True)
 
         self.map_widget = map_widget
 
@@ -453,8 +471,8 @@ class NoticeWidget(QWidget):
         :param event:
         :return:
         """
-        super().dragEnterEvent(event)
-        self.map_widget.view.dragEnterEvent(event)
+        if event.mimeData().hasFormat('component/name'):
+            event.accept()
 
     def dragMoveEvent(self, event: QDragMoveEvent):
         """
@@ -592,8 +610,9 @@ class MapWidget(QWidget):
                                   latitude=40)
 
         # add the widgets in a leyered manner
-        self.layout.addWidget(self.notice_widget)
+        # self.layout.addWidget(self.notice_widget)
         self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
+
         self.setLayout(self.layout)  # Set the layout for the MapWidget
 
     @property
@@ -916,6 +935,7 @@ class MapWidget(QWidget):
 
         if updateDiagram:
             self.view.setSceneRectDiagram()
+
 
     def enterEvent(self, event: QEnterEvent):
         """

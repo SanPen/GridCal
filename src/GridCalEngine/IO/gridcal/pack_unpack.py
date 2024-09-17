@@ -1128,7 +1128,6 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
                                                               gc_prop=gc_prop,
                                                               elm=elm,
                                                               property_value=val)
-                                print()
 
                             elif gc_prop.tpe == int:
                                 # set the value directly

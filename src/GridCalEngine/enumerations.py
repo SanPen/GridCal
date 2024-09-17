@@ -1711,6 +1711,7 @@ class SimulationTypes(Enum):
     """
     Enumeration of simulation types
     """
+    DesignView = 'Design View'
     TemplateDriver = 'Template'
     PowerFlow_run = 'Power flow'
     ShortCircuit_run = 'Short circuit'

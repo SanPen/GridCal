@@ -458,9 +458,11 @@ class GridMapWidget(BaseDiagramWidget):
         if it1 == it2:
             return 0
 
-        new_line = Line()
-        new_line.set_data_from(it1.line_container.api_object)
+        # TODO: Review this and possibly link to existing functions
+        # new_line = Line()
+        # new_line.set_data_from(it1.line_container.api_object)
         # ln1 = self.api_object.copy()
+        new_line = it1.line_container.api_object.copy()
 
         better_first, better_second, bus_from, bus_to = compare_options(it1, it2)
 
@@ -956,7 +958,6 @@ class GridMapWidget(BaseDiagramWidget):
 
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
-        bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
 
         vmin = 0
         vmax = 1.2

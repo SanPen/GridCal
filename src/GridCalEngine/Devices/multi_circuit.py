@@ -767,6 +767,13 @@ class MultiCircuit(Assets):
 
         self.snapshot_time = self.time_profile[t]
 
+    def get_snapshot_time_str(self) -> str:
+        """
+        Get the snapshot datetime as a string
+        :return: snapshot datetime string
+        """
+        return self.snapshot_time.strftime("%Y-%m-%d %H:%M:%S")
+
     def get_bus_branch_connectivity_matrix(self) -> Tuple[csc_matrix, csc_matrix, csc_matrix]:
         """
         Get the branch-bus connectivity
