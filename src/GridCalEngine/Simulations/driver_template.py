@@ -210,9 +210,6 @@ class TimeSeriesDriverTemplate(DriverTemplate):
 
                     self.topologic_groups: Dict[int, List[int]] = self.get_topologic_groups()
 
-        # dictionary to query the available time indices and map them to  the internal results indices
-        self.reverse_time_indices = {val: i for i, val in enumerate(self.time_indices)}
-
     def get_steps(self):
         """
         Get time steps list of strings
