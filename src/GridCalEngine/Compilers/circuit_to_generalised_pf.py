@@ -21,7 +21,7 @@ from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import (BusMode, BranchImpedanceMode, ExternalGridMode, ConverterControlType,
-                                        TransformerControlType, HvdcControlType)
+                                        TransformerControlType, HvdcControlType, GpfControlType)
 from GridCalEngine.basic_structures import CxVec
 import GridCalEngine.DataStructures as ds
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -47,9 +47,11 @@ def get_bus_data(circuit: MultiCircuit,
     substation_dict = {sub: i for i, sub in enumerate(circuit.substations)}
 
     bus_index_dict: Dict[str, int] = dict()
+    bus_name_to_idx: Dict[str, int] = dict()
 
     for i, bus in enumerate(circuit.buses):
         bus_index_dict[bus.name] = i  # associate the NAME to the index
+        bus_name_to_idx[bus.name] = i  # associate the NAME to the index
 
         # bus parameters
         bus_data.names[i] = bus.name
@@ -325,6 +327,14 @@ def get_generator_data(circuit: MultiCircuit,
     :param use_stored_guess:
     :return:
     """
+    print("(circuit_to_generalised_pf) bus_data.name_to_idx", bus_data.name_to_idx)	
+    #check if there are any dc buses
+    hasDC = bus_data.is_dc.sum() > 0
+    if hasDC:
+        print("(circuit_to_generalised_pf) has DC!")
+    else:
+        print("(circuit_to_generalised_pf) has no DC!")
+
     devices = circuit.get_generators()
 
     data = ds.GeneratorData(nelm=len(devices),
@@ -370,13 +380,29 @@ def get_generator_data(circuit: MultiCircuit,
         data.pmax[k] = elm.Pmax
         data.pmin[k] = elm.Pmin
 
+        if hasDC: 
+            data.gpf_ctrl1_elm[k] = elm.gpf_ctrl1_elm
+            data.gpf_ctrl1_mode[k] = elm.gpf_ctrl1_mode
+            data.gpf_ctrl1_val[k] = elm.gpf_ctrl1_val
+            data.gpf_ctrl2_elm[k] = elm.gpf_ctrl2_elm
+            data.gpf_ctrl2_mode[k] = elm.gpf_ctrl2_mode
+            data.gpf_ctrl2_val[k] = elm.gpf_ctrl2_val
+        else:
+            #define a string1 where you replace each space with two spaces
+            # strinf1 = elm.bus.name.replace(" ", "  ")
+            data.gpf_ctrl1_elm[k] = str(elm.bus.name)
+            data.gpf_ctrl1_mode[k] = GpfControlType.type_Vm
+            data.gpf_ctrl1_val[k] = elm.Vset
+            data.gpf_ctrl2_elm[k] = elm.name
+            data.gpf_ctrl2_mode[k] = GpfControlType.type_Pzip
+            data.gpf_ctrl2_val[k] = elm.P/100.0
 
-        data.gpf_ctrl1_elm[k] = elm.gpf_ctrl1_elm
-        data.gpf_ctrl1_mode[k] = elm.gpf_ctrl1_mode
-        data.gpf_ctrl1_val[k] = elm.gpf_ctrl1_val
-        data.gpf_ctrl2_elm[k] = elm.gpf_ctrl2_elm
-        data.gpf_ctrl2_mode[k] = elm.gpf_ctrl2_mode
-        data.gpf_ctrl2_val[k] = elm.gpf_ctrl2_val
+            print("elm.bus", elm.bus)
+
+            #check if elm.bus is in bus_dict
+            if elm.bus in bus_data.name_to_idx:
+                print("(circuit_to_generalised_pf) elm.bus in bus_data.name_to_idx")
+                print(elm.bus)
 
 
         if time_series:

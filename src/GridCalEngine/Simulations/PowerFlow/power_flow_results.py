@@ -65,6 +65,7 @@ class NumericPowerFlowResults:
         self.V = V
         self.converged = converged
         self.norm_f = norm_f
+        print('NumericPowerFlowResults norm_f:', norm_f)
         self.Scalc = Scalc
         self.ma = ma
         self.theta = theta
@@ -73,6 +74,7 @@ class NumericPowerFlowResults:
         self.Yf = Yf
         self.Yt = Yt
         self.iterations = iterations
+        print('NumericPowerFlowResults iterations:', iterations)
         self.elapsed = elapsed
         self.method = None
         self.vsc_results = vsc_results

@@ -22,6 +22,8 @@ from GridCalEngine.Utils.NumericalMethods.common import (ConvexMethodResult, Con
                                                          check_function_and_args)
 from GridCalEngine.Utils.NumericalMethods.sparse_solve import get_linear_solver
 from GridCalEngine.basic_structures import Logger
+import time
+import timeit
 
 
 linear_solver = get_linear_solver()
@@ -90,8 +92,14 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
             # compute update step
             try:
 
-                # compute update step: J x Δx = Δg
+                # use timeit library
+                startTime = timeit.default_timer()  # Start time
+                #print size of ret.J and ret.f
+                print("(newton_raphson.py) Size of ret.J: ", ret.J.shape)
+                print("(newton_raphson.py) Size of ret.f: ", ret.f.shape)
                 dx = linear_solver(ret.J, ret.f)
+                endTime = timeit.default_timer()  # End time
+                print("(newton_raphson.py) Time to compute dx: ", endTime - startTime)
 
                 if np.isnan(dx).any():
                     logger.add_error(f"Newton-Raphson's Jacobian is singular @iter {iteration}:")

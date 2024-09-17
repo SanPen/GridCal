@@ -28,6 +28,7 @@ from GridCalEngine.Compilers.circuit_to_newton_pa import (NEWTON_PA_AVAILABLE, n
                                                           translate_newton_pa_pf_results)
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE, pgm_pf
 from GridCalEngine.enumerations import EngineType, SimulationTypes
+import time
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -110,6 +111,7 @@ class PowerFlowDriver(DriverTemplate):
         Pack run_pf for the QThread
         """
         self.tic()
+        startTime = time.time()
         if self.engine == EngineType.NewtonPA and not NEWTON_PA_AVAILABLE:
             self.engine = EngineType.GridCal
             self.logger.add_warning('Failed back to GridCal')
@@ -174,6 +176,8 @@ class PowerFlowDriver(DriverTemplate):
         self.results.fill_circuit_info(self.grid)
 
         self.toc()
+        endTime = time.time()
+        print("Time taken for entire power flow simulation: ", endTime - startTime)
 
         for convergence_report in self.results.convergence_reports:
             n = len(convergence_report.error_)

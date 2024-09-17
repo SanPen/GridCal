@@ -2876,6 +2876,7 @@ def compile_numerical_circuit_at(circuit: MultiCircuit,
                                             time_series=time_series,
                                             areas_dict=areas_dict,
                                             use_stored_guess=use_stored_guess)
+                                            
 
     nc.generator_data, gen_dict = gc_compiler2.get_generator_data(circuit=circuit,
                                                                   bus_dict=bus_dict,

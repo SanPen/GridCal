@@ -1,13 +1,13 @@
 import os
 import sys
 
-# sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
+sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.generalised_power_flow import run_nonlinear_opf, \
     ac_optimal_power_flow
 from GridCalEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
-
+import timeit
 
 def example_3bus_acopf():
     """
@@ -510,17 +510,56 @@ def system_1_5_Subsystem():
 
 def ieee14():
     # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
-    file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/14bus.gridcal'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/BEST6CASE/final.gridcal'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/experiments/14busfinaltiming.gridcal'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/importantComparison/fubm_caseHVDC_vt.gridcal'
+    file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/experiments/IEEE 118.xlsx'
     grid = gce.FileOpen(file_path).open()
     assert grid is not None
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-7, retry_with_other_methods=False)
+    startTime = timeit.default_timer()
+    results = gce.power_flow(grid, options=pf_options)
+    print("Time:", timeit.default_timer() - startTime)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+def entsoE():
+    file0 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/20211216T1459Z_ENTSO-E_BD_1346.zip'
+    file1 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/PT_3PQT_v2.zip'
+                               
+    file_list = [file0, file1]
+    grid = gce.FileOpen(file_list).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-7, retry_with_other_methods=True)
+    startTime = timeit.default_timer()
+    results = gce.power_flow(grid, options=pf_options)
+    print("Time:", timeit.default_timer() - startTime)
+
+    #print convergence status
+    print("Converged?", results.converged)
+
+    print(results.get_bus_df())
+    print()
+    print(results.get_branch_df())
+    print("Error:", results.error)
+
+
+def bigBus():
+    # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/experiments/IEEE 118.xlsx'
+    grid = gce.FileOpen(file_path).open()
+    assert grid is not None
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-7, retry_with_other_methods=False)
 
     results = gce.power_flow(grid, options=pf_options)
 
     print(results.get_bus_df())
     print()
     print(results.get_branch_df())
-    print("Error:", results.error)  
+    print("Error:", results.error)
 
 
 def simple3busacdc_controllingPower_wtrafo():
@@ -1349,7 +1388,10 @@ if __name__ == '__main__':
     # simple4busacdc_wControllableTrafo_remoteControl() #converges true, nodal power balances derivatives look good too
     # complex6bus() #converges true, derivatives at least the nodal power balances look good
     # complex10bus()
-    ieee14() #converges true, derivatives look good   
+    # ieee14() #converges true, derivatives look good   
+    # bigBus()
+    entsoE()
+
     # system_1_5_Subsystem()
 
 

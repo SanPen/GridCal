@@ -25,6 +25,8 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerF
 from GridCalEngine.enumerations import ReactivePowerControlMode
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
 from GridCalEngine.basic_structures import Logger
+import time
+import timeit
 
 linear_solver = get_linear_solver()
 sparse = get_sparse_type()
@@ -74,6 +76,9 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     npq = len(pq)
     npvpq = npv + npq
 
+    print("(newton_raphson.py) Ybus:")
+    print(Ybus.todense())
+
     if npvpq > 0:
 
         # evaluate F(x0)
@@ -97,7 +102,11 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
 
             # compute update step
             try:
+                print("jgkdlfjdfl;gjdlf;kgjdflkgjsdf;lgkjdsf;lkg")
+                startTime = timeit.default_timer()
                 dx = linear_solver(J, f)
+                endTime = timeit.default_timer()
+                print("(newton_raphson.py) Time to compute dx: ", endTime - startTime)
 
                 if np.isnan(dx).any():
                     end = time.time()

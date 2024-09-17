@@ -111,6 +111,9 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     tapMod_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
     tapAng_contrTrafo = np.zeros(nc.controllable_trafo_data.nelm)
 
+    print("(newton_raphson_general.py) known angle bus indices")
+    print(nc.gpf_kn_angle_idx)
+
 
     '''
     GPF ver 2
@@ -129,11 +132,11 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
         ret: ConvexMethodResult = newton_raphson(func=pf_function_gpf2,
                                                     func_args=(Vm0, Va0, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, Ybus, nc),
                                                     x0=_x0,
-                                                    tol=1e-7,
+                                                    tol=1e-6,
                                                     max_iter=pf_options.max_iter,
                                                     # max_iter = 3,
                                                     trust=pf_options.trust_radius,
-                                                    verbose=pf_options.verbose,
+                                                    verbose=1,
                                                     logger= logger)
         
         # update setpoints
@@ -141,7 +144,21 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
         p_from_vsc, p_to_vsc, q_to_vsc = update_vsc_setpoints(nc, p_from_vsc, p_to_vsc, q_to_vsc)
         p_zip_gen, q_zip_gen = update_gen_setpoints(nc, p_zip_gen, q_zip_gen)
         p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = update_contTrafo_setpoints(nc, p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)
-
+        print("p_from_vsc")
+        print(p_from_vsc)
+        print("p_to_vsc")
+        print(p_to_vsc)
+        print("q_to_vsc")
+        print(q_to_vsc)
+        print("")
+        print("p_from_contTrafo")
+        print(p_from_contTrafo)
+        print("q_from_contTrafo")
+        print(q_from_contTrafo)
+        print("p_to_contTrafo")
+        print(p_to_contTrafo)
+        print("q_to_contTrafo")
+        print(q_to_contTrafo)
     else:
         Vm0, Va0, S0, I0, Y0, p_to, p_from, q_to, q_from, p_zip, q_zip, modulations, taus = update_setpoints(nc, Vm0, Va0, S0, I0, Y0, p_from, p_to, q_from, q_to, p_zip, q_zip, modulations, taus, verbose = 0)
         p_zip = update_zips(nc.nbus, p_zip, nc.kn_pzip_idx, nc.kn_pzip_setpoints)
@@ -201,6 +218,7 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
 
     end = time.time()
     elapsed = end - start
+    print("(newton_raphson_general.py) Time taken for power flow simulation: ", elapsed)
 
     # if ret.converged == False:
     #     #raise an exception that says the power flow did not converge
@@ -587,11 +605,16 @@ def pf_function_gpf2(x: Vec,
     Vm, Va, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = x2var_gpf2(x, nc, Vm0, Va0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)
     V = Vm * np.exp(1j * Va)
 
+    startTime = time.time()
     g = compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc)
+    endTime = time.time()
+    print("(newton_raphson_general.py) buildilng g time", endTime - startTime)	
     # print("(newton_raphson_general.py) g", g)
 
     if compute_jac:
+        
         Gx = compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc)
+
     else:
         Gx = None
 
@@ -676,6 +699,12 @@ def compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_g
     contTrafo_frombus_idx = nc.controllable_trafo_data.F
     contTrafo_tobus_idx = nc.controllable_trafo_data.T
 
+    # print("(newton_raphson_general.py) Vm", abs(V))
+    # print("(newton_raphson_general.py) Va", np.angle(V))
+    # print("(newton_raphson_general.py) Sbus", S0)
+    # print("(newton_raphson_general.py) I0", I0)
+    # print("(newton_raphson_general.py) Y0", Y0)
+
     # print("(newton_raphson_general.py) compute_fx_gpf2 Sbus", Sbus)
     # print("(newton_raphson_general.py) compute_fx_gpf2 Scalc", Scalc)
 
@@ -690,6 +719,11 @@ def compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_g
     q_to_overall = Cto_vsc @ q_to_vsc + Cto_contTrafo @ q_to_contTrafo
     q_from_overall = Cfrom_contTrafo @ q_from_contTrafo
 
+    # print("(newton_raphson_general.py) p_to", p_to_overall)
+    # print("(newton_raphson_general.py) p_from", p_from_overall)
+    # print("(newton_raphson_general.py) q_to", q_to_overall)
+    # print("(newton_raphson_general.py) q_from", q_from_overall)
+
     p_to_vsc_at_bus = Cto_vsc @ p_to_vsc
     q_to_vsc_at_bus = Cto_vsc @ q_to_vsc
     p_from_vsc_at_bus = Cfrom_vsc @ p_from_vsc
@@ -698,6 +732,9 @@ def compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_g
 
     p_zip_overall = C_gen @ p_zip_gen
     q_zip_overall = C_gen @ q_zip_gen
+
+    # print("(newton_raphson_general.py) p_zip", p_zip_overall)
+    # print("(newton_raphson_general.py) q_zip", q_zip_overall)
 
     #controllable trafo stuff
     v_from_contTrafo = V[nc.controllable_trafo_data.F]
@@ -760,7 +797,7 @@ def compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_g
                                  passivePfromSetFromBus, passivePtoSetFromBus, passiveQfromSetFromBus, passiveQtoSetFromBus,
                                     passivePfromSetToBus, passivePtoSetToBus, passiveQfromSetToBus, passiveQtoSetToBus,
                                     passivePfromSetYbus, passivePtoSetYbus, passiveQfromSetYbus, passiveQtoSetYbus)
-    
+    # print("(newton_raphson_general.py) compute_fx_gpf2 g", g)
     return g
 
 
@@ -824,16 +861,33 @@ def delete_rows_csc(matrix, rows_to_delete):
     Returns:
     - scipy.sparse.csc_matrix, the resulting matrix with specified rows deleted.
     """
+    #reverse sort the rows_to_delete
+    rows_to_delete = np.sort(rows_to_delete)[::-1]
+
     matrix_coo = matrix.tocoo()
     mask = ~np.isin(matrix_coo.row, rows_to_delete)
-    filtered_matrix = coo_matrix((matrix_coo.data[mask], (matrix_coo.row[mask], matrix_coo.col[mask])),
+    try:
+        filtered_matrix = coo_matrix((matrix_coo.data[mask], (matrix_coo.row[mask], matrix_coo.col[mask])),
                                  shape=(matrix_coo.shape[0] - len(rows_to_delete), matrix_coo.shape[1]))
+    except:
+        pass
 
     # Adjust row indices to account for deleted rows
     row_offset = np.cumsum(np.isin(np.arange(matrix_coo.shape[0]), rows_to_delete))
     filtered_matrix.row -= row_offset[filtered_matrix.row]
     
     return filtered_matrix.tocsc()
+
+def delete_rows_csr(mat, indices):
+    """
+    Remove the rows denoted by ``indices`` form the CSR sparse matrix ``mat``.
+    """
+    if not isinstance(mat, csr_matrix):
+        raise ValueError("works only for CSR format -- use .tocsr() first")
+    indices = list(indices)
+    mask = np.ones(mat.shape[0], dtype=bool)
+    mask[indices] = False
+    return mat[mask]
 
 
 def stack(*args):
@@ -948,9 +1002,13 @@ def compute_gc_symbolic_NodalBalance_zip(x, V, g, Ybus, S0, I0, Y0, nc):
     j_Qzip = j_zip
 
     #now we remove the columns where the zips are known and we remove the rows where the qzips are dc indices
-    j_Pzip_trimmed = delete_columns_csc(j_Pzip, nc.gpf_kn_pzip_gen_idx)
-    _j_Qzip_trimmed = delete_columns_csc(j_Qzip, nc.gpf_kn_qzip_gen_idx)
-    j_Qzip_trimmed = delete_rows_csc(_j_Qzip_trimmed, nc.dc_indices)
+    # j_Pzip_trimmed = delete_columns_csc(j_Pzip, nc.gpf_kn_pzip_gen_idx)
+    # _j_Qzip_trimmed = delete_columns_csc(j_Qzip, nc.gpf_kn_qzip_gen_idx)
+    # j_Qzip_trimmed = delete_rows_csc(_j_Qzip_trimmed, nc.dc_indices)
+
+    j_Pzip_trimmed = delete_rows_csr(j_Pzip.transpose().tocsr(), nc.gpf_kn_pzip_gen_idx).transpose().tocsc()
+    _j_Qzip_trimmed = delete_rows_csr(j_Qzip.transpose().tocsr(), nc.gpf_kn_qzip_gen_idx).transpose().tocsc()
+    j_Qzip_trimmed = delete_rows_csr(_j_Qzip_trimmed.tocsr(), nc.dc_indices).tocsc()
 
     '''
     |J_Pzip|0|
@@ -1057,6 +1115,15 @@ def compute_gx_symbolic_VSC_VmVa(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to
     p_to_vsc += 1e-7    
     q_to_vsc += 1e-7
 
+    #print everything shape
+    # print("(newton_raphson_general.py) a_arr", a_arr)
+    # print("(newton_raphson_general.py) b_arr", b_arr)
+    # print("(newton_raphson_general.py) c_arr", c_arr)
+    # print("(newton_raphson_general.py) Vm.shape", Vm.shape)
+    # print("(newton_raphson_general.py) p_to_vsc.shape", p_to_vsc.shape)
+    # print("(newton_raphson_general.py) q_to_vsc.shape", q_to_vsc.shape)
+    # print("(newton_raphson_general.py) vsc_tobus_idx.shape", vsc_tobus_idx.shape)
+
     dL_dVt = a_arr*(p_to_vsc**2 + q_to_vsc**2)**0.5 / Vm[vsc_tobus_idx]**2 + 2*c_arr*(p_to_vsc**2 + q_to_vsc**2)/Vm[vsc_tobus_idx]**3
     dL_dPt = 1 - b_arr*p_to_vsc/(Vm[vsc_tobus_idx]*(p_to_vsc**2 + q_to_vsc**2)**0.5) - 2*c_arr*p_to_vsc/Vm[vsc_tobus_idx]**2
     dL_dQt = -b_arr*q_to_vsc/(Vm[vsc_tobus_idx]*(p_to_vsc**2 + q_to_vsc**2)**0.5)- 2*c_arr*q_to_vsc/Vm[vsc_tobus_idx]**2
@@ -1069,17 +1136,32 @@ def compute_gx_symbolic_VSC_VmVa(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to
     dL_dQt = -1 * dL_dQt
     dL_dPf = -1 * dL_dPf
 
+    #create identity matrix of ndarray type of size nc.vsc_data.nelm
+    I = np.eye(nc.vsc_data.nelm)
+
     Cto_vsc = nc.vsc_data.C_vsc_bus_t.transpose()
-    j_L_Vt = Cto_vsc @ dL_dVt
-    j_L_Pt = dL_dPt
-    j_L_Qt = dL_dQt
-    j_L_Pf = dL_dPf
+    # print("(newton_raphson_general.py) Cto_vsc type", type(Cto_vsc))	
+    # print("(newton_raphson_general.py) Cto_vsc.shape", Cto_vsc.shape)
+    # print("(newton_raphson_general.py) dL_dVt.shape", dL_dVt.shape)
+    # print("(newton_raphson_general.py) dL_dVt type", type(dL_dVt))
+    j_L_Vt = np.multiply(Cto_vsc.toarray(), dL_dVt)
+    # print("(newton_raphson_general.py) j_L_Vt.shape", j_L_Vt.shape)
+    j_L_Pt = np.multiply(I, dL_dPt)
+    # print("(newton_raphson_general.py) j_L_Pt.shape", j_L_Pt.shape)
+    j_L_Qt = np.multiply(I, dL_dQt)
+    # print("(newton_raphson_general.py) j_L_Qt.shape", j_L_Qt.shape)	
+    j_L_Pf = np.multiply(I, dL_dPf)
+    # print("(newton_raphson_general.py) j_L_Pf.shape", j_L_Pf.shape)	
 
     #start slicing columns according to gpf_un_volt_idx, gpf_un_pfrom_vsc_kdx, gpf_un_pto_vsc_kdx, gpf_un_qto_vsc_kdx
-    j_L_Vt_trimmed = csr_matrix(j_L_Vt)[:, nc.gpf_un_volt_idx]
+    j_L_Vt_trimmed = csr_matrix(j_L_Vt)[nc.gpf_un_volt_idx, :].transpose()
+    # print("(newton_raphson_general.py) j_L_Vt_trimmed.shape", j_L_Vt_trimmed.shape)
     j_L_Pf_trimmed = csr_matrix(j_L_Pf)[:, nc.gpf_un_pfrom_vsc_kdx]
+    # print("(newton_raphson_general.py) j_L_Pf_trimmed.shape", j_L_Pf_trimmed.shape)
     j_L_Pt_trimmed = csr_matrix(j_L_Pt)[:, nc.gpf_un_pto_vsc_kdx]
+    # print("(newton_raphson_general.py) j_L_Pt_trimmed.shape", j_L_Pt_trimmed.shape)
     j_L_Qt_trimmed = csr_matrix(j_L_Qt)[:, nc.gpf_un_qto_vsc_kdx]
+    # print("(newton_raphson_general.py) j_L_Qt_trimmed.shape", j_L_Qt_trimmed.shape)
 
     #now we make the chunks of zeros
     dL_dVa = csc_matrix((nc.vsc_data.nelm, nc.gpf_un_angle_idx.size))
@@ -1095,6 +1177,21 @@ def compute_gx_symbolic_VSC_VmVa(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to
     '''
     |j_L_Vt_trimmed|dL_dVa|dL_dPzip|dL_dQzip|j_L_Pf_trimmed|j_L_Pt_trimmed|j_L_Qt_trimmed|dL_dPfrom_Trafo|dL_dQfrom_Trafo|dL_dPto_Trafo|dL_dQto_Trafo|dL_dMod_Trafo|dL_dTau_Trafo|
     '''
+
+    #print out dimensions of all
+    # print("(newton_raphson_general.py) j_L_Vt_trimmed.shape", j_L_Vt_trimmed.shape)
+    # print("(newton_raphson_general.py) dL_dVa.shape", dL_dVa.shape)
+    # print("(newton_raphson_general.py) dL_dPzip.shape", dL_dPzip.shape)
+    # print("(newton_raphson_general.py) dL_dQzip.shape", dL_dQzip.shape)
+    # print("(newton_raphson_general.py) j_L_Pf_trimmed.shape", j_L_Pf_trimmed.shape)
+    # print("(newton_raphson_general.py) j_L_Pt_trimmed.shape", j_L_Pt_trimmed.shape)
+    # print("(newton_raphson_general.py) j_L_Qt_trimmed.shape", j_L_Qt_trimmed.shape)
+    # print("(newton_raphson_general.py) dL_dPfrom_Trafo.shape", dL_dPfrom_Trafo.shape)
+    # print("(newton_raphson_general.py) dL_dQfrom_Trafo.shape", dL_dQfrom_Trafo.shape)
+    # print("(newton_raphson_general.py) dL_dPto_Trafo.shape", dL_dPto_Trafo.shape)
+    # print("(newton_raphson_general.py) dL_dQto_Trafo.shape", dL_dQto_Trafo.shape)
+    # print("(newton_raphson_general.py) dL_dMod_Trafo.shape", dL_dMod_Trafo.shape)
+    # print("(newton_raphson_general.py) dL_dTau_Trafo.shape", dL_dTau_Trafo.shape)
     
     hChunk0 = hstack([j_L_Vt_trimmed.tocsc(), dL_dVa, dL_dPzip, dL_dQzip, j_L_Pf_trimmed.tocsc(), j_L_Pt_trimmed.tocsc(), j_L_Qt_trimmed.tocsc(), dL_dPfrom_Trafo, dL_dQfrom_Trafo, dL_dPto_Trafo, dL_dQto_Trafo, dL_dMod_Trafo, dL_dTau_Trafo])
     return hChunk0
@@ -1518,12 +1615,19 @@ def compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p
     x1 = x.copy()
     Vm = np.abs(V)
     Va = np.angle(V)
-    
+    # startTime = time.time()
+    # J = compute_gx_gpf_symbolic(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to_vsc, q_to_vsc, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo) 
+    # endTime = time.time()
+    # print("(newton_raphson_general.py) building Gx time", endTime - startTime)
     try:
         if onlyNumerical:
             raise Exception("Switching to numerical differentiation")
-        
-        J = compute_gx_gpf_symbolic(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to_vsc, q_to_vsc, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)          
+        startTime = time.time()
+        J = compute_gx_gpf_symbolic(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to_vsc, q_to_vsc, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)         
+        endTime = time.time()
+        print("(newton_raphson_general.py) buildilng Gx time", endTime - startTime)
+        #print length of x 
+        print("(newton_raphson_general.py) length of x", len(x))
         assert J.shape == (len(x), len(x))
         if det(J.todense()) == 0:
             raise Exception("Determinant of J is zero, switching to numerical differentiation")
@@ -1531,6 +1635,7 @@ def compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p
         return J
 
     except:
+        print("Switching to numerical differentiation")	
         J = np.zeros((len(x), len(x)), dtype=float)
         for i in range(len(x)):
             '''
@@ -1771,11 +1876,11 @@ def compute_fx_gpf2_raiyan(Scalc, Sbus, V, all_bus_idx, ac_indices, dc_indices, 
 
     active_power_balance = Scalc.real - Sbus.real + p_to_overall + p_from_overall - p_zip_overall
     fx.extend(active_power_balance)
-    fx_names.append(f"All Active Power Balance Bus {all_bus_idx}")
+    # fx_names.append(f"All Active Power Balance Bus {all_bus_idx}")
 
     ac_reactive_power_balance = Scalc[ac_indices].imag - Sbus[ac_indices].imag + q_to_overall[ac_indices] + q_from_overall[ac_indices] - q_zip_overall[ac_indices]
     fx.extend(ac_reactive_power_balance)
-    fx_names.append(f"AC Reactive Power Balance Bus {ac_indices}")
+    # fx_names.append(f"AC Reactive Power Balance Bus {ac_indices}")
 
     # VSC active power balance, check if there are VSC buses
     if nvsc > 0:
@@ -1785,18 +1890,18 @@ def compute_fx_gpf2_raiyan(Scalc, Sbus, V, all_bus_idx, ac_indices, dc_indices, 
         vsc_active_power_balance = vsc_losses - p_to_vsc_at_bus[vsc_tobus_idx] - p_from_vsc_at_bus[vsc_frombus_idx]
         fx.extend(vsc_active_power_balance)
         # if anyone in vsc_active_power_balance is greater than 100, print it
-        for i in range(len(vsc_active_power_balance)):
-            if vsc_active_power_balance[i] > 100:
-                print(f"vsc_active_power_balance[{i}]: ", vsc_active_power_balance[i])
-                print(f"p_to_vsc_at_bus[{vsc_tobus_idx[i]}]: ", p_to_vsc_at_bus[vsc_tobus_idx[i]])
-                print(f"q_to_vsc_at_bus[{vsc_tobus_idx[i]}]: ", q_to_vsc_at_bus[vsc_tobus_idx[i]])
-                print(f"p_from_vsc_at_bus[{vsc_frombus_idx[i]}]: ", p_from_vsc_at_bus[vsc_frombus_idx[i]])
-                #print losses
-                print(f"vsc_current[{i}]: ", vsc_current[i])
-                print(f"vsc_losses[{i}]: ", vsc_losses[i])
-                print(f"vsc_active_power_balance[{i}]: ", vsc_active_power_balance[i])
+        # for i in range(len(vsc_active_power_balance)):
+            # if vsc_active_power_balance[i] > 100:
+        #         print(f"vsc_active_power_balance[{i}]: ", vsc_active_power_balance[i])
+        #         print(f"p_to_vsc_at_bus[{vsc_tobus_idx[i]}]: ", p_to_vsc_at_bus[vsc_tobus_idx[i]])
+        #         print(f"q_to_vsc_at_bus[{vsc_tobus_idx[i]}]: ", q_to_vsc_at_bus[vsc_tobus_idx[i]])
+        #         print(f"p_from_vsc_at_bus[{vsc_frombus_idx[i]}]: ", p_from_vsc_at_bus[vsc_frombus_idx[i]])
+        #         #print losses
+        #         print(f"vsc_current[{i}]: ", vsc_current[i])
+        #         print(f"vsc_losses[{i}]: ", vsc_losses[i])
+        #         print(f"vsc_active_power_balance[{i}]: ", vsc_active_power_balance[i])
 
-        fx_names.append(f"VSC Active Power Balance Bus {vsc_tobus_idx}")
+        # fx_names.append(f"VSC Active Power Balance Bus {vsc_tobus_idx}")
 
 
     if ncontrTrafo > 0:
@@ -1809,10 +1914,24 @@ def compute_fx_gpf2_raiyan(Scalc, Sbus, V, all_bus_idx, ac_indices, dc_indices, 
         _c = (vm_to_contTrafo**2) * (np.conj(y_series) + np.conj(y_shunt))
         _d = v_to_contTrafo * np.conj(v_from_contTrafo) * np.conj(y_series) / (tapMod_contTrafo * np.exp(-1j * tapAng_contrTrafo))
         Sto = _c - _d
+    
         fx.extend(Sfrom.real - p_from_contTrafo)
         fx.extend(Sfrom.imag - q_from_contTrafo)
         fx.extend(Sto.real - p_to_contTrafo)
         fx.extend(Sto.imag - q_to_contTrafo)
+        # Vm = np.abs(V)
+        # vm_from_contTrafo = np.abs(v_from_contTrafo)
+        # vm_to_contTrafo = np.abs(v_to_contTrafo)
+        # _a = (vm_from_contTrafo**2) * (np.conj(y_series) + np.conj(y_shunt)) / tapMod_contTrafo**2
+        # _b = v_from_contTrafo * np.conj(v_to_contTrafo) * np.conj(y_series) / (tapMod_contTrafo * np.exp(1j * tapAng_contrTrafo))
+        # Sfrom = _a - _b
+        # _c = (vm_to_contTrafo**2) * (np.conj(y_series) + np.conj(y_shunt))
+        # _d = v_to_contTrafo * np.conj(v_from_contTrafo) * np.conj(y_series) / (tapMod_contTrafo * np.exp(-1j * tapAng_contrTrafo))
+        # Sto = _c - _d
+        # fx.extend(Sfrom.real - p_from_contTrafo)
+        # fx.extend(Sfrom.imag - q_from_contTrafo)
+        # fx.extend(Sto.real - p_to_contTrafo)
+        # fx.extend(Sto.imag - q_to_contTrafo)
         # print("(newton_raphson_general.py) vm_from_contTrafo", vm_from_contTrafo)
         # print("(newton_raphson_general.py) vm_to_contTrafo", vm_to_contTrafo)
         # print("(newton_raphson_general.py) tapMod_contTrafo", tapMod_contTrafo)
@@ -1823,10 +1942,10 @@ def compute_fx_gpf2_raiyan(Scalc, Sbus, V, all_bus_idx, ac_indices, dc_indices, 
         # print("(newton_raphson_general.py) Sto.imag - q_to_contTrafo: ", Sto.imag - q_to_contTrafo)
 
         #append the names
-        fx_names.append(f"Transformer From Active Power Balance Bus {contTrafo_frombus_idx}")
-        fx_names.append(f"Transformer From Reactive Power Balance Bus {contTrafo_frombus_idx}")
-        fx_names.append(f"Transformer To Active Power Balance Bus {contTrafo_tobus_idx}")
-        fx_names.append(f"Transformer To Reactive Power Balance Bus {contTrafo_tobus_idx}")
+        # fx_names.append(f"Transformer From Active Power Balance Bus {contTrafo_frombus_idx}")
+        # fx_names.append(f"Transformer From Reactive Power Balance Bus {contTrafo_frombus_idx}")
+        # fx_names.append(f"Transformer To Active Power Balance Bus {contTrafo_tobus_idx}")
+        # fx_names.append(f"Transformer To Reactive Power Balance Bus {contTrafo_tobus_idx}")
 
         '''
         # right what are we going to do here, we need to form four equations
@@ -2136,7 +2255,7 @@ def var2x(nc: NumericalCircuit):
     return x
 
 
-def var2x_gpf2(nc: NumericalCircuit, verbose = 1):
+def var2x_gpf2(nc: NumericalCircuit, verbose = 0):
     """
     Generates an initial state vector 'x' for a numerical circuit simulation,
     with each element set to a default value based on the type of variable.

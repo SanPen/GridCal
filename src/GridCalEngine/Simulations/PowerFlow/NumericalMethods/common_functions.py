@@ -20,6 +20,7 @@ import numpy as np
 from scipy.sparse import csc_matrix
 from typing import Tuple, Union
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
+import time
 
 
 @nb.njit(cache=True)
@@ -159,6 +160,12 @@ def compute_converter_losses(V: CxVec,
     # # compute G-switch
     # Gsw = np.zeros(len(F))
     # Gsw[iVscL] = PLoss_IEC / np.power(np.abs(V[F[iVscL]]), 2)
+    print("(common_functions.py) compute_converter_losses")
+    print("V: ", V)
+    #iterate through V. if v is 0, add asmall value to it
+    for i in range(len(V)):
+        if V[i] == 0:
+            V[i] = 1e-6
 
     Gsw = np.zeros(len(F))
     for i in iVscL:
@@ -174,7 +181,7 @@ def compute_converter_losses(V: CxVec,
     return Gsw
 
 
-@nb.jit(nopython=True, cache=True, fastmath=True)
+# @nb.jit(nopython=True, cache=True, fastmath=True)
 def compute_acdc_fx(Vm: Vec,
                     Sbus: CxVec,
                     Scalc: CxVec,
@@ -271,5 +278,4 @@ def compute_acdc_fx(Vm: Vec,
         # F6(x0) Pf control mismatch, Droop Pf - Pfset = Kdp*(Vmf - Vmfset)
         fx[k] = -Sf[i].real + Pfset[i] + Kdp[i] * (Vm[F[i]] - Vmfset[i])
         k += 1
-
     return fx

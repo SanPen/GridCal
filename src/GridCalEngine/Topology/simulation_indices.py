@@ -932,10 +932,10 @@ class SimulationIndices2:
         self.compile_control_indices(control_mode=control_mode, F=F, T=T)
 
         
-        #GENERALISED PF: quick fix, when pure AC system, run the old one.
-        if len(self.dc) == 0:
-            # (Generalised PF) determine the indices and setpoints
-            self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 0)
+        # #GENERALISED PF: quick fix, when pure AC system, run the old one.
+        # if len(self.dc) == 0:
+        #     # (Generalised PF) determine the indices and setpoints
+        #     self.compile_control_indices_generalised_pf(Sbase, gen_data, vsc_data, bus_data, adj, idx_islands, verbose = 1)
 
         # else:
             # (Generalised PF 2) determine the indices and setpoints 
@@ -968,7 +968,6 @@ class SimulationIndices2:
         self.gpf_un_pzip_gen_idx = np.append(self.gpf_un_pzip_gen_idx, self.gen_dc)
         self.gpf_un_qzip_gen_idx = np.append(self.gpf_un_qzip_gen_idx, self.gen_ac)
         
-        #for the vscs
         self.gpf_un_pfrom_vsc_kdx = np.append(self.gpf_un_pfrom_vsc_kdx, np.arange(vsc_data.nelm))
         self.gpf_un_pto_vsc_kdx = np.append(self.gpf_un_pto_vsc_kdx, np.arange(vsc_data.nelm))
         self.gpf_un_qto_vsc_kdx = np.append(self.gpf_un_qto_vsc_kdx, np.arange(vsc_data.nelm))
@@ -984,6 +983,8 @@ class SimulationIndices2:
         #lets iterate through all the controls now starting from the controls we get from the generators
         for k in range(gen_data.nelm):
             if k in self.gen_ac:
+                #print the size of self.gen_ac
+                print("gen_ac: ", len(self.gen_ac))
                 self.check_control_type(gen_data.gpf_ctrl1_mode[k], gen_data.gpf_ctrl1_elm[k], gen_data.gpf_ctrl1_val[k], gen_data.names[k])
                 self.check_control_type(gen_data.gpf_ctrl2_mode[k], gen_data.gpf_ctrl2_elm[k], gen_data.gpf_ctrl2_val[k], gen_data.names[k])
             else:

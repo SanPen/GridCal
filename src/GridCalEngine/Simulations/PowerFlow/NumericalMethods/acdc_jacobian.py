@@ -106,7 +106,7 @@ def make_lookup(n, arr):
     return lookup
 
 
-@nb.njit(cache=True)
+# @nb.njit(cache=True)
 def fill_acdc_jacobian_data(Jx: Vec, Ji: IntVec, Jp: IntVec,
                             Yp, Yi: IntVec,
                             Ys: CxVec,

@@ -30,7 +30,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.enumerations import ReactivePowerControlMode
 import GridCalEngine.Utils.NumericalMethods.sparse_solve as gcsp
-
+import timeit
 
 def NR_LS_ACDC(nc: NumericalCircuit,
                V0: CxVec,
@@ -59,7 +59,6 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     :return: NumericPowerFlowResults
     """
     start = time.time()
-
     # initialize the variables
     nb = nc.nbus
     nl = nc.nbr
@@ -132,6 +131,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                        virtual_tap_from=nc.branch_data.virtual_tap_f,
                                        virtual_tap_to=nc.branch_data.virtual_tap_t)
 
+    # print("(newton_raphson_acdc) Ybus: ")
+    # print(Ybus.todense())
     #  compute branch power Sf
     If = Yf * V  # complex current injected at "from" bus, Yf(br, :) * V; For in-service Branches
     It = Yt * V  # complex current injected at "to"   bus, Yt(br, :) * V; For in-service Branches
@@ -147,6 +148,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
     # compute total mismatch
     Scalc = compute_power(Ybus, V)
+    startTime = time.time()
     fx = compute_acdc_fx(Vm=Vm,
                          Sbus=Sbus,
                          Scalc=Scalc,
@@ -167,21 +169,26 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                          k_pf_dp=nc.k_pf_dp,
                          i_vf_beq=nc.i_vf_beq,
                          i_vt_m=nc.i_vt_m)
-
+    end = time.time()
+    print("(newton_raphson_acdc.py) Time taken for jacobian: ", end - startTime)
     norm_f = np.max(np.abs(fx))
 
     # -------------------------------------------------------------------------
-    converged = norm_f < tolerance
+    converged = norm_f < 1e-6
     iterations = 0
     while not converged and iterations < max_iter:
-
+        print("norm_f", norm_f)
         # compute the Jacobian
         J = fubm_jacobian(nb, nl, nc.k_pf_tau, nc.k_pf_dp, nc.k_qf_m, nc.k_qt_m, nc.k_vt_m, nc.k_zero_beq, nc.k_vf_beq,
                           nc.i_vf_beq, nc.i_vt_m,
                           F, T, Ys, k2, tap, m, Bc, Beq, Kdp, V, Ybus, Yf, Yt, Cf, Ct, pvpq, pq)
 
         # solve the linear system
-        dx = gcsp.super_lu_linsolver(J, -fx)
+        start = time.time()
+        for i in range(1000):
+            dx = gcsp.super_lu_linsolver(J, -fx)
+        end = time.time()
+        print("(newton_raphson_acdc.py) Time taken for linear solver: ", (end - startTime)/1000.0)
 
         if not np.isnan(dx).any():  # check if the solution worked
 
@@ -200,7 +207,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
             cond = True
             l_iter = 0
             norm_f_new = 0.0
-            while cond and l_iter < max_iter and mu > tolerance:  # backtracking: if all goes well it is only done 1 time
+            while cond and l_iter < max_iter and mu > 1e-6:  # backtracking: if all goes well it is only done 1 time
 
                 # restore the previous values if we are backtracking (the first iteration is the normal NR procedure)
                 if l_iter > 0:
@@ -249,6 +256,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
                 # compute total mismatch
                 Scalc = compute_power(Ybus, V)
+                startTime = time.time()
                 fx = compute_acdc_fx(Vm=Vm,
                                      Sbus=Sbus,
                                      Scalc=Scalc,
@@ -269,8 +277,10 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                      k_pf_dp=nc.k_pf_dp,
                                      i_vf_beq=nc.i_vf_beq,
                                      i_vt_m=nc.i_vt_m)
-
+                end = time.time()
+                print("(newton_raphson_acdc.py) Time taken for jacobian: ", end - startTime)
                 norm_f_new = np.max(np.abs(fx))
+                print("norm_f_new", norm_f_new)
                 cond = norm_f_new > norm_f  # condition to back track (no improvement at all)
 
                 mu *= acceleration_parameter
@@ -291,9 +301,10 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                 nc.branch_data.tap_module = m
                 nc.branch_data.tap_angle = tau
                 nc.branch_data.Beq = Beq
-
+                print("iterations", iterations)
                 # return NumericPowerFlowResults(V, converged, norm_f_new, prev_Scalc,
                 #                                m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
+                print("norm_f", norm_f)
                 return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
                                                Scalc=Scalc, ma=m, theta=tau, Beq=Beq,
                                                Ybus=Ybus, Yf=Yf, Yt=Yt,
@@ -348,6 +359,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
                             # recompute the mismatch, based on the new S0
                             Scalc = compute_power(Ybus, V)
+                            startTime = time.time()
                             fx = compute_acdc_fx(Vm=Vm,
                                                  Sbus=Sbus,
                                                  Scalc=Scalc,
@@ -368,6 +380,8 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                                                  k_pf_dp=nc.k_pf_dp,
                                                  i_vf_beq=nc.i_vf_beq,
                                                  i_vt_m=nc.i_vt_m)
+                            end = time.time()
+                            print("(newton_raphson_acdc.py) Time taken for jacobian: ", end - startTime)
                             norm_f_new = np.max(np.abs(fx))
 
                             # if verbose > 0:
@@ -377,6 +391,7 @@ def NR_LS_ACDC(nc: NumericalCircuit,
 
                 # set the mismatch to the new mismatch
                 norm_f = norm_f_new
+                print("norm_f", norm_f)
 
             if verbose:
                 print('dx:', dx)
@@ -388,16 +403,21 @@ def NR_LS_ACDC(nc: NumericalCircuit,
                 print('norm_f:', norm_f)
 
             iterations += 1
-            converged = norm_f <= tolerance
+            converged = norm_f <= 1e-6
+            print("norm_f", norm_f)
         else:
             iterations = max_iter
             converged = False
+            print("norm_f", norm_f)
+
+        print("norm_f", norm_f)
 
     end = time.time()
     elapsed = end - start
 
     # return NumericPowerFlowResults(V, converged, norm_f, Scalc,
     #                                m, tau, Beq, Ybus, Yf, Yt, iterations, elapsed)
+    print("norm_f", norm_f)	
     return NumericPowerFlowResults(V=V, converged=converged, norm_f=norm_f,
                                    Scalc=Scalc, ma=m, theta=tau, Beq=Beq,
                                    Ybus=Ybus, Yf=Yf, Yt=Yt,

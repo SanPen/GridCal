@@ -31,6 +31,7 @@ from GridCalEngine.DataStructures.numerical_circuit_general_pf import compile_nu
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, Vec, IntVec, CscMat
+import time
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -220,6 +221,7 @@ def solve(circuit: NumericalCircuit,
 
         # Newton-Raphson (full)
         elif solver_type == SolverType.GENERALISED:
+            startTime = time.time()
             solution = pflw.NR_LS_GENERAL(nc=circuit,
                                         V0=V0,
                                         S0=S0,
@@ -231,11 +233,12 @@ def solve(circuit: NumericalCircuit,
                                         mu_0=options.trust_radius,
                                         control_q=options.control_Q,
                                         pf_options=options)
-
-
+            endTime = time.time()
+            print("(power_flow_worker.py) Time taken for power flow simulation: ", endTime - startTime)
 
         # Newton-Raphson (full)
         elif solver_type == SolverType.NR:
+            startTime = time.time()
             if options.generalised_pf:
                 solution = pflw.NR_LS_GENERAL(nc=circuit,
                                            V0=V0,
@@ -252,6 +255,7 @@ def solve(circuit: NumericalCircuit,
                 
             elif circuit.any_control:
                 # Solve NR with the AC/DC algorithm
+                print("(power_flow_worker.py) solving with NR_LS_ACDC")
                 solution = pflw.NR_LS_ACDC(nc=circuit,
                                            V0=V0,
                                            S0=S0,
@@ -280,7 +284,8 @@ def solve(circuit: NumericalCircuit,
                                       control_q=options.control_Q,
                                       verbose=options.verbose,
                                       logger=logger)
-
+            endTime = time.time()
+            print("(power_flow_worker.py) Time taken for power flow simulation: ", endTime - startTime)
         # Newton-Raphson-Decpupled
         elif solver_type == SolverType.NRD:
             # Solve NR with the linear AC solution
@@ -865,6 +870,9 @@ def multi_island_pf(multi_circuit: MultiCircuit,
             bus_dict=bus_dict,
             areas_dict=areas_dict
         )
+        #print size of nelm of generators
+        print("(power_flow_worker.py) Number of generators: ", nc.generator_data.nelm)
+
         print("(power_flow_worker.py) Generalised PowerFlow")
     
 
