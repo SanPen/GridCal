@@ -1337,7 +1337,7 @@ class DiagramsMain(CompiledArraysMain):
             val = f"[{idx}] {self.circuit.time_profile[idx]}"
             self.ui.schematic_step_label.setText(val)
         else:
-            self.ui.schematic_step_label.setText("Snapshot")
+            self.ui.schematic_step_label.setText(f"Snapshot [{self.circuit.get_snapshot_time_str()}]")
 
     def objects_time_slider_change(self) -> None:
         """
@@ -1366,7 +1366,7 @@ class DiagramsMain(CompiledArraysMain):
             val = f"[{idx}] {self.circuit.time_profile[idx]}"
             self.ui.db_step_label.setText(val)
         else:
-            self.ui.db_step_label.setText("Snapshot")
+            self.ui.db_step_label.setText(f"Snapshot [{self.circuit.get_snapshot_time_str()}]")
 
     def take_picture(self):
         """
