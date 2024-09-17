@@ -887,6 +887,8 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Gen:\n", df_gen)
         print("Link DC:\n", df_linkdc)
 
+        print('Qshunt min: ' + str(Qsh_min))
+
         if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
             print("Slacks:\n", df_slsf)
             print("Slacks:\n", df_slst)

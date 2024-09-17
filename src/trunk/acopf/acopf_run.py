@@ -426,14 +426,15 @@ def caseinvest():
     grid = gce.FileOpen(file_path).open()
 
     # grid.generators.
-    sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=0.15)
+    sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=15)
     grid.add_controllable_shunt(grid.buses[2], sh1)
 
-    sh2 = gce.ControllableShunt(number_of_steps=2, b_per_step=0.05)
+    sh2 = gce.ControllableShunt(number_of_steps=2, b_per_step=5)
     grid.add_controllable_shunt(grid.buses[5], sh2)
 
-    sh3 = gce.ControllableShunt(number_of_steps=2, b_per_step=0.1)
+    sh3 = gce.ControllableShunt(number_of_steps=2, b_per_step=10)
     grid.add_controllable_shunt(grid.buses[7], sh3)
+
 
     nc = compile_numerical_circuit_at(grid)
     options = gce.PowerFlowOptions(gce.SolverType.NR, verbose=False)

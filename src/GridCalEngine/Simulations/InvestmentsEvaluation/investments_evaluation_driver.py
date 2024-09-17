@@ -161,7 +161,7 @@ def optimal_power_flow_function(inv_list: List[Investment],
     :return: InvestmentScores
     """
 
-    opf_options = opf_options
+    opf_options = OptimalPowerFlowOptions(solver=SolverType.NONLINEAR_OPF, verbose=0, ips_init_with_pf=True) #TODO: Replace this for opf_options once the GUI opf_options are correctly read
     driver = OptimalPowerFlowDriver(grid=grid, options=opf_options)
     driver.run()
 
