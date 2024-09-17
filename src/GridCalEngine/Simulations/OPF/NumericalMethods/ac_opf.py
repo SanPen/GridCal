@@ -592,6 +592,7 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
     nc.shunt_data.Y[id_sh] = 0 + 0j
     admittances = nc.get_admittance_matrices()
 
+    # print(admittances.Ybus)
 
     Csh = nc.shunt_data.C_bus_elm[:, id_sh]
     Cg = sp.hstack([Cgen, Csh])
@@ -885,21 +886,27 @@ def ac_optimal_power_flow(nc: NumericalCircuit,
         print("Tau-Trafos:\n", df_trafo_tau)
         print("Gen:\n", df_gen)
         print("Link DC:\n", df_linkdc)
-        print("Slacks:\n", df_slsf)
-        print("Slacks:\n", df_slst)
-        print("Slacks:\n", df_slvmax)
-        print("Slacks:\n", df_slvmin)
+
+        if opf_options.acopf_mode == AcOpfMode.ACOPFslacks:
+            print("Slacks:\n", df_slsf)
+            print("Slacks:\n", df_slst)
+            print("Slacks:\n", df_slvmax)
+            print("Slacks:\n", df_slvmin)
+
         if optimize_nodal_capacity:
             df_nodal_cap = pd.DataFrame(data={'Nodal capacity (MW)': slcap * nc.Sbase}, index=capacity_nodes_idx)
             print("Nodal Capacity:\n", df_nodal_cap)
         print("Error", result.error)
         print("Gamma", result.gamma)
         print("Sf", result.structs.Sf)
-        print('Times:\n', df_times)
-        print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
-                                                   't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
-                                                   't_mult', 't_steps', 't_cond', 't_iter']].div(df_times['t_iter'],
-                                                                                                 axis=0))
+
+        if opf_options.verbose > 1:
+
+            print('Times:\n', df_times)
+            print('Relative times:\n', 100 * df_times[['t_modadm', 't_f', 't_g', 't_h', 't_fx', 't_gx',
+                                                       't_hx', 't_fxx', 't_gxx', 't_hxx', 't_nrstep',
+                                                       't_mult', 't_steps', 't_cond', 't_iter']].div(df_times['t_iter'],
+                                                                                                     axis=0))
 
     if plot_error:
         result.plot_error()
@@ -1110,5 +1117,5 @@ def run_nonlinear_opf(grid: MultiCircuit,
             results.error = island_res.error
             results.iterations = island_res.iterations
             results.converged = island_res.converged
-
+    print('Converged: ' + str(results.converged))
     return results
