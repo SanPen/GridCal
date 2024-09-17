@@ -291,7 +291,9 @@ class InputsAnalysisResults(ResultsTemplate):
         for elm in elms:
             i = self.bus_dict[elm.bus]
             i2 = d2[i]
-            x[:, i2] += elm.get_profile(magnitude=magnitude).toarray()
+            if i2 != "":
+                i3 = int(i2)
+                x[:, i3] += elm.get_profile(magnitude=magnitude).toarray()
 
         return x, headers
 
