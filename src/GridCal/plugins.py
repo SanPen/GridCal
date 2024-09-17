@@ -20,11 +20,14 @@ import os
 import importlib
 import importlib.util
 import hashlib
-from typing import List, Dict
+from typing import List, Dict, TYPE_CHECKING, Callable
 import json
 from PySide6.QtGui import QPixmap
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
+
+if TYPE_CHECKING:
+    from GridCal.Gui.Main.GridCalMain import MainGUI
 
 
 def plugins_path() -> str:
@@ -51,7 +54,7 @@ class PluginFunction:
         self.alias = ""
         self.function_ptr = None
 
-    def get_pointer_lambda(self, gui_instance):
+    def get_pointer_lambda(self, gui_instance: MainGUI) -> Callable:
         """
         Really hard core magic to avoid lambdas shadow each other due to late binding
 
@@ -113,12 +116,17 @@ class PluginInfo:
     Plugin information
     """
 
-    def __init__(self) -> None:
+    def __init__(self, folder, file_path) -> None:
         """
 
         """
+        # file info
+        self.folder = folder
+        self.file_path = file_path
+
+        # plugin data
         self.name = ""
-        self.path = ""
+        self.code_file_path = ""
         self.icon_path = ""
 
         self.main_fcn: PluginFunction = PluginFunction()
@@ -126,6 +134,11 @@ class PluginInfo:
         self.investments_fcn: PluginFunction = PluginFunction()
 
         self.icon: QPixmap | None = None
+
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            self.parse(data)
+            self.read_plugin()
 
     def __repr__(self) -> str:
         return self.name
@@ -140,7 +153,7 @@ class PluginInfo:
         """
         return {
             "name": self.name,
-            "path": self.path,
+            "path": self.code_file_path,
             "icon_path": self.icon_path,
             "main_fcn": self.main_fcn.to_dict(),
             "investments_fcn": self.investments_fcn.to_dict(),
@@ -152,7 +165,7 @@ class PluginInfo:
         :param data: Data like the one saved
         """
         self.name = data.get('name', '')
-        self.path = data.get('path', '')
+        self.code_file_path = data.get('path', '')
         self.icon_path = data.get('icon_path', '')
 
         if 'main_fcn' in data.keys():
@@ -165,8 +178,7 @@ class PluginInfo:
         """
         Read the pointed plugin
         """
-        base_path = plugins_path()
-        plugin_path = os.path.join(base_path, self.path)
+        plugin_path = os.path.join(self.folder, self.code_file_path)
 
         if os.path.exists(plugin_path):
 
@@ -182,7 +194,7 @@ class PluginInfo:
             print(f"Plugin {self.name}: Path {plugin_path} not found :/")
 
         # Read the icon file if available
-        icon_path = os.path.join(base_path, self.icon_path)
+        icon_path = os.path.join(self.folder, self.icon_path)
         if os.path.exists(icon_path):
             self.icon = QPixmap(icon_path)
         else:
@@ -217,21 +229,18 @@ class PluginsInfo:
 
         # List all JSON files in the folder
         folder = plugins_path()
-        for file in os.listdir(folder):
-            if file.endswith('.plugin.json'):
-                file_path = os.path.join(folder, file)
+        # for file in os.listdir(folder):
+        for subdir, dirs, files in os.walk(folder):
+            for file in files:
+                if file.endswith('.plugin.json'):
+                    file_path = os.path.join(subdir, file)
 
-                try:
-                    with open(file_path, 'r') as f:
-                        data = json.load(f)
-
-                        pl = PluginInfo()
-                        pl.parse(data)
-                        pl.read_plugin()
+                    try:
+                        pl = PluginInfo(subdir, file_path)
                         self.plugins[pl.name] = pl
 
-                except json.JSONDecodeError as e:
-                    print("Error reading the plugins index", e)
+                    except json.JSONDecodeError as e:
+                        print("Error reading the plugins index", e)
 
 
 def load_function_from_file_path(file_path: str, function_name: str):

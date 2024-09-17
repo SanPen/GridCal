@@ -24,7 +24,7 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
-from GridCal.Gui.plugins import PluginsInfo
+from GridCal.plugins import PluginsInfo
 import GridCal.Gui.GuiFunctions as gf
 from GridCal.Gui.GuiFunctions import add_menu_entry
 
