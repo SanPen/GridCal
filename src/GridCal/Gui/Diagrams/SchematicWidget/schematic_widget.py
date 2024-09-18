@@ -264,59 +264,6 @@ class SchematicScene(QGraphicsScene):
         # nue with the rest of the actions)
         super(SchematicScene, self).mouseReleaseEvent(event)
 
-    # def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
-    #     """
-    #
-    #     :param event:
-    #     :return:
-    #     """
-    #     super().contextMenuEvent(event)
-    #
-    #     context_menu = QMenu()
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Center",
-    #                    icon_path=":/Icons/icons/resize.svg",
-    #                    function_ptr=lambda x: self.parent_.align_schematic())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Expand",
-    #                    icon_path=":/Icons/icons/plus (gray).svg",
-    #                    function_ptr=lambda x: self.parent_.expand_node_distances())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Contract",
-    #                    icon_path=":/Icons/icons/minus (gray).svg",
-    #                    function_ptr=lambda x: self.parent_.shrink_node_distances())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Auto-layout",
-    #                    icon_path=":/Icons/icons/automatic_layout.svg",
-    #                    function_ptr=lambda x: self.parent_.auto_layout(sel=""))
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Layout from (lat, lon) data",
-    #                    icon_path=":/Icons/icons/map.svg",
-    #                    function_ptr=lambda x: self.parent_.fill_xy_from_lat_lon())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Zoom in",
-    #                    icon_path=":/Icons/icons/zoom_in.svg",
-    #                    function_ptr=lambda x: self.parent_.zoom_in())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Zoom out",
-    #                    icon_path=":/Icons/icons/zoom_out.svg",
-    #                    function_ptr=lambda x: self.parent_.zoom_out())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Clear highlight",
-    #                    icon_path=":/Icons/icons/bus_icon.svg",
-    #                    function_ptr=lambda x: self.parent_.clear_big_bus_markers())
-    #
-    #     # launch the menu
-    #     context_menu.exec(event.screenPos())
-
 
 class CustomGraphicsView(QGraphicsView):
     """
@@ -366,78 +313,6 @@ class CustomGraphicsView(QGraphicsView):
         :return:
         """
         super().contextMenuEvent(event)
-
-        # Get the position of the mouse during the event
-        # pos = event.pos()
-        #
-        # # Check if there's any child widget at the mouse position
-        # child_widget = self.childAt(pos)
-        # a = self.childAt(event.globalPos())
-        # b = child_widget == self
-        # # If there's a child widget, do not show the custom context menu
-        # if isinstance(child_widget, QWidget):
-        #     return
-        #
-        # context_menu = QMenu()
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Center",
-        #                icon_path=":/Icons/icons/resize.svg",
-        #                function_ptr=lambda x: self.parent_.align_schematic())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Expand",
-        #                icon_path=":/Icons/icons/plus (gray).svg",
-        #                function_ptr=lambda x: self.parent_.expand_node_distances())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Contract",
-        #                icon_path=":/Icons/icons/minus (gray).svg",
-        #                function_ptr=lambda x: self.parent_.shrink_node_distances())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Auto-layout",
-        #                icon_path=":/Icons/icons/automatic_layout.svg",
-        #                function_ptr=lambda x: self.parent_.auto_layout(sel=""))
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Layout from (lat, lon) data",
-        #                icon_path=":/Icons/icons/map.svg",
-        #                function_ptr=lambda x: self.parent_.fill_xy_from_lat_lon())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Zoom in",
-        #                icon_path=":/Icons/icons/zoom_in.svg",
-        #                function_ptr=lambda x: self.parent_.zoom_in())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Zoom out",
-        #                icon_path=":/Icons/icons/zoom_out.svg",
-        #                function_ptr=lambda x: self.parent_.zoom_out())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Clear highlight",
-        #                icon_path=":/Icons/icons/bus_icon.svg",
-        #                function_ptr=lambda x: self.parent_.clear_big_bus_markers())
-        #
-        # # launch the menu
-        # context_menu.exec(event.globalPos())
-
-
-# def find_my_node(idtag_: str,
-#                  bus_dict: Dict[str, BusGraphicItem],
-#                  fluid_node_dict: Dict[str, FluidNodeGraphicItem]):
-#     """
-#     Function to look for the bus or fluid node
-#     :param idtag_: bus or fluidnode idtag
-#     :param bus_dict:
-#     :param fluid_node_dict:
-#     :return: Matching graphic object
-#     """
-#     graphic_obj = bus_dict.get(idtag_, None)
-#     if graphic_obj is None:
-#         graphic_obj = fluid_node_dict.get(idtag_, None)
-#     return graphic_obj
 
 
 class SchematicWidget(BaseDiagramWidget):
@@ -4164,13 +4039,6 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     raise Exception('Unsupported side value {}'.format(side))
 
-                # Add this line to the new connection bus
-                # new_bus_graphic_item.add_hosting_connection(graphic_obj=line_graphics)
-                # new_bus_graphic_item.get_terminal().update()
-                #
-                # # remove thid line from the old bus connections
-                # old_bus_graphic_item.delete_hosting_connection(graphic_obj=line_graphics)
-                # old_bus_graphic_item.get_terminal().update()
         else:
             warning_msg("you must select the origin and destination buses!",
                         title='Change bus')
@@ -4230,22 +4098,6 @@ class SchematicWidget(BaseDiagramWidget):
             # detect the bus and its combinations
             if idx_bus_list[0][1] == line_graphics.api_object.bus_from:
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
-
-    # def disable_all_results_tags(self):
-    #     """
-    #     Disable all results' tags in this diagram
-    #     """
-    #     for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
-    #         for key, widget in type_dict.items():
-    #             widget.disable_label_drawing()
-    #
-    # def enable_all_results_tags(self):
-    #     """
-    #     Enable all results' tags in this diagram
-    #     """
-    #     for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
-    #         for key, widget in type_dict.items():
-    #             widget.enable_label_drawing()
 
     def get_picture_width(self) -> int:
         return self.editor_graphics_view.width()

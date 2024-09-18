@@ -23,8 +23,8 @@ from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
 from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, QDataStream, QModelIndex)
-from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor, QDropEvent,
-                           QWheelEvent)
+from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor,
+                           QDropEvent, QWheelEvent)
 
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
