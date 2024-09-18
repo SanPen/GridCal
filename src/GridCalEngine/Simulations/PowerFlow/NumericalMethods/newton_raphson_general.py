@@ -101,8 +101,8 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     p_from_vsc = np.zeros(nc.vsc_data.nelm)
     p_to_vsc = np.zeros(nc.vsc_data.nelm)
     q_to_vsc = np.zeros(nc.vsc_data.nelm)
-    p_zip_gen = np.zeros(nc.generator_data.nelm)
-    q_zip_gen = np.zeros(nc.generator_data.nelm)
+    p_zip_gen = np.ones(nc.generator_data.nelm)*0.5
+    q_zip_gen = np.ones(nc.generator_data.nelm)*0.5
     p_from_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
     q_from_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)
     p_to_contTrafo = np.zeros(nc.controllable_trafo_data.nelm)

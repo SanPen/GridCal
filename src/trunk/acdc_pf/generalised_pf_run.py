@@ -528,7 +528,7 @@ def ieee14():
 
 def entsoE():
     file0 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/20211216T1459Z_ENTSO-E_BD_1346.zip'
-    file1 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/FR_3PQT_v3.zip'
+    file1 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/PT_3PQT_v2.zip'
                                
     file_list = [file0, file1]
     grid = gce.FileOpen(file_list).open()
