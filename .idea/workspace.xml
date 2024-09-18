@@ -28,55 +28,20 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added modelling authority in many physical assets&#10;Substantially refactored the TableModels to inherit from WrappableTableModel">
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="deleted unused code from the maps&#10;added the script clearing button function that was missing somehow">
+      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_3.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Analysis/AnalysisDialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ConsoleWidget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/console_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/contingency_planner_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner/contingency_planner_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/coordinates_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/CoordinatesInput/coordinates_dialogue.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_segment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_segment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/node_graphic_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/node_graphic_item.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/substation_graphic_item.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/voltage_level_graphic_item.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Substation/voltage_level_graphic_item.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/dc_line_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/dc_line_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/hvdc_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/hvdc_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/switch_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/switch_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/transformer2w_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/transformer2w_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/transformer_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/transformer_editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/transformer_taps_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/transformer_taps_editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/upfc_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/upfc_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/vsc_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/vsc_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/winding_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/winding_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/controllable_shunt_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/controllable_shunt_editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/controllable_shunt_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/controllable_shunt_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/generator_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Injections/generator_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/bus_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Substation/bus_graphics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Fluid/fluid_path_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Fluid/fluid_path_graphics.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GeneralDialogues.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/general_dialogues.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GuiFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/gui_functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/compiled_arrays.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/compiled_arrays.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/base_diagram_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/base_diagram_widget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/objects.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/time_events.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/time_events.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Results/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Results/results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Scripting/scripting.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Scripting/scripting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Settings/configuration.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/base_gui.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/base_gui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/io.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/simulations.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profile_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/ProfilesInput/profile_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/RosetaExplorer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/RosetaExplorer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/roseta_objects_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/RosetaExplorer/roseta_objects_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/SystemScaler/system_scaler.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/SystemScaler/system_scaler.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TowerBuilder/LineBuilderDialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/TreeModelViewer/TreeModelViewer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/TreeModelViewer/TreeModelViewer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/associations_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/associations_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/object_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/object_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/profiles_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/profiles_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/table_view_header_wrap.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/table_view_header_wrap.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/wrappable_table_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/wrappable_table_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/base_diagram.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/base_diagram.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/map_diagram.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/map_diagram.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -235,6 +200,9 @@
     "Python.download_stats.executor": "Run",
     "Python.fubm_example.executor": "Run",
     "Python.generate_ssl_key.executor": "Run",
+    "Python.line_arrow.executor": "Run",
+    "Python.line_arrow_2.executor": "Run",
+    "Python.line_arrow_3.executor": "Run",
     "Python.make.executor": "Run",
     "Python.new_circuit_objects.executor": "Run",
     "Python.profile_dialogue.executor": "Run",
@@ -546,7 +514,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="make" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="line_arrow" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -555,12 +523,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/doc" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/qt_related" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/doc/make.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/qt_related/line_arrow.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -569,7 +537,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="line_arrow_2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -578,12 +546,35 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/qt_related" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/upload_to_pypi.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="line_arrow_3" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/qt_related" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_3.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -710,24 +701,6 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
-    <configuration name="pytest for test_load_save_load.test_load_save_load2" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="_new_keywords" value="&quot;&quot;" />
-      <option name="_new_parameters" value="&quot;&quot;" />
-      <option name="_new_additionalArguments" value="&quot;&quot;" />
-      <option name="_new_target" value="&quot;test_load_save_load.test_load_save_load2&quot;" />
-      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
-      <method v="2" />
-    </configuration>
     <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -747,19 +720,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.upload_to_pypi" />
-      <item itemvalue="Python.make" />
+      <item itemvalue="Python.line_arrow" />
+      <item itemvalue="Python.line_arrow_2" />
+      <item itemvalue="Python.line_arrow_3" />
       <item itemvalue="Python.ExecuteGridCal" />
-      <item itemvalue="Python tests.pytest for test_load_save_load.test_load_save_load2" />
       <item itemvalue="Python tests.pytest in tests" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.ExecuteGridCal" />
+        <item itemvalue="Python.line_arrow" />
+        <item itemvalue="Python.line_arrow_2" />
+        <item itemvalue="Python.line_arrow_3" />
         <item itemvalue="Python tests.pytest in tests" />
-        <item itemvalue="Python.upload_to_pypi" />
-        <item itemvalue="Python tests.pytest for test_load_save_load.test_load_save_load2" />
-        <item itemvalue="Python.make" />
       </list>
     </recent_temporary>
   </component>
@@ -1536,7 +1509,7 @@
       <workItem from="1726475468111" duration="318000" />
       <workItem from="1726475791119" duration="9402000" />
       <workItem from="1726556623923" duration="6824000" />
-      <workItem from="1726638738311" duration="5811000" />
+      <workItem from="1726638738311" duration="15108000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1881,7 +1854,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="589" />
+    <option name="localTasksCounter" value="591" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1928,8 +1901,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Changed the automatic_precision check for a button&#10;Added missing config parameters at get_config_structure()" />
-    <MESSAGE value="Set maximum resizing of a part of the settings" />
     <MESSAGE value="Fixed issue when dgridcals were not &quot;valid for simulation&quot;" />
     <MESSAGE value="5.1.22" />
     <MESSAGE value="Removed extra prints" />
@@ -1953,7 +1924,9 @@
     <MESSAGE value="Improved the plugin scanning to folders" />
     <MESSAGE value="5.1.33" />
     <MESSAGE value="Added modelling authority in many physical assets&#10;Substantially refactored the TableModels to inherit from WrappableTableModel" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added modelling authority in many physical assets&#10;Substantially refactored the TableModels to inherit from WrappableTableModel" />
+    <MESSAGE value="renamed GuiFunctions, GeneralDialogues and ConsoleWidget" />
+    <MESSAGE value="deleted unused code from the maps&#10;added the script clearing button function that was missing somehow" />
+    <option name="LAST_COMMIT_MESSAGE" value="deleted unused code from the maps&#10;added the script clearing button function that was missing somehow" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2383,7 +2356,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py</url>
-          <line>3504</line>
+          <line>3505</line>
           <option name="timeStamp" value="1851" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2393,7 +2366,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py</url>
-          <line>1095</line>
+          <line>1096</line>
           <option name="timeStamp" value="1924" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2520,6 +2493,7 @@
     <SUITE FILE_PATH="coverage/GridCal$main.coverage" NAME="main Coverage Results" MODIFIED="1629915665021" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PCA/josep_v2" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_topology_processor_test_topology_rts.coverage" NAME="Nosetests for tests.test_topology_processor.test_topology_rts Coverage Results" MODIFIED="1709292306565" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$generate_property_gatters_and_setters.coverage" NAME="generate_property_gatters_and_setters Coverage Results" MODIFIED="1711104335326" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/code_generation" />
+    <SUITE FILE_PATH="coverage/GridCal$line_arrow_3.coverage" NAME="line_arrow_3 Coverage Results" MODIFIED="1726659364429" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$hydro_opf.coverage" NAME="hydro_opf Coverage Results" MODIFIED="1704400043683" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_power_flow_test_voltage_remote_control_with_generation.coverage" NAME="pytest for test_power_flow.test_voltage_remote_control_with_generation Coverage Results" MODIFIED="1724486261888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$make_wheels.coverage" NAME="make_wheels Coverage Results" MODIFIED="1694621489184" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
@@ -2695,7 +2669,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_simple_mip_test_lp_simple3.coverage" NAME="Nosetests for test_simple_mip.test_lp_simple3 Coverage Results" MODIFIED="1704806778841" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$new_circuit_objects.coverage" NAME="new_circuit_objects Coverage Results" MODIFIED="1707126047746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/code_generation" />
     <SUITE FILE_PATH="coverage/GridCal$run.coverage" NAME="run Coverage Results" MODIFIED="1724667152589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalServer" />
-    <SUITE FILE_PATH="coverage/GridCal$line_arrow_2.coverage" NAME="line_arrow_2 Coverage Results" MODIFIED="1707241035685" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/qt_related" />
+    <SUITE FILE_PATH="coverage/GridCal$line_arrow_2.coverage" NAME="line_arrow_2 Coverage Results" MODIFIED="1726659418907" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$run_contingencies_script.coverage" NAME="run_contingencies_script Coverage Results" MODIFIED="1726224948389" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/contingencies" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_short_circuit.coverage" NAME="Nosetests for tests.test_short_circuit Coverage Results" MODIFIED="1648735680536" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$io_call.coverage" NAME="io_call Coverage Results" MODIFIED="1707813182693" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/io" />
@@ -2900,8 +2874,8 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_tutorials.coverage" NAME="Nosetests for tests.test_tutorials Coverage Results" MODIFIED="1647335600894" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_sparse2_test_stack_4.coverage" NAME="pytest for test_sparse2.test_stack_4 Coverage Results" MODIFIED="1720634487427" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$grid_editor_widget__1_.coverage" NAME="grid_editor_widget (1) Coverage Results" MODIFIED="1692806772617" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridEditorWidget" />
-    <SUITE FILE_PATH="coverage/GridCal$line_arrow.coverage" NAME="line_arrow Coverage Results" MODIFIED="1707237502674" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_simple_mip_test_lp_simple4.coverage" NAME="Nosetests for test_simple_mip.test_lp_simple4 Coverage Results" MODIFIED="1704807541299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$line_arrow.coverage" NAME="line_arrow Coverage Results" MODIFIED="1726659438159" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/qt_related" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_temp_correction_py.coverage" NAME="Nosetests in test_temp_correction.py Coverage Results" MODIFIED="1609501421833" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$demo_mvrsm.coverage" NAME="demo_mvrsm Coverage Results" MODIFIED="1707726283113" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/MVRSM" />
     <SUITE FILE_PATH="coverage/GridCal$1d_example.coverage" NAME="1d_metropolis_algorithm_example Coverage Results" MODIFIED="1660055113109" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/MCMC" />
@@ -2928,7 +2902,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ptdf_test_ptdf_ieee14_definition_ps.coverage" NAME="Nosetests for test_ptdf.test_ptdf_ieee14_definition_ps Coverage Results" MODIFIED="1706268834144" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$newton_equivalence_utils.coverage" NAME="newton_equivalence_utils Coverage Results" MODIFIED="1687725154112" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1696580506087" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1726644785401" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1726663834877" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$MVRSM_mo.coverage" NAME="MVRSM_mo Coverage Results" MODIFIED="1707735080331" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/MVRSM" />
     <SUITE FILE_PATH="coverage/GridCal$graph_save2.coverage" NAME="graph_save2 Coverage Results" MODIFIED="1702996105426" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalEngine/IO/rdf_test" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />

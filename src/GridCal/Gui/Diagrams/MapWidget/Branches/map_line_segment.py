@@ -99,10 +99,6 @@ class MapLineSegment(QGraphicsLineItem):
         pen.setWidthF(w)
 
         self.setPen(pen)
-        # self.arrow_from_1.set_colour(color, w, style)
-        # self.arrow_from_2.set_colour(color, w, style)
-        # self.arrow_to_1.set_colour(color, w, style)
-        # self.arrow_to_2.set_colour(color, w, style)
 
     def set_from_side_coordinates(self, x: float, y: float):
         """

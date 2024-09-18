@@ -612,3 +612,10 @@ class BaseDiagramWidget(QSplitter):
             min_bus_width=min_bus_width,
             max_bus_width=max_bus_width
         )
+
+    def copy(self):
+        """
+
+        :return:
+        """
+        raise Exception('Copy method not implemented!')

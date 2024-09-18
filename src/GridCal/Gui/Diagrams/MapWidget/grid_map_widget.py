@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 from typing import Union, List, Tuple
+import json
 import numpy as np
 import math
 from PySide6.QtWidgets import QGraphicsItem
@@ -1168,6 +1169,29 @@ class GridMapWidget(BaseDiagramWidget):
             self.call_new_substation_diagram_func(substation)
         else:
             print("call_new_substation_diagram_func is None :( ")
+
+    def copy(self) -> "GridMapWidget":
+        """
+        Deep copy of this widget
+        :return: GridMapWidget
+        """
+        d_copy = MapDiagram(name=self.diagram.name + '_copy')
+        j_data = json.dumps(self.diagram.get_data_dict(), indent=4)
+        d_copy.parse_data(data=json.loads(j_data),
+                          obj_dict=self.circuit.get_all_elements_dict_by_type(add_locations=True),
+                          logger=self.logger)
+
+        return GridMapWidget(
+            tile_src=self.map.tile_src,
+            start_level=self.diagram.start_level,
+            longitude=self.diagram.longitude,
+            latitude=self.diagram.latitude,
+            name=self.diagram.name,
+            circuit=self.circuit,
+            diagram=self.diagram,
+            call_new_substation_diagram_func=self.call_new_substation_diagram_func,
+            call_delete_db_element_func=self.call_delete_db_element_func
+        )
 
 
 def generate_map_diagram(substations: List[Substation],

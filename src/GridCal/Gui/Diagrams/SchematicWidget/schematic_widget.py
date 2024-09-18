@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import sys
 import os
+import json
 import numpy as np
 import pandas as pd
 from typing import List, Dict, Union, Tuple
@@ -4252,35 +4253,25 @@ class SchematicWidget(BaseDiagramWidget):
     def get_picture_height(self) -> int:
         return self.editor_graphics_view.height()
 
-    # def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
-    #     """
-    #     Save video
-    #     :param fname: file name
-    #     :param fps: frames per second
-    #     :returns width, height
-    #     """
-    #
-    #     w = self.editor_graphics_view.width()
-    #     h = self.editor_graphics_view.height()
-    #
-    #     self._video = cv2.VideoWriter(filename=fname,
-    #                                   fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
-    #                                   fps=fps,
-    #                                   frameSize=(w, h))
-    #
-    #     return w, h
+    def copy(self) -> "SchematicWidget":
+        """
+        Deep copy of this widget
+        :return: SchematicWidget
+        """
+        d_copy = SchematicDiagram(name=self.diagram.name + '_copy')
+        j_data = json.dumps(self.diagram.get_data_dict(), indent=4)
+        d_copy.parse_data(data=json.loads(j_data),
+                          obj_dict=self.circuit.get_all_elements_dict_by_type(add_locations=True),
+                          logger=self.logger)
 
-    # def capture_video_frame(self) -> None:
-    #     """
-    #     Save the current state in a video frame
-    #     """
-    #
-    #     image, w, h = self.get_image(transparent=False)
-    #
-    #     # convert picture using the memory
-    #     # we need to remove the alpha channel, otherwise the video frame is not saved
-    #     frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
-    #     self._video.write(frame)
+        return SchematicWidget(
+            circuit=self.circuit,
+            diagram=self.diagram,
+            default_bus_voltage=self.default_bus_voltage,
+            time_index=self.get_time_index(),
+            prefer_node_breaker=self.prefer_node_breaker,
+            call_delete_db_element_func=self.call_delete_db_element_func
+        )
 
 
 def generate_schematic_diagram(buses: List[Bus],
