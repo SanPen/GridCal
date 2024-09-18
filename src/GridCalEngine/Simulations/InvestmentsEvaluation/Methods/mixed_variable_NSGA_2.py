@@ -132,6 +132,7 @@ class MixedVariableProblem(ElementwiseProblem):
         #     self.devices.append(elm)
         for elm in grid.controllable_shunts:
             self.variables[elm.idtag] = Real(bounds=(elm.Bmin, elm.Bmax))  # Bounded by Bmin and Bmax
+            # TODO ? Modify shunt limits?? Not sure if it should be here
             self.devices.append(elm)
 
         super().__init__(n_obj=n_obj, vars=self.variables)

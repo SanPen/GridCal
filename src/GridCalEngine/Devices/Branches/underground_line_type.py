@@ -75,13 +75,13 @@ class UndergroundLineType(EditableDevice):
         Zbase = (Vn * Vn) / Sbase
         Ybase = 1.0 / Zbase
 
-        R = np.round(self.R * length, 6)
-        X = np.round(self.X * length, 6)
-        B = np.round(self.B * 1e-6 * length, 6)
+        R = self.R * length
+        X = self.X * length
+        B = self.B * 1e-6 * length
 
-        R0 = np.round(self.R0 * length, 6)
-        X0 = np.round(self.X0 * length, 6)
-        B0 = np.round(self.B0 * 1e-6 * length, 6)
+        R0 = self.R0 * length
+        X0 = self.X0 * length
+        B0 = self.B0 * 1e-6 * length
 
         # get the rating in MVA = kA * kV
         rate = self.Imax * Vn * np.sqrt(3)
