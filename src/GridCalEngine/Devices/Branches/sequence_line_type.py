@@ -73,13 +73,13 @@ class SequenceLineType(EditableDevice):
         Zbase = (Vn * Vn) / Sbase
         Ybase = 1.0 / Zbase
 
-        R = np.round(self.R * length, 6)
-        X = np.round(self.X * length, 6)
-        B = np.round(self.B * 1e-6 * length, 6)
+        R = np.round(self.R * length / Zbase, 6)
+        X = np.round(self.X * length / Zbase, 6)
+        B = np.round(self.B * 1e-6 * length / Ybase, 6)
 
-        R0 = np.round(self.R0 * length, 6)
-        X0 = np.round(self.X0 * length, 6)
-        B0 = np.round(self.B0 * 1e-6 * length, 6)
+        R0 = np.round(self.R0 * length / Zbase, 6)
+        X0 = np.round(self.X0 * length / Zbase, 6)
+        B0 = np.round(self.B0 * 1e-6 * length /Ybase, 6)
 
         # get the rating in MVA = kA * kV
         rate = self.Imax * Vn * np.sqrt(3)

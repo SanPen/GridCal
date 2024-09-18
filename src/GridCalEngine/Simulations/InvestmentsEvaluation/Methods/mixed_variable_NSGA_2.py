@@ -182,9 +182,13 @@ class MixedVariableProblem(ElementwiseProblem):
                         pass
                     elif isinstance(device, ControllableShunt):
                         pass
+                    elif isinstance(device, Transformer2W):
+                        device.apply_template(self.default_template[i], Sbase=self.grid.Sbase,
+                                              logger=self.logger)
                     else:
                         # Default values introduced in the device
-                        device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
+                        device.apply_default_template(self.default_template[i], Sbase=self.grid.Sbase,
+                                                      logger=self.logger)
             else:
                 raise KeyError(f"String key {xi} not found.")
 
