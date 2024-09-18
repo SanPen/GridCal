@@ -296,6 +296,50 @@ class Line(BranchParent):
         else:
             logger.add_error('Template not recognised', self.name)
 
+    def apply_default_template(self, obj: Union[OverheadLineType, UndergroundLineType, SequenceLineType], Sbase: float,
+                               logger=Logger()):
+        """
+        Apply a line template to this object
+        :param obj: OverheadLineType, UndergroundLineType, SequenceLineType
+        :param Sbase: Nominal power in MVA
+        :param logger: Logger
+        """
+
+        if type(obj) in [UndergroundLineType, SequenceLineType]:
+
+            self.R = self.length * obj.R
+            self.X = self.length * obj.X
+            self.B = self.length * obj.B
+            self.R0 = self.length * obj.R0
+            self.X0 = self.length * obj.X0
+            self.B0 = self.length * obj.B0
+            self.rate = self.length * obj.Imax * obj.Vnom * np.sqrt(3)
+
+            if self.template is not None:
+                if obj != self.template:
+                    self.template = obj
+            else:
+                self.template = obj
+
+        elif type(obj) in [OverheadLineType]:
+
+            self.R = self.length * obj.R1
+            self.X = self.length * obj.X1
+            self.B = self.length * obj.Bsh1 * -1e6
+            self.R0 = self.length * obj.R0
+            self.X0 = self.length * obj.X0
+            self.B0 = self.length * obj.Bsh0 * -1e6
+            self.rate = self.length * obj.Imax * obj.Vnom * np.sqrt(3)
+
+            if self.template is not None:
+                if obj != self.template:
+                    self.template = obj
+            else:
+                self.template = obj
+        else:
+            logger.add_error('Template not recognised', self.name)
+
+
     def get_line_type(self) -> SequenceLineType:
         """
         Get the equivalent sequence line type of this line
