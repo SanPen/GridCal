@@ -22,10 +22,10 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
     HeaderViewWithWordWrap
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         QtWidgets.QHeaderView.__init__(self, QtCore.Qt.Orientation.Horizontal)
 
-    def sectionSizeFromContents(self, logicalIndex):
+    def sectionSizeFromContents(self, logicalIndex: int) -> QtCore.QSize:
         """
 
         :param logicalIndex:

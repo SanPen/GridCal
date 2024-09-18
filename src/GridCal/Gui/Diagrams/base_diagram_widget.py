@@ -191,21 +191,19 @@ class BaseDiagramWidget(QSplitter):
         """
         return self._time_index
 
-    def set_editor_model(self,
-                         api_object: ALL_DEV_TYPES,
-                         dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
+    def set_editor_model(self, api_object: ALL_DEV_TYPES):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
-        :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
         """
+        template_elm, dictionary_of_lists = self.circuit.get_dictionary_of_lists(api_object.device_type)
         mdl = ObjectsModel(objects=[api_object],
                            property_list=api_object.property_list,
                            time_index=self.get_time_index(),
                            parent=self.object_editor_table,
                            editable=True,
                            transposed=True,
-                           dictionary_of_lists=dictionary_of_lists if dictionary_of_lists is not None else dict())
+                           dictionary_of_lists=dictionary_of_lists)
 
         self.object_editor_table.setModel(mdl)
 

@@ -18,7 +18,7 @@
 from typing import Union
 import numpy as np
 
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -27,7 +27,7 @@ from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
 
 
-class InjectionParent(EditableDevice):
+class InjectionParent(PhysicalDevice):
     """
     Parent class for Injections
     """
@@ -63,7 +63,7 @@ class InjectionParent(EditableDevice):
         :param device_type: DeviceType
         """
 
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,

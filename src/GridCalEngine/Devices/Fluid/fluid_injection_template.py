@@ -16,13 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 
 
-class FluidInjectionTemplate(EditableDevice):
+class FluidInjectionTemplate(PhysicalDevice):
 
     def __init__(self,
                  name: str = '',
@@ -46,7 +46,7 @@ class FluidInjectionTemplate(EditableDevice):
         :param device_type: type of machine (turbine, pump, p2x)
         :param build_status: status if the plant is built, planned, etc.
         """
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,

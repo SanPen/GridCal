@@ -152,12 +152,7 @@ class MapLineSegment(QGraphicsLineItem):
         :return:
         """
         if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.BusDevice: self.editor.circuit.get_buses(),
-                                             DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
-                                             DeviceType.BranchGroupDevice: self.editor.circuit.get_branch_groups()
-                                         })
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """

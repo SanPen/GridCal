@@ -23,8 +23,8 @@ from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
 
 
-class BranchParent(EditableDevice):
+class BranchParent(PhysicalDevice):
     """
     This class serves to represent the basic branch
     All other branches inherit from this one
@@ -82,7 +82,7 @@ class BranchParent(EditableDevice):
         :param device_type: device_type (passed on)
         """
 
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,

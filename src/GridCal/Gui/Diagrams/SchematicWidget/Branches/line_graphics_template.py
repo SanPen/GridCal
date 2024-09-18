@@ -587,11 +587,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         if self.api_object is not None:           
             
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.BusDevice: self.editor.circuit.get_buses(),
-                                             DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
-                                         })
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def remove_widget(self):
         """

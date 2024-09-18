@@ -16,12 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import DeviceType
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Substation.substation import Substation
 
 
-class VoltageLevel(EditableDevice):
+class VoltageLevel(PhysicalDevice):
 
     def __init__(self, name='VoltageLevel', idtag: Union[str, None] = None, code: str = '',
                  Vnom: float = 1.0, substation: Union[None, Substation] = None):
@@ -33,7 +33,7 @@ class VoltageLevel(EditableDevice):
         :param Vnom: Nominal voltage in kV
         :param substation: Substation object (optional)
         """
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 code=code,
                                 idtag=idtag,

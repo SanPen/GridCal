@@ -148,10 +148,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.updateDiagram()  # always update
 
         if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.SubstationDevice: self.editor.circuit.get_substations(),
-                                         })
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def mouseReleaseEvent(self, event):
         """
