@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 import numpy as np
-from typing import Dict, List, Union, Any, Tuple
+from typing import Dict, List, Union, Any, Tuple, TYPE_CHECKING
 from PySide6 import QtCore, QtWidgets, QtGui
 from collections import defaultdict
 
@@ -25,6 +25,9 @@ from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit, Base
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+
+if TYPE_CHECKING:
+    from GridCal.Gui.object_model import ObjectsModel
 
 
 class TreeDelegate(QtWidgets.QItemDelegate):
@@ -503,7 +506,7 @@ class LineLocationsDelegate(QtWidgets.QItemDelegate):
         # editor.children()[1].setValue(val.real)
         editor.blockSignals(False)
 
-    def setModelData(self, editor: QtWidgets.QFrame, model: "ObjectsModel", index):
+    def setModelData(self, editor: QtWidgets.QFrame, model: ObjectsModel, index):
         """
 
         :param editor:
