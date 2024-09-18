@@ -26,6 +26,7 @@ from GridCalEngine.basic_structures import CxVec
 import GridCalEngine.DataStructures as ds
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+import math
 
 
 def get_bus_data(circuit: MultiCircuit,
@@ -327,7 +328,10 @@ def get_generator_data(circuit: MultiCircuit,
     :param use_stored_guess:
     :return:
     """
-    print("(circuit_to_generalised_pf) bus_data.name_to_idx", bus_data.name_to_idx)	
+    
+    #make an array arrCounter that is len(circuit.buses) and set all values to 0
+    arrCounter = [0] * bus_data.nbus
+
     #check if there are any dc buses
     hasDC = bus_data.is_dc.sum() > 0
     if hasDC:
@@ -349,6 +353,9 @@ def get_generator_data(circuit: MultiCircuit,
 
         i = bus_dict[elm.bus]
         data.bus_idx[k] = i
+
+        #increase the counter of the bus by 1
+        arrCounter[i] += 1
 
         if elm.bus.is_dc:
             data.is_at_dc_bus[k] = 1
@@ -390,19 +397,36 @@ def get_generator_data(circuit: MultiCircuit,
         else:
             #define a string1 where you replace each space with two spaces
             # strinf1 = elm.bus.name.replace(" ", "  ")
-            data.gpf_ctrl1_elm[k] = str(elm.bus.name)
-            data.gpf_ctrl1_mode[k] = GpfControlType.type_Vm
-            data.gpf_ctrl1_val[k] = elm.Vset
-            data.gpf_ctrl2_elm[k] = elm.name
-            data.gpf_ctrl2_mode[k] = GpfControlType.type_Pzip
-            data.gpf_ctrl2_val[k] = elm.P/100.0
+            if bus_data.bus_types[i] == BusMode.Slack.value:
+                data.gpf_ctrl1_elm[k] = str(elm.bus.name)
+                data.gpf_ctrl1_mode[k] = GpfControlType.type_Vm
+                data.gpf_ctrl1_val[k] = elm.Vset
+                data.gpf_ctrl2_elm[k] = str(elm.bus.name)
+                data.gpf_ctrl2_mode[k] = GpfControlType.type_Va
+                data.gpf_ctrl2_val[k] = 0.0 #magic number here for the angle reference
+            else:
+                if arrCounter[i] > 1:
+                    data.gpf_ctrl1_elm[k] = elm.name
+                    data.gpf_ctrl1_mode[k] = GpfControlType.type_Pzip
+                    data.gpf_ctrl1_val[k] = elm.P/100.0
+                    data.gpf_ctrl2_elm[k] = elm.name
+                    data.gpf_ctrl2_mode[k] = GpfControlType.type_Qzip
+                    Q = elm.P * math.tan(math.acos(elm.Pf))
+                    data.gpf_ctrl2_val[k] = Q/100.0
+                else:
+                    data.gpf_ctrl1_elm[k] = str(elm.bus.name)
+                    data.gpf_ctrl1_mode[k] = GpfControlType.type_Vm
+                    data.gpf_ctrl1_val[k] = elm.Vset
+                    data.gpf_ctrl2_elm[k] = elm.name
+                    data.gpf_ctrl2_mode[k] = GpfControlType.type_Pzip
+                    data.gpf_ctrl2_val[k] = elm.P/100.0
 
-            print("elm.bus", elm.bus)
+            # print("elm.bus", elm.bus)
 
             #check if elm.bus is in bus_dict
-            if elm.bus in bus_data.name_to_idx:
-                print("(circuit_to_generalised_pf) elm.bus in bus_data.name_to_idx")
-                print(elm.bus)
+            # if elm.bus in bus_data.name_to_idx:
+            #     print("(circuit_to_generalised_pf) elm.bus in bus_data.name_to_idx")
+            #     print(elm.bus)
 
 
         if time_series:
@@ -476,6 +500,13 @@ def get_generator_data(circuit: MultiCircuit,
         data.C_bus_elm[i, k] = 1
 
     data.name_to_idx = gen_name_to_idx.copy()
+    #print the arrCounter
+    print("(circuit_to_generalised_pf) arrCounter: ", arrCounter)
+    #check if any of the indices in arrCounter are greater than 1
+    for i in range(len(arrCounter)):
+        if arrCounter[i] > 1:
+            print("(circuit_to_generalised_pf) arrCounter[i] > 1")
+            print(i)
 
     return data, gen_index_dict
 

@@ -984,7 +984,7 @@ class SimulationIndices2:
         for k in range(gen_data.nelm):
             if k in self.gen_ac:
                 #print the size of self.gen_ac
-                print("gen_ac: ", len(self.gen_ac))
+                # print("gen_ac: ", len(self.gen_ac))
                 self.check_control_type(gen_data.gpf_ctrl1_mode[k], gen_data.gpf_ctrl1_elm[k], gen_data.gpf_ctrl1_val[k], gen_data.names[k])
                 self.check_control_type(gen_data.gpf_ctrl2_mode[k], gen_data.gpf_ctrl2_elm[k], gen_data.gpf_ctrl2_val[k], gen_data.names[k])
             else:
