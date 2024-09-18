@@ -908,10 +908,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm.bus_to = bus_dict[entry['bus_to']]
                 set_object_properties(elm, prop, entry)
 
-                if "control_mode" in entry.keys():
-                    elm.control_mode = modes[entry["control_mode"]]
-                elif "mode" in entry.keys():
-                    elm.control_mode = modes[entry["mode"]]
+                # if "control_mode" in entry.keys():
+                #     elm.control_mode = modes[entry["control_mode"]]
+                # elif "mode" in entry.keys():
+                #     elm.control_mode = modes[entry["mode"]]
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -1345,6 +1345,11 @@ def parse_json(file_name) -> MultiCircuit:
 
 
 def get_obj_ref(elm):
+    """
+    get the idtag and if none return an empty str
+    :param elm:
+    :return:
+    """
     return elm.idtag if elm is not None else ''
 
 
@@ -1521,9 +1526,10 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                        'step': elm.step,
                                        'shedding_cost': elm.Cost
                                        } for elm in circuit.get_controllable_shunts()]
+
     element_profiles['Controllable shunt'] = [{'id': elm.idtag,
                                                'active': profile_to_json(elm.active_prof),
-                                               'step': profile_to_json(elm.steps_prof), } for elm in
+                                               'step': profile_to_json(elm.step_prof), } for elm in
                                               circuit.get_controllable_shunts()]
 
     # current injection
@@ -2041,12 +2047,12 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
 
                         'k': elm.k,
                         'kdp': elm.kdp,
-                        'Pfset': elm.Pdc_set,
-                        'Qfset': elm.Qac_set,
-                        'vac_set': elm.Vac_set,
-                        'vdc_set': elm.Vdc_set,
+                        'Pfset': elm.Pset,
+                        'Qfset': elm.Qset,
+                        'vac_set': elm.vset,
+                        'vdc_set': elm.vset,
 
-                        'control_mode': modes[elm.control_mode],
+                        # 'control_mode': modes[elm.control_mode],
 
                         'overload_cost': elm.Cost,
                         'capex': elm.capex,

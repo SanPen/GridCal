@@ -21,7 +21,7 @@ from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
@@ -99,10 +99,6 @@ class MapLineSegment(QGraphicsLineItem):
         pen.setWidthF(w)
 
         self.setPen(pen)
-        # self.arrow_from_1.set_colour(color, w, style)
-        # self.arrow_from_2.set_colour(color, w, style)
-        # self.arrow_to_1.set_colour(color, w, style)
-        # self.arrow_to_2.set_colour(color, w, style)
 
     def set_from_side_coordinates(self, x: float, y: float):
         """
@@ -152,12 +148,7 @@ class MapLineSegment(QGraphicsLineItem):
         :return:
         """
         if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.BusDevice: self.editor.circuit.get_buses(),
-                                             DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
-                                             DeviceType.BranchGroupDevice: self.editor.circuit.get_branch_groups()
-                                         })
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """

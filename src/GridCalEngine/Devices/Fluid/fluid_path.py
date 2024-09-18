@@ -17,7 +17,7 @@
 from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, Tuple
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.enumerations import DeviceType, SubObjectType
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
 
 
-class FluidPath(EditableDevice):
+class FluidPath(PhysicalDevice):
 
     def __init__(self,
                  name: str = '',
@@ -47,7 +47,7 @@ class FluidPath(EditableDevice):
         :param min_flow: minimum flow (m3/s)
         :param max_flow: maximum flow (m3/s)
         """
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,

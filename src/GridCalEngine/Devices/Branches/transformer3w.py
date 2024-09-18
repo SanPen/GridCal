@@ -18,9 +18,10 @@
 from typing import Tuple, Union
 import numpy as np
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.enumerations import DeviceType
 
 
 def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, float]:
@@ -41,7 +42,7 @@ def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, flo
         return 1e-20, 1e-20, 1e-20
 
 
-class Transformer3W(EditableDevice):
+class Transformer3W(PhysicalDevice):
 
     def __init__(self, idtag: Union[str, None] = None,
                  code: str = '',
@@ -77,7 +78,7 @@ class Transformer3W(EditableDevice):
         :param x: graphical x position (px)
         :param y: graphical y position (px)
         """
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,

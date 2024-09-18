@@ -1,7 +1,7 @@
 
 import sys
 # GUI imports
-from GridCal.Gui.GuiFunctions import *
+from GridCal.Gui.gui_functions import *
 from GridCal.Gui.TreeModelViewer.MainWindow import *
 
 

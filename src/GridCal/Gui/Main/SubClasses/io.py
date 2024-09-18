@@ -20,12 +20,12 @@ from typing import Union, List, Callable
 import pandas as pd
 from PySide6 import QtWidgets
 
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
+from GridCal.Gui.general_dialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI

@@ -23,7 +23,7 @@ from GridCal.Gui.TowerBuilder.gui import Ui_Dialog
 import GridCalEngine.Devices as dev
 from GridCal.Gui.TowerBuilder.table_models import TowerModel, WireInTower, WiresTable
 from GridCal.Gui.pandas_model import PandasModel
-from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCalEngine.basic_structures import Logger
 
 

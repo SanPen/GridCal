@@ -58,16 +58,16 @@ class PluginFunction:
         """
         Really hard core magic to avoid lambdas shadow each other due to late binding
 
-        lambda e, func=func: func(self)
+        lambda e=True, func=self.function_ptr: func(self)
 
         explanation:
-        - e is a bool parameter that the QAction sends when triggered
-        - func=func is there for the lambda to force the usage of the value of func
-          during the iteration and not after the loop
+        - e is a bool parameter that the QAction sends when triggered,
+            set it by default True, otherwise fails on windows
+        - func=self.function_ptr is there for the lambda to force the usage of the value of self.function_ptr
+            during the iteration and not after the loop since lambdas in a loop are lazy evaluated
         - func(self) is then what I wanted to lambda in the first place
         """
-        func = self.function_ptr
-        return lambda e=True, func=func: func(gui_instance)  # This is not an error, it is correct
+        return lambda e=True, func=self.function_ptr: func(gui_instance)  # This is not an error, it is correct
 
     def to_dict(self) -> Dict[str, str]:
         """

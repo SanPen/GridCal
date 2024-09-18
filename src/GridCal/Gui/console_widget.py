@@ -62,7 +62,7 @@ class ConsoleWidget(RichJupyterWidget):
 
         self.exit_requested.connect(stop)
 
-    def set_dark_theme(self):
+    def set_dark_theme(self) -> None:
         """
         Set the dark theme
         """
@@ -77,7 +77,7 @@ class ConsoleWidget(RichJupyterWidget):
                             color: #fff;
                             """)
 
-    def set_light_theme(self):
+    def set_light_theme(self) -> None:
         """
         Set the light theme
         """
@@ -113,7 +113,7 @@ class ConsoleWidget(RichJupyterWidget):
         """
         self._append_plain_text(text)
 
-    def execute_command(self, command):
+    def execute_command(self, command: str) -> None:
         """
         Execute a command in the frame of the console widget
         """

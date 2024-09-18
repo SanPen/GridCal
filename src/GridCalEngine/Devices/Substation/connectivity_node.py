@@ -19,10 +19,11 @@ from typing import Union
 
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
+from GridCalEngine.enumerations import DeviceType
 
 
-class ConnectivityNode(EditableDevice):
+class ConnectivityNode(PhysicalDevice):
 
     def __init__(self, name='CN',
                  idtag=None,
@@ -43,7 +44,7 @@ class ConnectivityNode(EditableDevice):
         :param internal: Is internal?
         :param Vnom: Nominal voltage in kV
         """
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 code=code,
                                 idtag=idtag,

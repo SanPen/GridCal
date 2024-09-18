@@ -18,7 +18,7 @@ import numpy as np
 from typing import List
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtWidgets import QTableView, QVBoxLayout, QPushButton, QHBoxLayout, QDialog, QSpacerItem, QSizePolicy
-from GridCal.Gui.GeneralDialogues import ArrayTableModel
+from GridCal.Gui.general_dialogues import ArrayTableModel
 from GridCal.Gui.messages import error_msg
 from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShunt
 

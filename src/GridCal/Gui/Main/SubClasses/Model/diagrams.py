@@ -25,15 +25,15 @@ from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
-                                          InputNumberDialogue)
+from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
+                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
@@ -1242,6 +1242,23 @@ class DiagramsMain(CompiledArraysMain):
                 # update view
                 self.set_diagrams_list_view()
 
+    def duplicate_diagram(self):
+        """
+        Duplicate the selected diagram
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+        if diagram_widget is not None:
+
+            new_diagram_widget = diagram_widget.copy()
+
+            self.add_diagram_widget_and_diagram(diagram_widget=new_diagram_widget,
+                                                diagram=new_diagram_widget.diagram)
+
+            # refresh the list view
+            self.set_diagrams_list_view()
+        else:
+            info_msg(text="Select a valid diagram", title="Duplicate diagram")
+
     def remove_all_diagrams(self) -> None:
         """
         Remove all diagrams and their widgets
@@ -1795,6 +1812,11 @@ class DiagramsMain(CompiledArraysMain):
                           text="New map",
                           icon_path=":/Icons/icons/map (add).svg",
                           function_ptr=lambda: self.add_map_diagram(True))
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Duplicate",
+                          icon_path=":/Icons/icons/copy.svg",
+                          function_ptr=self.duplicate_diagram)
 
         context_menu.addSeparator()
         gf.add_menu_entry(menu=context_menu,

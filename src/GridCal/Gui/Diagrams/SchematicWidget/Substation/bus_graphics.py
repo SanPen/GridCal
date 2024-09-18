@@ -23,7 +23,7 @@ from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
                                                    FONT_SCALE, EMERGENCY)
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
@@ -730,14 +730,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
 
         if self.api_object.device_type == DeviceType.BusDevice:
-            dictionary_of_lists = {DeviceType.AreaDevice: self.editor.circuit.get_areas(),
-                                   DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
-                                   DeviceType.SubstationDevice: self.editor.circuit.get_substations(),
-                                   DeviceType.VoltageLevelDevice: self.editor.circuit.get_voltage_levels(),
-                                   DeviceType.CountryDevice: self.editor.circuit.get_countries()}
-
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists=dictionary_of_lists)
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """

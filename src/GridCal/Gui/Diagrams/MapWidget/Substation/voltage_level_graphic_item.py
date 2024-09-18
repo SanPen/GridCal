@@ -22,7 +22,7 @@ from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import (QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsEllipseItem)
 
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -148,10 +148,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.updateDiagram()  # always update
 
         if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.SubstationDevice: self.editor.circuit.get_substations(),
-                                         })
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def mouseReleaseEvent(self, event):
         """

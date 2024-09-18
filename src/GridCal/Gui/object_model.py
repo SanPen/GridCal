@@ -19,8 +19,9 @@ import numpy as np
 from typing import Dict, List, Union
 from PySide6 import QtCore, QtWidgets, QtGui
 from enum import EnumMeta
-from GridCal.Gui.GuiFunctions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
-                                      ComplexDelegate, LineLocationsDelegate)
+from GridCal.Gui.gui_functions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
+                                       ComplexDelegate, LineLocationsDelegate)
+from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Devices import Bus, ContingencyGroup
 from GridCalEngine.Devices.Parents.editable_device import GCProp, GCPROP_TYPES
 from GridCalEngine.enumerations import DeviceType
@@ -28,7 +29,7 @@ from GridCalEngine.Devices.Branches.line_locations import LineLocations
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
-class ObjectsModel(QtCore.QAbstractTableModel):
+class ObjectsModel(WrappableTableModel):
     """
     Class to populate a Qt table view with the properties of objects
     """
@@ -51,7 +52,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         :param transposed: Display the table transposed?
         :param dictionary_of_lists: dictionary of lists for the Delegates
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        WrappableTableModel.__init__(self, parent)
 
         self.parent = parent
 
@@ -92,23 +93,6 @@ class ObjectsModel(QtCore.QAbstractTableModel):
         self.dictionary_of_lists = dictionary_of_lists if dictionary_of_lists is not None else dict()
 
         self.set_delegates()
-
-        # flag for the headers text wraper: HeaderViewWithWordWrap
-        self._hide_headers_mode = False
-
-    def hideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = True
-
-    def unhideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = False
 
     def set_time_index(self, time_index: Union[int, None]):
         """
@@ -325,10 +309,7 @@ class ObjectsModel(QtCore.QAbstractTableModel):
                 else:
                     value2 = value
 
-                # setattr(self.objects[obj_idx], self.attributes[attr_idx], value2)
-                self.objects[obj_idx].set_vaule(prop=prop,
-                                                t_idx=self.time_index_,
-                                                value=value2)
+                self.objects[obj_idx].set_vaule(prop=prop, t_idx=self.time_index_, value=value2)
             else:
                 pass  # the column cannot be edited
 

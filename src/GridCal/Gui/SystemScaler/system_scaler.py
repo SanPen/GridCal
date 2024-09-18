@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QApplication
 from PySide6 import QtCore, QtWidgets
 
 from GridCal.Gui.SystemScaler.system_scaler_ui import Ui_Dialog
-from GridCal.Gui.GuiFunctions import get_list_model, FloatDelegate
+from GridCal.Gui.gui_functions import get_list_model, FloatDelegate
 from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit

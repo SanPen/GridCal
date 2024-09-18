@@ -44,7 +44,6 @@ from GridCalEngine.Devices.Branches.series_reactance import SeriesReactance
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
-from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -106,7 +105,7 @@ class ArrowHead(QGraphicsPolygonItem):
         self.label.setDefaultTextColor(color)
 
     def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}",
-                  draw_label: bool = True):
+                  draw_label: bool = True, visibility_filter_value=1e-4):
         """
         Set the sign with a value
         :param value: any real value
@@ -115,9 +114,10 @@ class ArrowHead(QGraphicsPolygonItem):
         :param name: name of the displayed magnitude (i.e. Pf)
         :param units: the units of the displayed magnitude (i.e MW)
         :param format_str: the formatting string of the displayed magnitude
+        :param visibility_filter_value: threshold to determine if to show this widget
         :param draw_label: Draw label
         """
-        # self.backwards = value < 0
+        self.setVisible(abs(value) > visibility_filter_value)
         self.backwards = backwards
 
         self.label.setVisible(draw_label)
@@ -146,9 +146,13 @@ class ArrowHead(QGraphicsPolygonItem):
         arrow_p2 = base_pt - QTransform().rotate(angle).map(QPointF(p1, p2))
         arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
 
-        self.setPolygon(arrow_polygon)
+        # base_pt = line.p1() + (line.p2() - line.p1()) * self.position
+        #
+        # arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
 
+        self.setPolygon(arrow_polygon)
         if self.show_text:
+            # angle = - line.angle()
             a = angle + 180 if 90 < line.angle() <= 270 else angle  # this keep the labels upside
             label_p = base_pt - QTransform().rotate(a).map(QPointF(0, -10 if self.under else 35))
             self.label.setPos(label_p)
@@ -488,10 +492,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         # arrows
         self.view_arrows = True
-        self.arrow_from_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=False)
-        self.arrow_from_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=True)
-        self.arrow_to_1 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=False)
-        self.arrow_to_2 = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=True)
+        self.arrow_p_from = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=False)
+        self.arrow_q_from = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=True)
+        self.arrow_p_to = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=False)
+        self.arrow_q_to = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=True)
 
         if from_port and to_port:
             self.redraw()
@@ -560,10 +564,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
 
         self.setPen(pen)
-        self.arrow_from_1.set_colour(color, w, style)
-        self.arrow_from_2.set_colour(color, w, style)
-        self.arrow_to_1.set_colour(color, w, style)
-        self.arrow_to_2.set_colour(color, w, style)
+        self.arrow_p_from.set_colour(color, w, style)
+        self.arrow_q_from.set_colour(color, w, style)
+        self.arrow_p_to.set_colour(color, w, style)
+        self.arrow_q_to.set_colour(color, w, style)
 
         if self.symbol is not None:
             self.symbol.set_colour(color, w, style)
@@ -587,11 +591,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         if self.api_object is not None:           
             
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.BusDevice: self.editor.circuit.get_buses(),
-                                             DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
-                                         })
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def remove_widget(self):
         """
@@ -754,10 +754,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
                 # arrows
                 if self.view_arrows:
-                    self.arrow_from_1.redraw()
-                    self.arrow_from_2.redraw()
-                    self.arrow_to_1.redraw()
-                    self.arrow_to_2.redraw()
+                    self.arrow_p_from.redraw()
+                    self.arrow_q_from.redraw()
+                    self.arrow_p_to.redraw()
+                    self.arrow_q_to.redraw()
 
                 if self.symbol is not None:
                     self.symbol.redraw()
@@ -809,10 +809,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
             Qf = Sf.imag
             Pt = St.real
             Qt_ = St.imag
-            self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
-            self.arrow_from_2.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr", draw_label=self.draw_labels)
-            self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
-            self.arrow_to_2.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr", draw_label=self.draw_labels)
+            self.arrow_p_from.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+            self.arrow_q_from.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr", draw_label=self.draw_labels)
+            self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+            self.arrow_q_to.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr", draw_label=self.draw_labels)
 
     def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
         """
@@ -820,10 +820,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         :param Pf: Complex power from
         :param Pt: Complex power to
         """
-        self.arrow_from_1.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
-        self.arrow_from_2.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
-        self.arrow_to_1.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
-        self.arrow_to_2.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+        self.arrow_p_from.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+        self.arrow_q_from.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+        self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+        self.arrow_q_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
 
     def change_bus(self):
         """

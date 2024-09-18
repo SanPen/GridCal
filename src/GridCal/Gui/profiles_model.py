@@ -23,7 +23,8 @@ from warnings import warn
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.enumerations import DeviceType
-from GridCal.Gui.GuiFunctions import (ComboDelegate, TextDelegate, FloatDelegate, ComplexDelegate)
+from GridCal.Gui.gui_functions import (ComboDelegate, TextDelegate, FloatDelegate, ComplexDelegate)
+from GridCal.Gui.wrappable_table_model import WrappableTableModel
 
 
 class ObjectHistory:
@@ -92,7 +93,7 @@ class ObjectHistory:
         return len(self.undo_stack) > 0
 
 
-class ProfilesModel(QtCore.QAbstractTableModel):
+class ProfilesModel(WrappableTableModel):
     """
     Class to populate a Qt table view with profiles from objects
     """
@@ -114,7 +115,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :param parent: Parent object: the QTableView object
         :param max_undo_states:
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        WrappableTableModel.__init__(self, parent)
 
         self.parent = parent
 
@@ -141,23 +142,6 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         # self.add_state(columns=range(self.columnCount()), action_name='initial')
 
         self.set_delegates()
-
-        # flag for the headers text wraper: HeaderViewWithWordWrap
-        self._hide_headers_mode = False
-
-    def hideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = True
-
-    def unhideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = False
 
     def set_delegates(self) -> None:
         """
