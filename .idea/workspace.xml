@@ -28,20 +28,10 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="deleted unused code from the maps&#10;added the script clearing button function that was missing somehow">
-      <change afterPath="$PROJECT_DIR$/src/trunk/qt_related/line_arrow_3.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="removed commented out code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_segment.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/Branches/map_line_segment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Fluid/fluid_path_graphics.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Fluid/fluid_path_graphics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/base_diagram_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/base_diagram_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/base_diagram.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/base_diagram.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/map_diagram.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Devices/Diagrams/map_diagram.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/json_parser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/gridcal/zip_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/Session/results_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Session/results_model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1509,7 +1499,7 @@
       <workItem from="1726475468111" duration="318000" />
       <workItem from="1726475791119" duration="9402000" />
       <workItem from="1726556623923" duration="6824000" />
-      <workItem from="1726638738311" duration="15108000" />
+      <workItem from="1726638738311" duration="17923000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1854,7 +1844,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="591" />
+    <option name="localTasksCounter" value="593" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1901,8 +1891,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fixed issue when dgridcals were not &quot;valid for simulation&quot;" />
-    <MESSAGE value="5.1.22" />
     <MESSAGE value="Removed extra prints" />
     <MESSAGE value="Added set snapshot test" />
     <MESSAGE value="Fixed naming issues" />
@@ -1926,7 +1914,9 @@
     <MESSAGE value="Added modelling authority in many physical assets&#10;Substantially refactored the TableModels to inherit from WrappableTableModel" />
     <MESSAGE value="renamed GuiFunctions, GeneralDialogues and ConsoleWidget" />
     <MESSAGE value="deleted unused code from the maps&#10;added the script clearing button function that was missing somehow" />
-    <option name="LAST_COMMIT_MESSAGE" value="deleted unused code from the maps&#10;added the script clearing button function that was missing somehow" />
+    <MESSAGE value="Added diagram duplication" />
+    <MESSAGE value="removed commented out code" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed commented out code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2356,7 +2346,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py</url>
-          <line>3505</line>
+          <line>3380</line>
           <option name="timeStamp" value="1851" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2366,7 +2356,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py</url>
-          <line>1096</line>
+          <line>971</line>
           <option name="timeStamp" value="1924" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -2449,19 +2439,10 @@
           <option name="timeStamp" value="2153" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/object_model.py</url>
-          <line>94</line>
-          <option name="timeStamp" value="2160" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/object_model.py</url>
-          <line>117</line>
-          <option name="timeStamp" value="2162" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCal/Gui/object_model.py</url>
-          <line>165</line>
-          <option name="timeStamp" value="2163" />
+          <condition expression="value == 0" language="Python" />
+          <url>file://$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/Branches/line_graphics_template.py</url>
+          <line>118</line>
+          <option name="timeStamp" value="2164" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2902,7 +2883,7 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ptdf_test_ptdf_ieee14_definition_ps.coverage" NAME="Nosetests for test_ptdf.test_ptdf_ieee14_definition_ps Coverage Results" MODIFIED="1706268834144" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$newton_equivalence_utils.coverage" NAME="newton_equivalence_utils Coverage Results" MODIFIED="1687725154112" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$update_gui_all.coverage" NAME="update_gui_all Coverage Results" MODIFIED="1696580506087" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1726663834877" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1726667826760" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$MVRSM_mo.coverage" NAME="MVRSM_mo Coverage Results" MODIFIED="1707735080331" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/MVRSM" />
     <SUITE FILE_PATH="coverage/GridCal$graph_save2.coverage" NAME="graph_save2 Coverage Results" MODIFIED="1702996105426" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCalEngine/IO/rdf_test" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_latin_hypercube_py.coverage" NAME="Nosetests in test_latin_hypercube.py Coverage Results" MODIFIED="1617046286335" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
