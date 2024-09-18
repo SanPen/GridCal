@@ -105,7 +105,7 @@ class ArrowHead(QGraphicsPolygonItem):
         self.label.setDefaultTextColor(color)
 
     def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}",
-                  draw_label: bool = True):
+                  draw_label: bool = True, visibility_filter_value=1e-4):
         """
         Set the sign with a value
         :param value: any real value
@@ -114,9 +114,10 @@ class ArrowHead(QGraphicsPolygonItem):
         :param name: name of the displayed magnitude (i.e. Pf)
         :param units: the units of the displayed magnitude (i.e MW)
         :param format_str: the formatting string of the displayed magnitude
+        :param visibility_filter_value: threshold to determine if to show this widget
         :param draw_label: Draw label
         """
-        # self.backwards = value < 0
+        self.setVisible(abs(value) > visibility_filter_value)
         self.backwards = backwards
 
         self.label.setVisible(draw_label)
