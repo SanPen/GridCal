@@ -14,18 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from __future__ import annotations
-import numpy as np
-from typing import Dict, List, Union
-from PySide6 import QtCore, QtWidgets, QtGui
-from enum import EnumMeta
-from GridCal.Gui.GuiFunctions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
-                                      ComplexDelegate, LineLocationsDelegate)
-from GridCalEngine.Devices import Bus, ContingencyGroup
-from GridCalEngine.Devices.Parents.editable_device import GCProp, GCPROP_TYPES
-from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.Branches.line_locations import LineLocations
-from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from PySide6 import QtCore, QtWidgets
 
 
 class WrappableTableModel(QtCore.QAbstractTableModel):
@@ -43,14 +32,14 @@ class WrappableTableModel(QtCore.QAbstractTableModel):
         # flag for the headers text wraper: HeaderViewWithWordWrap
         self._hide_headers_mode = False
 
-    def hideHeaders(self) -> None:  # Do not rename, this is used by HeaderViewWithWordWrap
+    def hide_headers(self) -> None:
         """
 
         :return:
         """
         self._hide_headers_mode = True
 
-    def unhideHeaders(self) -> None:  # Do not rename, this is used by HeaderViewWithWordWrap
+    def unhide_headers(self) -> None:
         """
 
         :return:

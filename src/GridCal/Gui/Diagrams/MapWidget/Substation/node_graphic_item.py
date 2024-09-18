@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
 from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor, QCursor

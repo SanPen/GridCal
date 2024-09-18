@@ -22,7 +22,7 @@ from GridCal.Gui.ContingencyPlanner.gui import Ui_MainWindow
 import GridCalEngine.Devices as dev
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_plan import generate_automatic_contingency_plan
 
 

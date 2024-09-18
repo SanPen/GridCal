@@ -25,9 +25,9 @@ from typing import List, Tuple, Dict, Union
 # GUI imports
 from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 import GridCal.Gui.Visualization.visualization as viz
-from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg

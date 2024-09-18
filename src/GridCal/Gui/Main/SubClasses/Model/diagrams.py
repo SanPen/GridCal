@@ -25,15 +25,15 @@ from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
-                                          InputNumberDialogue)
+from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
+                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,

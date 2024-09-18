@@ -19,8 +19,8 @@ import numpy as np
 from typing import Dict, List, Union
 from PySide6 import QtCore, QtWidgets, QtGui
 from enum import EnumMeta
-from GridCal.Gui.GuiFunctions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
-                                      ComplexDelegate, LineLocationsDelegate)
+from GridCal.Gui.gui_functions import (IntDelegate, ComboDelegate, TextDelegate, FloatDelegate, ColorPickerDelegate,
+                                       ComplexDelegate, LineLocationsDelegate)
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Devices import Bus, ContingencyGroup
 from GridCalEngine.Devices.Parents.editable_device import GCProp, GCPROP_TYPES

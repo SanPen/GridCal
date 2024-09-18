@@ -20,7 +20,7 @@ import numpy as np
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu, QLabel, QDoubleSpinBox, QPushButton, QVBoxLayout, QComboBox, QDialog, QGraphicsScene
-from GridCal.Gui.GuiFunctions import get_list_model, add_menu_entry
+from GridCal.Gui.gui_functions import get_list_model, add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCalEngine.Devices.Branches.line import SequenceLineType, OverheadLineType, UndergroundLineType
 from GridCalEngine.Devices.Branches.dc_line import DcLine

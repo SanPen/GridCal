@@ -20,7 +20,7 @@ from typing import Dict, List, Union
 
 from PySide6 import QtCore, QtWidgets
 
-from GridCal.Gui.GuiFunctions import (FloatDelegate)
+from GridCal.Gui.gui_functions import (FloatDelegate)
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Devices.Associations.association import Association, Associations
 from GridCalEngine.Devices.Parents.editable_device import GCProp

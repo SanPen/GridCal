@@ -26,7 +26,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphic
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_editor import GeneratorQCurveEditor
 from GridCal.Gui.SolarPowerWizard.solar_power_wizzard import SolarPvWizard
 from GridCal.Gui.WindPowerWizard.wind_power_wizzard import WindFarmWizard
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget

@@ -22,7 +22,7 @@ from PySide6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import (QMenu, QGraphicsSceneContextMenuEvent, QGraphicsSceneMouseEvent, QGraphicsEllipseItem)
 
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus

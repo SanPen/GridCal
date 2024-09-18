@@ -23,7 +23,7 @@ from warnings import warn
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.enumerations import DeviceType
-from GridCal.Gui.GuiFunctions import (ComboDelegate, TextDelegate, FloatDelegate, ComplexDelegate)
+from GridCal.Gui.gui_functions import (ComboDelegate, TextDelegate, FloatDelegate, ComplexDelegate)
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
 
 

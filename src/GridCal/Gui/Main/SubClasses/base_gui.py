@@ -41,13 +41,13 @@ from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 import GridCal.Session.synchronization_driver as syncdrv
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
+from GridCal.Gui.general_dialogues import CheckListDialogue, StartEndSelectionDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg, error_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.LoadCatalogue.catalogue_dialogue import CatalogueGUI
@@ -59,8 +59,8 @@ from GridCal.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.GeneralDialogues import clear_qt_layout
-from GridCal.Gui.ConsoleWidget import ConsoleWidget
+from GridCal.Gui.general_dialogues import clear_qt_layout
+from GridCal.Gui.console_widget import ConsoleWidget
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
 
 

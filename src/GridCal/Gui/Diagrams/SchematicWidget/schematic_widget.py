@@ -74,7 +74,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.GeneralDialogues import InputNumberDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question

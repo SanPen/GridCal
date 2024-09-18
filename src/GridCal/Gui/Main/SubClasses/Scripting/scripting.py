@@ -20,8 +20,8 @@ from PySide6 import QtWidgets, QtCore
 from GridCal.Gui.Main.SubClasses.io import IoMain
 from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
 
-from GridCal.Gui.GuiFunctions import CustomFileSystemModel
-import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.gui_functions import CustomFileSystemModel
+import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.messages import error_msg, yes_no_question
 
 

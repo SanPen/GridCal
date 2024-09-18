@@ -25,7 +25,7 @@ from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 import GridCalEngine.basic_structures as bs
 import GridCalEngine.Devices as dev
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.profiles_model import ProfilesModel
 import GridCalEngine.Utils.Filtering as flt
@@ -36,7 +36,7 @@ from GridCal.Gui.Analysis.object_plot_analysis import object_histogram_analysis
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 from GridCal.Gui.SystemScaler.system_scaler import SystemScaler

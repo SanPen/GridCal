@@ -22,9 +22,9 @@ from PySide6.QtWidgets import (QApplication, QMenu, QGraphicsSceneContextMenuEve
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor, QCursor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GeneralDialogues import InputNumberDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel

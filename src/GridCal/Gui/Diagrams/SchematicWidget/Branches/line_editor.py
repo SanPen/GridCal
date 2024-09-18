@@ -19,7 +19,7 @@ import numpy as np
 from typing import Union, List
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QDoubleSpinBox, QComboBox, QCheckBox
-from GridCal.Gui.GuiFunctions import get_list_model
+from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Gui.messages import error_msg
 from GridCalEngine.Devices.Branches.line import Line, SequenceLineType, OverheadLineType, UndergroundLineType
 
