@@ -35,7 +35,7 @@ from GridCalEngine.Devices.Injections.controllable_shunt import ControllableShun
 from GridCalEngine.Devices.types import BRANCH_TYPES, BRANCH_TEMPLATE_TYPES
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.basic_structures import Logger
-
+import numpy as np
 
 class MixedVariableProblem(ElementwiseProblem):
     """
@@ -57,6 +57,13 @@ class MixedVariableProblem(ElementwiseProblem):
         all_dict = self.grid.get_all_elements_dict()
         self.device_template_dict: Dict[BRANCH_TYPES, List[BRANCH_TEMPLATE_TYPES]] = dict()
 
+        # store original limits of controllable shunts:
+        self.shunt_bounds=dict()
+        for C_shunt in self.grid.controllable_shunts:
+            self.shunt_bounds={"{}".format(C_shunt.idtag):
+                        {"Bmin": C_shunt.Bmin,
+                         "Bmax": C_shunt.Bmax}
+                    }
         # create the decision vars
         for investment_group, investments_list in self.grid.get_investments_by_groups():
 
@@ -132,7 +139,6 @@ class MixedVariableProblem(ElementwiseProblem):
         #     self.devices.append(elm)
         for elm in grid.controllable_shunts:
             self.variables[elm.idtag] = Real(bounds=(elm.Bmin, elm.Bmax))  # Bounded by Bmin and Bmax
-            # TODO ? Modify shunt limits?? Not sure if it should be here
             self.devices.append(elm)
 
         super().__init__(n_obj=n_obj, vars=self.variables)
@@ -181,7 +187,9 @@ class MixedVariableProblem(ElementwiseProblem):
                     if isinstance(device, Shunt):
                         pass
                     elif isinstance(device, ControllableShunt):
-                        pass
+                        new_B = x[device.idtag]
+                        device.b_steps = np.array([new_B,0])
+
                     elif isinstance(device, Transformer2W):
                         device.apply_template(self.default_template[i], Sbase=self.grid.Sbase,
                                               logger=self.logger)
