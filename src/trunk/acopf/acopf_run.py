@@ -421,19 +421,19 @@ def caseinvest():
     Solves for pf_init=False in about a minute and 130 iterations.
     """
 
-    file_path = 'C:/Users/eroot/Downloads/claudia_v4.1_OPF_test.gridcal'
+    file_path = 'C:/Users/eroot/Downloads/TEST_OPF_new_cat_assoc_Cshunt.gridcal'
 
     grid = gce.FileOpen(file_path).open()
 
     # grid.generators.
-    sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=15)
-    grid.add_controllable_shunt(grid.buses[2], sh1)
-
-    sh2 = gce.ControllableShunt(number_of_steps=2, b_per_step=5)
-    grid.add_controllable_shunt(grid.buses[5], sh2)
-
-    sh3 = gce.ControllableShunt(number_of_steps=2, b_per_step=10)
-    grid.add_controllable_shunt(grid.buses[7], sh3)
+    # sh1 = gce.ControllableShunt(number_of_steps=2, b_per_step=15)
+    # grid.add_controllable_shunt(grid.buses[2], sh1)
+    #
+    # sh2 = gce.ControllableShunt(number_of_steps=2, b_per_step=5)
+    # grid.add_controllable_shunt(grid.buses[5], sh2)
+    #
+    # sh3 = gce.ControllableShunt(number_of_steps=2, b_per_step=10)
+    # grid.add_controllable_shunt(grid.buses[7], sh3)
 
 
     nc = compile_numerical_circuit_at(grid)
@@ -441,7 +441,7 @@ def caseinvest():
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
 
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=1, ips_tolerance=1e-6,
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, verbose=3, ips_tolerance=1e-6,
                                               ips_iterations=70, ips_init_with_pf=True)
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=0)
     run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
@@ -473,7 +473,7 @@ def casehvdc():
     power_flow = gce.PowerFlowDriver(grid, options)
     power_flow.run()
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=3)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, ips_tolerance=1e-5,
                                               ips_iterations=150, verbose=1, acopf_mode=gce.AcOpfMode.ACOPFslacks)
     res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)
