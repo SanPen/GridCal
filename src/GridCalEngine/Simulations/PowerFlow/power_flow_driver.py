@@ -179,20 +179,20 @@ class PowerFlowDriver(DriverTemplate):
             n = len(convergence_report.error_)
             for i in range(n):
                 self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
-                                     device=f"Converged",
+                                     device_property=f"Converged",
                                      value=convergence_report.converged_[i],
                                      expected_value="True")
                 self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
-                                     device="Elapsed (s)",
-                                     value=convergence_report.elapsed_[i])
+                                     device_property="Elapsed (s)",
+                                     value='{:.4f}'.format(convergence_report.elapsed_[i]))
                 self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
-                                     device="Error (p.u.)",
-                                     value=convergence_report.error_[i],
-                                     expected_value=self.options.tolerance)
+                                     device_property="Error (p.u.)",
+                                     value='{:.4e}'.format(convergence_report.error_[i]),
+                                     expected_value=f"<{self.options.tolerance}")
                 self.logger.add_info(msg=f"Method {convergence_report.methods_[i]}",
-                                     device="Iterations",
+                                     device_property="Iterations",
                                      value=convergence_report.iterations_[i],
-                                     expected_value=self.options.max_iter)
+                                     expected_value=f"<{self.options.max_iter}")
 
         if self.options.generate_report:
             self.add_report()

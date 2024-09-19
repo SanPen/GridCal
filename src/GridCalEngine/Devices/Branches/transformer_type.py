@@ -16,8 +16,9 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import Tuple, Union
 from numpy import sqrt
-
+from GridCalEngine.enumerations import TapChangerTypes
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.Devices.Branches.tap_changer import TapChanger
 
 
 class TransformerType(EditableDevice):
@@ -32,6 +33,11 @@ class TransformerType(EditableDevice):
                  short_circuit_voltage: float = 0.0,
                  gr_hv1: float = 0.5,
                  gx_hv1: float = 0.5,
+                 total_positions: int = 5,
+                 neutral_position: int = 2,
+                 dV: float = 0.01,
+                 asymmetry_angle: float = 90.0,
+                 tc_type: TapChangerTypes = TapChangerTypes.NoRegulation,
                  name: str = 'TransformerType',
                  idtag: Union[None, str] = None) -> None:
         """
@@ -45,6 +51,11 @@ class TransformerType(EditableDevice):
         :param short_circuit_voltage: Short circuit voltage in %
         :param gr_hv1: proportion of the resistance in the HV side (i.e. 0.5)
         :param gx_hv1: proportion of the reactance in the HV side (i.e. 0.5)
+        :param total_positions: Total number of positions
+        :param neutral_position: Neutral position
+        :param dV: per unit of voltage increment
+        :param asymmetry_angle: Asymmetry angle (deg)
+        :param tc_type: Tap changer type
         :param name: Name of the device template
         :param idtag: device UUID
         """
@@ -72,6 +83,13 @@ class TransformerType(EditableDevice):
 
         self.GX_hv1 = gx_hv1
 
+        # The tap changer parameters are stored and used with the help of the TapChanger object
+        self._tap_changer = TapChanger(total_positions=total_positions,
+                                       neutral_position=neutral_position,
+                                       dV=dV,
+                                       asymmetry_angle=asymmetry_angle,
+                                       tc_type=tc_type)
+
         self.register(key='HV', units='kV', tpe=float, definition='Nominal voltage al the high voltage side')
         self.register(key='LV', units='kV', tpe=float, definition='Nominal voltage al the low voltage side')
         self.register(key='Sn', units='MVA', tpe=float, definition='Nominal power', old_names=['rating'])
@@ -80,7 +98,148 @@ class TransformerType(EditableDevice):
         self.register(key='I0', units='%', tpe=float, definition='No-load current')
         self.register(key='Vsc', units='%', tpe=float, definition='Short-circuit voltage')
 
-    def get_impedances(self, VH, VL, Sbase):
+        self.register(key='tc_type', units='', tpe=TapChangerTypes, definition='Regulation type')
+        self.register(key='total_positions', units='', tpe=int, definition='Number of tap positions')
+        self.register(key='dV', units='p.u.', tpe=float, definition='Voltage increment per step')
+        self.register(key='neutral_position', units='', tpe=int, definition='neutral poition couting from zero')
+        self.register(key='asymmetry_angle', units='deg', tpe=float, definition='Asymmetry_angle')
+
+        self.register(key='tap_module_min', units='p.u.', tpe=float, definition='Min tap module', editable=False)
+        self.register(key='tap_module_max', units='p.u.', tpe=float, definition='Max tap module', editable=False)
+        self.register(key='tap_phase_min', units='rad', tpe=float, definition='Min tap phase', editable=False)
+        self.register(key='tap_phase_max', units='rad', tpe=float, definition='Max tap phase', editable=False)
+
+    @property
+    def tap_module_min(self) -> float:
+        """
+        Min tap module, computed on the fly
+        :return: float
+        """
+        return self._tap_changer.get_tap_module_min()
+
+    @tap_module_min.setter
+    def tap_module_min(self, val: float):
+        # this is a read only property
+        pass
+
+    @property
+    def tap_module_max(self) -> float:
+        """
+        Max tap module, computed on the fly
+        :return: float
+        """
+        return self._tap_changer.get_tap_module_max()
+
+    @tap_module_max.setter
+    def tap_module_max(self, val: float):
+        # this is a read only property
+        pass
+
+    @property
+    def tap_phase_min(self) -> float:
+        """
+        Min tap phase, cputed on the fly
+        :return: float
+        """
+        return self._tap_changer.get_tap_phase_min()
+
+    @tap_phase_min.setter
+    def tap_phase_min(self, val: float):
+        # this is a read only property
+        pass
+
+    @property
+    def tap_phase_max(self) -> float:
+        """
+        Maximum tap phase (calculated)
+        :return: float
+        """
+        return self._tap_changer.get_tap_phase_max()
+
+    @tap_phase_max.setter
+    def tap_phase_max(self, val: float):
+        # this is a read only property
+        pass
+
+    @property
+    def total_positions(self) -> int:
+        """
+        Tap changer total number of positions
+        :return: int
+        """
+        return self._tap_changer.total_positions
+
+    @total_positions.setter
+    def total_positions(self, value: int):
+        if isinstance(value, int):
+            self._tap_changer.total_positions = value
+        else:
+            raise TypeError(f'Expected int but got {type(value)}')
+
+    @property
+    def neutral_position(self) -> int:
+        """
+        Tap changer neutral position
+        :return: int
+        """
+        return self._tap_changer.neutral_position
+
+    @neutral_position.setter
+    def neutral_position(self, value: int):
+        if isinstance(value, int):
+            if 0 <= value < self._tap_changer.total_positions:
+                self._tap_changer.neutral_position = value
+            else:
+                pass
+        else:
+            raise TypeError(f'Expected int but got {type(value)}')
+
+    @property
+    def dV(self) -> float:
+        """
+        Tap changer Voltage increment per step (p.u.)
+        :return: float
+        """
+        return self._tap_changer.dV
+
+    @dV.setter
+    def dV(self, value: float):
+        if isinstance(value, float):
+            self._tap_changer.dV = value
+        else:
+            raise TypeError(f'Expected int but got {type(value)}')
+
+    @property
+    def asymmetry_angle(self) -> float:
+        """
+        Tap changer assymetry angle (deg)
+        :return: float
+        """
+        return self._tap_changer.asymmetry_angle
+
+    @asymmetry_angle.setter
+    def asymmetry_angle(self, value: float):
+        if isinstance(value, float):
+            self._tap_changer.asymmetry_angle = value
+        else:
+            raise TypeError(f'Expected float but got {type(value)}')
+
+    @property
+    def tc_type(self) -> TapChangerTypes:
+        """
+        Get the tap changer type
+        :return: TapChangerTypes
+        """
+        return self._tap_changer.tc_type
+
+    @tc_type.setter
+    def tc_type(self, value: TapChangerTypes):
+        if isinstance(value, TapChangerTypes):
+            self._tap_changer.tc_type = value
+        else:
+            raise TypeError(f'Expected TapChangerTypes but got {type(value)}')
+
+    def get_impedances(self, VH: float, VL: float, Sbase: float):
         """
         Compute the branch parameters of a transformer from the short circuit test
         values.
@@ -103,6 +262,17 @@ class TransformerType(EditableDevice):
                                            GR_hv1=self.GR_hv1)
 
         return z_series, y_shunt
+
+    def get_tap_changer(self) -> TapChanger:
+        """
+        Get tap changer object
+        :return: TapChanger
+        """
+        return TapChanger(total_positions=self.total_positions,
+                          neutral_position=self.neutral_position,
+                          dV=self.dV,
+                          asymmetry_angle=self.asymmetry_angle,
+                          tc_type=self.tc_type)
 
 
 def get_impedances(VH_bus: float, VL_bus: float, Sn: float, HV: float, LV: float,

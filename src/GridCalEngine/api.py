@@ -155,3 +155,73 @@ def acopf(grid: MultiCircuit,
                                   pf_init=pf_init)
 
     return acopf_res
+
+
+def contingencies_ts(circuit: MultiCircuit,
+                     use_clustering: bool = False,
+                     n_points: int = 100,
+                     use_srap=False,
+                     srap_max_power=1300.0,
+                     srap_top_n=5,
+                     srap_deadband=10,
+                     srap_rever_to_nominal_rating=True,
+                     detailed_massive_report=True,
+                     contingency_deadband=0.0,
+                     contingency_method=ContingencyMethod.PTDF) -> ContingencyAnalysisTimeSeriesResults:
+    """
+    Run a time series contingency analysis
+    :param circuit: MultiCircuit instance
+    :param use_clustering: Use clustering?
+    :param n_points: Number of points for clustering
+    :param use_srap: Use SRAP?
+    :param srap_max_power: Max power in SRAP
+    :param srap_top_n: Top number of SRAP nodes to consider
+    :param srap_deadband: Deadband for SRAP power
+    :param srap_rever_to_nominal_rating: Revert to nominal rating for SRAP flow
+    :param detailed_massive_report: Detailed massive report?
+    :param contingency_deadband: Deadband for contingency analysis
+    :param contingency_method: Contingency analysis method (ContingencyMethod)
+    :return: ContingencyAnalysisTimeSeriesResults
+    """
+
+    if use_clustering:
+        options_clustering = ClusteringAnalysisOptions(n_points=n_points)
+        driver_clustering = ClusteringDriver(grid=circuit, options=options_clustering)
+        driver_clustering.run()
+        clustering_results_ = driver_clustering.results
+    else:
+        clustering_results_ = None
+
+    # declare the contingency analysis options
+    options_contingencies = ContingencyAnalysisOptions(
+        use_provided_flows=False,
+        Pf=None,
+        pf_options=PowerFlowOptions(SolverType.DC),
+        lin_options=LinearAnalysisOptions(),
+        use_srap=use_srap,
+        srap_max_power=srap_max_power,
+        srap_top_n=srap_top_n,
+        srap_deadband=srap_deadband,
+        srap_rever_to_nominal_rating=srap_rever_to_nominal_rating,
+        detailed_massive_report=detailed_massive_report,
+        contingency_deadband=contingency_deadband,
+        contingency_method=contingency_method,
+        contingency_groups=circuit.contingency_groups
+    )
+
+    # declare the contingency drivers
+    driver_contingencies = ContingencyAnalysisTimeSeriesDriver(
+        grid=circuit,
+        options=options_contingencies,
+        time_indices=circuit.get_all_time_indices(),
+        clustering_results=clustering_results_
+    )
+
+    # run!
+    driver_contingencies.run()
+
+    if use_clustering:
+        # this reconciles the results time steps properly
+        driver_contingencies.results.expand_clustered_results()
+
+    return driver_contingencies.results

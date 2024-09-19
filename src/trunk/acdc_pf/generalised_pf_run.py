@@ -4,9 +4,9 @@ import sys
 sys.path.append('C:/Users/raiya/Documents/8. eRoots/thesis/code/GridCal/src')
 import GridCalEngine.api as gce
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.generalised_power_flow import run_nonlinear_opf, \
-    ac_optimal_power_flow
-from GridCalEngine.enumerations import TransformerControlType, AcOpfMode, ReactivePowerControlMode
+from generalised_power_flow import (run_nonlinear_opf,
+                                    ac_optimal_power_flow)
+from GridCalEngine.enumerations import TransformerControlType, AcOpfMode
 
 
 def example_3bus_acopf():
@@ -472,7 +472,7 @@ def case14():
     for ll in range(len(grid.lines)):
         grid.lines[ll].monitor_loading = True
 
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=ReactivePowerControlMode.NoControl)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, control_q=False)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF, acopf_mode=AcOpfMode.ACOPFstd,
                                               ips_tolerance=1e-6, ips_iterations=50, verbose=1)
     res = run_nonlinear_opf(grid=grid, pf_options=pf_options, opf_options=opf_options, plot_error=True, pf_init=True)

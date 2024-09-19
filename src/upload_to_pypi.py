@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
         _requires_pyhon = '>=3.8'
 
-        _provides_extra = 'gch5 files'
+        _provides_extra = 'gch5'
 
         _license_ = 'LGPL'
 

@@ -17,14 +17,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 from PySide6.QtWidgets import QMenu
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_editor import TransformerEditor
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer_taps_editor import TransformerTapsEditor
 from GridCalEngine.Devices.Branches.transformer import Transformer2W, TransformerType
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, TapModuleControl
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -106,6 +106,16 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                            text="Tap down",
                            function_ptr=self.tap_down,
                            icon_path=":/Icons/icons/down.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Control V from",
+                           function_ptr=self.control_v_from,
+                           icon_path=":/Icons/icons/edit.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Control V to",
+                           function_ptr=self.control_v_to,
+                           icon_path=":/Icons/icons/edit.svg")
 
             menu.addSeparator()
 
@@ -240,3 +250,19 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         Set one tap down
         """
         self.api_object.tap_down()
+
+    def control_v_from(self):
+        """
+
+        :return:
+        """
+        self.api_object.regulation_bus = self.api_object.bus_from
+        self.api_object.tap_module_control_mode = TapModuleControl.Vm
+
+    def control_v_to(self):
+        """
+
+        :return:
+        """
+        self.api_object.regulation_bus = self.api_object.bus_to
+        self.api_object.tap_module_control_mode = TapModuleControl.Vm

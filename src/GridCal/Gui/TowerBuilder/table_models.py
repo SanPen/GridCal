@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from typing import Union
+from typing import Union, List
 from PySide6 import QtCore
 from GridCalEngine.Devices.Branches.wire import Wire
 from GridCalEngine.Devices.Branches.overhead_line_type import OverheadLineType, WireInTower
@@ -32,6 +32,9 @@ Typical values of earth
 
 
 class WiresTable(QtCore.QAbstractTableModel):
+    """
+    Wires table for the tower
+    """
 
     def __init__(self, parent=None):
 
@@ -39,13 +42,13 @@ class WiresTable(QtCore.QAbstractTableModel):
 
         self.header = ['Name', 'R (Ohm/km)', 'GMR (m)', 'max current (kA)']
 
-        self.index_prop = {0: 'name', 1: 'r', 2: 'gmr', 3: 'max_current'}
+        # self.index_prop = {0: 'name', 1: 'r', 2: 'GMR', 3: 'max_current'}
 
         self.converter = {0: str, 1: float, 2: float, 3: float}
 
         self.editable = [True, True, True, True]
 
-        self.wires = list()
+        self.wires: List[Wire] = list()
 
     def add(self, wire: Wire):
         """
@@ -102,8 +105,17 @@ class WiresTable(QtCore.QAbstractTableModel):
 
         if index.isValid():
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
-                val = getattr(self.wires[index.row()], self.index_prop[index.column()])
-                return str(val)
+                wire = self.wires[index.row()]
+                if index.column() == 0:
+                    return wire.name
+                elif index.column() == 1:
+                    return str(wire.R)
+                elif index.column() == 2:
+                    return str(wire.GMR)
+                elif index.column() == 3:
+                    return str(wire.max_current)
+
+                return ""
         return None
 
     def headerData(self,
@@ -122,17 +134,28 @@ class WiresTable(QtCore.QAbstractTableModel):
         :param value:
         :param role:
         """
-        if self.editable[index.column()]:
-            wire = self.wires[index.row()]
-            attr = self.index_prop[index.column()]
-
-            if attr == 'tower_name':
-                if self.is_used(value):
-                    pass
-                else:
-                    setattr(wire, attr, self.converter[index.column()](value))
-            else:
-                setattr(wire, attr, self.converter[index.column()](value))
+        # if self.editable[index.column()]:
+        #     wire = self.wires[index.row()]
+        #     # attr = self.index_prop[index.column()]
+        #
+        #     if attr == 'tower_name':
+        #         if self.is_used(value):
+        #             pass
+        #         else:
+        #             wire.
+        #             setattr(wire, attr, self.converter[index.column()](value))
+        #     else:
+        #         setattr(wire, attr, self.converter[index.column()](value))
+        #
+        #     wire = self.wires[index.row()]
+        #     if index.column() == 0:
+        #         return wire.name
+        #     elif index.column() == 1:
+        #         return str(wire.R)
+        #     elif index.column() == 2:
+        #         return str(wire.GMR)
+        #     elif index.column() == 3:
+        #         return str(wire.max_current)
 
         return True
 

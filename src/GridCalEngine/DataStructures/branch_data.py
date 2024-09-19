@@ -18,8 +18,9 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
-from GridCalEngine.enumerations import WindingsConnection, TransformerControlType
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec
+from GridCalEngine.enumerations import WindingsConnection
+from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec, BoolVec
 from typing import List, Tuple, Dict
 
 
@@ -50,17 +51,9 @@ class BranchData:
         self.F: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "from" buses
         self.T: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the "to" buses
 
-        self.ctrl_bus1: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses1
-        self.ctrl_bus2: IntVec = np.zeros(self.nelm, dtype=int)  # indices of the control buses2
-
-        # reliabilty
+        # reliability
         self.mttf: Vec = np.zeros(self.nelm, dtype=float)
         self.mttr: Vec = np.zeros(self.nelm, dtype=float)
-
-        # composite losses curve (a * x^2 + b * x + c)
-        self.a: Vec = np.zeros(self.nelm, dtype=float)
-        self.b: Vec = np.zeros(self.nelm, dtype=float)
-        self.c: Vec = np.zeros(self.nelm, dtype=float)
 
         self.R: Vec = np.zeros(self.nelm, dtype=float)
         self.X: Vec = np.zeros(self.nelm, dtype=float)
@@ -77,7 +70,10 @@ class BranchData:
         self.G2: Vec = np.zeros(self.nelm, dtype=float)
         self.B2: Vec = np.zeros(self.nelm, dtype=float)
 
-        self.conn: ObjVec = np.array([WindingsConnection.GG] * self.nelm)
+        self.conn: ObjVec = np.full(self.nelm, fill_value=WindingsConnection.GG, dtype=object)
+
+        self.m_taps = SparseObjectArray(n=self.nelm)
+        self.tau_taps = SparseObjectArray(n=self.nelm)
 
         self.k: Vec = np.ones(nelm, dtype=float)
 
@@ -93,30 +89,34 @@ class BranchData:
         self.virtual_tap_t: Vec = np.ones(self.nelm, dtype=float)
         self.virtual_tap_f: Vec = np.ones(self.nelm, dtype=float)
 
-        self.Pfset: Vec = np.zeros(nelm, dtype=float)
-        self.Qfset: Vec = np.zeros(nelm, dtype=float)
-        self.Qtset: Vec = np.zeros(nelm, dtype=float)
-        self.vf_set: Vec = np.ones(nelm, dtype=float)
-        self.vt_set: Vec = np.ones(nelm, dtype=float)
+        self.Pset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
+        self.Qset: Vec = np.zeros(nelm, dtype=float)  # always over the controlled side
+        self.vset: Vec = np.ones(nelm, dtype=float)  # always over the controlled side
 
         self.Kdp: Vec = np.ones(self.nelm, dtype=float)
         self.Kdp_va: Vec = np.ones(self.nelm, dtype=float)
         self.alpha1: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha1)
         self.alpha2: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha2)
         self.alpha3: Vec = np.zeros(self.nelm, dtype=float)  # converter losses parameter (alpha3)
-        self.control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+
+        self.tap_module_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_phase_control_mode: ObjVec = np.zeros(self.nelm, dtype=object)
+        self.tap_controlled_buses: IntVec = np.zeros(self.nelm, dtype=int)
+        self.is_converter: BoolVec = np.zeros(self.nelm, dtype=bool)
 
         self.contingency_enabled: IntVec = np.ones(self.nelm, dtype=int)
         self.monitor_loading: IntVec = np.ones(self.nelm, dtype=int)
 
-        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
-                                                           dtype=int)  # connectivity branch with their "from" bus
-        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus),
-                                                           dtype=int)  # connectivity branch with their "to" bus
+        # connectivity branch with their "from" bus
+        self.C_branch_bus_f: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
+        # connectivity branch with their "to" bus
+        self.C_branch_bus_t: sp.lil_matrix = sp.lil_matrix((self.nelm, nbus), dtype=int)
 
         self.overload_cost: Vec = np.zeros(nelm, dtype=float)
 
         self.original_idx: IntVec = np.zeros(nelm, dtype=int)
+
+        self._any_pf_control = False
 
     def size(self) -> int:
         """
@@ -168,8 +168,14 @@ class BranchData:
         data.alpha3 = self.alpha3[elm_idx]
 
         data.conn = self.conn[elm_idx]  # winding connection
+        data.m_taps = self.m_taps.slice(elm_idx)
+        data.tau_taps = self.tau_taps.slice(elm_idx)
 
-        data.control_mode = self.control_mode[elm_idx]
+        data.tap_phase_control_mode = self.tap_phase_control_mode[elm_idx]
+        data.tap_module_control_mode = self.tap_module_control_mode[elm_idx]
+        data.tap_controlled_buses = self.tap_controlled_buses[elm_idx]
+        data.is_converter = self.is_converter[elm_idx]
+
         data.contingency_enabled = self.contingency_enabled[elm_idx]
         data.monitor_loading = self.monitor_loading[elm_idx]
 
@@ -186,11 +192,9 @@ class BranchData:
         data.tap_angle_max = self.tap_angle_max[elm_idx]
         data.Beq = self.Beq[elm_idx]
         data.G0sw = self.G0sw[elm_idx]
-        data.Pfset = self.Pfset[elm_idx]
-        data.Qfset = self.Qfset[elm_idx]
-        data.Qtset = self.Qtset[elm_idx]
-        data.vf_set = self.vf_set[elm_idx]
-        data.vt_set = self.vt_set[elm_idx]
+        data.Pset = self.Pset[elm_idx]
+        data.Qset = self.Qset[elm_idx]
+        data.vset = self.vset[elm_idx]
 
         data.C_branch_bus_f = self.C_branch_bus_f[np.ix_(elm_idx, bus_idx)]
         data.C_branch_bus_t = self.C_branch_bus_t[np.ix_(elm_idx, bus_idx)]
@@ -198,19 +202,16 @@ class BranchData:
         # first slice, then remap
         data.F = self.F[elm_idx]
         data.T = self.T[elm_idx]
-        data.ctrl_bus1 = self.ctrl_bus1[elm_idx]
-        data.ctrl_bus2 = self.ctrl_bus2[elm_idx]
         bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
-            if data.control_mode[k] != TransformerControlType.fixed:
-                data.ctrl_bus1[k] = bus_map[data.ctrl_bus1[k]]
-                data.ctrl_bus2[k] = bus_map[data.ctrl_bus2[k]]
             data.F[k] = bus_map[data.F[k]]
             data.T[k] = bus_map[data.T[k]]
 
         data.overload_cost = self.overload_cost[elm_idx]
 
         data.original_idx = elm_idx
+
+        data._any_pf_control = self._any_pf_control
 
         return data
 
@@ -254,8 +255,14 @@ class BranchData:
         data.alpha3 = self.alpha3.copy()
 
         data.conn = self.conn.copy()  # winding connection
+        data.m_taps = self.m_taps.copy()
+        data.tau_taps = self.tau_taps.copy()
 
-        data.control_mode = self.control_mode.copy()
+        data.tap_phase_control_mode = self.tap_phase_control_mode.copy()
+        data.tap_module_control_mode = self.tap_module_control_mode.copy()
+        data.tap_controlled_buses = self.tap_controlled_buses.copy()
+        data.is_converter = self.is_converter.copy()
+
         data.contingency_enabled = self.contingency_enabled.copy()
         data.monitor_loading = self.monitor_loading.copy()
 
@@ -272,11 +279,9 @@ class BranchData:
         data.tap_angle_max = self.tap_angle_max.copy()
         data.Beq = self.Beq.copy()
         data.G0sw = self.G0sw.copy()
-        data.Pfset = self.Pfset.copy()
-        data.Qfset = self.Qfset.copy()
-        data.Qtset = self.Qtset.copy()
-        data.vf_set = self.vf_set.copy()
-        data.vt_set = self.vt_set.copy()
+        data.Pset = self.Pset.copy()
+        data.Qset = self.Qset.copy()
+        data.vset = self.vset.copy()
 
         data.C_branch_bus_f = self.C_branch_bus_f.copy()
         data.C_branch_bus_t = self.C_branch_bus_t.copy()
@@ -288,7 +293,16 @@ class BranchData:
 
         data.original_idx = self.original_idx.copy()
 
+        data._any_pf_control = self._any_pf_control
+
         return data
+
+    def get_series_admittance(self) -> CxVec:
+        """
+        Get the series admittance of the branches
+        :return: complex vector
+        """
+        return 1.0 / (self.R + 1j * self.X)
 
     def get_island(self, bus_idx: Vec) -> IntVec:
         """
@@ -316,6 +330,13 @@ class BranchData:
         :return:
         """
         return np.where(self.dc != 0)[0]
+
+    def get_series_admittance(self) -> CxVec:
+        """
+
+        :return:
+        """
+        return 1.0 / (self.R + 1.0j * self.X)
 
     def get_linear_series_admittance(self) -> Vec:
         """
@@ -389,6 +410,14 @@ class BranchData:
             'Tap angle': self.tap_angle
         }
         return pd.DataFrame(data=data)
+
+    @property
+    def tap(self) -> CxVec:
+        """
+
+        :return:
+        """
+        return self.tap_module * np.exp(1.0j * self.tap_angle)
 
     def __len__(self) -> int:
         return self.nelm

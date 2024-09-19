@@ -18,7 +18,9 @@ def test_linear_vs_nonlinear_ncap():
     grid = gce.FileOpen(fname).open()
 
     # Nonlinear OPF
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=0)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR,
+                                      verbose=0,
+                                      control_q=False)
 
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NONLINEAR_OPF,
                                               ips_tolerance=1e-8,

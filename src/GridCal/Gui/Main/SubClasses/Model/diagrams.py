@@ -25,15 +25,15 @@ from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
-from GridCal.Gui.GeneralDialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
-                                          InputNumberDialogue)
+from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
+                                           InputNumberDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
 import GridCalEngine.Devices as dev
 import GridCalEngine.Simulations as sim
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.object_model import ObjectsModel
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import (SchematicWidget,
                                                                    BusGraphicItem,
@@ -44,8 +44,8 @@ from GridCal.Gui.Diagrams.diagrams_model import DiagramsModel
 from GridCal.Gui.messages import yes_no_question, error_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
-from GridCal.Gui.Diagrams.MapWidget.TileProviders.blue_marble import BlueMarbleTiles
-from GridCal.Gui.Diagrams.MapWidget.TileProviders.cartodb import CartoDbTiles
+from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
+from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -405,8 +405,8 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.PowerFlowTimeSeriesDriver.tpe.value:
             if t_idx is not None:
-                results: sim.PowerFlowTimeSeriesResults = self.session.get_results(
-                    SimulationTypes.PowerFlowTimeSeries_run)
+                drv, results = self.session.power_flow_ts
+
                 bus_active = [bus.active_prof[t_idx] for bus in self.circuit.buses]
                 br_active = [br.active_prof[t_idx] for br in self.circuit.get_branches_wo_hvdc()]
                 hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
@@ -609,7 +609,7 @@ class DiagramsMain(CompiledArraysMain):
 
             t_idx2 = 0 if t_idx is None else t_idx
 
-            results: sim.NodalCapacityTimeSeriesResults = self.session.nodal_capacity_optimization_ts
+            _, results = self.session.nodal_capacity_optimization_ts
             bus_active = [bus.active_prof[t_idx2] for bus in self.circuit.buses]
             br_active = [br.active_prof[t_idx2] for br in self.circuit.get_branches_wo_hvdc()]
             hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.hvdc_lines]
@@ -655,6 +655,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.Sf,
                                               loadings=results.loading,
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               loading_label='Loading',
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
@@ -685,6 +686,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.Sf[t_idx],
                                               loadings=np.abs(results.loading[t_idx]),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -715,6 +717,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.Sf[con_idx, :],
                                               loadings=np.abs(results.loading[con_idx, :]),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -745,6 +748,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=-results.max_flows[t_idx, :],
                                               loadings=np.abs(results.max_loading[t_idx]),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -763,7 +767,7 @@ class DiagramsMain(CompiledArraysMain):
                 nbr = self.circuit.get_branch_number()
                 bus_active = [bus.active for bus in self.circuit.buses]
                 br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-
+                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
                 return diagram.colour_results(buses=buses,
                                               branches=branches,
                                               hvdc_lines=hvdc_lines,
@@ -774,6 +778,7 @@ class DiagramsMain(CompiledArraysMain):
                                               St=np.zeros(nbr, dtype=complex),
                                               loadings=np.zeros(nbr, dtype=complex),
                                               br_active=br_active,
+                                              hvdc_active=hvdc_active,
                                               use_flow_based_width=use_flow_based_width,
                                               min_branch_width=min_branch_width,
                                               max_branch_width=max_branch_width,
@@ -790,6 +795,30 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.AvailableTransferCapacityDriver.tpe.value:
             pass
 
+        elif current_study == SimulationTypes.DesignView.value.tpe.value:
+            nbus = self.circuit.get_bus_number()
+            nbr = self.circuit.get_branch_number()
+            bus_active = [bus.active for bus in self.circuit.buses]
+            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+            return diagram.colour_results(buses=buses,
+                                          branches=branches,
+                                          hvdc_lines=hvdc_lines,
+                                          Sbus=np.zeros(nbus, dtype=complex),
+                                          voltages=np.ones(nbus, dtype=complex),
+                                          bus_active=bus_active,
+                                          Sf=np.zeros(nbr, dtype=complex),
+                                          St=np.zeros(nbr, dtype=complex),
+                                          loadings=np.zeros(nbr, dtype=complex),
+                                          br_active=br_active,
+                                          hvdc_active=hvdc_active,
+                                          use_flow_based_width=use_flow_based_width,
+                                          min_branch_width=min_branch_width,
+                                          max_branch_width=max_branch_width,
+                                          min_bus_width=min_bus_width,
+                                          max_bus_width=max_bus_width,
+                                          cmap=cmap)
+
         elif current_study == 'Transient stability':
             raise Exception('Not implemented :(')
 
@@ -800,11 +829,15 @@ class DiagramsMain(CompiledArraysMain):
         """
         Color the grid now
         """
-        print("Colour!")
         if self.ui.available_results_to_color_comboBox.currentIndex() > -1:
 
             current_study = self.ui.available_results_to_color_comboBox.currentText()
-            val = self.ui.diagram_step_slider.value()
+
+            offset = self.ui.diagram_step_slider.minimum()
+            if offset == -1:
+                offset = 0
+            val = self.ui.diagram_step_slider.value() - offset
+
             t_idx = val if val > -1 else None
 
             for diagram in self.diagram_widgets_list:
@@ -1025,6 +1058,12 @@ class DiagramsMain(CompiledArraysMain):
                     elif isinstance(sel_obj, dev.UPFC):
                         root_bus = sel_obj.bus_from
 
+                    elif isinstance(sel_obj, dev.Switch):
+                        root_bus = sel_obj.bus_from
+
+                    else:
+                        root_bus = None
+
                     if root_bus is not None:
 
                         dlg = InputNumberDialogue(min_value=1, max_value=99,
@@ -1120,30 +1159,36 @@ class DiagramsMain(CompiledArraysMain):
 
         self.set_diagrams_list_view()
 
-    def add_map_diagram(self) -> None:
+    def add_map_diagram(self, ask: bool = True) -> None:
         """
         Adds a Map diagram
         """
+        if ask:
+            ok = yes_no_question(text=f"Do you want to add all substations to the map?\nYou can add them later.",
+                                 title="New map")
+        else:
+            ok = True
+
+        if ok:
+            diagram = generate_map_diagram(substations=self.circuit.get_substations(),
+                                           voltage_levels=self.circuit.get_voltage_levels(),
+                                           lines=self.circuit.get_lines(),
+                                           dc_lines=self.circuit.get_dc_lines(),
+                                           hvdc_lines=self.circuit.get_hvdc(),
+                                           fluid_nodes=self.circuit.get_fluid_nodes(),
+                                           fluid_paths=self.circuit.get_fluid_paths(),
+                                           prog_func=None,
+                                           text_func=None,
+                                           name='Map diagram')
+
+            # set other default properties of the diagram
+            diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
+            diagram.start_level = 5
+        else:
+            diagram = dev.MapDiagram(name='Map diagram')
+
         # select the tile source
         tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
-
-        diagram = generate_map_diagram(substations=self.circuit.get_substations(),
-                                       voltage_levels=self.circuit.get_voltage_levels(),
-                                       lines=self.circuit.get_lines(),
-                                       dc_lines=self.circuit.get_dc_lines(),
-                                       hvdc_lines=self.circuit.get_hvdc(),
-                                       fluid_nodes=self.circuit.get_fluid_nodes(),
-                                       fluid_paths=self.circuit.get_fluid_paths(),
-                                       prog_func=None,
-                                       text_func=None,
-                                       name='Map diagram')
-
-        # set other default properties of the diagram
-        diagram.tile_source = self.ui.tile_provider_comboBox.currentText()
-        diagram.start_level = 5
-
-        # diagram.longitude = -15.41
-        # diagram.latitude = 40.11
 
         # create the map widget
         map_widget = GridMapWidget(tile_src=tile_source,
@@ -1196,6 +1241,23 @@ class DiagramsMain(CompiledArraysMain):
 
                 # update view
                 self.set_diagrams_list_view()
+
+    def duplicate_diagram(self):
+        """
+        Duplicate the selected diagram
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+        if diagram_widget is not None:
+
+            new_diagram_widget = diagram_widget.copy()
+
+            self.add_diagram_widget_and_diagram(diagram_widget=new_diagram_widget,
+                                                diagram=new_diagram_widget.diagram)
+
+            # refresh the list view
+            self.set_diagrams_list_view()
+        else:
+            info_msg(text="Select a valid diagram", title="Duplicate diagram")
 
     def remove_all_diagrams(self) -> None:
         """
@@ -1292,7 +1354,7 @@ class DiagramsMain(CompiledArraysMain):
             val = f"[{idx}] {self.circuit.time_profile[idx]}"
             self.ui.schematic_step_label.setText(val)
         else:
-            self.ui.schematic_step_label.setText("Snapshot")
+            self.ui.schematic_step_label.setText(f"Snapshot [{self.circuit.get_snapshot_time_str()}]")
 
     def objects_time_slider_change(self) -> None:
         """
@@ -1321,7 +1383,7 @@ class DiagramsMain(CompiledArraysMain):
             val = f"[{idx}] {self.circuit.time_profile[idx]}"
             self.ui.db_step_label.setText(val)
         else:
-            self.ui.db_step_label.setText("Snapshot")
+            self.ui.db_step_label.setText(f"Snapshot [{self.circuit.get_snapshot_time_str()}]")
 
     def take_picture(self):
         """
@@ -1749,7 +1811,12 @@ class DiagramsMain(CompiledArraysMain):
         gf.add_menu_entry(menu=context_menu,
                           text="New map",
                           icon_path=":/Icons/icons/map (add).svg",
-                          function_ptr=self.add_map_diagram)
+                          function_ptr=lambda: self.add_map_diagram(True))
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Duplicate",
+                          icon_path=":/Icons/icons/copy.svg",
+                          function_ptr=self.duplicate_diagram)
 
         context_menu.addSeparator()
         gf.add_menu_entry(menu=context_menu,
@@ -1824,6 +1891,14 @@ class DiagramsMain(CompiledArraysMain):
                 cmap_text = self.ui.palette_comboBox.currentText()
                 cmap = self.cmap_dict[cmap_text]
                 diagram_widget.diagram.palette = cmap
+
+                current_study = self.ui.available_results_to_color_comboBox.currentText()
+                val = self.ui.diagram_step_slider.value()
+                t_idx = val if val > -1 else None
+
+                self.grid_colour_function(diagram=diagram_widget,
+                                          current_study=current_study,
+                                          t_idx=t_idx)
 
     def set_diagrams_map_tile_provider(self):
         """

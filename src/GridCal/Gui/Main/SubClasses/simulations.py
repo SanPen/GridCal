@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import os
 import datetime
 import numpy as np
@@ -23,8 +25,9 @@ from typing import List, Tuple, Dict, Union
 # GUI imports
 from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 import GridCal.Gui.Visualization.visualization as viz
+from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
@@ -41,8 +44,8 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType,
-                                        ReactivePowerControlMode, TapsControlMode, MIPSolvers, TimeGrouping,
+from GridCalEngine.basic_structures import Logger
+from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
                                         ContingencyFilteringMethods, InvestmentsEvaluationObjectives)
@@ -65,9 +68,9 @@ class SimulationsMain(TimeEventsMain):
         # Power Flow Methods
         self.solvers_dict = OrderedDict()
         self.solvers_dict[SolverType.NR.value] = SolverType.NR
-        self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
         self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
         self.solvers_dict[SolverType.LM.value] = SolverType.LM
+        self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
         self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
         self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
         self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
@@ -76,20 +79,6 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.solver_comboBox.setModel(gf.get_list_model(list(self.solvers_dict.keys())))
         self.ui.solver_comboBox.setCurrentIndex(0)
-
-        # reactive power controls
-        self.q_control_modes_dict = OrderedDict()
-        self.q_control_modes_dict['No control'] = ReactivePowerControlMode.NoControl
-        self.q_control_modes_dict['Direct'] = ReactivePowerControlMode.Direct
-        lst = list(self.q_control_modes_dict.keys())
-        self.ui.reactive_power_control_mode_comboBox.setModel(gf.get_list_model(lst))
-
-        # taps controls (transformer voltage regulator)
-        self.taps_control_modes_dict = OrderedDict()
-        self.taps_control_modes_dict['No control'] = TapsControlMode.NoControl
-        self.taps_control_modes_dict['Direct'] = TapsControlMode.Direct
-        lst = list(self.taps_control_modes_dict.keys())
-        self.ui.taps_control_mode_comboBox.setModel(gf.get_list_model(lst))
 
         # transfer modes
         self.transfer_modes_dict = OrderedDict()
@@ -184,6 +173,7 @@ class SimulationsMain(TimeEventsMain):
             InvestmentEvaluationMethod.MixedVariableGA,
         ]
         self.investment_evaluation_method_dict = OrderedDict()
+        self.plugins_investment_evaluation_method_dict = OrderedDict()
         lst = list()
         for method in investment_methods:
             self.investment_evaluation_method_dict[method.value] = method
@@ -249,6 +239,10 @@ class SimulationsMain(TimeEventsMain):
         # combobox change
         self.ui.engineComboBox.currentTextChanged.connect(self.modify_ui_options_according_to_the_engine)
         self.ui.contingency_filter_by_comboBox.currentTextChanged.connect(self.modify_contingency_filter_mode)
+        self.ui.available_results_to_color_comboBox.currentTextChanged.connect(self.changed_study)
+
+        # button
+        self.ui.find_automatic_precission_Button.clicked.connect(self.automatic_pf_precission)
 
     def get_simulations(self) -> List[DRIVER_OBJECTS]:
         """
@@ -265,7 +259,7 @@ class SimulationsMain(TimeEventsMain):
 
         return all_threads
 
-    def get_available_results(self):
+    def get_available_drivers(self) -> List[DRIVER_OBJECTS]:
         """
         Get a list of all the available results' objects
         :return: list[object]
@@ -280,16 +274,19 @@ class SimulationsMain(TimeEventsMain):
 
         return lst
 
-    def get_time_indices(self) -> np.ndarray:
+    def get_time_indices(self) -> np.ndarray | None:
         """
         Get an array of indices of the time steps selected within the start-end interval
         :return: np.array[int]
         """
 
-        start = self.get_simulation_start()
-        end = self.get_simulation_end()
+        if self.circuit.time_profile is None:
+            return None
+        else:
+            start = self.get_simulation_start()
+            end = self.get_simulation_end()
 
-        return np.arange(start, end + 1)
+            return np.arange(start, end + 1)
 
     def modify_ui_options_according_to_the_engine(self) -> None:
         """
@@ -310,8 +307,8 @@ class SimulationsMain(TimeEventsMain):
 
             # Power Flow Methods
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
+
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
             self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
@@ -338,9 +335,9 @@ class SimulationsMain(TimeEventsMain):
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
+            self.solvers_dict[SolverType.PowellDogLeg.value] = SolverType.PowellDogLeg
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
             self.solvers_dict[SolverType.HELM.value] = SolverType.HELM
             self.solvers_dict[SolverType.GAUSS.value] = SolverType.GAUSS
@@ -366,7 +363,6 @@ class SimulationsMain(TimeEventsMain):
             # Power Flow Methods
             self.solvers_dict = OrderedDict()
             self.solvers_dict[SolverType.NR.value] = SolverType.NR
-            self.solvers_dict[SolverType.NRI.value] = SolverType.NRI
             self.solvers_dict[SolverType.IWAMOTO.value] = SolverType.IWAMOTO
             self.solvers_dict[SolverType.LM.value] = SolverType.LM
             self.solvers_dict[SolverType.FASTDECOUPLED.value] = SolverType.FASTDECOUPLED
@@ -535,6 +531,25 @@ class SimulationsMain(TimeEventsMain):
 
         self.ui.units_label.setText("")
 
+    def changed_study(self):
+        """
+
+        :return:
+        """
+        current_study_name = self.ui.available_results_to_color_comboBox.currentText()
+        drv_dict = {driver.tpe.value: driver for driver in self.get_available_drivers()}
+        drv = drv_dict.get(current_study_name, None)
+        if drv is not None and hasattr(drv, 'time_indices'):
+            if len(drv.time_indices):
+                a = drv.time_indices[0]
+                b = drv.time_indices[-1]
+                self.ui.diagram_step_slider.setRange(a, b)
+                self.ui.diagram_step_slider.setValue(a)
+            else:
+                self.setup_time_sliders()
+        else:
+            self.setup_time_sliders()
+
     def update_available_results(self) -> None:
         """
         Update the results that are displayed in the results tab
@@ -546,10 +561,10 @@ class SimulationsMain(TimeEventsMain):
         # clear results lists
         self.ui.results_treeView.setModel(None)
 
-        available_results = self.get_available_results()
+        available_results = self.get_available_drivers()
         max_steps = 0
         d = dict()
-        lst = list()
+        lst = [SimulationTypes.DesignView.value]
         for driver in available_results:
             name = driver.tpe.value
             lst.append(name)
@@ -589,106 +604,67 @@ class SimulationsMain(TimeEventsMain):
         self.ui.available_results_to_color_comboBox.setModel(mdl)
         self.ui.resultsTableView.setModel(None)
         self.ui.resultsLogsTreeView.setModel(None)
+        self.changed_study()
 
-    def get_compatible_areas_from_to(self) -> Tuple[
-        bool,
-        List[Tuple[int, dev.Bus]],
-        List[Tuple[int, dev.Bus]],
-        List[Tuple[int, object, float]],
-        List[Tuple[int, object, float]],
-        List[dev.Area], List[dev.Area]]:
+    def get_compatible_from_to_buses_and_inter_branches(self) -> dev.InterAggregationInfo:
         """
         Get the lists that help defining the inter area objects
-        :return: success?,
-                 list of tuples bus idx, Bus in the areas from,
-                 list of tuples bus idx, Bus in the areas to,
-                 List of inter area Branches (branch index, branch object, flow sense w.r.t the area exchange),
-                 List of inter area HVDC (branch index, branch object, flow sense w.r.t the area exchange),
-                 List of areas from,
-                 List of areas to
+        :return: InterAggregationInfo
         """
-        areas_from_idx = gf.get_checked_indices(self.ui.areaFromListView.model())
-        areas_to_idx = gf.get_checked_indices(self.ui.areaToListView.model())
-        areas_from = [self.circuit.areas[i] for i in areas_from_idx]
-        areas_to = [self.circuit.areas[i] for i in areas_to_idx]
+        dev_tpe_from = self.exchange_places_dict[self.ui.fromComboBox.currentText()]
+        devs_from = self.circuit.get_elements_by_type(dev_tpe_from)
+        from_idx = gf.get_checked_indices(self.ui.fromListView.model())
+        objects_from = [devs_from[i] for i in from_idx]
 
-        for a1 in areas_from:
-            if a1 in areas_to:
-                error_msg("The area from '{0}' is in the list of areas to. This cannot be.".format(a1.name),
-                          'Incompatible areas')
-                return False, [], [], [], [], [], []
-        for a2 in areas_to:
-            if a2 in areas_from:
-                error_msg("The area to '{0}' is in the list of areas from. This cannot be.".format(a2.name),
-                          'Incompatible areas')
-                return False, [], [], [], [], [], []
+        dev_tpe_to = self.exchange_places_dict[self.ui.toComboBox.currentText()]
+        devs_to = self.circuit.get_elements_by_type(dev_tpe_to)
+        to_idx = gf.get_checked_indices(self.ui.toListView.model())
+        objects_to = [devs_to[i] for i in to_idx]
 
-        lst_from = self.circuit.get_areas_buses(areas_from)
-        lst_to = self.circuit.get_areas_buses(areas_to)
-        lst_br = self.circuit.get_inter_areas_branches(areas_from, areas_to)
-        lst_br_hvdc = self.circuit.get_inter_areas_hvdc_branches(areas_from, areas_to)
-        return True, lst_from, lst_to, lst_br, lst_br_hvdc, areas_from, areas_to
+        info: dev.InterAggregationInfo = self.circuit.get_inter_aggregation_info(objects_from=objects_from,
+                                                                                 objects_to=objects_to)
 
-    def get_selected_power_flow_options(self):
+        if info.logger.has_logs():
+            # Show dialogue
+            dlg = LogsDialogue(name="Add selected DB objects to current diagram", logger=info.logger)
+            dlg.setModal(True)
+            dlg.exec()
+
+        return info
+
+    def get_selected_power_flow_options(self) -> sim.PowerFlowOptions:
         """
         Gather power flow run options
-        :return:
+        :return: sim.PowerFlowOptions
         """
-        solver_type = self.solvers_dict[self.ui.solver_comboBox.currentText()]
 
-        q_control_mode = self.q_control_modes_dict[self.ui.reactive_power_control_mode_comboBox.currentText()]
-
-        taps_control_mode = self.taps_control_modes_dict[self.ui.taps_control_mode_comboBox.currentText()]
-
-        verbose = self.ui.verbositySpinBox.value()
-
-        exponent = self.ui.tolerance_spinBox.value()
-        tolerance = 1.0 / (10.0 ** exponent)
-
-        max_iter = self.ui.max_iterations_spinBox.value()
-
-        max_outer_iter = 1000  # not used anymore
-
-        mu = self.ui.muSpinBox.value()
-
-        if self.ui.helm_retry_checkBox.isChecked():
-            retry_with_other_methods = True  # to set a value
-        else:
-            retry_with_other_methods = False
+        tolerance = 1.0 / (10.0 ** self.ui.tolerance_spinBox.value())
 
         if self.ui.apply_impedance_tolerances_checkBox.isChecked():
             branch_impedance_tolerance_mode = BranchImpedanceMode.Upper
         else:
             branch_impedance_tolerance_mode = BranchImpedanceMode.Specified
 
-        temp_correction = self.ui.temperature_correction_checkBox.isChecked()
-
-        distributed_slack = self.ui.distributed_slack_checkBox.isChecked()
-
-        ignore_single_node_islands = self.ui.ignore_single_node_islands_checkBox.isChecked()
-
-        use_stored_guess = self.ui.use_voltage_guess_checkBox.isChecked()
-
-        override_branch_controls = self.ui.override_branch_controls_checkBox.isChecked()
-
-        generate_report = self.ui.addPowerFlowReportCheckBox.isChecked()
-
-        ops = sim.PowerFlowOptions(solver_type=solver_type,
-                                   retry_with_other_methods=retry_with_other_methods,
-                                   verbose=verbose,
-                                   tolerance=tolerance,
-                                   max_iter=max_iter,
-                                   max_outer_loop_iter=max_outer_iter,
-                                   control_q=q_control_mode,
-                                   control_taps=taps_control_mode,
-                                   apply_temperature_correction=temp_correction,
-                                   branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
-                                   distributed_slack=distributed_slack,
-                                   ignore_single_node_islands=ignore_single_node_islands,
-                                   trust_radius=mu,
-                                   use_stored_guess=use_stored_guess,
-                                   override_branch_controls=override_branch_controls,
-                                   generate_report=generate_report)
+        ops = sim.PowerFlowOptions(
+            solver_type=self.solvers_dict[self.ui.solver_comboBox.currentText()],
+            retry_with_other_methods=self.ui.helm_retry_checkBox.isChecked(),
+            verbose=self.ui.verbositySpinBox.value(),
+            tolerance=tolerance,
+            max_iter=self.ui.max_iterations_spinBox.value(),
+            max_outer_loop_iter=1000,
+            control_q=self.ui.control_q_checkBox.isChecked(),
+            control_taps_phase=self.ui.control_tap_phase_checkBox.isChecked(),
+            control_taps_modules=self.ui.control_tap_modules_checkBox.isChecked(),
+            control_remote_voltage=self.ui.control_remote_voltage_checkBox.isChecked(),
+            orthogonalize_controls=self.ui.orthogonalize_pf_controls_checkBox.isChecked(),
+            apply_temperature_correction=self.ui.temperature_correction_checkBox.isChecked(),
+            branch_impedance_tolerance_mode=branch_impedance_tolerance_mode,
+            distributed_slack=self.ui.distributed_slack_checkBox.isChecked(),
+            ignore_single_node_islands=self.ui.ignore_single_node_islands_checkBox.isChecked(),
+            trust_radius=self.ui.muSpinBox.value(),
+            use_stored_guess=self.ui.use_voltage_guess_checkBox.isChecked(),
+            generate_report=self.ui.addPowerFlowReportCheckBox.isChecked()
+        )
 
         return ops
 
@@ -741,7 +717,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if use_opf:
 
-            opf_time_series_results = self.session.optimal_power_flow_ts
+            _, opf_time_series_results = self.session.optimal_power_flow_ts
 
             if opf_time_series_results is None:
                 if use_opf:
@@ -888,16 +864,6 @@ class SimulationsMain(TimeEventsMain):
                 # get the power flow options from the GUI
                 options = self.get_selected_power_flow_options()
 
-                # compute the automatic precision
-                if self.ui.auto_precision_checkBox.isChecked():
-
-                    options.tolerance, tol_idx = self.circuit.get_automatic_precision()
-
-                    if tol_idx > 12:
-                        tol_idx = 12
-
-                    self.ui.tolerance_spinBox.setValue(tol_idx)
-
                 opf_results = self.get_opf_results(use_opf=self.ui.actionOpf_to_Power_flow.isChecked())
 
                 self.ui.progress_label.setText('Running power flow...')
@@ -924,7 +890,7 @@ class SimulationsMain(TimeEventsMain):
         """
         # update the results in the circuit structures
 
-        results = self.session.power_flow
+        _, results = self.session.power_flow
 
         if results is not None:
             self.ui.progress_label.setText('Colouring power flow results in the grid...')
@@ -948,7 +914,7 @@ class SimulationsMain(TimeEventsMain):
         if self.circuit.valid_for_simulation():
             if not self.session.is_this_running(SimulationTypes.ShortCircuit_run):
 
-                pf_results = self.session.power_flow
+                _, pf_results = self.session.power_flow
 
                 if pf_results is not None:
 
@@ -987,8 +953,7 @@ class SimulationsMain(TimeEventsMain):
 
                         # get the power flow options from the GUI
                         sc_options = sim.ShortCircuitOptions(bus_index=sel_buses[0],
-                                                             fault_type=self_short_circuit_types[0],
-                                                             branch_impedance_tolerance_mode=branch_impedance_tolerance_mode)
+                                                             fault_type=self_short_circuit_types[0])
 
                         pf_options = self.get_selected_power_flow_options()
 
@@ -1016,7 +981,7 @@ class SimulationsMain(TimeEventsMain):
 
         """
         # update the results in the circuit structures
-        results = self.session.short_circuit
+        _, results = self.session.short_circuit
 
         if results is not None:
 
@@ -1083,7 +1048,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.LinearAnalysis_run)
 
         # update the results in the circuit structures
-        results = self.session.linear_power_flow
+        _, results = self.session.linear_power_flow
         if results is not None:
 
             self.ui.progress_label.setText('Colouring PTDF results in the grid...')
@@ -1136,7 +1101,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.LinearAnalysis_TS_run)
 
         # update the results in the circuit structures
-        results = self.session.linear_power_flow_ts
+        _, results = self.session.linear_power_flow_ts
         if results is not None:
 
             # expand the clusters
@@ -1224,7 +1189,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.ContingencyAnalysis_run)
 
         # update the results in the circuit structures
-        results = self.session.contingency
+        _, results = self.session.contingency
         if results is not None:
 
             self.ui.progress_label.setText('Colouring contingency analysis results in the grid...')
@@ -1285,7 +1250,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.ContingencyAnalysisTS_run)
 
         # update the results in the circuit structures
-        results = self.session.contingency_ts
+        _, results = self.session.contingency_ts
         if results is not None:
 
             # expand the clusters
@@ -1316,23 +1281,22 @@ class SimulationsMain(TimeEventsMain):
                 threshold = self.ui.atcThresholdSpinBox.value()
                 max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
                 # available transfer capacity inter areas
-                (compatible_areas, lst_from, lst_to, lst_br,
-                 lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+                info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-                if not compatible_areas:
+                if not info.valid:
                     return
 
-                idx_from = np.array([i for i, bus in lst_from])
-                idx_to = np.array([i for i, bus in lst_to])
-                idx_br = np.array([i for i, bus, sense in lst_br])
-                sense_br = np.array([sense for i, bus, sense in lst_br])
+                idx_from = info.idx_bus_from
+                idx_to = info.idx_bus_to
+                idx_br = info.idx_branches
+                sense_br = info.sense_branches
 
                 # HVDC
-                idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+                idx_hvdc_br = info.idx_hvdc
+                sense_hvdc_br = info.sense_hvdc
 
                 if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                    pf_results = self.session.power_flow
+                    _, pf_results = self.session.power_flow
                     if pf_results is not None:
                         Pf = pf_results.Sf.real
                         Pf_hvdc = pf_results.hvdc_Pf.real
@@ -1399,7 +1363,7 @@ class SimulationsMain(TimeEventsMain):
 
         """
         self.remove_simulation(SimulationTypes.NetTransferCapacity_run)
-        results = self.session.net_transfer_capacity
+        _, results = self.session.net_transfer_capacity
 
         # update the results in the circuit structures
         if results is not None:
@@ -1431,24 +1395,22 @@ class SimulationsMain(TimeEventsMain):
                     max_report_elements = 5  # TODO: self.ui.ntcReportLimitingElementsSpinBox.value()
 
                     # available transfer capacity inter areas
-                    (compatible_areas,
-                     lst_from, lst_to, lst_br,
-                     lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+                    info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-                    if not compatible_areas:
+                    if not info.valid:
                         return
 
-                    idx_from = np.array([i for i, bus in lst_from])
-                    idx_to = np.array([i for i, bus in lst_to])
-                    idx_br = np.array([i for i, bus, sense in lst_br])
-                    sense_br = np.array([sense for i, bus, sense in lst_br])
+                    idx_from = info.idx_bus_from
+                    idx_to = info.idx_bus_to
+                    idx_br = info.idx_branches
+                    sense_br = info.sense_branches
 
                     # HVDC
-                    idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                    sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+                    idx_hvdc_br = info.idx_hvdc
+                    sense_hvdc_br = info.sense_hvdc
 
                     if self.ui.usePfValuesForAtcCheckBox.isChecked():
-                        pf_results = self.session.power_flow_ts
+                        _, pf_results = self.session.power_flow_ts
                         if pf_results is not None:
                             Pf = pf_results.Sf.real
                             Pf_hvdc = pf_results.hvdc_Pf.real
@@ -1522,7 +1484,7 @@ class SimulationsMain(TimeEventsMain):
         self.remove_simulation(SimulationTypes.NetTransferCapacityTS_run)
 
         # update the results in the circuit structures
-        results = self.session.net_transfer_capacity_ts
+        _, results = self.session.net_transfer_capacity_ts
         if results is not None:
 
             # expand the clusters
@@ -1547,7 +1509,7 @@ class SimulationsMain(TimeEventsMain):
 
         if self.circuit.valid_for_simulation():
 
-            pf_drv, pf_results = self.session.power_flow_driver_and_results
+            pf_drv, pf_results = self.session.power_flow
 
             if pf_results is not None:
 
@@ -1565,19 +1527,19 @@ class SimulationsMain(TimeEventsMain):
 
                     if self.ui.atcRadioButton.isChecked():
                         use_alpha = True
-                        compatible_areas, lst_from, lst_to, lst_br, lst_hvdc_br, areas_from, areas_to = self.get_compatible_areas_from_to()
+                        info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-                        if compatible_areas:
-                            idx_from = [i for i, bus in lst_from]
-                            idx_to = [i for i, bus in lst_to]
+                        if info.valid:
+                            idx_from = info.idx_bus_from
+                            idx_to = info.idx_bus_to
 
                             alpha_vec[idx_from] *= 2
                             alpha_vec[idx_to] *= -2
                             sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
 
                             # HVDC
-                            idx_hvdc_br = np.array([i for i, bus, sense in lst_hvdc_br])
-                            sense_hvdc_br = np.array([sense for i, bus, sense in lst_hvdc_br])
+                            idx_hvdc_br = info.idx_hvdc
+                            sense_hvdc_br = info.sense_hvdc
                         else:
                             sel_bus_idx = np.zeros(0, dtype=int)  # for completeness
                             # incompatible areas...exit
@@ -1703,7 +1665,7 @@ class SimulationsMain(TimeEventsMain):
         Actions performed after the voltage stability. Launched by the thread after its execution
         :return:
         """
-        results = self.session.continuation_power_flow
+        _, results = self.session.continuation_power_flow
 
         if results is not None:
 
@@ -1768,7 +1730,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        results = self.session.power_flow_ts
+        _, results = self.session.power_flow_ts
 
         if results is not None:
 
@@ -1838,7 +1800,7 @@ class SimulationsMain(TimeEventsMain):
         @return:
         """
 
-        results = self.session.stochastic_power_flow
+        _, results = self.session.stochastic_power_flow
 
         if results is not None:
 
@@ -1862,7 +1824,7 @@ class SimulationsMain(TimeEventsMain):
         # update the results in the circuit structures
         self.remove_simulation(SimulationTypes.Cascade_run)
 
-        results = self.session.cascade
+        _, results = self.session.cascade
         n = len(results.events)
 
         if n > 0:
@@ -1927,30 +1889,23 @@ class SimulationsMain(TimeEventsMain):
 
         # available transfer capacity inter areas
         if maximize_flows:
-            (compatible_areas, lst_from, lst_to,
-             lst_br, lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
-            idx_from = np.array([i for i, bus in lst_from])
-            idx_to = np.array([i for i, bus in lst_to])
+            inter_aggregation_info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-            if len(idx_from) == 0:
+            if len(inter_aggregation_info.lst_from) == 0:
                 error_msg('The area "from" has no buses!')
                 return None
 
-            if len(idx_to) == 0:
+            if len(inter_aggregation_info.lst_to) == 0:
                 error_msg('The area "to" has no buses!')
                 return None
         else:
-            idx_from = None
-            idx_to = None
-            areas_from = None
-            areas_to = None
+            inter_aggregation_info = None
 
         ips_method = self.ips_solvers_dict[self.ui.ips_method_comboBox.currentText()]
         ips_tolerance = 1.0 / (10.0 ** self.ui.ips_tolerance_spinBox.value())
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
-        # pf_results = self.session.power_flow
 
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
@@ -1962,10 +1917,7 @@ class SimulationsMain(TimeEventsMain):
                                               skip_generation_limits=skip_generation_limits,
                                               lodf_tolerance=lodf_tolerance,
                                               maximize_flows=maximize_flows,
-                                              area_from_bus_idx=idx_from,
-                                              area_to_bus_idx=idx_to,
-                                              areas_from=areas_from,
-                                              areas_to=areas_to,
+                                              inter_aggregation_info=inter_aggregation_info,
                                               unit_commitment=unit_commitment,
                                               export_model_fname=export_model_fname,
                                               generate_report=generate_report,
@@ -2011,7 +1963,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        results = self.session.optimal_power_flow
+        _, results = self.session.optimal_power_flow
 
         if results is not None:
 
@@ -2080,7 +2032,7 @@ class SimulationsMain(TimeEventsMain):
         Post OPF Time Series
         """
 
-        results = self.session.optimal_power_flow_ts
+        _, results = self.session.optimal_power_flow_ts
 
         if results is not None:
 
@@ -2109,7 +2061,7 @@ class SimulationsMain(TimeEventsMain):
 
             if self.circuit.time_profile is not None:
 
-                results = self.session.optimal_power_flow_ts
+                _, results = self.session.optimal_power_flow_ts
 
                 if results is not None:
 
@@ -2142,16 +2094,15 @@ class SimulationsMain(TimeEventsMain):
         """
 
         # available transfer capacity inter areas
-        (compatible_areas, lst_from, lst_to, lst_br,
-         lst_hvdc_br, areas_from, areas_to) = self.get_compatible_areas_from_to()
+        info: dev.InterAggregationInfo = self.get_compatible_from_to_buses_and_inter_branches()
 
-        if not compatible_areas:
+        if not info.valid:
             error_msg('There are no compatible areas')
             return None
 
-        idx_from = np.array([i for i, bus in lst_from])
-        idx_to = np.array([i for i, bus in lst_to])
-        idx_br = np.array([i for i, bus, sense in lst_br])
+        idx_from = info.idx_bus_from
+        idx_to = info.idx_bus_to
+        idx_br = info.idx_branches
 
         if len(idx_from) == 0:
             error_msg('The area "from" has no buses!')
@@ -2220,7 +2171,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Actions to run after the OPF simulation
         """
-        results = self.session.optimal_net_transfer_capacity
+        _, results = self.session.optimal_net_transfer_capacity
 
         if results is not None:
             self.remove_simulation(SimulationTypes.OPF_NTC_run)
@@ -2272,7 +2223,7 @@ class SimulationsMain(TimeEventsMain):
         Actions to run after the optimal net transfer capacity time series simulation
         """
 
-        results = self.session.optimal_net_transfer_capacity_ts
+        _, results = self.session.optimal_net_transfer_capacity_ts
 
         if results is not None:
 
@@ -2299,7 +2250,7 @@ class SimulationsMain(TimeEventsMain):
         """
         if self.ui.actionFind_node_groups.isChecked():
 
-            ptdf_results = self.session.linear_power_flow
+            _, ptdf_results = self.session.linear_power_flow
 
             if ptdf_results is not None:
 
@@ -2384,7 +2335,7 @@ class SimulationsMain(TimeEventsMain):
 
         :return:
         """
-        results = self.session.inputs_analysis
+        _, results = self.session.inputs_analysis
 
         if results is not None:
             self.remove_simulation(SimulationTypes.InputsAnalysis_run)
@@ -2403,7 +2354,7 @@ class SimulationsMain(TimeEventsMain):
 
             if self.ui.actionStorage_location_suggestion.isChecked():
 
-                ts_results = self.session.power_flow_ts
+                _, ts_results = self.session.power_flow_ts
 
                 if ts_results is not None:
 
@@ -2489,23 +2440,38 @@ class SimulationsMain(TimeEventsMain):
 
                 if not self.session.is_this_running(SimulationTypes.InvestmentsEvaluation_run):
 
-                    # evaluation method
-                    method = self.investment_evaluation_method_dict[
-                        self.ui.investment_evaluation_method_ComboBox.currentText()
-                    ]
+                    if self.ui.internal_investment_methods_radioButton.isChecked():
+                        # evaluation method
+                        method = self.investment_evaluation_method_dict[
+                            self.ui.investment_evaluation_method_ComboBox.currentText()
+                        ]
 
-                    # maximum number of function evalñuations as a factor of the number of investments
+                        obj_fn_tpe = self.investment_evaluation_objfunc_dict[
+                            self.ui.investment_evaluation_objfunc_ComboBox.currentText()
+                        ]
+
+                        fn_ptr = None
+
+                    elif self.ui.plugins_investment_methods_radioButton.isChecked():
+
+                        method = InvestmentEvaluationMethod.FromPlugin
+                        obj_fn_tpe = InvestmentsEvaluationObjectives.FromPlugin
+                        fn_ptr = self.plugins_investment_evaluation_method_dict[
+                            self.ui.plugins_investment_evaluation_method_ComboBox.currentText()
+                        ]
+                    else:
+                        raise Exception("Unrecognized investment simulation mode")
+
+                    # maximum number of function evaluations as a factor of the number of investments
                     max_eval = self.ui.max_investments_evluation_number_spinBox.value() * len(
                         self.circuit.investments_groups)
 
-                    objf_tpe = self.investment_evaluation_objfunc_dict[
-                        self.ui.investment_evaluation_objfunc_ComboBox.currentText()
-                    ]
-
+                    # compose the options
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
                                                                pf_options=self.get_selected_power_flow_options(),
-                                                               objf_tpe=objf_tpe
+                                                               objf_tpe=obj_fn_tpe,
+                                                               plugin_fcn_ptr=fn_ptr
                                                                )
 
                     opf_time_series_results = self.get_opf_ts_results(
@@ -2540,7 +2506,7 @@ class SimulationsMain(TimeEventsMain):
         """
         Post investments evaluation
         """
-        results = self.session.investments_evaluation
+        _, results = self.session.investments_evaluation
 
         # update the results in the circuit structures
         if results is not None:
@@ -2563,7 +2529,7 @@ class SimulationsMain(TimeEventsMain):
         :return: ClusteringResults or None
         """
         if self.ui.actionUse_clustering.isChecked():
-            clustering_results = self.session.clustering
+            _, clustering_results = self.session.clustering
 
             if clustering_results is not None:
                 n = len(clustering_results.time_indices)
@@ -2631,7 +2597,7 @@ class SimulationsMain(TimeEventsMain):
         # update the results in the circuit structures
         self.remove_simulation(SimulationTypes.ClusteringAnalysis_run)
 
-        results = self.session.clustering
+        _, results = self.session.clustering
         if results is not None:
 
             self.update_available_results()
@@ -2698,7 +2664,7 @@ class SimulationsMain(TimeEventsMain):
         if self.ui.actionUse_clustering.isChecked():
 
             # check if there are clustering results yet
-            clustering_results = self.session.clustering
+            _, clustering_results = self.session.clustering
 
             if clustering_results is not None:
                 n = len(clustering_results.time_indices)
@@ -2794,7 +2760,7 @@ class SimulationsMain(TimeEventsMain):
         Post OPF Time Series
         """
 
-        results = self.session.nodal_capacity_optimization_ts
+        _, results = self.session.nodal_capacity_optimization_ts
 
         if results is not None:
 
@@ -2814,3 +2780,15 @@ class SimulationsMain(TimeEventsMain):
 
         if not self.session.is_anything_running():
             self.UNLOCK()
+
+    def automatic_pf_precission(self):
+        """
+        Find the automatic tolerance
+        :return:
+        """
+        tolerance, tol_idx = self.circuit.get_automatic_precision()
+
+        if tol_idx > 12:
+            tol_idx = 12
+
+        self.ui.tolerance_spinBox.setValue(tol_idx)

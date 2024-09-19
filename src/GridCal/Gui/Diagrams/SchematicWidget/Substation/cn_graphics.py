@@ -388,12 +388,7 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
 
         if self.api_object.device_type == DeviceType.ConnectivityNodeDevice:
-
-            dictionary_of_lists = {DeviceType.BusDevice: self.editor.circuit.get_buses(),
-                                   DeviceType.VoltageLevelDevice: self.editor.circuit.get_voltage_levels(), }
-
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists=dictionary_of_lists)
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def mouseDoubleClickEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent):
         """

@@ -37,8 +37,8 @@ class NumericPowerFlowResults:
                  converged: bool,
                  norm_f: float,
                  Scalc: CxVec,
-                 ma: Union[Vec, None] = None,
-                 theta: Union[Vec, None] = None,
+                 m: Union[Vec, None] = None,
+                 tau: Union[Vec, None] = None,
                  Beq: Union[Vec, None] = None,
                  Ybus: Union[CscMat, None] = None,
                  Yf: Union[CscMat, None] = None,
@@ -51,8 +51,8 @@ class NumericPowerFlowResults:
         :param converged: converged?
         :param norm_f: error
         :param Scalc: Calculated power vector
-        :param ma: Tap modules vector for all the Branches
-        :param theta: Tap angles vector for all the Branches
+        :param m: Tap modules vector for all the Branches
+        :param tau: Tap angles vector for all the Branches
         :param Beq: Equivalent susceptance vector for all the Branches
         :param Ybus: Admittance matrix
         :param Yf: Admittance matrix of the "from" buses
@@ -64,8 +64,8 @@ class NumericPowerFlowResults:
         self.converged = converged
         self.norm_f = norm_f
         self.Scalc = Scalc
-        self.ma = ma
-        self.theta = theta
+        self.tap_module = m
+        self.tap_angle = tau
         self.Beq = Beq
         self.Ybus = Ybus
         self.Yf = Yf
@@ -173,9 +173,11 @@ class PowerFlowResults(ResultsTemplate):
         self.St: CxVec = np.zeros(m, dtype=complex)
         self.If: CxVec = np.zeros(m, dtype=complex)
         self.It: CxVec = np.zeros(m, dtype=complex)
+
         self.tap_module: Vec = np.zeros(m, dtype=float)
         self.tap_angle: Vec = np.zeros(m, dtype=float)
         self.Beq: Vec = np.zeros(m, dtype=float)
+
         self.Vbranch: CxVec = np.zeros(m, dtype=complex)
         self.loading: CxVec = np.zeros(m, dtype=complex)
         self.losses: CxVec = np.zeros(m, dtype=complex)
@@ -282,19 +284,19 @@ class PowerFlowResults(ResultsTemplate):
             **elm_idx**: branch original indices
         """
         self.Sbus[b_idx] = results.Sbus
-
         self.voltage[b_idx] = results.voltage
 
         self.Sf[br_idx] = results.Sf
-
         self.St[br_idx] = results.St
-
         self.If[br_idx] = results.If
+        self.It[br_idx] = results.It
+
+        self.tap_module[br_idx] = results.tap_module
+        self.tap_angle[br_idx] = results.tap_angle
+        self.Beq[br_idx] = results.Beq
 
         self.Vbranch[br_idx] = results.Vbranch
-
         self.loading[br_idx] = results.loading
-
         self.losses[br_idx] = results.losses
 
         self.convergence_reports += results.convergence_reports
@@ -391,14 +393,15 @@ class PowerFlowResults(ResultsTemplate):
             va_rad = np.angle(self.voltage, deg=False)
             data = np.c_[vm, va]
 
-            plt.ion()
-            color_norm = plt_colors.LogNorm()
-            fig = plt.figure(figsize=(8, 6))
-            ax3 = plt.subplot(1, 1, 1, projection='polar')
-            sc3 = ax3.scatter(va_rad, vm, c=vm, norm=color_norm)
-            fig.suptitle(result_type.value)
-            plt.tight_layout()
-            plt.show()
+            if self.plotting_allowed():
+                plt.ion()
+                color_norm = plt_colors.LogNorm()
+                fig = plt.figure(figsize=(8, 6))
+                ax3 = plt.subplot(1, 1, 1, projection='polar')
+                sc3 = ax3.scatter(va_rad, vm, c=vm, norm=color_norm)
+                fig.suptitle(result_type.value)
+                plt.tight_layout()
+                plt.show()
 
             return ResultsTable(data=data,
                                 index=self.bus_names,

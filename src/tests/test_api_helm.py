@@ -20,7 +20,6 @@ import numpy as np
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions, PowerFlowDriver
-from tests.print_power_flow_results import print_power_flow_results
 
 
 def test_api_helm():
@@ -38,8 +37,6 @@ def test_api_helm():
     options = PowerFlowOptions(SolverType.HELM, verbose=False, tolerance=1e-9)
     power_flow = PowerFlowDriver(grid, options)
     power_flow.run()
-
-    print_power_flow_results(power_flow)
 
 
 if __name__ == '__main__':

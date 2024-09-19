@@ -19,15 +19,15 @@ from typing import Tuple, Union
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from GridCalEngine.enumerations import BusMode
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.enumerations import BusMode, DeviceType
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation import Area, Zone, Country
 from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.profile import Profile
 
 
-class Bus(EditableDevice):
+class Bus(PhysicalDevice):
 
     def __init__(self, name="Bus",
                  idtag=None,
@@ -88,7 +88,7 @@ class Bus(EditableDevice):
         :param Va0: initial solution for the voltage angle (rad)
         """
 
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,
@@ -267,10 +267,9 @@ class Bus(EditableDevice):
 
         return BusMode.PQ_tpe
 
-    def get_voltage_guess(self, logger=None, use_stored_guess=False):
+    def get_voltage_guess(self, use_stored_guess=False) -> complex:
         """
         Determine the voltage initial guess
-        :param logger: Logger object
         :param use_stored_guess: use the stored guess or get one from the devices
         :return: voltage guess
         """

@@ -1,18 +1,53 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 import numpy as np
-from numpy import angle, conj, exp, r_, Inf
+from numpy import exp, r_, Inf
 from numpy.linalg import norm
 from scipy.sparse.linalg import splu
 import time
 import GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions as cf
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import NumericPowerFlowResults
-from GridCalEngine.enumerations import ReactivePowerControlMode
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import control_q_inside_method
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import (control_q_inside_method,
+                                                                                    compute_slack_distribution)
+from GridCalEngine.basic_structures import Vec, CxVec, CscMat, IntVec
 
 np.set_printoptions(linewidth=320)
 
 
-def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pv_, pq_, pqv_, p_, Qmin, Qmax, tol=1e-9, max_it=100,
-         control_q=ReactivePowerControlMode.NoControl, ) -> NumericPowerFlowResults:
+def FDPF(Vbus: CxVec,
+         S0: CxVec,
+         I0: CxVec,
+         Y0: CxVec,
+         Ybus: CscMat,
+         B1: CscMat,
+         B2: CscMat,
+         pv_: IntVec,
+         pq_: IntVec,
+         pqv_: IntVec,
+         p_: IntVec,
+         vd_: IntVec,
+         Qmin: Vec,
+         Qmax: Vec,
+         bus_installed_power: Vec,
+         tol: float = 1e-9,
+         max_it: float = 100,
+         control_q: bool = False,
+         distribute_slack: bool = False) -> NumericPowerFlowResults:
     """
     Fast decoupled power flow
     :param Vbus: array of initial voltages
@@ -26,11 +61,14 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pv_, pq_, pqv_, p_, Qmin, Qmax, tol=1e-
     :param pq_: Array with the indices of the PQ buses
     :param pqv_: Array with the indices of the PQV buses
     :param p_: Array with the indices of the P buses
+    :param vd_: Array with the indices of the VD buses
     :param Qmin: Minimum voltage
     :param Qmax: Maximum voltage
-    :param tol: desired tolerance
+    :param tol: Tolerance
+    :param bus_installed_power: Array of installed power per bus
     :param max_it: maximum number of iterations
     :param control_q: Control Q method
+    :param distribute_slack: Distribute Slack method
     :return: NumericPowerFlowResults instance
     """
 
@@ -118,7 +156,7 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pv_, pq_, pqv_, p_, Qmin, Qmax, tol=1e-
             # it is only worth checking Q limits with a low error
             # since with higher errors, the Q values may be far from realistic
             # finally, the Q control only makes sense if there are pv nodes
-            if control_q != ReactivePowerControlMode.NoControl and normQ < 1e-2 and (len(pv) + len(p)) > 0:
+            if control_q and normQ < 1e-2 and (len(pv) + len(p)) > 0:
 
                 # check and adjust the reactive power
                 # this function passes pv buses to pq when the limits are violated,
@@ -135,6 +173,13 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pv_, pq_, pqv_, p_, Qmin, Qmax, tol=1e-
                     B1_factorization = splu(B1[np.ix_(blck1_idx, blck1_idx)])
                     B2_factorization = splu(B2[np.ix_(blck3_idx, blck2_idx)])
 
+            if distribute_slack and normQ < 1e-2:
+                ok, delta = compute_slack_distribution(Scalc=Scalc,
+                                                       vd=vd_,
+                                                       bus_installed_power=bus_installed_power)
+                if ok:
+                    S0 += delta
+
         F = r_[dP, dQ]  # concatenate again
         normF = norm(F, Inf)
 
@@ -150,8 +195,8 @@ def FDPF(Vbus, S0, I0, Y0, Ybus, B1, B2, pv_, pq_, pqv_, p_, Qmin, Qmax, tol=1e-
                                    converged=converged,
                                    norm_f=normF,
                                    Scalc=Scalc,
-                                   ma=None,
-                                   theta=None,
+                                   m=None,
+                                   tau=None,
                                    Beq=None,
                                    Ybus=None, Yf=None, Yt=None,
                                    iterations=iter_,

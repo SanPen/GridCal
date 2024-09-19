@@ -18,6 +18,7 @@ import io
 import numpy as np
 import pandas as pd
 from PySide6 import QtCore, QtWidgets
+from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Utils.Filtering.results_table_filtering import FilterResultsTable
 
@@ -50,7 +51,7 @@ def fast_data_to_numpy_text(data: np.ndarray) -> str:
     return txt
 
 
-class ResultsModel(QtCore.QAbstractTableModel):
+class ResultsModel(WrappableTableModel):
     """
     Class to populate a Qt table view with data from the results
     """
@@ -59,7 +60,7 @@ class ResultsModel(QtCore.QAbstractTableModel):
 
         :param table:
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        WrappableTableModel.__init__(self, parent)
 
         self.table = table
 
@@ -135,6 +136,9 @@ class ResultsModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+        if self._hide_headers_mode is True:
+            return None
+
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 if len(self.table.cols_c) > section:

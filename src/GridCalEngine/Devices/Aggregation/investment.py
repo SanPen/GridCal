@@ -30,8 +30,8 @@ class Investment(EditableDevice):
                  device_idtag: Union[str, None] = None,
                  name="Investment",
                  code='',
-                 CAPEX=0.0,
-                 OPEX=0.0,
+                 CAPEX: float = 0.0,
+                 OPEX: float = 0.0,
                  status: bool = True,
                  group: InvestmentsGroup = None,
                  comment: str = ""):
@@ -43,7 +43,7 @@ class Investment(EditableDevice):
         :param CAPEX: Float. Capital expenditures
         :param OPEX: Float. Operating expenditures
         :param status: If true the investment activates when applied, otherwise is deactivated
-        :param group: ContingencyGroup. Contingency group
+        :param group: InvestmentGroup. Investment group
         :param comment: Comment
         """
 
@@ -55,16 +55,16 @@ class Investment(EditableDevice):
                                 comment=comment)
 
         # Contingency type
-        self.device_idtag = device_idtag
-        self.CAPEX = CAPEX
-        self.OPEX = OPEX
+        self.device_idtag: str = device_idtag
+        self.CAPEX: float = CAPEX
+        self.OPEX: float = OPEX
         self._group: InvestmentsGroup = group
         self.status: bool = status
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID')
-        self.register(key='CAPEX', units='Me', tpe=float,
+        self.register(key='CAPEX', units='M€', tpe=float,
                       definition='Capital expenditures. This is the initial investment.')
-        self.register(key='OPEX', units='Me', tpe=float,
+        self.register(key='OPEX', units='M€', tpe=float,
                       definition='Operation expenditures. Maintenance costs among other recurrent costs.')
         self.register(key='status', units='', tpe=bool,
                       definition='If true the investment activates when applied, otherwise is deactivated.')
@@ -92,5 +92,5 @@ class Investment(EditableDevice):
 
     @category.setter
     def category(self, val):
-        # self.group.category = val
+        # The category is set through the group, so no implementation here
         pass

@@ -18,9 +18,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem
 from GridCalEngine.Devices.Branches.upfc import UPFC
+from GridCalEngine.enumerations import TapModuleControl
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -90,6 +91,18 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
 
             menu.addSeparator()
 
+            add_menu_entry(menu=menu,
+                           text="Control V from",
+                           function_ptr=self.control_v_from,
+                           icon_path=":/Icons/icons/edit.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Control V to",
+                           function_ptr=self.control_v_to,
+                           icon_path=":/Icons/icons/edit.svg")
+
+            menu.addSeparator()
+
             ra6 = menu.addAction('Plot profiles')
             plot_icon = QIcon()
             plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
@@ -108,7 +121,22 @@ class UpfcGraphicItem(LineGraphicTemplateItem):
             ra5.setIcon(ra5_icon)
             ra5.triggered.connect(self.assign_status_to_profile)
 
-
             menu.exec_(event.screenPos())
         else:
             pass
+
+    def control_v_from(self):
+        """
+
+        :return:
+        """
+        self.api_object.regulation_bus = self.api_object.bus_from
+        self.api_object.tap_module_control_mode = TapModuleControl.Vm
+
+    def control_v_to(self):
+        """
+
+        :return:
+        """
+        self.api_object.regulation_bus = self.api_object.bus_to
+        self.api_object.tap_module_control_mode = TapModuleControl.Vm

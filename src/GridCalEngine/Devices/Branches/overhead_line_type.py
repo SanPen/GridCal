@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
+from typing import List
 import numpy as np
 from numpy import pi, log, sqrt
 from matplotlib import pyplot as plt
@@ -34,8 +37,11 @@ Typical values of earth
 
 
 class WireInTower:
+    """
+    Wire -> Tower association
+    """
 
-    def __init__(self, wire: Wire, xpos=0, ypos=0, phase=1):
+    def __init__(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
         """
         Wire in a tower
         :param wire: Wire instance
@@ -43,22 +49,22 @@ class WireInTower:
         :param ypos: y position in m
         :param phase: 0->Neutral, 1->A, 2->B, 3->C
         """
-        self.wire = wire
+        self.wire: Wire = wire
 
-        self.name = wire.name
+        self.name: str = wire.name
 
-        self.xpos = xpos
+        self.xpos: float = xpos
 
-        self.ypos = ypos
+        self.ypos: float = ypos
 
-        self.phase = phase
+        self.phase: int = phase
 
         self.device_type = DeviceType.WireDevice
 
 
 class OverheadLineType(EditableDevice):
 
-    def __init__(self, name='Tower', idtag=None):
+    def __init__(self, name='Tower', idtag: str | None = None):
         """
         Overhead line editor
         :param name: name
@@ -70,7 +76,7 @@ class OverheadLineType(EditableDevice):
                                 device_type=DeviceType.OverheadLineTypeDevice)
 
         # list of wires in the tower
-        self.wires_in_tower = list()
+        self.wires_in_tower: List[WireInTower] = list()
 
         self.Vnom = 1.0
 
@@ -126,12 +132,15 @@ class OverheadLineType(EditableDevice):
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
 
-    def add_wire(self, w: WireInTower):
+    def add_wire_relationship(self, wire: Wire, xpos: float = 0.0, ypos: float = 0.0, phase: int = 1):
         """
-
-        :param w:
-        :return:
+        Wire in a tower
+        :param wire: Wire instance
+        :param xpos: x position in m
+        :param ypos: y position in m
+        :param phase: 0->Neutral, 1->A, 2->B, 3->C
         """
+        w = WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
         self.wires_in_tower.append(w)
 
     def z_series(self):
@@ -184,9 +193,9 @@ class OverheadLineType(EditableDevice):
         if n > 0:
             x = np.zeros(n)
             y = np.zeros(n)
-            for i, wire in enumerate(self.wires_in_tower):
-                x[i] = wire.xpos
-                y[i] = wire.ypos
+            for i, wire_tower in enumerate(self.wires_in_tower):
+                x[i] = wire_tower.xpos
+                y[i] = wire_tower.ypos
 
             ax.plot(x, y, '.')
             ax.set_title('Tower wire position')
@@ -216,7 +225,7 @@ class OverheadLineType(EditableDevice):
             if wire_i.ypos != 0.0:
                 all_y_zero = False
 
-            if wire_i.wire.gmr < 0:
+            if wire_i.wire.GMR < 0:
                 logger.add('The wires' + wire_i.name + '(' + str(i) + ') has GRM=0 which is impossible.')
                 return False
 
@@ -262,18 +271,18 @@ class OverheadLineType(EditableDevice):
 
         if all_ok:
             # Impedances
-            self.z_abcn, \
-                self.z_phases_abcn, \
-                self.z_abc, \
-                self.z_phases_abc, \
-                self.z_seq = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+            (self.z_abcn,
+             self.z_phases_abcn,
+             self.z_abc,
+             self.z_phases_abc,
+             self.z_seq) = calc_z_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # Admittances
-            self.y_abcn, \
-                self.y_phases_abcn, \
-                self.y_abc, \
-                self.y_phases_abc, \
-                self.y_seq = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
+            (self.y_abcn,
+             self.y_phases_abcn,
+             self.y_abc,
+             self.y_phases_abc,
+             self.y_seq) = calc_y_matrix(self.wires_in_tower, f=self.frequency, rho=self.earth_resistivity)
 
             # compute the tower rating in kA
             self.Imax = self.compute_rating()
@@ -330,7 +339,7 @@ class OverheadLineType(EditableDevice):
 
         return R1, X1, B1, R0, X0, B0, rate
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -510,7 +519,12 @@ def calc_z_matrix(wires: list, f=50, rho=100):
     for i, wire_i in enumerate(wires):
 
         # self impedance
-        z_prim[i, i] = z_ii(r_i=wire_i.wire.r, x_i=wire_i.wire.x, h_i=wire_i.ypos, gmr_i=wire_i.wire.gmr, f=f, rho=rho)
+        z_prim[i, i] = z_ii(r_i=wire_i.wire.R,
+                            x_i=wire_i.wire.X,
+                            h_i=wire_i.ypos,
+                            gmr_i=wire_i.wire.GMR,
+                            f=f,
+                            rho=rho)
 
         # mutual impedances
         for j, wire_j in enumerate(wires):
@@ -583,7 +597,7 @@ def calc_y_matrix(wires: list, f=50, rho=100):
 
         # self impedance
         if wire_i.ypos > 0:
-            p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / (wire_i.wire.gmr + 1e-12))
+            p_prim[i, i] = one_two_pi_e0 * log(2 * wire_i.ypos / (wire_i.wire.GMR + 1e-12))
         else:
             p_prim[i, i] = 0
             print(wire_i.name, 'has y=0 !')

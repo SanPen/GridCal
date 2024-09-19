@@ -9,7 +9,7 @@ import GridCal.ThirdParty.qdarktheme as qdarktheme
 # Engine imports
 
 # GUI imports
-from GridCal.Gui.GuiFunctions import get_list_model, get_logger_tree_model
+from GridCal.Gui.gui_functions import get_list_model, get_logger_tree_model
 
 from PySide6 import QtCore, QtWidgets, QtGui
 from GridCal.Gui.messages import *

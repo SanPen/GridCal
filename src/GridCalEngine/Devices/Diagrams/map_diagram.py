@@ -48,12 +48,12 @@ class MapDiagram(BaseDiagram):
 
         self.latitude = latitude  # latitude
 
-    def get_properties_dict(self) -> Dict[str, Union[str, int, float, Dict[str, Union[GraphicLocation, MapLocation]]]]:
+    def get_data_dict(self) -> Dict[str, Union[str, int, float, Dict[str, Union[GraphicLocation, MapLocation]]]]:
         """
         get the properties dictionary to save
         :return: dictionary to serialize
         """
-        data = super().get_properties_dict()
+        data = super().get_data_dict()
         data['tile_source'] = self.tile_source
         data['start_level'] = self.start_level
         data['longitude'] = self.longitude

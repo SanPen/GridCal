@@ -23,8 +23,8 @@ from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
-from GridCalEngine.enumerations import BuildStatus
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.enumerations import BuildStatus, DeviceType
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.profile import Profile
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from GridCalEngine.Devices.types import CONNECTION_TYPE
 
 
-class BranchParent(EditableDevice):
+class BranchParent(PhysicalDevice):
     """
     This class serves to represent the basic branch
     All other branches inherit from this one
@@ -82,7 +82,7 @@ class BranchParent(EditableDevice):
         :param device_type: device_type (passed on)
         """
 
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,
@@ -120,13 +120,19 @@ class BranchParent(EditableDevice):
         self.build_status = build_status
 
         # line rating in MVA
-        self.rate = rate
+        if not isinstance(rate, Union[float, int]):
+            raise ValueError("Rate must be a float")
+        self._rate = float(rate)
         self._rate_prof = Profile(default_value=rate, data_type=float)
 
-        self.contingency_factor = contingency_factor
+        if not isinstance(contingency_factor, Union[float, int]):
+            raise ValueError("contingency_factor must be a float")
+        self._contingency_factor = float(contingency_factor)
         self._contingency_factor_prof = Profile(default_value=contingency_factor, data_type=float)
 
-        self.protection_rating_factor = protection_rating_factor
+        if not isinstance(protection_rating_factor, Union[float, int]):
+            raise ValueError("protection_rating_factor must be a float")
+        self._protection_rating_factor = float(protection_rating_factor)
         self._protection_rating_factor_prof = Profile(default_value=protection_rating_factor, data_type=float)
 
         # List of measurements
@@ -334,6 +340,51 @@ class BranchParent(EditableDevice):
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a Cost_prof')
 
+    @property
+    def rate(self):
+        """
+        Rate (MVA)
+        :return:
+        """
+        return self._rate
+
+    @rate.setter
+    def rate(self, val: float):
+        if isinstance(val, float):
+            self._rate = val
+        else:
+            raise ValueError(f'{val} is not a float')
+
+    @property
+    def contingency_factor(self):
+        """
+        Rate (MVA)
+        :return:
+        """
+        return self._contingency_factor
+
+    @contingency_factor.setter
+    def contingency_factor(self, val: float):
+        if isinstance(val, float):
+            self._contingency_factor = val
+        else:
+            raise ValueError(f'{val} is not a float')
+
+    @property
+    def protection_rating_factor(self):
+        """
+        Rate (MVA)
+        :return:
+        """
+        return self._protection_rating_factor
+
+    @protection_rating_factor.setter
+    def protection_rating_factor(self, val: float):
+        if isinstance(val, float):
+            self._protection_rating_factor = val
+        else:
+            raise ValueError(f'{val} is not a float')
+
     def get_max_bus_nominal_voltage(self):
         """
         GEt the maximum nominal voltage
@@ -362,28 +413,10 @@ class BranchParent(EditableDevice):
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """
-        Get the branch virtual taps
-
-        The virtual taps generate when a line nominal voltage ate the two connection buses differ
-
-        Returns:
-
-            **tap_f** (float, 1.0): Virtual tap at the *from* side
-
-            **tap_t** (float, 1.0): Virtual tap at the *to* side
-
+        Always unit vitual taps (unless proven otherwise)
+        :return: tap_f, tap_t
         """
-        # resolve how the transformer is actually connected and set the virtual taps
-        bus_f_v = self.bus_from.Vnom
-        bus_t_v = self.bus_to.Vnom
-
-        if bus_f_v == bus_t_v:
-            return 1.0, 1.0
-        else:
-            if bus_f_v > 0.0 and bus_t_v > 0.0:
-                return 1.0, bus_f_v / bus_t_v
-            else:
-                return 1.0, 1.0
+        return 1.0, 1.0
 
     def get_coordinates(self):
         """

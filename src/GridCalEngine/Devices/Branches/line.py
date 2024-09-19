@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Union
+from typing import Union, Tuple, List
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -27,6 +27,7 @@ from GridCalEngine.Devices.Parents.branch_parent import BranchParent
 from GridCalEngine.Devices.Branches.sequence_line_type import SequenceLineType
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Associations.association import Associations
 from GridCalEngine.Devices.Branches.line_locations import LineLocations
 
 
@@ -103,7 +104,7 @@ class Line(BranchParent):
                               device_type=DeviceType.LineDevice)
 
         # line length in km
-        self.length = length
+        self._length = length
 
         # line impedance tolerance
         self.tolerance = tolerance
@@ -136,6 +137,11 @@ class Line(BranchParent):
 
         # type template
         self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template
+
+        # association with various templates
+        self.possible_tower_types: Associations = Associations(device_type=DeviceType.OverheadLineTypeDevice)
+        self.possible_underground_line_types: Associations = Associations(device_type=DeviceType.UnderGroundLineDevice)
+        self.possible_sequence_line_types: Associations = Associations(device_type=DeviceType.SequenceLineDevice)
 
         # Line locations
         self._locations: LineLocations = LineLocations()
@@ -172,6 +178,37 @@ class Line(BranchParent):
                                  'therefore 0.5 is at the middle.')
         self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
         self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
+
+        self.register(key='possible_tower_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible overhead line types (>1 to denote association), - to denote no association',
+                      display=False)
+
+        self.register(key='possible_underground_line_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible underground line types (>1 to denote association), - to denote no association',
+                      display=False)
+
+        self.register(key='possible_sequence_line_types', units='', tpe=SubObjectType.Associations,
+                      definition='Possible sequence line types (>1 to denote association), - to denote no association',
+                      display=False)
+
+    @property
+    def length(self) -> float:
+        """
+        Line length in km
+        :return: float
+        """
+        return self._length
+
+    @length.setter
+    def length(self, val: float):
+        if isinstance(val, float):
+            if val > 0.0:
+                self._length = val
+            else:
+                print('The length cannot be zero, setting it to 1.0 km')
+                self._length = 1.0
+        else:
+            raise Exception('The length must be a float value')
 
     @property
     def temp_oper_prof(self) -> Profile:
@@ -260,7 +297,24 @@ class Line(BranchParent):
         else:
             logger.add_error('Template not recognised', self.name)
 
-    def get_save_data(self):
+    def get_line_type(self) -> SequenceLineType:
+        """
+        Get the equivalent sequence line type of this line
+        :return: SequenceLineType
+        """
+        if self.length == 0.0:
+            raise Exception("Length must be greater than 0")
+
+        return SequenceLineType(name=f"{self.name}_type",
+                                Imax=1, Vnom=self.get_max_bus_nominal_voltage(),
+                                R=self.R / self.length,
+                                X=self.X / self.length,
+                                B=self.B / self.length,
+                                R0=self.R0 / self.length,
+                                X0=self.X0 / self.length,
+                                B0=self.B0 / self.length)
+
+    def get_save_data(self) -> List[str]:
         """
         Return the data that matches the edit_headers
         :return:
@@ -284,11 +338,11 @@ class Line(BranchParent):
                 data.append(obj)
         return data
 
-    def fix_inconsistencies(self, logger: Logger):
+    def fix_inconsistencies(self, logger: Logger) -> bool:
         """
         Fix the inconsistencies
         :param logger:
-        :return:
+        :return: any error
         """
         errors = False
 
@@ -301,9 +355,9 @@ class Line(BranchParent):
 
     def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
         """
-
+        Check if ths should be a transformer
         :param branch_connection_voltage_tolerance:
-        :return:
+        :return: should it be a transformer?
         """
         if self.bus_to is not None and self.bus_from is not None:
             V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
@@ -353,8 +407,8 @@ class Line(BranchParent):
         """
         R = r_ohm * length
         X = x_ohm * length
-        B = (
-                    2 * np.pi * freq * c_nf * 1e-9) * length  # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
+        # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
+        B = (2 * np.pi * freq * c_nf * 1e-9) * length
 
         Vf = self.get_max_bus_nominal_voltage()
 
@@ -367,55 +421,69 @@ class Line(BranchParent):
         self.rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
         self.length = length
 
-    def copyData(self, second_Line):
-        self.copy()
-        self.busfrom = getattr(second_Line, 'bus_from', None)
-        self.busto = getattr(second_Line, 'bus_to', None)
-        self.cnfrom = getattr(second_Line, 'cn_from', None)
-        self.cnto = getattr(second_Line, 'cn_to', None)
-        self.name = second_Line.name
-        self.idtag = second_Line.idtag
-        self.code = second_Line.code
-        self.R = second_Line.R
-        self.X = second_Line.X
-        self.B = second_Line.B
-        self.rate = second_Line.rate
-        self.active = second_Line.active
-        self.tolerance = second_Line.tolerance
-        self.Cost = second_Line.Cost
-        self.mttf = second_Line.mttf
-        self.mttr = second_Line.mttr
-        self.r_fault = second_Line.r_fault
-        self.x_fault = second_Line.x_fault
-        self.fault_pos = second_Line.fault_pos
-        self.length = second_Line.length
-        self.temp_base = second_Line.temp_base
-        self.temp_oper = second_Line.temp_oper
-        self.alpha = second_Line.alpha
-        self.template = second_Line.template
-        self.contingency_factor = second_Line.contingency_factor
-        self.protection_rating_factor = second_Line.protection_rating_factor
-        self.contingency_enabled = second_Line.contingency_enabled
-        self.monitor_loading = second_Line.monitor_loading
-        self.R0 = second_Line.R0
-        self.X0 = second_Line.X0
-        self.B0 = second_Line.B0
-        self.R2 = second_Line.R2
-        self.X2 = second_Line.X2
-        self.B2 = second_Line.B2
-        self.capex = second_Line.capex
-        self.opex = second_Line.opex
-        self.build_status = second_Line.build_status
+    def get_virtual_taps(self) -> Tuple[float, float]:
+        """
+        Get the branch virtual taps
 
-        # # Fetch all attributes from second_Line dynamically
-        # attributes = [attr for attr in dir(second_Line) if
-        #               not attr.startswith('__') and not callable(getattr(second_Line, attr))]
-        #
-        # # Using getattr to fetch each attribute, defaulting to None if not found
-        # for attr in attributes:
-        #     if not attr == 'locations':
-        #         try:
-        #             # Try setting the attribute, if it is writable
-        #             setattr(self, attr, getattr(second_Line, attr, None))
-        #         except AttributeError as e:
-        #             print(f"Cannot set protected attribute {attr}: {str(e)}")
+        The virtual taps generate when a line nominal voltage ate the two connection buses differ
+
+        Returns:
+            **tap_f** (float, 1.0): Virtual tap at the *from* side
+            **tap_t** (float, 1.0): Virtual tap at the *to* side
+        """
+        # resolve how the transformer is actually connected and set the virtual taps
+        bus_f_v = self.bus_from.Vnom
+        bus_t_v = self.bus_to.Vnom
+
+        if bus_f_v == bus_t_v:
+            return 1.0, 1.0
+        else:
+            if bus_f_v > 0.0 and bus_t_v > 0.0:
+                return 1.0, bus_f_v / bus_t_v
+            else:
+                return 1.0, 1.0
+
+    # def set_data_from(self, second_Line: "Line"):
+    #     """
+    #     Set the data from another line
+    #     :param second_Line:
+    #     :return:
+    #     """
+    #     self.copy()
+    #     self.bus_from = second_Line.bus_from
+    #     self.bus_to = second_Line.bus_to
+    #     self.cn_from = second_Line.cn_from
+    #     self.cn_to = second_Line.cn_to
+    #     self.name = second_Line.name
+    #     self.idtag = second_Line.idtag
+    #     self.code = second_Line.code
+    #     self.R = second_Line.R
+    #     self.X = second_Line.X
+    #     self.B = second_Line.B
+    #     self.rate = second_Line.rate
+    #     self.active = second_Line.active
+    #     self.tolerance = second_Line.tolerance
+    #     self.Cost = second_Line.Cost
+    #     self.mttf = second_Line.mttf
+    #     self.mttr = second_Line.mttr
+    #     self.r_fault = second_Line.r_fault
+    #     self.x_fault = second_Line.x_fault
+    #     self.fault_pos = second_Line.fault_pos
+    #     self.length = second_Line.length
+    #     self.temp_base = second_Line.temp_base
+    #     self.temp_oper = second_Line.temp_oper
+    #     self.alpha = second_Line.alpha
+    #     self.template = second_Line.template
+    #     self.contingency_factor = second_Line.contingency_factor
+    #     self.protection_rating_factor = second_Line.protection_rating_factor
+    #     self.contingency_enabled = second_Line.contingency_enabled
+    #     self.monitor_loading = second_Line.monitor_loading
+    #     self.R0 = second_Line.R0
+    #     self.X0 = second_Line.X0
+    #     self.B0 = second_Line.B0
+    #     self.R2 = second_Line.R2
+    #     self.X2 = second_Line.X2
+    #     self.B2 = second_Line.B2
+    #     self.capex = second_Line.capex
+    #     self.opex = second_Line.opex
+    #     self.build_status = second_Line.build_status

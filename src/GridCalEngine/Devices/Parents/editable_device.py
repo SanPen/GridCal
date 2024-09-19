@@ -18,14 +18,14 @@ import random
 import uuid
 import numpy as np
 from GridCalEngine.Devices.profile import Profile
-from typing import List, Dict, AnyStr, Any, Optional, Union, Type, Tuple
-from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection, TransformerControlType,
-                                        ConverterControlType, TapModuleControl, TapAngleControl, SubObjectType,
+from typing import List, Dict, AnyStr, Any, Union, Type, Tuple
+from GridCalEngine.enumerations import (DeviceType, TimeFrame, BuildStatus, WindingsConnection,
+                                        TapModuleControl, TapPhaseControl, SubObjectType,
                                         HvdcControlType, ActionType, AvailableTransferMode, ContingencyMethod,
                                         CpfParametrization, CpfStopAt, InvestmentEvaluationMethod, SolverType,
                                         InvestmentsEvaluationObjectives, NodalCapacityMethod, TimeGrouping,
-                                        ZonalGrouping, MIPSolvers, AcOpfMode, ReactivePowerControlMode,
-                                        BranchImpedanceMode, FaultType)
+                                        ZonalGrouping, MIPSolvers, AcOpfMode,
+                                        BranchImpedanceMode, FaultType, TapChangerTypes)
 
 # types that can be assigned to a GridCal property
 GCPROP_TYPES = Union[
@@ -38,10 +38,8 @@ GCPROP_TYPES = Union[
     Type[HvdcControlType],
     Type[BuildStatus],
     Type[WindingsConnection],
-    Type[TransformerControlType],
-    Type[ConverterControlType],
     Type[TapModuleControl],
-    Type[TapAngleControl],
+    Type[TapPhaseControl],
     Type[ActionType],
     Type[AvailableTransferMode],
     Type[ContingencyMethod],
@@ -55,10 +53,19 @@ GCPROP_TYPES = Union[
     Type[ZonalGrouping],
     Type[MIPSolvers],
     Type[AcOpfMode],
-    Type[ReactivePowerControlMode],
     Type[BranchImpedanceMode],
-    Type[FaultType]
+    Type[FaultType],
+    Type[TapChangerTypes]
 ]
+
+
+def uuid2idtag(val: str):
+    """
+    Remove the useless characters and format as a proper 32-char UID
+    :param val: value that looks like a UUID
+    :return: proper UUID
+    """
+    return val.replace('_', '').replace('-', '')
 
 
 def parse_idtag(val: Union[str, None]) -> str:
@@ -74,7 +81,7 @@ def parse_idtag(val: Union[str, None]) -> str:
         elif len(val) == 0:
             return uuid.uuid4().hex  # generate a proper UUIDv4 string
         else:
-            candidate_val = val.replace('_', '').replace('-', '')
+            candidate_val = uuid2idtag(val)
             if len(candidate_val) == 32:
                 return candidate_val  # if the string passed can be a UUID, set it
             else:
@@ -227,7 +234,8 @@ class EditableDevice:
         # list of properties that cannot be edited
         self.non_editable_properties: List[str] = list()
 
-        self.properties_with_profile: Dict[str, Optional[Any]] = dict()
+        # dictionary with property name -> profile name
+        self.properties_with_profile: Dict[str, str] = dict()
 
         self.register(key='idtag', units='', tpe=str, definition='Unique ID', editable=False)
         self.register(key='name', units='', tpe=str, definition='Name of the device.')
@@ -236,6 +244,19 @@ class EditableDevice:
                       definition='Object action to perform.\nOnly used for model merging.',
                       display=False)
         self.register(key='comment', units='', tpe=str, definition='User comment')
+
+    def get_uuid(self) -> str:
+        """
+        If the idtag property looks like a UUID, it adds the dashes
+        :return: UUID with dashes
+        """
+        if isinstance(self._idtag, str):
+            if len(self.idtag) == 32:
+                return str(uuid.UUID(self.idtag))
+            else:
+                raise Exception("The idtag is not a proper UUID")
+        else:
+            raise Exception("The idtag is not a proper UUID string")
 
     def __str__(self) -> str:
         """
@@ -344,6 +365,7 @@ class EditableDevice:
         """
         assert (hasattr(self, key))  # the property must exist, this avoids bugs when registering
 
+        # create GCProp object
         prop = GCProp(prop_name=key,
                       units=units,
                       tpe=tpe,
@@ -362,7 +384,7 @@ class EditableDevice:
 
         if profile_name != '':
             assert (hasattr(self, profile_name))  # the profile property must exist, this avoids bugs in registering
-            assert (isinstance(getattr(self, profile_name), Profile))
+            assert (isinstance(getattr(self, profile_name), Profile))  # the profile must be of type "Profile"
             self.properties_with_profile[key] = profile_name
 
         if not editable:
@@ -662,14 +684,13 @@ class EditableDevice:
         """
         # get the value of the magnitude
         snapshot_value = getattr(self, magnitude)
-        # val = Profile(default_value=snapshot_value)
 
-        val = self.get_profile(magnitude=magnitude)
+        prof = self.get_profile(magnitude=magnitude)
 
-        val.create_sparse(size=len(index), default_value=snapshot_value)
+        prof.create_sparse(size=len(index), default_value=snapshot_value)
 
         # set the profile variable associated with the magnitude
-        setattr(self, self.properties_with_profile[magnitude], val)
+        setattr(self, self.properties_with_profile[magnitude], prof)
 
     def ensure_profiles_exist(self, index):
         """
@@ -711,9 +732,9 @@ class EditableDevice:
         Set the profile values at t
         :param t: time index (integer)
         """
-        for magnitude in self.properties_with_profile.keys():
-            profile: Profile = getattr(self, self.properties_with_profile[magnitude])
-            setattr(self, magnitude, profile[t])
+        for property_name, profile_name in self.properties_with_profile.items():
+            profile: Profile = getattr(self, profile_name)
+            setattr(self, property_name, profile[t])
 
     def get_profile(self, magnitude: str) -> Union[Profile, None]:
         """

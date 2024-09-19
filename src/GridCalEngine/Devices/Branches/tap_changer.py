@@ -18,28 +18,8 @@
 import numpy as np
 import pandas as pd
 from typing import Union, Dict
+from GridCalEngine.Utils.NumericalMethods.common import find_closest_number
 from GridCalEngine.enumerations import TapChangerTypes
-from GridCalEngine.basic_structures import Vec
-
-
-def find_closest_number(arr: Vec, target: float) -> int:
-    """
-
-    :param arr:
-    :param target:
-    :return:
-    """
-    idx = np.searchsorted(arr, target)
-    if idx == 0:
-        return arr[0]
-    if idx == len(arr):
-        return arr[-1]
-    before = arr[idx - 1]
-    after = arr[idx]
-    if after - target < target - before:
-        return after
-    else:
-        return before
 
 
 class TapChanger:
@@ -54,16 +34,16 @@ class TapChanger:
                  asymmetry_angle: float = 90.0,
                  tc_type: TapChangerTypes = TapChangerTypes.NoRegulation) -> None:
         """
-
-        :param total_positions:
-        :param neutral_position:
-        :param dV: per unit of voltage increment
-        :param asymmetry_angle:
-        :param tc_type:
+        Tap changer
+        :param total_positions: Total number of positions
+        :param neutral_position: Neutral position
+        :param dV: per unit of voltage increment (p.u.)
+        :param asymmetry_angle: Asymmetry angle (deg)
+        :param tc_type: Tap changer type
         """
 
         self.asymmetry_angle = asymmetry_angle  # assymetry angle (Theta)
-        self.total_positions = total_positions  # total number of positions
+        self._total_positions = total_positions  # total number of positions
         self.dV = dV  # voltage increment in p.u.
         self.neutral_position = neutral_position  # neutral position
         self._tap_position = neutral_position  # index with respect to the neutral position
@@ -74,6 +54,22 @@ class TapChanger:
         self._tau_array = np.zeros(total_positions)
         self._m_array = np.zeros(total_positions)
         self.recalc()
+
+    @property
+    def total_positions(self) -> int:
+        """
+        Tap changer total number of positions
+        :return: int
+        """
+        return self._total_positions
+
+    @total_positions.setter
+    def total_positions(self, value: int):
+        if isinstance(value, int):
+            self._total_positions = value
+            self.resize()
+        else:
+            raise TypeError(f'Expected int but got {type(value)}')
 
     @property
     def tap_position(self) -> int:
@@ -90,6 +86,23 @@ class TapChanger:
         :param val: tap value
         """
         self._tap_position = val
+
+    @property
+    def tap_modules_array(self):
+        return self._m_array
+
+    @property
+    def tap_angles_array(self):
+        return self._tau_array
+
+    def resize(self) -> None:
+        """
+        Resize and recalc the tap positions array
+        """
+        self._ndv = np.zeros(self.total_positions)
+        self._tau_array = np.zeros(self.total_positions)
+        self._m_array = np.zeros(self.total_positions)
+        self.recalc()
 
     def recalc(self) -> None:
         """
@@ -241,20 +254,42 @@ class TapChanger:
         """
         return self._m_array[self.tap_position]
 
-    def set_tap_module(self, tap_module: float):
+    def set_tap_module(self, tap_module: float) -> float:
         """
         Set the tap position closest to the tap module
         :param tap_module: float value of the tap module
         """
-        # if tap_module == 1.0:
-        #     self.tap_position = 0
-        # elif tap_module > 1:
-        #     self.tap_position = round((tap_module - 1.0) / self.inc_reg_up)
-        # elif tap_module < 1:
-        #     self.tap_position = -round((1.0 - tap_module) / self.inc_reg_down)
-
         if self.tc_type != TapChangerTypes.NoRegulation:
-            return find_closest_number(arr=self._tau_array, target=tap_module)
+            _, val = find_closest_number(arr=self._tau_array, target=tap_module)
+            return val
+
+    def get_tap_module_min(self) -> float:
+        """
+        Min tap module, computed on the fly
+        :return: float
+        """
+        return self.get_tap_module2(tap_position=0)
+
+    def get_tap_module_max(self) -> float:
+        """
+        Max tap module, computed on the fly
+        :return: float
+        """
+        return self.get_tap_module2(tap_position=self.total_positions - 1)
+
+    def get_tap_phase_min(self) -> float:
+        """
+        Min tap phase, cputed on the fly
+        :return: float
+        """
+        return self.get_tap_phase2(tap_position=0)
+
+    def get_tap_phase_max(self) -> float:
+        """
+        Maximum tap phase (calculated)
+        :return: float
+        """
+        return self.get_tap_phase2(tap_position=self.total_positions - 1)
 
     def __eq__(self, other: "TapChanger") -> bool:
         """
@@ -269,6 +304,9 @@ class TapChanger:
                 and (self.tap_position == other.tap_position)
                 and (self.tc_type == other.tc_type))
 
-    def __str__(self):
-
+    def __str__(self) -> str:
+        """
+        String representation
+        :return:
+        """
         return "Tap changer"

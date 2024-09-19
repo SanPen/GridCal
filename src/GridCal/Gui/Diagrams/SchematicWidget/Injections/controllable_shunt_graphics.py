@@ -22,7 +22,7 @@ from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Sq
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.controllable_shunt_editor import ControllableShuntEditor
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -184,5 +184,4 @@ class ControllableShuntGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        dictionary_of_lists = {DeviceType.Technology: self.editor.circuit.technologies}
-        self.editor.set_editor_model(api_object=self.api_object, dictionary_of_lists=dictionary_of_lists)
+        self.editor.set_editor_model(api_object=self.api_object)

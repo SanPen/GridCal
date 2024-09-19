@@ -135,7 +135,7 @@ def save_gridcal_data_to_zip(dfs: Dict[str, pd.DataFrame],
         # save diagrams
         for diagram in diagrams:
             filename = "diagrams/" + diagram.idtag + ".diagram"
-            f_zip_ptr.writestr(filename, json.dumps(diagram.get_properties_dict(), indent=4))
+            f_zip_ptr.writestr(filename, json.dumps(diagram.get_data_dict(), indent=4))
 
         # for each DataFrame and name...
         i = 0

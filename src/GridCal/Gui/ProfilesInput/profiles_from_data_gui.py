@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'profiles_from_data_gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -60,7 +60,7 @@ class Ui_Dialog(object):
         self.open_button = QPushButton(self.frame)
         self.open_button.setObjectName(u"open_button")
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/import_profiles.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.open_button.setIcon(icon)
 
         self.horizontalLayout_5.addWidget(self.open_button)
@@ -102,7 +102,7 @@ class Ui_Dialog(object):
         self.transformNamesPushButton = QPushButton(self.frame_2)
         self.transformNamesPushButton.setObjectName(u"transformNamesPushButton")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/transform.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/Icons/icons/transform.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.transformNamesPushButton.setIcon(icon1)
 
         self.horizontalLayout_3.addWidget(self.transformNamesPushButton)
@@ -133,7 +133,7 @@ class Ui_Dialog(object):
         self.autolink_button = QPushButton(self.frame_10)
         self.autolink_button.setObjectName(u"autolink_button")
         icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/auto-link.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/Icons/icons/auto-link.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.autolink_button.setIcon(icon2)
 
         self.horizontalLayout_7.addWidget(self.autolink_button)
@@ -150,7 +150,7 @@ class Ui_Dialog(object):
         self.rnd_link_pushButton = QPushButton(self.frame_10)
         self.rnd_link_pushButton.setObjectName(u"rnd_link_pushButton")
         icon3 = QIcon()
-        icon3.addFile(u":/Icons/icons/auto-link-rnd.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/Icons/icons/auto-link-rnd.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.rnd_link_pushButton.setIcon(icon3)
 
         self.horizontalLayout_7.addWidget(self.rnd_link_pushButton)
@@ -158,7 +158,7 @@ class Ui_Dialog(object):
         self.assign_to_all_pushButton = QPushButton(self.frame_10)
         self.assign_to_all_pushButton.setObjectName(u"assign_to_all_pushButton")
         icon4 = QIcon()
-        icon4.addFile(u":/Icons/icons/link-to-all.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon4.addFile(u":/Icons/icons/link-to-all.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.assign_to_all_pushButton.setIcon(icon4)
 
         self.horizontalLayout_7.addWidget(self.assign_to_all_pushButton)
@@ -166,7 +166,7 @@ class Ui_Dialog(object):
         self.assign_to_selection_pushButton = QPushButton(self.frame_10)
         self.assign_to_selection_pushButton.setObjectName(u"assign_to_selection_pushButton")
         icon5 = QIcon()
-        icon5.addFile(u":/Icons/icons/link-to-selection.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon5.addFile(u":/Icons/icons/link-to-selection.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.assign_to_selection_pushButton.setIcon(icon5)
 
         self.horizontalLayout_7.addWidget(self.assign_to_selection_pushButton)
@@ -178,7 +178,7 @@ class Ui_Dialog(object):
         self.clear_selection_button = QPushButton(self.frame_10)
         self.clear_selection_button.setObjectName(u"clear_selection_button")
         icon6 = QIcon()
-        icon6.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon6.addFile(u":/Icons/icons/delete.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.clear_selection_button.setIcon(icon6)
 
         self.horizontalLayout_7.addWidget(self.clear_selection_button)
@@ -201,7 +201,7 @@ class Ui_Dialog(object):
         self.set_multiplier_button = QPushButton(self.frame_9)
         self.set_multiplier_button.setObjectName(u"set_multiplier_button")
         icon7 = QIcon()
-        icon7.addFile(u":/Icons/icons/multiply.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon7.addFile(u":/Icons/icons/multiply.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.set_multiplier_button.setIcon(icon7)
 
         self.gridLayout.addWidget(self.set_multiplier_button, 0, 0, 1, 1)
@@ -221,7 +221,7 @@ class Ui_Dialog(object):
         self.doit_button = QPushButton(self.frame_9)
         self.doit_button.setObjectName(u"doit_button")
         icon8 = QIcon()
-        icon8.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon8.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.doit_button.setIcon(icon8)
 
         self.gridLayout.addWidget(self.doit_button, 0, 6, 1, 1)

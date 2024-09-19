@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, List
 import numpy as np
 import pandas as pd
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -23,6 +23,7 @@ from GridCalEngine.Simulations.results_template import ResultsTemplate
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType, SimulationTypes
+from GridCalEngine.basic_structures import IntVec
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -87,7 +88,7 @@ class InputsAnalysisResults(ResultsTemplate):
         self.bus_zone_indices = self.get_bus_zone_indices()
         self.bus_country_indices = self.get_bus_country_indices()
 
-    def get_generators_df(self):
+    def get_generators_df(self) -> pd.DataFrame:
         """
 
         :return:
@@ -117,7 +118,7 @@ class InputsAnalysisResults(ResultsTemplate):
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
 
-    def get_batteries_df(self):
+    def get_batteries_df(self) -> pd.DataFrame:
         """
 
         :return:
@@ -141,7 +142,7 @@ class InputsAnalysisResults(ResultsTemplate):
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
 
-    def get_loads_df(self):
+    def get_loads_df(self) -> pd.DataFrame:
         """
 
         :return:
@@ -159,7 +160,7 @@ class InputsAnalysisResults(ResultsTemplate):
                 'Zone', 'Area', 'Substation', 'Country']
         return pd.DataFrame(data=dta, columns=cols)
 
-    def get_static_generators_df(self):
+    def get_static_generators_df(self) -> pd.DataFrame:
         """
 
         :return:
@@ -222,7 +223,7 @@ class InputsAnalysisResults(ResultsTemplate):
 
         return df
 
-    def get_bus_zone_indices(self):
+    def get_bus_zone_indices(self) -> IntVec:
         """
 
         :return:
@@ -230,7 +231,7 @@ class InputsAnalysisResults(ResultsTemplate):
         d = {elm: i for i, elm in enumerate(self.grid.zones)}
         return np.array([d.get(bus.zone, "") for bus in self.grid.buses])
 
-    def get_bus_area_indices(self):
+    def get_bus_area_indices(self) -> IntVec:
         """
 
         :return:
@@ -238,7 +239,7 @@ class InputsAnalysisResults(ResultsTemplate):
         d = {elm: i for i, elm in enumerate(self.grid.areas)}
         return np.array([d.get(bus.area, "") for bus in self.grid.buses])
 
-    def get_bus_country_indices(self):
+    def get_bus_country_indices(self) -> IntVec:
         """
 
         :return:
@@ -246,7 +247,7 @@ class InputsAnalysisResults(ResultsTemplate):
         d = {elm: i for i, elm in enumerate(self.grid.countries)}
         return np.array([d.get(bus.country, "") for bus in self.grid.buses])
 
-    def get_bus_substation_indices(self):
+    def get_bus_substation_indices(self) -> IntVec:
         """
 
         :return:
@@ -291,11 +292,13 @@ class InputsAnalysisResults(ResultsTemplate):
         for elm in elms:
             i = self.bus_dict[elm.bus]
             i2 = d2[i]
-            x[:, i2] += elm.get_profile(magnitude=magnitude).toarray()
+            if i2 != "":
+                i3 = int(i2)
+                x[:, i3] += elm.get_profile(magnitude=magnitude).toarray()
 
         return x, headers
 
-    def mdl(self, result_type) -> "ResultsTable":
+    def mdl(self, result_type: ResultTypes) -> "ResultsTable":
         """
         Plot the results
         :param result_type: type of results (string)
@@ -464,14 +467,14 @@ class InputsAnalysisDriver(DriverTemplate):
         self.results = InputsAnalysisResults(grid=grid)
         self.toc()
 
-    def get_steps(self):
+    def get_steps(self) -> List[int]:
         """
 
         :return:
         """
         return list()
 
-    def run(self):
+    def run(self) -> None:
         """
         Pack run_pf for the QThread
         :return:

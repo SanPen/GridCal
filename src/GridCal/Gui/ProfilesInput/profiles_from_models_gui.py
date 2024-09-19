@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'profiles_from_models_gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -39,7 +39,7 @@ class Ui_Dialog(object):
         self.addModelsButton = QPushButton(self.frame_3)
         self.addModelsButton.setObjectName(u"addModelsButton")
         icon = QIcon()
-        icon.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/Icons/icons/plus.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.addModelsButton.setIcon(icon)
 
         self.horizontalLayout_6.addWidget(self.addModelsButton)
@@ -47,7 +47,7 @@ class Ui_Dialog(object):
         self.deleteModelsButton = QPushButton(self.frame_3)
         self.deleteModelsButton.setObjectName(u"deleteModelsButton")
         icon1 = QIcon()
-        icon1.addFile(u":/Icons/icons/delete3.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/Icons/icons/delete3.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.deleteModelsButton.setIcon(icon1)
 
         self.horizontalLayout_6.addWidget(self.deleteModelsButton)
@@ -99,7 +99,7 @@ class Ui_Dialog(object):
         self.acceptModelsButton = QPushButton(self.frame_7)
         self.acceptModelsButton.setObjectName(u"acceptModelsButton")
         icon2 = QIcon()
-        icon2.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/Icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.acceptModelsButton.setIcon(icon2)
 
         self.horizontalLayout_8.addWidget(self.acceptModelsButton)

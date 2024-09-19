@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 import numba as nb
+from typing import Tuple
 from GridCalEngine.enumerations import BusMode
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
 
@@ -44,172 +45,6 @@ def get_q_increment(V1, V2, k):
     """
 
     return 2 * (1 / (1 + np.exp(-k * np.abs(V2 - V1))) - 0.5)
-
-
-def control_q_iterative(V, Vset, Q, Qmax, Qmin, types, original_types, verbose, k):
-    """
-    Change the buses type in order to control the generators reactive power using
-    iterative changes in Q to reach Vset.
-
-    Arguments:
-
-        **V** (list): array of voltages (all buses)
-
-        **Vset** (list): Array of set points (all buses)
-
-        **Q** (list): Array of reactive power (all buses)
-
-        **Qmin** (list): Array of minimal reactive power (all buses)
-
-        **Qmax** (list): Array of maximal reactive power (all buses)
-
-        **types** (list): Array of types (all buses)
-
-        **original_types** (list): Types as originally intended (all buses)
-
-        **verbose** (list): output messages via the console
-
-        **k** (float, 30): Steepness factor
-
-    Return:
-
-        **Qnew** (list): New reactive power values
-
-        **types_new** (list): Modified types array
-
-        **any_control_issue** (bool): Was there any control issue?
-    """
-
-    if verbose:
-        print('Q control logic (iterative)')
-
-    n = len(V)
-    Vm = np.abs(V)
-    Qnew = Q.copy()
-    types_new = types.copy()
-    any_control_issue = False
-    precision = 4
-    inc_prec = int(1.5 * precision)
-
-    for i in range(n):
-
-        if types[i] == BusMode.Slack_tpe.value:
-            pass
-
-        elif types[i] == BusMode.PQ_tpe.value and original_types[i] == BusMode.PV_tpe.value:
-
-            gain = get_q_increment(Vm[i], abs(Vset[i]), k)
-
-            if round(Vm[i], precision) < round(abs(Vset[i]), precision):
-                increment = round(abs(Qmax[i] - Q[i]) * gain, inc_prec)
-
-                if increment > 0 and Q[i] + increment < Qmax[i]:
-                    # I can push more VAr, so let's do so
-                    Qnew[i] = Q[i] + increment
-                    if verbose:
-                        print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
-                                                                            round(gain, precision),
-                                                                            round(Vm[i], precision),
-                                                                            abs(Vset[i])))
-                        print("Bus {} increment = {} (Q = {}, Qmax = {})".format(i,
-                                                                                 round(increment, inc_prec),
-                                                                                 round(Q[i], precision),
-                                                                                 round(abs(Qmax[i]), precision),
-                                                                                 ))
-                        print("Bus {} raising its Q from {} to {} (V = {}, Vset = {})".format(i,
-                                                                                              round(Q[i], precision),
-                                                                                              round(Qnew[i], precision),
-                                                                                              round(Vm[i], precision),
-                                                                                              abs(Vset[i]),
-                                                                                              ))
-                    any_control_issue = True
-
-                else:
-                    if verbose:
-                        print("Bus {} stable enough (inc = {}, Q = {}, Qmax = {}, V = {}, Vset = {})".format(i,
-                                                                                                             round(
-                                                                                                                 increment,
-                                                                                                                 inc_prec),
-                                                                                                             round(Q[i],
-                                                                                                                   precision),
-                                                                                                             round(abs(
-                                                                                                                 Qmax[
-                                                                                                                     i]),
-                                                                                                                   precision),
-                                                                                                             round(
-                                                                                                                 Vm[i],
-                                                                                                                 precision),
-                                                                                                             abs(Vset[
-                                                                                                                     i]),
-                                                                                                             )
-                              )
-
-            elif round(Vm[i], precision) > round(abs(Vset[i]), precision):
-                increment = round(abs(Qmin[i] - Q[i]) * gain, inc_prec)
-
-                if increment > 0 and Q[i] - increment > Qmin[i]:
-                    # I can pull more VAr, so let's do so
-                    Qnew[i] = Q[i] - increment
-                    if verbose:
-                        print("Bus {} increment = {} (Q = {}, Qmin = {})".format(i,
-                                                                                 round(increment, inc_prec),
-                                                                                 round(Q[i], precision),
-                                                                                 round(abs(Qmin[i]), precision),
-                                                                                 )
-                              )
-                        print("Bus {} gain = {} (V = {}, Vset = {})".format(i,
-                                                                            round(gain, precision),
-                                                                            round(Vm[i], precision),
-                                                                            abs(Vset[i]),
-                                                                            )
-                              )
-                        print("Bus {} lowering its Q from {} to {} (V = {}, Vset = {})".format(i,
-                                                                                               round(Q[i], precision),
-                                                                                               round(Qnew[i],
-                                                                                                     precision),
-                                                                                               round(Vm[i], precision),
-                                                                                               abs(Vset[i]),
-                                                                                               )
-                              )
-                    any_control_issue = True
-
-                else:
-                    if verbose:
-                        print("Bus {} stable enough (inc = {}, Q = {}, Qmin = {}, V = {}, Vset = {})".format(i,
-                                                                                                             round(
-                                                                                                                 increment,
-                                                                                                                 inc_prec),
-                                                                                                             round(Q[i],
-                                                                                                                   precision),
-                                                                                                             round(abs(
-                                                                                                                 Qmin[
-                                                                                                                     i]),
-                                                                                                                   precision),
-                                                                                                             round(
-                                                                                                                 Vm[i],
-                                                                                                                 precision),
-                                                                                                             abs(Vset[
-                                                                                                                     i]),
-                                                                                                             )
-                              )
-
-            else:
-                if verbose:
-                    print("Bus {} stable (V = {}, Vset = {})".format(i,
-                                                                     round(Vm[i], precision),
-                                                                     abs(Vset[i]),
-                                                                     )
-                          )
-
-        elif types[i] == BusMode.PV_tpe.value:
-            # If it's still in PV mode (first run), change it to PQ mode
-            types_new[i] = BusMode.PQ_tpe.value
-            Qnew[i] = 0
-            if verbose:
-                print("Bus {} switching to PQ control, with a Q of 0".format(i))
-            any_control_issue = True
-
-    return Qnew, types_new, any_control_issue
 
 
 def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=False):
@@ -354,7 +189,9 @@ def control_q_direct(V, Vm, Vset, Q, Qmax, Qmin, types, original_types, verbose=
 
 
 @nb.njit(cache=True)
-def control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax):
+def control_q_inside_method(Scalc: CxVec, S0: CxVec,
+                            pv: IntVec, pq: IntVec, pqv: IntVec, p: IntVec,
+                            Qmin: Vec, Qmax: Vec):
     """
     Control of reactive power within the numerical method
     :param Scalc: Calculated power array (changed inside)
@@ -390,226 +227,23 @@ def control_q_inside_method(Scalc, S0, pv, pq, pqv, p, Qmin, Qmax):
     return changed, pv, pq, pqv, p
 
 
-def tap_up(tap, max_tap):
+def compute_slack_distribution(Scalc: CxVec, vd: IntVec, bus_installed_power: Vec) -> Tuple[bool, Vec]:
     """
-    Go to the next upper tap position
+    Slack distribution logic
+    :param Scalc: Computed power array
+    :param vd: slack indices
+    :param bus_installed_power: Amount of installed power
+    :return: is slack division possible?
     """
-    if tap + 1 <= max_tap:
-        return tap + 1
+    # Distribute the slack power
+    slack_power = Scalc[vd].real.sum()
+    total_installed_power = bus_installed_power.sum()
+
+    if total_installed_power > 0.0:
+        delta = slack_power * bus_installed_power / total_installed_power
+        ok = True
     else:
-        return tap
+        delta = np.zeros(len(Scalc))
+        ok = False
 
-
-def tap_down(tap, min_tap):
-    """
-    Go to the next upper tap position
-    """
-    if tap - 1 >= min_tap:
-        return tap - 1
-    else:
-        return tap
-
-
-def control_taps_iterative(voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
-                           tap_inc_reg_up, tap_inc_reg_down, vset, verbose=False):
-    """
-    Change the taps and compute the continuous tap magnitude.
-
-    Arguments:
-
-        **voltage** (list): array of bus voltages solution
-
-        **T** (list): array of indices of the "to" buses of each branch
-
-        **bus_to_regulated_idx** (list): array with the indices of the Branches that regulate the bus "to"
-
-        **tap_position** (list): array of branch tap positions
-
-        **tap_module** (list): array of branch tap modules
-
-        **min_tap** (list): array of minimum tap positions
-
-        **max_tap** (list): array of maximum tap positions
-
-        **tap_inc_reg_up** (list): array of tap increment when regulating up
-
-        **tap_inc_reg_down** (list): array of tap increment when regulating down
-
-        **vset** (list): array of set voltages to control
-
-    Returns:
-
-        **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-
-        **tap_magnitude** (list): Tap module at each bus in per unit
-
-        **tap_position** (list): Tap position at each bus
-    """
-
-    stable = True
-    for i in bus_to_regulated_idx:  # traverse the indices of the Branches that are regulated at the "to" bus
-
-        j = T[i]  # get the index of the "to" bus of the branch "i"
-        v = np.abs(voltage[j])
-        if verbose:
-            print("Bus", j, "regulated by branch", i, ": U =", round(v, 4), "pu, U_set =", vset[i])
-
-        if tap_position[i] > 0:
-
-            if vset[i] > v + tap_inc_reg_up[i] / 2:
-                if tap_position[i] == min_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap ", tap_position[i])
-                    stable = False
-
-            elif vset[i] < v - tap_inc_reg_up[i] / 2:
-                if tap_position[i] == max_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap ", tap_position[i])
-                    stable = False
-
-        elif tap_position[i] < 0:
-            if vset[i] > v + tap_inc_reg_down[i] / 2:
-                if tap_position[i] == min_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap", tap_position[i])
-                    stable = False
-
-            elif vset[i] < v - tap_inc_reg_down[i] / 2:
-                if tap_position[i] == max_tap[i]:
-                    print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap", tap_position[i])
-                    stable = False
-
-        else:
-            if vset[i] > v + tap_inc_reg_up[i] / 2:
-                if tap_position[i] == min_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at lowest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_down(tap_position[i], min_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_down[i]
-                    if verbose:
-                        print("Branch", i, ": Lowering from tap ", tap_position[i])
-                    stable = False
-
-            elif vset[i] < v - tap_inc_reg_down[i] / 2:
-                if tap_position[i] == max_tap[i]:
-                    if verbose:
-                        print("Branch", i, ": Already at highest tap (", tap_position[i], "), skipping")
-                else:
-                    tap_position[i] = tap_up(tap_position[i], max_tap[i])
-                    tap_module[i] = 1.0 + tap_position[i] * tap_inc_reg_up[i]
-                    if verbose:
-                        print("Branch", i, ": Raising from tap ", tap_position[i])
-                    stable = False
-
-    return stable, tap_module, tap_position
-
-
-def control_taps_direct(voltage, T, bus_to_regulated_idx, tap_position, tap_module, min_tap, max_tap,
-                        tap_inc_reg_up, tap_inc_reg_down, vset, tap_index_offset, verbose=False):
-    """
-    Change the taps and compute the continuous tap magnitude.
-
-    Arguments:
-
-        **voltage** (list): array of bus voltages solution
-
-        **T** (list): array of indices of the "to" buses of each branch
-
-        **bus_to_regulated_idx** (list): array with the indices of the Branches
-        that regulate the bus "to"
-
-        **tap_position** (list): array of branch tap positions
-
-        **tap_module** (list): array of branch tap modules
-
-        **min_tap** (list): array of minimum tap positions
-
-        **max_tap** (list): array of maximum tap positions
-
-        **tap_inc_reg_up** (list): array of tap increment when regulating up
-
-        **tap_inc_reg_down** (list): array of tap increment when regulating down
-
-        **vset** (list): array of set voltages to control
-
-    Returns:
-
-        **stable** (bool): Is the system stable (i.e.: are controllers stable)?
-
-        **tap_magnitude** (list): Tap module at each bus in per unit
-
-        **tap_position** (list): Tap position at each bus
-    """
-    stable = True
-
-    # traverse the indices of the Branches that are regulated at the "to" bus
-    for k, bus_idx in enumerate(bus_to_regulated_idx):
-
-        j = T[bus_idx]  # get the index of the "to" bus of the branch "i"
-        v = np.abs(voltage[j])  # voltage at to "to" bus
-        if verbose:
-            print("Bus", j, "regulated by branch", bus_idx, ": U=", round(v, 4), "pu, U_set=", vset[k])
-
-        tap_inc = tap_inc_reg_up
-        if tap_inc_reg_up.all() != tap_inc_reg_down.all():
-            print("Error: tap_inc_reg_up and down are not equal for branch {}".format(bus_idx))
-
-        desired_module = v / vset[k] * tap_module[tap_index_offset + k]
-        desired_pos = round((desired_module - 1) / tap_inc[k])
-
-        if desired_pos == tap_position[k]:
-            continue
-
-        elif desired_pos > 0 and desired_pos > max_tap[k]:
-            if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
-                                                                                       tap_position[k],
-                                                                                       max_tap[k],
-                                                                                       tap_module[tap_index_offset + k],
-                                                                                       1 + max_tap[k] * tap_inc[k]))
-            tap_position[k] = max_tap[k]
-
-        elif desired_pos < 0 and desired_pos < min_tap[k]:
-            if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
-                                                                                       tap_position[k],
-                                                                                       min_tap[k],
-                                                                                       tap_module[tap_index_offset + k],
-                                                                                       1 + min_tap[k] * tap_inc[k]))
-            tap_position[k] = min_tap[k]
-
-        else:
-            if verbose:
-                print("Branch {}: Changing from tap {} to {} (module {} to {})".format(bus_idx,
-                                                                                       tap_position[k],
-                                                                                       desired_pos,
-                                                                                       tap_module[tap_index_offset + k],
-                                                                                       1 + desired_pos * tap_inc[k]))
-            tap_position[k] = desired_pos
-
-        tap_module[tap_index_offset + k] = 1 + tap_position[k] * tap_inc[k]
-        stable = False
-
-    return stable, tap_module, tap_position
+    return ok, delta

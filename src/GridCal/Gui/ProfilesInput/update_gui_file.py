@@ -5,5 +5,5 @@ from GridCal.Gui.update_gui_common import convert_resource_file, convert_ui_file
 
 if __name__ == '__main__':
     convert_resource_file(source='icons.qrc')
-    for f in ['profiles_from_data_gui.ui', 'profiles_from_models_gui.ui']:
+    for f in ['profiles_from_data_gui.ui', 'profiles_from_models_gui.ui', 'excel_sheet_selection.ui']:
         convert_ui_file(source=f)

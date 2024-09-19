@@ -19,12 +19,14 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
+from __future__ import annotations
+
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
 
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Devices.Aggregation.area import Area
+from GridCalEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCalEngine.DataStructures.generator_data import GeneratorData
@@ -40,7 +42,7 @@ from GridCalEngine.DataStructures.fluid_pump_data import FluidPumpData
 from GridCalEngine.DataStructures.fluid_p2x_data import FluidP2XData
 from GridCalEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, set_var_bounds, join
-from GridCalEngine.enumerations import TransformerControlType, HvdcControlType, ZonalGrouping, MIPSolvers
+from GridCalEngine.enumerations import HvdcControlType, ZonalGrouping, MIPSolvers, TapPhaseControl
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import (LinearAnalysis, LinearMultiContingency,
                                                                      LinearMultiContingencies)
 
@@ -1115,7 +1117,7 @@ def add_linear_branches_formulation(t: int,
                 bk = 1.0 / branch_data_t.X[m]
 
             # compute the flow
-            if branch_data_t.control_mode[m] == TransformerControlType.Pf:
+            if branch_data_t.tap_phase_control_mode[m] == TapPhaseControl.Pf:
 
                 # add angle
                 branch_vars.tap_angles[t, m] = prob.add_var(lb=branch_data_t.tap_angle_min[m],
@@ -1542,8 +1544,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       all_generators_fixed: bool = False,
                       lodf_threshold: float = 0.001,
                       maximize_inter_area_flow: bool = False,
-                      areas_from: List[Area] = None,
-                      areas_to: List[Area] = None,
+                      inter_aggregation_info: InterAggregationInfo | None = None,
                       energy_0: Union[Vec, None] = None,
                       fluid_level_0: Union[Vec, None] = None,
                       optimize_nodal_capacity: bool = False,
@@ -1568,8 +1569,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                  instead of resorting to dispatcheable status
     :param lodf_threshold: LODF threshold value to consider contingencies
     :param maximize_inter_area_flow: Maximize the inter-area flow?
-    :param areas_from: Array of areas "from"
-    :param areas_to: Array of areas "to"
+    :param inter_aggregation_info: Inter rea (or country, etc) information
     :param energy_0: Vector of initial energy for batteries (size: Number of batteries)
     :param fluid_level_0: initial fluid level of the nodes
     :param optimize_nodal_capacity: Optimize the nodal capacity? (optional)
@@ -1617,8 +1617,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
     gen_fuel_rates_matrix = grid.get_fuel_rates_sparse_matrix()
 
     if maximize_inter_area_flow:
-        inter_area_branches = grid.get_inter_areas_branches(a1=areas_from, a2=areas_to)
-        inter_area_hvdc = grid.get_inter_areas_hvdc_branches(a1=areas_from, a2=areas_to)
+        inter_area_branches = inter_aggregation_info.lst_br
+        inter_area_hvdc = inter_aggregation_info.lst_br_hvdc
     else:
         inter_area_branches = list()
         inter_area_hvdc = list()

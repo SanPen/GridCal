@@ -119,12 +119,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        self.editor.set_editor_model(api_object=self.api_object,
-                                     dictionary_of_lists={
-                                         DeviceType.GeneratorDevice: self.editor.circuit.get_generators(),
-                                         DeviceType.BusDevice: self.editor.circuit.get_buses(),
-                                         DeviceType.ConnectivityNodeDevice: self.editor.circuit.get_connectivity_nodes(),
-                                     })
+        self.editor.set_editor_model(api_object=self.api_object)
 
     def change_bus(self):
         """

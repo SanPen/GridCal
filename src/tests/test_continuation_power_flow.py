@@ -16,15 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
 from GridCalEngine.api import *
-from tests.zip_file_mgmt import open_data_frame_from_zip
+from GridCalEngine.Utils.zip_file_mgmt import open_data_frame_from_zip
 
 
 def test_cpf():
     fname = os.path.join('data', 'grids', 'IEEE39_1W.gridcal')
     main_circuit = FileOpen(fname).open()
-    pf_options = PowerFlowOptions(SolverType.NR,
-                                  verbose=0,
-                                  control_q=ReactivePowerControlMode.NoControl)
+    pf_options = PowerFlowOptions(SolverType.NR, verbose=0, control_q=False)
 
     Vmbase = open_data_frame_from_zip(file_name_zip=os.path.join('data', 'results', 'Results_IEEE39_1W.zip'),
                                       file_name='Power flow Bus voltage module.csv').values[:, 0]

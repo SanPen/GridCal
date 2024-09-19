@@ -141,7 +141,7 @@ def test_ieee_grids() -> None:
 
     options = gce.PowerFlowOptions(gce.SolverType.NR,
                                    verbose=0,
-                                   control_q=gce.ReactivePowerControlMode.NoControl,
+                                   control_q=False,
                                    retry_with_other_methods=False)
 
     for grid_file, results_file in files:

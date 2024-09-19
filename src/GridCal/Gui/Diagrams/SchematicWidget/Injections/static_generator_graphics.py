@@ -166,7 +166,4 @@ class StaticGeneratorGraphicItem(InjectionTemplateGraphicItem):
         :param QGraphicsSceneMouseEvent:
         :return:
         """
-        self.editor.set_editor_model(api_object=self.api_object,
-                                     dictionary_of_lists={
-                                         DeviceType.Technology: self.editor.circuit.technologies,
-                                     })
+        self.editor.set_editor_model(api_object=self.api_object)

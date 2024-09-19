@@ -184,13 +184,13 @@ class ReliabilityStudy(DriverTemplate):
 
         self.__cancel__ = False
 
-    def progress_callback(self, l):
+    def progress_callback(self, lmbda: float):
         """
         Send progress report
-        :param l: lambda value
+        :param lmbda: lambda value
         :return: None
         """
-        self.report_text('Running voltage collapse lambda:' + "{0:.2f}".format(l) + '...')
+        self.report_text('Running voltage collapse lambda:' + "{0:.2f}".format(lmbda) + '...')
 
     def run(self):
         """

@@ -23,6 +23,7 @@ from GridCal.Gui.Diagrams.MapWidget.Tiles.tile_worker import TileWorker
 def log(val: str):
     print(val)
 
+
 # # set how old disk-cache tiles can be before we re-request them from the
 # # server.  this is the number of days old a tile is before we re-request.
 # # if 'None', never re-request tiles after first satisfied request.
@@ -58,7 +59,8 @@ class Tiles(BaseTiles):
                  url_path: str,
                  max_server_requests: int,
                  http_proxy,
-                 refetch_days: int = 60):
+                 refetch_days: int = 60,
+                 attribution: str = ""):
         """
         Initialise a Tiles instance.
         :param levels: a list of level numbers that are to be served
@@ -75,6 +77,8 @@ class Tiles(BaseTiles):
         self.TilesetName = TilesetName
         self.TilesetShortName = TilesetShortName
         self.TilesetVersion = TilesetVersion
+
+        self.attribution_string = attribution
 
         # prepare the tile cache directory, if required
         # we have to do this *before* the base class initialization!

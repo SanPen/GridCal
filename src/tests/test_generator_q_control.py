@@ -2,7 +2,7 @@ import os
 from GridCalEngine.api import *
 
 
-def test_q_control_true():
+def test_q_control_true() -> None:
     """
     Test that when the Q control is enabled the Q limits are respected
     """
@@ -12,7 +12,7 @@ def test_q_control_true():
     for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
 
         options = PowerFlowOptions(solver_type,
-                                   control_q=ReactivePowerControlMode.Direct,
+                                   control_q=True,
                                    retry_with_other_methods=False)
 
         power_flow = PowerFlowDriver(main_circuit, options)
@@ -39,10 +39,9 @@ def test_q_control_false():
     main_circuit = FileOpen(fname).open()
 
     for solver_type in [SolverType.NR, SolverType.IWAMOTO, SolverType.LM, SolverType.FASTDECOUPLED]:
-
         options = PowerFlowOptions(solver_type,
                                    verbose=0,
-                                   control_q=ReactivePowerControlMode.NoControl,
+                                   control_q=False,
                                    retry_with_other_methods=False)
 
         power_flow = PowerFlowDriver(main_circuit, options)
@@ -58,3 +57,7 @@ def test_q_control_false():
         ok = l_ok.all() and r_ok.all()
 
         assert not ok
+
+
+if __name__ == '__main__':
+    test_q_control_true()

@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import List, Dict, Union
 from pymoo.core.mixed import MixedVariableGA
 from pymoo.algorithms.moo.nsga2 import RankAndCrowding
 # from pymoo.decomposition.asf import ASF
@@ -23,34 +24,100 @@ from pymoo.optimize import minimize
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.variable import Real, Integer, Choice, Binary
 
+from GridCalEngine.Devices.Aggregation.investment import Investment
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Branches.transformer import Transformer2W
+from GridCalEngine.Devices.Branches.line import Line
+from GridCalEngine.Devices.types import BRANCH_TYPES, BRANCH_TEMPLATE_TYPES
+from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.basic_structures import Logger
+
 
 class MixedVariableProblem(ElementwiseProblem):
     """
     Problem formulation packaging to use the pymoo library
     """
-    def __init__(self, obj_func, n_obj):
+
+    def __init__(self, grid: MultiCircuit, obj_func, n_obj):
         """
         :param obj_func:
         :param n_obj:
         """
-        vars = {
-            "react1_bi": Binary(),
-            "react2_bi": Binary(),
-            "react3_bi": Binary(),
-            "react4_bi": Binary(),
-            "react5_bi": Binary(),
-            # "vol_level": Choice(options=["vol132","vol220"]),
-            "vol_level": Choice(options=["vol220"]),
-            # "vol_level": Choice(options=["vol132"]),
-            "n_cables": Integer(bounds=(2, 3)),
-            "S_rtr": Real(bounds=(500e6, 1000e6)),
-            "react1": Real(bounds=(0.0, 1.0)),
-            "react2": Real(bounds=(0.0, 1.0)),
-            "react3": Real(bounds=(0.0, 1.0)),
-            "react4": Real(bounds=(0.0, 1.0)),
-            "react5": Real(bounds=(0.0, 1.0))}
-        super().__init__(n_obj=n_obj,
-                         vars=vars)
+
+        ElementwiseProblem.__init__(self, n_var=n_obj, n_obj=n_obj)
+
+        self.logger = Logger()
+
+        self.grid = grid
+
+        all_dict = self.grid.get_all_elements_dict()
+        self.device_template_dict: Dict[BRANCH_TYPES, List[BRANCH_TEMPLATE_TYPES]] = dict()
+
+        # create the decision vars
+        for investment_group, investments_list in self.grid.get_investments_by_groups():
+
+            if len(investments_list) == 1:
+
+                for investment in investments_list:
+
+                    device = all_dict.get(investment.device_idtag, None)
+
+                    if device is not None:
+                        if isinstance(device, Transformer2W):
+
+                            for ass_key, association in device.possible_transformer_types.data.items():
+                                template = association.api_object
+                                lst = self.device_template_dict.get(device, None)
+                                if lst is None:
+                                    self.device_template_dict[device] = [template]
+                                else:
+                                    lst.extend([template])
+
+                        elif isinstance(device, Line):
+
+                            for association_type in [device.possible_tower_types,
+                                                     device.possible_sequence_line_types,
+                                                     device.possible_underground_line_types]:
+
+                                for ass_key, association in association_type.data.items():
+                                    template = association.api_object
+                                    lst = self.device_template_dict.get(device, None)
+                                    if lst is None:
+                                        self.device_template_dict[device] = [template]
+                                    else:
+                                        lst.extend([template])
+                        else:
+                            self.logger.add_error("Investment device not recognized",
+                                                  device=device.name,
+                                                  device_class=device.device_type)
+                    else:
+                        self.logger.add_error("Investment device is none",
+                                              device=investment.device_idtag)
+            else:
+                self.logger.add_error("Only single-investment groups can be considered",
+                                      device=investment_group.name,
+                                      device_class=investment_group.device_type.value)
+
+        # convert the data to decision vars: the decision vars are
+        # integers from 0 to the number of templates of each device (the template position in self.data[device])
+        self.variables: Dict[str, Integer] = dict()
+        self.devices = list()  # list of devices in sequential order to match the order of the vars
+        self.default_template = list()  # list of templates that represent the devices in their initial state
+        for elm, template_list in self.device_template_dict.items():
+            self.variables[elm.idtag] = Integer(bounds=(0, len(template_list) + 1))
+            self.devices.append(elm)
+
+            if isinstance(elm, Line):
+                default_template = elm.get_line_type()
+
+            elif isinstance(elm, Transformer2W):
+                default_template = elm.get_transformer_type(Sbase=self.grid.Sbase)
+            else:
+                raise Exception('Device not recognized')
+
+            self.default_template.append(default_template)
+
+        super().__init__(n_obj=n_obj, vars=self.variables)
         self.obj_func = obj_func
 
     def _evaluate(self, x, out, *args, **kwargs):
@@ -62,23 +129,29 @@ class MixedVariableProblem(ElementwiseProblem):
         :param kwargs:
         :return:
         """
-        # Ideally, we want this to be automatically inputted:
-        # react1_bi, react2_bi, react3_bi, react4_bi, react5_bi, vol, n_cables, S_rtr, react1, react2, react3, react4,
-        #  react5 = x["react1_bi"], x["react2_bi"], x["react3_bi"], x["react4_bi"], x["react5_bi"], x["vol_level"],
-        #             x["n_cables"], x["S_rtr"], x["react1"], x["react2"], x["react3"], x["react4"], x["react5"]
-        # def build_grid_data
-        # then
-        # def run_pf or now run_opf
-        # then
-        # def compute_costs
-        # then
-        # obj_func = capex + opex
-        # to be outputted as out["F"]
+
+        for i, xi in enumerate(x):
+            device = self.devices[i]
+            if i > 0:
+                template = self.data[device.idtag][xi]
+
+                if isinstance(device, Line):
+                    device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
+
+                elif isinstance(device, Transformer2W):
+                    device.apply_template(template, Sbase=self.grid.Sbase, logger=self.logger)
+
+                else:
+                    raise Exception('Device not recognized')
+            else:
+                device.apply_template(self.default_template[i], Sbase=self.grid.Sbase, logger=self.logger)
 
         out["F"] = self.obj_func(x)
+        print("Completed eval")
 
 
-def NSGA_2(obj_func,
+def NSGA_2(grid: MultiCircuit,
+           obj_func,
            n_obj: int = 2,
            max_evals: int = 30,
            pop_size: int = 1,
@@ -97,7 +170,7 @@ def NSGA_2(obj_func,
     # :param eta:
     :return:
     """
-    problem = MixedVariableProblem(obj_func, n_obj)
+    problem = MixedVariableProblem(grid, obj_func, n_obj)
 
     algorithm = MixedVariableGA(pop_size=pop_size,
                                 sampling=MixedVariableSampling(),
@@ -112,7 +185,7 @@ def NSGA_2(obj_func,
                    verbose=True,
                    save_history=False)
 
-    # Shall we need this?
+    # Do they want opex or capex to have more weight?
     # weights = np.array([0.5, 0.5])
     # decomp = ASF()
     # I = decomp(res.F, weights).argmin()

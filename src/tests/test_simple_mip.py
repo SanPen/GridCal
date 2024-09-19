@@ -18,6 +18,13 @@
 import numpy as np
 from GridCalEngine.Utils.MIP.SimpleMip import LpModel, LpExp, LpCst, LpVar
 
+try:
+    import highspy
+
+    HIGHSPY_AVAILABLE = True
+except ImportError:
+    HIGHSPY_AVAILABLE = False
+
 
 def test_linear_formulation():
 
@@ -110,16 +117,17 @@ def test_lp_simple2():
     prob.add_cst(A + B <= 4)
     prob.add_cst(A + B >= 2)
 
-    prob.solve()
+    if HIGHSPY_AVAILABLE:
+        prob.solve()
 
-    assert prob.is_optimal()
-    assert prob.get_objective_value() == 4
+        assert prob.is_optimal()
+        assert prob.get_objective_value() == 4
 
-    prob.minimize(A + B + 1)
-    prob.solve()
+        prob.minimize(A + B + 1)
+        prob.solve()
 
-    assert prob.is_optimal()
-    assert prob.get_objective_value() == 3
+        assert prob.is_optimal()
+        assert prob.get_objective_value() == 3
 
 
 def test_lp_simple3():
@@ -132,12 +140,14 @@ def test_lp_simple3():
 
     prob.add_cst(3 * XR + 4 * XE <= 650)
     prob.add_cst(2 * XR + 3 * XE <= 500)
-    prob.solve()
 
-    assert prob.is_optimal()
-    assert np.isclose(prob.get_objective_value(), 1137.5)
-    assert np.isclose(prob.get_value(XR), 0)
-    assert np.isclose(prob.get_value(XE), 162.5)
+    if HIGHSPY_AVAILABLE:
+        prob.solve()
+
+        assert prob.is_optimal()
+        assert np.isclose(prob.get_objective_value(), 1137.5)
+        assert np.isclose(prob.get_value(XR), 0)
+        assert np.isclose(prob.get_value(XE), 162.5)
 
 
 def test_lp_simple4():
@@ -146,17 +156,18 @@ def test_lp_simple4():
     X = prob.add_vars(name="X", size=4)
     S = prob.add_vars(name="S", size=5)
 
-    prob.maximize(2 * X[3] + S[4])
+    if HIGHSPY_AVAILABLE:
+        prob.maximize(2 * X[3] + S[4])
 
-    prob.add_cst(X[0] + S[0] == 100)
-    prob.add_cst(S[0] - 0.5 * X[0] - X[1] - S[1] == 0)
-    prob.add_cst(2 * X[0] + S[1] - 0.5 * X[1] - X[2] - S[2] == 0)
-    prob.add_cst(2 * X[1] + S[2] - 0.5 * X[2] - X[3] - S[3] == 0)
-    prob.add_cst(2 * X[2] + S[3] - 0.5 * X[3] - S[4] == 0)
+        prob.add_cst(X[0] + S[0] == 100)
+        prob.add_cst(S[0] - 0.5 * X[0] - X[1] - S[1] == 0)
+        prob.add_cst(2 * X[0] + S[1] - 0.5 * X[1] - X[2] - S[2] == 0)
+        prob.add_cst(2 * X[1] + S[2] - 0.5 * X[2] - X[3] - S[3] == 0)
+        prob.add_cst(2 * X[2] + S[3] - 0.5 * X[3] - S[4] == 0)
 
-    prob.solve()
+        prob.solve()
 
-    assert prob.is_optimal()
-    assert np.isclose(prob.get_objective_value(), 208.13008130081298)
-    assert np.allclose(prob.get_array_value(X), np.array([27.642277, 58.536587, 26.016260, 104.065041]))
-    assert np.allclose(prob.get_array_value(S), np.array([72.357727, 0.0, 0.0, 0.0, 0.0]))
+        assert prob.is_optimal()
+        assert np.isclose(prob.get_objective_value(), 208.13008130081298)
+        assert np.allclose(prob.get_array_value(X), np.array([27.642277, 58.536587, 26.016260, 104.065041]))
+        assert np.allclose(prob.get_array_value(S), np.array([72.357727, 0.0, 0.0, 0.0, 0.0]))

@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import os
 import string
 import sys
@@ -24,11 +26,14 @@ from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
-from typing import List, Dict
+from typing import List
 from GridCal.Gui.pandas_model import PandasModel
-from GridCal.Gui.GuiFunctions import get_list_model
+from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Gui.ProfilesInput.profiles_from_data_gui import Ui_Dialog
 from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
+from GridCal.Gui.messages import error_msg
+from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Devices.Parents.editable_device import uuid2idtag
 
 
 class MultiplierType(Enum):
@@ -43,32 +48,60 @@ class ProfileAssociation:
     ProfileAssociation
     """
 
-    def __init__(self, name, code, scale=1, multiplier=1, profile_name=''):
+    def __init__(self, elm: ALL_DEV_TYPES, scale: float = 1.0, multiplier: float = 1.0, profile_name: str = ''):
         """
 
-        :param name:
-        :param code:
-        :param scale:
+        :param elm: GridCal device
+        :param scale: Sacling of the profile
         :param multiplier:
         :param profile_name:
         """
-        self.name: str = name
-        self.code: str = code
+        self.elm: ALL_DEV_TYPES = elm
         self.scale: float = scale
         self.multiplier: float = multiplier
         self.profile_name: str = profile_name
 
-    def get_at(self, idx):
+    @property
+    def name(self):
+        """
 
+        :return:
+        """
+        return self.elm.name
+
+    @property
+    def code(self):
+        """
+
+        :return:
+        """
+        return self.elm.code
+
+    @property
+    def idtag(self):
+        """
+
+        :return:
+        """
+        return self.elm.idtag
+
+    def get_at(self, idx):
+        """
+
+        :param idx:
+        :return:
+        """
         if idx == 0:
             return self.name
         elif idx == 1:
             return self.code
         elif idx == 2:
-            return self.profile_name
+            return self.idtag
         elif idx == 3:
-            return self.scale
+            return self.profile_name
         elif idx == 4:
+            return self.scale
+        elif idx == 5:
             return self.multiplier
         else:
             return ''
@@ -84,7 +117,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
 
         self.__values: List[ProfileAssociation] = list()
 
-        self.__headers = ['Name', 'Code', 'Profile', 'Scale', 'Multiplier']
+        self.__headers = ['Name', 'Code', 'Idtag', 'Profile', 'Scale', 'Multiplier']
 
     def append(self, val: ProfileAssociation):
         """
@@ -213,25 +246,30 @@ class StringSubstitutions(Enum):
     PSSeBusLoad = 'N -> N_1'
 
 
-def check_similarity(name_to_search, code_to_search, names_array, threshold):
+def check_similarity(name_to_search: str,
+                     code_to_search: str,
+                     idtag_to_search: str,
+                     names_array: List[str],
+                     threshold: float) -> int | None:
     """
     Search a value in the array of input names
     :param name_to_search: name of the GridCal object
     :param code_to_search: code (secondary id) of the GridCal object
+    :param idtag_to_search: idtag to search
     :param names_array: array of names coming from the profile
     :param threshold: similarity threshold
     :return: index of the profile entry match or None if no match was found
     """
-    # exact match of the name or the code
-    for what_to_search in [name_to_search, code_to_search]:
-        if what_to_search in names_array:
-            matches = np.where(names_array == what_to_search)[0]
-            if len(matches) > 0:
-                return matches[0]
-            else:
-                return None
+    # exact match of the name or the code or idtag
+    for idx, name in enumerate(names_array):
+        if name == name_to_search:
+            return idx
+        elif name == code_to_search:
+            return idx
+        elif uuid2idtag(name) == idtag_to_search:
+            return idx
 
-    # else, find the most likely match if the threshold is appropriate
+    # else, find the most likely match with the name if the threshold is appropriate
     if 0.01 <= threshold < 1.0:
         max_val = 0
         max_idx = None
@@ -254,22 +292,42 @@ def check_similarity(name_to_search, code_to_search, names_array, threshold):
         return None
 
 
+# def msg(text: str, title="Warning"):
+#     """
+#     Message box
+#     :param text: Text to display
+#     :param title: Name of the window
+#     """
+#     msg = QtWidgets.QMessageBox()
+#     msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
+#     msg.setText(text)
+#     # msg.setInformativeText("This is additional information")
+#     msg.setWindowTitle(title)
+#     # msg.setDetailedText("The details are as follows:")
+#     msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
+#     retval = msg.exec_()
+
+
 class ProfileInputGUI(QtWidgets.QDialog):
     """
     ProfileInputGUI
     """
 
-    def __init__(self, parent=None, list_of_objects=None, magnitudes=['']):
+    def __init__(self, parent=None, list_of_objects: List[ALL_DEV_TYPES] = None, magnitudes: List[str] = None):
         """
 
-        Args:
-            parent:
-            list_of_objects: List of objects to which set a profile to
-            magnitudes: Property of the objects to which set the pandas DataFrame
+        :param parent:
+        :param list_of_objects: List of objects to which set a profile to
+        :param magnitudes: Property of the objects to which set the pandas DataFrame
         """
         QtWidgets.QDialog.__init__(self, parent)
+
         if list_of_objects is None:
             list_of_objects = list()
+
+        if magnitudes is None:
+            magnitudes = ['']
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Profiles import dialogue')
@@ -318,9 +376,11 @@ class ProfileInputGUI(QtWidgets.QDialog):
         # initialize associations
         self.also_reactive_power = False
 
+        # create the table model
         self.associations = ProfileAssociations()
         for elm in list_of_objects:
-            self.associations.append(ProfileAssociation(elm.name, elm.code))
+            self.associations.append(ProfileAssociation(elm=elm))
+
         self.display_associations()
 
         self.ui.splitter.setStretchFactor(0, 3)
@@ -358,21 +418,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.assignation_table.doubleClicked.connect(self.assignation_table_double_click)
         self.ui.tableView.doubleClicked.connect(self.print_profile)
 
-    def msg(self, text, title="Warning"):
-        """
-        Message box
-        :param text: Text to display
-        :param title: Name of the window
-        """
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
-        msg.setText(text)
-        # msg.setInformativeText("This is additional information")
-        msg.setWindowTitle(title)
-        # msg.setDetailedText("The details are as follows:")
-        msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-        retval = msg.exec_()
-
     def get_multiplier(self):
         """
         Gets the necessary multiplier to pass the profile units to Mega
@@ -390,7 +435,9 @@ class ProfileInputGUI(QtWidgets.QDialog):
         files_types = "Formats (*.xlsx *.xls *.csv)"
 
         # call dialog to select the file
-        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', filter=files_types)
+        filename, type_selected = QtWidgets.QFileDialog.getOpenFileName(self,
+                                                                        caption='Open file',
+                                                                        filter=files_types)
 
         if len(filename) > 0:
             # get the filename extension
@@ -404,7 +451,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                                                            # dtype=float,  # do not use if dates are expected
                                                            dayfirst=True)
                 except ValueError as e:
-                    self.msg(text=str(e), title="Error loading CSV file")
+                    error_msg(text=str(e), title="Value error loading CSV file")
                     return
 
                 except UnicodeDecodeError:
@@ -415,7 +462,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                                                                # dtype=float,  # do not use if dates are expected
                                                                dayfirst=True)
                     except Exception as e:
-                        self.msg(str(e))
+                        error_msg(str(e), title="Error")
                         return
 
             elif file_extension in ['.xlsx', '.xls']:
@@ -433,7 +480,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                     return
 
             else:
-                self.msg(text="Could not open:\n" + filename, title="File open")
+                error_msg(text="Could not open:\n" + filename, title="File open")
                 return
 
             # try to format the data
@@ -447,15 +494,17 @@ class ProfileInputGUI(QtWidgets.QDialog):
                         try:
                             a = float(self.original_data_frame.values[i, j])
                         except Exception as e2:
-                            print(str(e2) + ': not a float value (', i, j,
-                                  '):{}'.format(self.original_data_frame.values[i, j]))
+                            print(f"{e2}: not a float value ({i}, {j}: {self.original_data_frame.values[i, j]})")
 
-                self.msg('The format of the data is not recognized. Only int or float values are allowed')
+                error_msg('The format of the data is not recognized. Only int or float values are allowed')
                 return
 
             # correct the column names
             cols = [str(x).strip() for x in self.original_data_frame.columns.values]
             self.original_data_frame.columns = cols
+
+            # replace NaN
+            self.original_data_frame.fillna(0, inplace=True)
 
             # set the profile names list
             self.profile_names = np.array([str(e).strip() for e in self.original_data_frame.columns.values],
@@ -485,6 +534,10 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.assignation_table.repaint()
 
     def display_profiles(self):
+        """
+
+        :return:
+        """
         # set the loaded data_frame to the GUI
         model = PandasModel(self.original_data_frame)
         self.ui.tableView.setModel(model)
@@ -528,8 +581,6 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             self.make_association(idx_s, idx_o, mult=None, col_idx=col)
 
-            # self.display_associations()
-
     def set_multiplier(self, tpe):
         """
         Set the table multipliers
@@ -559,16 +610,19 @@ class ProfileInputGUI(QtWidgets.QDialog):
         """
         mult = self.get_multiplier()
         threshold = self.ui.autolink_slider.value() / 100.0
+        profile_names = list(self.profile_names.copy())
 
         for idx_o, elm in enumerate(self.objects):
 
-            idx = check_similarity(name_to_search=elm.name.strip(),
-                                   code_to_search=elm.code.strip(),
-                                   names_array=self.profile_names,
-                                   threshold=threshold)
+            idx: int | None = check_similarity(name_to_search=elm.name.strip(),
+                                               code_to_search=elm.code.strip(),
+                                               idtag_to_search=elm.idtag.strip(),
+                                               names_array=profile_names,
+                                               threshold=threshold)
 
-            # assign the string with the closest profile
+            # assign the string with the closest match profile
             if idx is not None:
+                # make the association
                 self.make_association(idx, idx_o, mult)
 
         self.display_associations()

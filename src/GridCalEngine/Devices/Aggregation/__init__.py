@@ -27,3 +27,4 @@ from GridCalEngine.Devices.Aggregation.region import Region
 from GridCalEngine.Devices.Aggregation.municipality import Municipality
 from GridCalEngine.Devices.Aggregation.branch_group import BranchGroup
 from GridCalEngine.Devices.Aggregation.modelling_authority import ModellingAuthority
+from GridCalEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo

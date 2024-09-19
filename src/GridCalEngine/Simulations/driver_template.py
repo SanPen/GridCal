@@ -88,7 +88,7 @@ class DriverTemplate:
 
         if not skip_logger:
             self.logger.add_info(msg="Elapsed total (s)",
-                                 device="Started")
+                                 device_property="Started")
 
     def toc(self, skip_logger=False):
         """
@@ -99,8 +99,8 @@ class DriverTemplate:
 
         if not skip_logger:
             self.logger.add_info(msg="Elapsed total (s)",
-                                 device="Ended",
-                                 value=self.elapsed)
+                                 device_property="Ended (s)",
+                                 value='{:.4f}'.format(self.elapsed))
 
     def get_steps(self):
         """

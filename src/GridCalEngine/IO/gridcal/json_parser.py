@@ -26,8 +26,8 @@ from GridCalEngine.IO.gridcal.generic_io_functions import CustomJSONizer
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
-from GridCalEngine.enumerations import (DeviceType, ConverterControlType, HvdcControlType, BuildStatus,
-                                        TransformerControlType)
+from GridCalEngine.enumerations import (DeviceType, HvdcControlType, BuildStatus,
+                                        TapModuleControl, TapPhaseControl)
 
 
 def add_to_dict(main_dict: Dict[str, List[Any]], data_to_append: Dict[Any, Any], key: str):
@@ -890,16 +890,16 @@ def parse_json_data_v3(data: dict, logger: Logger):
                     ('vdc_set', 'Vdc_set'),
                     ]
 
-            modes = {0: ConverterControlType.type_0_free,
-                     1: ConverterControlType.type_I_1,
-                     2: ConverterControlType.type_I_2,
-                     3: ConverterControlType.type_I_3,
-                     4: ConverterControlType.type_II_4,
-                     5: ConverterControlType.type_II_5,
-                     6: ConverterControlType.type_III_6,
-                     7: ConverterControlType.type_III_7,
-                     8: ConverterControlType.type_IV_I,
-                     9: ConverterControlType.type_IV_II}
+            # modes = {0: ConverterControlType.type_0_free,
+            #          1: ConverterControlType.type_I_1,
+            #          2: ConverterControlType.type_I_2,
+            #          3: ConverterControlType.type_I_3,
+            #          4: ConverterControlType.type_II_4,
+            #          5: ConverterControlType.type_II_5,
+            #          6: ConverterControlType.type_III_6,
+            #          7: ConverterControlType.type_III_7,
+            #          8: ConverterControlType.type_IV_I,
+            #          9: ConverterControlType.type_IV_II}
 
             for entry in devices["VSC"]:
 
@@ -908,10 +908,10 @@ def parse_json_data_v3(data: dict, logger: Logger):
                 elm.bus_to = bus_dict[entry['bus_to']]
                 set_object_properties(elm, prop, entry)
 
-                if "control_mode" in entry.keys():
-                    elm.control_mode = modes[entry["control_mode"]]
-                elif "mode" in entry.keys():
-                    elm.control_mode = modes[entry["mode"]]
+                # if "control_mode" in entry.keys():
+                #     elm.control_mode = modes[entry["control_mode"]]
+                # elif "mode" in entry.keys():
+                #     elm.control_mode = modes[entry["mode"]]
 
                 if has_profiles:
                     profile_entry = device_profiles_dict[elm.idtag]
@@ -1345,6 +1345,11 @@ def parse_json(file_name) -> MultiCircuit:
 
 
 def get_obj_ref(elm):
+    """
+    get the idtag and if none return an empty str
+    :param elm:
+    :return:
+    """
     return elm.idtag if elm is not None else ''
 
 
@@ -1521,9 +1526,10 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                        'step': elm.step,
                                        'shedding_cost': elm.Cost
                                        } for elm in circuit.get_controllable_shunts()]
+
     element_profiles['Controllable shunt'] = [{'id': elm.idtag,
                                                'active': profile_to_json(elm.active_prof),
-                                               'step': profile_to_json(elm.steps_prof), } for elm in
+                                               'step': profile_to_json(elm.step_prof), } for elm in
                                               circuit.get_controllable_shunts()]
 
     # current injection
@@ -1765,12 +1771,15 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                    circuit.get_dc_lines()]
 
     # Transformer 2W
-    control_modes = {TransformerControlType.fixed: 0,
-                     TransformerControlType.V: 1,
-                     TransformerControlType.Pf: 2,
-                     TransformerControlType.PtV: 3,
-                     TransformerControlType.Qt: 4,
-                     TransformerControlType.PtQt: 5}
+    control_modes = {TapModuleControl.fixed: None,
+                     TapModuleControl.Vm: "Vm",
+                     TapModuleControl.Qf: "Qf",
+                     TapModuleControl.Qt: "Qt",
+                     TapPhaseControl.fixed: None,
+                     TapPhaseControl.Pf: "Pf",
+                     TapPhaseControl.Pt: "Pt",
+                     }
+
     elements["Transformer2w"] = [{'id': elm.idtag,
                                   'type': 'transformer',
                                   'phases': 'ps',
@@ -1804,7 +1813,8 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                   'max_tap_angle': elm.tap_phase_max,
                                   'id_tap_angle_table': "",
 
-                                  'control_mode': control_modes[elm.control_mode],
+                                  'tap_phase_control_mode': control_modes[elm.tap_phase_control_mode],
+                                  'tap_module_control_mode': control_modes[elm.tap_module_control_mode],
 
                                   # 'min_tap_position': self.tap_changer.min_tap,
                                   # 'max_tap_position': self.tap_changer.max_tap,
@@ -1867,7 +1877,8 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                              'max_tap_angle': elm.tap_phase_max,
                              'id_tap_angle_table': "",
 
-                             'control_mode': control_modes[elm.control_mode],
+                             'tap_phase_control_mode': control_modes[elm.tap_phase_control_mode],
+                             'tap_module_control_mode': control_modes[elm.tap_module_control_mode],
 
                              # 'min_tap_position': self.tap_changer.min_tap,
                              # 'max_tap_position': self.tap_changer.max_tap,
@@ -1987,16 +1998,17 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
                                 circuit.get_upfc()]
 
     # VSC
-    modes = {ConverterControlType.type_0_free: 0,
-             ConverterControlType.type_I_1: 1,
-             ConverterControlType.type_I_2: 2,
-             ConverterControlType.type_I_3: 3,
-             ConverterControlType.type_II_4: 4,
-             ConverterControlType.type_II_5: 5,
-             ConverterControlType.type_III_6: 6,
-             ConverterControlType.type_III_7: 7,
-             ConverterControlType.type_IV_I: 8,
-             ConverterControlType.type_IV_II: 9}
+    # modes = {ConverterControlType.type_0_free: 0,
+    #          ConverterControlType.type_I_1: 1,
+    #          ConverterControlType.type_I_2: 2,
+    #          ConverterControlType.type_I_3: 3,
+    #          ConverterControlType.type_II_4: 4,
+    #          ConverterControlType.type_II_5: 5,
+    #          ConverterControlType.type_III_6: 6,
+    #          ConverterControlType.type_III_7: 7,
+    #          ConverterControlType.type_IV_I: 8,
+    #          ConverterControlType.type_IV_II: 9}
+
     elements["VSC"] = [{'id': elm.idtag,
                         'type': 'vsc',
                         'phases': 'ps',
@@ -2035,12 +2047,12 @@ def save_json_file_v3(file_path: str, circuit: MultiCircuit, simulation_drivers:
 
                         'k': elm.k,
                         'kdp': elm.kdp,
-                        'Pfset': elm.Pdc_set,
-                        'Qfset': elm.Qac_set,
-                        'vac_set': elm.Vac_set,
-                        'vdc_set': elm.Vdc_set,
+                        'Pfset': elm.Pset,
+                        'Qfset': elm.Qset,
+                        'vac_set': elm.vset,
+                        'vdc_set': elm.vset,
 
-                        'control_mode': modes[elm.control_mode],
+                        # 'control_mode': modes[elm.control_mode],
 
                         'overload_cost': elm.Cost,
                         'capex': elm.capex,

@@ -175,6 +175,10 @@ class BaseDiagram:
 
     @property
     def use_flow_based_width(self) -> bool:
+        """
+
+        :return:
+        """
         return self._use_flow_based_width
 
     @use_flow_based_width.setter
@@ -303,7 +307,7 @@ class BaseDiagram:
 
         return group
 
-    def get_properties_dict(self) -> Dict[str, Union[str, int, float, Dict[str, Union[GraphicLocation, MapLocation]]]]:
+    def get_data_dict(self) -> Dict[str, Union[str, int, float, Dict[str, Union[GraphicLocation, MapLocation]]]]:
         """
         get the properties dictionary to save
         :return: dictionary to serialize

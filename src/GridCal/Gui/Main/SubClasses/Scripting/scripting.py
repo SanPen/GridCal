@@ -19,9 +19,8 @@ from PySide6.QtGui import QFont, QFontMetrics, Qt
 from PySide6 import QtWidgets, QtCore
 from GridCal.Gui.Main.SubClasses.io import IoMain
 from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
-
-from GridCal.Gui.GuiFunctions import CustomFileSystemModel
-import GridCal.Gui.GuiFunctions as gf
+from GridCal.Gui.gui_functions import CustomFileSystemModel
+import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.messages import error_msg, yes_no_question
 
 
@@ -51,11 +50,11 @@ class ScriptingMain(IoMain):
 
         self.ui.sourceCodeTextEdit.highlighter = PythonHighlighter(self.ui.sourceCodeTextEdit.document())
 
-        # tree view
-        root_path = self.scripts_path()
+        # scripts tree view
+        scripts_path = self.scripts_path()
         self.python_fs_model = CustomFileSystemModel(root_path=self.scripts_path(), ext_filter=['*.py'])
         self.ui.sourceCodeTreeView.setModel(self.python_fs_model)
-        self.ui.sourceCodeTreeView.setRootIndex(self.python_fs_model.index(root_path))
+        self.ui.sourceCodeTreeView.setRootIndex(self.python_fs_model.index(scripts_path))
 
         # actions ------------------------------------------------------------------------------------------------------
         self.ui.actionReset_console.triggered.connect(self.create_console)
@@ -63,6 +62,7 @@ class ScriptingMain(IoMain):
         # buttonclicks -------------------------------------------------------------------------------------------------
         self.ui.runSourceCodeButton.clicked.connect(self.run_source_code)
         self.ui.saveSourceCodeButton.clicked.connect(self.save_source_code)
+        self.ui.clearSourceCodeButton.clicked.connect(self.clear_source_code)
 
         # double clicked -----------------------------------------------------------------------------------------------
         self.ui.sourceCodeTreeView.doubleClicked.connect(self.source_code_tree_clicked)
@@ -99,6 +99,17 @@ class ScriptingMain(IoMain):
             self.ui.sourceCodeNameLineEdit.setText(name.replace('.py', ''))
         else:
             error_msg(pth + ' does not exists :/', 'Open script')
+
+    def clear_source_code(self):
+        """
+        Clear source code
+        """
+        ok = yes_no_question(text='Are you sure you want to clear source code?',
+                             title='Clear Source Code')
+
+        if ok:
+            self.ui.sourceCodeNameLineEdit.setText("")
+            self.ui.sourceCodeTextEdit.setPlainText("")
 
     def save_source_code(self):
         """

@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import sys
 import os
+import json
 import numpy as np
 import pandas as pd
 from typing import List, Dict, Union, Tuple
@@ -33,7 +34,7 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
 from PySide6.QtWidgets import (QGraphicsView, QMessageBox, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, BRANCH_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.busbar import BusBar
@@ -53,7 +54,6 @@ from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.enumerations import DeviceType, SimulationTypes
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
-from GridCalEngine.Devices.types import BRANCH_TYPES
 
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
@@ -75,7 +75,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.GeneralDialogues import InputNumberDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
@@ -264,59 +264,6 @@ class SchematicScene(QGraphicsScene):
         # nue with the rest of the actions)
         super(SchematicScene, self).mouseReleaseEvent(event)
 
-    # def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
-    #     """
-    #
-    #     :param event:
-    #     :return:
-    #     """
-    #     super().contextMenuEvent(event)
-    #
-    #     context_menu = QMenu()
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Center",
-    #                    icon_path=":/Icons/icons/resize.svg",
-    #                    function_ptr=lambda x: self.parent_.align_schematic())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Expand",
-    #                    icon_path=":/Icons/icons/plus (gray).svg",
-    #                    function_ptr=lambda x: self.parent_.expand_node_distances())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Contract",
-    #                    icon_path=":/Icons/icons/minus (gray).svg",
-    #                    function_ptr=lambda x: self.parent_.shrink_node_distances())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Auto-layout",
-    #                    icon_path=":/Icons/icons/automatic_layout.svg",
-    #                    function_ptr=lambda x: self.parent_.auto_layout(sel=""))
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Layout from (lat, lon) data",
-    #                    icon_path=":/Icons/icons/map.svg",
-    #                    function_ptr=lambda x: self.parent_.fill_xy_from_lat_lon())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Zoom in",
-    #                    icon_path=":/Icons/icons/zoom_in.svg",
-    #                    function_ptr=lambda x: self.parent_.zoom_in())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Zoom out",
-    #                    icon_path=":/Icons/icons/zoom_out.svg",
-    #                    function_ptr=lambda x: self.parent_.zoom_out())
-    #
-    #     add_menu_entry(menu=context_menu,
-    #                    text="Clear highlight",
-    #                    icon_path=":/Icons/icons/bus_icon.svg",
-    #                    function_ptr=lambda x: self.parent_.clear_big_bus_markers())
-    #
-    #     # launch the menu
-    #     context_menu.exec(event.screenPos())
-
 
 class CustomGraphicsView(QGraphicsView):
     """
@@ -366,78 +313,6 @@ class CustomGraphicsView(QGraphicsView):
         :return:
         """
         super().contextMenuEvent(event)
-
-        # Get the position of the mouse during the event
-        # pos = event.pos()
-        #
-        # # Check if there's any child widget at the mouse position
-        # child_widget = self.childAt(pos)
-        # a = self.childAt(event.globalPos())
-        # b = child_widget == self
-        # # If there's a child widget, do not show the custom context menu
-        # if isinstance(child_widget, QWidget):
-        #     return
-        #
-        # context_menu = QMenu()
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Center",
-        #                icon_path=":/Icons/icons/resize.svg",
-        #                function_ptr=lambda x: self.parent_.align_schematic())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Expand",
-        #                icon_path=":/Icons/icons/plus (gray).svg",
-        #                function_ptr=lambda x: self.parent_.expand_node_distances())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Contract",
-        #                icon_path=":/Icons/icons/minus (gray).svg",
-        #                function_ptr=lambda x: self.parent_.shrink_node_distances())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Auto-layout",
-        #                icon_path=":/Icons/icons/automatic_layout.svg",
-        #                function_ptr=lambda x: self.parent_.auto_layout(sel=""))
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Layout from (lat, lon) data",
-        #                icon_path=":/Icons/icons/map.svg",
-        #                function_ptr=lambda x: self.parent_.fill_xy_from_lat_lon())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Zoom in",
-        #                icon_path=":/Icons/icons/zoom_in.svg",
-        #                function_ptr=lambda x: self.parent_.zoom_in())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Zoom out",
-        #                icon_path=":/Icons/icons/zoom_out.svg",
-        #                function_ptr=lambda x: self.parent_.zoom_out())
-        #
-        # add_menu_entry(menu=context_menu,
-        #                text="Clear highlight",
-        #                icon_path=":/Icons/icons/bus_icon.svg",
-        #                function_ptr=lambda x: self.parent_.clear_big_bus_markers())
-        #
-        # # launch the menu
-        # context_menu.exec(event.globalPos())
-
-
-# def find_my_node(idtag_: str,
-#                  bus_dict: Dict[str, BusGraphicItem],
-#                  fluid_node_dict: Dict[str, FluidNodeGraphicItem]):
-#     """
-#     Function to look for the bus or fluid node
-#     :param idtag_: bus or fluidnode idtag
-#     :param bus_dict:
-#     :param fluid_node_dict:
-#     :return: Matching graphic object
-#     """
-#     graphic_obj = bus_dict.get(idtag_, None)
-#     if graphic_obj is None:
-#         graphic_obj = fluid_node_dict.get(idtag_, None)
-#     return graphic_obj
 
 
 class SchematicWidget(BaseDiagramWidget):
@@ -4164,13 +4039,6 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     raise Exception('Unsupported side value {}'.format(side))
 
-                # Add this line to the new connection bus
-                # new_bus_graphic_item.add_hosting_connection(graphic_obj=line_graphics)
-                # new_bus_graphic_item.get_terminal().update()
-                #
-                # # remove thid line from the old bus connections
-                # old_bus_graphic_item.delete_hosting_connection(graphic_obj=line_graphics)
-                # old_bus_graphic_item.get_terminal().update()
         else:
             warning_msg("you must select the origin and destination buses!",
                         title='Change bus')
@@ -4231,57 +4099,31 @@ class SchematicWidget(BaseDiagramWidget):
             if idx_bus_list[0][1] == line_graphics.api_object.bus_from:
                 idx, old_bus, old_bus_graphic_item = idx_bus_list[0]
 
-    # def disable_all_results_tags(self):
-    #     """
-    #     Disable all results' tags in this diagram
-    #     """
-    #     for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
-    #         for key, widget in type_dict.items():
-    #             widget.disable_label_drawing()
-    #
-    # def enable_all_results_tags(self):
-    #     """
-    #     Enable all results' tags in this diagram
-    #     """
-    #     for device_tpe, type_dict in self.graphics_manager.graphic_dict.items():
-    #         for key, widget in type_dict.items():
-    #             widget.enable_label_drawing()
-
     def get_picture_width(self) -> int:
         return self.editor_graphics_view.width()
 
     def get_picture_height(self) -> int:
         return self.editor_graphics_view.height()
 
-    # def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
-    #     """
-    #     Save video
-    #     :param fname: file name
-    #     :param fps: frames per second
-    #     :returns width, height
-    #     """
-    #
-    #     w = self.editor_graphics_view.width()
-    #     h = self.editor_graphics_view.height()
-    #
-    #     self._video = cv2.VideoWriter(filename=fname,
-    #                                   fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
-    #                                   fps=fps,
-    #                                   frameSize=(w, h))
-    #
-    #     return w, h
+    def copy(self) -> "SchematicWidget":
+        """
+        Deep copy of this widget
+        :return: SchematicWidget
+        """
+        d_copy = SchematicDiagram(name=self.diagram.name + '_copy')
+        j_data = json.dumps(self.diagram.get_data_dict(), indent=4)
+        d_copy.parse_data(data=json.loads(j_data),
+                          obj_dict=self.circuit.get_all_elements_dict_by_type(add_locations=True),
+                          logger=self.logger)
 
-    # def capture_video_frame(self) -> None:
-    #     """
-    #     Save the current state in a video frame
-    #     """
-    #
-    #     image, w, h = self.get_image(transparent=False)
-    #
-    #     # convert picture using the memory
-    #     # we need to remove the alpha channel, otherwise the video frame is not saved
-    #     frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
-    #     self._video.write(frame)
+        return SchematicWidget(
+            circuit=self.circuit,
+            diagram=self.diagram,
+            default_bus_voltage=self.default_bus_voltage,
+            time_index=self.get_time_index(),
+            prefer_node_breaker=self.prefer_node_breaker,
+            call_delete_db_element_func=self.call_delete_db_element_func
+        )
 
 
 def generate_schematic_diagram(buses: List[Bus],
@@ -4386,21 +4228,6 @@ def generate_schematic_diagram(buses: List[Bus],
     add_devices_list(cls="fluid_paths", dev_lst=fluid_paths)
 
     # --------------------------------------------------------------------------------------------------------------
-    # if text_func is not None:
-    #     text_func('Creating schematic transformer3w devices')
-    #
-    # nn = len(transformers3w)
-    # for i, elm in enumerate(transformers3w):
-    #
-    #     if prog_func is not None:
-    #         prog_func((i + 1) / nn * 100.0)
-    #
-    #     x = int(elm.x * explode_factor)
-    #     y = int(elm.y * explode_factor)
-    #     diagram.set_point(device=elm, location=GraphicLocation(x=x, y=y))
-    #     diagram.set_point(device=elm.winding1, location=GraphicLocation())
-    #     diagram.set_point(device=elm.winding2, location=GraphicLocation())
-    #     diagram.set_point(device=elm.winding3, location=GraphicLocation())
 
     return diagram
 
@@ -4434,7 +4261,7 @@ List[FluidPath]]:
     bus_dict = circuit.get_bus_index_dict()
 
     # get all Branches
-    all_branches = circuit.get_branches()
+    all_branches = circuit.get_branches() + circuit.get_switches()
     branch_dict = {b: i for i, b in enumerate(all_branches)}
 
     # create a pool of buses
@@ -4519,7 +4346,7 @@ List[FluidPath]]:
             switches.append(obj)
 
         else:
-            raise Exception('Unrecognized branch type ' + obj.device_type.value)
+            raise Exception(f'Unrecognized branch type {obj.device_type.value}')
 
     return (list(buses), list(busbars), list(cns), lines, dc_lines, transformers2w, transformers3w,
             windings, hvdc_lines, vsc_converters, upfc_devices, series_reactances, switches,

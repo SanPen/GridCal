@@ -23,7 +23,8 @@ from warnings import warn
 
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.enumerations import DeviceType
-from GridCal.Gui.GuiFunctions import (ComboDelegate, TextDelegate, FloatDelegate, ComplexDelegate)
+from GridCal.Gui.gui_functions import (ComboDelegate, TextDelegate, FloatDelegate, ComplexDelegate)
+from GridCal.Gui.wrappable_table_model import WrappableTableModel
 
 
 class ObjectHistory:
@@ -92,7 +93,7 @@ class ObjectHistory:
         return len(self.undo_stack) > 0
 
 
-class ProfilesModel(QtCore.QAbstractTableModel):
+class ProfilesModel(WrappableTableModel):
     """
     Class to populate a Qt table view with profiles from objects
     """
@@ -114,7 +115,7 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :param parent: Parent object: the QTableView object
         :param max_undo_states:
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        WrappableTableModel.__init__(self, parent)
 
         self.parent = parent
 
@@ -257,6 +258,10 @@ class ProfilesModel(QtCore.QAbstractTableModel):
         :param role:
         :return:
         """
+
+        if self._hide_headers_mode is True:
+            return None
+
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if len(self.elements):
                 if orientation == QtCore.Qt.Orientation.Horizontal:
