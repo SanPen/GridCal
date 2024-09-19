@@ -190,7 +190,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.setSelected(True)
 
         event.setAccepted(True)
-        self.editor.map.view.disableMove = True
+        self.editor.map.view.disable_move = True
 
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object)
@@ -208,7 +208,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse enters the item.
         """
-        self.editor.map.view.inItem = True
+        # self.editor.map.view.in_item = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -217,7 +217,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
-        self.editor.map.view.inItem = False
+        # self.editor.map.view.in_item = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()
