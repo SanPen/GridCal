@@ -67,7 +67,7 @@ class InvestmentsEvaluationDriver(DriverTemplate):
         self.nc: Union[NumericalCircuit, None] = None
 
         # gather a dictionary of all the elements, this serves for the investments generation
-        self.get_all_elements_dict = self.grid.get_all_elements_dict()
+        self.get_all_elements_dict, dict_ok = self.grid.get_all_elements_dict()
 
     def get_steps(self):
         """
