@@ -100,6 +100,22 @@ class GridErrorLog:
         """
         self.logs.clear()
 
+    def add_normal_logger(self, logger: Logger):
+        """
+        Add normal logger
+        :param logger: Logger
+        """
+        for l in logger.entries:
+            self.add(object_type=l.device_class,
+                     element_name=l.device,
+                     element_index=0,
+                     severity=l.severity,
+                     propty=l.device_property,
+                     message=l.msg,
+                     val=l.value,
+                     lower=l.expected_object_value,
+                     upper=l.expected_value)
+
     def get_model(self) -> "QtGui.QStandardItemModel":
         """
         Get TreeView Model
@@ -1043,7 +1059,7 @@ def analyze_batteries(elements: List[Battery],
 
 def analyze_static_gen(elements: List[StaticGenerator],
                        time_profile,
-                       logger: GridErrorLog,):
+                       logger: GridErrorLog, ):
     """
 
     :param elements:
@@ -1076,7 +1092,7 @@ def analyze_static_gen(elements: List[StaticGenerator],
 
 def analyze_load(elements: List[Load],
                  time_profile,
-                 logger: GridErrorLog,):
+                 logger: GridErrorLog, ):
     """
 
     :param elements:
@@ -1137,6 +1153,12 @@ def grid_analysis(circuit: MultiCircuit,
     :param eps_min: Min epsylon value for comparison
     :return: list of fixable error objects
     """
+
+    # check for duplicated uuid's
+    duplicates_logger = Logger()
+    _, ok_dict = circuit.get_all_elements_dict(logger=duplicates_logger)
+    logger.add_normal_logger(duplicates_logger)
+
     if circuit.time_profile is not None:
         nt = len(circuit.time_profile)
     else:
@@ -1287,6 +1309,8 @@ def grid_analysis(circuit: MultiCircuit,
                        lower=str(Qmin),
                        val=Ql_prof[t],
                        upper=str(Qmax))
+
+
 
     return fixable_errors
 
