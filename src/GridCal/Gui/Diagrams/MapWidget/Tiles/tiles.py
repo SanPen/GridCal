@@ -147,9 +147,9 @@ class Tiles(BaseTiles):
         # test for firewall - use proxy (if supplied)
         test_url = self.servers[0] + self.url_path.format(Z=0, X=0, Y=0)
         try:
-            # r = request.Request(test_url, headers={'User-Agent': 'Nokia (PyQt) Graphics Dojo 1.0'})
-            # response = request.urlopen(r).read()
-            request.urlopen(test_url)
+            r = request.Request(test_url, headers={'User-Agent': 'GridCal 5'})
+            response = request.urlopen(r).read()
+            # request.urlopen(test_url)
         except HTTPError as e:
             # if it's fatal, log it and die, otherwise try a proxy
             status_code = e.code
@@ -188,7 +188,7 @@ class Tiles(BaseTiles):
                 worker = TileWorker(id_num=num_thread,
                                     server=server,
                                     tilepath=self.url_path,
-                                    requests=self.request_queue,
+                                    requests_cue=self.request_queue,
                                     callback=self.tile_is_available,
                                     error_tile=self.error_tile,
                                     content_type=self.content_type,

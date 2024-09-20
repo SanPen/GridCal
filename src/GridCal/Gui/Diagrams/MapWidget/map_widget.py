@@ -113,6 +113,7 @@ class MapView(QGraphicsView):
         self._scene = scene
 
         self.map_widget = map_widget
+        self.setStyleSheet("QGraphicsView { border: none; }")
 
         # Create a QLabel
         self.attribution_label = QLabel("Bottom Left Label")

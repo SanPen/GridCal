@@ -1126,10 +1126,10 @@ class GridMapWidget(BaseDiagramWidget):
         #
         # painter = QPainter(image)
         # painter.setRenderHint(QPainter.Antialiasing)
-        # # self.view.render(painter)  # self.view stores the grid widgets
-        # self.render(painter)
+        # self.map.view.render(painter)  # self.view stores the grid widgets
+        # # self.render(painter)
         # painter.end()
-        image = self.grab().toImage()
+        image = self.map.grab().toImage()
 
         return image, w, h
 

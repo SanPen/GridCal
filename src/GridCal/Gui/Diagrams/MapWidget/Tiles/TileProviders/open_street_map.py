@@ -10,14 +10,21 @@ from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 class OsmTiles(Tiles):
     """An object to source server tiles for pySlipQt."""
 
-    def __init__(self, tiles_dir='open_street_map_tiles', http_proxy=None):
+    def __init__(self, name: str = 'OpenStreetMap Tiles', tiles_dir='open_street_map_tiles', http_proxy=None, tile_servers=None):
+        """
+
+        :param name:
+        :param tiles_dir:
+        :param http_proxy:
+        :param tile_servers:
+        """
         """Override the base class for these tiles.
 
         Basically, just fill in the BaseTiles class with values from above
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='OpenStreetMap Tiles',
+        super().__init__(TilesetName=name,
                          TilesetShortName='OSM Tiles',
                          TilesetVersion='1.0',
                          levels=list(range(17)),
@@ -30,7 +37,7 @@ class OsmTiles(Tiles):
                              # 'https://a.tile.openstreetmap.org',
                              # 'https://b.tile.openstreetmap.org',
                              # 'https://c.tile.openstreetmap.org',
-                         ],
+                         ] if tile_servers is None else tile_servers,
                          url_path='/{Z}/{X}/{Y}.png',
                          max_server_requests=2,
                          max_lru=10000,

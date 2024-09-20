@@ -46,6 +46,7 @@ from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
+from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import OsmTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -95,6 +96,11 @@ class DiagramsMain(CompiledArraysMain):
                 name='Carto dark matter',
                 tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_dark_matter'),
                 tile_servers=["http://basemaps.cartocdn.com/dark_all/"]
+            ),
+            OsmTiles(
+                name='Open Street Map',
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'osm'),
+                tile_servers=["https://tile.openstreetmap.org"]
             )
         ]
         tile_names = [tile.TilesetName for tile in self.tile_sources]
