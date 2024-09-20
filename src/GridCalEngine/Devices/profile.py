@@ -21,7 +21,7 @@ import numpy as np
 import numba as nb
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 from GridCalEngine.enumerations import DeviceType
-from GridCalEngine.Devices.sparse_array import SparseArray, PROFILE_TYPES, check_type
+from GridCalEngine.Utils.Sparse.sparse_array import SparseArray, PROFILE_TYPES, check_type
 
 
 @nb.njit()
@@ -483,3 +483,13 @@ class Profile:
         :param data: array of data values
         """
         self._sparse_array.set_sparse_data_from_data(indptr=indptr, data=data)
+
+    def fix_nan(self, default_value: float = 0.0):
+        """
+        Replace NaN values with default value in-place
+        :param default_value: some value to replace the NaN with
+        """
+        if self.dtype == float:
+            if not self._is_sparse:
+                if self._dense_array is not None:
+                    np.nan_to_num(self._dense_array, nan=default_value)  # this is supposed to happen in-place

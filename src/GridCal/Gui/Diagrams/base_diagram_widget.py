@@ -52,6 +52,18 @@ if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel, SchematicWidget
 
 
+def change_font_size(obj, font_size: int):
+    """
+
+    :param obj:
+    :param font_size:
+    :return:
+    """
+    font1 = obj.font()
+    font1.setPointSize(font_size)
+    obj.setFont(font1)
+
+
 class BaseDiagramWidget(QSplitter):
     """
     Common diagram widget to host common functions
@@ -79,13 +91,18 @@ class BaseDiagramWidget(QSplitter):
         # --------------------------------------------------------------------------------------------------------------
         # Widget layout and child widgets:
         self.horizontal_layout = QHBoxLayout(self)
+
+        # Table to display object's properties
         self.object_editor_table = QTableView(self)
+        change_font_size(self.object_editor_table, 9)
+        change_font_size(self.object_editor_table.verticalHeader(), 9)
+        change_font_size(self.object_editor_table.horizontalHeader(), 9)
 
         # Actual libraryView object
         self.library_view = QListView(self)
-
         self.library_view.setViewMode(self.library_view.ViewMode.ListMode)
         self.library_view.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        change_font_size(self.library_view, 9)
 
         # library model
         self.library_model = library_model
@@ -174,21 +191,19 @@ class BaseDiagramWidget(QSplitter):
         """
         return self._time_index
 
-    def set_editor_model(self,
-                         api_object: ALL_DEV_TYPES,
-                         dictionary_of_lists: Union[None, Dict[DeviceType, List[ALL_DEV_TYPES]]] = None):
+    def set_editor_model(self, api_object: ALL_DEV_TYPES):
         """
         Set an api object to appear in the editable table view of the editor
         :param api_object: any EditableDevice
-        :param dictionary_of_lists: dictionary of lists of objects that may be referenced to
         """
+        template_elm, dictionary_of_lists = self.circuit.get_dictionary_of_lists(api_object.device_type)
         mdl = ObjectsModel(objects=[api_object],
                            property_list=api_object.property_list,
                            time_index=self.get_time_index(),
                            parent=self.object_editor_table,
                            editable=True,
                            transposed=True,
-                           dictionary_of_lists=dictionary_of_lists if dictionary_of_lists is not None else dict())
+                           dictionary_of_lists=dictionary_of_lists)
 
         self.object_editor_table.setModel(mdl)
 
@@ -597,3 +612,10 @@ class BaseDiagramWidget(QSplitter):
             min_bus_width=min_bus_width,
             max_bus_width=max_bus_width
         )
+
+    def copy(self):
+        """
+
+        :return:
+        """
+        raise Exception('Copy method not implemented!')

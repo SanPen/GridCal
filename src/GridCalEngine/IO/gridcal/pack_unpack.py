@@ -373,6 +373,8 @@ def get_profile_from_dict(profile: Profile,
         else:
             arr = [collection.get(i, default_value) for i in data['dense_data']]
         profile.set(np.array(arr))
+
+    # mark as initialized
     profile.set_initialized()
 
 
@@ -1436,9 +1438,7 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
                 xpos = df['xpos'].values[i]
                 ypos = df['ypos'].values[i]
                 phase = df['phase'].values[i]
-
-                w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
-                tower.add_wire(w)
+                tower.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
 
     # create diagrams --------------------------------------------------------------------------------------------------
     if text_func is not None:

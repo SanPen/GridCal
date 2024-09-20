@@ -24,6 +24,9 @@ from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.Main.SubClasses.Results.results import ResultsMain
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.generic_graphics import set_dark_mode, set_light_mode
+from GridCal.plugins import PluginsInfo
+import GridCal.Gui.gui_functions as gf
+from GridCal.Gui.gui_functions import add_menu_entry
 
 
 def config_data_to_struct(data_: Dict[str, Union[Dict[str, Any], str, Any]],
@@ -89,6 +92,9 @@ class ConfigurationMain(ResultsMain):
 
         # create main window
         ResultsMain.__init__(self, parent)
+
+        # plugins
+        self.plugins_info = PluginsInfo()
 
         # check boxes
         self.ui.dark_mode_checkBox.clicked.connect(self.change_theme_mode)
@@ -218,15 +224,18 @@ class ConfigurationMain(ResultsMain):
                 "retry": self.ui.helm_retry_checkBox,
                 "distributed_slack": self.ui.distributed_slack_checkBox,
                 "ignore_single_node_islands": self.ui.ignore_single_node_islands_checkBox,
-                "automatic_precision": self.ui.auto_precision_checkBox,
                 "use_voltage_guess": self.ui.use_voltage_guess_checkBox,
                 "precision": self.ui.tolerance_spinBox,
                 "acceleration": self.ui.muSpinBox,
                 "max_iterations": self.ui.max_iterations_spinBox,
                 "verbosity": self.ui.verbositySpinBox,
+
                 "reactive_power_control_mode": self.ui.control_q_checkBox,
                 "transformer_taps_module_control": self.ui.control_tap_modules_checkBox,
                 "transformer_taps_phase_control": self.ui.control_tap_phase_checkBox,
+                "remote_voltage_controls_switch": self.ui.control_remote_voltage_checkBox,
+                "orthogonalize_controls": self.ui.orthogonalize_pf_controls_checkBox,
+
                 "apply_temperature_correction": self.ui.temperature_correction_checkBox,
                 "apply_impedance_tolerances": self.ui.apply_impedance_tolerances_checkBox,
                 "add_pf_report": self.ui.addPowerFlowReportCheckBox,
@@ -426,3 +435,60 @@ class ConfigurationMain(ResultsMain):
         date_time_value = self.ui.snapshot_dateTimeEdit.dateTime().toPython()
 
         self.circuit.snapshot_time = date_time_value
+
+    def plugin_main_function_triggered(self, arg):
+
+        print(arg)
+
+    def add_plugins(self):
+        """
+        Add the plugins information and create the menu entries
+        """
+        self.ui.menuplugins.clear()
+
+        add_menu_entry(menu=self.ui.menuplugins,
+                       text="Reload",
+                       icon_path=":/Icons/icons/undo.svg",
+                       function_ptr=self.add_plugins)
+
+        self.plugins_info.read()  # force refresh
+
+        self.plugins_investment_evaluation_method_dict = dict()
+
+        # for every plugin...
+        for key, plugin_info in self.plugins_info.plugins.items():
+
+            # maybe add the main function
+            if plugin_info.main_fcn.function_ptr is not None:
+
+                """
+                Really hard core magic to avoid lambdas shadow each other due to late binding
+                
+                lambda e, func=func: func(self)
+                
+                explanation:
+                - e is a bool parameter that the QAction sends when triggered
+                - func=func is there for the lambda to force the usage of the value of func 
+                  during the iteration and not after the loop
+                - func(self) is then what I wanted to lambda in the first place                
+                """
+                # func = plugin_info.main_fcn.function_ptr
+                # lmbd = lambda e, func=func: func(self)  # This is not an error, it is correct
+
+                action = add_menu_entry(
+                    menu=self.ui.menuplugins,
+                    text=plugin_info.name,
+                    icon_path=":/Icons/icons/plugin.svg",
+                    icon_pixmap=plugin_info.icon,
+                    function_ptr=plugin_info.main_fcn.get_pointer_lambda(gui_instance=self)
+                )
+
+            # maybe add the investments function
+            if plugin_info.investments_fcn.function_ptr is not None:
+                self.plugins_investment_evaluation_method_dict[
+                    plugin_info.investments_fcn.alias
+                ] = plugin_info.investments_fcn.function_ptr
+
+        # create combobox model for the plugin investments
+        lst = list(self.plugins_investment_evaluation_method_dict.keys())
+        self.ui.plugins_investment_evaluation_method_ComboBox.setModel(gf.get_list_model(lst))

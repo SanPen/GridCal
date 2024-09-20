@@ -34,20 +34,20 @@ from PySide6 import QtGui, QtWidgets, QtCore
 # Engine imports
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 import GridCalEngine.Simulations as sim
-from GridCalEngine.enumerations import EngineType
+from GridCalEngine.enumerations import EngineType, DeviceType
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 
 from GridCalEngine.Compilers.circuit_to_bentayga import BENTAYGA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
-
-import GridCal.Gui.GuiFunctions as gf
+from GridCalEngine.IO.file_system import get_create_gridcal_folder
+import GridCal.Gui.gui_functions as gf
 import GridCal.Session.synchronization_driver as syncdrv
 from GridCal.Gui.AboutDialogue.about_dialogue import AboutDialogueGuiGUI
 from GridCal.Gui.Analysis.AnalysisDialogue import GridAnalysisGUI
 from GridCal.Gui.ContingencyPlanner.contingency_planner_dialogue import ContingencyPlannerGUI
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import CheckListDialogue, StartEndSelectionDialogue
+from GridCal.Gui.general_dialogues import CheckListDialogue, StartEndSelectionDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg, error_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.LoadCatalogue.catalogue_dialogue import CatalogueGUI
@@ -59,8 +59,8 @@ from GridCal.Session.session import SimulationSession, GcThread
 from GridCal.Gui.SigmaAnalysis.sigma_analysis_dialogue import SigmaAnalysisGUI
 from GridCal.Gui.SyncDialogue.sync_dialogue import SyncDialogueWindow
 from GridCal.Gui.TowerBuilder.LineBuilderDialogue import TowerBuilderGUI
-from GridCal.Gui.GeneralDialogues import clear_qt_layout
-from GridCal.Gui.ConsoleWidget import ConsoleWidget
+from GridCal.Gui.general_dialogues import clear_qt_layout
+from GridCal.Gui.console_widget import ConsoleWidget
 from GridCal.Gui.Diagrams.generic_graphics import IS_DARK
 
 
@@ -149,7 +149,7 @@ class BaseMainGui(QMainWindow):
 
         self.current_boundary_set: str = ""
 
-        # threads --------------------------------------------------------------------------------------------------
+        # threads ------------------------------------------------------------------------------------------------------
         self.painter = None
         self.open_file_thread_object = None
         self.save_file_thread_object = None
@@ -164,7 +164,7 @@ class BaseMainGui(QMainWindow):
         self.simulation_start_index: int = -1
         self.simulation_end_index: int = -1
 
-        # window pointers ------------------------------------------------------------------------------------------
+        # window pointers ----------------------------------------------------------------------------------------------
         self.file_sync_window: Union[SyncDialogueWindow, None] = None
         self.sigma_dialogue: Union[SigmaAnalysisGUI, None] = None
         self.grid_generator_dialogue: Union[GridGeneratorGUI, None] = None
@@ -181,7 +181,7 @@ class BaseMainGui(QMainWindow):
         self.contingency_checks_diag: Union[CheckListDialogue, None] = None
         self.start_end_dialogue_window: Union[StartEndSelectionDialogue, None] = None
 
-        # available engines
+        # available engines --------------------------------------------------------------------------------------------
         engine_lst = [EngineType.GridCal]
         if NEWTON_PA_AVAILABLE:
             engine_lst.append(EngineType.NewtonPA)
@@ -194,10 +194,19 @@ class BaseMainGui(QMainWindow):
         self.ui.engineComboBox.setCurrentIndex(0)
         self.engine_dict = {x.value: x for x in engine_lst}
 
-        # dark mode detection
+        # available engines --------------------------------------------------------------------------------------------
+        exchange_places = [DeviceType.AreaDevice, DeviceType.CountryDevice]
+        exchange_places_mdl = gf.get_list_model([x.value for x in exchange_places])
+        self.ui.fromComboBox.setModel(exchange_places_mdl)
+        self.ui.fromComboBox.setCurrentIndex(0)
+        self.ui.toComboBox.setModel(exchange_places_mdl)
+        self.ui.toComboBox.setCurrentIndex(0)
+        self.exchange_places_dict = {x.value: x for x in exchange_places}
+
+        # dark mode detection ------------------------------------------------------------------------------------------
         self.ui.dark_mode_checkBox.setChecked(IS_DARK)
 
-        # Console
+        # Console ------------------------------------------------------------------------------------------------------
         self.console: Union[ConsoleWidget, None] = None
         try:
             self.create_console()
@@ -206,7 +215,7 @@ class BaseMainGui(QMainWindow):
 
         self.calculation_inputs_to_display = None
 
-        # ----------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         self.ui.actionClear_stuff_running_right_now.triggered.connect(self.clear_stuff_running)
         self.ui.actionAbout.triggered.connect(self.about_box)
         self.ui.actionAuto_rate_branches.triggered.connect(self.auto_rate_branches)
@@ -230,21 +239,9 @@ class BaseMainGui(QMainWindow):
 
         self.ui.grid_name_line_edit.textChanged.connect(self.change_circuit_name)
 
-    def add_data_to_circuit(self, filename):
-        df = self.catalogue_dialogue.read_csv_file(filename)
-        print(df.head())
-
-        if self.catalogue_dialogue.ui.checkBox.isChecked():
-            # or self.catalogue_dialogue.ui.checkBox_5.isChecked()
-            transformers = self.catalogue_dialogue.get_transformer_catalogue(df)
-            self.circuit.transformer_types += transformers
-
-        elif self.catalogue_dialogue.ui.checkBox_2.isChecked():
-            self.circuit.underground_cable_types += self.catalogue_dialogue.get_cables_catalogue(df)
-
-        elif self.catalogue_dialogue.ui.checkBox_3.isChecked():
-            # or self.catalogue_dialogue.ui.checkBox_6.isChecked()
-            self.circuit.sequence_line_types += self.catalogue_dialogue.get_sequence_lines_catalogue(df)
+        # comboboxes
+        self.ui.fromComboBox.currentTextChanged.connect(self.update_from_to_list_views)
+        self.ui.toComboBox.currentTextChanged.connect(self.update_from_to_list_views)
 
     def LOCK(self, val: bool = True) -> None:
         """
@@ -277,7 +274,8 @@ class BaseMainGui(QMainWindow):
                                                   "pd: pandas\n"
                                                   "plt: matplotlib\n"
                                                   "app: This instance of GridCal\n"
-                                                  "circuit: The current grid\n\n")
+                                                  "circuit: The current grid\n"
+                                                  "user_folder: path to the user folder\n")
 
         self.console.buffer_size = 10000
 
@@ -285,13 +283,17 @@ class BaseMainGui(QMainWindow):
         self.ui.pythonConsoleTab.layout().addWidget(self.console)
 
         # push some variables to the console
-        self.console.push_vars({"hlp": self.print_console_help,
-                                "np": np,
-                                "pd": pd,
-                                "plt": plt,
-                                "clc": self.clc,
-                                'app': self,
-                                'circuit': self.circuit})
+        self.console.push_vars(
+            {"hlp": self.print_console_help,
+             "np": np,
+             "pd": pd,
+             "plt": plt,
+             "clc": self.clc,
+             'app': self,
+             'circuit': self.circuit,
+             'user_folder': get_create_gridcal_folder,
+             }
+        )
 
         if IS_DARK:
             self.console.set_dark_theme()
@@ -586,20 +588,23 @@ class BaseMainGui(QMainWindow):
         self.ui.vs_target_comboBox.setModel(mdl)
         self.setup_time_sliders()
 
-    def update_area_combos(self):
+    def update_from_to_list_views(self):
         """
-        Update the area dependent combos
+        Update the exchange area, countries, etc... dependent combos
         """
-        n = len(self.circuit.areas)
-        mdl1 = gf.get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
-        mdl2 = gf.get_list_model([str(elm) for elm in self.circuit.areas], checks=True)
+        same_type = self.ui.fromComboBox.currentText() == self.ui.toComboBox.currentText()
 
-        self.ui.areaFromListView.setModel(mdl1)
-        self.ui.areaToListView.setModel(mdl2)
+        devs_from = self.circuit.get_elements_by_type(self.exchange_places_dict[self.ui.fromComboBox.currentText()])
+        mdl1 = gf.get_list_model([str(elm) for elm in devs_from], checks=True)
+        self.ui.fromListView.setModel(mdl1)
 
-        if n > 1:
-            self.ui.areaFromListView.model().item(0).setCheckState(QtCore.Qt.CheckState.Checked)
-            self.ui.areaToListView.model().item(1).setCheckState(QtCore.Qt.CheckState.Checked)
+        devs_to = self.circuit.get_elements_by_type(self.exchange_places_dict[self.ui.toComboBox.currentText()])
+        mdl2 = gf.get_list_model([str(elm) for elm in devs_to], checks=True)
+        self.ui.toListView.setModel(mdl2)
+
+        if len(devs_from) > 1 and same_type:
+            self.ui.fromListView.model().item(0).setCheckState(QtCore.Qt.CheckState.Checked)
+            self.ui.toListView.model().item(1).setCheckState(QtCore.Qt.CheckState.Checked)
 
     def fix_generators_active_based_on_the_power(self, ask_before=True):
         """
@@ -673,7 +678,7 @@ class BaseMainGui(QMainWindow):
         branches = self.circuit.get_branches()
 
         if len(branches) > 0:
-            pf_results = self.session.power_flow
+            _, pf_results = self.session.power_flow
 
             if pf_results is not None:
                 factor = self.ui.branch_rating_doubleSpinBox.value()

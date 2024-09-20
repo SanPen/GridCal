@@ -45,12 +45,12 @@ from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_driver import S
 from GridCalEngine.Simulations.Stochastic.stochastic_power_flow_driver import (StochasticPowerFlowDriver,
                                                                                StochasticPowerFlowResults)
 from GridCalEngine.Simulations.Clustering.clustering_driver import ClusteringDriver, ClusteringResults
-from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingResults
-from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisResults
+from GridCalEngine.Simulations.Stochastic.blackout_driver import CascadingResults, CascadingDriver
+from GridCalEngine.Simulations.InputsAnalysis.inputs_analysis_driver import InputsAnalysisResults, InputsAnalysisDriver
 from GridCalEngine.Simulations.InvestmentsEvaluation.investments_evaluation_driver import (InvestmentsEvaluationDriver,
                                                                                            InvestmentsEvaluationResults)
 from GridCalEngine.Simulations.SigmaAnalysis.sigma_analysis_driver import SigmaAnalysisResults
-from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityResults
+from GridCalEngine.Simulations.NTC.ntc_driver import OptimalNetTransferCapacityResults, OptimalNetTransferCapacityDriver
 from GridCalEngine.Simulations.NodalCapacity.nodal_capacity_ts_driver import (NodalCapacityTimeSeriesDriver,
                                                                               NodalCapacityTimeSeriesResults)
 from GridCalEngine.Simulations.Topology.node_groups_driver import NodeGroupsDriver
@@ -437,25 +437,16 @@ class SimulationSession:
         return False
 
     @property
-    def clustering(self) -> ClusteringResults:
+    def clustering(self) -> Tuple[ClusteringDriver, ClusteringResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.ClusteringAnalysis_run)
-        return results
+        return drv, results
 
     @property
-    def power_flow(self) -> PowerFlowResults:
-        """
-
-        :return:
-        """
-        drv, results = self.get_driver_results(SimulationTypes.PowerFlow_run)
-        return results
-
-    @property
-    def power_flow_driver_and_results(self) -> Tuple[PowerFlowDriver, PowerFlowResults]:
+    def power_flow(self) -> Tuple[PowerFlowDriver, PowerFlowResults]:
         """
 
         :return:
@@ -464,181 +455,182 @@ class SimulationSession:
         return drv, results
 
     @property
-    def power_flow_ts(self) -> PowerFlowTimeSeriesResults:
+    def power_flow_ts(self) -> Tuple[PowerFlowTimeSeriesDriver, PowerFlowTimeSeriesResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.PowerFlowTimeSeries_run)
-        return results
+        return drv, results
 
     @property
-    def optimal_power_flow(self) -> OptimalPowerFlowResults:
+    def optimal_power_flow(self) -> Tuple[OptimalPowerFlowDriver, OptimalPowerFlowResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPF_run)
-        return results
+        return drv, results
 
     @property
-    def optimal_power_flow_ts(self) -> OptimalPowerFlowTimeSeriesResults:
+    def optimal_power_flow_ts(self) -> Tuple[OptimalPowerFlowTimeSeriesDriver, OptimalPowerFlowTimeSeriesResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPFTimeSeries_run)
-        return results
+        return drv, results
 
     @property
-    def short_circuit(self) -> ShortCircuitResults:
+    def short_circuit(self) -> Tuple[ShortCircuitDriver, ShortCircuitResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.ShortCircuit_run)
-        return results
+        return drv, results
 
     @property
-    def linear_power_flow(self) -> LinearAnalysisResults:
+    def linear_power_flow(self) -> Tuple[LinearAnalysisDriver, LinearAnalysisResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.LinearAnalysis_run)
-        return results
+        return drv, results
 
     @property
-    def linear_power_flow_ts(self) -> LinearAnalysisTimeSeriesResults:
+    def linear_power_flow_ts(self) -> Tuple[LinearAnalysisTimeSeriesDriver, LinearAnalysisTimeSeriesResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.LinearAnalysis_TS_run)
-        return results
+        return drv, results
 
     @property
-    def contingency(self) -> ContingencyAnalysisResults:
+    def contingency(self) -> Tuple[ContingencyAnalysisDriver, ContingencyAnalysisResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.ContingencyAnalysis_run)
-        return results
+        return drv, results
 
     @property
-    def contingency_ts(self) -> ContingencyAnalysisTimeSeriesResults:
+    def contingency_ts(self) -> Tuple[ContingencyAnalysisTimeSeriesDriver, ContingencyAnalysisTimeSeriesResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.ContingencyAnalysisTS_run)
-        return results
+        return drv, results
 
     @property
-    def continuation_power_flow(self) -> ContinuationPowerFlowResults:
+    def continuation_power_flow(self) -> Tuple[ContinuationPowerFlowDriver, ContinuationPowerFlowResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.ContinuationPowerFlow_run)
-        return results
+        return drv, results
 
     @property
-    def net_transfer_capacity(self) -> AvailableTransferCapacityResults:
+    def net_transfer_capacity(self) -> Tuple[AvailableTransferCapacityDriver, AvailableTransferCapacityResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.NetTransferCapacity_run)
-        return results
+        return drv, results
 
     @property
-    def net_transfer_capacity_ts(self) -> AvailableTransferCapacityTimeSeriesResults:
+    def net_transfer_capacity_ts(self) -> Tuple[AvailableTransferCapacityTimeSeriesDriver,
+                                                AvailableTransferCapacityTimeSeriesResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.NetTransferCapacityTS_run)
-        return results
+        return drv, results
 
     @property
-    def optimal_net_transfer_capacity(self) -> OptimalNetTransferCapacityResults:
+    def optimal_net_transfer_capacity(self) -> Tuple[OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPF_NTC_run)
-        return results
+        return drv, results
 
     @property
-    def optimal_net_transfer_capacity_ts(self) -> OptimalNetTransferCapacityResults:
+    def optimal_net_transfer_capacity_ts(self) -> Tuple[OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.OPF_NTC_TS_run)
-        return results
+        return drv, results
 
     @property
-    def nodal_capacity_optimization_ts(self) -> NodalCapacityTimeSeriesResults:
+    def nodal_capacity_optimization_ts(self) -> Tuple[NodalCapacityTimeSeriesDriver, NodalCapacityTimeSeriesResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.NodalCapacityTimeSeries_run)
-        return results
+        return drv, results
 
     @property
-    def stochastic_power_flow(self) -> StochasticPowerFlowResults:
+    def stochastic_power_flow(self) -> Tuple[StochasticPowerFlowDriver, StochasticPowerFlowResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.StochasticPowerFlow)
-        return results
+        return drv, results
 
     @property
-    def sigma_analysis(self) -> SigmaAnalysisResults:
+    def sigma_analysis(self) -> Tuple[ShortCircuitDriver, SigmaAnalysisResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.SigmaAnalysis_run)
-        return results
+        return drv, results
 
     @property
-    def cascade(self) -> CascadingResults:
+    def cascade(self) -> Tuple[CascadingDriver, CascadingResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.Cascade_run)
-        return results
+        return drv, results
 
     @property
-    def inputs_analysis(self) -> InputsAnalysisResults:
+    def inputs_analysis(self) -> Tuple[InputsAnalysisDriver, InputsAnalysisResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.InputsAnalysis_run)
-        return results
+        return drv, results
 
     @property
-    def investments_evaluation(self) -> InvestmentsEvaluationResults:
+    def investments_evaluation(self) -> Tuple[InvestmentsEvaluationDriver, InvestmentsEvaluationResults]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.InvestmentsEvaluation_run)
-        return results
+        return drv, results
 
     @property
-    def node_groups_driver(self) -> NodeGroupsDriver:
+    def node_groups_driver(self) -> Tuple[NodeGroupsDriver, None]:
         """
 
         :return:
         """
         drv, results = self.get_driver_results(SimulationTypes.NodeGrouping_run)
-        return drv
+        return drv, None

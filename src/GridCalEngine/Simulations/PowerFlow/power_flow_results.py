@@ -393,14 +393,15 @@ class PowerFlowResults(ResultsTemplate):
             va_rad = np.angle(self.voltage, deg=False)
             data = np.c_[vm, va]
 
-            plt.ion()
-            color_norm = plt_colors.LogNorm()
-            fig = plt.figure(figsize=(8, 6))
-            ax3 = plt.subplot(1, 1, 1, projection='polar')
-            sc3 = ax3.scatter(va_rad, vm, c=vm, norm=color_norm)
-            fig.suptitle(result_type.value)
-            plt.tight_layout()
-            plt.show()
+            if self.plotting_allowed():
+                plt.ion()
+                color_norm = plt_colors.LogNorm()
+                fig = plt.figure(figsize=(8, 6))
+                ax3 = plt.subplot(1, 1, 1, projection='polar')
+                sc3 = ax3.scatter(va_rad, vm, c=vm, norm=color_norm)
+                fig.suptitle(result_type.value)
+                plt.tight_layout()
+                plt.show()
 
             return ResultsTable(data=data,
                                 index=self.bus_names,

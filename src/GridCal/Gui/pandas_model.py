@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 from typing import Union, Any
 from PySide6 import QtCore, QtWidgets
+from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.enumerations import ResultTypes
 
 
@@ -50,7 +51,7 @@ def fast_data_to_numpy_text(data: np.ndarray):
     return txt
 
 
-class PandasModel(QtCore.QAbstractTableModel):
+class PandasModel(WrappableTableModel):
     """
     Class to populate a Qt table view with a pandas data frame
     """
@@ -69,7 +70,7 @@ class PandasModel(QtCore.QAbstractTableModel):
         :param editable_min_idx:
         :param decimals:
         """
-        QtCore.QAbstractTableModel.__init__(self, parent)
+        WrappableTableModel.__init__(self, parent)
         self.data_c = data.values
         self.cols_c = data.columns
         self.index_c = data.index.values
@@ -85,23 +86,6 @@ class PandasModel(QtCore.QAbstractTableModel):
         self.format_string = '.' + str(decimals) + 'f'
 
         self.formatter = lambda x: "%.2f" % x
-
-        # flag for the headers text wraper: HeaderViewWithWordWrap
-        self._hide_headers_mode = False
-
-    def hideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = True
-
-    def unhideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = False
 
     def flags(self, index: QtCore.QModelIndex):
         """

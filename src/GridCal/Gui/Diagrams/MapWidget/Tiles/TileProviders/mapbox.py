@@ -1,5 +1,5 @@
 """
-A tile source that serves MapQuest tiles from the internet.
+A tile source that serves OpenStreetMap tiles from the internet.
 """
 
 import math
@@ -7,36 +7,33 @@ from typing import Tuple
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 
-class MapquestTiles(Tiles):
+class MapboxTiles(Tiles):
     """An object to source internet tiles for pySlip."""
 
-    def __init__(self, tiles_dir='mapquest_tiles', http_proxy=None):
+    def __init__(self, tiles_dir='modest_maps_tiles', http_proxy=None):
         """Override the base class for these tiles.
 
         Basically, just fill in the BaseTiles class with values from above
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='MapQuest Tiles',
-                         TilesetShortName='MQ Tiles',
+        super().__init__(TilesetName='ModestMaps Tiles',
+                         TilesetShortName='MM Tiles',
                          TilesetVersion='1.0',
                          levels=list(range(17)),
                          tile_width=256,
                          tile_height=256,
-                         servers=['http://otile1.mqcdn.com',
-                                  'http://otile2.mqcdn.com',
-                                  'http://otile3.mqcdn.com',
-                                  'http://otile4.mqcdn.com',
-                                  ],
-                         url_path='/tiles/1.0.0/map/{Z}/{X}/{Y}.jpg',
-                         max_server_requests=2,
-                         max_lru=10000,
                          tiles_dir=tiles_dir,
-                         http_proxy=http_proxy)
+                         max_lru=10000,
+                         servers=['http://c.tiles.mapbox.com',
+                                  ],
+                         url_path='/v3/examples.map-szwdot65/{Z}/{X}/{Y}.png',
+                         max_server_requests=2,
+                         http_proxy=http_proxy,
+                         attribution="© Mapbox © OpenStreetMap contributors")
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
-        """
-        Convert geo to tile fractional coordinates for level in use.
+        """Convert geo to tile fractional coordinates for level in use.
 
         geo  tuple of geo coordinates (xgeo, ygeo)
 
@@ -53,7 +50,8 @@ class MapquestTiles(Tiles):
         return xtile, ytile
 
     def Tile2Geo(self, xtile: float, ytile: float) -> Tuple[float, float]:
-        """Convert tile fractional coordinates to geo for level in use.
+        """
+        Convert tile fractional coordinates to geo for level in use.
 
         tile  a tupl;e (xtile,ytile) of tile fractional coordinates
 

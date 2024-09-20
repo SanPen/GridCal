@@ -69,10 +69,18 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
     @property
     def n_groups(self) -> int:
+        """
+
+        :return:
+        """
         return self._combinations.shape[1]
 
     @property
     def max_eval(self) -> int:
+        """
+
+        :return:
+        """
         return self._combinations.shape[0]
 
     def get_index(self) -> StrVec:
@@ -120,13 +128,15 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                        "Overload cost (€)",
                        "Voltage deviations cost (€)",
                        "Objective function"] + list(self.investment_groups_names)
-            data = np.c_[self._capex,
-            self._opex,
-            self._losses,
-            self._overload_score,
-            self._voltage_score,
-            self._f_obj,
-            self._combinations]
+            data = np.c_[
+                self._capex,
+                self._opex,
+                self._losses,
+                self._overload_score,
+                self._voltage_score,
+                self._f_obj,
+                self._combinations
+            ]
             y_label = ''
             title = ''
 
@@ -143,16 +153,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             y_label = ''
             title = ''
 
-            # plt.ion()
-            fig = plt.figure(figsize=(8, 6))
-            ax3 = plt.subplot(1, 1, 1)
-            sc3 = ax3.scatter(x, y, c=range(len(x)), norm=color_norm)
-            ax3.set_xlabel('Investment cost (M€)')
-            ax3.set_ylabel('Technical cost (M€)')
-            plt.colorbar(sc3, fraction=0.05, label='Objective function')
-            fig.suptitle(result_type.value[0])
-            plt.tight_layout()
-            # plt.show()
+            if self.plotting_allowed():
+                # plt.ion()
+                fig = plt.figure(figsize=(8, 6))
+                ax3 = plt.subplot(1, 1, 1)
+                sc3 = ax3.scatter(x, y, c=range(len(x)), norm=color_norm)
+                ax3.set_xlabel('Investment cost (M€)')
+                ax3.set_ylabel('Technical cost (M€)')
+                plt.colorbar(sc3, fraction=0.05, label='Objective function')
+                fig.suptitle(result_type.value[0])
+                plt.tight_layout()
+                # plt.show()
 
         elif result_type == ResultTypes.InvestmentsIterationsPlot:
             labels = self._index_names
@@ -163,16 +174,17 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             y_label = ''
             title = ''
 
-            plt.ion()
-            fig = plt.figure(figsize=(8, 6))
-            ax3 = plt.subplot(1, 1, 1)
-            ax3.plot(x, y, '.')
-            # plt.plot(iters, self.best_y[0:self.iter], 'r')
-            ax3.set_xlabel('Iteration')
-            ax3.set_ylabel('Objective')
-            fig.suptitle(result_type.value[0])
-            plt.grid()
-            plt.show()
+            if self.plotting_allowed():
+                plt.ion()
+                fig = plt.figure(figsize=(8, 6))
+                ax3 = plt.subplot(1, 1, 1)
+                ax3.plot(x, y, '.')
+                # plt.plot(iters, self.best_y[0:self.iter], 'r')
+                ax3.set_xlabel('Iteration')
+                ax3.set_ylabel('Objective')
+                fig.suptitle(result_type.value[0])
+                plt.grid()
+                plt.show()
 
         else:
             columns = []

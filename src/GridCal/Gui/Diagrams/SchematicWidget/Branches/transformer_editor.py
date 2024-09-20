@@ -18,7 +18,7 @@
 from typing import List
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QComboBox
-from GridCal.Gui.GuiFunctions import get_list_model, create_spinbox
+from GridCal.Gui.gui_functions import get_list_model, create_spinbox
 from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.transformer_type import TransformerType, reverse_transformer_short_circuit_study
 

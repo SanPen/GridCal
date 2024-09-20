@@ -15,12 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from PySide6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDialogButtonBox)
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QDialogButtonBox)
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.substation import Substation
 
 
 class NewMapLineDialogue(QDialog):
+    """
+    NewMapLineDialogue
+    """
     def __init__(self, grid: MultiCircuit, se_from: Substation, se_to: Substation, parent=None):
         """
         Constructor
@@ -89,6 +92,10 @@ class NewMapLineDialogue(QDialog):
         self.setLayout(main_layout)
 
     def is_valid(self):
+        """
+
+        :return: 
+        """
         return self._is_valid
 
     def bus_from(self):
@@ -114,12 +121,14 @@ class NewMapLineDialogue(QDialog):
             return None
 
     def accept(self):
-        selected_option1 = self.combo_box_from.currentText()
-        selected_option2 = self.combo_box_to.currentText()
-        # print(f"Accepted: {selected_option1}, {selected_option2}")
+        """
+        accept
+        """
         super().accept()
 
     def reject(self):
+        """
+        reject
+        """
         self._is_valid = False
-        # print("Canceled")
         super().reject()

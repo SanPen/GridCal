@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Callable
 from GridCalEngine.enumerations import InvestmentsEvaluationObjectives, InvestmentEvaluationMethod, DeviceType
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
@@ -30,7 +31,8 @@ class InvestmentsEvaluationOptions(OptionsTemplate):
                  pf_options: Union[PowerFlowOptions, None] = None,
                  opf_options: Union[OptimalPowerFlowOptions, None] = None,
                  solver: InvestmentEvaluationMethod = InvestmentEvaluationMethod.NSGA3,
-                 obj_tpe: InvestmentsEvaluationObjectives = InvestmentsEvaluationObjectives.PowerFlow):
+                 obj_tpe: InvestmentsEvaluationObjectives = InvestmentsEvaluationObjectives.PowerFlow,
+                 plugin_fcn_ptr: Callable = None,):
         """
 
         :param max_eval: Maximum number of evaluations
@@ -50,6 +52,8 @@ class InvestmentsEvaluationOptions(OptionsTemplate):
         self.solver = solver
 
         self.objf_tpe = obj_tpe
+
+        self.plugin_fcn_ptr = plugin_fcn_ptr
 
         self.register(key="max_eval", tpe=int)
         self.register(key="pf_options", tpe=DeviceType.SimulationOptionsDevice)

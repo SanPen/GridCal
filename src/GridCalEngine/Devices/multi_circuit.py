@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import os
 import cmath
@@ -31,7 +32,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice
 from GridCalEngine.basic_structures import IntVec, Vec, Mat, CxVec, IntMat, CxMat
 
 import GridCalEngine.Devices as dev
-from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES
+from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, AREA_TYPES
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.Topology.topology_processor import TopologyProcessorInfo, process_grid_topology_at
@@ -206,24 +207,24 @@ class MultiCircuit(Assets):
         """
         return (self.get_bus_number() + self.get_connectivity_nodes_number()) > 0
 
-    def get_objects_with_profiles_list(self) -> List[ALL_DEV_TYPES]:
+    def get_template_objects_list(self) -> List[ALL_DEV_TYPES]:
         """
         get objects_with_profiles in the form of list
         :return: List[dev.EditableDevice]
         """
         lst = list()
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             for elm in elm_list:
                 lst.append(elm)
         return lst
 
-    def get_objects_with_profiles_str_dict(self) -> Dict[str, List[str]]:
+    def get_template_objects_str_dict(self) -> Dict[str, List[str]]:
         """
         get objects_with_profiles as a strings dictionary
         :return:
         """
         d = dict()
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             d[key] = [o.device_type.value for o in elm_list]
         return d
 
@@ -759,10 +760,19 @@ class MultiCircuit(Assets):
         """
         Set the profiles state at the index t as the default values.
         """
-        for device in self.items_declared():
+        self.ensure_profiles_exist()
+
+        for device in self.items():
             device.set_profile_values(t)
 
         self.snapshot_time = self.time_profile[t]
+
+    def get_snapshot_time_str(self) -> str:
+        """
+        Get the snapshot datetime as a string
+        :return: snapshot datetime string
+        """
+        return self.snapshot_time.strftime("%Y-%m-%d %H:%M:%S")
 
     def get_bus_branch_connectivity_matrix(self) -> Tuple[csc_matrix, csc_matrix, csc_matrix]:
         """
@@ -997,7 +1007,7 @@ class MultiCircuit(Assets):
 
         return logger
 
-    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col, lat_col, lon_col) -> Logger:
+    def import_bus_lat_lon(self, df: pd.DataFrame, bus_col: str, lat_col: str, lon_col: str) -> Logger:
         """
         Import the buses' latitude and longitude
         :param df: Pandas DataFrame with the information
@@ -1045,21 +1055,10 @@ class MultiCircuit(Assets):
                 lst[k] = 0
         return lst
 
-    def get_area_buses(self, area: dev.Area) -> List[Tuple[int, dev.Bus]]:
-        """
-        Get the selected buses
-        :return:
-        """
-        lst: List[Tuple[int, dev.Bus]] = list()
-        for k, bus in enumerate(self._buses):
-            if bus.area == area:
-                lst.append((k, bus))
-        return lst
-
     def get_areas_buses(self, areas: List[dev.Area]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
-        :return:
+        :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self._buses):
@@ -1067,31 +1066,47 @@ class MultiCircuit(Assets):
                 lst.append((k, bus))
         return lst
 
-    def get_zone_buses(self, zone: dev.Zone) -> List[Tuple[int, dev.Bus]]:
+    def get_zone_buses(self, zones: List[dev.Zone]) -> List[Tuple[int, dev.Bus]]:
         """
         Get the selected buses
-        :return:
+        :return: list of bus indices and bus ptr
         """
         lst: List[Tuple[int, dev.Bus]] = list()
         for k, bus in enumerate(self._buses):
-            if bus.zone == zone:
+            if bus.zone in zones:
                 lst.append((k, bus))
         return lst
 
-    def get_inter_area_branches(self, a1: dev.Area, a2: dev.Area):
+    def get_country_buses(self, countries: List[dev.Country]) -> List[Tuple[int, dev.Bus]]:
         """
-        Get the inter-area Branches
-        :param a1: Area from
-        :param a2: Area to
-        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        Get the selected buses
+        :return: list of bus indices and bus ptr
         """
-        lst: List[Tuple[int, object, float]] = list()
-        for k, branch in enumerate(self.get_branches()):
-            if branch.bus_from.area == a1 and branch.bus_to.area == a2:
-                lst.append((k, branch, 1.0))
-            elif branch.bus_from.area == a2 and branch.bus_to.area == a1:
-                lst.append((k, branch, -1.0))
+        lst: List[Tuple[int, dev.Bus]] = list()
+        for k, bus in enumerate(self._buses):
+            if bus.country in countries:
+                lst.append((k, bus))
         return lst
+
+    def get_aggregation_buses(self, aggregations: List[AREA_TYPES]) -> List[Tuple[int, dev.Bus]]:
+        """
+        Get the selected buses
+        :param aggregations:
+        :return: list of bus indices and bus ptr
+        """
+        if len(aggregations) == 0:
+            return list()
+
+        if isinstance(aggregations[0], dev.Area):
+            return self.get_areas_buses(aggregations)
+
+        if isinstance(aggregations[0], dev.Zone):
+            return self.get_zone_buses(aggregations)
+
+        if isinstance(aggregations[0], dev.Country):
+            return self.get_country_buses(aggregations)
+
+        raise TypeError("Aggregation type not supported")
 
     def get_inter_areas_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
@@ -1108,6 +1123,21 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, -1.0))
         return lst
 
+    def get_inter_buses_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-buese Branches. HVDC Branches are not considered
+        :param a1: Group of Buses 1
+        :param a2: Group of Buses 1
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self.get_branches_wo_hvdc()):
+            if branch.bus_from in a1 and branch.bus_to in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from in a2 and branch.bus_to in a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
     def get_inter_areas_hvdc_branches(self, a1: List[dev.Area], a2: List[dev.Area]) -> List[Tuple[int, object, float]]:
         """
         Get the inter-area Branches
@@ -1120,6 +1150,21 @@ class MultiCircuit(Assets):
             if branch.bus_from.area in a1 and branch.bus_to.area in a2:
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
+                lst.append((k, branch, -1.0))
+        return lst
+
+    def get_inter_buses_hvdc_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
+        """
+        Get the inter-area Branches
+        :param a1: Group of Buses 1
+        :param a2: Group of Buses 1
+        :return: List of (branch index, branch object, flow sense w.r.t the area exchange)
+        """
+        lst: List[Tuple[int, object, float]] = list()
+        for k, branch in enumerate(self._hvdc_lines):
+            if branch.bus_from in a1 and branch.bus_to in a2:
+                lst.append((k, branch, 1.0))
+            elif branch.bus_from in a2 and branch.bus_to in a1:
                 lst.append((k, branch, -1.0))
         return lst
 
@@ -1195,6 +1240,57 @@ class MultiCircuit(Assets):
             hvdc_T[k] = bus_dict[elm.bus_to]
 
         return area_names, bus_area_indices, F, T, hvdc_F, hvdc_T
+
+    def get_inter_aggregation_info(self,
+                                   objects_from: List[AREA_TYPES],
+                                   objects_to: List[AREA_TYPES]) -> dev.InterAggregationInfo:
+        """
+        Get the lists that help defining the inter area objects
+        :param objects_from: list of objects from
+        :param objects_to: list of objects to
+        :return: InterAggregationInfo
+        """
+        logger = Logger()
+
+        if len(objects_from) == 0 or len(objects_to) == 0:
+            logger.add_error(msg=f'One of the lists has no elements')
+            return dev.InterAggregationInfo(valid=False, lst_from=[], lst_to=[], lst_br=[], lst_br_hvdc=[],
+                                            objects_from=[], objects_to=[], logger=logger)
+
+        # find the buses in the aggregation from
+        lst_from = self.get_aggregation_buses(objects_from)
+        buses_from_set = {x[1] for x in lst_from}
+
+        # find the buses in the aggregation to
+        lst_to = self.get_aggregation_buses(objects_to)
+        buses_to_set = {x[1] for x in lst_to}
+
+        buses_intersection = buses_from_set & buses_to_set
+
+        if len(buses_intersection) > 0:
+            dev_tpe_from = objects_from[0].device_type
+            dev_tpe_to = objects_to[0].device_type
+
+            for bus in buses_intersection:
+                logger.add_error(msg=f'Bus in both selected {dev_tpe_from.value} to {dev_tpe_to.value}',
+                                 device_class=bus.device_type.value,
+                                 device=bus.name)
+
+            return dev.InterAggregationInfo(valid=False, lst_from=[], lst_to=[], lst_br=[], lst_br_hvdc=[],
+                                            objects_from=[], objects_to=[], logger=logger)
+
+        # find the tie branches
+        lst_br = self.get_inter_buses_branches(buses_from_set, buses_to_set)
+        lst_br_hvdc = self.get_inter_buses_hvdc_branches(buses_from_set, buses_to_set)
+
+        return dev.InterAggregationInfo(valid=True,
+                                        lst_from=lst_from,
+                                        lst_to=lst_to,
+                                        lst_br=lst_br,
+                                        lst_br_hvdc=lst_br_hvdc,
+                                        objects_from=objects_from,
+                                        objects_to=objects_to,
+                                        logger=logger)
 
     def change_base(self, Sbase_new: float):
         """
@@ -1653,7 +1749,7 @@ class MultiCircuit(Assets):
         """
 
         if all_elements_dict is None:
-            all_elements_dict = self.get_all_elements_dict()
+            all_elements_dict, dict_ok = self.get_all_elements_dict()
 
         for inv in investments_list:
             device_idtag = inv.device_idtag
@@ -1704,98 +1800,98 @@ class MultiCircuit(Assets):
                              expected_value=self.get_snapshot_time_unix())
 
         # for each category
-        for key, template_elms_list in self.objects_with_profiles.items():
+        # for key, template_elms_list in self.categorized_template_objects_dict.items():
 
-            # for each object type
-            for template_elm in template_elms_list:
+        # for each object type
+        for template_elm in self.template_items():
 
-                # get all objects of the type
-                elms1 = self.get_elements_by_type(device_type=template_elm.device_type)
-                elms2 = grid2.get_elements_by_type(device_type=template_elm.device_type)
+            # get all objects of the type
+            elms1 = self.get_elements_by_type(device_type=template_elm.device_type)
+            elms2 = grid2.get_elements_by_type(device_type=template_elm.device_type)
 
-                if len(elms1) != len(elms2):
-                    logger.add_error(msg="Different number of elements",
-                                     device_class=template_elm.device_type.value,
-                                     value=len(elms2),
-                                     expected_value=len(elms1))
+            if len(elms1) != len(elms2):
+                logger.add_error(msg="Different number of elements",
+                                 device_class=template_elm.device_type.value,
+                                 value=len(elms2),
+                                 expected_value=len(elms1))
 
-                # for every property
-                for prop_name, prop in template_elm.registered_properties.items():
+            # for every property
+            for prop_name, prop in template_elm.registered_properties.items():
 
-                    if skip_internals:
-                        analyze = prop.display
-                    else:
-                        analyze = True
+                if skip_internals:
+                    analyze = prop.display
+                else:
+                    analyze = True
 
-                    if analyze:
-                        # for every pair of elements:
-                        for elm1, elm2 in zip(elms1, elms2):
+                if analyze:
+                    # for every pair of elements:
+                    for elm1, elm2 in zip(elms1, elms2):
 
-                            # compare the snapshot values
-                            v1 = elm1.get_property_value(prop=prop, t_idx=None)
-                            v2 = elm2.get_property_value(prop=prop, t_idx=None)
+                        # compare the snapshot values
+                        v1 = elm1.get_property_value(prop=prop, t_idx=None)
+                        v2 = elm2.get_property_value(prop=prop, t_idx=None)
 
-                            if type(v1) == type(v2):
+                        if type(v1) == type(v2):
 
-                                if v1 != v2:
-                                    logger.add_error(msg="Different snapshot values",
-                                                     device_class=template_elm.device_type.value,
-                                                     device_property=prop.name,
-                                                     value=v2,
-                                                     expected_value=v1)
-                            else:
-                                # we update the type of the property...no error for now
-                                logger.add_warning(msg="Different snapshot value types",
-                                                   device_class=template_elm.device_type.value,
-                                                   device_property=prop.name,
-                                                   value=str(type(v2)),
-                                                   expected_value=str(type(v1)))
+                            if v1 != v2:
+                                logger.add_error(msg="Different snapshot values",
+                                                 device_class=template_elm.device_type.value,
+                                                 device_property=prop.name,
+                                                 value=v2,
+                                                 expected_value=v1)
+                        else:
+                            # we update the type of the property...no error for now
+                            logger.add_warning(msg="Different snapshot value types",
+                                               device_class=template_elm.device_type.value,
+                                               device_property=prop.name,
+                                               value=str(type(v2)),
+                                               expected_value=str(type(v1)))
 
-                            if prop.has_profile():
-                                p1 = elm1.get_profile_by_prop(prop=prop)
-                                p2 = elm1.get_profile_by_prop(prop=prop)
+                        if prop.has_profile():
+                            p1 = elm1.get_profile_by_prop(prop=prop)
+                            p2 = elm1.get_profile_by_prop(prop=prop)
 
-                                if p1 != p2:
-                                    logger.add_error(msg="Different profile values",
-                                                     device_class=template_elm.device_type.value,
-                                                     device_property=prop.name,
-                                                     object_value=p2,
-                                                     expected_object_value=p1)
+                            if p1 != p2:
+                                logger.add_error(msg="Different profile values",
+                                                 device_class=template_elm.device_type.value,
+                                                 device_property=prop.name,
+                                                 object_value=p2,
+                                                 expected_object_value=p1)
 
-                                if detailed_profile_comparison:
-                                    for t_idx in range(nt):
+                            if detailed_profile_comparison:
+                                for t_idx in range(nt):
 
-                                        v1 = p1[t_idx]
-                                        v2 = p2[t_idx]
+                                    v1 = p1[t_idx]
+                                    v2 = p2[t_idx]
 
-                                        if v1 != v2:
-                                            logger.add_error(msg="Different time series values",
-                                                             device_class=template_elm.device_type.value,
-                                                             device_property=prop.name,
-                                                             device=str(elm1),
-                                                             value=v2,
-                                                             expected_value=v1)
+                                    if v1 != v2:
+                                        logger.add_error(msg="Different time series values",
+                                                         device_class=template_elm.device_type.value,
+                                                         device_property=prop.name,
+                                                         device=str(elm1),
+                                                         value=v2,
+                                                         expected_value=v1)
 
-                                        v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
-                                        v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
+                                    v1b = elm1.get_property_value(prop=prop, t_idx=t_idx)
+                                    v2b = elm2.get_property_value(prop=prop, t_idx=t_idx)
 
-                                        if v1 != v1b:
-                                            logger.add_error(
-                                                msg="Profile getting values differ with different getter methods!",
-                                                device_class=template_elm.device_type.value,
-                                                device_property=prop.name,
-                                                device=str(elm1),
-                                                value=v1b,
-                                                expected_value=v1)
+                                    if v1 != v1b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
 
-                                        if v2 != v2b:
-                                            logger.add_error(
-                                                msg="Profile getting values differ with different getter methods!",
-                                                device_class=template_elm.device_type.value,
-                                                device_property=prop.name,
-                                                device=str(elm1),
-                                                value=v1b,
-                                                expected_value=v1)
+                                    if v2 != v2b:
+                                        logger.add_error(
+                                            msg="Profile getting values differ with different getter methods!",
+                                            device_class=template_elm.device_type.value,
+                                            device_property=prop.name,
+                                            device=str(elm1),
+                                            value=v1b,
+                                            expected_value=v1)
 
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
@@ -1829,7 +1925,7 @@ class MultiCircuit(Assets):
                              expected_value=self.get_snapshot_time_unix)
 
         # get a dictionary of all the elements of the other circuit
-        base_elements_dict = base_grid.get_all_elements_dict()
+        base_elements_dict, dict_ok = base_grid.get_all_elements_dict()
 
         for elm_from_here in self.items():  # for every device...
             action = ActionType.NoAction
@@ -2157,7 +2253,7 @@ class MultiCircuit(Assets):
         logger = Logger()
         bus_set = set(self._buses)
         cn_set = set(self._connectivity_nodes)
-        all_dev = self.get_all_elements_dict()
+        all_dev, dict_ok = self.get_all_elements_dict()
         nt = self.get_time_number()
 
         self.clean_branches(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)

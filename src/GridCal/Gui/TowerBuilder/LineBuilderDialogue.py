@@ -23,7 +23,7 @@ from GridCal.Gui.TowerBuilder.gui import Ui_Dialog
 import GridCalEngine.Devices as dev
 from GridCal.Gui.TowerBuilder.table_models import TowerModel, WireInTower, WiresTable
 from GridCal.Gui.pandas_model import PandasModel
-from GridCal.Gui.GeneralDialogues import LogsDialogue
+from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCalEngine.basic_structures import Logger
 
 
@@ -136,7 +136,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
-            selected_wire = self.wires_table.wires[sel_idx].copy()
+            selected_wire: Wire = self.wires_table.wires[sel_idx].copy()
             self.tower_driver.add(WireInTower(selected_wire))
         else:
             self.msg('Select a wire in the wires catalogue')

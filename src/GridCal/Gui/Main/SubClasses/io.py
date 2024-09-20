@@ -20,22 +20,24 @@ from typing import Union, List, Callable
 import pandas as pd
 from PySide6 import QtWidgets
 
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
-from GridCal.Gui.GeneralDialogues import LogsDialogue, CustomQuestionDialogue
+from GridCal.Gui.general_dialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg, info_msg
 from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
@@ -182,7 +184,7 @@ class IoMain(ConfigurationMain):
 
         self.remove_all_diagrams()
 
-        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_objects_with_profiles_str_dict(),
+        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_template_objects_str_dict(),
                                                                   top='Objects'))
         self.expand_object_tree_nodes()
 
@@ -251,7 +253,9 @@ class IoMain(ConfigurationMain):
         else:
             warning_msg('There is a file being processed now.')
 
-    def open_file_threaded(self, post_function=None, allow_diff_file_format: bool = False, title: str = 'Open file'):
+    def open_file_threaded(self, post_function=None,
+                           allow_diff_file_format: bool = False,
+                           title: str = 'Open file'):
         """
         Open file from a Qt thread to remain responsive
         :param post_function: Any function to run after
@@ -374,7 +378,7 @@ class IoMain(ConfigurationMain):
 
                 # update the drop-down menus that display dates
                 self.update_date_dependent_combos()
-                self.update_area_combos()
+                self.update_from_to_list_views()
 
                 # get the session tree structure
                 session_data_dict = self.open_file_thread_object.get_session_tree()
@@ -422,7 +426,7 @@ class IoMain(ConfigurationMain):
         self.collect_memory()
         self.setup_time_sliders()
         self.get_circuit_snapshot_datetime()
-
+        self.change_theme_mode()
 
     def select_csv_file(self, caption='Open CSV file'):
         """
@@ -466,68 +470,70 @@ class IoMain(ConfigurationMain):
 
             if self.open_file_thread_object.valid:
 
-                if not new_circuit.valid_for_simulation():
-                    # load the circuit right away
-                    self.stuff_running_now.append('file_open')
-                    self.post_open_file()
+                logger = self.circuit.add_circuit(new_circuit)
+
+                if len(logger) > 0:
+                    dlg = LogsDialogue('File merge logger', logger)
+                    dlg.exec_()
+
+                dlg2 = CustomQuestionDialogue(title="Grid differential",
+                                              question="How do you want to represent the loaded grid?",
+                                              answer1="Create new diagram",
+                                              answer2="Add to current diagram")
+                dlg2.exec_()
+
+                if dlg2.accepted_answer == 1:
+                    # Create a blank diagram and add to it
+                    diagram_widget = self.create_blank_schematic_diagram(name=new_circuit.name)
+
+                elif dlg2.accepted_answer == 2:
+                    diagram_widget = self.get_selected_diagram_widget()
+
                 else:
-                    # add the circuit
-                    logger = self.circuit.add_circuit(new_circuit)
+                    return
 
-                    if len(logger) > 0:
-                        dlg = LogsDialogue('File merge logger', logger)
-                        dlg.exec_()
-
-                    dlg2 = CustomQuestionDialogue(title="Grid differential",
-                                                  question="How do you want to represent the loaded grid?",
-                                                  answer1="Create new diagram",
-                                                  answer2="Add to current diagram")
-                    dlg2.exec_()
-
-                    if dlg2.accepted_answer == 1:
-                        # Create a blank diagram and add to it
-                        diagram_widget = self.create_blank_schematic_diagram(name=new_circuit.name)
-
-                    elif dlg2.accepted_answer == 2:
-                        diagram_widget = self.get_selected_diagram_widget()
-
-                    else:
-                        return
-
-                    if diagram_widget is not None:
-                        injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
-                        injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
-                        injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
-                        diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
-                                                                 connectivity_nodes=new_circuit.connectivity_nodes,
-                                                                 busbars=new_circuit.bus_bars,
-                                                                 lines=new_circuit.lines,
-                                                                 dc_lines=new_circuit.dc_lines,
-                                                                 transformers2w=new_circuit.transformers2w,
-                                                                 transformers3w=new_circuit.transformers3w,
-                                                                 hvdc_lines=new_circuit.hvdc_lines,
-                                                                 vsc_devices=new_circuit.vsc_devices,
-                                                                 upfc_devices=new_circuit.upfc_devices,
-                                                                 switches=new_circuit.switch_devices,
-                                                                 fluid_nodes=new_circuit.fluid_nodes,
-                                                                 fluid_paths=new_circuit.fluid_paths,
-                                                                 injections_by_bus=injections_by_bus,
-                                                                 injections_by_fluid_node=injections_by_fluid_node,
-                                                                 injections_by_cn=injections_by_cn,
-                                                                 explode_factor=1.0,
-                                                                 prog_func=None,
-                                                                 text_func=None)
-                        diagram_widget.set_selected_buses(buses=new_circuit.buses)
-                    else:
-                        info_msg("No diagram was selected...", title="Add to current diagram")
+                if isinstance(diagram_widget, SchematicWidget):
+                    injections_by_bus = new_circuit.get_injection_devices_grouped_by_bus()
+                    injections_by_fluid_node = new_circuit.get_injection_devices_grouped_by_fluid_node()
+                    injections_by_cn = new_circuit.get_injection_devices_grouped_by_cn()
+                    diagram_widget.add_elements_to_schematic(buses=new_circuit.buses,
+                                                             connectivity_nodes=new_circuit.connectivity_nodes,
+                                                             busbars=new_circuit.bus_bars,
+                                                             lines=new_circuit.lines,
+                                                             dc_lines=new_circuit.dc_lines,
+                                                             transformers2w=new_circuit.transformers2w,
+                                                             transformers3w=new_circuit.transformers3w,
+                                                             hvdc_lines=new_circuit.hvdc_lines,
+                                                             vsc_devices=new_circuit.vsc_devices,
+                                                             upfc_devices=new_circuit.upfc_devices,
+                                                             switches=new_circuit.switch_devices,
+                                                             fluid_nodes=new_circuit.fluid_nodes,
+                                                             fluid_paths=new_circuit.fluid_paths,
+                                                             injections_by_bus=injections_by_bus,
+                                                             injections_by_fluid_node=injections_by_fluid_node,
+                                                             injections_by_cn=injections_by_cn,
+                                                             explode_factor=1.0,
+                                                             prog_func=None,
+                                                             text_func=None)
+                    diagram_widget.set_selected_buses(buses=new_circuit.buses)
+                else:
+                    info_msg("No schematic diagram was selected...", title="Add to current diagram")
 
     def export_circuit_differential(self):
         """
         Prompt to add another circuit
         """
-        self.open_file_threaded(post_function=self.post_create_circuit_differential,
-                                allow_diff_file_format=True,
-                                title="Load base grid to compare...")
+        # check that this circuit is ok
+        logger = Logger()
+        _, ok = self.circuit.get_all_elements_dict(logger=logger)
+
+        if ok:
+            self.open_file_threaded(post_function=self.post_create_circuit_differential,
+                                    allow_diff_file_format=True,
+                                    title="Load base grid to compare...")
+        else:
+            dlg = LogsDialogue('This circuit has duplicated idtags :(', logger)
+            dlg.exec_()
 
     def post_create_circuit_differential(self):
         """
@@ -552,30 +558,37 @@ class IoMain(ConfigurationMain):
                     # diff the circuit
                     new_circuit = self.open_file_thread_object.circuit
 
-                    # create the differential
-                    ok, diff_logger, dgrid = self.circuit.differentiate_circuits(new_circuit)
+                    dict_logger = Logger()
+                    _, dict_ok = new_circuit.get_all_elements_dict(logger=dict_logger)
 
-                    if diff_logger.has_logs():
-                        dlg = LogsDialogue('Grid differences', diff_logger)
-                        dlg.exec_()
+                    if dict_ok:
+                        # create the differential
+                        ok, diff_logger, dgrid = self.circuit.differentiate_circuits(new_circuit)
 
-                    # select the file to save
-                    filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
-                                                                                    dgrid.name,
-                                                                                    "GridCal diff (*.dgridcal)")
+                        if diff_logger.has_logs():
+                            dlg = LogsDialogue('Grid differences', diff_logger)
+                            dlg.exec_()
 
-                    if filename != '':
+                        # select the file to save
+                        filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
+                                                                                        dgrid.name,
+                                                                                        "GridCal diff (*.dgridcal)")
 
-                        # if the user did not enter the extension, add it automatically
-                        name, file_extension = os.path.splitext(filename)
+                        if filename != '':
 
-                        if file_extension == '':
-                            filename = name + ".dgridcal"
+                            # if the user did not enter the extension, add it automatically
+                            name, file_extension = os.path.splitext(filename)
 
-                        # we were able to compose the file correctly, now save it
-                        self.save_file_now(filename=filename,
-                                           type_selected=type_selected,
-                                           grid=dgrid)
+                            if file_extension == '':
+                                filename = name + ".dgridcal"
+
+                            # we were able to compose the file correctly, now save it
+                            self.save_file_now(filename=filename,
+                                               type_selected=type_selected,
+                                               grid=dgrid)
+                    else:
+                        dlg = LogsDialogue('The base circuit has duplicated idtags :(', dict_logger)
+                        dlg.exec()
 
     def save_file_as(self):
         """
@@ -791,7 +804,7 @@ class IoMain(ConfigurationMain):
 
             # update the drop down menus that display dates
             self.update_date_dependent_combos()
-            self.update_area_combos()
+            self.update_from_to_list_views()
 
             # clear the results
             self.clear_results()
@@ -835,7 +848,7 @@ class IoMain(ConfigurationMain):
         :return:
         """
 
-        available_results = self.get_available_results()
+        available_results = self.get_available_drivers()
 
         if len(available_results) > 0:
 
@@ -849,7 +862,7 @@ class IoMain(ConfigurationMain):
 
                 self.stuff_running_now.append('export_all')
                 self.export_all_thread_object = exprtdrv.ExportAllThread(circuit=self.circuit,
-                                                                         simulations_list=available_results,
+                                                                         drivers_list=available_results,
                                                                          file_name=filename)
 
                 self.export_all_thread_object.progress_signal.connect(self.ui.progressBar.setValue)
@@ -903,7 +916,8 @@ class IoMain(ConfigurationMain):
                         for elm_type in elms_in_category:
                             name = f"{category}_{elm_type}@{c}"
                             df = calc_input.get_structure(elm_type).astype(str)
-                            df.to_excel(excel_writer=writer, sheet_name=name[:31])  # excel supports 31 chars per sheet name
+                            df.to_excel(excel_writer=writer,
+                                        sheet_name=name[:31])  # excel supports 31 chars per sheet name
 
     def load_results_driver(self):
         """

@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QMenu
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.enumerations import TapModuleControl

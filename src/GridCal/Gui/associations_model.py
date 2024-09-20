@@ -20,7 +20,8 @@ from typing import Dict, List, Union
 
 from PySide6 import QtCore, QtWidgets
 
-from GridCal.Gui.GuiFunctions import (FloatDelegate)
+from GridCal.Gui.gui_functions import (FloatDelegate)
+from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Devices.Associations.association import Association, Associations
 from GridCalEngine.Devices.Parents.editable_device import GCProp
 from GridCalEngine.Devices.types import ASSOCIATION_TYPES, ALL_DEV_TYPES
@@ -38,7 +39,7 @@ def try_convert_to_float(value: str) -> Union[float, str]:
         return value
 
 
-class AssociationsModel(QtCore.QAbstractTableModel):
+class AssociationsModel(WrappableTableModel):
     """
     Class to populate a Qt table view with the properties of objects
     """
@@ -56,7 +57,7 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         :param gc_prop:
         :param table_view:
         """
-        QtCore.QAbstractTableModel.__init__(self)
+        WrappableTableModel.__init__(self)
 
         self._table_view = table_view
 
@@ -83,23 +84,6 @@ class AssociationsModel(QtCore.QAbstractTableModel):
         self._formatter = lambda x: f"%.2f" % x
 
         self._decimals = decimals
-
-        # flag for the headers text wraper: HeaderViewWithWordWrap
-        self._hide_headers_mode = False
-
-    def hideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = True
-
-    def unhideHeaders(self):
-        """
-
-        :return:
-        """
-        self._hide_headers_mode = False
 
     def get_association(self, i: int, j: int) -> Union[None, Association]:
         """

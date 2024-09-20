@@ -20,14 +20,14 @@ from PySide6 import QtWidgets
 from GridCal.Gui.Analysis.gui import Ui_MainWindow
 from GridCal.Gui.Analysis.object_plot_analysis import grid_analysis, GridErrorLog, FixableErrorOutOfRange
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCal.Gui.GeneralDialogues import LogsDialogue, Logger
+from GridCal.Gui.general_dialogues import LogsDialogue, Logger
 
 
 class GridAnalysisGUI(QtWidgets.QMainWindow):
     """
     GridAnalysisGUI
     """
-    def __init__(self, circuit: MultiCircuit = None):
+    def __init__(self, circuit: MultiCircuit):
         """
 
         :param circuit: MultiCircuit
@@ -40,7 +40,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         # set the circuit
         self.circuit = circuit
 
-        self.object_types = [dev.device_type.value for dev in circuit.get_objects_with_profiles_list()]
+        self.object_types = [dev.device_type.value for dev in circuit.get_template_objects_list()]
 
         # declare logs
         self.log = GridErrorLog()
@@ -72,7 +72,8 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
             min_vcc=self.ui.transformerVccMinSpinBox.value(),
             max_vcc=self.ui.transformerVccMaxSpinBox.value(),
-            logger=self.log)
+            logger=self.log
+        )
 
         # set logs
         self.ui.logsTreeView.setModel(self.log.get_model())
@@ -82,7 +83,6 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         Fix all detected fixable errors
         :return:
         """
-        print('Fixing issues...')
         logger = Logger()
         for fixable_err in self.fixable_errors:
             fixable_err.fix(logger=logger,

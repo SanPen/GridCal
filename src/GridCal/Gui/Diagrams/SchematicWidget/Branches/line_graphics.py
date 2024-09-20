@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Union
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPen, QBrush
 from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneContextMenuEvent
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
 from GridCal.Gui.messages import yes_no_question, warning_msg

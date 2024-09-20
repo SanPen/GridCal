@@ -207,7 +207,7 @@ class Assets:
         self._diagrams: List[Union[dev.MapDiagram, dev.SchematicDiagram]] = list()
 
         # objects with profiles
-        self.objects_with_profiles = {
+        self.template_objects_dict = {
             "Regions": [
                 dev.Country(),
                 dev.Community(),
@@ -286,7 +286,7 @@ class Assets:
 
         self.properties_with_profile = ['Y']
         '''
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             for elm in elm_list:
                 if elm.properties_with_profile is not None:
                     key = str(elm.device_type.value)
@@ -308,11 +308,12 @@ class Assets:
         for key, tpe in self.device_type_name_dict.items():
             yield tpe
 
-    def items_declared(self) -> Generator[ALL_DEV_TYPES, None, None]:
+    def template_items(self) -> Generator[ALL_DEV_TYPES, None, None]:
         """
-        Iterator of the declared objects in the MultiCircuit
+        Iterator of the declared objects in the MultiCircuit.
+        These are the object types that you see in the App DataBase tree
         """
-        for key, elm_type_list in self.objects_with_profiles.items():
+        for key, elm_type_list in self.template_objects_dict.items():
             for elm in elm_type_list:
                 yield elm
 
@@ -470,7 +471,7 @@ class Assets:
 
     def format_profiles(self, index: pd.DatetimeIndex):
         """
-        Format the pandas profiles in place using a time index.
+        Format the profiles in place using a time index.
         :param index: Time profile
         """
 
@@ -479,7 +480,7 @@ class Assets:
         for key, tpe in self.device_type_name_dict.items():
             elements = self.get_elements_by_type(device_type=tpe)
             for elm in elements:
-                elm.create_profiles(index)
+                elm.ensure_profiles_exist(index)
 
     def set_time_profile(self, unix_data: IntVec):
         """
@@ -503,10 +504,13 @@ class Assets:
         if self.time_profile is None:
             raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
 
-        for key, tpe in self.device_type_name_dict.items():
-            elements = self.get_elements_by_type(device_type=tpe)
-            for elm in elements:
-                elm.ensure_profiles_exist(self.time_profile)
+        # for key, tpe in self.device_type_name_dict.items():
+        #     elements = self.get_elements_by_type(device_type=tpe)
+        #     for elm in elements:
+        #         elm.ensure_profiles_exist(self.time_profile)
+
+        for elm in self.items():
+            elm.ensure_profiles_exist(self.time_profile)
 
     def delete_profiles(self):
         """
@@ -601,7 +605,7 @@ class Assets:
                                device=obj.idtag)
         else:
             if self.time_profile is not None:
-                obj.create_profiles(self.time_profile)
+                obj.ensure_profiles_exist(self.time_profile)
             self._lines.append(obj)
 
         return obj
@@ -643,7 +647,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._dc_lines.append(obj)
 
     def delete_dc_line(self, obj: dev.DcLine):
@@ -697,7 +701,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._transformers2w.append(obj)
 
     def delete_transformer2w(self, obj: dev.Transformer2W):
@@ -751,7 +755,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._hvdc_lines.append(obj)
 
     def delete_hvdc_line(self, obj: dev.HvdcLine):
@@ -798,7 +802,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._vsc_devices.append(obj)
 
     def delete_vsc_converter(self, obj: dev.VSC):
@@ -838,7 +842,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._upfc_devices.append(obj)
 
     def delete_upfc_converter(self, obj: dev.UPFC):
@@ -885,7 +889,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._switch_devices.append(obj)
 
         return obj
@@ -942,7 +946,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._transformers3w.append(obj)
         if add_middle_bus:
             self.add_bus(obj.bus0)  # add the middle transformer
@@ -1005,7 +1009,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._windings.append(obj)
 
     def delete_winding(self, obj: dev.Winding):
@@ -1087,7 +1091,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._series_reactances.append(obj)
 
     def delete_series_reactance(self, obj: dev.SeriesReactance) -> None:
@@ -1172,7 +1176,7 @@ class Assets:
             obj = dev.Bus()
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
 
         self._buses.append(obj)
 
@@ -1388,7 +1392,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._voltage_levels.append(obj)
 
     def delete_voltage_level(self, obj: dev.VoltageLevel) -> None:
@@ -2035,7 +2039,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._pi_measurements.append(obj)
 
     def delete_pi_measurement(self, obj: dev.PiMeasurement) -> None:
@@ -2097,7 +2101,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._qi_measurements.append(obj)
 
     def delete_qi_measurement(self, obj: dev.QiMeasurement) -> None:
@@ -2160,7 +2164,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._vm_measurements.append(obj)
 
     def delete_vm_measurement(self, obj: dev.VmMeasurement) -> None:
@@ -2223,7 +2227,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._pf_measurements.append(obj)
 
     def delete_pf_measurement(self, obj: dev.PfMeasurement) -> None:
@@ -2286,7 +2290,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._qf_measurements.append(obj)
 
     def delete_qf_measurement(self, obj: dev.QfMeasurement) -> None:
@@ -2349,7 +2353,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._if_measurements.append(obj)
 
     def delete_if_measurement(self, obj: dev.IfMeasurement) -> None:
@@ -2613,7 +2617,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._branch_groups.append(obj)
 
     def delete_branch_group(self, obj: dev.BranchGroup) -> None:
@@ -2898,7 +2902,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._communities.append(obj)
 
     def delete_community(self, obj: dev.Community) -> None:
@@ -2969,7 +2973,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._regions.append(obj)
 
     def delete_region(self, obj: dev.Region) -> None:
@@ -3036,7 +3040,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._municipalities.append(obj)
 
     def delete_municipality(self, obj: dev.Municipality) -> None:
@@ -3203,7 +3207,7 @@ class Assets:
         group2index = {g: i for i, g in enumerate(self._contingency_groups)}
 
         # get a dictionary of all objects
-        all_devices = self.get_all_elements_dict()
+        all_devices, dict_ok = self.get_all_elements_dict()
 
         # get the buses that match the filtering
         buses = self.get_buses_by(filter_elements=grouping_elements)
@@ -3449,7 +3453,7 @@ class Assets:
         """
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
         self._modelling_authorities.append(obj)
 
     def delete_modelling_authority(self, obj: dev.ModellingAuthority) -> None:
@@ -3741,7 +3745,7 @@ class Assets:
         self._fluid_nodes.append(obj)
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
 
     def delete_fluid_node(self, obj: dev.FluidNode):
         """
@@ -3800,7 +3804,7 @@ class Assets:
         self._fluid_paths.append(obj)
 
         if self.time_profile is not None:
-            obj.create_profiles(self.time_profile)
+            obj.ensure_profiles_exist(self.time_profile)
 
     def delete_fluid_path(self, obj: dev.FluidPath):
         """
@@ -5261,19 +5265,33 @@ class Assets:
 
         return found
 
-    def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
+    def get_all_elements_dict(self, logger = Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
         """
         Get a dictionary of all elements
+        :param: logger: Logger
         :return: Dict[idtag] -> object
         """
         data = dict()
+        ok = True
         for key, tpe in self.device_type_name_dict.items():
             elements = self.get_elements_by_type(device_type=tpe)
 
             for elm in elements:
-                data[elm.idtag] = elm
 
-        return data
+                e = data.get(elm.idtag, None)
+                if e is None:
+                    data[elm.idtag] = elm
+                else:
+                    logger.add_error(
+                        msg="Duplicated idtag!",
+                        device=elm.name,
+                        device_class=elm.device_type.value,
+                        device_property="idtag",
+                        expected_value=f"{e.device_type.value}:{e.idtag}:{e.name}"
+                    )
+                    ok = False
+
+        return data, ok
 
     def get_all_elements_dict_by_type(self,
                                       add_locations: bool = False,
@@ -5319,6 +5337,281 @@ class Assets:
         Clear the multi-circuit (remove the bus and branch objects)
         """
 
-        for key, elm_list in self.objects_with_profiles.items():
+        for key, elm_list in self.template_objects_dict.items():
             for elm in elm_list:
                 self.get_elements_by_type(device_type=elm.device_type).clear()
+
+    def get_dictionary_of_lists(self, elm_type: DeviceType) -> Tuple[
+        ALL_DEV_TYPES, Dict[DeviceType, List[ALL_DEV_TYPES]]]:
+        """
+
+        :param elm_type:
+        :return:
+        """
+        dictionary_of_lists = dict()
+
+        if elm_type == DeviceType.BusDevice:
+            elm = dev.Bus()
+            dictionary_of_lists = {DeviceType.AreaDevice: self.areas,
+                                   DeviceType.ZoneDevice: self.zones,
+                                   DeviceType.SubstationDevice: self.substations,
+                                   DeviceType.VoltageLevelDevice: self.voltage_levels,
+                                   DeviceType.CountryDevice: self.countries,
+                                   DeviceType.ModellingAuthority: self.modelling_authorities,
+                                   }
+
+        elif elm_type == DeviceType.LoadDevice:
+            elm = dev.Load()
+            dictionary_of_lists = {
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.StaticGeneratorDevice:
+            elm = dev.StaticGenerator()
+            dictionary_of_lists = {
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.ControllableShuntDevice:
+            elm = dev.ControllableShunt()
+            dictionary_of_lists = {
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.CurrentInjectionDevice:
+            elm = dev.CurrentInjection()
+            dictionary_of_lists = {
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.GeneratorDevice:
+            elm = dev.Generator()
+            dictionary_of_lists = {DeviceType.Technology: self.technologies,
+                                   DeviceType.FuelDevice: self.fuels,
+                                   DeviceType.EmissionGasDevice: self.emission_gases,
+                                   DeviceType.ModellingAuthority: self.modelling_authorities, }
+
+        elif elm_type == DeviceType.BatteryDevice:
+            elm = dev.Battery()
+            dictionary_of_lists = {
+                DeviceType.Technology: self.technologies,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.ShuntDevice:
+            elm = dev.Shunt()
+            dictionary_of_lists = {
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.ExternalGridDevice:
+            elm = dev.ExternalGrid()
+            dictionary_of_lists = {
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.LineDevice:
+            elm = dev.Line()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.SwitchDevice:
+            elm = dev.Switch()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.Transformer2WDevice:
+            elm = dev.Transformer2W()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.WindingDevice:
+            elm = dev.Winding()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.Transformer3WDevice:
+            elm = dev.Transformer3W()
+            dictionary_of_lists = {
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.HVDCLineDevice:
+            elm = dev.HvdcLine()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.VscDevice:
+            elm = dev.VSC()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.UpfcDevice:
+            elm = dev.UPFC()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.SeriesReactanceDevice:
+            elm = dev.SeriesReactance()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.DCLineDevice:
+            elm = dev.DcLine()
+            dictionary_of_lists = {
+                DeviceType.BranchGroupDevice: self.branch_groups,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.SubstationDevice:
+            elm = dev.Substation()
+            dictionary_of_lists = {
+                DeviceType.CountryDevice: self.get_countries(),
+                DeviceType.CommunityDevice: self.get_communities(),
+                DeviceType.RegionDevice: self.get_regions(),
+                DeviceType.MunicipalityDevice: self.get_municipalities(),
+                DeviceType.AreaDevice: self.get_areas(),
+                DeviceType.ZoneDevice: self.get_zones(),
+            }
+
+        elif elm_type == DeviceType.ConnectivityNodeDevice:
+            elm = dev.ConnectivityNode()
+            dictionary_of_lists = {
+                DeviceType.BusDevice: self.buses,
+                DeviceType.VoltageLevelDevice: self.voltage_levels,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.BusBarDevice:
+            elm = dev.BusBar()
+            dictionary_of_lists = {
+                DeviceType.VoltageLevelDevice: self.voltage_levels,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.VoltageLevelDevice:
+            elm = dev.VoltageLevel()
+            dictionary_of_lists = {DeviceType.SubstationDevice: self.get_substations(), }
+
+        elif elm_type == DeviceType.AreaDevice:
+            elm = dev.Area()
+
+        elif elm_type == DeviceType.ZoneDevice:
+            elm = dev.Zone()
+            dictionary_of_lists = {DeviceType.AreaDevice: self.get_areas(), }
+
+        elif elm_type == DeviceType.CountryDevice:
+            elm = dev.Country()
+
+        elif elm_type == DeviceType.CommunityDevice:
+            elm = dev.Community()
+            dictionary_of_lists = {DeviceType.CountryDevice: self.get_countries(), }
+
+        elif elm_type == DeviceType.RegionDevice:
+            elm = dev.Region()
+            dictionary_of_lists = {DeviceType.CommunityDevice: self.get_communities(), }
+
+        elif elm_type == DeviceType.MunicipalityDevice:
+            elm = dev.Municipality()
+            dictionary_of_lists = {DeviceType.RegionDevice: self.get_regions(), }
+
+        elif elm_type == DeviceType.ContingencyDevice:
+            elm = dev.Contingency()
+            dictionary_of_lists = {DeviceType.ContingencyGroupDevice: self.get_contingency_groups(), }
+
+        elif elm_type == DeviceType.ContingencyGroupDevice:
+            elm = dev.ContingencyGroup()
+
+        elif elm_type == DeviceType.InvestmentDevice:
+            elm = dev.Investment()
+            dictionary_of_lists = {DeviceType.InvestmentsGroupDevice: self.investments_groups, }
+
+        elif elm_type == DeviceType.InvestmentsGroupDevice:
+            elm = dev.InvestmentsGroup()
+
+        elif elm_type == DeviceType.BranchGroupDevice:
+            elm = dev.BranchGroup()
+
+        elif elm_type == DeviceType.Technology:
+            elm = dev.Technology()
+
+        elif elm_type == DeviceType.FuelDevice:
+            elm = dev.Fuel()
+
+        elif elm_type == DeviceType.EmissionGasDevice:
+            elm = dev.EmissionGas()
+
+        elif elm_type == DeviceType.WireDevice:
+            elm = dev.Wire()
+
+        elif elm_type == DeviceType.OverheadLineTypeDevice:
+            elm = dev.OverheadLineType()
+
+        elif elm_type == DeviceType.SequenceLineDevice:
+            elm = dev.SequenceLineType()
+
+        elif elm_type == DeviceType.UnderGroundLineDevice:
+            elm = dev.UndergroundLineType()
+
+        elif elm_type == DeviceType.TransformerTypeDevice:
+            elm = dev.TransformerType()
+
+        elif elm_type == DeviceType.FluidNodeDevice:
+            elm = dev.FluidNode()
+            dictionary_of_lists = {DeviceType.ModellingAuthority: self.modelling_authorities, }
+
+        elif elm_type == DeviceType.FluidPathDevice:
+            elm = dev.FluidPath()
+            dictionary_of_lists = {
+                DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.FluidTurbineDevice:
+            elm = dev.FluidTurbine()
+            dictionary_of_lists = {
+                DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
+                DeviceType.GeneratorDevice: self.get_generators(),
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.FluidPumpDevice:
+            elm = dev.FluidPump()
+            dictionary_of_lists = {
+                DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
+                DeviceType.GeneratorDevice: self.get_generators(),
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.FluidP2XDevice:
+            elm = dev.FluidP2x()
+            dictionary_of_lists = {
+                DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
+                DeviceType.GeneratorDevice: self.get_generators(),
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
+
+        elif elm_type == DeviceType.ModellingAuthority:
+            elm = dev.ModellingAuthority()
+            dictionary_of_lists = dict()
+
+        else:
+            raise Exception(f'elm_type not understood: {elm_type.value}')
+
+        return elm, dictionary_of_lists

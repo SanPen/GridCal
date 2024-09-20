@@ -1,6 +1,8 @@
 Linear example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code-block:: python
+
     """
     IEEE14 example with linear OPF
     """
@@ -21,7 +23,9 @@ Linear example
 
 Non-linear example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code-block:: python
+
     """
     IEEE14 example with non-linear OPF
     """

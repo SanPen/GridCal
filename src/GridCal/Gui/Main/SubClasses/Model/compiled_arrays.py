@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt
 
 from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.Main.SubClasses.Server.server import ServerMain
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 
 from GridCalEngine.enumerations import EngineType
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at

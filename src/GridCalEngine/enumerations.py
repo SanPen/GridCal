@@ -122,6 +122,7 @@ class InvestmentEvaluationMethod(Enum):
     NSGA3 = "NSGA3"
     Random = "Random"
     MixedVariableGA = "Mixed Variable NSGA2"
+    FromPlugin = "From plugin"
 
     def __str__(self):
         return self.value
@@ -1038,6 +1039,8 @@ class DeviceType(Enum):
 
     SimulationOptionsDevice = "SimulationOptionsDevice"
 
+    InterAggregationInfo = "InterAggregationInfo"
+
     def __str__(self) -> str:
         return str(self.value)
 
@@ -1274,6 +1277,7 @@ class InvestmentsEvaluationObjectives(Enum):
     TimeSeriesPowerFlow = 'TimeSeriesPowerFlow'
     OptimalPowerFlow = 'OptimalPowerFlow'
     TimeSeriesOptimalPowerFlow = 'TimeSeriesOptimalPowerFlow'
+    FromPlugin = 'From Plugin'
 
     def __str__(self):
         return str(self.value)
@@ -1708,6 +1712,7 @@ class SimulationTypes(Enum):
     """
     Enumeration of simulation types
     """
+    DesignView = 'Design View'
     TemplateDriver = 'Template'
     PowerFlow_run = 'Power flow'
     ShortCircuit_run = 'Short circuit'

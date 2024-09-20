@@ -18,13 +18,13 @@
 from typing import Union
 import numpy as np
 
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 from GridCalEngine.Devices.profile import Profile
 
 
-class FluidNode(EditableDevice):
+class FluidNode(PhysicalDevice):
 
     def __init__(self,
                  name: str = '',
@@ -52,7 +52,7 @@ class FluidNode(EditableDevice):
         :param bus: electrical bus they are linked with
         :param build_status
         """
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
                                 code=code,

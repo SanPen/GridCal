@@ -547,23 +547,35 @@ def interprete_excel_v2(circuit: MultiCircuit, data):
 
     # Add the overhead_line_types ##################################################################################
     if 'overhead_line_types' in data.keys():
-        lst = data['overhead_line_types']
+        df = data['overhead_line_types']
         if data['overhead_line_types'].values.shape[0] > 0:
-            for tower_name in lst['tower_name'].unique():
-                tower = dev.OverheadLineType()
-                vals = lst[lst['tower_name'] == tower_name].values
+            for tower_name in df['tower_name'].unique():
+                obj = dev.OverheadLineType()
+                dft = df[df['tower_name'] == tower_name]
+                vals = dft.values
+
+                wire_prop = df.columns.values[len(obj.registered_properties):]
 
                 # set the tower values
-                set_object_attributes(tower, tower.registered_properties.keys(), vals[0, :])
+                set_object_attributes(obj, obj.registered_properties.keys(), vals[0, :])
 
                 # add the wires
-                for i in range(vals.shape[0]):
-                    wire = dev.Wire()
-                    set_object_attributes(wire, tower.get_wire_properties(), vals[i, len(tower.registered_properties):])
-                    tower.add_wire(wire)
+                if len(wire_prop) == 7:
+                    for i in range(vals.shape[0]):
+                        # ['wire_name' 'xpos' 'ypos' 'phase' 'r' 'x' 'gmr']
+                        name = dft['wire_name'].values[i]
+                        gmr = dft['gmr'].values[i]
+                        r = dft['r'].values[i]
+                        x = dft['x'].values[i]
+                        xpos = dft['xpos'].values[i]
+                        ypos = dft['ypos'].values[i]
+                        phase = dft['phase'].values[i]
 
-                circuit.add_overhead_line(tower)
-                branch_types[str(tower)] = tower
+                        wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
+                        obj.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
+
+                circuit.add_overhead_line(obj)
+                branch_types[str(obj)] = obj
         else:
             pass
     else:
@@ -1022,8 +1034,7 @@ def interpret_excel_v3(circuit: MultiCircuit, data):
                         phase = dft['phase'].values[i]
 
                         wire = dev.Wire(name=name, gmr=gmr, r=r, x=x)
-                        w = dev.WireInTower(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
-                        obj.add_wire(w)
+                        obj.add_wire_relationship(wire=wire, xpos=xpos, ypos=ypos, phase=phase)
 
                 circuit.add_overhead_line(obj)
                 branch_types[str(obj)] = obj

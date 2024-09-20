@@ -20,10 +20,10 @@ from typing import List
 from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
 
-import GridCal.Gui.GuiFunctions as gf
+import GridCal.Gui.gui_functions as gf
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCal.Gui.GeneralDialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
+from GridCal.Gui.general_dialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
@@ -115,7 +115,7 @@ class TimeEventsMain(ObjectsTableMain):
                 self.circuit.delete_profiles()
                 self.ui.profiles_tableView.setModel(None)
                 self.update_date_dependent_combos()
-                self.update_area_combos()
+                self.update_from_to_list_views()
             else:
                 pass
         else:

@@ -34,7 +34,8 @@ class OsmTiles(Tiles):
                          url_path='/{Z}/{X}/{Y}.png',
                          max_server_requests=2,
                          max_lru=10000,
-                         http_proxy=http_proxy)
+                         http_proxy=http_proxy,
+                         attribution="© OpenStreetMap contributors")
         # TODO: implement map wrap-around
         #        self.wrap_x = True
         #        self.wrap_y = False

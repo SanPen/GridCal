@@ -51,6 +51,7 @@ Contents
     rst_source/benchmarks
     rst_source/troubleshooting
     rst_source/other_data_models
+    rst_source/plugins
     rst_source/change_log
     rst_source/api/auto/modules
 

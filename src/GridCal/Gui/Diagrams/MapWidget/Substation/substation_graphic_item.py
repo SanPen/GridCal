@@ -22,9 +22,9 @@ from PySide6.QtWidgets import (QApplication, QMenu, QGraphicsSceneContextMenuEve
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor, QCursor
 from GridCal.Gui.Diagrams.MapWidget.Substation.node_template import NodeTemplate
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
-from GridCal.Gui.GeneralDialogues import InputNumberDialogue
+from GridCal.Gui.general_dialogues import InputNumberDialogue
 
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices import VoltageLevel
@@ -145,6 +145,9 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         lat, long = self.editor.to_lat_lon(self.rect().x(), self.rect().y())
 
+        self.lat = lat
+        self.lon = long
+
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,
                                            longitude=long,
@@ -187,18 +190,10 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.setSelected(True)
 
         event.setAccepted(True)
-        self.editor.map.view.disableMove = True
+        self.editor.map.view.disable_move = True
 
         if self.api_object is not None:
-            self.editor.set_editor_model(api_object=self.api_object,
-                                         dictionary_of_lists={
-                                             DeviceType.CountryDevice: self.editor.circuit.get_countries(),
-                                             DeviceType.CommunityDevice: self.editor.circuit.get_communities(),
-                                             DeviceType.RegionDevice: self.editor.circuit.get_regions(),
-                                             DeviceType.MunicipalityDevice: self.editor.circuit.get_municipalities(),
-                                             DeviceType.AreaDevice: self.editor.circuit.get_areas(),
-                                             DeviceType.ZoneDevice: self.editor.circuit.get_zones(),
-                                         })
+            self.editor.set_editor_model(api_object=self.api_object)
 
     def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent):
         """
@@ -213,7 +208,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse enters the item.
         """
-        self.editor.map.view.inItem = True
+        # self.editor.map.view.in_item = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         self.hovered = True
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -222,7 +217,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
-        self.editor.map.view.inItem = False
+        # self.editor.map.view.in_item = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()

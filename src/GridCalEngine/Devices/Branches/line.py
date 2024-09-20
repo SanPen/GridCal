@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import numpy as np
-from typing import Union, Tuple
+from typing import Union, Tuple, List
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
@@ -357,7 +357,7 @@ class Line(BranchParent):
                                 X0=self.X0 / self.length,
                                 B0=self.B0 / self.length)
 
-    def get_save_data(self):
+    def get_save_data(self) -> List[str]:
         """
         Return the data that matches the edit_headers
         :return:
@@ -381,11 +381,11 @@ class Line(BranchParent):
                 data.append(obj)
         return data
 
-    def fix_inconsistencies(self, logger: Logger):
+    def fix_inconsistencies(self, logger: Logger) -> bool:
         """
         Fix the inconsistencies
         :param logger:
-        :return:
+        :return: any error
         """
         errors = False
 
@@ -398,9 +398,9 @@ class Line(BranchParent):
 
     def should_this_be_a_transformer(self, branch_connection_voltage_tolerance: float = 0.1) -> bool:
         """
-
+        Check if ths should be a transformer
         :param branch_connection_voltage_tolerance:
-        :return:
+        :return: should it be a transformer?
         """
         if self.bus_to is not None and self.bus_from is not None:
             V1 = min(self.bus_to.Vnom, self.bus_from.Vnom)
@@ -471,11 +471,8 @@ class Line(BranchParent):
         The virtual taps generate when a line nominal voltage ate the two connection buses differ
 
         Returns:
-
             **tap_f** (float, 1.0): Virtual tap at the *from* side
-
             **tap_t** (float, 1.0): Virtual tap at the *to* side
-
         """
         # resolve how the transformer is actually connected and set the virtual taps
         bus_f_v = self.bus_from.Vnom
@@ -489,47 +486,47 @@ class Line(BranchParent):
             else:
                 return 1.0, 1.0
 
-    def set_data_from(self, second_Line: "Line"):
-        """
-        Set the data from another line
-        :param second_Line:
-        :return:
-        """
-        self.copy()
-        self.bus_from = second_Line.bus_from
-        self.bus_to = second_Line.bus_to
-        self.cn_from = second_Line.cn_from
-        self.cn_to = second_Line.cn_to
-        self.name = second_Line.name
-        self.idtag = second_Line.idtag
-        self.code = second_Line.code
-        self.R = second_Line.R
-        self.X = second_Line.X
-        self.B = second_Line.B
-        self.rate = second_Line.rate
-        self.active = second_Line.active
-        self.tolerance = second_Line.tolerance
-        self.Cost = second_Line.Cost
-        self.mttf = second_Line.mttf
-        self.mttr = second_Line.mttr
-        self.r_fault = second_Line.r_fault
-        self.x_fault = second_Line.x_fault
-        self.fault_pos = second_Line.fault_pos
-        self.length = second_Line.length
-        self.temp_base = second_Line.temp_base
-        self.temp_oper = second_Line.temp_oper
-        self.alpha = second_Line.alpha
-        self.template = second_Line.template
-        self.contingency_factor = second_Line.contingency_factor
-        self.protection_rating_factor = second_Line.protection_rating_factor
-        self.contingency_enabled = second_Line.contingency_enabled
-        self.monitor_loading = second_Line.monitor_loading
-        self.R0 = second_Line.R0
-        self.X0 = second_Line.X0
-        self.B0 = second_Line.B0
-        self.R2 = second_Line.R2
-        self.X2 = second_Line.X2
-        self.B2 = second_Line.B2
-        self.capex = second_Line.capex
-        self.opex = second_Line.opex
-        self.build_status = second_Line.build_status
+    # def set_data_from(self, second_Line: "Line"):
+    #     """
+    #     Set the data from another line
+    #     :param second_Line:
+    #     :return:
+    #     """
+    #     self.copy()
+    #     self.bus_from = second_Line.bus_from
+    #     self.bus_to = second_Line.bus_to
+    #     self.cn_from = second_Line.cn_from
+    #     self.cn_to = second_Line.cn_to
+    #     self.name = second_Line.name
+    #     self.idtag = second_Line.idtag
+    #     self.code = second_Line.code
+    #     self.R = second_Line.R
+    #     self.X = second_Line.X
+    #     self.B = second_Line.B
+    #     self.rate = second_Line.rate
+    #     self.active = second_Line.active
+    #     self.tolerance = second_Line.tolerance
+    #     self.Cost = second_Line.Cost
+    #     self.mttf = second_Line.mttf
+    #     self.mttr = second_Line.mttr
+    #     self.r_fault = second_Line.r_fault
+    #     self.x_fault = second_Line.x_fault
+    #     self.fault_pos = second_Line.fault_pos
+    #     self.length = second_Line.length
+    #     self.temp_base = second_Line.temp_base
+    #     self.temp_oper = second_Line.temp_oper
+    #     self.alpha = second_Line.alpha
+    #     self.template = second_Line.template
+    #     self.contingency_factor = second_Line.contingency_factor
+    #     self.protection_rating_factor = second_Line.protection_rating_factor
+    #     self.contingency_enabled = second_Line.contingency_enabled
+    #     self.monitor_loading = second_Line.monitor_loading
+    #     self.R0 = second_Line.R0
+    #     self.X0 = second_Line.X0
+    #     self.B0 = second_Line.B0
+    #     self.R2 = second_Line.R2
+    #     self.X2 = second_Line.X2
+    #     self.B2 = second_Line.B2
+    #     self.capex = second_Line.capex
+    #     self.opex = second_Line.opex
+    #     self.build_status = second_Line.build_status

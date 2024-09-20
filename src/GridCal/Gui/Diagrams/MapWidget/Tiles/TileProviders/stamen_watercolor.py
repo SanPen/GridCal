@@ -1,5 +1,7 @@
 """
-A tile source that serves OpenStreetMap tiles from the internet.
+A tile source that serves Stamen Watercolor tiles from the internet.
+
+Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.
 """
 
 import math
@@ -7,32 +9,33 @@ from typing import Tuple
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
 
-class MapboxTiles(Tiles):
+class StamenWatercolorTiles(Tiles):
     """An object to source internet tiles for pySlip."""
 
-    def __init__(self, tiles_dir='modest_maps_tiles', http_proxy=None):
+    def __init__(self, tiles_dir='stamen_watercolor_tiles', http_proxy=None):
         """Override the base class for these tiles.
 
         Basically, just fill in the BaseTiles class with values from above
         and provide the Geo2Tile() and Tile2Geo() methods.
         """
 
-        super().__init__(TilesetName='ModestMaps Tiles',
-                         TilesetShortName='MM Tiles',
+        super().__init__(TilesetName='Stamen Watercolor Tiles',
+                         TilesetShortName='STMW Tiles',
                          TilesetVersion='1.0',
-                         levels=list(range(17)),
+                         levels=list(range(16)),
                          tile_width=256,
                          tile_height=256,
-                         tiles_dir=tiles_dir,
-                         max_lru=10000,
-                         servers=['http://c.tiles.mapbox.com',
-                                  ],
-                         url_path='/v3/examples.map-szwdot65/{Z}/{X}/{Y}.png',
+                         servers=['http://c.tile.stamen.com', ],
+                         url_path='/watercolor/{Z}/{X}/{Y}.jpg',
                          max_server_requests=2,
-                         http_proxy=http_proxy)
+                         max_lru=10000,
+                         tiles_dir=tiles_dir,
+                         http_proxy=http_proxy,
+                         attribution="Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL.")
 
     def Geo2Tile(self, longitude: float, latitude: float) -> Tuple[float, float]:
-        """Convert geo to tile fractional coordinates for level in use.
+        """
+        Convert geo to tile fractional coordinates for level in use.
 
         geo  tuple of geo coordinates (xgeo, ygeo)
 

@@ -16,12 +16,13 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from typing import Union
-from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
+from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 
 
-class BusBar(EditableDevice):
+class BusBar(PhysicalDevice):
 
     def __init__(self, name='BusBar', idtag: Union[None, str] = None, code: str = '',
                  voltage_level: Union[None, VoltageLevel] = None,
@@ -34,7 +35,7 @@ class BusBar(EditableDevice):
         :param voltage_level: VoltageLevel of this bus bar (optional)
         :param cn: internal Connectivity node, if none a new one is created
         """
-        EditableDevice.__init__(self,
+        PhysicalDevice.__init__(self,
                                 name=name,
                                 code=code,
                                 idtag=idtag,

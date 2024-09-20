@@ -17,7 +17,7 @@
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
 from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent
-from GridCal.Gui.GuiFunctions import add_menu_entry
+from GridCal.Gui.gui_functions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
 from PySide6.QtGui import QBrush, QColor, QCursor
@@ -176,7 +176,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         if len(selected_items) < 2:
             self.setSelected(True)
         if self.enabled:
-            self.editor.map.view.disableMove = True
+            self.editor.map.view.disable_move = True
             if event.button() == Qt.RightButton:
                 pass
 
@@ -197,7 +197,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse enters the item.
         """
-        self.editor.map.view.inItem = True
+        # self.editor.map.view.in_item = True
         self.hovered = True
         self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
@@ -206,7 +206,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         Event handler for when the mouse leaves the item.
         """
-        self.editor.map.view.inItem = False
+        # self.editor.map.view.in_item = False
         self.hovered = False
         self.setDefaultColor()
         QApplication.instance().restoreOverrideCursor()

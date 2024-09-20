@@ -100,6 +100,22 @@ class GridErrorLog:
         """
         self.logs.clear()
 
+    def add_normal_logger(self, logger: Logger):
+        """
+        Add normal logger
+        :param logger: Logger
+        """
+        for l in logger.entries:
+            self.add(object_type=l.device_class,
+                     element_name=l.device,
+                     element_index=0,
+                     severity=l.severity,
+                     propty=l.device_property,
+                     message=l.msg,
+                     val=l.value,
+                     lower=l.expected_object_value,
+                     upper=l.expected_value)
+
     def get_model(self) -> "QtGui.QStandardItemModel":
         """
         Get TreeView Model
@@ -379,6 +395,14 @@ def analyze_lines(elements: List[Line],
                        propty="bus_to",
                        message="The bus to is None")
 
+        if elm.bus_to == elm.bus_from:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from, bus_to",
+                       message="Branch connected in loop (bus_from = bus_to)")
+
         if V1 > 0 and V2 > 0:
             per = V1 / V2
             if per < (1.0 - branch_connection_voltage_tolerance):
@@ -529,6 +553,14 @@ def analyze_transformers(elements: List[Transformer2W],
                        severity=LogSeverity.Error,
                        propty="bus_to",
                        message="The bus to is None")
+
+        if elm.bus_to == elm.bus_from:
+            logger.add(object_type=elm.device_type.value,
+                       element_name=elm,
+                       element_index=i,
+                       severity=LogSeverity.Error,
+                       propty="bus_from, bus_to",
+                       message="Branch connected in loop (bus_from = bus_to)")
 
         if elm.name == '':
             logger.add(object_type=object_type.value,
@@ -1027,7 +1059,7 @@ def analyze_batteries(elements: List[Battery],
 
 def analyze_static_gen(elements: List[StaticGenerator],
                        time_profile,
-                       logger: GridErrorLog,):
+                       logger: GridErrorLog, ):
     """
 
     :param elements:
@@ -1060,7 +1092,7 @@ def analyze_static_gen(elements: List[StaticGenerator],
 
 def analyze_load(elements: List[Load],
                  time_profile,
-                 logger: GridErrorLog,):
+                 logger: GridErrorLog, ):
     """
 
     :param elements:
@@ -1121,6 +1153,12 @@ def grid_analysis(circuit: MultiCircuit,
     :param eps_min: Min epsylon value for comparison
     :return: list of fixable error objects
     """
+
+    # check for duplicated uuid's
+    duplicates_logger = Logger()
+    _, ok_dict = circuit.get_all_elements_dict(logger=duplicates_logger)
+    logger.add_normal_logger(duplicates_logger)
+
     if circuit.time_profile is not None:
         nt = len(circuit.time_profile)
     else:
@@ -1158,6 +1196,18 @@ def grid_analysis(circuit: MultiCircuit,
 
     analyze_transformers(elements=circuit.get_transformers2w(),
                          object_type=DeviceType.Transformer2WDevice,
+                         transformer_virtual_tap_tolerance=transformer_virtual_tap_tolerance,
+                         eps_min=eps_min,
+                         eps_max=eps_max,
+                         min_vcc=min_vcc,
+                         max_vcc=max_vcc,
+                         tap_min=tap_min,
+                         tap_max=tap_max,
+                         logger=logger,
+                         fixable_errors=fixable_errors)
+
+    analyze_transformers(elements=circuit.get_windings(),
+                         object_type=DeviceType.WindingDevice,
                          transformer_virtual_tap_tolerance=transformer_virtual_tap_tolerance,
                          eps_min=eps_min,
                          eps_max=eps_max,
@@ -1259,6 +1309,8 @@ def grid_analysis(circuit: MultiCircuit,
                        lower=str(Qmin),
                        val=Ql_prof[t],
                        upper=str(Qmax))
+
+
 
     return fixable_errors
 

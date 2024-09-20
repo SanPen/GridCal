@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from PySide6 import QtCore, QtWidgets, QtGui
+from GridCal.Gui.wrappable_table_model import WrappableTableModel
 
 
 class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
@@ -22,19 +23,18 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
     HeaderViewWithWordWrap
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         QtWidgets.QHeaderView.__init__(self, QtCore.Qt.Orientation.Horizontal)
 
-    def sectionSizeFromContents(self, logicalIndex):
+    def sectionSizeFromContents(self, logicalIndex: int) -> QtCore.QSize:
         """
 
         :param logicalIndex:
         :return:
         """
-        if self.model():
-            headerText = self.model().headerData(logicalIndex,
-                                                 self.orientation(),
-                                                 QtCore.Qt.ItemDataRole.DisplayRole)
+        mdl: WrappableTableModel = self.model()
+        if mdl:
+            headerText = mdl.headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
             option = QtWidgets.QStyleOptionHeader()
             self.initStyleOption(option)
             option.section = logicalIndex
@@ -59,19 +59,19 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         :param logicalIndex:
         :return:
         """
-        if self.model():
+        mdl: WrappableTableModel = self.model()  # assign with typing
+        if mdl:
             painter.save()
-            self.model().hideHeaders()
+            mdl.hide_headers()
             super().paintSection(painter, rect, logicalIndex)
-            self.model().unhideHeaders()
+            mdl.unhide_headers()
             painter.restore()
-            headerText = self.model().headerData(logicalIndex,
-                                                 self.orientation(),
-                                                 QtCore.Qt.ItemDataRole.DisplayRole)
+            headerText = mdl.headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
+
             if headerText is not None:
+
                 headerText = headerText.replace("_", " ")
 
-                # painter.drawText(QtCore.QRectF(rect), QtCore.Qt.TextFlag.TextWordWrap, headerText)
                 # Define text indentation
                 indentation = 4  # pixels
                 textRect = QtCore.QRectF(rect.adjusted(indentation, 0, 0, 0))  # Indent left and right
@@ -79,6 +79,5 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
                 painter.drawText(textRect,
                                  QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.TextFlag.TextWordWrap,
                                  headerText)
-                # painter.restore()
         else:
             QtWidgets.QHeaderView.paintSection(self, painter, rect, logicalIndex)

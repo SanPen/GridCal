@@ -34,8 +34,8 @@ from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
-from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QVBoxLayout,
-                               QGraphicsSceneMouseEvent, QGraphicsItem)
+from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout, QVBoxLayout,
+                               QGraphicsSceneMouseEvent, QGraphicsItem, QLabel, QGraphicsProxyWidget)
 
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 
@@ -114,15 +114,32 @@ class MapView(QGraphicsView):
 
         self.map_widget = map_widget
 
+        # Create a QLabel
+        self.label = QLabel("Bottom Left Label")
+        self.label.setStyleSheet("background-color: rgba(0, 0, 0, 0);"
+                                 "color: rgba(150, 150, 150, 180);"
+                                 "font-size:9pt")  # Semi-transparent yellow
+
+        # Create a QGraphicsProxyWidget for the QLabel
+        self.label_proxy_widget = QGraphicsProxyWidget()
+        self.label_proxy_widget.setWidget(self.label)
+
+        # Position the QLabel within the scene
+        self.label_proxy_widget.setPos(0, scene.sceneRect().height() - self.label.height())  # Bottom-left position
+        self.label_proxy_widget.setFlag(QGraphicsItem.ItemIgnoresTransformations)
+
+        # Add the proxy widget to the scene
+        self._scene.addItem(self.label_proxy_widget)
+
         self.mouse_x = None
         self.mouse_y = None
 
         self.diagram_w = 25000
         self.diagram_H = 25000
 
-        self.inItem = False
+        # self.in_item = False  # looks that it is written but never used
         self.pressed = False
-        self.disableMove = False
+        self.disable_move = False
 
         # updated later
         self.view_width = self.width()
@@ -133,6 +150,14 @@ class MapView(QGraphicsView):
         self.schema_zoom = 1.0
 
         self.scale(initial_zoom_factor, initial_zoom_factor)
+
+    def set_notice(self, val: str):
+        """
+
+        :param val:
+        :return:
+        """
+        self.label.setText(val)
 
     def selected_items(self) -> List[QGraphicsItem]:
         """
@@ -149,7 +174,7 @@ class MapView(QGraphicsView):
         """
         self.map_widget.mousePressEvent(event)
         self.pressed = True
-        self.disableMove = False
+        self.disable_move = False
 
         super().mousePressEvent(event)
 
@@ -161,7 +186,7 @@ class MapView(QGraphicsView):
         """
         self.map_widget.mouseReleaseEvent(event)
         self.pressed = False
-        self.disableMove = True
+        self.disable_move = True
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent):
@@ -179,11 +204,12 @@ class MapView(QGraphicsView):
         :param event:
         :return:
         """
-        if not self.disableMove:
+        if not self.disable_move:
             self.map_widget.mouseMoveEvent(event)
-            self.centerSchema()
+            self.center_schema()
 
         super().mouseMoveEvent(event)
+        self.update_label_position()
 
     def keyPressEvent(self, event: QKeyEvent):
         """
@@ -234,7 +260,8 @@ class MapView(QGraphicsView):
 
         self.map_widget.wheelEvent(event)
 
-        self.centerSchema()
+        self.center_schema()
+        self.update_label_position()
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         """
@@ -267,19 +294,29 @@ class MapView(QGraphicsView):
         Widget resized, recompute some state.
         """
 
+        super().resizeEvent(event)
         self.map_widget.resizeEvent(event=event)
 
-    def setSizeDiagram(self) -> None:
+    def update_label_position(self):
+        """
+        Updates the position of the label to the bottom-left corner of the viewport.
+        """
+        view_width = self.viewport().width()
+        view_height = self.viewport().height()
+
+        # Set position relative to the bottom-left corner of the viewport
+        self.label_proxy_widget.setPos(self.mapToScene(0, view_height - self.label.height()))
+
+    def set_size_diagram(self) -> None:
         """
 
         :return:
         """
         # new widget size
-        # TODO: These vars must be declared in init
         self.view_width = self.width()
         self.view_height = self.height()
 
-    def setSceneRectDiagram(self) -> None:
+    def set_scene_rect_diagram(self) -> None:
         """
 
         :return:
@@ -291,12 +328,9 @@ class MapView(QGraphicsView):
         yToDiagram = -(used_height / 2)
 
         # Adjust the scene rect if needed
-        self.setSceneRect(xToDiagram,
-                          yToDiagram,
-                          used_width,
-                          used_height)
+        self.setSceneRect(xToDiagram, yToDiagram, used_width, used_height)
 
-        self.centerSchema()
+        self.center_schema()
 
     def to_lat_lon(self, x: float, y: float) -> Tuple[float, float]:
         """
@@ -332,7 +366,7 @@ class MapView(QGraphicsView):
 
         return x, y
 
-    def centerSchema(self) -> None:
+    def center_schema(self) -> None:
         """
         This function centers the schema relative to the map according to lat. and long.
         """
@@ -358,8 +392,6 @@ class MapWidget(QWidget):
                  parent: Union[None, QWidget],
                  tile_src: Tiles,
                  start_level: int,
-                 startLat: float,
-                 startLon: float,
                  editor: GridMapWidget,
                  zoom_callback: Callable[[int], None],
                  position_callback: Callable[[float, float, int, int], None]):
@@ -368,10 +400,8 @@ class MapWidget(QWidget):
         :param parent: the GUI parent widget
         :param tile_src: a Tiles object, source of tiles
         :param start_level: level to initially display
-        :param startLat:
-        :param startLon:
-        :param zoom_callback:
-        :param position_callback:
+        :param zoom_callback: zoom change callback function
+        :param position_callback: position change change callback function
         """
 
         QWidget.__init__(self, parent)  # inherit all parent object setup
@@ -381,28 +411,18 @@ class MapWidget(QWidget):
         # -------------------------------------------------------------------------
         self.diagram_scene = MapScene(self)
 
+        # pointer to the editor
         self.editor: GridMapWidget = editor
 
-        self.view = MapView(scene=self.diagram_scene, map_widget=self)
-
-        self.view.setBackgroundBrush(Qt.transparent)
-
-        # re-map events, because otherwise the view shadows the base widget events
-        # self.view.mousePressEvent = self.mousePressEvent
-        # self.view.mouseReleaseEvent = self.mouseReleaseEvent
-        # self.view.mouseDoubleClickEvent = self.mouseDoubleClickEvent
-        # self.view.mouseMoveEvent = self.mouseMoveEvent
-        # self.view.wheelEvent = self.wheelEvent
-        # self.view.keyPressEvent = self.keyPressEvent
-        # self.view.keyReleaseEvent = self.keyReleaseEvent
-
         # Create a layout for the view
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
-        self.setLayout(self.layout)  # Set the layout for the MapWidget
+        self.layout = QStackedLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.setStyleSheet("background-color: transparent;")
+
+        # the view is the transparent layer used to draw stuff
+        self.view = MapView(scene=self.diagram_scene, map_widget=self)
+        self.view.setBackgroundBrush(Qt.transparent)
 
         # -------------------------------------------------------------------------
         # Internal vars
@@ -410,6 +430,7 @@ class MapWidget(QWidget):
         # remember the tile source object
         self._tile_src: Tiles = tile_src
         self._tile_src.setCallback(self.on_tile_available)
+        self.view.set_notice(val=self._tile_src.attribution_string)
 
         # the tile coordinates
         self.level: int = start_level
@@ -468,6 +489,12 @@ class MapWidget(QWidget):
                                   longitude=0,
                                   latitude=40)
 
+        # add the widgets in a leyered manner
+        # self.layout.addWidget(self.notice_widget)
+        self.layout.addWidget(self.view)  # Add the QGraphicsView to the layout
+
+        self.setLayout(self.layout)  # Set the layout for the MapWidget
+
     @property
     def tile_src(self) -> Tiles:
         """
@@ -488,10 +515,11 @@ class MapWidget(QWidget):
         if tile_src.TilesetName != self._tile_src.TilesetName:  # avoid changing tilesets to themselves
             self._tile_src: Tiles = tile_src
             self._tile_src.setCallback(self.on_tile_available)
+            self.view.set_notice(val=self._tile_src.attribution_string)
 
             if self.GotoLevel(level):
                 self.GotoLevelAndPosition(level=level, longitude=longitude, latitude=latitude)
-                self.view.centerSchema()
+                self.view.center_schema()
             else:
                 while abs(self.view.schema_zoom - 0.015625) > 0.00001:
                     self.view.schema_zoom = self.view.schema_zoom / self.view.map_widget.zoom_factor
@@ -780,13 +808,13 @@ class MapWidget(QWidget):
         Widget resized, recompute some state.
         """
         if updateDiagram:
-            self.view.setSizeDiagram()
+            self.view.set_size_diagram()
 
         # recalculate the "key" tile stuff
         self.rectify_key_tile()
 
         if updateDiagram:
-            self.view.setSceneRectDiagram()
+            self.view.set_scene_rect_diagram()
 
     def enterEvent(self, event: QEnterEvent):
         """

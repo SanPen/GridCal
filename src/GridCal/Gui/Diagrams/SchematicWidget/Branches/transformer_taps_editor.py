@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from PySide6.QtWidgets import QPushButton, QVBoxLayout, QDialog, QLabel, QComboBox
 
-from GridCal.Gui.GuiFunctions import create_spinbox, create_int_spinbox, get_list_model
+from GridCal.Gui.gui_functions import create_spinbox, create_int_spinbox, get_list_model
 from GridCalEngine.Devices.Branches.tap_changer import TapChanger, TapChangerTypes
 
 

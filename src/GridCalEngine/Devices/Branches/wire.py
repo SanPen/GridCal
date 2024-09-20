@@ -29,7 +29,8 @@ class Wire(EditableDevice):
                  max_current: float = 1.0,
                  stranding: str = "",
                  material: str = "",
-                 diameter: float = 0.0):
+                 diameter: float = 0.0,
+                 code: str = ""):
         """
         Wire definition
         :param name: Name of the wire type
@@ -37,13 +38,16 @@ class Wire(EditableDevice):
         :param r: Resistance per unit length (Ohm / km)
         :param x: Reactance per unit length (Ohm / km)
         :param max_current: Maximum current of the conductor in (kA)
-
+        :param stranding: Stranding of the wire type
+        :param material: Material of the wire type
+        :param diameter: Diameter of the wire type
+        :param code: Code of the wire type
         """
 
         EditableDevice.__init__(self,
                                 name=name,
                                 idtag=idtag,
-                                code='',
+                                code=code,
                                 device_type=DeviceType.WireDevice)
 
         # self.wire_name = name
@@ -55,9 +59,9 @@ class Wire(EditableDevice):
         self.GMR = gmr
         self.max_current = max_current
 
-        self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor')
-        self.register(key='X', units='Ohm/km', tpe=float, definition='reactance of the conductor')
-        self.register(key='GMR', units='m', tpe=float, definition='Geometric Mean Radius of the conductor')
+        self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor', old_names=['r'])
+        self.register(key='X', units='Ohm/km', tpe=float, definition='reactance of the conductor', old_names=['x'])
+        self.register(key='GMR', units='m', tpe=float, definition='Geometric Mean Radius of the conductor', old_names=['gmr'])
         self.register(key='max_current', units='kA', tpe=float, definition='Maximum current of the conductor')
         self.register(key='stranding', tpe=str, definition='Stranding of wire')
         self.register(key='material', tpe=str, definition='Material of wire')

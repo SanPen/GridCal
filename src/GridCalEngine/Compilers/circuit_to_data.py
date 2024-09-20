@@ -1007,6 +1007,8 @@ def get_branch_data(
                                  logger=logger)
 
         data.conn[ii] = elm.conn
+        data.m_taps[ii] = elm.tap_changer.tap_modules_array
+        data.tau_taps[ii] = elm.tap_changer.tap_angles_array
 
         ii += 1
 
@@ -1034,6 +1036,8 @@ def get_branch_data(
                                      logger=logger)
 
             data.conn[ii] = elm.conn
+            data.m_taps[ii] = elm.tap_changer.tap_modules_array
+            data.tau_taps[ii] = elm.tap_changer.tap_angles_array
 
             ii += 1
 
