@@ -31,7 +31,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         if not mainWindow.objectName():
             mainWindow.setObjectName(u"mainWindow")
-        mainWindow.resize(1249, 820)
+        mainWindow.resize(1196, 741)
         mainWindow.setBaseSize(QSize(0, 0))
         font = QFont()
         font.setPointSize(10)
@@ -4433,7 +4433,7 @@ class Ui_mainWindow(object):
         mainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QMenuBar(mainWindow)
         self.menuBar.setObjectName(u"menuBar")
-        self.menuBar.setGeometry(QRect(0, 0, 1249, 21))
+        self.menuBar.setGeometry(QRect(0, 0, 1196, 21))
         self.menuBar.setFont(font)
         self.menuProject = QMenu(self.menuBar)
         self.menuProject.setObjectName(u"menuProject")

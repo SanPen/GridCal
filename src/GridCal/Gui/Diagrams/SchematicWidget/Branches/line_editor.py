@@ -29,8 +29,10 @@ class LineEditor(QDialog):
     LineEditor
     """
 
-    def __init__(self, line: Line,
+    def __init__(self,
+                 line: Line,
                  Sbase=100,
+                 frequency=50,
                  templates: Union[List[Union[SequenceLineType, OverheadLineType, UndergroundLineType]], None] = None,
                  current_template=None):
         """
@@ -45,6 +47,8 @@ class LineEditor(QDialog):
         self.line = line
 
         self.Sbase = Sbase
+
+        self.frequency = frequency
 
         self.templates = templates
 
@@ -210,28 +214,20 @@ class LineEditor(QDialog):
             self.line.length = self.l_spinner.value()
             self.line.apply_template(self.selected_template, Sbase=self.Sbase)
         else:
-            length = self.l_spinner.value()
-            I = self.i_spinner.value()
-            R = self.r_spinner.value() * length
-            X = self.x_spinner.value() * length
-            B = self.b_spinner.value() * length
 
-            Vf = self.line.get_max_bus_nominal_voltage()
+            # converting uS to nFarads
+            c_nf = self.b_spinner.value() * 1e3 / (2 * 1.73205080757 * self.frequency)
 
-            Zbase = (Vf * Vf) / self.Sbase
-            Ybase = 1.0 / Zbase
-
-            self.line.R = np.round(R / Zbase, 6)
-            self.line.X = np.round(X / Zbase, 6)
-            self.line.B = np.round(B * 1e-6 / Ybase, 6)
-            old_rate = float(self.line.rate)
-            new_rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
-            self.line.rate = new_rate
-            self.line.length = length
-
-            if self.apply_to_profile.isChecked():
-                prof_old = self.line.rate_prof.toarray()
-                self.line.rate_prof.set(prof_old * new_rate / old_rate)
+            self.line.fill_design_properties(
+                r_ohm=self.r_spinner.value(),  # ohm / km
+                x_ohm=self.x_spinner.value(),  # ohm / km
+                c_nf=c_nf,  # nF / km
+                length=self.l_spinner.value(),  # km
+                Imax=self.i_spinner.value(),  # kA
+                freq=self.frequency,  # Hz
+                Sbase=self.Sbase,  # MVA
+                apply_to_profile=self.apply_to_profile.isChecked()
+            )
 
         self.accept()
 
