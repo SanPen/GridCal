@@ -198,7 +198,8 @@ class SimulationsMain(TimeEventsMain):
         self.investment_evaluation_objfunc_dict = OrderedDict()
         lst = list()
         for method in [InvestmentsEvaluationObjectives.PowerFlow,
-                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow]:
+                       InvestmentsEvaluationObjectives.TimeSeriesPowerFlow,
+                       InvestmentsEvaluationObjectives.OptimalPowerFlow]:
             self.investment_evaluation_objfunc_dict[method.value] = method
             lst.append(method.value)
         self.ui.investment_evaluation_objfunc_ComboBox.setModel(gf.get_list_model(lst))
@@ -2470,7 +2471,8 @@ class SimulationsMain(TimeEventsMain):
                     options = sim.InvestmentsEvaluationOptions(solver=method,
                                                                max_eval=max_eval,
                                                                pf_options=self.get_selected_power_flow_options(),
-                                                               objf_tpe=obj_fn_tpe,
+                                                               opf_options=self.get_opf_options(),
+                                                               obj_tpe=obj_fn_tpe,
                                                                plugin_fcn_ptr=fn_ptr
                                                                )
 
