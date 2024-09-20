@@ -819,7 +819,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.AvailableTransferCapacityDriver.tpe.value:
             pass
 
-        elif current_study == SimulationTypes.DesignView.value.tpe.value:
+        elif current_study == SimulationTypes.DesignView.value:
             nbus = self.circuit.get_bus_number()
             nbr = self.circuit.get_branch_number()
             bus_active = [bus.active for bus in self.circuit.buses]

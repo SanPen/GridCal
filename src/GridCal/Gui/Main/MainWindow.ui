@@ -471,72 +471,6 @@ QProgressBar::chunk{
                           <property name="bottomMargin">
                            <number>0</number>
                           </property>
-                          <item row="10" column="0">
-                           <widget class="QLabel" name="label_9">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Node max. size</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="15" column="1">
-                           <widget class="QSpinBox" name="resolution_factor_spinBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="toolTip">
-                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Resolution factor.&lt;/p&gt;&lt;p&gt;1K = 1920 x 1080 pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                            </property>
-                            <property name="suffix">
-                             <string> K</string>
-                            </property>
-                            <property name="minimum">
-                             <number>1</number>
-                            </property>
-                            <property name="maximum">
-                             <number>100</number>
-                            </property>
-                            <property name="value">
-                             <number>10</number>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="7" column="0">
-                           <widget class="QLabel" name="label_118">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Map tile provider</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="4" column="0">
-                           <widget class="QLabel" name="label_24">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Layout algorithm</string>
-                            </property>
-                            <property name="textFormat">
-                             <enum>Qt::PlainText</enum>
-                            </property>
-                            <property name="scaledContents">
-                             <bool>true</bool>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="4" column="1">
                            <widget class="QComboBox" name="automatic_layout_comboBox">
                             <property name="font">
@@ -549,42 +483,6 @@ QProgressBar::chunk{
                             </property>
                            </widget>
                           </item>
-                          <item row="2" column="0">
-                           <widget class="QLabel" name="label_60">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Node expansion factor</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="9" column="1">
-                           <widget class="QDoubleSpinBox" name="min_node_size_spinBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="suffix">
-                             <string> px</string>
-                            </property>
-                            <property name="decimals">
-                             <number>1</number>
-                            </property>
-                            <property name="minimum">
-                             <double>0.100000000000000</double>
-                            </property>
-                            <property name="singleStep">
-                             <double>0.100000000000000</double>
-                            </property>
-                            <property name="value">
-                             <double>20.000000000000000</double>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="7" column="1">
                            <widget class="QComboBox" name="tile_provider_comboBox">
                             <property name="font">
@@ -594,202 +492,7 @@ QProgressBar::chunk{
                             </property>
                            </widget>
                           </item>
-                          <item row="3" column="0">
-                           <widget class="QLabel" name="label_43">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Palette</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="12" column="0">
-                           <widget class="QLabel" name="label_15">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Branch max. size</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="1" column="0">
-                           <widget class="QLabel" name="label_35">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Default voltage</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="9" column="0">
-                           <widget class="QLabel" name="label">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Node min. size</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="11" column="0">
-                           <widget class="QLabel" name="label_14">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Branch min. size</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="12" column="1">
-                           <widget class="QDoubleSpinBox" name="max_branch_size_spinBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="suffix">
-                             <string> px</string>
-                            </property>
-                            <property name="decimals">
-                             <number>1</number>
-                            </property>
-                            <property name="singleStep">
-                             <double>0.100000000000000</double>
-                            </property>
-                            <property name="value">
-                             <double>20.000000000000000</double>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="2" column="1">
-                           <widget class="QDoubleSpinBox" name="explosion_factor_doubleSpinBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="toolTip">
-                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When expanding or contracting the distances between nodes, this is the factor that applies.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                            </property>
-                            <property name="decimals">
-                             <number>3</number>
-                            </property>
-                            <property name="minimum">
-                             <double>1.000000000000000</double>
-                            </property>
-                            <property name="maximum">
-                             <double>999999999.000000000000000</double>
-                            </property>
-                            <property name="singleStep">
-                             <double>0.100000000000000</double>
-                            </property>
-                            <property name="value">
-                             <double>1.500000000000000</double>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="16" column="1">
-                           <widget class="QSpinBox" name="fps_spinBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="suffix">
-                             <string> FPS</string>
-                            </property>
-                            <property name="minimum">
-                             <number>1</number>
-                            </property>
-                            <property name="maximum">
-                             <number>9999</number>
-                            </property>
-                            <property name="value">
-                             <number>30</number>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="10" column="1">
-                           <widget class="QDoubleSpinBox" name="max_node_size_spinBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="suffix">
-                             <string> px</string>
-                            </property>
-                            <property name="decimals">
-                             <number>1</number>
-                            </property>
-                            <property name="minimum">
-                             <double>0.100000000000000</double>
-                            </property>
-                            <property name="singleStep">
-                             <double>0.100000000000000</double>
-                            </property>
-                            <property name="value">
-                             <double>40.000000000000000</double>
-                            </property>
-                           </widget>
-                          </item>
                           <item row="16" column="0">
-                           <widget class="QLabel" name="label_150">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="text">
-                             <string>Video FPS</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="3" column="1">
-                           <widget class="QComboBox" name="palette_comboBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="5" column="1">
-                           <widget class="QCheckBox" name="ask_before_appliying_layout_checkBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="toolTip">
-                             <string>Ask before running the automatic grid layout. This is because you might have a layout already and ruin it accidentally.</string>
-                            </property>
-                            <property name="text">
-                             <string>Ask before applying</string>
-                            </property>
-                            <property name="checked">
-                             <bool>true</bool>
-                            </property>
-                            <property name="tristate">
-                             <bool>false</bool>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="15" column="0">
                            <widget class="QLabel" name="label_32">
                             <property name="font">
                              <font>
@@ -798,27 +501,6 @@ QProgressBar::chunk{
                             </property>
                             <property name="text">
                              <string>Export resolution</string>
-                            </property>
-                           </widget>
-                          </item>
-                          <item row="11" column="1">
-                           <widget class="QDoubleSpinBox" name="min_branch_size_spinBox">
-                            <property name="font">
-                             <font>
-                              <pointsize>8</pointsize>
-                             </font>
-                            </property>
-                            <property name="suffix">
-                             <string> px</string>
-                            </property>
-                            <property name="decimals">
-                             <number>1</number>
-                            </property>
-                            <property name="singleStep">
-                             <double>0.100000000000000</double>
-                            </property>
-                            <property name="value">
-                             <double>0.500000000000000</double>
                             </property>
                            </widget>
                           </item>
@@ -846,7 +528,230 @@ QProgressBar::chunk{
                             </property>
                            </widget>
                           </item>
-                          <item row="17" column="1">
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_35">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Default voltage</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="0" colspan="2">
+                           <widget class="QFrame" name="frame_3">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Raised</enum>
+                            </property>
+                            <layout class="QFormLayout" name="formLayout_2">
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item row="0" column="0">
+                              <widget class="QLabel" name="label_110">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>24</width>
+                                 <height>24</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>24</width>
+                                 <height>24</height>
+                                </size>
+                               </property>
+                               <property name="text">
+                                <string/>
+                               </property>
+                               <property name="pixmap">
+                                <pixmap resource="icons.qrc">:/Icons/icons/schematic.svg</pixmap>
+                               </property>
+                               <property name="scaledContents">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item row="0" column="1">
+                              <widget class="QLabel" name="label_111">
+                               <property name="palette">
+                                <palette>
+                                 <active>
+                                  <colorrole role="WindowText">
+                                   <brush brushstyle="SolidPattern">
+                                    <color alpha="255">
+                                     <red>85</red>
+                                     <green>87</green>
+                                     <blue>83</blue>
+                                    </color>
+                                   </brush>
+                                  </colorrole>
+                                 </active>
+                                 <inactive>
+                                  <colorrole role="WindowText">
+                                   <brush brushstyle="SolidPattern">
+                                    <color alpha="255">
+                                     <red>85</red>
+                                     <green>87</green>
+                                     <blue>83</blue>
+                                    </color>
+                                   </brush>
+                                  </colorrole>
+                                 </inactive>
+                                 <disabled>
+                                  <colorrole role="WindowText">
+                                   <brush brushstyle="SolidPattern">
+                                    <color alpha="255">
+                                     <red>190</red>
+                                     <green>190</green>
+                                     <blue>190</blue>
+                                    </color>
+                                   </brush>
+                                  </colorrole>
+                                 </disabled>
+                                </palette>
+                               </property>
+                               <property name="font">
+                                <font>
+                                 <pointsize>11</pointsize>
+                                </font>
+                               </property>
+                               <property name="text">
+                                <string>Schematic</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="15" column="0" colspan="2">
+                           <widget class="QFrame" name="frame_30">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Raised</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_18">
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLabel" name="label_66">
+                               <property name="minimumSize">
+                                <size>
+                                 <width>24</width>
+                                 <height>24</height>
+                                </size>
+                               </property>
+                               <property name="maximumSize">
+                                <size>
+                                 <width>24</width>
+                                 <height>24</height>
+                                </size>
+                               </property>
+                               <property name="text">
+                                <string/>
+                               </property>
+                               <property name="pixmap">
+                                <pixmap resource="icons.qrc">:/Icons/icons/picture.svg</pixmap>
+                               </property>
+                               <property name="scaledContents">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QLabel" name="label_45">
+                               <property name="palette">
+                                <palette>
+                                 <active>
+                                  <colorrole role="WindowText">
+                                   <brush brushstyle="SolidPattern">
+                                    <color alpha="255">
+                                     <red>85</red>
+                                     <green>87</green>
+                                     <blue>83</blue>
+                                    </color>
+                                   </brush>
+                                  </colorrole>
+                                 </active>
+                                 <inactive>
+                                  <colorrole role="WindowText">
+                                   <brush brushstyle="SolidPattern">
+                                    <color alpha="255">
+                                     <red>85</red>
+                                     <green>87</green>
+                                     <blue>83</blue>
+                                    </color>
+                                   </brush>
+                                  </colorrole>
+                                 </inactive>
+                                 <disabled>
+                                  <colorrole role="WindowText">
+                                   <brush brushstyle="SolidPattern">
+                                    <color alpha="255">
+                                     <red>190</red>
+                                     <green>190</green>
+                                     <blue>190</blue>
+                                    </color>
+                                   </brush>
+                                  </colorrole>
+                                 </disabled>
+                                </palette>
+                               </property>
+                               <property name="font">
+                                <font>
+                                 <pointsize>11</pointsize>
+                                </font>
+                               </property>
+                               <property name="text">
+                                <string>Export</string>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                               </property>
+                              </widget>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="7" column="0">
+                           <widget class="QLabel" name="label_118">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Map tile provider</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="18" column="1">
                            <spacer name="verticalSpacer">
                             <property name="orientation">
                              <enum>Qt::Vertical</enum>
@@ -960,205 +865,6 @@ QProgressBar::chunk{
                             </layout>
                            </widget>
                           </item>
-                          <item row="0" column="0" colspan="2">
-                           <widget class="QFrame" name="frame_3">
-                            <property name="frameShape">
-                             <enum>QFrame::NoFrame</enum>
-                            </property>
-                            <property name="frameShadow">
-                             <enum>QFrame::Raised</enum>
-                            </property>
-                            <layout class="QFormLayout" name="formLayout_2">
-                             <property name="leftMargin">
-                              <number>0</number>
-                             </property>
-                             <property name="rightMargin">
-                              <number>0</number>
-                             </property>
-                             <property name="bottomMargin">
-                              <number>0</number>
-                             </property>
-                             <item row="0" column="0">
-                              <widget class="QLabel" name="label_110">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>24</width>
-                                 <height>24</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>24</width>
-                                 <height>24</height>
-                                </size>
-                               </property>
-                               <property name="text">
-                                <string/>
-                               </property>
-                               <property name="pixmap">
-                                <pixmap resource="icons.qrc">:/Icons/icons/schematic.svg</pixmap>
-                               </property>
-                               <property name="scaledContents">
-                                <bool>true</bool>
-                               </property>
-                              </widget>
-                             </item>
-                             <item row="0" column="1">
-                              <widget class="QLabel" name="label_111">
-                               <property name="palette">
-                                <palette>
-                                 <active>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>85</red>
-                                     <green>87</green>
-                                     <blue>83</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </active>
-                                 <inactive>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>85</red>
-                                     <green>87</green>
-                                     <blue>83</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </inactive>
-                                 <disabled>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>190</red>
-                                     <green>190</green>
-                                     <blue>190</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </disabled>
-                                </palette>
-                               </property>
-                               <property name="font">
-                                <font>
-                                 <pointsize>11</pointsize>
-                                </font>
-                               </property>
-                               <property name="text">
-                                <string>Schematic</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                            </layout>
-                           </widget>
-                          </item>
-                          <item row="14" column="0" colspan="2">
-                           <widget class="QFrame" name="frame_30">
-                            <property name="frameShape">
-                             <enum>QFrame::NoFrame</enum>
-                            </property>
-                            <property name="frameShadow">
-                             <enum>QFrame::Raised</enum>
-                            </property>
-                            <layout class="QHBoxLayout" name="horizontalLayout_18">
-                             <property name="leftMargin">
-                              <number>0</number>
-                             </property>
-                             <property name="topMargin">
-                              <number>0</number>
-                             </property>
-                             <property name="rightMargin">
-                              <number>0</number>
-                             </property>
-                             <property name="bottomMargin">
-                              <number>0</number>
-                             </property>
-                             <item>
-                              <widget class="QLabel" name="label_66">
-                               <property name="minimumSize">
-                                <size>
-                                 <width>24</width>
-                                 <height>24</height>
-                                </size>
-                               </property>
-                               <property name="maximumSize">
-                                <size>
-                                 <width>24</width>
-                                 <height>24</height>
-                                </size>
-                               </property>
-                               <property name="text">
-                                <string/>
-                               </property>
-                               <property name="pixmap">
-                                <pixmap resource="icons.qrc">:/Icons/icons/picture.svg</pixmap>
-                               </property>
-                               <property name="scaledContents">
-                                <bool>true</bool>
-                               </property>
-                              </widget>
-                             </item>
-                             <item>
-                              <widget class="QLabel" name="label_45">
-                               <property name="palette">
-                                <palette>
-                                 <active>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>85</red>
-                                     <green>87</green>
-                                     <blue>83</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </active>
-                                 <inactive>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>85</red>
-                                     <green>87</green>
-                                     <blue>83</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </inactive>
-                                 <disabled>
-                                  <colorrole role="WindowText">
-                                   <brush brushstyle="SolidPattern">
-                                    <color alpha="255">
-                                     <red>190</red>
-                                     <green>190</green>
-                                     <blue>190</blue>
-                                    </color>
-                                   </brush>
-                                  </colorrole>
-                                 </disabled>
-                                </palette>
-                               </property>
-                               <property name="font">
-                                <font>
-                                 <pointsize>11</pointsize>
-                                </font>
-                               </property>
-                               <property name="text">
-                                <string>Export</string>
-                               </property>
-                               <property name="alignment">
-                                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                               </property>
-                              </widget>
-                             </item>
-                            </layout>
-                           </widget>
-                          </item>
                           <item row="8" column="0" colspan="2">
                            <widget class="QFrame" name="frame_24">
                             <property name="frameShape">
@@ -1260,7 +966,28 @@ QProgressBar::chunk{
                             </layout>
                            </widget>
                           </item>
-                          <item row="13" column="1">
+                          <item row="17" column="1">
+                           <widget class="QSpinBox" name="fps_spinBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="suffix">
+                             <string> FPS</string>
+                            </property>
+                            <property name="minimum">
+                             <number>1</number>
+                            </property>
+                            <property name="maximum">
+                             <number>9999</number>
+                            </property>
+                            <property name="value">
+                             <number>30</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="14" column="1">
                            <widget class="QCheckBox" name="branch_width_based_on_flow_checkBox">
                             <property name="font">
                              <font>
@@ -1271,6 +998,261 @@ QProgressBar::chunk{
                              <string>Width based on flow</string>
                             </property>
                             <property name="checked">
+                             <bool>false</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="13" column="0">
+                           <widget class="QLabel" name="label_15">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Branch max. size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="16" column="1">
+                           <widget class="QSpinBox" name="resolution_factor_spinBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="toolTip">
+                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Resolution factor.&lt;/p&gt;&lt;p&gt;1K = 1920 x 1080 pixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                            </property>
+                            <property name="suffix">
+                             <string> K</string>
+                            </property>
+                            <property name="minimum">
+                             <number>1</number>
+                            </property>
+                            <property name="maximum">
+                             <number>100</number>
+                            </property>
+                            <property name="value">
+                             <number>10</number>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="17" column="0">
+                           <widget class="QLabel" name="label_150">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Video FPS</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="11" column="1">
+                           <widget class="QDoubleSpinBox" name="max_node_size_spinBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="suffix">
+                             <string> px</string>
+                            </property>
+                            <property name="decimals">
+                             <number>1</number>
+                            </property>
+                            <property name="minimum">
+                             <double>0.100000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.100000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>40.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="13" column="1">
+                           <widget class="QDoubleSpinBox" name="max_branch_size_spinBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="suffix">
+                             <string> px</string>
+                            </property>
+                            <property name="decimals">
+                             <number>1</number>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.100000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>20.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="11" column="0">
+                           <widget class="QLabel" name="label_9">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Node max. size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="10" column="1">
+                           <widget class="QDoubleSpinBox" name="min_node_size_spinBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="suffix">
+                             <string> px</string>
+                            </property>
+                            <property name="decimals">
+                             <number>1</number>
+                            </property>
+                            <property name="minimum">
+                             <double>0.100000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.100000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>20.000000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="12" column="1">
+                           <widget class="QDoubleSpinBox" name="min_branch_size_spinBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="suffix">
+                             <string> px</string>
+                            </property>
+                            <property name="decimals">
+                             <number>1</number>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.100000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>0.500000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_60">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Node expansion factor</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QDoubleSpinBox" name="explosion_factor_doubleSpinBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="toolTip">
+                             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When expanding or contracting the distances between nodes, this is the factor that applies.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                            </property>
+                            <property name="decimals">
+                             <number>3</number>
+                            </property>
+                            <property name="minimum">
+                             <double>1.000000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>999999999.000000000000000</double>
+                            </property>
+                            <property name="singleStep">
+                             <double>0.100000000000000</double>
+                            </property>
+                            <property name="value">
+                             <double>1.500000000000000</double>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="12" column="0">
+                           <widget class="QLabel" name="label_14">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Branch min. size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="10" column="0">
+                           <widget class="QLabel" name="label">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Node min. size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="9" column="0">
+                           <widget class="QLabel" name="label_43">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="text">
+                             <string>Palette</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="9" column="1">
+                           <widget class="QComboBox" name="palette_comboBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="QCheckBox" name="ask_before_appliying_layout_checkBox">
+                            <property name="font">
+                             <font>
+                              <pointsize>8</pointsize>
+                             </font>
+                            </property>
+                            <property name="toolTip">
+                             <string>Ask before running the automatic grid layout. This is because you might have a layout already and ruin it accidentally.</string>
+                            </property>
+                            <property name="text">
+                             <string>Layout algorithm (mark to ask)</string>
+                            </property>
+                            <property name="checked">
+                             <bool>true</bool>
+                            </property>
+                            <property name="tristate">
                              <bool>false</bool>
                             </property>
                            </widget>
