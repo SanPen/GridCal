@@ -541,11 +541,14 @@ class SimulationsMain(TimeEventsMain):
         drv_dict = {driver.tpe.value: driver for driver in self.get_available_drivers()}
         drv = drv_dict.get(current_study_name, None)
         if drv is not None and hasattr(drv, 'time_indices'):
-            if len(drv.time_indices):
-                a = drv.time_indices[0]
-                b = drv.time_indices[-1]
-                self.ui.diagram_step_slider.setRange(a, b)
-                self.ui.diagram_step_slider.setValue(a)
+            if drv.time_indices is not None:
+                if len(drv.time_indices):
+                    a = drv.time_indices[0]
+                    b = drv.time_indices[-1]
+                    self.ui.diagram_step_slider.setRange(a, b)
+                    self.ui.diagram_step_slider.setValue(a)
+                else:
+                    self.setup_time_sliders()
             else:
                 self.setup_time_sliders()
         else:
