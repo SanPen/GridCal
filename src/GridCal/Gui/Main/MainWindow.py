@@ -616,7 +616,9 @@ class Ui_mainWindow(object):
 
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setFont(font)
+        font1 = QFont()
+        font1.setPointSize(9)
+        self.tabWidget.setFont(font1)
         self.GridTab = QWidget()
         self.GridTab.setObjectName(u"GridTab")
         self.verticalLayout_9 = QVBoxLayout(self.GridTab)
@@ -625,6 +627,7 @@ class Ui_mainWindow(object):
         self.verticalLayout_9.setContentsMargins(0, 0, 0, 0)
         self.tabWidget_3 = QTabWidget(self.GridTab)
         self.tabWidget_3.setObjectName(u"tabWidget_3")
+        self.tabWidget_3.setFont(font1)
         self.tabWidget_3.setTabPosition(QTabWidget.South)
         self.tabWidget_3.setTabShape(QTabWidget.Rounded)
         self.tabWidget_3.setElideMode(Qt.ElideNone)
@@ -672,6 +675,7 @@ class Ui_mainWindow(object):
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.tabWidget_6 = QTabWidget(self.diagram_selection_frame)
         self.tabWidget_6.setObjectName(u"tabWidget_6")
+        self.tabWidget_6.setFont(font1)
         self.tabWidget_6.setTabPosition(QTabWidget.North)
         self.tab_3 = QWidget()
         self.tab_3.setObjectName(u"tab_3")
@@ -680,8 +684,6 @@ class Ui_mainWindow(object):
         self.verticalLayout_37.setContentsMargins(0, 0, 0, 5)
         self.diagramsListView = QListView(self.tab_3)
         self.diagramsListView.setObjectName(u"diagramsListView")
-        font1 = QFont()
-        font1.setPointSize(9)
         self.diagramsListView.setFont(font1)
         self.diagramsListView.setFrameShape(QFrame.NoFrame)
 
@@ -698,6 +700,7 @@ class Ui_mainWindow(object):
         self.available_results_to_color_comboBox = QComboBox(self.grid_colouring_frame)
         self.available_results_to_color_comboBox.setObjectName(u"available_results_to_color_comboBox")
         self.available_results_to_color_comboBox.setMinimumSize(QSize(164, 0))
+        self.available_results_to_color_comboBox.setFont(font1)
 
         self.horizontalLayout_30.addWidget(self.available_results_to_color_comboBox)
 
@@ -2140,7 +2143,7 @@ class Ui_mainWindow(object):
         self.settings_tabWidget = QTabWidget(self.SettingsTab)
         self.settings_tabWidget.setObjectName(u"settings_tabWidget")
         self.settings_tabWidget.setEnabled(True)
-        self.settings_tabWidget.setFont(font)
+        self.settings_tabWidget.setFont(font1)
         self.settings_tabWidget.setAutoFillBackground(False)
         self.settings_tabWidget.setTabPosition(QTabWidget.South)
         self.settings_tabWidget.setIconSize(QSize(16, 16))
@@ -2244,6 +2247,7 @@ class Ui_mainWindow(object):
         self.find_automatic_precission_Button = QPushButton(self.frame_19)
         self.find_automatic_precission_Button.setObjectName(u"find_automatic_precission_Button")
         self.find_automatic_precission_Button.setMaximumSize(QSize(50, 16777215))
+        self.find_automatic_precission_Button.setFont(font1)
 
         self.gridLayout_22.addWidget(self.find_automatic_precission_Button, 8, 2, 1, 1)
 
@@ -5006,7 +5010,8 @@ class Ui_mainWindow(object):
 #if QT_CONFIG(tooltip)
         self.ask_before_appliying_layout_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Ask before running the automatic grid layout. This is because you might have a layout already and ruin it accidentally.", None))
 #endif // QT_CONFIG(tooltip)
-        self.ask_before_appliying_layout_checkBox.setText(QCoreApplication.translate("mainWindow", u"Layout algorithm (mark to ask)", None))
+        self.ask_before_appliying_layout_checkBox.setText(QCoreApplication.translate("mainWindow", u"Layout algorithm \n"
+"(mark to ask)", None))
         self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Settings", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Diagrams", None))
 #if QT_CONFIG(tooltip)

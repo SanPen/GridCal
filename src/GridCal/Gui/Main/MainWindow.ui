@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1249</width>
-    <height>820</height>
+    <width>1196</width>
+    <height>741</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -144,7 +144,7 @@ QProgressBar::chunk{
      <widget class="QTabWidget" name="tabWidget">
       <property name="font">
        <font>
-        <pointsize>10</pointsize>
+        <pointsize>9</pointsize>
        </font>
       </property>
       <property name="currentIndex">
@@ -176,6 +176,11 @@ QProgressBar::chunk{
         </property>
         <item>
          <widget class="QTabWidget" name="tabWidget_3">
+          <property name="font">
+           <font>
+            <pointsize>9</pointsize>
+           </font>
+          </property>
           <property name="tabPosition">
            <enum>QTabWidget::South</enum>
           </property>
@@ -297,6 +302,11 @@ QProgressBar::chunk{
                    </property>
                    <item>
                     <widget class="QTabWidget" name="tabWidget_6">
+                     <property name="font">
+                      <font>
+                       <pointsize>9</pointsize>
+                      </font>
+                     </property>
                      <property name="tabPosition">
                       <enum>QTabWidget::North</enum>
                      </property>
@@ -373,6 +383,11 @@ QProgressBar::chunk{
                               <width>164</width>
                               <height>0</height>
                              </size>
+                            </property>
+                            <property name="font">
+                             <font>
+                              <pointsize>9</pointsize>
+                             </font>
                             </property>
                             <property name="toolTip">
                              <string>Available results</string>
@@ -1247,7 +1262,8 @@ QProgressBar::chunk{
                              <string>Ask before running the automatic grid layout. This is because you might have a layout already and ruin it accidentally.</string>
                             </property>
                             <property name="text">
-                             <string>Layout algorithm (mark to ask)</string>
+                             <string>Layout algorithm 
+(mark to ask)</string>
                             </property>
                             <property name="checked">
                              <bool>true</bool>
@@ -3749,7 +3765,7 @@ QProgressBar::chunk{
           </property>
           <property name="font">
            <font>
-            <pointsize>10</pointsize>
+            <pointsize>9</pointsize>
            </font>
           </property>
           <property name="toolTip">
@@ -4047,6 +4063,11 @@ QProgressBar::chunk{
                    <width>50</width>
                    <height>16777215</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
                  </property>
                  <property name="toolTip">
                   <string>Find the tolerance that best represents the load values for power flow</string>
@@ -9665,7 +9686,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1249</width>
+     <width>1196</width>
      <height>21</height>
     </rect>
    </property>
