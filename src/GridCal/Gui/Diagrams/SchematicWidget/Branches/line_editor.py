@@ -134,6 +134,7 @@ class LineEditor(QDialog):
         self.l_spinner.setMaximum(9999999)
         self.l_spinner.setDecimals(6)
         self.l_spinner.setValue(length)
+        self.l_spinner.setSuffix(' Km')
 
         # Max current
         self.i_spinner = QDoubleSpinBox()
@@ -141,6 +142,7 @@ class LineEditor(QDialog):
         self.i_spinner.setMaximum(9999999)
         self.i_spinner.setDecimals(2)
         self.i_spinner.setValue(I)
+        self.i_spinner.setSuffix(' KA')
 
         # R
         self.r_spinner = QDoubleSpinBox()
@@ -148,6 +150,7 @@ class LineEditor(QDialog):
         self.r_spinner.setMaximum(9999999)
         self.r_spinner.setDecimals(6)
         self.r_spinner.setValue(R)
+        self.r_spinner.setSuffix(' Ω/Km')
 
         # X
         self.x_spinner = QDoubleSpinBox()
@@ -155,13 +158,15 @@ class LineEditor(QDialog):
         self.x_spinner.setMaximum(9999999)
         self.x_spinner.setDecimals(6)
         self.x_spinner.setValue(X)
+        self.x_spinner.setSuffix(' Ω/Km')
 
-        # B
-        self.b_spinner = QDoubleSpinBox()
-        self.b_spinner.setMinimum(0)
-        self.b_spinner.setMaximum(9999999)
-        self.b_spinner.setDecimals(6)
-        self.b_spinner.setValue(B)
+        # C
+        self.c_spinner = QDoubleSpinBox()
+        self.c_spinner.setMinimum(0)
+        self.c_spinner.setMaximum(9999999)
+        self.c_spinner.setDecimals(6)
+        self.c_spinner.setValue(B)
+        self.c_spinner.setSuffix(" nF/Km")
 
         # apply to profile
         self.apply_to_profile = QCheckBox()
@@ -181,20 +186,20 @@ class LineEditor(QDialog):
             self.layout.addWidget(self.load_template_btn)
             self.layout.addWidget(QLabel(""))
 
-        self.layout.addWidget(QLabel("L: Line length [Km]"))
+        self.layout.addWidget(QLabel("L: Line length"))
         self.layout.addWidget(self.l_spinner)
 
-        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
+        self.layout.addWidget(QLabel("Imax: Max. current @" + str(int(Vf)) + " [KV]"))
         self.layout.addWidget(self.i_spinner)
 
-        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
+        self.layout.addWidget(QLabel("R: Resistance"))
         self.layout.addWidget(self.r_spinner)
 
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
+        self.layout.addWidget(QLabel("X: Inductance"))
         self.layout.addWidget(self.x_spinner)
 
-        self.layout.addWidget(QLabel("B: Susceptance [uS/Km]"))
-        self.layout.addWidget(self.b_spinner)
+        self.layout.addWidget(QLabel("C: Capacitance"))
+        self.layout.addWidget(self.c_spinner)
 
         self.layout.addWidget(self.apply_to_profile)
 
@@ -215,13 +220,10 @@ class LineEditor(QDialog):
             self.line.apply_template(self.selected_template, Sbase=self.Sbase)
         else:
 
-            # converting uS to nFarads
-            c_nf = self.b_spinner.value() * 1e3 / (2 * 1.73205080757 * self.frequency)
-
             self.line.fill_design_properties(
                 r_ohm=self.r_spinner.value(),  # ohm / km
                 x_ohm=self.x_spinner.value(),  # ohm / km
-                c_nf=c_nf,  # nF / km
+                c_nf=self.c_spinner.value(),  # nF / km
                 length=self.l_spinner.value(),  # km
                 Imax=self.i_spinner.value(),  # kA
                 freq=self.frequency,  # Hz
@@ -241,7 +243,7 @@ class LineEditor(QDialog):
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
             self.x_spinner.setValue(template.X)
-            self.b_spinner.setValue(template.B)
+            self.c_spinner.setValue(template.B)
 
             self.selected_template = template
 
@@ -249,7 +251,7 @@ class LineEditor(QDialog):
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
             self.x_spinner.setValue(template.X)
-            self.b_spinner.setValue(template.B)
+            self.c_spinner.setValue(template.B)
 
             self.selected_template = template
 
@@ -257,7 +259,7 @@ class LineEditor(QDialog):
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R1)
             self.x_spinner.setValue(template.X1)
-            self.b_spinner.setValue(template.Bsh1)
+            self.c_spinner.setValue(template.Bsh1)
 
             self.selected_template = template
 
