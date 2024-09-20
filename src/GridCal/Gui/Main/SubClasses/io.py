@@ -23,7 +23,7 @@ from PySide6 import QtWidgets
 import GridCal.Gui.gui_functions as gf
 import GridCal.Session.export_results_driver as exprtdrv
 import GridCal.Session.file_handler as filedrv
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
+
 from GridCal.Gui.CoordinatesInput.coordinates_dialogue import CoordinatesInputGUI
 from GridCal.Gui.general_dialogues import LogsDialogue, CustomQuestionDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -32,10 +32,12 @@ from GridCal.Gui.GridGenerator.grid_generator_dialogue import GridGeneratorGUI
 from GridCal.Gui.RosetaExplorer.RosetaExplorer import RosetaExplorerGUI
 from GridCal.Gui.Main.SubClasses.Settings.configuration import ConfigurationMain
 
+from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Compilers.circuit_to_newton_pa import NEWTON_PA_AVAILABLE
 from GridCalEngine.Compilers.circuit_to_pgm import PGM_AVAILABLE
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.contingency_parser import import_contingencies_from_json, export_contingencies_json_file
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
@@ -521,9 +523,17 @@ class IoMain(ConfigurationMain):
         """
         Prompt to add another circuit
         """
-        self.open_file_threaded(post_function=self.post_create_circuit_differential,
-                                allow_diff_file_format=True,
-                                title="Load base grid to compare...")
+        # check that this circuit is ok
+        logger = Logger()
+        _, ok = self.circuit.get_all_elements_dict(logger=logger)
+
+        if ok:
+            self.open_file_threaded(post_function=self.post_create_circuit_differential,
+                                    allow_diff_file_format=True,
+                                    title="Load base grid to compare...")
+        else:
+            dlg = LogsDialogue('This circuit has duplicated idtags :(', logger)
+            dlg.exec_()
 
     def post_create_circuit_differential(self):
         """
@@ -548,30 +558,37 @@ class IoMain(ConfigurationMain):
                     # diff the circuit
                     new_circuit = self.open_file_thread_object.circuit
 
-                    # create the differential
-                    ok, diff_logger, dgrid = self.circuit.differentiate_circuits(new_circuit)
+                    dict_logger = Logger()
+                    _, dict_ok = new_circuit.get_all_elements_dict(logger=dict_logger)
 
-                    if diff_logger.has_logs():
-                        dlg = LogsDialogue('Grid differences', diff_logger)
-                        dlg.exec_()
+                    if dict_ok:
+                        # create the differential
+                        ok, diff_logger, dgrid = self.circuit.differentiate_circuits(new_circuit)
 
-                    # select the file to save
-                    filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
-                                                                                    dgrid.name,
-                                                                                    "GridCal diff (*.dgridcal)")
+                        if diff_logger.has_logs():
+                            dlg = LogsDialogue('Grid differences', diff_logger)
+                            dlg.exec_()
 
-                    if filename != '':
+                        # select the file to save
+                        filename, type_selected = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file',
+                                                                                        dgrid.name,
+                                                                                        "GridCal diff (*.dgridcal)")
 
-                        # if the user did not enter the extension, add it automatically
-                        name, file_extension = os.path.splitext(filename)
+                        if filename != '':
 
-                        if file_extension == '':
-                            filename = name + ".dgridcal"
+                            # if the user did not enter the extension, add it automatically
+                            name, file_extension = os.path.splitext(filename)
 
-                        # we were able to compose the file correctly, now save it
-                        self.save_file_now(filename=filename,
-                                           type_selected=type_selected,
-                                           grid=dgrid)
+                            if file_extension == '':
+                                filename = name + ".dgridcal"
+
+                            # we were able to compose the file correctly, now save it
+                            self.save_file_now(filename=filename,
+                                               type_selected=type_selected,
+                                               grid=dgrid)
+                    else:
+                        dlg = LogsDialogue('The base circuit has duplicated idtags :(', dict_logger)
+                        dlg.exec()
 
     def save_file_as(self):
         """

@@ -46,6 +46,7 @@ from GridCal.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
+from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import OsmTiles
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -86,6 +87,24 @@ class DiagramsMain(CompiledArraysMain):
                 name='Blue Marble',
                 tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'blue_marble')
             ),
+
+            # Carto layers:
+            # light_all,
+            # dark_all,
+            # light_nolabels,
+            # light_only_labels,
+            # dark_nolabels,
+            # dark_only_labels,
+            # rastertiles/voyager,
+            # rastertiles/voyager_nolabels,
+            # rastertiles/voyager_only_labels,
+            # rastertiles/voyager_labels_under
+
+            CartoDbTiles(
+                name='Carto voyager',
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_voyager'),
+                tile_servers=["http://basemaps.cartocdn.com/rastertiles/voyager/"]
+            ),
             CartoDbTiles(
                 name='Carto positron',
                 tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_positron'),
@@ -95,6 +114,11 @@ class DiagramsMain(CompiledArraysMain):
                 name='Carto dark matter',
                 tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_dark_matter'),
                 tile_servers=["http://basemaps.cartocdn.com/dark_all/"]
+            ),
+            OsmTiles(
+                name='Open Street Map',
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'osm'),
+                tile_servers=["https://tile.openstreetmap.org"]
             )
         ]
         tile_names = [tile.TilesetName for tile in self.tile_sources]
@@ -761,33 +785,29 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
-            if t_idx is None:
-                results = self.session.get_results(SimulationTypes.InputsAnalysis_run)
-                nbus = self.circuit.get_bus_number()
-                nbr = self.circuit.get_branch_number()
-                bus_active = [bus.active for bus in self.circuit.buses]
-                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
-                return diagram.colour_results(buses=buses,
-                                              branches=branches,
-                                              hvdc_lines=hvdc_lines,
-                                              Sbus=np.zeros(nbus, dtype=complex),
-                                              voltages=np.ones(nbus, dtype=complex),
-                                              bus_active=bus_active,
-                                              Sf=np.zeros(nbr, dtype=complex),
-                                              St=np.zeros(nbr, dtype=complex),
-                                              loadings=np.zeros(nbr, dtype=complex),
-                                              br_active=br_active,
-                                              hvdc_active=hvdc_active,
-                                              use_flow_based_width=use_flow_based_width,
-                                              min_branch_width=min_branch_width,
-                                              max_branch_width=max_branch_width,
-                                              min_bus_width=min_bus_width,
-                                              max_bus_width=max_bus_width,
-                                              cmap=cmap)
-            else:
-                if allow_popups:
-                    info_msg(f"{current_study} only has values for the snapshot")
+            nbus = self.circuit.get_bus_number()
+            nbr = self.circuit.get_branch_number()
+            bus_active = [bus.active for bus in self.circuit.buses]
+            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] if t_idx is not None else hvdc.active
+                           for hvdc in self.circuit.hvdc_lines]
+            return diagram.colour_results(buses=buses,
+                                          branches=branches,
+                                          hvdc_lines=hvdc_lines,
+                                          Sbus=np.zeros(nbus, dtype=complex),
+                                          voltages=np.ones(nbus, dtype=complex),
+                                          bus_active=bus_active,
+                                          Sf=np.zeros(nbr, dtype=complex),
+                                          St=np.zeros(nbr, dtype=complex),
+                                          loadings=np.zeros(nbr, dtype=complex),
+                                          br_active=br_active,
+                                          hvdc_active=hvdc_active,
+                                          use_flow_based_width=use_flow_based_width,
+                                          min_branch_width=min_branch_width,
+                                          max_branch_width=max_branch_width,
+                                          min_bus_width=min_bus_width,
+                                          max_bus_width=max_bus_width,
+                                          cmap=cmap)
 
         elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             pass
@@ -795,12 +815,13 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.AvailableTransferCapacityDriver.tpe.value:
             pass
 
-        elif current_study == SimulationTypes.DesignView.value.tpe.value:
+        elif current_study == SimulationTypes.DesignView.value:
             nbus = self.circuit.get_bus_number()
             nbr = self.circuit.get_branch_number()
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+            hvdc_active = [hvdc.active_prof[t_idx] if t_idx is not None else hvdc.active
+                           for hvdc in self.circuit.hvdc_lines]
             return diagram.colour_results(buses=buses,
                                           branches=branches,
                                           hvdc_lines=hvdc_lines,
