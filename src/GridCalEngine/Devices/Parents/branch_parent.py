@@ -125,6 +125,8 @@ class BranchParent(PhysicalDevice):
         self._rate = float(rate)
         self._rate_prof = Profile(default_value=rate, data_type=float)
 
+        # TODO define additional rates if needed, plus register property (only here, not in init)
+
         if not isinstance(contingency_factor, Union[float, int]):
             raise ValueError("contingency_factor must be a float")
         self._contingency_factor = float(contingency_factor)

@@ -1007,6 +1007,10 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.endNumber = 2
 
         # TODO: where are the taps? that is making the round trip fail...
+        object_template = cgmes_model.get_class_type("RatioTapChanger")
+        tap_changer = object_template(rdfid=form_rdfid(mc_elm.idtag))
+        tap_changer.uuid = mc_elm.idtag
+        # tap_changer.total_pos = mc_elm.tap_changer.tap_position
 
         cm_transformer.PowerTransformerEnd.append(pte1)
         cgmes_model.add(pte1)
@@ -1037,6 +1041,12 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             object_list=cgmes_model.cgmes_assets.Substation_list,
             target_uuid=mc_elm.bus1.substation.idtag
         )
+
+        # TODO tr3w rates?
+        # current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+        # current_rate = np.round(current_rate, 4)
+        # create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate, cgmes_model, logger)
+        # create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate, cgmes_model, logger)
 
         # Winding 1 ----------------------------------------------------------------------------------------------------
         pte1 = object_template()
