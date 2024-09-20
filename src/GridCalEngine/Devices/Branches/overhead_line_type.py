@@ -123,12 +123,12 @@ class OverheadLineType(EditableDevice):
 
         self.register(key='earth_resistivity', units='Ohm/m3', tpe=float, definition='Earth resistivity')
         self.register(key='frequency', units='Hz', tpe=float, definition='Frequency')
-        self.register(key='R1', units='Ohm/km', tpe=float, definition='Positive sequence resistance')
-        self.register(key='X1', units='Ohm/km', tpe=float, definition='Positive sequence reactance')
-        self.register(key='Bsh1', units='uS/km', tpe=float, definition='Positive sequence shunt susceptance')
-        self.register(key='R0', units='Ohm/km', tpe=float, definition='Zero-sequence resistance')
-        self.register(key='X0', units='Ohm/km', tpe=float, definition='Zero sequence reactance')
-        self.register(key='Bsh0', units='uS/km', tpe=float, definition='Zero sequence shunt susceptance')
+        self.register(key='R1', units='Ohm/Km', tpe=float, definition='Positive sequence resistance')
+        self.register(key='X1', units='Ohm/Km', tpe=float, definition='Positive sequence reactance')
+        self.register(key='Bsh1', units='uS/Km', tpe=float, definition='Positive sequence shunt susceptance')
+        self.register(key='R0', units='Ohm/Km', tpe=float, definition='Zero-sequence resistance')
+        self.register(key='X0', units='Ohm/Km', tpe=float, definition='Zero sequence reactance')
+        self.register(key='Bsh0', units='uS/Km', tpe=float, definition='Zero sequence shunt susceptance')
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the tower', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
 
@@ -382,9 +382,9 @@ def z_ii(r_i, x_i, h_i, gmr_i, f, rho):
     """
     w = 2 * pi * f  # rad
 
-    mu_0 = 4 * pi * 1e-4  # H/km
+    mu_0 = 4 * pi * 1e-4  # H/Km
 
-    mu_0_2pi = 2e-4  # H/km
+    mu_0_2pi = 2e-4  # H/Km
 
     p = sqrt(rho / (1j * w * mu_0))
 
@@ -408,9 +408,9 @@ def z_ij(x_i, x_j, h_i, h_j, d_ij, f, rho):
     """
     w = 2 * pi * f  # rad
 
-    mu_0 = 4 * pi * 1e-4  # H/km
+    mu_0 = 4 * pi * 1e-4  # H/Km
 
-    mu_0_2pi = 2e-4  # H/km
+    mu_0_2pi = 2e-4  # H/Km
 
     p = sqrt(rho / (1j * w * mu_0))
 
@@ -585,11 +585,11 @@ def calc_y_matrix(wires: list, f=50, rho=100):
     # dictionary with the wire indices per phase
     phases_set = set()
 
-    # 1 / (2 * pi * e0) in km/F
+    # 1 / (2 * pi * e0) in Km/F
     e_air = 1.00058986
-    e_0 = 8.854187817e-9  # F/km
+    e_0 = 8.854187817e-9  # F/Km
     e = e_0 * e_air
-    one_two_pi_e0 = 1 / (2 * pi * e)  # km/F
+    one_two_pi_e0 = 1 / (2 * pi * e)  # Km/F
 
     phases_abcn = np.zeros(n, dtype=int)
 

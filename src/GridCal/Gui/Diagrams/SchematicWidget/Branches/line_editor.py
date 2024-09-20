@@ -160,13 +160,13 @@ class LineEditor(QDialog):
         self.x_spinner.setValue(X)
         self.x_spinner.setSuffix(' Ω/Km')
 
-        # C
-        self.c_spinner = QDoubleSpinBox()
-        self.c_spinner.setMinimum(0)
-        self.c_spinner.setMaximum(9999999)
-        self.c_spinner.setDecimals(6)
-        self.c_spinner.setValue(B)
-        self.c_spinner.setSuffix(" nF/Km")
+        # B
+        self.b_spinner = QDoubleSpinBox()
+        self.b_spinner.setMinimum(0)
+        self.b_spinner.setMaximum(9999999)
+        self.b_spinner.setDecimals(6)
+        self.b_spinner.setValue(B)
+        self.b_spinner.setSuffix(" uS/Km")
 
         # apply to profile
         self.apply_to_profile = QCheckBox()
@@ -198,8 +198,8 @@ class LineEditor(QDialog):
         self.layout.addWidget(QLabel("X: Inductance"))
         self.layout.addWidget(self.x_spinner)
 
-        self.layout.addWidget(QLabel("C: Capacitance"))
-        self.layout.addWidget(self.c_spinner)
+        self.layout.addWidget(QLabel("S: Susceptance"))
+        self.layout.addWidget(self.b_spinner)
 
         self.layout.addWidget(self.apply_to_profile)
 
@@ -219,11 +219,11 @@ class LineEditor(QDialog):
             self.line.length = self.l_spinner.value()
             self.line.apply_template(self.selected_template, Sbase=self.Sbase)
         else:
-
+            wf = 2 * np.pi * self.frequency
             self.line.fill_design_properties(
                 r_ohm=self.r_spinner.value(),  # ohm / km
                 x_ohm=self.x_spinner.value(),  # ohm / km
-                c_nf=self.c_spinner.value(),  # nF / km
+                c_nf=self.b_spinner.value() * 1e3 / wf,  # nF / km
                 length=self.l_spinner.value(),  # km
                 Imax=self.i_spinner.value(),  # kA
                 freq=self.frequency,  # Hz
@@ -233,17 +233,18 @@ class LineEditor(QDialog):
 
         self.accept()
 
-    def load_template(self, template):
+    def load_template(self, template: Union[SequenceLineType, OverheadLineType, UndergroundLineType]):
         """
-
-        :param template:
+        Load a template in the editor
+        :param template: line compatible template
         :return:
         """
+
         if isinstance(template, SequenceLineType):
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
             self.x_spinner.setValue(template.X)
-            self.c_spinner.setValue(template.B)
+            self.b_spinner.setValue(template.B)
 
             self.selected_template = template
 
@@ -251,7 +252,7 @@ class LineEditor(QDialog):
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
             self.x_spinner.setValue(template.X)
-            self.c_spinner.setValue(template.B)
+            self.b_spinner.setValue(template.B)
 
             self.selected_template = template
 
@@ -259,7 +260,7 @@ class LineEditor(QDialog):
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R1)
             self.x_spinner.setValue(template.X1)
-            self.c_spinner.setValue(template.Bsh1)
+            self.b_spinner.setValue(template.Bsh1)
 
             self.selected_template = template
 
