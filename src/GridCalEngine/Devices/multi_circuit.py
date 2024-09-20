@@ -2633,3 +2633,12 @@ class MultiCircuit(Assets):
         self.underground_cable_types += data.underground_cable_types
         self.wire_types += data.wire_types
         self.sequence_line_types += data.sequence_line_types
+
+    def replace_investment_capex(self, investment: dev.Investment, new_capex: float):
+        """
+        Replace the capex of an investment
+        :param new_capex: float
+        :param investment: dev.Investment
+        """
+        investment.CAPEX = new_capex
+
