@@ -394,32 +394,42 @@ class Line(BranchParent):
         elm.temperature_prof = self.temp_oper_prof
         return elm
 
-    def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase):
+    def fill_design_properties(self, r_ohm, x_ohm, c_nf, length, Imax, freq, Sbase, apply_to_profile: bool = True,):
         """
         Fill R, X, B from not-in-per-unit parameters
-        :param r_ohm: Resistance per km in OHM
-        :param x_ohm: Reactance per km in OHM
-        :param c_nf: Capacitance per km in nF
+        :param r_ohm: Resistance per km in OHM/km
+        :param x_ohm: Reactance per km in OHM/km
+        :param c_nf: Capacitance per km in nF/km
         :param length: lenght in kn
         :param Imax: Maximum current in kA
         :param freq: System frequency in Hz
         :param Sbase: Base power in MVA (take always 100 MVA)
+        :param apply_to_profile: modify the profile is checked
         """
-        R = r_ohm * length
-        X = x_ohm * length
-        # impedance = 1 / (2 * pi * f * c), susceptance = (2 * pi * f * c)
-        B = (2 * np.pi * freq * c_nf * 1e-9) * length
+        r_ohm_total = r_ohm * length
+        x_ohm_total = x_ohm * length
+        # impedance = 1 / (2 * pi * f * c),
+        # susceptance = (2 * pi * f * c)
+        b_siemens_total = (2 * np.pi * freq * c_nf * 1e-9) * length
 
         Vf = self.get_max_bus_nominal_voltage()
 
         Zbase = (Vf * Vf) / Sbase
         Ybase = 1.0 / Zbase
 
-        self.R = np.round(R / Zbase, 6)
-        self.X = np.round(X / Zbase, 6)
-        self.B = np.round(B / Ybase, 6)
-        self.rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
+        self.R = np.round(r_ohm_total / Zbase, 6)
+        self.X = np.round(x_ohm_total / Zbase, 6)
+        self.B = np.round(b_siemens_total / Ybase, 6)
+
+        old_rate = float(self.rate)
+        new_rate = np.round(Imax * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
+
+        self.rate = new_rate
         self.length = length
+
+        if apply_to_profile:
+            prof_old = self.rate_prof.toarray()
+            self.rate_prof.set(prof_old * new_rate / old_rate)
 
     def get_virtual_taps(self) -> Tuple[float, float]:
         """

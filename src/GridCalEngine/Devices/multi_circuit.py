@@ -1749,7 +1749,7 @@ class MultiCircuit(Assets):
         """
 
         if all_elements_dict is None:
-            all_elements_dict = self.get_all_elements_dict()
+            all_elements_dict, dict_ok = self.get_all_elements_dict()
 
         for inv in investments_list:
             device_idtag = inv.device_idtag
@@ -1916,7 +1916,7 @@ class MultiCircuit(Assets):
                              expected_value=self.get_snapshot_time_unix)
 
         # get a dictionary of all the elements of the other circuit
-        base_elements_dict = base_grid.get_all_elements_dict()
+        base_elements_dict, dict_ok = base_grid.get_all_elements_dict()
 
         for elm_from_here in self.items():  # for every device...
             action = ActionType.NoAction
@@ -2244,7 +2244,7 @@ class MultiCircuit(Assets):
         logger = Logger()
         bus_set = set(self._buses)
         cn_set = set(self._connectivity_nodes)
-        all_dev = self.get_all_elements_dict()
+        all_dev, dict_ok = self.get_all_elements_dict()
         nt = self.get_time_number()
 
         self.clean_branches(nt=nt, bus_set=bus_set, cn_set=cn_set, logger=logger)

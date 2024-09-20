@@ -3207,7 +3207,7 @@ class Assets:
         group2index = {g: i for i, g in enumerate(self._contingency_groups)}
 
         # get a dictionary of all objects
-        all_devices = self.get_all_elements_dict()
+        all_devices, dict_ok = self.get_all_elements_dict()
 
         # get the buses that match the filtering
         buses = self.get_buses_by(filter_elements=grouping_elements)
@@ -5265,19 +5265,33 @@ class Assets:
 
         return found
 
-    def get_all_elements_dict(self) -> dict[str, ALL_DEV_TYPES]:
+    def get_all_elements_dict(self, logger = Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
         """
         Get a dictionary of all elements
+        :param: logger: Logger
         :return: Dict[idtag] -> object
         """
         data = dict()
+        ok = True
         for key, tpe in self.device_type_name_dict.items():
             elements = self.get_elements_by_type(device_type=tpe)
 
             for elm in elements:
-                data[elm.idtag] = elm
 
-        return data
+                e = data.get(elm.idtag, None)
+                if e is None:
+                    data[elm.idtag] = elm
+                else:
+                    logger.add_error(
+                        msg="Duplicated idtag!",
+                        device=elm.name,
+                        device_class=elm.device_type.value,
+                        device_property="idtag",
+                        expected_value=f"{e.device_type.value}:{e.idtag}:{e.name}"
+                    )
+                    ok = False
+
+        return data, ok
 
     def get_all_elements_dict_by_type(self,
                                       add_locations: bool = False,

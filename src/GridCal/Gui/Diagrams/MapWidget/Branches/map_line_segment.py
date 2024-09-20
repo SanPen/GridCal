@@ -282,7 +282,8 @@ class MapLineSegment(QGraphicsLineItem):
                     templates.append(temp)
 
         current_template = self.api_object.template
-        dlg = LineEditor(self.api_object, Sbase, templates, current_template)
+        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
+                         templates=templates, current_template=current_template)
         if dlg.exec_():
             pass
 

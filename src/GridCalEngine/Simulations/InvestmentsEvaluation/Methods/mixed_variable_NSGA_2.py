@@ -50,7 +50,7 @@ class MixedVariableProblem(ElementwiseProblem):
 
         self.grid = grid
 
-        all_dict = self.grid.get_all_elements_dict()
+        all_dict, dict_ok = self.grid.get_all_elements_dict()
         self.device_template_dict: Dict[BRANCH_TYPES, List[BRANCH_TEMPLATE_TYPES]] = dict()
 
         # create the decision vars

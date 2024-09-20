@@ -243,7 +243,7 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
         self.max_iter = options.max_eval
 
         # gather a dictionary of all the elements, this serves for the investments generation
-        self.get_all_elements_dict = self.grid.get_all_elements_dict()
+        self.get_all_elements_dict, dict_ok = self.grid.get_all_elements_dict()
 
         # compose useful arrays
         self.vm_cost = np.array([e.Vm_cost for e in grid.get_buses()], dtype=float)
