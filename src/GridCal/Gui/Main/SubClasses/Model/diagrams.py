@@ -87,6 +87,24 @@ class DiagramsMain(CompiledArraysMain):
                 name='Blue Marble',
                 tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'blue_marble')
             ),
+
+            # Carto layers:
+            # light_all,
+            # dark_all,
+            # light_nolabels,
+            # light_only_labels,
+            # dark_nolabels,
+            # dark_only_labels,
+            # rastertiles/voyager,
+            # rastertiles/voyager_nolabels,
+            # rastertiles/voyager_only_labels,
+            # rastertiles/voyager_labels_under
+
+            CartoDbTiles(
+                name='Carto voyager',
+                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_voyager'),
+                tile_servers=["http://basemaps.cartocdn.com/rastertiles/voyager/"]
+            ),
             CartoDbTiles(
                 name='Carto positron',
                 tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_positron'),
