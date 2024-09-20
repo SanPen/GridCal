@@ -785,33 +785,29 @@ class DiagramsMain(CompiledArraysMain):
 
         elif current_study == sim.InputsAnalysisDriver.tpe.value:
 
-            if t_idx is None:
-                results = self.session.get_results(SimulationTypes.InputsAnalysis_run)
-                nbus = self.circuit.get_bus_number()
-                nbr = self.circuit.get_branch_number()
-                bus_active = [bus.active for bus in self.circuit.buses]
-                br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-                hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
-                return diagram.colour_results(buses=buses,
-                                              branches=branches,
-                                              hvdc_lines=hvdc_lines,
-                                              Sbus=np.zeros(nbus, dtype=complex),
-                                              voltages=np.ones(nbus, dtype=complex),
-                                              bus_active=bus_active,
-                                              Sf=np.zeros(nbr, dtype=complex),
-                                              St=np.zeros(nbr, dtype=complex),
-                                              loadings=np.zeros(nbr, dtype=complex),
-                                              br_active=br_active,
-                                              hvdc_active=hvdc_active,
-                                              use_flow_based_width=use_flow_based_width,
-                                              min_branch_width=min_branch_width,
-                                              max_branch_width=max_branch_width,
-                                              min_bus_width=min_bus_width,
-                                              max_bus_width=max_bus_width,
-                                              cmap=cmap)
-            else:
-                if allow_popups:
-                    info_msg(f"{current_study} only has values for the snapshot")
+            nbus = self.circuit.get_bus_number()
+            nbr = self.circuit.get_branch_number()
+            bus_active = [bus.active for bus in self.circuit.buses]
+            br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
+            hvdc_active = [hvdc.active_prof[t_idx] if t_idx is not None else hvdc.active
+                           for hvdc in self.circuit.hvdc_lines]
+            return diagram.colour_results(buses=buses,
+                                          branches=branches,
+                                          hvdc_lines=hvdc_lines,
+                                          Sbus=np.zeros(nbus, dtype=complex),
+                                          voltages=np.ones(nbus, dtype=complex),
+                                          bus_active=bus_active,
+                                          Sf=np.zeros(nbr, dtype=complex),
+                                          St=np.zeros(nbr, dtype=complex),
+                                          loadings=np.zeros(nbr, dtype=complex),
+                                          br_active=br_active,
+                                          hvdc_active=hvdc_active,
+                                          use_flow_based_width=use_flow_based_width,
+                                          min_branch_width=min_branch_width,
+                                          max_branch_width=max_branch_width,
+                                          min_bus_width=min_bus_width,
+                                          max_bus_width=max_bus_width,
+                                          cmap=cmap)
 
         elif current_study == sim.AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             pass
@@ -824,7 +820,8 @@ class DiagramsMain(CompiledArraysMain):
             nbr = self.circuit.get_branch_number()
             bus_active = [bus.active for bus in self.circuit.buses]
             br_active = [br.active for br in self.circuit.get_branches_wo_hvdc()]
-            hvdc_active = [hvdc.active_prof[t_idx] for hvdc in self.circuit.hvdc_lines]
+            hvdc_active = [hvdc.active_prof[t_idx] if t_idx is not None else hvdc.active
+                           for hvdc in self.circuit.hvdc_lines]
             return diagram.colour_results(buses=buses,
                                           branches=branches,
                                           hvdc_lines=hvdc_lines,
