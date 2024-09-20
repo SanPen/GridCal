@@ -514,7 +514,7 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                     if cgmes_elm.p != 0.0:
                         pf = np.cos(np.arctan(cgmes_elm.q / cgmes_elm.p))
                     else:
-                        pf = 0.8
+                        pf = 1.0  # default is 0.8 in gc
                         logger.add_warning(msg='GeneratingUnit p is 0.',
                                            device=cgmes_elm.rdfid,
                                            device_class=cgmes_elm.tpe,
