@@ -6,7 +6,8 @@ For example, see osm_tiles.py.
 """
 import queue
 import ssl
-from urllib import request
+# from urllib import request
+from urllib.request import Request, urlopen
 from collections.abc import Callable
 from PySide6.QtGui import QPixmap
 from PySide6.QtCore import QThread
@@ -27,7 +28,7 @@ class TileWorker(QThread):
                  id_num: int,
                  server: str,
                  tilepath: str,
-                 requests: queue.Queue,
+                 requests_cue: queue.Queue,
                  callback: Callable[[int, float, float, QPixmap, bool], None],  # level, x, y, pixmap, error
                  error_tile: QPixmap,
                  content_type: str,
@@ -40,7 +41,7 @@ class TileWorker(QThread):
         :param id_num: a unique numer identifying the worker instance
         :param server: server URL
         :param tilepath: path to tile on server
-        :param requests: the request queue
+        :param requests_cue: the request queue
         :param callback: function to call after tile available
         :param error_tile: image of error tile
         :param content_type: expected Content-Type string
@@ -54,7 +55,7 @@ class TileWorker(QThread):
         self.id_num = id_num
         self.server = server
         self.tilepath = tilepath
-        self.requests = requests
+        self.requests_cue = requests_cue
         self.callback: Callable[[int, float, float, QPixmap, bool], None] = callback
         self.error_tile_image = error_tile
         self.content_type = content_type
@@ -70,15 +71,19 @@ class TileWorker(QThread):
         """
         while True:
             # get zoom level and tile coordinates to retrieve
-            (level, x, y) = self.requests.get()
+            (level, x, y) = self.requests_cue.get()
 
             # try to retrieve the image
             error = False
             pixmap = self.error_image
             try:
                 tile_url = self.server + self.tilepath.format(Z=level, X=x, Y=y)
-                response = request.urlopen(tile_url)
+
+                # Create a Request object with the desired headers
+                response = urlopen(Request(tile_url, headers={'User-Agent': 'GridCal 5'}))
+
                 content_type = response.info().get_content_type()
+
                 if content_type == self.content_type:
                     data = response.read()
                     pixmap = QPixmap()
@@ -88,11 +93,11 @@ class TileWorker(QThread):
                     error = True
             except Exception as e:
                 error = True
-                log('%s exception getting tile (%d,%d,%d)' % (type(e).__name__, level, x, y))
+                log(f"{e} exception getting tile ({level},{x},{y}) with {tile_url}")
 
             # call the callback function passing level, x, y and pixmap data
             # error is False if we want to cache this tile on-disk
             self.callback(level, x, y, pixmap, error)
 
             # finally, removes request from queue
-            self.requests.task_done()
+            self.requests_cue.task_done()

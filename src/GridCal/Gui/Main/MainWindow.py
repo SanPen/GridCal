@@ -741,58 +741,13 @@ class Ui_mainWindow(object):
         self.gridLayout = QGridLayout(self.frame_58)
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setContentsMargins(6, 0, 6, 0)
-        self.label_9 = QLabel(self.frame_58)
-        self.label_9.setObjectName(u"label_9")
-        font2 = QFont()
-        font2.setPointSize(8)
-        self.label_9.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_9, 10, 0, 1, 1)
-
-        self.resolution_factor_spinBox = QSpinBox(self.frame_58)
-        self.resolution_factor_spinBox.setObjectName(u"resolution_factor_spinBox")
-        self.resolution_factor_spinBox.setFont(font2)
-        self.resolution_factor_spinBox.setMinimum(1)
-        self.resolution_factor_spinBox.setMaximum(100)
-        self.resolution_factor_spinBox.setValue(10)
-
-        self.gridLayout.addWidget(self.resolution_factor_spinBox, 15, 1, 1, 1)
-
-        self.label_118 = QLabel(self.frame_58)
-        self.label_118.setObjectName(u"label_118")
-        self.label_118.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_118, 7, 0, 1, 1)
-
-        self.label_24 = QLabel(self.frame_58)
-        self.label_24.setObjectName(u"label_24")
-        self.label_24.setFont(font2)
-        self.label_24.setTextFormat(Qt.PlainText)
-        self.label_24.setScaledContents(True)
-
-        self.gridLayout.addWidget(self.label_24, 4, 0, 1, 1)
-
         self.automatic_layout_comboBox = QComboBox(self.frame_58)
         self.automatic_layout_comboBox.setObjectName(u"automatic_layout_comboBox")
+        font2 = QFont()
+        font2.setPointSize(8)
         self.automatic_layout_comboBox.setFont(font2)
 
         self.gridLayout.addWidget(self.automatic_layout_comboBox, 4, 1, 1, 1)
-
-        self.label_60 = QLabel(self.frame_58)
-        self.label_60.setObjectName(u"label_60")
-        self.label_60.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_60, 2, 0, 1, 1)
-
-        self.min_node_size_spinBox = QDoubleSpinBox(self.frame_58)
-        self.min_node_size_spinBox.setObjectName(u"min_node_size_spinBox")
-        self.min_node_size_spinBox.setFont(font2)
-        self.min_node_size_spinBox.setDecimals(1)
-        self.min_node_size_spinBox.setMinimum(0.100000000000000)
-        self.min_node_size_spinBox.setSingleStep(0.100000000000000)
-        self.min_node_size_spinBox.setValue(20.000000000000000)
-
-        self.gridLayout.addWidget(self.min_node_size_spinBox, 9, 1, 1, 1)
 
         self.tile_provider_comboBox = QComboBox(self.frame_58)
         self.tile_provider_comboBox.setObjectName(u"tile_provider_comboBox")
@@ -800,109 +755,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.tile_provider_comboBox, 7, 1, 1, 1)
 
-        self.label_43 = QLabel(self.frame_58)
-        self.label_43.setObjectName(u"label_43")
-        self.label_43.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_43, 3, 0, 1, 1)
-
-        self.label_15 = QLabel(self.frame_58)
-        self.label_15.setObjectName(u"label_15")
-        self.label_15.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_15, 12, 0, 1, 1)
-
-        self.label_35 = QLabel(self.frame_58)
-        self.label_35.setObjectName(u"label_35")
-        self.label_35.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_35, 1, 0, 1, 1)
-
-        self.label = QLabel(self.frame_58)
-        self.label.setObjectName(u"label")
-        self.label.setFont(font2)
-
-        self.gridLayout.addWidget(self.label, 9, 0, 1, 1)
-
-        self.label_14 = QLabel(self.frame_58)
-        self.label_14.setObjectName(u"label_14")
-        self.label_14.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_14, 11, 0, 1, 1)
-
-        self.max_branch_size_spinBox = QDoubleSpinBox(self.frame_58)
-        self.max_branch_size_spinBox.setObjectName(u"max_branch_size_spinBox")
-        self.max_branch_size_spinBox.setFont(font2)
-        self.max_branch_size_spinBox.setDecimals(1)
-        self.max_branch_size_spinBox.setSingleStep(0.100000000000000)
-        self.max_branch_size_spinBox.setValue(20.000000000000000)
-
-        self.gridLayout.addWidget(self.max_branch_size_spinBox, 12, 1, 1, 1)
-
-        self.explosion_factor_doubleSpinBox = QDoubleSpinBox(self.frame_58)
-        self.explosion_factor_doubleSpinBox.setObjectName(u"explosion_factor_doubleSpinBox")
-        self.explosion_factor_doubleSpinBox.setFont(font2)
-        self.explosion_factor_doubleSpinBox.setDecimals(3)
-        self.explosion_factor_doubleSpinBox.setMinimum(1.000000000000000)
-        self.explosion_factor_doubleSpinBox.setMaximum(999999999.000000000000000)
-        self.explosion_factor_doubleSpinBox.setSingleStep(0.100000000000000)
-        self.explosion_factor_doubleSpinBox.setValue(1.500000000000000)
-
-        self.gridLayout.addWidget(self.explosion_factor_doubleSpinBox, 2, 1, 1, 1)
-
-        self.fps_spinBox = QSpinBox(self.frame_58)
-        self.fps_spinBox.setObjectName(u"fps_spinBox")
-        self.fps_spinBox.setFont(font2)
-        self.fps_spinBox.setMinimum(1)
-        self.fps_spinBox.setMaximum(9999)
-        self.fps_spinBox.setValue(30)
-
-        self.gridLayout.addWidget(self.fps_spinBox, 16, 1, 1, 1)
-
-        self.max_node_size_spinBox = QDoubleSpinBox(self.frame_58)
-        self.max_node_size_spinBox.setObjectName(u"max_node_size_spinBox")
-        self.max_node_size_spinBox.setFont(font2)
-        self.max_node_size_spinBox.setDecimals(1)
-        self.max_node_size_spinBox.setMinimum(0.100000000000000)
-        self.max_node_size_spinBox.setSingleStep(0.100000000000000)
-        self.max_node_size_spinBox.setValue(40.000000000000000)
-
-        self.gridLayout.addWidget(self.max_node_size_spinBox, 10, 1, 1, 1)
-
-        self.label_150 = QLabel(self.frame_58)
-        self.label_150.setObjectName(u"label_150")
-        self.label_150.setFont(font2)
-
-        self.gridLayout.addWidget(self.label_150, 16, 0, 1, 1)
-
-        self.palette_comboBox = QComboBox(self.frame_58)
-        self.palette_comboBox.setObjectName(u"palette_comboBox")
-        self.palette_comboBox.setFont(font2)
-
-        self.gridLayout.addWidget(self.palette_comboBox, 3, 1, 1, 1)
-
-        self.ask_before_appliying_layout_checkBox = QCheckBox(self.frame_58)
-        self.ask_before_appliying_layout_checkBox.setObjectName(u"ask_before_appliying_layout_checkBox")
-        self.ask_before_appliying_layout_checkBox.setFont(font2)
-        self.ask_before_appliying_layout_checkBox.setChecked(True)
-        self.ask_before_appliying_layout_checkBox.setTristate(False)
-
-        self.gridLayout.addWidget(self.ask_before_appliying_layout_checkBox, 5, 1, 1, 1)
-
         self.label_32 = QLabel(self.frame_58)
         self.label_32.setObjectName(u"label_32")
         self.label_32.setFont(font2)
 
-        self.gridLayout.addWidget(self.label_32, 15, 0, 1, 1)
-
-        self.min_branch_size_spinBox = QDoubleSpinBox(self.frame_58)
-        self.min_branch_size_spinBox.setObjectName(u"min_branch_size_spinBox")
-        self.min_branch_size_spinBox.setFont(font2)
-        self.min_branch_size_spinBox.setDecimals(1)
-        self.min_branch_size_spinBox.setSingleStep(0.100000000000000)
-        self.min_branch_size_spinBox.setValue(0.500000000000000)
-
-        self.gridLayout.addWidget(self.min_branch_size_spinBox, 11, 1, 1, 1)
+        self.gridLayout.addWidget(self.label_32, 16, 0, 1, 1)
 
         self.defaultBusVoltageSpinBox = QDoubleSpinBox(self.frame_58)
         self.defaultBusVoltageSpinBox.setObjectName(u"defaultBusVoltageSpinBox")
@@ -913,46 +770,11 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.defaultBusVoltageSpinBox, 1, 1, 1, 1)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.label_35 = QLabel(self.frame_58)
+        self.label_35.setObjectName(u"label_35")
+        self.label_35.setFont(font2)
 
-        self.gridLayout.addItem(self.verticalSpacer, 17, 1, 1, 1)
-
-        self.frame_22 = QFrame(self.frame_58)
-        self.frame_22.setObjectName(u"frame_22")
-        self.frame_22.setFrameShape(QFrame.NoFrame)
-        self.frame_22.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_15 = QHBoxLayout(self.frame_22)
-        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
-        self.horizontalLayout_15.setContentsMargins(0, 0, 0, 0)
-        self.label_99 = QLabel(self.frame_22)
-        self.label_99.setObjectName(u"label_99")
-        self.label_99.setMinimumSize(QSize(24, 24))
-        self.label_99.setMaximumSize(QSize(24, 24))
-        self.label_99.setPixmap(QPixmap(u":/Icons/icons/show_color_controls.svg"))
-        self.label_99.setScaledContents(True)
-
-        self.horizontalLayout_15.addWidget(self.label_99)
-
-        self.label_100 = QLabel(self.frame_22)
-        self.label_100.setObjectName(u"label_100")
-        palette = QPalette()
-        brush = QBrush(QColor(85, 87, 83, 255))
-        brush.setStyle(Qt.SolidPattern)
-        palette.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        brush1 = QBrush(QColor(190, 190, 190, 255))
-        brush1.setStyle(Qt.SolidPattern)
-        palette.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_100.setPalette(palette)
-        font3 = QFont()
-        font3.setPointSize(11)
-        self.label_100.setFont(font3)
-        self.label_100.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
-
-        self.horizontalLayout_15.addWidget(self.label_100)
-
-
-        self.gridLayout.addWidget(self.frame_22, 6, 0, 1, 2)
+        self.gridLayout.addWidget(self.label_35, 1, 0, 1, 1)
 
         self.frame_3 = QFrame(self.frame_58)
         self.frame_3.setObjectName(u"frame_3")
@@ -972,11 +794,17 @@ class Ui_mainWindow(object):
 
         self.label_111 = QLabel(self.frame_3)
         self.label_111.setObjectName(u"label_111")
-        palette1 = QPalette()
-        palette1.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette1.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette1.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_111.setPalette(palette1)
+        palette = QPalette()
+        brush = QBrush(QColor(85, 87, 83, 255))
+        brush.setStyle(Qt.SolidPattern)
+        palette.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        brush1 = QBrush(QColor(190, 190, 190, 255))
+        brush1.setStyle(Qt.SolidPattern)
+        palette.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_111.setPalette(palette)
+        font3 = QFont()
+        font3.setPointSize(11)
         self.label_111.setFont(font3)
         self.label_111.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
@@ -1003,18 +831,59 @@ class Ui_mainWindow(object):
 
         self.label_45 = QLabel(self.frame_30)
         self.label_45.setObjectName(u"label_45")
-        palette2 = QPalette()
-        palette2.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette2.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette2.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_45.setPalette(palette2)
+        palette1 = QPalette()
+        palette1.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette1.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette1.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_45.setPalette(palette1)
         self.label_45.setFont(font3)
         self.label_45.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
         self.horizontalLayout_18.addWidget(self.label_45)
 
 
-        self.gridLayout.addWidget(self.frame_30, 14, 0, 1, 2)
+        self.gridLayout.addWidget(self.frame_30, 15, 0, 1, 2)
+
+        self.label_118 = QLabel(self.frame_58)
+        self.label_118.setObjectName(u"label_118")
+        self.label_118.setFont(font2)
+
+        self.gridLayout.addWidget(self.label_118, 7, 0, 1, 1)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout.addItem(self.verticalSpacer, 18, 1, 1, 1)
+
+        self.frame_22 = QFrame(self.frame_58)
+        self.frame_22.setObjectName(u"frame_22")
+        self.frame_22.setFrameShape(QFrame.NoFrame)
+        self.frame_22.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_15 = QHBoxLayout(self.frame_22)
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.horizontalLayout_15.setContentsMargins(0, 0, 0, 0)
+        self.label_99 = QLabel(self.frame_22)
+        self.label_99.setObjectName(u"label_99")
+        self.label_99.setMinimumSize(QSize(24, 24))
+        self.label_99.setMaximumSize(QSize(24, 24))
+        self.label_99.setPixmap(QPixmap(u":/Icons/icons/show_color_controls.svg"))
+        self.label_99.setScaledContents(True)
+
+        self.horizontalLayout_15.addWidget(self.label_99)
+
+        self.label_100 = QLabel(self.frame_22)
+        self.label_100.setObjectName(u"label_100")
+        palette2 = QPalette()
+        palette2.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette2.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette2.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_100.setPalette(palette2)
+        self.label_100.setFont(font3)
+        self.label_100.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+
+        self.horizontalLayout_15.addWidget(self.label_100)
+
+
+        self.gridLayout.addWidget(self.frame_22, 6, 0, 1, 2)
 
         self.frame_24 = QFrame(self.frame_58)
         self.frame_24.setObjectName(u"frame_24")
@@ -1047,12 +916,135 @@ class Ui_mainWindow(object):
 
         self.gridLayout.addWidget(self.frame_24, 8, 0, 1, 2)
 
+        self.fps_spinBox = QSpinBox(self.frame_58)
+        self.fps_spinBox.setObjectName(u"fps_spinBox")
+        self.fps_spinBox.setFont(font2)
+        self.fps_spinBox.setMinimum(1)
+        self.fps_spinBox.setMaximum(9999)
+        self.fps_spinBox.setValue(30)
+
+        self.gridLayout.addWidget(self.fps_spinBox, 17, 1, 1, 1)
+
         self.branch_width_based_on_flow_checkBox = QCheckBox(self.frame_58)
         self.branch_width_based_on_flow_checkBox.setObjectName(u"branch_width_based_on_flow_checkBox")
         self.branch_width_based_on_flow_checkBox.setFont(font2)
         self.branch_width_based_on_flow_checkBox.setChecked(False)
 
-        self.gridLayout.addWidget(self.branch_width_based_on_flow_checkBox, 13, 1, 1, 1)
+        self.gridLayout.addWidget(self.branch_width_based_on_flow_checkBox, 14, 1, 1, 1)
+
+        self.label_15 = QLabel(self.frame_58)
+        self.label_15.setObjectName(u"label_15")
+        self.label_15.setFont(font2)
+
+        self.gridLayout.addWidget(self.label_15, 13, 0, 1, 1)
+
+        self.resolution_factor_spinBox = QSpinBox(self.frame_58)
+        self.resolution_factor_spinBox.setObjectName(u"resolution_factor_spinBox")
+        self.resolution_factor_spinBox.setFont(font2)
+        self.resolution_factor_spinBox.setMinimum(1)
+        self.resolution_factor_spinBox.setMaximum(100)
+        self.resolution_factor_spinBox.setValue(10)
+
+        self.gridLayout.addWidget(self.resolution_factor_spinBox, 16, 1, 1, 1)
+
+        self.label_150 = QLabel(self.frame_58)
+        self.label_150.setObjectName(u"label_150")
+        self.label_150.setFont(font2)
+
+        self.gridLayout.addWidget(self.label_150, 17, 0, 1, 1)
+
+        self.max_node_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.max_node_size_spinBox.setObjectName(u"max_node_size_spinBox")
+        self.max_node_size_spinBox.setFont(font2)
+        self.max_node_size_spinBox.setDecimals(1)
+        self.max_node_size_spinBox.setMinimum(0.100000000000000)
+        self.max_node_size_spinBox.setSingleStep(0.100000000000000)
+        self.max_node_size_spinBox.setValue(40.000000000000000)
+
+        self.gridLayout.addWidget(self.max_node_size_spinBox, 11, 1, 1, 1)
+
+        self.max_branch_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.max_branch_size_spinBox.setObjectName(u"max_branch_size_spinBox")
+        self.max_branch_size_spinBox.setFont(font2)
+        self.max_branch_size_spinBox.setDecimals(1)
+        self.max_branch_size_spinBox.setSingleStep(0.100000000000000)
+        self.max_branch_size_spinBox.setValue(20.000000000000000)
+
+        self.gridLayout.addWidget(self.max_branch_size_spinBox, 13, 1, 1, 1)
+
+        self.label_9 = QLabel(self.frame_58)
+        self.label_9.setObjectName(u"label_9")
+        self.label_9.setFont(font2)
+
+        self.gridLayout.addWidget(self.label_9, 11, 0, 1, 1)
+
+        self.min_node_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.min_node_size_spinBox.setObjectName(u"min_node_size_spinBox")
+        self.min_node_size_spinBox.setFont(font2)
+        self.min_node_size_spinBox.setDecimals(1)
+        self.min_node_size_spinBox.setMinimum(0.100000000000000)
+        self.min_node_size_spinBox.setSingleStep(0.100000000000000)
+        self.min_node_size_spinBox.setValue(20.000000000000000)
+
+        self.gridLayout.addWidget(self.min_node_size_spinBox, 10, 1, 1, 1)
+
+        self.min_branch_size_spinBox = QDoubleSpinBox(self.frame_58)
+        self.min_branch_size_spinBox.setObjectName(u"min_branch_size_spinBox")
+        self.min_branch_size_spinBox.setFont(font2)
+        self.min_branch_size_spinBox.setDecimals(1)
+        self.min_branch_size_spinBox.setSingleStep(0.100000000000000)
+        self.min_branch_size_spinBox.setValue(0.500000000000000)
+
+        self.gridLayout.addWidget(self.min_branch_size_spinBox, 12, 1, 1, 1)
+
+        self.label_60 = QLabel(self.frame_58)
+        self.label_60.setObjectName(u"label_60")
+        self.label_60.setFont(font2)
+
+        self.gridLayout.addWidget(self.label_60, 2, 0, 1, 1)
+
+        self.explosion_factor_doubleSpinBox = QDoubleSpinBox(self.frame_58)
+        self.explosion_factor_doubleSpinBox.setObjectName(u"explosion_factor_doubleSpinBox")
+        self.explosion_factor_doubleSpinBox.setFont(font2)
+        self.explosion_factor_doubleSpinBox.setDecimals(3)
+        self.explosion_factor_doubleSpinBox.setMinimum(1.000000000000000)
+        self.explosion_factor_doubleSpinBox.setMaximum(999999999.000000000000000)
+        self.explosion_factor_doubleSpinBox.setSingleStep(0.100000000000000)
+        self.explosion_factor_doubleSpinBox.setValue(1.500000000000000)
+
+        self.gridLayout.addWidget(self.explosion_factor_doubleSpinBox, 2, 1, 1, 1)
+
+        self.label_14 = QLabel(self.frame_58)
+        self.label_14.setObjectName(u"label_14")
+        self.label_14.setFont(font2)
+
+        self.gridLayout.addWidget(self.label_14, 12, 0, 1, 1)
+
+        self.label = QLabel(self.frame_58)
+        self.label.setObjectName(u"label")
+        self.label.setFont(font2)
+
+        self.gridLayout.addWidget(self.label, 10, 0, 1, 1)
+
+        self.label_43 = QLabel(self.frame_58)
+        self.label_43.setObjectName(u"label_43")
+        self.label_43.setFont(font2)
+
+        self.gridLayout.addWidget(self.label_43, 9, 0, 1, 1)
+
+        self.palette_comboBox = QComboBox(self.frame_58)
+        self.palette_comboBox.setObjectName(u"palette_comboBox")
+        self.palette_comboBox.setFont(font2)
+
+        self.gridLayout.addWidget(self.palette_comboBox, 9, 1, 1, 1)
+
+        self.ask_before_appliying_layout_checkBox = QCheckBox(self.frame_58)
+        self.ask_before_appliying_layout_checkBox.setObjectName(u"ask_before_appliying_layout_checkBox")
+        self.ask_before_appliying_layout_checkBox.setFont(font2)
+        self.ask_before_appliying_layout_checkBox.setChecked(True)
+        self.ask_before_appliying_layout_checkBox.setTristate(False)
+
+        self.gridLayout.addWidget(self.ask_before_appliying_layout_checkBox, 4, 0, 1, 1)
 
 
         self.verticalLayout_38.addWidget(self.frame_58)
@@ -4973,49 +4965,48 @@ class Ui_mainWindow(object):
         self.diagram_step_slider.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Time slider</span></p><p>Move this time slider to select the appropriate time slot to view.</p><p>The first position sets the snapshot values, the rest attend to the time series values.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_3), QCoreApplication.translate("mainWindow", u"Diagrams", None))
-        self.label_9.setText(QCoreApplication.translate("mainWindow", u"Node max. size", None))
-#if QT_CONFIG(tooltip)
-        self.resolution_factor_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Resolution factor.</p><p>1K = 1920 x 1080 pixels</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.resolution_factor_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" K", None))
-        self.label_118.setText(QCoreApplication.translate("mainWindow", u"Map tile provider", None))
-        self.label_24.setText(QCoreApplication.translate("mainWindow", u"Layout algorithm", None))
 #if QT_CONFIG(tooltip)
         self.automatic_layout_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Algorithm to use for the automatic </p><p>layout of the grid nodes</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_60.setText(QCoreApplication.translate("mainWindow", u"Node expansion factor", None))
-        self.min_node_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
-        self.label_43.setText(QCoreApplication.translate("mainWindow", u"Palette", None))
-        self.label_15.setText(QCoreApplication.translate("mainWindow", u"Branch max. size", None))
-        self.label_35.setText(QCoreApplication.translate("mainWindow", u"Default voltage", None))
-        self.label.setText(QCoreApplication.translate("mainWindow", u"Node min. size", None))
-        self.label_14.setText(QCoreApplication.translate("mainWindow", u"Branch min. size", None))
-        self.max_branch_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
-#if QT_CONFIG(tooltip)
-        self.explosion_factor_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>When expanding or contracting the distances between nodes, this is the factor that applies.</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-        self.fps_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" FPS", None))
-        self.max_node_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
-        self.label_150.setText(QCoreApplication.translate("mainWindow", u"Video FPS", None))
-#if QT_CONFIG(tooltip)
-        self.ask_before_appliying_layout_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Ask before running the automatic grid layout. This is because you might have a layout already and ruin it accidentally.", None))
-#endif // QT_CONFIG(tooltip)
-        self.ask_before_appliying_layout_checkBox.setText(QCoreApplication.translate("mainWindow", u"Ask before applying", None))
         self.label_32.setText(QCoreApplication.translate("mainWindow", u"Export resolution", None))
-        self.min_branch_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
 #if QT_CONFIG(tooltip)
         self.defaultBusVoltageSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p><span style=\" font-weight:700;\">Bus default voltage</span></p><p>This is the voltage that drag&amp;drop buses have when they are created from the schematic.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.defaultBusVoltageSpinBox.setSuffix(QCoreApplication.translate("mainWindow", u" kV", None))
-        self.label_99.setText("")
-        self.label_100.setText(QCoreApplication.translate("mainWindow", u"Map", None))
+        self.label_35.setText(QCoreApplication.translate("mainWindow", u"Default voltage", None))
         self.label_110.setText("")
         self.label_111.setText(QCoreApplication.translate("mainWindow", u"Schematic", None))
         self.label_66.setText("")
         self.label_45.setText(QCoreApplication.translate("mainWindow", u"Export", None))
+        self.label_118.setText(QCoreApplication.translate("mainWindow", u"Map tile provider", None))
+        self.label_99.setText("")
+        self.label_100.setText(QCoreApplication.translate("mainWindow", u"Map", None))
         self.label_156.setText("")
         self.label_155.setText(QCoreApplication.translate("mainWindow", u"Display", None))
+        self.fps_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" FPS", None))
         self.branch_width_based_on_flow_checkBox.setText(QCoreApplication.translate("mainWindow", u"Width based on flow", None))
+        self.label_15.setText(QCoreApplication.translate("mainWindow", u"Branch max. size", None))
+#if QT_CONFIG(tooltip)
+        self.resolution_factor_spinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Resolution factor.</p><p>1K = 1920 x 1080 pixels</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.resolution_factor_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" K", None))
+        self.label_150.setText(QCoreApplication.translate("mainWindow", u"Video FPS", None))
+        self.max_node_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
+        self.max_branch_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
+        self.label_9.setText(QCoreApplication.translate("mainWindow", u"Node max. size", None))
+        self.min_node_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
+        self.min_branch_size_spinBox.setSuffix(QCoreApplication.translate("mainWindow", u" px", None))
+        self.label_60.setText(QCoreApplication.translate("mainWindow", u"Node expansion factor", None))
+#if QT_CONFIG(tooltip)
+        self.explosion_factor_doubleSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>When expanding or contracting the distances between nodes, this is the factor that applies.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_14.setText(QCoreApplication.translate("mainWindow", u"Branch min. size", None))
+        self.label.setText(QCoreApplication.translate("mainWindow", u"Node min. size", None))
+        self.label_43.setText(QCoreApplication.translate("mainWindow", u"Palette", None))
+#if QT_CONFIG(tooltip)
+        self.ask_before_appliying_layout_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Ask before running the automatic grid layout. This is because you might have a layout already and ruin it accidentally.", None))
+#endif // QT_CONFIG(tooltip)
+        self.ask_before_appliying_layout_checkBox.setText(QCoreApplication.translate("mainWindow", u"Layout algorithm (mark to ask)", None))
         self.tabWidget_6.setTabText(self.tabWidget_6.indexOf(self.tab_4), QCoreApplication.translate("mainWindow", u"Settings", None))
         self.tabWidget_3.setTabText(self.tabWidget_3.indexOf(self.GridSectionTab), QCoreApplication.translate("mainWindow", u"Diagrams", None))
 #if QT_CONFIG(tooltip)

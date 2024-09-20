@@ -34,7 +34,7 @@ from PySide6.QtCore import Qt, QTimer, QEvent, QPointF
 from PySide6.QtGui import (QPainter, QColor, QPixmap, QCursor,
                            QMouseEvent, QKeyEvent, QWheelEvent,
                            QResizeEvent, QEnterEvent, QPaintEvent, QDragEnterEvent, QDragMoveEvent, QDropEvent)
-from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout, QVBoxLayout,
+from PySide6.QtWidgets import (QSizePolicy, QWidget, QGraphicsScene, QGraphicsView, QStackedLayout,
                                QGraphicsSceneMouseEvent, QGraphicsItem, QLabel, QGraphicsProxyWidget)
 
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
@@ -77,7 +77,7 @@ class MapScene(QGraphicsScene):
         # print(f"Scene pressed at {event.scenePos()}")
         super().mousePressEvent(event)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         """
 
         :param event:
@@ -113,20 +113,19 @@ class MapView(QGraphicsView):
         self._scene = scene
 
         self.map_widget = map_widget
+        self.setStyleSheet("QGraphicsView { border: none; }")
 
         # Create a QLabel
-        self.label = QLabel("Bottom Left Label")
-        self.label.setStyleSheet("background-color: rgba(0, 0, 0, 0);"
-                                 "color: rgba(150, 150, 150, 180);"
-                                 "font-size:9pt")  # Semi-transparent yellow
+        self.attribution_label = QLabel("Bottom Left Label")
+        self.attribution_label.setStyleSheet("background-color: rgba(0, 0, 0, 0);"
+                                             "color: rgba(150, 150, 150, 180);"
+                                             "font-size:9pt")  # Semi-transparent yellow
 
         # Create a QGraphicsProxyWidget for the QLabel
         self.label_proxy_widget = QGraphicsProxyWidget()
-        self.label_proxy_widget.setWidget(self.label)
-
-        # Position the QLabel within the scene
-        self.label_proxy_widget.setPos(0, scene.sceneRect().height() - self.label.height())  # Bottom-left position
+        self.label_proxy_widget.setWidget(self.attribution_label)
         self.label_proxy_widget.setFlag(QGraphicsItem.ItemIgnoresTransformations)
+        self.update_label_position()
 
         # Add the proxy widget to the scene
         self._scene.addItem(self.label_proxy_widget)
@@ -157,7 +156,7 @@ class MapView(QGraphicsView):
         :param val:
         :return:
         """
-        self.label.setText(val)
+        self.attribution_label.setText(val)
 
     def selected_items(self) -> List[QGraphicsItem]:
         """
@@ -305,7 +304,7 @@ class MapView(QGraphicsView):
         view_height = self.viewport().height()
 
         # Set position relative to the bottom-left corner of the viewport
-        self.label_proxy_widget.setPos(self.mapToScene(0, view_height - self.label.height()))
+        self.label_proxy_widget.setPos(self.mapToScene(0, view_height - self.attribution_label.height()))
 
     def set_size_diagram(self) -> None:
         """
@@ -1878,15 +1877,6 @@ class MapWidget(QWidget):
         # self.tile_size_x = tile_src.tile_size_x
         # self.tile_size_y = tile_src.tile_size_y
         self.level = level
-
-        result = self.tile_src.GetInfo(level)
-        (num_tiles_x, num_tiles_y, ppd_x, ppd_y) = result
-        # self.map_width = self.tile_size_x * num_tiles_x
-        # self.map_height = self.tile_size_y * num_tiles_y
-
-        # set tile levels stuff - allowed levels, etc
-        # self.tiles_max_level = max(tile_src.levels)
-        # self.tiles_min_level = min(tile_src.levels)
 
         # set callback from Tile source object when tile(s) available
         self.tile_src.setCallback(self.on_tile_available)

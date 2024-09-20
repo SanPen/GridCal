@@ -40,7 +40,7 @@ from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import DeviceType, SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 import GridCalEngine.Devices.Diagrams.palettes as palettes
