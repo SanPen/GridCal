@@ -27,7 +27,7 @@ class OsmTiles(Tiles):
         super().__init__(TilesetName=name,
                          TilesetShortName='OSM Tiles',
                          TilesetVersion='1.0',
-                         levels=list(range(17)),
+                         levels=list(range(20)),
                          tile_width=256,
                          tile_height=256,
                          tiles_dir=tiles_dir,

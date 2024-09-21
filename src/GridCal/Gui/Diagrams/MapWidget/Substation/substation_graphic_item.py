@@ -80,29 +80,25 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         x, y = self.editor.to_x_y(lat=lat, lon=lon)
         self.setRect(x, y, r, r)
 
-        # ellipse_item = QGraphicsEllipseItem(0, 0, r, r)
-        # ellipse_item.setBrush(QBrush(QColor(0, 0, 255, 127)))
-        # ellipse_item.setParentItem(self)
-        # ellipse_item.setPos(QPointF(-84.287109, -1007.726563))
+        # Enable hover events for the item
+        self.setAcceptHoverEvents(True)
 
-        # self.resize(r)
-        self.setAcceptHoverEvents(True)  # Enable hover events for the item
-        # self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
-        self.setFlag(
-            self.GraphicsItemFlag.ItemIsSelectable | QGraphicsRectItem.ItemIsMovable)  # Allow selecting the node
+        # Allow selecting the node
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable | QGraphicsRectItem.ItemIsMovable)
 
         self.setCursor(QCursor(Qt.PointingHandCursor))
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
-        self.colorInner = QColor(255, 100, 100, 100)
-        self.colorBorder = QColor(255, 100, 100, 100)
-
-        # Assign color to the node
+        self.color = QColor(self.api_object.color)
+        self.color.setAlpha(128)
+        self.border_color = QColor(self.api_object.color)  # No Alpha
         self.setDefaultColor()
+
         self.hovered = False
         self.needsUpdate = False
-        # self.setZValue(1)
+
+        # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
     def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
@@ -209,7 +205,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         Event handler for when the mouse enters the item.
         """
         # self.editor.map.view.in_item = True
-        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
+        self.set_color(self.inn, QColor(Qt.red))
         self.hovered = True
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
@@ -361,7 +357,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             self.editor.add_api_voltage_level(substation_graphics=self,
                                               api_object=vl)
 
-    def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+    def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
 
         :param inner_color:
@@ -383,7 +379,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        self.setNodeColor(self.colorInner, self.colorBorder)
+        self.set_color(self.color, self.border_color)
 
     def getPos(self) -> QPointF:
         """

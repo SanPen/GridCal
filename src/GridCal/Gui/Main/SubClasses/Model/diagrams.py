@@ -1425,11 +1425,15 @@ class DiagramsMain(CompiledArraysMain):
                                                                                 f_name, files_types)
 
                 if filename != "":
-                    if not (filename.endswith('.svg') or filename.endswith('.png')):
-                        filename += ".svg"
+                    if 'svg' in type_selected:
+                        if not filename.endswith('.svg'):
+                            filename += ".svg"
 
-                    # save in factor * K
-                    factor = self.ui.resolution_factor_spinBox.value()
+                    elif 'png' in type_selected:
+                        if not filename.endswith('.png'):
+                            filename += ".png"
+
+                    # save
                     diagram.take_picture(filename)
 
     def record_video(self):
