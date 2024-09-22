@@ -21,7 +21,6 @@ from PySide6.QtGui import QPen, QCursor
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsItemGroup
 from GridCal.Gui.messages import yes_no_question, error_msg, warning_msg
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
-from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import INJECTION_DEVICE_TYPES
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -60,7 +59,7 @@ class InjectionTemplateGraphicItem(GenericDiagramWidget, QGraphicsItemGroup):
 
         # Properties of the container:
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         self.width = 4
 

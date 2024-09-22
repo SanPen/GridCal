@@ -18,14 +18,14 @@ from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint, QRectF, QRect, QPointF
+from PySide6.QtCore import Qt, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
-                                                   FONT_SCALE, EMERGENCY)
+                                                   FONT_SCALE, EMERGENCY, TRANSPARENT)
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, HandleItem
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.load_graphics import LoadGraphicItem, Load
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem, Generator
@@ -58,7 +58,32 @@ SHUNT_GRAPHICS = Union[
     LoadGraphicItem,
     GeneratorGraphicItem,
     StaticGeneratorGraphicItem,
+    CurrentInjectionGraphicItem
 ]
+
+
+
+
+
+class ShortCircuitFlags:
+    """
+    Short circuit flags
+    """
+    def __init__(self, sc_3p: bool = False, sc_lg: bool = False, sc_ll: bool = False, sc_llg: bool = False):
+        self.sc_3p = sc_3p
+        self.sc_lg = sc_lg
+        self.sc_ll = sc_ll
+        self.sc_llg = sc_llg
+
+    def disable_all(self):
+        """
+
+        :return:
+        """
+        self.sc_3p = False
+        self.sc_lg = False
+        self.sc_ll = False
+        self.sc_llg = False
 
 
 class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
@@ -79,8 +104,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  bus: Bus = None,
                  h: int = 40,
                  w: int = 80,
-                 x: int = 0,
-                 y: int = 0,
+                 x: float = 0,
+                 y: float = 0,
                  draw_labels: bool = True):
         """
 
@@ -124,7 +149,8 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         # connection terminals the block
         self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
+        self._terminal.setPen(QPen(TRANSPARENT, self.pen_width, self.style,
+                                   Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
         # Create corner for resize:
         self.sizer = HandleItem(self._terminal, callback=self.change_size)
@@ -135,10 +161,10 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_tile_color(self.color)
 
-        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        self.setBrush(Qt.transparent)
+        self.setPen(QPen(TRANSPARENT, self.pen_width, self.style))
+        self.setBrush(TRANSPARENT)
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         # Update size:
         self.change_size(w=self.w)
@@ -182,7 +208,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                                            draw_labels=self.draw_labels,
                                            graphic_object=self)
 
-    def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
+    def add_big_marker(self, color: Union[None, QColor] = QColor(255, 0, 0, 255), tool_tip_text: str = ""):
         """
         Add a big marker to the bus
         :param color: Qt Color ot the marker
@@ -204,17 +230,17 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.editor.remove_from_scene(self.big_marker)
             self.big_marker = None
 
-    def set_position(self, x: int, y: int) -> None:
+    def set_position(self, x: float, y: float) -> None:
         """
         Set the bus x, y position
         :param x: x in pixels
         :param y: y in pixels
         """
         if np.isnan(x):
-            x = 0
+            x = 0.0
         if np.isnan(y):
-            y = 0
-        self.setPos(QPoint(int(x), int(y)))
+            y = 0.0
+        self.setPos(QPointF(x, y))
 
     def set_tile_color(self, brush: QBrush) -> None:
         """
@@ -670,8 +696,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         Disable short circuit
         """
-        # self.tile.setPen(QPen(QColor(ACTIVE['color']), self.pen_width))
-        self.tile.setPen(QPen(Qt.transparent, self.pen_width))
+        self.tile.setPen(QPen(TRANSPARENT, self.pen_width))
         self.sc_enabled = [False, False, False, False]
 
     def enable_disable_sc_3p(self):

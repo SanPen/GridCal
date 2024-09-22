@@ -78,7 +78,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.lon = lon
         self.radius = r
         x, y = self.editor.to_x_y(lat=lat, lon=lon)
-        self.setRect(x, y, r, r)
+        self.setRect(x, y, self.radius, self.radius)
 
         # Enable hover events for the item
         self.setAcceptHoverEvents(True)
@@ -92,6 +92,8 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.change_pen_width(0.5)
         self.color = QColor(self.api_object.color)
         self.color.setAlpha(128)
+        self.hoover_color = QColor(self.api_object.color)
+        self.hoover_color.setAlpha(180)
         self.border_color = QColor(self.api_object.color)  # No Alpha
         self.setDefaultColor()
 
@@ -100,6 +102,44 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+    def set_size(self, r: float):
+        """
+
+        :param r: radius in pixels
+        :return:
+        """
+        if r != self.radius:
+            rect = self.rect()
+            rect.setWidth(r)
+            rect.setHeight(r)
+
+            # change the width and height while keeping the same center
+            r2 = r / 2
+            new_x = rect.x() - r2
+            new_y = rect.y() - r2
+
+            # Set the new rectangle with the updated dimensions
+            self.setRect(new_x, new_y, r, r)
+            self.radius = r
+
+            self.set_callabacks(new_x + r2, new_y + r2)
+
+            for vl_graphics in self.voltage_level_graphics:
+                vl_graphics.center_on_substation()
+
+            self.update_diagram()
+
+    def set_api_object_color(self):
+        """
+        Gather the API object color and update this objects
+        """
+        self.color = QColor(self.api_object.color)
+        self.color.setAlpha(128)
+        self.hoover_color = QColor(self.api_object.color)
+        self.hoover_color.setAlpha(180)
+        self.border_color = QColor(self.api_object.color)  # No Alpha
+        self.setDefaultColor()
 
     def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
         """
@@ -198,14 +238,13 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         # super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.update_diagram()  # always update
-        print("SE mouse release")
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
         # self.editor.map.view.in_item = True
-        self.set_color(self.inn, QColor(Qt.red))
+        self.set_color(self.hoover_color, self.color)
         self.hovered = True
         QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
 
@@ -331,7 +370,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
 
         inpt = InputNumberDialogue(
-            min_value=1.0,
+            min_value=0.1,
             max_value=100000.0,
             default_value=self.editor.diagram.default_bus_voltage,
             title="Add voltage level",

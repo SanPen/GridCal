@@ -160,28 +160,28 @@ class ControllableBranchParent(BranchParent):
         self.tolerance = tolerance
 
         # total impedance and admittance in p.u.
-        self.R = r
-        self.X = x
-        self.G = g
-        self.B = b
+        self.R = float(r)
+        self.X = float(x)
+        self.G = float(g)
+        self.B = float(b)
 
-        self.R0 = r0
-        self.X0 = x0
-        self.G0 = g0
-        self.B0 = b0
+        self.R0 = float(r0)
+        self.X0 = float(x0)
+        self.G0 = float(g0)
+        self.B0 = float(b0)
 
-        self.R2 = r2
-        self.X2 = x2
-        self.G2 = g2
-        self.B2 = b2
+        self.R2 = float(r2)
+        self.X2 = float(x2)
+        self.G2 = float(g2)
+        self.B2 = float(b2)
 
         # Conductor base and operating temperatures in ºC
-        self.temp_base = temp_base
-        self.temp_oper = temp_oper
-        self._temp_oper_prof = Profile(default_value=temp_oper, data_type=float)
+        self.temp_base = float(temp_base)
+        self.temp_oper = float(temp_oper)
+        self._temp_oper_prof = Profile(default_value=self.temp_oper, data_type=float)
 
         # Conductor thermal constant (1/ºC)
-        self.alpha = alpha
+        self.alpha = float(alpha)
 
         # tap changer object
         self._tap_changer = TapChanger(total_positions=tc_total_positions,
@@ -192,37 +192,37 @@ class ControllableBranchParent(BranchParent):
 
         # Tap module
         if tap_module != 0:
-            self.tap_module = tap_module
+            self.tap_module = float(tap_module)
             self._tap_changer.set_tap_module(self.tap_module)
         else:
             self.tap_module = self._tap_changer.get_tap_module()
 
-        self._tap_module_prof = Profile(default_value=tap_module, data_type=float)
+        self._tap_module_prof = Profile(default_value=self.tap_module, data_type=float)
 
-        self._tap_module_max = tap_module_max
-        self._tap_module_min = tap_module_min
+        self._tap_module_max = float(tap_module_max)
+        self._tap_module_min = float(tap_module_min)
 
         self._tap_phase_control_mode: TapPhaseControl = tap_phase_control_mode
         self._tap_phase_control_mode_prof = Profile(default_value=tap_phase_control_mode, data_type=TapPhaseControl)
 
-        self.Pset = Pset
-        self._Pset_prof = Profile(default_value=Pset, data_type=float)
+        self.Pset = float(Pset)
+        self._Pset_prof = Profile(default_value=self.Pset, data_type=float)
 
-        self.Qset = Qset
-        self._Qset_prof = Profile(default_value=Qset, data_type=float)
+        self.Qset = float(Qset)
+        self._Qset_prof = Profile(default_value=self.Qset, data_type=float)
 
         # Tap angle
-        self.tap_phase = tap_phase
-        self._tap_phase_prof = Profile(default_value=tap_phase, data_type=float)
+        self.tap_phase = float(tap_phase)
+        self._tap_phase_prof = Profile(default_value=self.tap_phase, data_type=float)
 
-        self._tap_phase_max = tap_phase_max
-        self._tap_phase_min = tap_phase_min
+        self._tap_phase_max = float(tap_phase_max)
+        self._tap_phase_min = float(tap_phase_min)
 
         self._tap_module_control_mode: TapModuleControl = tap_module_control_mode
         self._tap_module_control_mode_prof = Profile(default_value=tap_module_control_mode, data_type=TapModuleControl)
 
-        self.vset = vset
-        self._vset_prof = Profile(default_value=vset, data_type=float)
+        self.vset = float(vset)
+        self._vset_prof = Profile(default_value=self.vset, data_type=float)
 
         self.regulation_branch: BranchParent = regulation_branch
 

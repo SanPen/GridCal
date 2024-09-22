@@ -64,8 +64,8 @@ class CnGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  node: ConnectivityNode = None,
                  h: int = 40,
                  w: int = 40,
-                 x: int = 0,
-                 y: int = 0,
+                 x: float = 0,
+                 y: float = 0,
                  draw_labels: bool = True):
         """
 

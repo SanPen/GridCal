@@ -204,7 +204,7 @@ aligned in memory. The GridCal data model is object-oriented, while the numerica
 ```python
 import GridCalEngine.api as gce
 
-# load a grid
+# load a grid (.gridcal, .m (Matpower), .raw (PSS/e) .rawx (PSS/e), .epc (PowerWorld), .dgs (PowerFactory)
 my_grid = gce.open_file("my_file.gridcal")
 ```
 
@@ -215,15 +215,19 @@ import GridCalEngine.api as gce
 # load a grid from many xml files
 my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
 
-# or from a single zip
+# or from a single zip assumed to contain CGMES files
 my_grid = gce.open_file("my_cgmes_set_of_files.zip")
+
+
+# load a grid from a combination of xml and zip files assumed to be CGMES
+my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", "boundary.zip"])
 ```
 
-GridCal supports a plethora of file formats:
+GridCal supports many file formats:
 
 - CIM 16 (.zip and .xml)
 - CGMES 2.4.15 and 3.0 (.zip and .xml)
-- PSS/e raw and rawx versions 29 to 35, including USA market excahnge RAW-30 specifics.
+- PSS/e raw and rawx versions 29 to 35, including USA market exchange RAW-30 specifics.
 - Matpower .m files directly.
 - DigSilent .DGS (not fully compatible)
 - PowerWorld .EPC (not fully compatible, supports substation coordinates)
@@ -242,7 +246,8 @@ my_grid = gce.open_file("my_file.gridcal")
 gce.save_file(my_grid, "my_file_2.gridcal")
 ```
 
-In the case of saving a model in CGMES mode, we need to specify some things:
+In the case of saving a model in CGMES mode, we need to specify some extra parameters. 
+To simplify we can use the API function `save_cgmes_file`:
 
 ```python
 import GridCalEngine.api as gce
@@ -826,7 +831,7 @@ plt.tight_layout()
 
 GriCal has contingency simulations, and it features a quite flexible way of defining contingencies.
 Firs you define a contingency group, and then define individual events that are assigned to that contingency group.
-THe simulation then tries all the contingency groups and apply the events registered in each group:
+The simulation then tries all the contingency groups and apply the events registered in each group:
 
 ```python
 import os

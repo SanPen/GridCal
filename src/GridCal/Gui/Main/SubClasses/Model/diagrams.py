@@ -185,7 +185,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionEdit_simulation_time_limits.triggered.connect(self.edit_time_interval)
         self.ui.actionDisable_all_results_tags.triggered.connect(self.disable_all_results_tags)
         self.ui.actionEnable_all_results_tags.triggered.connect(self.enable_all_results_tags)
-
+        self.ui.actionConsolidate_diagram_coordinates.triggered.connect(self.consolidate_diagram_coordinates)
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
 
@@ -1937,3 +1937,16 @@ class DiagramsMain(CompiledArraysMain):
                     tile_name = self.ui.tile_provider_comboBox.currentText()
                     tile_src = self.tile_name_dict[tile_name]
                     diagram_widget.map.tile_src = tile_src
+
+    def consolidate_diagram_coordinates(self):
+        """
+        Consolidate the diagram coordinates into the DB
+        :return:
+        """
+        diagram_widget = self.get_selected_diagram_widget()
+
+        if diagram_widget is not None:
+            ok = yes_no_question(text="The diagram coordinates will be saved into the corresponding properties "
+                                      "of the database, overwritting the existing ones. Do you want to do this?",
+                                 title="Consolidate diagram coordinates into the DB")
+            diagram_widget.consolidate_coordinates()

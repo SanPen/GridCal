@@ -619,3 +619,10 @@ class BaseDiagramWidget(QSplitter):
         :return:
         """
         raise Exception('Copy method not implemented!')
+
+    def consolidate_coordinates(self):
+        """
+
+        :return:
+        """
+        raise Exception('Consolidate method method not implemented!')

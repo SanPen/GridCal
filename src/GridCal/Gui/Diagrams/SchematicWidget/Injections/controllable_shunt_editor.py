@@ -61,7 +61,7 @@ class ControllableShuntArray(ArrayTableModel):
                 else:
                     self._data[column][row] = value
 
-            self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
+            self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole])
             return True
 
         return False

@@ -83,16 +83,16 @@ class Substation(GenericAreaGroup):
         self._municipality: Union[Municipality, None] = municipality
         self.address: str = address
 
-        self.irradiation: float = irradiation
-        self._irradiation_prof = Profile(default_value=irradiation, data_type=float)
+        self.irradiation: float = float(irradiation)
+        self._irradiation_prof = Profile(default_value=self.irradiation, data_type=float)
 
-        self.temparature: float = temparature
-        self._temparature_prof = Profile(default_value=temparature, data_type=float)
+        self.temparature: float = float(temparature)
+        self._temparature_prof = Profile(default_value=self.temparature, data_type=float)
 
-        self.wind_speed: float = wind_speed
-        self._wind_speed_prof = Profile(default_value=wind_speed, data_type=float)
+        self.wind_speed: float = float(wind_speed)
+        self._wind_speed_prof = Profile(default_value=self.wind_speed, data_type=float)
 
-        self.terrain_roughness: float = terrain_roughness
+        self.terrain_roughness: float = float(terrain_roughness)
 
         self.color = color if color is not None else "#3d7d95"
 

@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict
 import json
 import numpy as np
 import math
@@ -179,7 +179,7 @@ class MapLibraryModel(QStandardItemModel):
         mimedata = QMimeData()
         for idx in idxs:
             if idx.isValid():
-                txt = self.data(idx, Qt.DisplayRole)
+                txt = self.data(idx, Qt.ItemDataRole.DisplayRole)
 
                 data = QByteArray()
                 stream = QDataStream(data, QIODevice.WriteOnly)
@@ -194,7 +194,7 @@ class MapLibraryModel(QStandardItemModel):
         :param index:
         :return:
         """
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
 class GridMapWidget(BaseDiagramWidget):
@@ -678,12 +678,9 @@ class GridMapWidget(BaseDiagramWidget):
         :param lon:
         :return:
         """
-        graphic_object = SubstationGraphicItem(editor=self,
-                                               api_object=api_object,
-                                               lat=lat,
-                                               lon=lon)
+        graphic_object = SubstationGraphicItem(editor=self, api_object=api_object, lat=lat, lon=lon,
+                                               r=self.diagram.min_bus_width)
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
-
         self.add_to_scene(graphic_object=graphic_object)
 
         return graphic_object
@@ -868,10 +865,13 @@ class GridMapWidget(BaseDiagramWidget):
 
         # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
 
-        self.Update_widths()
+        self.update_device_sizes()
 
-    def Update_widths(self):
+    def update_device_sizes(self):
+        """
 
+        :return:
+        """
         max_zoom = self.map.max_level
         min_zoom = self.map.min_level
         zoom = self.map.zoom_factor
@@ -884,7 +884,13 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
             for key, lne in graphics_dict.items():
-                lne.setWidthScale(scale)
+                lne.set_width_scale(scale)
+
+        # rescale substations
+        data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
+        for se_key, se in data.items():
+            se.set_api_object_color()
+            se.set_size(r=self.diagram.min_bus_width)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -1192,6 +1198,15 @@ class GridMapWidget(BaseDiagramWidget):
             call_new_substation_diagram_func=self.call_new_substation_diagram_func,
             call_delete_db_element_func=self.call_delete_db_element_func
         )
+
+    def consolidate_coordinates(self):
+        """
+        Consolidate the graphic elements' x, y coordinates into the API DB values
+        """
+        graphics: List[SubstationGraphicItem] = self.graphics_manager.query(elm=DeviceType.SubstationDevice)
+        for gelm in graphics:
+            gelm.api_object.latitude = gelm.lat
+            gelm.api_object.longitude = gelm.lon
 
 
 def generate_map_diagram(substations: List[Substation],

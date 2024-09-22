@@ -94,31 +94,31 @@ class Transformer3W(PhysicalDevice):
         self._bus2 = bus2
         self._bus3 = bus3
 
-        self.active = active
-        self._active_prof = Profile(default_value=active, data_type=bool)
+        self.active = bool(active)
+        self._active_prof = Profile(default_value=self.active, data_type=bool)
 
-        self._V1 = V1
-        self._V2 = V2
-        self._V3 = V3
+        self._V1 = float(V1)
+        self._V2 = float(V2)
+        self._V3 = float(V3)
 
-        self._r12 = r12
-        self._r23 = r23
-        self._r31 = r31
+        self._r12 = float(r12)
+        self._r23 = float(r23)
+        self._r31 = float(r31)
 
-        self._x12 = x12
-        self._x23 = x23
-        self._x31 = x31
+        self._x12 = float(x12)
+        self._x23 = float(x23)
+        self._x31 = float(x31)
 
-        self._rate12 = rate12
-        self._rate23 = rate23
-        self._rate31 = rate31
+        self._rate12 = float(rate12)
+        self._rate23 = float(rate23)
+        self._rate31 = float(rate31)
 
         self.winding1 = Winding(bus_from=self.bus0, bus_to=bus1, HV=V1, LV=1.0, name=name + "_W1")
         self.winding2 = Winding(bus_from=self.bus0, bus_to=bus2, HV=V2, LV=1.0, name=name + "_W2")
         self.winding3 = Winding(bus_from=self.bus0, bus_to=bus3, HV=V3, LV=1.0, name=name + "_W3")
 
-        self.x = x
-        self.y = y
+        self.x = float(x)
+        self.y = float(y)
 
         self.register(key='bus0', units='', tpe=DeviceType.BusDevice, definition='Middle point connection bus.',
                       editable=False)

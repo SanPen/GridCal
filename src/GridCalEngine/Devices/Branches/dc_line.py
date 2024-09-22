@@ -109,25 +109,25 @@ class DcLine(BranchParent):
         self.measurements = list()
 
         # line length in km
-        self.length = length
+        self.length = float(length)
 
         # line impedance tolerance
-        self.tolerance = tolerance
+        self.tolerance = float(tolerance)
 
         # short circuit impedance
-        self.r_fault = r_fault
-        self.fault_pos = fault_pos
+        self.r_fault = float(r_fault)
+        self.fault_pos = float(fault_pos)
 
         # total impedance and admittance in p.u.
-        self.R = r
+        self.R = float(r)
 
         # Conductor base and operating temperatures in ºC
-        self.temp_base = temp_base
-        self.temp_oper = temp_oper
+        self.temp_base = float(temp_base)
+        self.temp_oper = float(temp_oper)
         self._temp_oper_prof = Profile(default_value=temp_oper, data_type=float)
 
         # Conductor thermal constant (1/ºC)
-        self.alpha = alpha
+        self.alpha = float(alpha)
 
         # type template
         self.template = template

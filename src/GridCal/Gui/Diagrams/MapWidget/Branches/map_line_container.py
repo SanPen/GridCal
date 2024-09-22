@@ -66,7 +66,7 @@ class MapLineContainer(GenericDiagramWidget):
         self.enabled = True
         self.original = True  # TODO: Que es esto?
 
-    def setWidthScale(self, val: float):
+    def set_width_scale(self, val: float):
         """
         Set the width scale of the line
         :param val:
@@ -239,7 +239,7 @@ class MapLineContainer(GenericDiagramWidget):
 
         self.update_connectors()
 
-        self.editor.Update_widths()
+        self.editor.update_device_sizes()
 
     def substation_to(self):
         return self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())

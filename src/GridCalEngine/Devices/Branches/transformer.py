@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import numpy as np
 from typing import Tuple, Union, List
@@ -204,27 +205,27 @@ class Transformer2W(ControllableBranchParent):
                                           tc_type=tc_type)
 
         # set the high and low voltage values
-        self.HV = HV
-        self.LV = LV
+        self.HV: None | float = None if HV is None else float(HV)
+        self.LV: None | float = None if LV is None else float(LV)
 
         if self.bus_from and self.bus_to:
             self.set_hv_and_lv(HV, LV)
 
-        self.Sn = nominal_power
+        self.Sn = float(nominal_power)
 
-        self.Pcu = copper_losses
+        self.Pcu = float(copper_losses)
 
-        self.Pfe = iron_losses
+        self.Pfe = float(iron_losses)
 
-        self.I0 = no_load_current
+        self.I0 = float(no_load_current)
 
-        self.Vsc = short_circuit_voltage
+        self.Vsc = float(short_circuit_voltage)
 
         # connection type
-        self.conn = conn
+        self.conn: WindingsConnection = conn
 
         # type template
-        self.template = template
+        self.template: TransformerType = template
 
         # association with transformer templates
         self.possible_transformer_types: Associations = Associations(device_type=DeviceType.TransformerTypeDevice)

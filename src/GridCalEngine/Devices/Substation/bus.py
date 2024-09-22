@@ -94,26 +94,26 @@ class Bus(PhysicalDevice):
                                 code=code,
                                 device_type=DeviceType.BusDevice)
 
-        self.active = active
-        self._active_prof = Profile(default_value=active, data_type=bool)
+        self.active = bool(active)
+        self._active_prof = Profile(default_value=self.active, data_type=bool)
 
         # Nominal voltage (kV)
-        self.Vnom = Vnom
+        self.Vnom = float(Vnom)
 
         # minimum voltage limit
-        self.Vmin = vmin
+        self.Vmin = float(vmin)
         self.Vm_cost = 1.0
 
         # maximum voltage limit
-        self.Vmax = vmax
+        self.Vmax = float(vmax)
 
-        self.Vm0 = Vm0
+        self.Vm0 = float(Vm0)
 
-        self.Va0 = Va0
+        self.Va0 = float(Va0)
 
-        self.angle_min = angle_min
+        self.angle_min = float(angle_min)
 
-        self.angle_max = angle_max
+        self.angle_max = float(angle_max)
 
         self.angle_cost = 0
 
@@ -124,11 +124,8 @@ class Bus(PhysicalDevice):
         self.Qmax_sum = 0
 
         # short circuit impedance
-        self.r_fault = r_fault
-        self.x_fault = x_fault
-
-        # is the bus active?
-        self.active = active
+        self.r_fault = float(r_fault)
+        self.x_fault = float(x_fault)
 
         self.country: Country = country
 
@@ -144,25 +141,21 @@ class Bus(PhysicalDevice):
         self.type = BusMode.PQ_tpe
 
         # Flag to determine if the bus is a slack bus or not
-        self.is_slack = is_slack
+        self.is_slack = bool(is_slack)
 
         # determined if this bus is an AC or DC bus
-        self.is_dc = is_dc
+        self.is_dc = bool(is_dc)
 
         # determine if this bus is part of a composite transformer such as a 3-winding transformer
-        self.is_internal = is_internal
-
-        # if true, the presence of storage devices turn the bus into a Reference bus in practice
-        # So that P +jQ are computed
-        self.dispatch_storage = False
+        self.is_internal = bool(is_internal)
 
         # position and dimensions
-        self.x = xpos
-        self.y = ypos
-        self.h = height
-        self.w = width
-        self.longitude = longitude
-        self.latitude = latitude
+        self.x = float(xpos)
+        self.y = float(ypos)
+        self.h = float(height)
+        self.w = float(width)
+        self.longitude = float(longitude)
+        self.latitude = float(latitude)
 
         self.register(key='active', units='', tpe=bool, definition='Is the bus active? used to disable the bus.',
                       profile_name='active_prof')
