@@ -66,7 +66,7 @@ class ResultsMain(SimulationsMain):
         self.ui.sear_results_lineEdit.returnPressed.connect(self.search_in_results)
 
         # wrap headers
-        self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap())
+        self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap(self.ui.resultsTableView))
 
     def results_tree_view_click(self, index):
         """

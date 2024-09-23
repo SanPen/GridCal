@@ -558,16 +558,6 @@
              </property>
             </widget>
            </item>
-           <item row="16" column="1" colspan="2">
-            <widget class="QCheckBox" name="fixTimeSeriesCheckBox">
-             <property name="text">
-              <string>Fix time series values</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="2">
             <widget class="QDoubleSpinBox" name="genVsetMaxSpinBox">
              <property name="value">
@@ -605,6 +595,16 @@
             <widget class="QDoubleSpinBox" name="transformerTapModuleMaxSpinBox">
              <property name="value">
               <double>1.050000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="16" column="0" colspan="3">
+            <widget class="QCheckBox" name="fixTimeSeriesCheckBox">
+             <property name="text">
+              <string>Analyze / Fix time series values</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>

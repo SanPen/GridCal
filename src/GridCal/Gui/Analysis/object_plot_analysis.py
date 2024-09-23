@@ -34,6 +34,9 @@ from GridCalEngine.Devices.Injections.load import Load
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Utils.NumericalMethods.numerical_stability import (sparse_instability_svd_test,
+                                                                      sparse_instability_lu_test)
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 class GridErrorLog:
@@ -1162,6 +1165,7 @@ def analyze_load(elements: List[Load],
 
 
 def grid_analysis(circuit: MultiCircuit,
+                  analyze_ts=True,
                   imbalance_threshold=0.02,
                   v_low=0.95,
                   v_high=1.05,
@@ -1173,11 +1177,13 @@ def grid_analysis(circuit: MultiCircuit,
                   max_vcc=18,
                   logger=GridErrorLog(),
                   branch_x_threshold=1e-4,
+                  condition_number_thrshold=1e4,
                   eps_max: float = 1e20,
                   eps_min: float = 1e-20):
     """
     Analyze the model data
     :param circuit: Circuit to analyze
+    :param analyze_ts: Analyze time series
     :param imbalance_threshold: Allowed percentage of imbalance
     :param v_low: lower voltage setting
     :param v_high: higher voltage setting
@@ -1189,6 +1195,7 @@ def grid_analysis(circuit: MultiCircuit,
     :param min_vcc: Minimum short circuit voltage (%)
     :param logger: GridErrorLog
     :param branch_x_threshold: Value to compare branches X such that it is numerically stable
+    :param condition_number_thrshold: Condition number threshold to report unstability
     :param eps_max: Max epsylon value for comparison
     :param eps_min: Min epsylon value for comparison
     :return: list of fixable error objects
@@ -1325,35 +1332,64 @@ def grid_analysis(circuit: MultiCircuit,
                    val=str(Ql),
                    upper=str(Qmax))
 
-    if circuit.time_profile is not None:
-        nt = len(circuit.time_profile)
+    # analyze the time series data
+    if analyze_ts:
+        if circuit.time_profile is not None:
+            nt = len(circuit.time_profile)
 
-    for t in range(nt):
-        # compare loads
-        p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + eps_min)
-        if p_ratio > imbalance_threshold:
-            msg = ">> " + str(imbalance_threshold) + "%"
-            logger.add(object_type='Active power balance',
-                       element_name=circuit,
-                       element_index=t,
-                       severity=LogSeverity.Error,
-                       propty=msg,
-                       message='There is too much active power imbalance',
-                       val="{:.1f}".format(p_ratio * 100))
+        for t in range(nt):
+            # compare loads
+            p_ratio = abs(Pl_prof[t] - Pg_prof[t]) / (Pl_prof[t] + eps_min)
+            if p_ratio > imbalance_threshold:
+                msg = ">> " + str(imbalance_threshold) + "%"
+                logger.add(object_type='Active power balance',
+                           element_name=circuit,
+                           element_index=t,
+                           severity=LogSeverity.Error,
+                           propty=msg,
+                           message='There is too much active power imbalance',
+                           val="{:.1f}".format(p_ratio * 100))
 
-        # compare reactive power limits
-        if not (Qmin <= -Ql_prof[t] <= Qmax):
-            logger.add(object_type='Reactive power power balance',
-                       element_name=circuit,
-                       element_index=t,
-                       severity=LogSeverity.Error,
-                       propty="Reactive power out of bounds",
-                       message='There is too much reactive power imbalance',
-                       lower=str(Qmin),
-                       val=Ql_prof[t],
-                       upper=str(Qmax))
+            # compare reactive power limits
+            if not (Qmin <= -Ql_prof[t] <= Qmax):
+                logger.add(object_type='Reactive power power balance',
+                           element_name=circuit,
+                           element_index=t,
+                           severity=LogSeverity.Error,
+                           propty="Reactive power out of bounds",
+                           message='There is too much reactive power imbalance',
+                           lower=str(Qmin),
+                           val=Ql_prof[t],
+                           upper=str(Qmax))
 
+    # analyze the numerical stability
+    nc = compile_numerical_circuit_at(circuit, t_idx=None)  # compile the snapshot
 
+    rcond, unstable = sparse_instability_svd_test(nc.Bbus, condition_number_thrshold=1.0/condition_number_thrshold)
+
+    if unstable:
+        logger.add(object_type='matrix',
+                   element_name=circuit,
+                   element_index=-1,
+                   severity=LogSeverity.Error,
+                   propty="condition number",
+                   message='B matrix is SVD-Unstable: this may make linear power flows output nonsense',
+                   lower="",
+                   val=str(rcond),
+                   upper=str(1.0 / condition_number_thrshold))
+
+    rcond, unstable = sparse_instability_lu_test(nc.Bpqpv, condition_number_thrshold=condition_number_thrshold)
+
+    if unstable:
+        logger.add(object_type='matrix',
+                   element_name=circuit,
+                   element_index=-1,
+                   severity=LogSeverity.Error,
+                   propty="condition number",
+                   message='B matrix is LU-Unstable: this may make linear power flows output nonsense',
+                   lower="",
+                   val=str(rcond),
+                   upper=str(condition_number_thrshold))
 
     return fixable_errors
 
