@@ -388,6 +388,16 @@ def parse_single(token: str) -> Union[Filter, None]:
         return None
 
 
+def has_operators(token: str) -> bool:
+    """
+    Check if there are operators and , or in the token
+    :param token: any token
+    :return: has operators?
+    """
+    words = token.split()
+    return "and" in words or "or" in words
+
+
 def parse_expression(expression: str) -> MasterFilter:
     """
     Parses the query expression
@@ -399,15 +409,16 @@ def parse_expression(expression: str) -> MasterFilter:
 
     for token in master_tokens:
 
-        if "and" not in token and "or" not in token:
+        if has_operators(token):
+
+            elm = FilterOps(token.strip())
+            mst_flt.add(elm=elm)
+
+        else:
 
             flt = parse_single(token=token)
 
             if flt is not None:
                 mst_flt.add(elm=flt)
-
-        else:
-            elm = FilterOps(token.strip())
-            mst_flt.add(elm=elm)
 
     return mst_flt
