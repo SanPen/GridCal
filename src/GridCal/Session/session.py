@@ -60,7 +60,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import ResultTypes, SimulationTypes
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS, RESULTS_OBJECTS
 from GridCalEngine.basic_structures import Logger
-from GridCal.Session.results_model import ResultsModel
+from GridCal.Gui.results_model import ResultsModel
 
 
 class GcThread(QThread):
