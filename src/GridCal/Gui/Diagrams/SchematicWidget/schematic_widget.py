@@ -1918,9 +1918,9 @@ class SchematicWidget(BaseDiagramWidget):
         transformer = pyproj.Transformer.from_crs(4326, 25830, always_xy=True)
 
         # the longitude is more reated to x, the latitude is more related to y
-        x, y = transformer.transform(xx=lon, yy=lat)
+        y, x = transformer.transform(xx=lon, yy=lat)
         x *= - factor
-        y *= factor
+        y *= - factor
 
         # remove the offset
         if remove_offset:
