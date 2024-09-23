@@ -266,7 +266,7 @@ class ControllableBranchParent(BranchParent):
                       definition='Objective voltage at the "to" side of the bus when regulating the tap.',
                       profile_name='vset_prof', old_names=['Vdc_set'])
 
-        self.register(key='Qset', units='p.u.', tpe=float,
+        self.register(key='Qset', units='MVAr', tpe=float,
                       definition='Objective power at the selected side.',
                       profile_name='Qset_prof')
 
@@ -287,7 +287,7 @@ class ControllableBranchParent(BranchParent):
                       definition='Control available with the tap angle', old_names=['tap_angle_control_mode'],
                       profile_name='tap_phase_control_mode_prof')
 
-        self.register(key='Pset', units='p.u.', tpe=float,
+        self.register(key='Pset', units='MW', tpe=float,
                       definition='Objective power at the selected side.',
                       profile_name='Pset_prof', old_names=['Pdc_set'])
 
