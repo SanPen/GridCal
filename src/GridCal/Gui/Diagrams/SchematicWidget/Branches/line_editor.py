@@ -87,7 +87,7 @@ class LineEditor(QDialog):
         R = self.line.R * Zbase / length
         X = self.line.X * Zbase / length
         B = self.line.B * Ybase / length
-        I = np.round(self.line.rate / (Vf * 1.73205080757), 6)  # current in kA
+        I = np.round(self.line.rate / (Vf * 1.73205080757), 6)  # current in KA
 
         # ------------------------------------------------------------------------------------------
 
@@ -225,7 +225,7 @@ class LineEditor(QDialog):
                 x_ohm=self.x_spinner.value(),  # ohm / km
                 c_nf=self.b_spinner.value() * 1e3 / wf,  # nF / km
                 length=self.l_spinner.value(),  # km
-                Imax=self.i_spinner.value(),  # kA
+                Imax=self.i_spinner.value(),  # KA
                 freq=self.frequency,  # Hz
                 Sbase=self.Sbase,  # MVA
                 apply_to_profile=self.apply_to_profile.isChecked()

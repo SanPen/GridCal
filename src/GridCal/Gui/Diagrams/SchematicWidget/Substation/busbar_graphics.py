@@ -797,7 +797,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             msg += f" [{tpe}]"
         msg += "<br>"
         msg += f"v={vm}&lt;{va}º pu<br>"
-        msg += f"V={vm_kv} kV<br>"
+        msg += f"V={vm_kv} KV<br>"
         if P is not None:
             p = format_str.format(P)
             q = format_str.format(Q)

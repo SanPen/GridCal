@@ -52,8 +52,8 @@ class MapLineSegment(QGraphicsLineItem):
         self.container: MapLineContainer = container
         self.draw_labels = True
 
-        self.style = Qt.SolidLine
-        self.color = Qt.blue
+        self.style = Qt.PenStyle.SolidLine
+        self.color = QColor(115, 115, 115, 200)  # translucent gray
         self.width = 0.1
 
         self.pos1: QPointF = self.first.get_center_pos()

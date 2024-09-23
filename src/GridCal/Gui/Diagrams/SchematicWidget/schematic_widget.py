@@ -345,7 +345,7 @@ class SchematicWidget(BaseDiagramWidget):
         Creates the Diagram Editor (DiagramEditorWidget)
         :param circuit: Circuit that is handling
         :param diagram: SchematicDiagram to use (optional)
-        :param default_bus_voltage: Default bus voltages (kV)
+        :param default_bus_voltage: Default bus voltages (KV)
         :param time_index: time index to represent
         :param prefer_node_breaker: Preffer the node breaker representation?
         """
@@ -374,7 +374,7 @@ class SchematicWidget(BaseDiagramWidget):
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
 
-        # default_bus_voltage (kV)
+        # default_bus_voltage (KV)
         self.default_bus_voltage = default_bus_voltage
 
         # Preffer the node breaker representation?

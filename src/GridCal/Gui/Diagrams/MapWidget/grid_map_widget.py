@@ -994,7 +994,7 @@ class GridMapWidget(BaseDiagramWidget):
         #
         #     tooltip = str(i) + ': ' + bus.name + '\n' \
         #               + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
-        #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
+        #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [KV]'
         #     if Sbus is not None:
         #         tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
         #     if types is not None:

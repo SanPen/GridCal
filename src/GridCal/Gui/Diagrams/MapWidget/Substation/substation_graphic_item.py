@@ -374,14 +374,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             max_value=100000.0,
             default_value=self.editor.diagram.default_bus_voltage,
             title="Add voltage level",
-            text="Voltage (kV)",
+            text="Voltage (KV)",
         )
 
         inpt.exec()
 
         if inpt.is_accepted:
             kv = inpt.value
-            vl = VoltageLevel(name=f'{kv}kV @ {self.api_object.name}',
+            vl = VoltageLevel(name=f'{kv}KV @ {self.api_object.name}',
                               Vnom=kv,
                               substation=self.api_object)
 

@@ -1385,6 +1385,7 @@ class MultiCircuit(Assets):
             group_type: DeviceType) -> List[Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
+        :param group_type: some grouping Device Type (Region, Substation, Area, Country, etc...)
         :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
         """
         result: List[Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = list()
@@ -1397,64 +1398,67 @@ class MultiCircuit(Assets):
 
             for elm in self.injection_items():
 
-                if group_type == DeviceType.AreaDevice:
-                    if elm.bus.area is not None:
-                        matches = elm.bus.area == group_device
-                    else:
-                        matches = False
-
-                elif group_type == DeviceType.ZoneDevice:
-                    if elm.bus.zone is not None:
-                        matches = elm.bus.zone == group_device
-                    else:
-                        matches = False
-
-                elif group_type == DeviceType.SubstationDevice:
-                    if elm.bus.substation is not None:
-                        matches = elm.bus.substation == group_device
-                    else:
-                        matches = False
-
-                elif group_type == DeviceType.CountryDevice:
-                    if elm.bus.substation is not None:
-                        matches = elm.bus.substation.country == group_device
-
-                        if elm.bus.country is not None:
-                            if elm.bus.substation.country != elm.bus.country:
-                                print(f"Bus <{elm.bus.name}> country is different from its substation country :/")
-                    else:
-                        if elm.bus.country is not None:
-                            matches = elm.bus.country == group_device
+                if elm.bus is not None:
+                    if group_type == DeviceType.AreaDevice:
+                        if elm.bus.area is not None:
+                            matches = elm.bus.area == group_device
                         else:
                             matches = False
 
-                elif group_type == DeviceType.CommunityDevice:
-                    if elm.bus.substation is not None:
-                        if elm.bus.substation.community is not None:
-                            matches = elm.bus.substation.community == group_device
+                    elif group_type == DeviceType.ZoneDevice:
+                        if elm.bus.zone is not None:
+                            matches = elm.bus.zone == group_device
                         else:
                             matches = False
-                    else:
-                        matches = False
 
-                elif group_type == DeviceType.RegionDevice:
-                    if elm.bus.substation is not None:
-                        if elm.bus.substation.region is not None:
-                            matches = elm.bus.substation.region == group_device
+                    elif group_type == DeviceType.SubstationDevice:
+                        if elm.bus.substation is not None:
+                            matches = elm.bus.substation == group_device
                         else:
                             matches = False
-                    else:
-                        matches = False
 
-                elif group_type == DeviceType.MunicipalityDevice:
-                    if elm.bus.substation is not None:
-                        if elm.bus.substation.municipality is not None:
-                            matches = elm.bus.substation.municipality == group_device
+                    elif group_type == DeviceType.CountryDevice:
+                        if elm.bus.substation is not None:
+                            matches = elm.bus.substation.country == group_device
+
+                            if elm.bus.country is not None:
+                                if elm.bus.substation.country != elm.bus.country:
+                                    print(f"Bus <{elm.bus.name}> country is different from its substation country :/")
+                        else:
+                            if elm.bus.country is not None:
+                                matches = elm.bus.country == group_device
+                            else:
+                                matches = False
+
+                    elif group_type == DeviceType.CommunityDevice:
+                        if elm.bus.substation is not None:
+                            if elm.bus.substation.community is not None:
+                                matches = elm.bus.substation.community == group_device
+                            else:
+                                matches = False
                         else:
                             matches = False
+
+                    elif group_type == DeviceType.RegionDevice:
+                        if elm.bus.substation is not None:
+                            if elm.bus.substation.region is not None:
+                                matches = elm.bus.substation.region == group_device
+                            else:
+                                matches = False
+                        else:
+                            matches = False
+
+                    elif group_type == DeviceType.MunicipalityDevice:
+                        if elm.bus.substation is not None:
+                            if elm.bus.substation.municipality is not None:
+                                matches = elm.bus.substation.municipality == group_device
+                            else:
+                                matches = False
+                        else:
+                            matches = False
+
                     else:
                         matches = False
-
                 else:
                     matches = False
 
