@@ -72,6 +72,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
             min_vcc=self.ui.transformerVccMinSpinBox.value(),
             max_vcc=self.ui.transformerVccMaxSpinBox.value(),
+            branch_x_threshold=1e-4,
             logger=self.log
         )
 

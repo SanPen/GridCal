@@ -359,6 +359,7 @@ def analyze_lines(elements: List[Line],
                   branch_connection_voltage_tolerance: float,
                   eps_min: float,
                   eps_max: float,
+                  branch_x_threshold: float,
                   logger: GridErrorLog,
                   fixable_errors: List[FIXABLE_ERROR_TYPES]):
     """
@@ -368,6 +369,7 @@ def analyze_lines(elements: List[Line],
     :param branch_connection_voltage_tolerance:
     :param eps_min:
     :param eps_max:
+    :param branch_x_threshold:
     :param logger:
     :param fixable_errors:
     :return:
@@ -509,6 +511,23 @@ def analyze_lines(elements: List[Line],
                                                          lower_limit=eps_min,
                                                          upper_limit=eps_max))
 
+        # check the reactance
+        if elm.X < branch_x_threshold:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Warning,
+                       propty='X',
+                       message='Line X is too low and can make models numerically unstable',
+                       lower=str(branch_x_threshold),
+                       upper="1e20",
+                       val=elm.X)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='X',
+                                                         value=elm.X,
+                                                         lower_limit=branch_x_threshold,
+                                                         upper_limit=1e20))
+
 
 def analyze_transformers(elements: List[Transformer2W],
                          object_type: DeviceType,
@@ -519,6 +538,7 @@ def analyze_transformers(elements: List[Transformer2W],
                          max_vcc: float,
                          tap_min: float,
                          tap_max: float,
+                         branch_x_threshold: float,
                          logger: GridErrorLog,
                          fixable_errors: List[FIXABLE_ERROR_TYPES]):
     """
@@ -532,6 +552,7 @@ def analyze_transformers(elements: List[Transformer2W],
     :param max_vcc:
     :param tap_min:
     :param tap_max:
+    :param branch_x_threshold:
     :param logger:
     :param fixable_errors:
     :return:
@@ -739,6 +760,23 @@ def analyze_transformers(elements: List[Transformer2W],
                                                              value=elm.rate,
                                                              lower_limit=elm.Sn,
                                                              upper_limit=elm.Sn))
+
+        # check the reactance
+        if elm.X < branch_x_threshold:
+            logger.add(object_type=object_type.value,
+                       element_name=elm.name,
+                       element_index=i,
+                       severity=LogSeverity.Warning,
+                       propty='X',
+                       message='Transformer X is too low and can make models numerically unstable',
+                       lower=str(branch_x_threshold),
+                       upper="1e20",
+                       val=elm.X)
+            fixable_errors.append(FixableErrorOutOfRange(grid_element=elm,
+                                                         property_name='X',
+                                                         value=elm.X,
+                                                         lower_limit=branch_x_threshold,
+                                                         upper_limit=1e20))
 
 
 def analyze_buses(elements: List[Bus],
@@ -1134,6 +1172,7 @@ def grid_analysis(circuit: MultiCircuit,
                   min_vcc=8,
                   max_vcc=18,
                   logger=GridErrorLog(),
+                  branch_x_threshold=1e-4,
                   eps_max: float = 1e20,
                   eps_min: float = 1e-20):
     """
@@ -1149,6 +1188,7 @@ def grid_analysis(circuit: MultiCircuit,
     :param max_vcc: maximum short circuit voltage (%)
     :param min_vcc: Minimum short circuit voltage (%)
     :param logger: GridErrorLog
+    :param branch_x_threshold: Value to compare branches X such that it is numerically stable
     :param eps_max: Max epsylon value for comparison
     :param eps_min: Min epsylon value for comparison
     :return: list of fixable error objects
@@ -1191,6 +1231,7 @@ def grid_analysis(circuit: MultiCircuit,
                   branch_connection_voltage_tolerance=branch_connection_voltage_tolerance,
                   eps_min=eps_min,
                   eps_max=eps_max,
+                  branch_x_threshold=branch_x_threshold,
                   logger=logger,
                   fixable_errors=fixable_errors)
 
@@ -1203,6 +1244,7 @@ def grid_analysis(circuit: MultiCircuit,
                          max_vcc=max_vcc,
                          tap_min=tap_min,
                          tap_max=tap_max,
+                         branch_x_threshold=branch_x_threshold,
                          logger=logger,
                          fixable_errors=fixable_errors)
 
@@ -1215,6 +1257,7 @@ def grid_analysis(circuit: MultiCircuit,
                          max_vcc=max_vcc,
                          tap_min=tap_min,
                          tap_max=tap_max,
+                         branch_x_threshold=branch_x_threshold,
                          logger=logger,
                          fixable_errors=fixable_errors)
 
