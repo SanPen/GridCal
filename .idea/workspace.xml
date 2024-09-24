@@ -28,26 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.1.40">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/LICENSE.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/Lib_BW.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/Lib_BW_CreateLargeCases.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/bbd_matrix.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/lib_numba.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/main_step1_simulation.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/main_step2_saveresults.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/partitionutil.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/preprocessscript.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/psutils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/serial_bbd_matrix.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/SyntheticNetworks/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/__init__.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Added ParaEMT">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator/grid_generator_dialogue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/SyntheticNetworks/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/SyntheticNetworks/rpgm_algo.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/SyntheticNetworks/rpgm_algo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/gridcal_to_para_emt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/gridcal_to_para_emt.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/ParaEMT/gridcal_to_para_emt.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1396,7 +1379,7 @@
       <workItem from="1727073607804" duration="8762000" />
       <workItem from="1727090913636" duration="7951000" />
       <workItem from="1727110707266" duration="6049000" />
-      <workItem from="1727167340708" duration="5463000" />
+      <workItem from="1727167340708" duration="7729000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1741,7 +1724,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="543" />
+    <option name="localTasksCounter" value="544" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1775,7 +1758,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="error handling at raw import" />
     <MESSAGE value="error handling at Load raw import" />
     <MESSAGE value="rdfid as default value for mRID" />
     <MESSAGE value="soring and print names for debugging comparison" />
@@ -1800,7 +1782,8 @@
     <MESSAGE value="Improved get_injection_devices_grouped_by_group_type by checking all the None chances" />
     <MESSAGE value="Improved label redrawing" />
     <MESSAGE value="5.1.40" />
-    <option name="LAST_COMMIT_MESSAGE" value="5.1.40" />
+    <MESSAGE value="Added ParaEMT" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added ParaEMT" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
