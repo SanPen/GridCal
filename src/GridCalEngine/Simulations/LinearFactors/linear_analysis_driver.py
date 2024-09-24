@@ -126,9 +126,11 @@ class LinearAnalysisDriver(DriverTemplate):
             # TODO: Use the function from HvdcData instead of the one from MultiCircuit
             Shvdc, Losses_hvdc, Pf_hvdc, Pt_hvdc, loading_hvdc, n_free = nc.hvdc_data.get_power(Sbase=nc.Sbase,
                                                                                                 theta=np.zeros(nbus))
-            self.results.Sf = analysis.get_flows(analysis.numerical_circuit.Sbus.real + Shvdc)
+
+            Pbus_pu = analysis.numerical_circuit.Sbus.real + Shvdc
+            self.results.Sbus = Pbus_pu * nc.Sbase
+            self.results.Sf = analysis.get_flows(Pbus_pu) * nc.Sbase
             self.results.loading = self.results.Sf / (analysis.numerical_circuit.branch_rates + 1e-20)
-            self.results.Sbus = analysis.numerical_circuit.Sbus.real
 
         elif self.engine == EngineType.Bentayga:
 

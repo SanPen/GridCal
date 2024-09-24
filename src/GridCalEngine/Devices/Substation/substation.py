@@ -45,7 +45,8 @@ class Substation(GenericAreaGroup):
                  irradiation: float = 0.0,
                  temparature: float = 0.0,
                  wind_speed: float = 0.0,
-                 terrain_roughness: float = 0.20):
+                 terrain_roughness: float = 0.20,
+                 color: Union[str, None] = "#3d7d95"):
         """
 
         :param name:
@@ -64,6 +65,7 @@ class Substation(GenericAreaGroup):
         :param temparature:
         :param wind_speed:
         :param terrain_roughness:
+        :param color: hexadecimal color string (i.e. #AA00FF)
         """
         GenericAreaGroup.__init__(self,
                                   name=name,
@@ -81,16 +83,18 @@ class Substation(GenericAreaGroup):
         self._municipality: Union[Municipality, None] = municipality
         self.address: str = address
 
-        self.irradiation: float = irradiation
-        self._irradiation_prof = Profile(default_value=irradiation, data_type=float)
+        self.irradiation: float = float(irradiation)
+        self._irradiation_prof = Profile(default_value=self.irradiation, data_type=float)
 
-        self.temparature: float = temparature
-        self._temparature_prof = Profile(default_value=temparature, data_type=float)
+        self.temparature: float = float(temparature)
+        self._temparature_prof = Profile(default_value=self.temparature, data_type=float)
 
-        self.wind_speed: float = wind_speed
-        self._wind_speed_prof = Profile(default_value=wind_speed, data_type=float)
+        self.wind_speed: float = float(wind_speed)
+        self._wind_speed_prof = Profile(default_value=self.wind_speed, data_type=float)
 
-        self.terrain_roughness: float = terrain_roughness
+        self.terrain_roughness: float = float(terrain_roughness)
+
+        self.color = color if color is not None else "#3d7d95"
 
         self.register(key="area", units="", tpe=DeviceType.AreaDevice,
                       definition="Substation area, altenativelly this can be obtained from the zone")
@@ -132,6 +136,8 @@ class Substation(GenericAreaGroup):
                                  "Slightly rough (grass, cereal field): 0.02~0.2\n"
                                  "Rough (forest, small houses): 1.0~1.5\n"
                                  "Very rough (Large buildings):1.0~4.0")
+
+        self.register(key='color', units='', tpe=str, definition='Color to paint the SE in the map diagram')
 
     @property
     def area(self) -> Union[Area, None]:

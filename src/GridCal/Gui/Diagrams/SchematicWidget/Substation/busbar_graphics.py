@@ -67,8 +67,8 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  busbar: BusBar = None,
                  h: int = 40,
                  w: int = 80,
-                 x: int = 0,
-                 y: int = 0,
+                 x: float = 0,
+                 y: float = 0,
                  draw_labels: bool = True):
         """
 
@@ -112,7 +112,8 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         # connection terminals the block
         self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
+        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style,
+                                   Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
         # Create corner for resize:
         self.sizer = HandleItem(self._terminal, callback=self.change_size)
@@ -126,7 +127,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
         self.setBrush(Qt.transparent)
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         # Update size:
         self.change_size(w=self.w)
@@ -170,7 +171,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                                            draw_labels=self.draw_labels,
                                            graphic_object=self)
 
-    def add_big_marker(self, color: Union[None, QColor] = Qt.red, tool_tip_text: str = ""):
+    def add_big_marker(self, color: Union[None, QColor] = QColor(255, 0, 0, 255), tool_tip_text: str = ""):
         """
         Add a big marker to the bus
         :param color: Qt Color ot the marker
@@ -192,17 +193,17 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.editor.remove_from_scene(self.big_marker)
             self.big_marker = None
 
-    def set_position(self, x: int, y: int) -> None:
+    def set_position(self, x: float, y: float) -> None:
         """
         Set the bus x, y position
         :param x: x in pixels
         :param y: y in pixels
         """
         if np.isnan(x):
-            x = 0
+            x = 0.0
         if np.isnan(y):
-            y = 0
-        self.setPos(QPoint(int(x), int(y)))
+            y = 0.0
+        self.setPos(QPointF(x, y))
 
     def set_tile_color(self, brush: QBrush) -> None:
         """
@@ -796,7 +797,7 @@ class BusBarGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             msg += f" [{tpe}]"
         msg += "<br>"
         msg += f"v={vm}&lt;{va}º pu<br>"
-        msg += f"V={vm_kv} kV<br>"
+        msg += f"V={vm_kv} KV<br>"
         if P is not None:
             p = format_str.format(P)
             q = format_str.format(Q)

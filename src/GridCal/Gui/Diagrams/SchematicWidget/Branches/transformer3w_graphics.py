@@ -167,9 +167,9 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         :return:
         """
         if self.api_object is not None:
-            self.winding_circles[0].setToolTip("Winding 1: {0} kV".format(self.api_object.V1))
-            self.winding_circles[1].setToolTip("Winding 2: {0} kV".format(self.api_object.V2))
-            self.winding_circles[2].setToolTip("Winding 3: {0} kV".format(self.api_object.V3))
+            self.winding_circles[0].setToolTip("Winding 1: {0} KV".format(self.api_object.V1))
+            self.winding_circles[1].setToolTip("Winding 2: {0} KV".format(self.api_object.V2))
+            self.winding_circles[2].setToolTip("Winding 3: {0} KV".format(self.api_object.V3))
         pass
 
     def set_label(self, val: str):

@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import Union
+from __future__ import annotations
+from typing import Union, TYPE_CHECKING
 import numpy as np
 
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
@@ -25,6 +25,9 @@ from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType, SubObjectType
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices import Technology
 
 
 class InjectionParent(PhysicalDevice):
@@ -74,16 +77,16 @@ class InjectionParent(PhysicalDevice):
 
         self.cn = cn
 
-        self.active = active
-        self._active_prof = Profile(default_value=active, data_type=bool)
+        self.active = bool(active)
+        self._active_prof = Profile(default_value=self.active, data_type=bool)
 
         self.mttf = mttf
 
         self.mttr = mttr
 
-        self.Cost = Cost
+        self.Cost = float(Cost)
 
-        self._Cost_prof = Profile(default_value=Cost, data_type=float)
+        self._Cost_prof = Profile(default_value=self.Cost, data_type=float)
 
         self.capex = capex
 
@@ -224,3 +227,12 @@ class InjectionParent(PhysicalDevice):
         :return:
         """
         return np.zeros(self.active_prof.size(), dtype=complex)
+
+    def associate_technology(self, tech: Technology, val=1.0):
+        """
+        Associate a technology with this injection device
+        :param tech:
+        :param val:
+        :return:
+        """
+        self.technologies.add_object(tech, val=val)

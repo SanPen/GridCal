@@ -22,7 +22,7 @@ from GridCal.Gui.table_view_header_wrap import HeaderViewWithWordWrap
 import GridCal.Gui.gui_functions as gf
 from GridCal.Gui.messages import error_msg, warning_msg
 from GridCal.Gui.Main.SubClasses.simulations import SimulationsMain
-from GridCal.Session.results_model import ResultsModel
+from GridCal.Gui.results_model import ResultsModel
 from GridCal.Gui.general_dialogues import fill_tree_from_logs
 import GridCalEngine.Utils.Filtering as flt
 from GridCalEngine.basic_structures import Logger
@@ -66,7 +66,7 @@ class ResultsMain(SimulationsMain):
         self.ui.sear_results_lineEdit.returnPressed.connect(self.search_in_results)
 
         # wrap headers
-        self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap())
+        self.ui.resultsTableView.setHorizontalHeader(HeaderViewWithWordWrap(self.ui.resultsTableView))
 
     def results_tree_view_click(self, index):
         """

@@ -52,8 +52,8 @@ class FluidInjectionTemplate(PhysicalDevice):
                                 code=code,
                                 device_type=device_type)
 
-        self.efficiency = efficiency  # MWh/m3
-        self.max_flow_rate = max_flow_rate  # m3/s
+        self.efficiency = float(efficiency)  # MWh/m3
+        self.max_flow_rate = float(max_flow_rate)  # m3/s
         self._plant: FluidNode = plant
         self._generator: Generator = generator
         self.build_status = build_status

@@ -271,7 +271,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
         if ok:
             # rate = I
-            rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = kA * kV * sqrt(3)
+            rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = KA * KV * sqrt(3)
 
             tpe = SequenceLineType(name='SequenceLine from ' + self.api_object.name,
                                    idtag=None,

@@ -39,11 +39,11 @@ class VoltageLevel(PhysicalDevice):
                                 idtag=idtag,
                                 device_type=DeviceType.VoltageLevelDevice)
 
-        self.Vnom = Vnom
+        self.Vnom = float(Vnom)
 
         self.substation: Union[None, Substation] = substation
 
-        self.register(key='Vnom', units='kV', tpe=float, definition='Nominal voltage')
+        self.register(key='Vnom', units='KV', tpe=float, definition='Nominal voltage')
 
         self.register(key="substation", tpe=DeviceType.SubstationDevice,
                       definition="Substation of this Voltage level (optional)")

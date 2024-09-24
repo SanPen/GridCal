@@ -85,17 +85,17 @@ class ShuntParent(InjectionParent):
                                  build_status=build_status,
                                  device_type=device_type)
 
-        self.G = G
-        self._G_prof = Profile(default_value=G, data_type=float)
+        self.G = float(G)
+        self._G_prof = Profile(default_value=self.G, data_type=float)
 
-        self.B = B
-        self._B_prof = Profile(default_value=B, data_type=float)
+        self.B = float(B)
+        self._B_prof = Profile(default_value=self.B, data_type=float)
 
-        self.G0 = G0
-        self._G0_prof = Profile(default_value=G0, data_type=float)
+        self.G0 = float(G0)
+        self._G0_prof = Profile(default_value=self.G0, data_type=float)
 
-        self.B0 = B0
-        self._B0_prof = Profile(default_value=B0, data_type=float)
+        self.B0 = float(B0)
+        self._B0_prof = Profile(default_value=self.B0, data_type=float)
 
         self.register(key='G', units='MW', tpe=float, definition='Active power', profile_name='G_prof')
         self.register(key='B', units='MVAr', tpe=float, definition='Reactive power', profile_name='B_prof')

@@ -190,23 +190,23 @@ class VSC(ControllableBranchParent):
             self.bus_from = None
             self.bus_to = None
 
-        self.G0sw = G0sw
-        self.Beq = Beq
-        self.tap_module = tap_module
-        self.tap_module_max = tap_module_max
-        self.tap_module_min = tap_module_min
+        self.G0sw = float(G0sw)
+        self.Beq = float(Beq)
+        self.tap_module = float(tap_module)
+        self.tap_module_max = float(tap_module_max)
+        self.tap_module_min = float(tap_module_min)
 
-        self.k = k
-        self.tap_phase = tap_phase
-        self.tap_phase_max = tap_phase_max
-        self.tap_phase_min = tap_phase_min
-        self.Beq_min = Beq_min
-        self.Beq_max = Beq_max
+        self.k = float(k)
+        self.tap_phase = float(tap_phase)
+        self.tap_phase_max = float(tap_phase_max)
+        self.tap_phase_min = float(tap_phase_min)
+        self.Beq_min = float(Beq_min)
+        self.Beq_max = float(Beq_max)
 
-        self.kdp = kdp
-        self.alpha1 = alpha1
-        self.alpha2 = alpha2
-        self.alpha3 = alpha3
+        self.kdp = float(kdp)
+        self.alpha1 = float(alpha1)
+        self.alpha2 = float(alpha2)
+        self.alpha3 = float(alpha3)
 
         self.register(key='G0sw', units='p.u.', tpe=float, definition='Inverter losses.')
         self.register(key='Beq', units='p.u.', tpe=float, definition='Total shunt susceptance.')

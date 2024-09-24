@@ -32,15 +32,21 @@ try:
 except ImportError:
     IS_DARK = False
 
+TRANSPARENT = QColor(0, 0, 0, 0)
+WHITE = QColor(255, 255, 255, 255)
+BLACK = QColor(0, 0, 0, 255)
+GRAY = QColor(115, 115, 115, 255)
+YELLOW = QColor(255, 247, 0, 255)
+
 # Declare colors
-ACTIVE = {'style': Qt.SolidLine,
-          'color': Qt.white if IS_DARK else Qt.black,
-          'text': Qt.white if IS_DARK else Qt.black,
-          'backgound': Qt.black if IS_DARK else Qt.white,
+ACTIVE = {'style': Qt.PenStyle.SolidLine,
+          'color': WHITE if IS_DARK else BLACK,
+          'text': WHITE if IS_DARK else BLACK,
+          'backgound': BLACK if IS_DARK else WHITE,
           'fluid': QColor(0, 170, 212, 255)}
 
-DEACTIVATED = {'style': Qt.DashLine, 'color': Qt.gray}
-EMERGENCY = {'style': Qt.SolidLine, 'color': Qt.yellow}
+DEACTIVATED = {'style': Qt.PenStyle.DashLine, 'color': GRAY}
+EMERGENCY = {'style': Qt.PenStyle.SolidLine, 'color': YELLOW}
 OTHER = ACTIVE
 FONT_SCALE = 1.9
 
@@ -50,8 +56,8 @@ def set_dark_mode() -> None:
     Set the dark mode
     """
     IS_DARK = True
-    ACTIVE['color'] = Qt.white
-    ACTIVE['text'] = Qt.white
+    ACTIVE['color'] = WHITE
+    ACTIVE['text'] = WHITE
 
 
 def set_light_mode() -> None:
@@ -59,8 +65,8 @@ def set_light_mode() -> None:
     Set the light mode
     """
     IS_DARK = False
-    ACTIVE['color'] = Qt.black
-    ACTIVE['text'] = Qt.black
+    ACTIVE['color'] = BLACK
+    ACTIVE['text'] = BLACK
 
 
 def is_dark_mode() -> bool:
@@ -97,7 +103,7 @@ class Polygon(QGraphicsPolygonItem):
         :param value:
         :return:
         """
-        if change == QGraphicsItem.ItemScenePositionHasChanged:
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
             self.parentItem().update_nexus(value)
         return super(QGraphicsPolygonItem, self).itemChange(change, value)
 
@@ -122,7 +128,7 @@ class Square(QGraphicsRectItem):
         :param value:
         :return:
         """
-        if change == QGraphicsItem.ItemScenePositionHasChanged:
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
             self.parentItem().update_nexus(value)
         return super(QGraphicsRectItem, self).itemChange(change, value)
 
@@ -147,7 +153,7 @@ class Circle(QGraphicsEllipseItem):
         :param value:
         :return:
         """
-        if change == QGraphicsItem.ItemScenePositionHasChanged:
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
             self.parentItem().update_nexus(value)
         return super(QGraphicsEllipseItem, self).itemChange(change, value)
 
@@ -172,7 +178,7 @@ class Line(QGraphicsLineItem):
         :param value:
         :return:
         """
-        if change == QGraphicsItem.ItemScenePositionHasChanged:
+        if change == QGraphicsItem.GraphicsItemChange.ItemScenePositionHasChanged:
             self.parentItem().update_nexus(value)
         return super(QGraphicsLineItem, self).itemChange(change, value)
 

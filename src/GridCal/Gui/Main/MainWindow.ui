@@ -9825,6 +9825,11 @@ QProgressBar::chunk{
      <string>Diagram</string>
     </property>
     <widget class="QMenu" name="menuBus_Branch_options">
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
      <property name="title">
       <string>Current schematic</string>
      </property>
@@ -9847,6 +9852,7 @@ QProgressBar::chunk{
     <addaction name="actionAdd_general_bus_branch_diagram"/>
     <addaction name="menuBus_Branch_options"/>
     <addaction name="actionAdd_map"/>
+    <addaction name="actionConsolidate_diagram_coordinates"/>
     <addaction name="separator"/>
     <addaction name="actionZoom_in"/>
     <addaction name="actionZoom_out"/>
@@ -11475,6 +11481,20 @@ QProgressBar::chunk{
    </property>
    <property name="text">
     <string>Catalogue</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+  </action>
+  <action name="actionConsolidate_diagram_coordinates">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/assign_to_profile.svg</normaloff>:/Icons/icons/assign_to_profile.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Consolidate coordinates</string>
    </property>
    <property name="font">
     <font>
