@@ -1233,8 +1233,8 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         sv_voltage.TopologicalNode = tp_list_with_boundary[i]
         # todo include boundary?
         # as the order of the results is the same as the order of buses (=tn)
-        # bv = cgmes_model.cgmes_assets.TopologicalNode_list[i].BaseVoltage
-        sv_voltage.v = np.abs(voltage)  # * bv.nominalVoltage
+        bv = tp_list_with_boundary[i].BaseVoltage
+        sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
         sv_voltage.angle = np.angle(voltage, deg=True)
 
         # Add the SvVoltage instance to the SvVoltage_list

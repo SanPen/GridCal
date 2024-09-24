@@ -42,8 +42,8 @@ from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 
 
 def get_gridcal_bus(psse_bus: RawBus,
-                    area_dict: Dict[int, dev.Area],
-                    zone_dict: Dict[int, dev.Zone],
+                    area_dict: Dict[int, dev.Country],
+                    zone_dict: Dict[int, dev.Community],
                     logger: Logger) -> Tuple[dev.Bus, Union[dev.Shunt, None]]:
     """
 
@@ -59,8 +59,8 @@ def get_gridcal_bus(psse_bus: RawBus,
         bus = dev.Bus(name=name,
                       Vnom=psse_bus.BASKV, code=str(psse_bus.I), vmin=psse_bus.EVLO, vmax=psse_bus.EVHI, xpos=0, ypos=0,
                       active=True,
-                      area=area_dict[psse_bus.AREA],
-                      zone=zone_dict[psse_bus.ZONE],
+                      country=area_dict[psse_bus.AREA],
+                      # zone=zone_dict[psse_bus.ZONE],
                       Vm0=psse_bus.VM,
                       Va0=np.deg2rad(psse_bus.VA))
 
@@ -71,8 +71,8 @@ def get_gridcal_bus(psse_bus: RawBus,
                       xpos=0,
                       ypos=0,
                       active=True,
-                      area=area_dict[psse_bus.AREA],
-                      zone=zone_dict[psse_bus.ZONE],
+                      country=area_dict[psse_bus.AREA],
+                      # zone=zone_dict[psse_bus.ZONE],
                       Vm0=psse_bus.VM,
                       Va0=np.deg2rad(psse_bus.VA))
 
@@ -81,8 +81,8 @@ def get_gridcal_bus(psse_bus: RawBus,
         name = psse_bus.NAME
         bus = dev.Bus(name=name, code=str(psse_bus.I), Vnom=psse_bus.BASKV, vmin=0.9, vmax=1.1, xpos=0, ypos=0,
                       active=True,
-                      area=area_dict[psse_bus.AREA],
-                      zone=zone_dict[psse_bus.ZONE],
+                      country=area_dict[psse_bus.AREA],
+                      # zone=zone_dict[psse_bus.ZONE],
                       Vm0=psse_bus.VM,
                       Va0=np.deg2rad(psse_bus.VA))
 
@@ -98,8 +98,8 @@ def get_gridcal_bus(psse_bus: RawBus,
         bus = dev.Bus(name=name,
                       Vnom=psse_bus.BASKV, code=str(psse_bus.I), vmin=psse_bus.EVLO, vmax=psse_bus.EVHI, xpos=0, ypos=0,
                       active=True,
-                      area=area_dict[psse_bus.AREA],
-                      zone=zone_dict[psse_bus.ZONE],
+                      country=area_dict[psse_bus.AREA],
+                      # zone=zone_dict[psse_bus.ZONE],
                       Vm0=psse_bus.VM,
                       Va0=np.deg2rad(psse_bus.VA))
 
@@ -756,11 +756,11 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
     circuit = MultiCircuit(Sbase=psse_circuit.SBASE)
     circuit.comments = 'Converted from a PSS/e .raw file'
 
-    circuit.areas = [dev.Area(name=x.ARNAME) for x in psse_circuit.areas]
-    circuit.zones = [dev.Zone(name=x.ZONAME) for x in psse_circuit.zones]
+    circuit.countries = [dev.Country(name=x.ARNAME) for x in psse_circuit.areas]
+    circuit.communities = [dev.Community(name=x.ZONAME) for x in psse_circuit.zones]
 
-    area_dict = {val.I: elm for val, elm in zip(psse_circuit.areas, circuit.areas)}
-    zones_dict = {val.I: elm for val, elm in zip(psse_circuit.zones, circuit.zones)}
+    area_dict = {val.I: elm for val, elm in zip(psse_circuit.areas, circuit.countries)}
+    zones_dict = {val.I: elm for val, elm in zip(psse_circuit.zones, circuit.communities)}
 
     # scan for missing zones or areas (yes, PSSe is so crappy that can reference areas that do not exist)
     missing_areas = False
@@ -796,10 +796,10 @@ def psse_to_gridcal(psse_circuit: PsseCircuit,
             circuit.add_shunt(bus=bus, api_obj=bus_shunt)
 
     if missing_areas:
-        circuit.areas = [v for k, v in area_dict.items()]
+        circuit.countries = [v for k, v in area_dict.items()]
 
     if missing_zones:
-        circuit.zones = [v for k, v in zones_dict.items()]
+        circuit.communities = [v for k, v in zones_dict.items()]
 
     # check htat the area slack buses actually make sense
     for area in psse_circuit.areas:

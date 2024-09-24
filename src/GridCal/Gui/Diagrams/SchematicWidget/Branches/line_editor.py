@@ -29,8 +29,10 @@ class LineEditor(QDialog):
     LineEditor
     """
 
-    def __init__(self, line: Line,
+    def __init__(self,
+                 line: Line,
                  Sbase=100,
+                 frequency=50,
                  templates: Union[List[Union[SequenceLineType, OverheadLineType, UndergroundLineType]], None] = None,
                  current_template=None):
         """
@@ -45,6 +47,8 @@ class LineEditor(QDialog):
         self.line = line
 
         self.Sbase = Sbase
+
+        self.frequency = frequency
 
         self.templates = templates
 
@@ -130,6 +134,7 @@ class LineEditor(QDialog):
         self.l_spinner.setMaximum(9999999)
         self.l_spinner.setDecimals(6)
         self.l_spinner.setValue(length)
+        self.l_spinner.setSuffix(' Km')
 
         # Max current
         self.i_spinner = QDoubleSpinBox()
@@ -137,6 +142,7 @@ class LineEditor(QDialog):
         self.i_spinner.setMaximum(9999999)
         self.i_spinner.setDecimals(2)
         self.i_spinner.setValue(I)
+        self.i_spinner.setSuffix(' KA')
 
         # R
         self.r_spinner = QDoubleSpinBox()
@@ -144,6 +150,7 @@ class LineEditor(QDialog):
         self.r_spinner.setMaximum(9999999)
         self.r_spinner.setDecimals(6)
         self.r_spinner.setValue(R)
+        self.r_spinner.setSuffix(' Ω/Km')
 
         # X
         self.x_spinner = QDoubleSpinBox()
@@ -151,6 +158,7 @@ class LineEditor(QDialog):
         self.x_spinner.setMaximum(9999999)
         self.x_spinner.setDecimals(6)
         self.x_spinner.setValue(X)
+        self.x_spinner.setSuffix(' Ω/Km')
 
         # B
         self.b_spinner = QDoubleSpinBox()
@@ -158,6 +166,7 @@ class LineEditor(QDialog):
         self.b_spinner.setMaximum(9999999)
         self.b_spinner.setDecimals(6)
         self.b_spinner.setValue(B)
+        self.b_spinner.setSuffix(" uS/Km")
 
         # apply to profile
         self.apply_to_profile = QCheckBox()
@@ -177,19 +186,19 @@ class LineEditor(QDialog):
             self.layout.addWidget(self.load_template_btn)
             self.layout.addWidget(QLabel(""))
 
-        self.layout.addWidget(QLabel("L: Line length [Km]"))
+        self.layout.addWidget(QLabel("L: Line length"))
         self.layout.addWidget(self.l_spinner)
 
-        self.layout.addWidget(QLabel("Imax: Max. current [KA] @" + str(int(Vf)) + " [KV]"))
+        self.layout.addWidget(QLabel("Imax: Max. current @" + str(int(Vf)) + " [KV]"))
         self.layout.addWidget(self.i_spinner)
 
-        self.layout.addWidget(QLabel("R: Resistance [Ohm/Km]"))
+        self.layout.addWidget(QLabel("R: Resistance"))
         self.layout.addWidget(self.r_spinner)
 
-        self.layout.addWidget(QLabel("X: Inductance [Ohm/Km]"))
+        self.layout.addWidget(QLabel("X: Inductance"))
         self.layout.addWidget(self.x_spinner)
 
-        self.layout.addWidget(QLabel("B: Susceptance [uS/Km]"))
+        self.layout.addWidget(QLabel("S: Susceptance"))
         self.layout.addWidget(self.b_spinner)
 
         self.layout.addWidget(self.apply_to_profile)
@@ -210,37 +219,27 @@ class LineEditor(QDialog):
             self.line.length = self.l_spinner.value()
             self.line.apply_template(self.selected_template, Sbase=self.Sbase)
         else:
-            length = self.l_spinner.value()
-            I = self.i_spinner.value()
-            R = self.r_spinner.value() * length
-            X = self.x_spinner.value() * length
-            B = self.b_spinner.value() * length
-
-            Vf = self.line.get_max_bus_nominal_voltage()
-
-            Zbase = (Vf * Vf) / self.Sbase
-            Ybase = 1.0 / Zbase
-
-            self.line.R = np.round(R / Zbase, 6)
-            self.line.X = np.round(X / Zbase, 6)
-            self.line.B = np.round(B * 1e-6 / Ybase, 6)
-            old_rate = float(self.line.rate)
-            new_rate = np.round(I * Vf * 1.73205080757, 6)  # nominal power in MVA = kA * kV * sqrt(3)
-            self.line.rate = new_rate
-            self.line.length = length
-
-            if self.apply_to_profile.isChecked():
-                prof_old = self.line.rate_prof.toarray()
-                self.line.rate_prof.set(prof_old * new_rate / old_rate)
+            wf = 2 * np.pi * self.frequency
+            self.line.fill_design_properties(
+                r_ohm=self.r_spinner.value(),  # ohm / km
+                x_ohm=self.x_spinner.value(),  # ohm / km
+                c_nf=self.b_spinner.value() * 1e3 / wf,  # nF / km
+                length=self.l_spinner.value(),  # km
+                Imax=self.i_spinner.value(),  # kA
+                freq=self.frequency,  # Hz
+                Sbase=self.Sbase,  # MVA
+                apply_to_profile=self.apply_to_profile.isChecked()
+            )
 
         self.accept()
 
-    def load_template(self, template):
+    def load_template(self, template: Union[SequenceLineType, OverheadLineType, UndergroundLineType]):
         """
-
-        :param template:
+        Load a template in the editor
+        :param template: line compatible template
         :return:
         """
+
         if isinstance(template, SequenceLineType):
             self.i_spinner.setValue(template.Imax)
             self.r_spinner.setValue(template.R)
