@@ -7,7 +7,7 @@ from PySide6 import QtWidgets
 from GridCal.Gui.GridGenerator.gui import Ui_MainWindow
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.Utils.ThirdParty.SyntheticNetworks.rpgm_algo import RpgAlgorithm
+from GridCalEngine.ThirdParty.SyntheticNetworks.rpgm_algo import RpgAlgorithm
 
 
 class GridGeneratorGUI(QtWidgets.QDialog):
