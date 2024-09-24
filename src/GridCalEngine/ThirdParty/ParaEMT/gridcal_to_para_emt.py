@@ -20,7 +20,7 @@ import time
 import numpy as np
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
-from GridCalEngine.ThirdParty.ParaEMT.Lib_BW import PFData, DyData, Initialize, EmtSimu
+from GridCalEngine.ThirdParty.ParaEMT.Lib_BW import PFData, DyData, Initialize, EmtSimu, States, States_ibr
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions
@@ -124,13 +124,294 @@ def get_dyn_data(grid: MultiCircuit) -> DyData:
     """
     dyd0 = DyData()
 
+    # types
+    dyd0.gen_type = np.asarray([])
+    dyd0.exc_type = np.asarray([])
+    dyd0.gov_type = np.asarray([])
+    dyd0.pss_type = np.asarray([])
+
+    dyd0.gen_Ra = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_X0 = np.asarray([])  # pu on machine MVA base
+
+    # gen
+    dyd0.gen_n = 0
+
+    # GENROU
+    dyd0.gen_genrou_bus = np.asarray([])
+    dyd0.gen_genrou_id = np.asarray([])
+    dyd0.gen_genrou_Td0p = np.asarray([])
+    dyd0.gen_genrou_Td0pp = np.asarray([])
+    dyd0.gen_genrou_Tq0p = np.asarray([])
+    dyd0.gen_genrou_Tq0pp = np.asarray([])
+    dyd0.gen_H = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_D = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_genrou_Xd = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_genrou_Xq = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_genrou_Xdp = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_genrou_Xqp = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_genrou_Xdpp = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_genrou_Xl = np.asarray([])  # pu on machine MVA base
+    dyd0.gen_genrou_S10 = np.asarray([])
+    dyd0.gen_genrou_S12 = np.asarray([])
+    dyd0.gen_genrou_idx = np.asarray([])
+    dyd0.gen_genrou_n = 0
+    dyd0.gen_genrou_xi_st = 0
+    dyd0.gen_genrou_odr = 0
+
+    # exc
+    dyd0.exc_n = 0
+
+    # SEXS
+    dyd0.exc_sexs_bus = np.asarray([])
+    dyd0.exc_sexs_id = np.asarray([])
+    dyd0.exc_sexs_TA_o_TB = np.asarray([])
+    dyd0.exc_sexs_TA = np.asarray([])
+    dyd0.exc_sexs_TB = np.asarray([])
+    dyd0.exc_sexs_K = np.asarray([])
+    dyd0.exc_sexs_TE = np.asarray([])
+    dyd0.exc_sexs_Emin = np.asarray([])  # pu on EFD base
+    dyd0.exc_sexs_Emax = np.asarray([])  # pu on EFD base
+    dyd0.exc_sexs_idx = np.asarray([])
+    dyd0.exc_sexs_n = 0
+    dyd0.exc_sexs_xi_st = 0
+    dyd0.exc_sexs_odr = 0
+
+    # gov
+    dyd0.gov_n = 0
+
+    # TGOV1
+    dyd0.gov_tgov1_bus = np.asarray([])
+    dyd0.gov_tgov1_id = np.asarray([])
+    dyd0.gov_tgov1_R = np.asarray([])  # pu on machine MVA base
+    dyd0.gov_tgov1_T1 = np.asarray([])
+    dyd0.gov_tgov1_Vmax = np.asarray([])  # pu on machine MVA base
+    dyd0.gov_tgov1_Vmin = np.asarray([])  # pu on machine MVA base
+    dyd0.gov_tgov1_T2 = np.asarray([])
+    dyd0.gov_tgov1_T3 = np.asarray([])
+    dyd0.gov_tgov1_Dt = np.asarray([])  # pu on machine MVA base
+    dyd0.gov_tgov1_idx = np.asarray([])
+    dyd0.gov_tgov1_n = 0
+    dyd0.gov_tgov1_xi_st = 0
+    dyd0.gov_tgov1_odr = 0
+
+    # HYGOV
+    dyd0.gov_hygov_bus = np.asarray([])
+    dyd0.gov_hygov_id = np.asarray([])
+    dyd0.gov_hygov_R = np.asarray([])  # pu on machine MVA base
+    dyd0.gov_hygov_r = np.asarray([])  # pu on machine MVA base
+    dyd0.gov_hygov_Tr = np.asarray([])
+    dyd0.gov_hygov_Tf = np.asarray([])
+    dyd0.gov_hygov_Tg = np.asarray([])
+    dyd0.gov_hygov_VELM = np.asarray([])
+    dyd0.gov_hygov_GMAX = np.asarray([])
+    dyd0.gov_hygov_GMIN = np.asarray([])
+    dyd0.gov_hygov_TW = np.asarray([])
+    dyd0.gov_hygov_At = np.asarray([])
+    dyd0.gov_hygov_Dturb = np.asarray([])  # pu on machine MVA base
+    dyd0.gov_hygov_qNL = np.asarray([])
+    dyd0.gov_hygov_idx = np.asarray([])
+    dyd0.gov_hygov_n = 0
+    dyd0.gov_hygov_xi_st = 0
+    dyd0.gov_hygov_odr = 0
+
+    # GAST
+    dyd0.gov_gast_bus = np.asarray([])
+    dyd0.gov_gast_id = np.asarray([])
+    dyd0.gov_gast_R = np.asarray([])
+    dyd0.gov_gast_T1 = np.asarray([])
+    dyd0.gov_gast_T2 = np.asarray([])
+    dyd0.gov_gast_T3 = np.asarray([])
+    dyd0.gov_gast_LdLmt = np.asarray([])
+    dyd0.gov_gast_KT = np.asarray([])
+    dyd0.gov_gast_VMAX = np.asarray([])
+    dyd0.gov_gast_VMIN = np.asarray([])
+    dyd0.gov_gast_Dturb = np.asarray([])
+    dyd0.gov_gast_idx = np.asarray([])
+    dyd0.gov_gast_n = 0
+    dyd0.gov_gast_xi_st = 0
+    dyd0.gov_gast_odr = 0
+
+    ## pss
+    dyd0.pss_n = 0
+
+    # IEEEST
+    dyd0.pss_ieeest_bus = np.asarray([])
+    dyd0.pss_ieeest_id = np.asarray([])
+    dyd0.pss_ieeest_A1 = np.asarray([])
+    dyd0.pss_ieeest_A2 = np.asarray([])
+    dyd0.pss_ieeest_A3 = np.asarray([])
+    dyd0.pss_ieeest_A4 = np.asarray([])
+    dyd0.pss_ieeest_A5 = np.asarray([])
+    dyd0.pss_ieeest_A6 = np.asarray([])
+    dyd0.pss_ieeest_T1 = np.asarray([])
+    dyd0.pss_ieeest_T2 = np.asarray([])
+    dyd0.pss_ieeest_T3 = np.asarray([])
+    dyd0.pss_ieeest_T4 = np.asarray([])
+    dyd0.pss_ieeest_T5 = np.asarray([])
+    dyd0.pss_ieeest_T6 = np.asarray([])
+    dyd0.pss_ieeest_KS = np.asarray([])
+    dyd0.pss_ieeest_LSMAX = np.asarray([])
+    dyd0.pss_ieeest_LSMIN = np.asarray([])
+    dyd0.pss_ieeest_VCU = np.asarray([])
+    dyd0.pss_ieeest_VCL = np.asarray([])
+    dyd0.pss_ieeest_idx = np.asarray([])
+    dyd0.pss_ieeest_n = 0
+    dyd0.pss_ieeest_xi_st = 0
+    dyd0.pss_ieeest_odr = 0
+
+    dyd0.ec_Lad = np.asarray([])
+    dyd0.ec_Laq = np.asarray([])
+    dyd0.ec_Ll = np.asarray([])
+    dyd0.ec_Lffd = np.asarray([])
+    dyd0.ec_L11d = np.asarray([])
+    dyd0.ec_L11q = np.asarray([])
+    dyd0.ec_L22q = np.asarray([])
+    dyd0.ec_Lf1d = np.asarray([])
+
+    dyd0.ec_Ld = np.asarray([])
+    dyd0.ec_Lq = np.asarray([])
+    dyd0.ec_L0 = np.asarray([])
+
+    dyd0.ec_Ra = np.asarray([])
+    dyd0.ec_Rfd = np.asarray([])
+    dyd0.ec_R1d = np.asarray([])
+    dyd0.ec_R1q = np.asarray([])
+    dyd0.ec_R2q = np.asarray([])
+
+    dyd0.ec_Lfd = np.asarray([])
+    dyd0.ec_L1d = np.asarray([])
+    dyd0.ec_L1q = np.asarray([])
+    dyd0.ec_L2q = np.asarray([])
+
+    dyd0.base_es = np.asarray([])
+    dyd0.base_is = np.asarray([])
+    dyd0.base_Is = np.asarray([])
+    dyd0.base_Zs = np.asarray([])
+    dyd0.base_Ls = np.asarray([])
+    dyd0.base_ifd = np.asarray([])
+    dyd0.base_efd = np.asarray([])
+    dyd0.base_Zfd = np.asarray([])
+    dyd0.base_Lfd = np.asarray([])
+
+    ## IBR parameters
+    dyd0.ibr_n = 0
+    dyd0.ibr_odr = 0
+
+    dyd0.ibr_kVbase = np.asarray([])
+    dyd0.ibr_MVAbase = np.asarray([])
+    dyd0.ibr_fbase = np.asarray([])
+    dyd0.ibr_Ibase = np.asarray([])
+
+    dyd0.ibr_regca_bus = np.asarray([])
+    dyd0.ibr_regca_id = np.asarray([])
+    dyd0.ibr_regca_LVPLsw = np.asarray([])
+    dyd0.ibr_regca_Tg = np.asarray([])
+    dyd0.ibr_regca_Rrpwr = np.asarray([])
+    dyd0.ibr_regca_Brkpt = np.asarray([])
+    dyd0.ibr_regca_Zerox = np.asarray([])
+    dyd0.ibr_regca_Lvpl1 = np.asarray([])
+    dyd0.ibr_regca_Volim = np.asarray([])
+    dyd0.ibr_regca_Lvpnt1 = np.asarray([])
+    dyd0.ibr_regca_Lvpnt0 = np.asarray([])
+    dyd0.ibr_regca_Iolim = np.asarray([])
+    dyd0.ibr_regca_Tfltr = np.asarray([])
+    dyd0.ibr_regca_Khv = np.asarray([])
+    dyd0.ibr_regca_Iqrmax = np.asarray([])
+    dyd0.ibr_regca_Iqrmin = np.asarray([])
+    dyd0.ibr_regca_Accel = np.asarray([])
+
+    dyd0.ibr_reecb_bus = np.asarray([])
+    dyd0.ibr_reecb_id = np.asarray([])
+    dyd0.ibr_reecb_PFFLAG = np.asarray([])
+    dyd0.ibr_reecb_VFLAG = np.asarray([])
+    dyd0.ibr_reecb_QFLAG = np.asarray([])
+    dyd0.ibr_reecb_PQFLAG = np.asarray([])
+    dyd0.ibr_reecb_Vdip = np.asarray([])
+    dyd0.ibr_reecb_Vup = np.asarray([])
+    dyd0.ibr_reecb_Trv = np.asarray([])
+    dyd0.ibr_reecb_dbd1 = np.asarray([])
+    dyd0.ibr_reecb_dbd2 = np.asarray([])
+    dyd0.ibr_reecb_Kqv = np.asarray([])
+    dyd0.ibr_reecb_Iqhl = np.asarray([])
+    dyd0.ibr_reecb_Iqll = np.asarray([])
+    dyd0.ibr_reecb_Vref0 = np.asarray([])
+    dyd0.ibr_reecb_Tp = np.asarray([])
+    dyd0.ibr_reecb_Qmax = np.asarray([])
+    dyd0.ibr_reecb_Qmin = np.asarray([])
+    dyd0.ibr_reecb_Vmax = np.asarray([])
+    dyd0.ibr_reecb_Vmin = np.asarray([])
+    dyd0.ibr_reecb_Kqp = np.asarray([])
+    dyd0.ibr_reecb_Kqi = np.asarray([])
+    dyd0.ibr_reecb_Kvp = np.asarray([])
+    dyd0.ibr_reecb_Kvi = np.asarray([])
+    dyd0.ibr_reecb_Tiq = np.asarray([])
+    dyd0.ibr_reecb_dPmax = np.asarray([])
+    dyd0.ibr_reecb_dPmin = np.asarray([])
+    dyd0.ibr_reecb_Pmax = np.asarray([])
+    dyd0.ibr_reecb_Pmin = np.asarray([])
+    dyd0.ibr_reecb_Imax = np.asarray([])
+    dyd0.ibr_reecb_Tpord = np.asarray([])
+
+    dyd0.ibr_repca_bus = np.asarray([])
+    dyd0.ibr_repca_id = np.asarray([])
+    dyd0.ibr_repca_remote_bus = np.asarray([])
+    dyd0.ibr_repca_branch_From_bus = np.asarray([])
+    dyd0.ibr_repca_branch_To_bus = np.asarray([])
+    dyd0.ibr_repca_branch_id = np.asarray([])
+    dyd0.ibr_repca_VCFlag = np.asarray([])
+    dyd0.ibr_repca_RefFlag = np.asarray([])
+    dyd0.ibr_repca_FFlag = np.asarray([])
+    dyd0.ibr_repca_Tfltr = np.asarray([])
+    dyd0.ibr_repca_Kp = np.asarray([])
+    dyd0.ibr_repca_Ki = np.asarray([])
+    dyd0.ibr_repca_Tft = np.asarray([])
+    dyd0.ibr_repca_Tfv = np.asarray([])
+    dyd0.ibr_repca_Vfrz = np.asarray([])
+    dyd0.ibr_repca_Rc = np.asarray([])
+    dyd0.ibr_repca_Xc = np.asarray([])
+    dyd0.ibr_repca_Kc = np.asarray([])
+    dyd0.ibr_repca_emax = np.asarray([])
+    dyd0.ibr_repca_emin = np.asarray([])
+    dyd0.ibr_repca_dbd1 = np.asarray([])
+    dyd0.ibr_repca_dbd2 = np.asarray([])
+    dyd0.ibr_repca_Qmax = np.asarray([])
+    dyd0.ibr_repca_Qmin = np.asarray([])
+    dyd0.ibr_repca_Kpg = np.asarray([])
+    dyd0.ibr_repca_Kig = np.asarray([])
+    dyd0.ibr_repca_Tp = np.asarray([])
+    dyd0.ibr_repca_fdbd1 = np.asarray([])
+    dyd0.ibr_repca_fdbd2 = np.asarray([])
+    dyd0.ibr_repca_femax = np.asarray([])
+    dyd0.ibr_repca_femin = np.asarray([])
+    dyd0.ibr_repca_Pmax = np.asarray([])
+    dyd0.ibr_repca_Pmin = np.asarray([])
+    dyd0.ibr_repca_Tg = np.asarray([])
+    dyd0.ibr_repca_Ddn = np.asarray([])
+    dyd0.ibr_repca_Dup = np.asarray([])
+
+    # PLL for bus freq/ang measurement
+    dyd0.pll_bus = np.asarray([])
+    dyd0.pll_ke = np.asarray([])
+    dyd0.pll_te = np.asarray([])
+    dyd0.bus_odr = 0
+
+    # bus volt magnitude measurement
+    dyd0.vm_bus = np.asarray([])
+    dyd0.vm_te = np.asarray([])
+
+    # measurement method
+    dyd0.mea_bus = np.asarray([])
+    dyd0.mea_method = np.asarray([])
+
+    # load
+    dyd0.load_odr = 0
+
     return dyd0
 
 
-def get_initialize_data(grid: MultiCircuit, pfd: PFData, dyd: DyData) -> Initialize:
+def get_initialize_data(pfd: PFData, dyd: DyData) -> Initialize:
     """
 
-    :param grid:
     :param pfd:
     :param dyd:
     :return:
@@ -147,10 +428,92 @@ def get_emt_simu_data(nc: NumericalCircuit) -> EmtSimu:
     :param nc:
     :return:
     """
+    nibr = 0
+
     emt = EmtSimu(ngen=nc.ngen,
-                  nibr=0,  # TODO: what is this?
+                  nibr=nibr,  # number of inverted based resources
                   nbus=nc.nbus,
                   nload=nc.nload)
+
+    # three - phase synchronous machine model, unit in Ohm
+    emt.ts = 50e-6  # second
+    emt.Tlen = 0.1  # second
+    emt.Nlen = np.asarray([])
+
+    emt.t = {}
+    emt.x = {}
+    emt.x_pv_1 = []
+    emt.x_pred = {}
+    emt.x_ibr = {}
+    emt.x_ibr_pv_1 = []
+    emt.x_load = {}
+    emt.x_load_pv_1 = []
+    emt.x_bus = {}
+    emt.x_bus_pv_1 = []
+    emt.v = {}
+    emt.i = {}
+
+    emt.xp = States(nc.ngen)  # seems not necessary, try later and see if they can be deleted
+    emt.xp_ibr = States_ibr(nibr)
+    emt.Igs = np.zeros(3 * nc.nbus)
+    emt.Isg = np.zeros(3 * nc.ngen)
+    emt.Igi = np.zeros(3 * nc.nbus)
+    emt.Il = np.zeros(3 * nc.nbus)  # to change to Igl and Iload
+    emt.Ild = np.zeros(3 * nc.nload)
+    emt.Iibr = np.zeros(3 * nibr)
+    emt.brch_Ihis = np.asarray([])
+    emt.brch_Ipre = np.asarray([])
+    emt.node_Ihis = np.asarray([])
+    emt.I_RHS = np.zeros(3 * nc.nbus)
+    emt.Vsol = np.zeros(3 * nc.nbus)
+    emt.Vsol_1 = np.zeros(3 * nc.nbus)
+
+    # emt.fft_vabc = []
+    # emt.fft_T = 1
+    # emt.fft_N = 0
+    # emt.fft_vma = {}
+    # emt.fft_vpn0 = {}
+
+    emt.theta = np.zeros(nc.ngen)
+    emt.ed_mod = np.zeros(nc.ngen)
+    emt.eq_mod = np.zeros(nc.ngen)
+
+    emt.t_release_f = 0.1
+    emt.loadmodel_option = 1  # 1-const rlc, 2-const z
+
+    # step change
+    emt.t_sc = 1000  # the time when the step change occurs
+    emt.i_gen_sc = 1  # which gen, index in pfd.gen_bus
+    emt.flag_exc_gov = 1  # 0 - exc, 1 - gov
+    emt.dsp = - 0.2  # increment
+    emt.flag_sc = 1  # 1 - step change to be implemented, 0 - step change completed
+
+    # gen trip
+    emt.t_gentrip = 1000  # the time when the gentrip occurs
+    emt.i_gentrip = 1  # which gen, index in pfd.gen_bus
+    emt.flag_gentrip = 1  # 1 - gentrip to be implemented, 0 - gentrip completed
+    emt.flag_reinit = 1  # 1 - re-init to be implemented, 0 - re-init completed
+
+    # ref at last time step (for calculating dref term)
+    emt.vref = np.zeros(nc.ngen)
+    emt.vref_1 = np.zeros(nc.ngen)
+    emt.gref = np.zeros(nc.ngen)
+
+    # playback
+    emt.data = []
+    emt.playback_enable = 0
+    emt.playback_t_chn = 0
+    emt.playback_sig_chn = 1
+    emt.playback_tn = 0
+
+    emt.data1 = []
+    emt.playback_enable1 = 0
+    emt.playback_t_chn1 = 0
+    emt.playback_sig_chn1 = 1
+    emt.playback_tn1 = 0
+
+    # mac as I source
+    emt.flag_Isrc = 0
 
     return emt
 
@@ -188,7 +551,7 @@ def run_para_emt(grid: MultiCircuit,
 
     pfd = get_pf_data(grid=grid, nc=nc, pf_results=pf_results)
     dyd = get_dyn_data(grid=grid)
-    ini = get_initialize_data(grid=grid, pfd=pfd, dyd=dyd)
+    ini = get_initialize_data(pfd=pfd, dyd=dyd)
     emt = get_emt_simu_data(nc=nc)
 
     # -------------------------------------------------------------------------------
