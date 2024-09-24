@@ -72,9 +72,9 @@ class MapLineContainer(GenericDiagramWidget):
         :param val:
         """
         for segment in self.segments_list:
-            pen = segment.pen()  # get the current pen
-            pen.setWidthF(val * segment.width)  # Set the fractional thickness of the line
-            segment.setPen(pen)  # Assign the pen to the line item
+            # pen = segment.pen()  # get the current pen
+            # pen.setWidthF(val * segment.width)  # Set the fractional thickness of the line
+            segment.set_width(val * segment.width)  # Assign the pen to the line item
 
     def clean_segments(self) -> None:
         """
@@ -132,10 +132,8 @@ class MapLineContainer(GenericDiagramWidget):
         :return:
         """
         for segment in self.segments_list:
-            segment.setPen(QPen(color, w, style))
             segment.setToolTip(tool_tip)
-            # segment.setPen(Qt.NoPen)
-            # segment.setBrush(color)
+            segment.set_colour(color=color, w=w, style=style)
 
     def update_connectors(self) -> None:
         """
@@ -463,3 +461,23 @@ class MapLineContainer(GenericDiagramWidget):
 
         for line in self.segments_list:
             line.set_enable(val=False)
+
+    def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
+        """
+
+        :param Sf:
+        :param St:
+        :return:
+        """
+        for segment in self.segments_list:
+            segment.set_arrows_with_power(Sf=Sf, St=St)
+
+    def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
+        """
+
+        :param Pf:
+        :param Pt:
+        :return:
+        """
+        for segment in self.segments_list:
+            segment.set_arrows_with_hvdc_power(Pf=Pf, Pt=Pt)

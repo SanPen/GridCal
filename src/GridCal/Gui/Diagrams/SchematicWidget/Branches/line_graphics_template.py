@@ -329,12 +329,13 @@ class ArrowHead(QGraphicsPolygonItem):
 
     def __init__(self,
                  parent: QGraphicsLineItem,
-                 arrow_size: int,
+                 arrow_size: float,
                  position: float = 0.9,
                  under: bool = False,
                  backwards: bool = False,
                  separation: int = 5,
-                 show_text: bool = True):
+                 show_text: bool = True,
+                 text_scale: float = 1.0):
         """
         Constructor
         :param parent: Parent line
@@ -344,11 +345,12 @@ class ArrowHead(QGraphicsPolygonItem):
         :param backwards: Is it backwards?
         :param separation: Separation
         :param show_text: Show the label?
+        :param text_scale: Text scale
         """
         QGraphicsPolygonItem.__init__(self, parent=parent)
 
         self.parent: QGraphicsLineItem = parent
-        self.arrow_size: int = arrow_size
+        self.arrow_size: float = arrow_size
         self.position: float = position
         self.under: bool = under
         self.backwards: float = backwards
@@ -356,6 +358,7 @@ class ArrowHead(QGraphicsPolygonItem):
 
         self.label = QGraphicsTextItem(self)
         self.label.setPlainText("")
+        # self.label.setScale(text_scale)
         self.show_text = show_text
 
         self.w = arrow_size
@@ -373,6 +376,7 @@ class ArrowHead(QGraphicsPolygonItem):
         """
         self.setBrush(color)
         self.label.setDefaultTextColor(color)
+        self.label.setScale(w)
 
     def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}",
                   draw_label: bool = True, visibility_filter_value=1e-4):

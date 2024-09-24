@@ -245,7 +245,7 @@ class GridMapWidget(BaseDiagramWidget):
                              position_callback=self.position_callback)
 
         # Any representation on the map must be done after this Goto Function
-        self.map.GotoLevelAndPosition(level=6, longitude=0, latitude=40)
+        self.map.GotoLevelAndPosition(level=6, longitude=longitude, latitude=latitude)
 
         self.map.startLev = 6
         self.map.startLat = 0
@@ -1059,7 +1059,7 @@ class GridMapWidget(BaseDiagramWidget):
                         a *= 255
 
                     color = QColor(r, g, b, a)
-                    style = Qt.SolidLine
+                    style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
@@ -1067,6 +1067,15 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = 0.5
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+
+                    if hasattr(graphic_object, 'set_arrows_with_power'):
+                        graphic_object.set_arrows_with_power(
+                            Sf=Sf[i] if Sf is not None else None,
+                            St=St[i] if St is not None else None
+                        )
+                else:
+                    # the graphic object is None
+                    pass
 
         # try colouring the HVDC lines
         if len(hvdc_lines) > 0:
@@ -1110,12 +1119,25 @@ class GridMapWidget(BaseDiagramWidget):
                         a *= 255
 
                     color = QColor(r, g, b, a)
-                    style = Qt.SolidLine
+                    style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
                         weight = 0.5
+
+                    tooltip = str(i) + ': ' + graphic_object.api_object.name
+                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                        abs(hvdc_loading[i]) * 100) + ' [%]'
+
+                    tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
+
+                    if hvdc_losses is not None:
+                        tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
+                        tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+                        graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=hvdc_Pt[i])
+                    else:
+                        graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
 
