@@ -61,7 +61,18 @@ class Generator(GeneratorParent):
                  capex: float = 0,
                  opex: float = 0,
                  srap_enabled: bool = True,
-                 build_status: BuildStatus = BuildStatus.Commissioned):
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 Xd: float = 1e-3,
+                 Xq: float = 1e-3,
+                 Xdp: float = 1e-3,
+                 Xqp: float = 1e-3,
+                 Xdpp: float = 1e-3,
+                 Xqpp: float = 1e-3,
+                 Td0p: float = 1e-3,
+                 Tq0p: float = 1e-3,
+                 Td0pp: float = 1e-3,
+                 Tq0pp: float = 1e-3,
+                 H: float = 1e-3,):
         """
         Voltage controlled generator. This generators supports several reactive power
         :param name: Name of the generator
@@ -93,6 +104,14 @@ class Generator(GeneratorParent):
         :param capex:
         :param opex:
         :param build_status:
+        :param Xd:
+        :param Xq:
+        :param Xdp:
+        :param Xqpp:
+        :param Td0p:
+        :param Tq0p:
+        :param Td0pp:
+        :param H:
         """
         GeneratorParent.__init__(self,
                                  name=name,
@@ -191,17 +210,17 @@ class Generator(GeneratorParent):
         # Dynamic vars
         # self.Ra = Ra
         # self.Xa = Xa
-        # self.Xd = Xd
-        # self.Xq = Xq
-        # self.Xdp = Xdp
-        # self.Xqp = Xqp
-        # self.Xdpp = Xdpp
-        # self.Xqpp = Xqpp
-        # self.Td0p = Td0p
-        # self.Tq0p = Tq0p
-        # self.Td0pp = Td0pp
-        # self.Tq0pp = Tq0pp
-        # self.H = H
+        self.Xd = Xd
+        self.Xq = Xq
+        self.Xdp = Xdp
+        self.Xqp = Xqp
+        self.Xdpp = Xdpp
+        self.Xqpp = Xqpp
+        self.Td0p = Td0p
+        self.Tq0p = Tq0p
+        self.Td0pp = Td0pp
+        self.Tq0pp = Tq0pp
+        self.H = H
         # self.speed_volt = speed_volt
         # self.base_mva = base_mva  # machine base MVA
 
@@ -253,6 +272,18 @@ class Generator(GeneratorParent):
 
         self.register(key='fuels', units='t/MWh', tpe=SubObjectType.Associations,
                       definition='List of fuels', display=False)
+
+        self.register(key='Xd', units='p.u.', tpe=float, definition='')
+        self.register(key='Xq', units='p.u.', tpe=float, definition='')
+        self.register(key='Xdp', units='p.u.', tpe=float, definition='')
+        self.register(key='Xqp', units='p.u.', tpe=float, definition='')
+        self.register(key='Xdpp', units='p.u.', tpe=float, definition='')
+        self.register(key='Xqpp', units='p.u.', tpe=float, definition='')
+        self.register(key='Td0p', units='p.u.', tpe=float, definition='')
+        self.register(key='Tq0p', units='p.u.', tpe=float, definition='')
+        self.register(key='Td0pp', units='p.u.', tpe=float, definition='')
+        self.register(key='Tq0pp', units='p.u.', tpe=float, definition='')
+        self.register(key='H', units='p.u.', tpe=float, definition='')
 
     @property
     def Pf_prof(self) -> Profile:
