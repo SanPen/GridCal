@@ -27,7 +27,7 @@ from GridCal.Gui.general_dialogues import NewProfilesStructureDialogue, TimeReIn
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
-from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI
+from GridCal.Gui.ProfilesInput.profile_dialogue import ProfileInputGUI, GeneratorsProfileOptionsDialogue
 from GridCal.Gui.profiles_model import ProfilesModel
 
 
@@ -179,17 +179,20 @@ class TimeEventsMain(ObjectsTableMain):
                     if len(objects) > 0:
                         if magnitude == 'P':
                             if objects[0].device_type == DeviceType.GeneratorDevice:
-                                ok1 = yes_no_question("Do you want to correct the generators active "
-                                                      "profile based on the active power profile?",
-                                                      "Match")
-                                if ok1:
+
+                                dlg = GeneratorsProfileOptionsDialogue()
+                                dlg.exec()
+
+                                if dlg.correct_active_profile.isChecked():
                                     self.fix_generators_active_based_on_the_power(ask_before=False)
 
-                                ok2 = yes_no_question("Do you want to set the generators to non-dispatchable?",
-                                                      "Are these renewable time series?")
-                                if ok2:
-                                    for gen in objects:
-                                        gen.dispatchable = False
+                                if dlg.set_non_dispatchable.isChecked():
+                                    for i, elm in enumerate(objects):
+                                        if self.profile_input_dialogue.has_profile(i):
+                                            # if there was a profile, we want the generator not dispatchable
+                                            elm.enabled_dispatch = False
+                                        else:
+                                            elm.enabled_dispatch = True
 
                             elif objects[0].device_type == DeviceType.LoadDevice:
                                 ok1 = yes_no_question("Do you want to correct the loads active profile "

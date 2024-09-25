@@ -255,7 +255,7 @@ class Profile:
         else:
             return 0.0
 
-    def set(self, arr: NumericVec):
+    def set(self, arr: NumericVec) -> bool:
         """
         Set array value
         :param arr:
@@ -278,31 +278,38 @@ class Profile:
                 if isinstance(base, np.bool_):
                     base = bool(base)
 
-                self._is_sparse = True
-                self._sparse_array = SparseArray(data_type=self.dtype)
+                if check_type(dtype=self.dtype, value=base):
+                    self._is_sparse = True
+                    self._sparse_array = SparseArray(data_type=self.dtype)
 
-                if most_common_count > 1:
-                    if isinstance(arr, np.ndarray):
-                        data, indptr = compress_array_numba(arr, base)
-                        data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
+                    if most_common_count > 1:
+                        if isinstance(arr, np.ndarray):
+                            data, indptr = compress_array_numba(arr, base)
+                            data_map = {i: x for i, x in zip(indptr, data)}  # this is to use a native python dict
+                        else:
+                            raise Exception('Unknown profile type' + str(type(arr)))
                     else:
-                        raise Exception('Unknown profile type' + str(type(arr)))
-                else:
-                    data_map = dict()
+                        data_map = dict()
 
-                self._sparse_array.create(size=len(arr),
-                                          default_value=base,
-                                          data=data_map)
-                check_type(dtype=self.dtype, value=base)
+                    self._sparse_array.create(size=len(arr),
+                                              default_value=base,
+                                              data=data_map)
+                else:
+                    print("Cannot set sparse array because the type check failed")
+                    return False
             else:
-                check_type(dtype=self.dtype, value=arr[0])
-                self._is_sparse = False
-                self._dense_array = arr
+                if check_type(dtype=self.dtype, value=arr[0]):
+                    self._is_sparse = False
+                    self._dense_array = arr
+                else:
+                    print("Cannot set dense array because the type check failed")
+                    return False
         else:
             self._is_sparse = False
             self._dense_array = arr
 
         self._initialized = True
+        return True
 
     def __eq__(self, other: "Profile") -> bool:
         """
