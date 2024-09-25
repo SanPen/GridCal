@@ -85,7 +85,6 @@ class TimeEventsMain(ObjectsTableMain):
         """
         dlg = NewProfilesStructureDialogue()
         if dlg.exec_():
-
             steps, step_length, step_unit, time_base = dlg.get_values()
 
             self.ui.profiles_tableView.setModel(None)
@@ -180,18 +179,23 @@ class TimeEventsMain(ObjectsTableMain):
                     if len(objects) > 0:
                         if magnitude == 'P':
                             if objects[0].device_type == DeviceType.GeneratorDevice:
-                                ok = yes_no_question(
-                                    "Do you want to correct the generators active "
-                                    "profile based on the active power profile?",
-                                    "Match")
-                                if ok:
+                                ok1 = yes_no_question("Do you want to correct the generators active "
+                                                      "profile based on the active power profile?",
+                                                      "Match")
+                                if ok1:
                                     self.fix_generators_active_based_on_the_power(ask_before=False)
+
+                                ok2 = yes_no_question("Do you want to set the generators to non-dispatchable?",
+                                                      "Are these renewable time series?")
+                                if ok2:
+                                    for gen in objects:
+                                        gen.dispatchable = False
+
                             elif objects[0].device_type == DeviceType.LoadDevice:
-                                ok = yes_no_question(
-                                    "Do you want to correct the loads active profile "
-                                    "based on the active power profile?",
-                                    "Match")
-                                if ok:
+                                ok1 = yes_no_question("Do you want to correct the loads active profile "
+                                                      "based on the active power profile?",
+                                                      "Match")
+                                if ok1:
                                     self.fix_loads_active_based_on_the_power(ask_before=False)
 
                 else:
