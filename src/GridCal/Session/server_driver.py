@@ -14,10 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import os
 import time
 import requests
-import asyncio
 from urllib3 import disable_warnings, exceptions
 from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
@@ -36,7 +34,7 @@ class JobsModel(QtCore.QAbstractTableModel):
     Class to populate a Qt table view with a pandas data frame
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         """
         QtCore.QAbstractTableModel.__init__(self)
@@ -281,8 +279,7 @@ class ServerDriver(QThread):
 
             # Check if the request was successful
             if response.status_code == 200:
-                # Print the response body
-                # print("Response Body:", response.json())
+                # Parse the response body
                 self.data_model.parse_data(data=response.json())
                 return True
             else:
@@ -303,15 +300,14 @@ class ServerDriver(QThread):
         :param instruction:
         :return: 
         """
-        # websocket_url = f"ws://{self.url}:{self.port}/process_file"
         websocket_url = f"{self.base_url()}/upload"
 
         if self.is_running():
             model_data = gather_model_as_jsons_for_communication(circuit=circuit, instruction=instruction)
 
-            response = asyncio.get_event_loop().run_until_complete(send_json_data(json_data=model_data,
-                                                                                  endpoint_url=websocket_url,
-                                                                                  certificate=self._certificate_path))
+            response = send_json_data(json_data=model_data,
+                                      endpoint_url=websocket_url,
+                                      certificate=self._certificate_path)
 
             self.get_jobs()
 

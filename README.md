@@ -1,9 +1,9 @@
 # GridCal
 
-GridCal is a top tier power systems planning and simulation software. 
-As such it has all the static analysis studies that you can think of, plus 
-linear and non-linear optimization functions. Some of these functions are 
-well known, while others you may have never heard of as they are a 
+GridCal is a top tier power systems planning and simulation software.
+As such it has all the static analysis studies that you can think of, plus
+linear and non-linear optimization functions. Some of these functions are
+well known, while others you may have never heard of as they are a
 product of cutting-edge research.
 
 ![](pics/GridCal.png)
@@ -13,26 +13,26 @@ product of cutting-edge research.
 [![DOI](https://www.zenodo.org/badge/49583206.svg)](https://www.zenodo.org/badge/latestdoi/49583206)
 [![Downloads](https://static.pepy.tech/personalized-badge/gridcal?period=total&units=abbreviation&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/gridcal)
 
-
-GridCal started in 2015 with a clear objective: create a solid programming library and a user-friendly interface. 
-This straightforward approach sparked many innovations — some driven by the necessity 
+GridCal started in 2015 with a clear objective: create a solid programming library and a user-friendly interface.
+This straightforward approach sparked many innovations — some driven by the necessity
 for commercial use, and others fueled by curiosity and research.
 
-Whether you're a pro needing free tools, a researcher wanting a real-world tested platform, 
-a teacher sharing commercial-grade software insights, or a student diving into practical algorithms, 
-GridCal's got your back. It's a high quality product made for all of us now and 
+Whether you're a pro needing free tools, a researcher wanting a real-world tested platform,
+a teacher sharing commercial-grade software insights, or a student diving into practical algorithms,
+GridCal's got your back. It's a high quality product made for all of us now and
 for the future generations.
 
 ## Installation
 
-GridCal is a software made in the Python programming language. 
-Therefore, it needs a Python interpreter installed in your operative system. 
+GridCal is a software made in the Python programming language.
+Therefore, it needs a Python interpreter installed in your operative system.
 
 The GridCal project is divided in three packages:
 
 - GridCalEngine: A package with the database and calculations logic.
 - GridCalServer: A package that serves an API-rest to use GridCalEngine remotelly.
-- GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and `GridCalServer` seamlessly.
+- GridCal: A package that contains the Graphical User Interface (GUI) and operates with `GridCalEngine` and
+  `GridCalServer` seamlessly.
 
 To install everything, you only need to install the GridCal package and the others will beinstalled as dependencies.
 
@@ -44,20 +44,20 @@ If you don't know what is this Python thing, we offer a windows installation:
 
 [Windows setup](https://www.advancedgridinsights.com/gridcal)
 
-This will install GridCal as a normal windows program and you need not to worry 
-about any of the previous instructions. Still, if you need some guidance, the 
+This will install GridCal as a normal windows program and you need not to worry
+about any of the previous instructions. Still, if you need some guidance, the
 following video might be of assistance: [Setup tutorial (video)](https://youtu.be/SY66WgLGo54).
 
 ### Package installation
 
-We recommend to install the latest version of [Python](www.python.org) and then, 
+We recommend to install the latest version of [Python](www.python.org) and then,
 install GridCal with the following terminal command:
 
 ```
 pip install GridCal
 ```
 
-You may need to use `pip3` if you are under Linux or MacOS, both of which 
+You may need to use `pip3` if you are under Linux or MacOS, both of which
 come with Python pre-installed already.
 
 ### Install into an environment
@@ -71,7 +71,7 @@ gridcal
 
 ### Run the graphical user interface
 
-Once you install GridCal in your local Python distribution, you can run the 
+Once you install GridCal in your local Python distribution, you can run the
 graphical user interface with the following terminal command:
 
 ```
@@ -88,8 +88,8 @@ You may save this command in a shortcut for easy future access.
 
 ### Install only the engine
 
-Some of you may only need GridCal as a library for some other purpose 
-like batch calculations, AI training or simple scripting. Whatever it may be, 
+Some of you may only need GridCal as a library for some other purpose
+like batch calculations, AI training or simple scripting. Whatever it may be,
 you can get the GridCal engine with the following terminal command:
 
 ```
@@ -99,9 +99,6 @@ pip install GridCalEngine
 This will install the `GridCalEngine` package that is a dependency of `GridCal`.
 
 Again, you may need to use `pip3` if you are under Linux or MacOS.
-
-
-
 
 ## Features
 
@@ -134,13 +131,13 @@ software, so that you can work, research and learn with it.
 
 ### Resources
 
-In an effort to ease the simulation and construction of grids, 
+In an effort to ease the simulation and construction of grids,
 We have included extra materials to work with. These are included in the standalone setups.
 
 - [Load profiles](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/equipment) for your projects.
 - [Grids](https://github.com/SanPen/GridCal/tree/master/Grids_and_profiles/grids) from IEEE and other open projects.
-- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers) ready to use in GridCal.
-
+- [Equipment catalogue](https://gridcal.readthedocs.io/en/latest/data_sheets.html) (Wires, Cables and Transformers)
+  ready to use in GridCal.
 
 ### Tutorials and examples
 
@@ -156,48 +153,46 @@ We have included extra materials to work with. These are included in the standal
 
 ## API
 
-Since day one, GridCal was meant to be used as a library as much as it was meant 
-to be used from the user interface. Following, we include some usage examples, but 
+Since day one, GridCal was meant to be used as a library as much as it was meant
+to be used from the user interface. Following, we include some usage examples, but
 feel free to check the [documentation](https://gridcal.readthedocs.io) out where you will find a complete
 description of the theory, the models and the objects.
 
 ### Understanding the program structure
 
-All simulations in GridCal are handled by the simulation drivers. The structure is as follows: 
+All simulations in GridCal are handled by the simulation drivers. The structure is as follows:
 
 <img height="250" src="doc/rst_source/figures/DataModelSimulation.png"/>
 
-Any driver is fed with the data model (`MultiCircuit` object), the respective driver options, and often another 
-object relative to specific inputs for that driver. The driver is run, storing the driver results object. 
+Any driver is fed with the data model (`MultiCircuit` object), the respective driver options, and often another
+object relative to specific inputs for that driver. The driver is run, storing the driver results object.
 Although this may seem overly complicated, it has proven to be maintainable and very convenient.
 
-
 ### Snapshot vs. time series
+
 GridCal has dual structure to handle legacy cases (snapshot), as well as cases with many variations (time series)
 
 - A **snapshot** is the grid for a particular moment in time.
-This includes the infrastructure plus the variable values of that infraestructure 
-such as the load, the generation, the rating, etc.
+  This includes the infrastructure plus the variable values of that infraestructure
+  such as the load, the generation, the rating, etc.
 
 - The **time series** record the variations of the magnitudes that can vary. These are aplied along with
-the infrastructure definition.
+  the infrastructure definition.
 
 In GridCal, the inputs do not get modified by the simulation results. This very important concept, helps
-maintaining the independence of the inputs and outputs, allowing the replicability of the results. 
+maintaining the independence of the inputs and outputs, allowing the replicability of the results.
 This key feature is not true for other open-source of comercial programs.
 
 A snapshot or any point of the time series, may be compiled to a `NumericalCircuit`. This object holds the
-numerical arrays and matrices of a time step, ready for the numerical methods. 
+numerical arrays and matrices of a time step, ready for the numerical methods.
 For those simulations that require many time steps, a collection of `NumericalCircuit` is compiled and used.
 
 <img height="280" src="doc/rst_source/figures/DataModel.png"/>
 
-It may seem that this extra step is redundant. However the compilation step is composed by mere copy operations, 
-which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are 
-aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented 
+It may seem that this extra step is redundant. However the compilation step is composed by mere copy operations,
+which are fast. This steps benefits greatly the efficiency of the numerical calculations since the arrays are
+aligned in memory. The GridCal data model is object-oriented, while the numerical circuit is array-oriented
 (despite beign packed into objects)
-
-
 
 ### Loading a grid
 
@@ -209,6 +204,7 @@ my_grid = gce.open_file("my_file.gridcal")
 ```
 
 In the case of CIM/CGMES, you may need to pass a list of files or a single zip file:
+
 ```python
 import GridCalEngine.api as gce
 
@@ -217,7 +213,6 @@ my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
 
 # or from a single zip assumed to contain CGMES files
 my_grid = gce.open_file("my_cgmes_set_of_files.zip")
-
 
 # load a grid from a combination of xml and zip files assumed to be CGMES
 my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", "boundary.zip"])
@@ -232,8 +227,6 @@ GridCal supports many file formats:
 - DigSilent .DGS (not fully compatible)
 - PowerWorld .EPC (not fully compatible, supports substation coordinates)
 
-
-
 ### Save a grid
 
 ```python
@@ -246,7 +239,7 @@ my_grid = gce.open_file("my_file.gridcal")
 gce.save_file(my_grid, "my_file_2.gridcal")
 ```
 
-In the case of saving a model in CGMES mode, we need to specify some extra parameters. 
+In the case of saving a model in CGMES mode, we need to specify some extra parameters.
 To simplify we can use the API function `save_cgmes_file`:
 
 ```python
@@ -267,10 +260,9 @@ gce.save_cgmes_file(grid=my_grid,
 
 ```
 
-
 ### Creating a Grid using the API objects
 
-We are going to create a very simple 5-node grid from the excellent book 
+We are going to create a very simple 5-node grid from the excellent book
 *Power System Load Flow Analysis by Lynn Powell*.
 
 ```python
@@ -359,6 +351,7 @@ print(power_flow.results.get_branch_df())
 ```
 
 Output:
+
 ```text
 IEEE14_from_raw
 
@@ -405,7 +398,6 @@ Branch results:
 5_6_1    44.09  12.47  -44.09  -8.05  1,247,068,151,943.25
 ```
 
-
 ### Inputs analysis
 
 GridCal can perform a summary of the inputs with the `InputsAnalysisDriver`:
@@ -427,13 +419,13 @@ print(df)
 ```
 
 The results per area:
+
 ```text
                P    Pgen   Pload  Pbatt  Pstagen      Pmin      Pmax      Q    Qmin    Qmax
 IEEE118-3  -57.0   906.0   963.0    0.0      0.0 -150000.0  150000.0 -345.0 -2595.0  3071.0
 IEEE118-2 -117.0  1369.0  1486.0    0.0      0.0 -140000.0  140000.0 -477.0 -1431.0  2196.0
 IEEE118-1  174.0  1967.0  1793.0    0.0      0.0 -250000.0  250000.0 -616.0 -3319.0  6510.0
 ```
-
 
 ### Linear analysis
 
@@ -499,7 +491,6 @@ Branch 2-3   -1.000000    0.344795    0.307071   -1.000000   -1.000000   -0.3070
 Branch 3-4   -0.457143   -0.655205    1.000000   -0.457143   -0.457143   -1.000000
 ```
 
-
 Now let's make a comparison between the linear flows and the non-linear flows from Newton-Raphson:
 
 ```python
@@ -508,7 +499,6 @@ from matplotlib import pyplot as plt
 import GridCalEngine.api as gce
 
 plt.style.use('fivethirtyeight')
-
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'IEEE39_1W.gridcal')
@@ -572,7 +562,6 @@ print('Branch loading\n', opf_driver.results.loading)
 print('Gen power\n', opf_driver.results.generator_power)
 print('Nodal prices \n', opf_driver.results.bus_shadow_prices)
 
-
 # declare the time series opf
 opf_ts_driver = gce.OptimalPowerFlowTimeSeriesDriver(grid=main_circuit)
 
@@ -607,8 +596,8 @@ opf_driver.run()
 
 # create the power flow driver, with the OPF results
 pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
-pf_driver = gce.PowerFlowDriver(grid=main_circuit, 
-                                options=pf_options, 
+pf_driver = gce.PowerFlowDriver(grid=main_circuit,
+                                options=pf_options,
                                 opf_results=opf_driver.results)
 pf_driver.run()
 
@@ -619,6 +608,7 @@ print(pf_driver.results.get_branch_df())
 ```
 
 Output:
+
 ```text
 OPF results:
 
@@ -660,7 +650,9 @@ Branch 7  -4.60  -5.88   4.62   4.01   -23.02
 ```
 
 ### Hydro linear OPF
-The following example loads and runs the linear optimization for a system that integrates fluid elements into a regular electrical grid. 
+
+The following example loads and runs the linear optimization for a system that integrates fluid elements into a regular
+electrical grid.
 
 ```python
 import os
@@ -682,6 +674,7 @@ print('Reservoir level\n', opf_driver.results.fluid_node_current_level)
 ```
 
 Output:
+
 ```text
 OPF results:
 
@@ -730,7 +723,7 @@ time                | f1         | f2  | f3  | f4
 ### Short circuit
 
 GridCal has unbalanced short circuit calculations. Now let's run a line-ground short circuit in the third bus of
-the South island of New Zealand grid example from reference book 
+the South island of New Zealand grid example from reference book
 _Computer Analysis of Power Systems by J. Arrillaga and C.P. Arnold_
 
 ```python
@@ -747,11 +740,11 @@ pf = gce.PowerFlowDriver(grid, pf_options)
 pf.run()
 
 fault_index = 2
-sc_options = gce.ShortCircuitOptions(bus_index=fault_index, 
+sc_options = gce.ShortCircuitOptions(bus_index=fault_index,
                                      fault_type=gce.FaultType.LG)
 
-sc = gce.ShortCircuitDriver(grid, options=sc_options, 
-                            pf_options=pf_options, 
+sc = gce.ShortCircuitDriver(grid, options=sc_options,
+                            pf_options=pf_options,
                             pf_results=pf.results)
 sc.run()
 
@@ -902,10 +895,9 @@ Contingency flows:
 
 This simulation can also be done for time series.
 
-
 ### State estimation
 
-Now lets program the example from the state estimation reference book 
+Now lets program the example from the state estimation reference book
 _State Estimation in Electric Power Systems by A. Monticelli_.
 
 ```python
@@ -1005,9 +997,9 @@ gce.export_results(results_list=[pf_results, pf_ts_results], file_name="IEEE39_1
 
 ### Client - Server operation
 
-To use the gridcal server, you need to install the `GridCalServer` python package. Once this is done, 
-the `gridcalserver`command will be available on the system. 
-To launch the server, simply type `gridcalserver`. This will launch a GridCal server on the machine, 
+To use the gridcal server, you need to install the `GridCalServer` python package. Once this is done,
+the `gridcalserver`command will be available on the system.
+To launch the server, simply type `gridcalserver`. This will launch a GridCal server on the machine,
 on port 8000. This is `https://localhost:8000`
 
 An example on how to send a grid from a script to the server:
@@ -1034,16 +1026,12 @@ gce.get_certificate(base_url="https://localhost:8000",
                     pwd="")
 
 # send json
-reply_from_server = response = asyncio.get_event_loop().run_until_complete(
-    gce.send_json_data(json_data=model_data,
-                       endpoint_url="https://localhost:8000/upload",
-                       certificate=gce.get_certificate_path())
-)
+reply_from_server = gce.send_json_data(json_data=model_data,
+                                       endpoint_url="https://localhost:8000/upload",
+                                       certificate=gce.get_certificate_path())
 
 print(reply_from_server)
 ```
-
-
 
 ## Contact
 
@@ -1060,13 +1048,13 @@ In practical terms this means that:
 
 - You can use GridCal for commercial work.
 - You can sell commercial services based on GridCal.
-- If you distrubute GridCal, you must distribute GridCal's source code as well. 
-That is always achieved in practice with python code.
-- GridCal license does not propagate to works that are not a derivative of GridCal. 
-An example of a derivative work is if you write a module of the program, the the license 
-of the modue must be LGPL too. An example of a non-derivative work is if you use 
-GridCal's API for something else without modifying the API itself, for instance, 
-using it as a library for another program.
+- If you distrubute GridCal, you must distribute GridCal's source code as well.
+  That is always achieved in practice with python code.
+- GridCal license does not propagate to works that are not a derivative of GridCal.
+  An example of a derivative work is if you write a module of the program, the the license
+  of the modue must be LGPL too. An example of a non-derivative work is if you use
+  GridCal's API for something else without modifying the API itself, for instance,
+  using it as a library for another program.
 
 Nonetheless, read the license carefully.
 
