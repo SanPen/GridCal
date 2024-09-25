@@ -35,19 +35,19 @@ def check_type(dtype: PROFILE_TYPES, value: Any) -> bool:
     """
     tpe = type(value)
     if tpe in [bool, np.bool_]:
-        assert dtype == bool
+        return dtype == bool
     elif tpe in [int, np.int32, np.int64]:
-        assert dtype == int or dtype == float
+        return dtype == int or dtype == float
     elif tpe in [float, np.float32, np.float64]:
-        assert dtype == float
+        return dtype == float
     elif issubclass(tpe, Enum):
-        assert tpe == dtype  # check that the enum type is the same
+        return tpe == dtype  # check that the enum type is the same
 
     elif isinstance(dtype, DeviceType):
         return True
 
     elif dtype == Vec:
-        assert isinstance(value, np.ndarray) or value is None
+        return isinstance(value, np.ndarray) or value is None
 
     else:
         raise Exception("Sparse array type value Not recognized")

@@ -21,6 +21,7 @@ from PySide6.QtGui import QPen, QColor, QCursor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from PySide6.QtWidgets import QGraphicsLineItem, QGraphicsSceneMouseEvent
 
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import ArrowHead
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.messages import yes_no_question
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
@@ -59,6 +60,19 @@ class MapLineSegment(QGraphicsLineItem):
         self.pos1: QPointF = self.first.get_center_pos()
         self.pos2: QPointF = self.second.get_center_pos()
 
+        # arrows
+        self.view_arrows = True
+        self._arrow_size = self.width * 1.5
+        self.arrow_p_from = ArrowHead(parent=self, arrow_size=self._arrow_size, position=0.2, under=False,
+                                      text_scale=0.01, show_text=False)
+        self.arrow_q_from = ArrowHead(parent=self, arrow_size=self._arrow_size, position=0.2, under=True,
+                                      text_scale=0.01, show_text=False)
+        self.arrow_p_to = ArrowHead(parent=self, arrow_size=self._arrow_size, position=0.8, under=False,
+                                    text_scale=0.01, show_text=False)
+        self.arrow_q_to = ArrowHead(parent=self, arrow_size=self._arrow_size, position=0.8, under=True,
+                                    text_scale=0.01, show_text=False)
+
+        # set callbacks
         self.first.add_position_change_callback(self.set_from_side_coordinates)
         self.second.add_position_change_callback(self.set_to_side_coordinates)
 
@@ -68,7 +82,7 @@ class MapLineSegment(QGraphicsLineItem):
         self.setZValue(0)
 
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
     @property
     def api_object(self) -> BRANCH_TYPES:
@@ -86,6 +100,21 @@ class MapLineSegment(QGraphicsLineItem):
         """
         return self.container.editor
 
+    def set_width(self, width: float):
+        """
+
+        :param width:
+        :return:
+        """
+        pen = self.pen()
+        pen.setWidthF(width)
+        self.setPen(pen)
+
+        self.arrow_p_from.label.setScale(width)
+        self.arrow_q_from.label.setScale(width)
+        self.arrow_p_to.label.setScale(width)
+        self.arrow_q_to.label.setScale(width)
+
     def set_colour(self, color: QColor, w: float, style: Qt.PenStyle):
         """
         Set color and style
@@ -95,10 +124,14 @@ class MapLineSegment(QGraphicsLineItem):
         :return:
         """
 
-        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        pen = QPen(color, w, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
         pen.setWidthF(w)
 
         self.setPen(pen)
+        self.arrow_p_from.set_colour(color, w, style)
+        self.arrow_q_from.set_colour(color, w, style)
+        self.arrow_p_to.set_colour(color, w, style)
+        self.arrow_q_to.set_colour(color, w, style)
 
     def set_from_side_coordinates(self, x: float, y: float):
         """
@@ -125,13 +158,15 @@ class MapLineSegment(QGraphicsLineItem):
         Update the endings of this segment
         """
         self.setLine(QLineF(self.pos1, self.pos2))
-        # Get the positions of the first and second objects
-        # if self.first.needsUpdate or self.second.needsUpdate or force:
-        #     # Set the line's starting and ending points
-        #     self.setLine(self.first.rect().x(),
-        #                  self.first.rect().y(),
-        #                  self.second.rect().x(),
-        #                  self.second.rect().y())
+
+        if self.api_object is not None:
+
+            # arrows
+            if self.view_arrows:
+                self.arrow_p_from.redraw()
+                self.arrow_q_from.redraw()
+                self.arrow_p_to.redraw()
+                self.arrow_q_to.redraw()
 
     def end_update(self) -> None:
         """
@@ -157,11 +192,6 @@ class MapLineSegment(QGraphicsLineItem):
         :return:
         """
         menu = QMenu()
-
-        # add_menu_entry(menu=menu,
-        #                text="Remove",
-        #                icon_path="",
-        #                function_ptr=self.RemoveFunction)
 
         menu.addSection("Line")
 
@@ -360,3 +390,34 @@ class MapLineSegment(QGraphicsLineItem):
         if ok:
             self.editor.circuit.delete_branch(obj=self.api_object)
             self.editor.delete_diagram_element(device=self.api_object)
+
+    def set_arrows_with_power(self, Sf: complex, St: complex) -> None:
+        """
+        Set the arrow directions
+        :param Sf: Complex power from
+        :param St: Complex power to
+        """
+
+        if Sf is not None:
+            if St is None:
+                St = -Sf
+
+            Pf = Sf.real
+            Qf = Sf.imag
+            Pt = St.real
+            Qt_ = St.imag
+            self.arrow_p_from.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+            self.arrow_q_from.set_value(Qf, True, Qf < 0, name="Qf", units="MVAr", draw_label=self.draw_labels)
+            self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+            self.arrow_q_to.set_value(Qt_, True, Qt_ > 0, name="Qt", units="MVAr", draw_label=self.draw_labels)
+
+    def set_arrows_with_hvdc_power(self, Pf: float, Pt: float) -> None:
+        """
+        Set the arrow directions
+        :param Pf: Complex power from
+        :param Pt: Complex power to
+        """
+        self.arrow_p_from.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+        self.arrow_q_from.set_value(Pf, True, Pf < 0, name="Pf", units="MW", draw_label=self.draw_labels)
+        self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
+        self.arrow_q_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)

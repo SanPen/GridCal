@@ -3469,7 +3469,8 @@ class SchematicWidget(BaseDiagramWidget):
                                 if hasattr(graphic_object, 'set_arrows_with_power'):
                                     graphic_object.set_arrows_with_power(
                                         Sf=Sf[i] if Sf is not None else None,
-                                        St=St[i] if St is not None else None)
+                                        St=St[i] if St is not None else None
+                                    )
                             else:
                                 w = graphic_object.pen_width
                                 style = Qt.PenStyle.DashLine
