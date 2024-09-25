@@ -333,11 +333,11 @@ class MultiCircuit(Assets):
 
         return cpy
 
-    def build_graph(self):
+    def build_graph(self) -> nx.MultiDiGraph:
         """
         Returns a networkx DiGraph object of the grid.
         """
-        graph = nx.DiGraph()
+        graph = nx.MultiDiGraph()
 
         bus_dictionary = dict()
 
