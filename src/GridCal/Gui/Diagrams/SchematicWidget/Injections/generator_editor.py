@@ -51,17 +51,17 @@ class GeneratorQCurveEditorTableModel(QAbstractTableModel):
         """
         return len(self._headers)
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         """
 
         :param index:
         :param role:
         :return:
         """
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return str(self._data[index.row(), index.column()])
 
-    def setData(self, index, value, role=Qt.EditRole):
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         """
 
         :param index:
@@ -69,7 +69,7 @@ class GeneratorQCurveEditorTableModel(QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             try:
                 # Attempt to convert the input to a float value
                 value = float(value)
@@ -93,7 +93,7 @@ class GeneratorQCurveEditorTableModel(QAbstractTableModel):
         :param index:
         :return:
         """
-        return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsSelectable
 
     def headerData(self,
                    section: int,
@@ -106,7 +106,7 @@ class GeneratorQCurveEditorTableModel(QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+        if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
             return self._headers[section]
         return super(GeneratorQCurveEditorTableModel, self).headerData(section, orientation, role)
 

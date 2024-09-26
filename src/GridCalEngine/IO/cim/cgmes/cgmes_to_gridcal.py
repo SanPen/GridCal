@@ -679,6 +679,12 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                 else:
                     rate = 1e-20
 
+                if cgmes_elm.length is None:
+                    length = 1.0
+                    logger.add_error(msg='Length missing.', device=cgmes_elm.rdfid, device_class=str(cgmes_elm.tpe))
+                else:
+                    length = float(cgmes_elm.length)
+
                 gcdev_elm = gcdev.Line(idtag=cgmes_elm.uuid,
                                        code=cgmes_elm.description,
                                        name=cgmes_elm.name,
@@ -694,7 +700,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                        x0=x0,
                                        b0=b0,
                                        rate=rate,
-                                       length=cgmes_elm.length)
+                                       length=length)
 
                 gcdev_model.add_line(gcdev_elm, logger=logger)
             else:

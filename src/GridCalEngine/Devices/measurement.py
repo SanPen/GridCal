@@ -45,8 +45,8 @@ class MeasurementTemplate(EditableDevice):
                                 idtag=idtag,
                                 code="",
                                 device_type=device_type)
-        self.value = value
-        self.sigma = uncertainty
+        self.value = float(value)
+        self.sigma = float(uncertainty)
         self.api_object: EditableDevice = api_obj
 
         self.register("value", tpe=float, definition="Value of the measurement")

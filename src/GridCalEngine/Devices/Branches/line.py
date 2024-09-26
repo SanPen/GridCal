@@ -104,36 +104,36 @@ class Line(BranchParent):
                               device_type=DeviceType.LineDevice)
 
         # line length in km
-        self._length = length
+        self._length = float(length)
 
         # line impedance tolerance
-        self.tolerance = tolerance
+        self.tolerance = float(tolerance)
 
         # short circuit impedance
-        self.r_fault = r_fault
-        self.x_fault = x_fault
-        self.fault_pos = fault_pos
+        self.r_fault = float(r_fault)
+        self.x_fault = float(x_fault)
+        self.fault_pos = float(fault_pos)
 
         # total impedance and admittance in p.u.
-        self.R = r
-        self.X = x
-        self.B = b
+        self.R = float(r)
+        self.X = float(x)
+        self.B = float(b)
 
-        self.R0 = r0
-        self.X0 = x0
-        self.B0 = b0
+        self.R0 = float(r0)
+        self.X0 = float(x0)
+        self.B0 = float(b0)
 
-        self.R2 = r2
-        self.X2 = x2
-        self.B2 = b2
+        self.R2 = float(r2)
+        self.X2 = float(x2)
+        self.B2 = float(b2)
 
         # Conductor base and operating temperatures in ºC
-        self.temp_base = temp_base
-        self.temp_oper = temp_oper
+        self.temp_base = float(temp_base)
+        self.temp_oper = float(temp_oper)
         self._temp_oper_prof = Profile(default_value=temp_oper, data_type=float)
 
         # Conductor thermal constant (1/ºC)
-        self.alpha = alpha
+        self.alpha = float(alpha)
 
         # type template
         self.template: Union[OverheadLineType, SequenceLineType, UndergroundLineType] = template

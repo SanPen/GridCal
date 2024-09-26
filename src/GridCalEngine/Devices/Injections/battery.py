@@ -157,27 +157,27 @@ class Battery(Generator):
         # type of this device
         self.device_type = DeviceType.BatteryDevice
 
-        self.charge_efficiency = charge_efficiency
+        self.charge_efficiency = float(charge_efficiency)
 
-        self.discharge_efficiency = discharge_efficiency
+        self.discharge_efficiency = float(discharge_efficiency)
 
-        self.max_soc = max_soc
+        self.max_soc = float(max_soc)
 
-        self.min_soc = min_soc
+        self.min_soc = float(min_soc)
 
         self.min_soc_charge = (self.max_soc + self.min_soc) / 2  # SoC state to force the battery charge
 
-        self.charge_per_cycle = charge_per_cycle  # charge 10% per cycle
+        self.charge_per_cycle = float(charge_per_cycle)  # charge 10% per cycle
 
-        self.discharge_per_cycle = discharge_per_cycle
+        self.discharge_per_cycle = float(discharge_per_cycle)
 
-        self.min_energy = Enom * self.min_soc
+        self.Enom = float(Enom)
 
-        self.Enom = Enom
+        self.soc_0 = float(soc)
 
-        self.soc_0 = soc
+        self.soc = float(soc)
 
-        self.soc = soc
+        self.min_energy = self.Enom * self.min_soc
 
         self.energy = self.Enom * self.soc
 

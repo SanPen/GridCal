@@ -65,23 +65,23 @@ class TransformerType(EditableDevice):
                                 code='',
                                 device_type=DeviceType.TransformerTypeDevice)
 
-        self.HV = hv_nominal_voltage
+        self.HV = float(hv_nominal_voltage)
 
-        self.LV = lv_nominal_voltage
+        self.LV = float(lv_nominal_voltage)
 
-        self.Sn = nominal_power
+        self.Sn = float(nominal_power)
 
-        self.Pcu = copper_losses
+        self.Pcu = float(copper_losses)
 
-        self.Pfe = iron_losses
+        self.Pfe = float(iron_losses)
 
-        self.I0 = no_load_current
+        self.I0 = float(no_load_current)
 
-        self.Vsc = short_circuit_voltage
+        self.Vsc = float(short_circuit_voltage)
 
-        self.GR_hv1 = gr_hv1
+        self.GR_hv1 = float(gr_hv1)
 
-        self.GX_hv1 = gx_hv1
+        self.GX_hv1 = float(gx_hv1)
 
         # The tap changer parameters are stored and used with the help of the TapChanger object
         self._tap_changer = TapChanger(total_positions=total_positions,

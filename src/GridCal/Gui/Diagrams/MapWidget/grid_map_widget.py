@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict
 import json
 import numpy as np
 import math
@@ -179,7 +179,7 @@ class MapLibraryModel(QStandardItemModel):
         mimedata = QMimeData()
         for idx in idxs:
             if idx.isValid():
-                txt = self.data(idx, Qt.DisplayRole)
+                txt = self.data(idx, Qt.ItemDataRole.DisplayRole)
 
                 data = QByteArray()
                 stream = QDataStream(data, QIODevice.WriteOnly)
@@ -194,7 +194,7 @@ class MapLibraryModel(QStandardItemModel):
         :param index:
         :return:
         """
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
 class GridMapWidget(BaseDiagramWidget):
@@ -245,7 +245,7 @@ class GridMapWidget(BaseDiagramWidget):
                              position_callback=self.position_callback)
 
         # Any representation on the map must be done after this Goto Function
-        self.map.GotoLevelAndPosition(level=6, longitude=0, latitude=40)
+        self.map.GotoLevelAndPosition(level=6, longitude=longitude, latitude=latitude)
 
         self.map.startLev = 6
         self.map.startLat = 0
@@ -678,12 +678,9 @@ class GridMapWidget(BaseDiagramWidget):
         :param lon:
         :return:
         """
-        graphic_object = SubstationGraphicItem(editor=self,
-                                               api_object=api_object,
-                                               lat=lat,
-                                               lon=lon)
+        graphic_object = SubstationGraphicItem(editor=self, api_object=api_object, lat=lat, lon=lon,
+                                               r=self.diagram.min_bus_width)
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
-
         self.add_to_scene(graphic_object=graphic_object)
 
         return graphic_object
@@ -868,10 +865,13 @@ class GridMapWidget(BaseDiagramWidget):
 
         # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
 
-        self.Update_widths()
+        self.update_device_sizes()
 
-    def Update_widths(self):
+    def update_device_sizes(self):
+        """
 
+        :return:
+        """
         max_zoom = self.map.max_level
         min_zoom = self.map.min_level
         zoom = self.map.zoom_factor
@@ -884,7 +884,13 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
             for key, lne in graphics_dict.items():
-                lne.setWidthScale(scale)
+                lne.set_width_scale(scale)
+
+        # rescale substations
+        data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
+        for se_key, se in data.items():
+            se.set_api_object_color()
+            se.set_size(r=self.diagram.min_bus_width)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -988,7 +994,7 @@ class GridMapWidget(BaseDiagramWidget):
         #
         #     tooltip = str(i) + ': ' + bus.name + '\n' \
         #               + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
-        #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
+        #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [KV]'
         #     if Sbus is not None:
         #         tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
         #     if types is not None:
@@ -1053,7 +1059,7 @@ class GridMapWidget(BaseDiagramWidget):
                         a *= 255
 
                     color = QColor(r, g, b, a)
-                    style = Qt.SolidLine
+                    style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
@@ -1061,6 +1067,15 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = 0.5
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+
+                    if hasattr(graphic_object, 'set_arrows_with_power'):
+                        graphic_object.set_arrows_with_power(
+                            Sf=Sf[i] if Sf is not None else None,
+                            St=St[i] if St is not None else None
+                        )
+                else:
+                    # the graphic object is None
+                    pass
 
         # try colouring the HVDC lines
         if len(hvdc_lines) > 0:
@@ -1104,12 +1119,25 @@ class GridMapWidget(BaseDiagramWidget):
                         a *= 255
 
                     color = QColor(r, g, b, a)
-                    style = Qt.SolidLine
+                    style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
                         weight = 0.5
+
+                    tooltip = str(i) + ': ' + graphic_object.api_object.name
+                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                        abs(hvdc_loading[i]) * 100) + ' [%]'
+
+                    tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
+
+                    if hvdc_losses is not None:
+                        tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
+                        tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+                        graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=hvdc_Pt[i])
+                    else:
+                        graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
 
@@ -1192,6 +1220,15 @@ class GridMapWidget(BaseDiagramWidget):
             call_new_substation_diagram_func=self.call_new_substation_diagram_func,
             call_delete_db_element_func=self.call_delete_db_element_func
         )
+
+    def consolidate_coordinates(self):
+        """
+        Consolidate the graphic elements' x, y coordinates into the API DB values
+        """
+        graphics: List[SubstationGraphicItem] = self.graphics_manager.query(elm=DeviceType.SubstationDevice)
+        for gelm in graphics:
+            gelm.api_object.latitude = gelm.lat
+            gelm.api_object.longitude = gelm.lon
 
 
 def generate_map_diagram(substations: List[Substation],

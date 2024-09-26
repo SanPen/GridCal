@@ -82,11 +82,11 @@ class LoadParent(InjectionParent):
                                  build_status=build_status,
                                  device_type=device_type)
 
-        self.P = P
-        self._P_prof = Profile(default_value=P, data_type=float)
+        self.P = float(P)
+        self._P_prof = Profile(default_value=self.P, data_type=float)
 
-        self.Q = Q
-        self._Q_prof = Profile(default_value=Q, data_type=float)
+        self.Q = float(Q)
+        self._Q_prof = Profile(default_value=self.Q, data_type=float)
 
         self.register(key='P', units='MW', tpe=float, definition='Active power', profile_name='P_prof')
         self.register(key='Q', units='MVAr', tpe=float, definition='Reactive power', profile_name='Q_prof')

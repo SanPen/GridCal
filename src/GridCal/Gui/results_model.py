@@ -150,7 +150,7 @@ class ResultsModel(WrappableTableModel):
                 if self.table.index_c is None:
                     return section
                 else:
-                    val = self.table.index_c[section]
+                    val = f"{section}: {self.table.index_c[section]}"
             else:
                 return ""
 

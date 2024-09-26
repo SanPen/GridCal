@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'gui.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.2
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -29,17 +29,17 @@ class Ui_MainWindow(object):
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(912, 540)
         icon = QIcon()
-        icon.addFile(u":/icons/icons/inputs_analysis 2.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u":/icons/icons/inputs_analysis 2.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         MainWindow.setWindowIcon(icon)
         self.actionSave_diagnostic = QAction(MainWindow)
         self.actionSave_diagnostic.setObjectName(u"actionSave_diagnostic")
         icon1 = QIcon()
-        icon1.addFile(u":/icons/icons/savec.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon1.addFile(u":/icons/icons/savec.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionSave_diagnostic.setIcon(icon1)
         self.actionFix_issues = QAction(MainWindow)
         self.actionFix_issues.setObjectName(u"actionFix_issues")
         icon2 = QIcon()
-        icon2.addFile(u":/icons/icons/fix.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon2.addFile(u":/icons/icons/fix.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.actionFix_issues.setIcon(icon2)
         self.actionAnalyze = QAction(MainWindow)
         self.actionAnalyze.setObjectName(u"actionAnalyze")
@@ -222,12 +222,6 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.label_6, 9, 0, 1, 1)
 
-        self.fixTimeSeriesCheckBox = QCheckBox(self.frame)
-        self.fixTimeSeriesCheckBox.setObjectName(u"fixTimeSeriesCheckBox")
-        self.fixTimeSeriesCheckBox.setChecked(True)
-
-        self.gridLayout.addWidget(self.fixTimeSeriesCheckBox, 16, 1, 1, 2)
-
         self.genVsetMaxSpinBox = QDoubleSpinBox(self.frame)
         self.genVsetMaxSpinBox.setObjectName(u"genVsetMaxSpinBox")
         self.genVsetMaxSpinBox.setValue(1.050000000000000)
@@ -254,6 +248,12 @@ class Ui_MainWindow(object):
         self.transformerTapModuleMaxSpinBox.setValue(1.050000000000000)
 
         self.gridLayout.addWidget(self.transformerTapModuleMaxSpinBox, 5, 2, 1, 1)
+
+        self.fixTimeSeriesCheckBox = QCheckBox(self.frame)
+        self.fixTimeSeriesCheckBox.setObjectName(u"fixTimeSeriesCheckBox")
+        self.fixTimeSeriesCheckBox.setChecked(True)
+
+        self.gridLayout.addWidget(self.fixTimeSeriesCheckBox, 16, 0, 1, 3)
 
 
         self.horizontalLayout.addWidget(self.frame)
@@ -306,7 +306,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
         icon3 = QIcon()
-        icon3.addFile(u":/icons/icons/gear.svg", QSize(), QIcon.Normal, QIcon.Off)
+        icon3.addFile(u":/icons/icons/gear.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.tabWidget.addTab(self.tab_2, icon3, "")
 
         self.verticalLayout_2.addWidget(self.tabWidget)
@@ -318,7 +318,7 @@ class Ui_MainWindow(object):
         self.toolBar = QToolBar(MainWindow)
         self.toolBar.setObjectName(u"toolBar")
         self.toolBar.setMovable(False)
-        MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
+        MainWindow.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolBar)
 
         self.toolBar.addAction(self.actionAnalyze)
         self.toolBar.addAction(self.actionFix_issues)
@@ -367,8 +367,8 @@ class Ui_MainWindow(object):
         self.label_13.setText("")
         self.label_14.setText(QCoreApplication.translate("MainWindow", u"Lines", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Virtual tap tolerance", None))
-        self.fixTimeSeriesCheckBox.setText(QCoreApplication.translate("MainWindow", u"Fix time series values", None))
         self.transformerVccMinSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" %", None))
+        self.fixTimeSeriesCheckBox.setText(QCoreApplication.translate("MainWindow", u"Analyze / Fix time series values", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Active power imbalance", None))
         self.label_16.setText(QCoreApplication.translate("MainWindow", u"System", None))
         self.activePowerImbalanceSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" %", None))

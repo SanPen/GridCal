@@ -93,7 +93,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     """
 
     def __init__(self, editor: SchematicWidget, fluid_node: FluidNode,
-                 parent=None, index=0, h: int = 20, w: int = 80, x: int = 0, y: int = 0,
+                 parent=None, index=0, h: int = 20, w: int = 80, x: float = 0, y: float = 0,
                  draw_labels: bool = True):
 
         GenericDiagramWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor, draw_labels=draw_labels)

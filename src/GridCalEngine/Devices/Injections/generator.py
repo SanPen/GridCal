@@ -116,51 +116,51 @@ class Generator(GeneratorParent):
                                  device_type=DeviceType.GeneratorDevice)
 
         # is the device active for active power dispatch?
-        self.enabled_dispatch = enabled_dispatch
+        self.enabled_dispatch = bool(enabled_dispatch)
 
         # positive sequence resistance
-        self.R1 = r1
+        self.R1 = float(r1)
 
         # positive sequence reactance
-        self.X1 = x1
+        self.X1 = float(x1)
 
         # zero sequence resistance
-        self.R0 = r0
+        self.R0 = float(r0)
 
         # zero sequence reactance
-        self.X0 = x0
+        self.X0 = float(x0)
 
         # negative sequence resistance
-        self.R2 = r2
+        self.R2 = float(r2)
 
         # negative sequence reactance
-        self.X2 = x2
+        self.X2 = float(x2)
 
         # Power factor
-        self.Pf = power_factor
+        self.Pf = float(power_factor)
 
         # voltage set profile for this load in p.u.
-        self._Pf_prof = Profile(default_value=power_factor, data_type=float)
+        self._Pf_prof = Profile(default_value=self.Pf, data_type=float)
 
         # If this generator is voltage controlled it produces a PV node, otherwise the node remains as PQ
-        self.is_controlled = is_controlled
+        self.is_controlled = bool(is_controlled)
 
         # Nominal power in MVA (also the machine base)
-        self._Snom = Snom
+        self._Snom = float(Snom)
 
         # Voltage module set point (p.u.)
-        self.Vset = vset
+        self.Vset = float(vset)
 
         # voltage set profile for this load in p.u.
-        self._Vset_prof = Profile(default_value=vset, data_type=float)
+        self._Vset_prof = Profile(default_value=self.Vset, data_type=float)
 
-        self.use_reactive_power_curve = use_reactive_power_curve
+        self.use_reactive_power_curve = bool(use_reactive_power_curve)
 
         # minimum reactive power in MVAr
-        self.qmin_set = Qmin
+        self.qmin_set = float(Qmin)
 
         # Maximum reactive power in MVAr
-        self.qmax_set = Qmax
+        self.qmax_set = float(Qmax)
 
         # declare the generation curve
         self.q_curve = GeneratorQCurve()
@@ -172,8 +172,8 @@ class Generator(GeneratorParent):
             self.q_curve.make_default_q_curve(self.Snom, self.qmin_set, self.qmax_set, n=1)
             self.custom_q_points = False
 
-        self.Cost2 = Cost2  # Cost of operation e/MW²
-        self.Cost0 = Cost0  # Cost of operation e
+        self.Cost2 = float(Cost2)  # Cost of operation e/MW²
+        self.Cost0 = float(Cost0)  # Cost of operation e
 
         self.StartupCost = 0.0
         self.ShutdownCost = 0.0
@@ -182,8 +182,8 @@ class Generator(GeneratorParent):
         self.RampUp = 1e20
         self.RampDown = 1e20
 
-        self._Cost2_prof = Profile(default_value=Cost2, data_type=float)
-        self._Cost0_prof = Profile(default_value=Cost0, data_type=float)
+        self._Cost2_prof = Profile(default_value=self.Cost2, data_type=float)
+        self._Cost0_prof = Profile(default_value=self.Cost0, data_type=float)
 
         self.emissions: Associations = Associations(device_type=DeviceType.EmissionGasDevice)
         self.fuels: Associations = Associations(device_type=DeviceType.FuelDevice)
@@ -206,7 +206,7 @@ class Generator(GeneratorParent):
         # self.base_mva = base_mva  # machine base MVA
 
         # system base power MVA
-        self.Sbase = Sbase
+        self.Sbase = float(Sbase)
 
         self.register(key='is_controlled', units='', tpe=bool, definition='Is this generator voltage-controlled?')
 

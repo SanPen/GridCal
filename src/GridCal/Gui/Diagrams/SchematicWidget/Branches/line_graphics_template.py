@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, QLineF, QPointF, QRectF
 from PySide6.QtGui import QPen, QCursor, QPixmap, QBrush, QColor, QTransform, QPolygonF
 from PySide6.QtWidgets import (QGraphicsLineItem, QGraphicsRectItem, QGraphicsPolygonItem,
                                QGraphicsEllipseItem, QGraphicsSceneMouseEvent, QGraphicsTextItem)
-from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDiagramWidget
+from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, GenericDiagramWidget, TRANSPARENT, WHITE
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Substation.cn_graphics import CnGraphicItem
@@ -50,115 +50,6 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import Transformer3WGraphicItem
 
 
-class ArrowHead(QGraphicsPolygonItem):
-    """
-    This is the arrow object
-    """
-
-    def __init__(self,
-                 parent: QGraphicsLineItem,
-                 arrow_size: int,
-                 position: float = 0.9,
-                 under: bool = False,
-                 backwards: bool = False,
-                 separation: int = 5,
-                 show_text: bool = True):
-        """
-        Constructor
-        :param parent: Parent line
-        :param arrow_size: Size of the arrow
-        :param position: proportion of the line where to locate the arrow
-        :param under: Is it under?
-        :param backwards: Is it backwards?
-        :param separation: Separation
-        :param show_text: Show the label?
-        """
-        QGraphicsPolygonItem.__init__(self, parent=parent)
-
-        self.parent: QGraphicsLineItem = parent
-        self.arrow_size: int = arrow_size
-        self.position: float = position
-        self.under: bool = under
-        self.backwards: float = backwards
-        self.sep = separation
-
-        self.label = QGraphicsTextItem(self)
-        self.label.setPlainText("")
-        self.show_text = show_text
-
-        self.w = arrow_size
-        self.h = arrow_size
-
-        self.setPen(Qt.NoPen)
-
-    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
-        """
-        Set color and style
-        :param color: QColor instance
-        :param w: width
-        :param style: PenStyle instance
-        :return:
-        """
-        # self.setPen(QPen(color, w, style))
-        # self.setPen(Qt.NoPen)
-        self.setBrush(color)
-        self.label.setDefaultTextColor(color)
-
-    def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}",
-                  draw_label: bool = True, visibility_filter_value=1e-4):
-        """
-        Set the sign with a value
-        :param value: any real value
-        :param redraw: redraw after the sign update
-        :param backwards: draw backwards
-        :param name: name of the displayed magnitude (i.e. Pf)
-        :param units: the units of the displayed magnitude (i.e MW)
-        :param format_str: the formatting string of the displayed magnitude
-        :param visibility_filter_value: threshold to determine if to show this widget
-        :param draw_label: Draw label
-        """
-        self.setVisible(abs(value) > visibility_filter_value)
-        self.backwards = backwards
-
-        self.label.setVisible(draw_label)
-        if draw_label:
-            x = format_str.format(value)
-            msg = f'{name}:{x} {units}'
-            self.label.setPlainText(msg)
-            self.setToolTip(msg)
-
-        if redraw:
-            self.redraw()
-
-    def redraw(self) -> None:
-        """
-        Redraw the arrow
-        """
-        line = self.parent.line()
-
-        # the angle is added 180º if the sign is negative
-        angle = - line.angle()
-        base_pt = line.p1() + (line.p2() - line.p1()) * self.position
-
-        p1 = -self.arrow_size if self.backwards else self.arrow_size
-        p2 = -self.arrow_size if self.under else self.arrow_size
-        arrow_p1 = base_pt - QTransform().rotate(angle).map(QPointF(p1, 0))
-        arrow_p2 = base_pt - QTransform().rotate(angle).map(QPointF(p1, p2))
-        arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
-
-        # base_pt = line.p1() + (line.p2() - line.p1()) * self.position
-        #
-        # arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
-
-        self.setPolygon(arrow_polygon)
-        if self.show_text:
-            # angle = - line.angle()
-            a = angle + 180 if 90 < line.angle() <= 270 else angle  # this keep the labels upside
-            label_p = base_pt - QTransform().rotate(a).map(QPointF(0, -10 if self.under else 35))
-            self.label.setPos(label_p)
-            self.label.setRotation(a)
-
-
 class TransformerSymbol(QGraphicsRectItem):
     """
     TransformerSymbol
@@ -176,19 +67,19 @@ class TransformerSymbol(QGraphicsRectItem):
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
 
-        self.setPen(QPen(Qt.transparent))
+        self.setPen(QPen(TRANSPARENT))
         self.setRect(QRectF(0, 0, w, h))
 
         self.c0 = QGraphicsEllipseItem(0, 0, d, d, parent=self)
         self.c1 = QGraphicsEllipseItem(0, 0, d, d, parent=self)
         self.c2 = QGraphicsEllipseItem(0, 0, d, d, parent=self)
 
-        self.c0.setPen(QPen(Qt.transparent, self.width, self.style))
+        self.c0.setPen(QPen(TRANSPARENT, self.width, self.style))
         self.c2.setPen(QPen(self.color, self.width, self.style))
         self.c1.setPen(QPen(self.color, self.width, self.style))
 
-        self.c0.setBrush(QBrush(Qt.white))
-        self.c2.setBrush(QBrush(Qt.white))
+        self.c0.setBrush(QBrush(WHITE))
+        self.c2.setBrush(QBrush(WHITE))
 
         self.c0.setPos(w * 0.35 - d / 2, h * 0.5 - d / 2)
         self.c1.setPos(w * 0.35 - d / 2, h * 0.5 - d / 2)
@@ -266,12 +157,12 @@ class VscSymbol(QGraphicsRectItem):
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
 
-        self.setPen(QPen(Qt.transparent))
+        self.setPen(QPen(TRANSPARENT))
         self.setRect(QRectF(0, 0, w, h))
 
         graphic = QGraphicsRectItem(QRectF(0, 0, w, h), parent=self)
         graphic.setBrush(QBrush(QPixmap(icon_route)))
-        graphic.setPen(QPen(Qt.transparent, self.width, self.style))
+        graphic.setPen(QPen(TRANSPARENT, self.width, self.style))
 
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """
@@ -366,7 +257,7 @@ class HvdcSymbol(QGraphicsRectItem):
         self.color = ACTIVE['color']
         self.style = ACTIVE['style']
 
-        self.setPen(QPen(Qt.transparent))
+        self.setPen(QPen(TRANSPARENT))
         self.setRect(QRectF(0, 0, w, h))
 
         offset = 3
@@ -377,12 +268,12 @@ class HvdcSymbol(QGraphicsRectItem):
 
         triangle = QGraphicsPolygonItem(self)
         triangle.setPolygon(t_points)
-        triangle.setPen(QPen(Qt.white))
-        triangle.setBrush(QBrush(Qt.white))
+        triangle.setPen(QPen(WHITE))
+        triangle.setBrush(QBrush(WHITE))
 
         line = QGraphicsRectItem(QRectF(h - offset, offset, offset, w - 2 * offset), parent=self)
-        line.setPen(QPen(Qt.white))
-        line.setBrush(QBrush(Qt.white))
+        line.setPen(QPen(WHITE))
+        line.setBrush(QBrush(WHITE))
 
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """
@@ -431,6 +322,126 @@ class HvdcSymbol(QGraphicsRectItem):
         self.setTransform(transform)
 
 
+class ArrowHead(QGraphicsPolygonItem):
+    """
+    This is the arrow object
+    """
+
+    def __init__(self,
+                 parent: QGraphicsLineItem,
+                 arrow_size: float,
+                 position: float = 0.9,
+                 under: bool = False,
+                 backwards: bool = False,
+                 separation: int = 5,
+                 show_text: bool = True,
+                 text_scale: float = 1.0):
+        """
+        Constructor
+        :param parent: Parent line
+        :param arrow_size: Size of the arrow
+        :param position: proportion of the line where to locate the arrow
+        :param under: Is it under?
+        :param backwards: Is it backwards?
+        :param separation: Separation
+        :param show_text: Show the label?
+        :param text_scale: Text scale
+        """
+        QGraphicsPolygonItem.__init__(self, parent=parent)
+
+        self.parent: QGraphicsLineItem = parent
+        self.arrow_size: float = arrow_size
+        self.position: float = position
+        self.under: bool = under
+        self.backwards: float = backwards
+        self.sep = separation
+
+        self.label = QGraphicsTextItem(self)
+        self.label.setPlainText("")
+        # self.label.setScale(text_scale)
+        self.show_text = show_text
+
+        self.w = arrow_size
+        self.h = arrow_size
+
+        self.setPen(Qt.PenStyle.NoPen)
+
+    def set_colour(self, color: QColor, w, style: Qt.PenStyle):
+        """
+        Set color and style
+        :param color: QColor instance
+        :param w: width
+        :param style: PenStyle instance
+        :return:
+        """
+        self.setBrush(color)
+        self.label.setDefaultTextColor(color)
+        self.label.setScale(w)
+
+    def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}",
+                  draw_label: bool = True, visibility_filter_value=1e-4):
+        """
+        Set the sign with a value
+        :param value: any real value
+        :param redraw: redraw after the sign update
+        :param backwards: draw backwards
+        :param name: name of the displayed magnitude (i.e. Pf)
+        :param units: the units of the displayed magnitude (i.e MW)
+        :param format_str: the formatting string of the displayed magnitude
+        :param visibility_filter_value: threshold to determine if to show this widget
+        :param draw_label: Draw label
+        """
+        self.setVisible(abs(value) > visibility_filter_value)
+        self.backwards = backwards
+
+        self.label.setVisible(draw_label)
+        if draw_label:
+            x = format_str.format(value)
+            msg = f'{name}:{x} {units}'
+            self.label.setPlainText(msg)
+            self.setToolTip(msg)
+
+        if redraw:
+            self.redraw()
+
+    def redraw(self) -> None:
+        """
+        Redraw the arrow
+        """
+        line = self.parent.line()
+
+        # the angle is added 180º if the sign is negative
+        angle = - line.angle()
+        base_pt = line.p1() + (line.p2() - line.p1()) * self.position
+
+        p1 = -self.arrow_size if self.backwards else self.arrow_size
+        p2 = -self.arrow_size if self.under else self.arrow_size
+        arrow_p1 = base_pt - QTransform().rotate(angle).map(QPointF(p1, 0))
+        arrow_p2 = base_pt - QTransform().rotate(angle).map(QPointF(p1, p2))
+        arrow_polygon = QPolygonF([base_pt, arrow_p1, arrow_p2])
+
+        self.setPolygon(arrow_polygon)
+
+        if self.show_text:
+            # if 90 < line.angle() <= 270:
+            #     label_p = base_pt - QTransform().rotate(-angle).map(QPointF(20, -10 if self.under else 35))
+            #     self.label.setPos(label_p)
+            #     self.label.setRotation(-angle)
+            # else:
+            #     label_p = base_pt - QTransform().rotate(angle).map(QPointF(20, -10 if self.under else 35))
+            #     self.label.setPos(label_p)
+            #     self.label.setRotation(angle)
+
+            if 90 < line.angle() <= 270:
+                label_p = base_pt - QTransform().rotate(angle).map(QPointF(-20, -35 if self.under else +10))
+                self.label.setRotation(angle + 180)
+            else:
+                label_p = base_pt - QTransform().rotate(angle).map(QPointF(40, -10 if self.under else 35))
+                self.label.setRotation(angle)
+
+            self.label.setPos(label_p)
+
+
 class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
     """
     LineGraphicItem
@@ -476,13 +487,13 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
             self.symbol = None
 
         self.scale = 1.0
-        self.pen_style = Qt.SolidLine
-        self.pen_color = Qt.black
+        self.pen_style = Qt.PenStyle.SolidLine
+        self.pen_color = QColor(0, 0, 0, 255)  # Black
         self.pen_width = width
         self.width = width
 
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         self.pos1: QPointF = QPointF(0.0, 0.0)
         self.pos2: QPointF = QPointF(0.0, 0.0)
@@ -561,7 +572,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         :return:
         """
 
-        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        pen = QPen(color, w, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
 
         self.setPen(pen)
         self.arrow_p_from.set_colour(color, w, style)
@@ -589,8 +600,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         :param event:
         :return:
         """
-        if self.api_object is not None:           
-            
+        if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object)
 
     def remove_widget(self):

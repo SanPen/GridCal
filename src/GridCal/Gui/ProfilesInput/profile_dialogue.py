@@ -19,14 +19,13 @@ from __future__ import annotations
 import os
 import string
 import sys
-from typing import Union
+from typing import Tuple, List
 from random import randint
 from enum import Enum
 from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
-from typing import List
 from GridCal.Gui.pandas_model import PandasModel
 from GridCal.Gui.gui_functions import get_list_model
 from GridCal.Gui.ProfilesInput.profiles_from_data_gui import Ui_Dialog
@@ -34,6 +33,7 @@ from GridCal.Gui.ProfilesInput.excel_dialog import ExcelDialog
 from GridCal.Gui.messages import error_msg
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.Devices.Parents.editable_device import uuid2idtag
+from GridCalEngine.basic_structures import Mat, BoolVec
 
 
 class MultiplierType(Enum):
@@ -127,16 +127,16 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         """
         self.__values.append(val)
 
-    def set_profile_at(self, idx, value):
+    def set_profile_at(self, idx: int, profile_name: str) -> None:
         """
 
         :param idx:
-        :param value:
+        :param profile_name:
         :return:
         """
-        self.__values[idx].profile_name = value
+        self.__values[idx].profile_name = profile_name
 
-    def set_scale_at(self, idx, value):
+    def set_scale_at(self, idx: int, value: float) -> None:
         """
 
         :param idx:
@@ -145,7 +145,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         """
         self.__values[idx].scale = value
 
-    def set_multiplier_at(self, idx, value):
+    def set_multiplier_at(self, idx: int, value: float) -> None:
         """
 
         :param idx:
@@ -154,7 +154,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         """
         self.__values[idx].multiplier = value
 
-    def get_profile_at(self, idx):
+    def get_profile_at(self, idx: int) -> str:
         """
 
         :param idx:
@@ -162,7 +162,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         """
         return self.__values[idx].profile_name
 
-    def get_scale_at(self, idx):
+    def get_scale_at(self, idx: int) -> float:
         """
 
         :param idx:
@@ -170,7 +170,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         """
         return self.__values[idx].scale
 
-    def get_multiplier_at(self, idx):
+    def get_multiplier_at(self, idx: int) -> float:
         """
 
         :param idx:
@@ -188,7 +188,7 @@ class ProfileAssociations(QtCore.QAbstractTableModel):
         self.__values[idx].scale = 1
         self.__values[idx].multiplier = 1
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
 
         :param parent:
@@ -292,20 +292,36 @@ def check_similarity(name_to_search: str,
         return None
 
 
-# def msg(text: str, title="Warning"):
-#     """
-#     Message box
-#     :param text: Text to display
-#     :param title: Name of the window
-#     """
-#     msg = QtWidgets.QMessageBox()
-#     msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
-#     msg.setText(text)
-#     # msg.setInformativeText("This is additional information")
-#     msg.setWindowTitle(title)
-#     # msg.setDetailedText("The details are as follows:")
-#     msg.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-#     retval = msg.exec_()
+class GeneratorsProfileOptionsDialogue(QtWidgets.QDialog):
+    """
+    Dialogue to show after profile import
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Generator active power options")
+        self.setModal(True)  # Make the dialog modal
+
+        # Create checkboxes
+        self.correct_active_profile = QtWidgets.QCheckBox("Correct active profile")
+        self.correct_active_profile.setToolTip("The generators active will be set to False if the power is zero")
+
+        self.set_non_dispatchable = QtWidgets.QCheckBox("Set to non-dispatchable")
+        self.set_non_dispatchable.setToolTip("Teh generators matched will be set set to non dispatchable. "
+                                             "This is usefull to specify renewable generation")
+
+        # Create layout and add checkboxes
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.correct_active_profile)
+        layout.addWidget(self.set_non_dispatchable)
+
+        # Create OK button to close the dialog
+        ok_button = QtWidgets.QPushButton("OK")
+        ok_button.clicked.connect(self.accept)  # Close modal on button click
+        layout.addWidget(ok_button)
+
+        self.setLayout(layout)
 
 
 class ProfileInputGUI(QtWidgets.QDialog):
@@ -332,15 +348,15 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('Profiles import dialogue')
 
-        self.project_directory = None
+        self.project_directory: str | None = None
 
         self.magnitudes = magnitudes
 
         # results
-        self.data = None
-        self.time = None
-        self.zeroed = None
-        self.normalized = False
+        self.data: Mat | None = None
+        self.time: pd.DatetimeIndex | None = None
+        self.zeroed: BoolVec = None  # array to know which profiles are only zeros
+        self.normalized: bool = False
 
         # units
         self.units = dict()
@@ -394,13 +410,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
         }
         self.ui.nameTransformationComboBox.setModel(get_list_model(list(self.transformations.keys())))
 
-        self.original_data_frame = None
+        self.original_data_frame: pd.DataFrame | None = None
 
         self.ui.autolink_slider.setValue(100)  # Set slider to max value
 
         self.profile_names = list()
 
-        self.excel_dialogue: Union[ExcelDialog, None] = None
+        self.excel_dialogue: ExcelDialog | None = None
 
         # click
         self.ui.open_button.clicked.connect(self.import_profile)
@@ -418,7 +434,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.assignation_table.doubleClicked.connect(self.assignation_table_double_click)
         self.ui.tableView.doubleClicked.connect(self.print_profile)
 
-    def get_multiplier(self):
+    def get_multiplier(self) -> float:
         """
         Gets the necessary multiplier to pass the profile units to Mega
         Remember that the power units in GridCal are the MVA
@@ -426,7 +442,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         unit = self.ui.units_combobox.currentText()
         return self.units[unit] / self.units['M']
 
-    def import_profile(self):
+    def import_profile(self) -> None:
         """
         Select a file to be loaded
         """
@@ -525,7 +541,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             self.original_data_frame[col_name].plot(ax=self.ui.plotwidget.canvas.ax)
             self.ui.plotwidget.canvas.draw()
 
-    def display_associations(self):
+    def display_associations(self) -> None:
         """
 
         @return:
@@ -533,7 +549,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.ui.assignation_table.setModel(self.associations)
         self.ui.assignation_table.repaint()
 
-    def display_profiles(self):
+    def display_profiles(self) -> None:
         """
 
         :return:
@@ -556,7 +572,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 self.original_data_frame[name].plot(ax=self.ui.plotwidget.canvas.ax)
                 self.ui.plotwidget.canvas.draw()
 
-    def make_association(self, source_idx, obj_idx, scale=None, mult=None, col_idx=None):
+    def make_association(self, source_idx: int, obj_idx: int, scale: float = 1.0, mult: float = 1.0) -> None:
         """
         Makes an association in the associations table
         """
@@ -579,7 +595,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             idx_o = self.ui.assignation_table.selectedIndexes()[0].row()
             col = self.ui.assignation_table.selectedIndexes()[0].column()
 
-            self.make_association(idx_s, idx_o, mult=None, col_idx=col)
+            self.make_association(idx_s, idx_o, mult=1.0)
 
     def set_multiplier(self, tpe):
         """
@@ -623,7 +639,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
             # assign the string with the closest match profile
             if idx is not None:
                 # make the association
-                self.make_association(idx, idx_o, mult)
+                self.make_association(idx, idx_o, 1.0, mult)
 
         self.display_associations()
 
@@ -705,7 +721,7 @@ class ProfileInputGUI(QtWidgets.QDialog):
 
             self.display_associations()
 
-    def get_profile(self, parent=None, labels=None, alsoQ=None):
+    def get_profiles_data(self) -> Tuple[Mat | None, pd.DatetimeIndex | None, BoolVec | None]:
         """
         Return ths assigned profiles
         @return:
@@ -795,13 +811,21 @@ class ProfileInputGUI(QtWidgets.QDialog):
                 self.original_data_frame.columns = self.profile_names
                 self.display_profiles()
 
-    def do_it(self):
+    def has_profile(self, i: int) -> bool:
+        """
+        Return if an object index has an associated profile
+        :param i:
+        :return:
+        """
+        return self.associations.get_profile_at(i) != ""
+
+    def do_it(self) -> None:
         """
         Close. The data has to be queried later to the object by the parent by calling get_association_data
         """
 
         # Generate profiles
-        self.data, self.time, self.zeroed = self.get_profile()
+        self.data, self.time, self.zeroed = self.get_profiles_data()
         self.normalized = self.ui.normalized_checkBox.isChecked()
 
         if self.normalized:
@@ -814,13 +838,13 @@ class ProfileInputGUI(QtWidgets.QDialog):
         self.close()
 
 
-class TestObj:
-    def __init__(self, name, code):
-        self.name = name
-        self.code = code
-
-
 if __name__ == "__main__":
+    class TestObj:
+        def __init__(self, name, code):
+            self.name = name
+            self.code = code
+
+
     app = QtWidgets.QApplication(sys.argv)
     window = ProfileInputGUI(list_of_objects=[TestObj('Test object', 'code')] * 10)
     window.resize(1.61 * 700.0, 600.0)  # golden ratio

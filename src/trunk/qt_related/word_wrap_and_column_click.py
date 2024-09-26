@@ -1,33 +1,44 @@
-# GridCal
-# Copyright (C) 2015 - 2024 Santiago Peñate Vera
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 3 of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program; if not, write to the Free Software Foundation,
-# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from PySide6 import QtCore, QtWidgets, QtGui
-from GridCal.Gui.wrappable_table_model import WrappableTableModel
+
+
+class WrappableTableModel(QtCore.QAbstractTableModel):
+    """
+    Simple table model with wrappable headers for demonstration purposes.
+    """
+
+    def __init__(self, data, headers):
+        super().__init__()
+        self._data = data
+        self._headers = headers
+
+    def rowCount(self, index):
+        return len(self._data)
+
+    def columnCount(self, index):
+        return len(self._data[0])
+
+    def data(self, index, role):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
+            return self._data[index.row()][index.column()]
+
+    def headerData(self, section, orientation, role):
+        if orientation == QtCore.Qt.Orientation.Horizontal and role == QtCore.Qt.ItemDataRole.DisplayRole:
+            return self._headers[section]
+        return super().headerData(section, orientation, role)
+
+    def hide_headers(self):
+        pass
+
+    def unhide_headers(self):
+        pass
 
 
 class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
     """
-    HeaderViewWithWordWrap
+    HeaderViewWithWordWrap - Header view that wraps text and selects columns on click.
     """
 
-    def __init__(self, parent) -> None:
-        """
-        THe parent must be passed on
-        :param parent:
-        """
+    def __init__(self, parent=None) -> None:
         super().__init__(QtCore.Qt.Orientation.Horizontal, parent)
 
         # Get the table view (assumes the header's parent is a QTableView)
@@ -41,20 +52,15 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
             # Connect the sectionClicked signal to the select_column method
             self.sectionClicked.connect(self.select_column)
         else:
-            raise Exception("The parent is not a QTableView :(" + str(type(self.tableView)) + ")")
+            raise Exception("The parent is not a QTableView :(")
 
     def sectionSizeFromContents(self, logicalIndex: int) -> QtCore.QSize:
         """
-
-        :param logicalIndex:
-        :return:
+        Override section size to wrap text if needed.
         """
         mdl: WrappableTableModel = self.model()
         if mdl:
             headerText = mdl.headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
-            option = QtWidgets.QStyleOptionHeader()
-            self.initStyleOption(option)
-            option.section = logicalIndex
             metrics = QtGui.QFontMetrics(self.font())
 
             maxWidth = self.sectionSize(logicalIndex)
@@ -70,18 +76,12 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
 
     def paintSection(self, painter, rect, logicalIndex: int):
         """
-
-        :param painter:
-        :param rect:
-        :param logicalIndex:
-        :return:
+        Custom painting to handle text wrapping in header.
         """
-        mdl: WrappableTableModel = self.model()  # assign with typing
+        mdl: WrappableTableModel = self.model()
         if mdl:
             painter.save()
-            mdl.hide_headers()
             super().paintSection(painter, rect, logicalIndex)
-            mdl.unhide_headers()
             painter.restore()
             headerText = mdl.headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
 
@@ -103,5 +103,51 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         Select the column corresponding to the clicked header.
         :param logicalIndex: Index of the clicked header section (column)
         """
+
         # Select the column
         self.tableView.selectColumn(logicalIndex)
+
+        # Debugging prints
+        # print(f"Column {logicalIndex} selected")
+
+
+
+class MyWindow(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        # Create table data and headers
+        data = [
+            ["Alice", 23, "Engineer"],
+            ["Bob", 30, "Doctor"],
+            ["Charlie", 22, "Artist"],
+            ["David", 40, "Lawyer"]
+        ]
+        headers = ["Name", "Age", "Occupation with very long description"]
+
+        # Set up the model
+        self.model = WrappableTableModel(data, headers)
+
+        # Set up the table view
+        self.tableView = QtWidgets.QTableView(self)
+        self.tableView.setModel(self.model)
+
+        # Set up the custom header and explicitly pass the table view as the parent
+        self.headerView = HeaderViewWithWordWrap(self.tableView)
+        self.tableView.setHorizontalHeader(self.headerView)
+
+        # Layout
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.tableView)
+
+
+# Main application loop
+if __name__ == "__main__":
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)
+    window = MyWindow()
+    window.setWindowTitle("QTableView with Wrappable Headers and Column Selection")
+    window.resize(600, 400)
+    window.show()
+    sys.exit(app.exec())

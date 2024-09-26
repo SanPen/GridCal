@@ -67,15 +67,15 @@ class Load(LoadParent):
                             build_status=build_status,
                             device_type=DeviceType.LoadDevice)
 
-        self.G = G
-        self.B = B
-        self.Ir = Ir
-        self.Ii = Ii
+        self.G = float(G)
+        self.B = float(B)
+        self.Ir = float(Ir)
+        self.Ii = float(Ii)
 
-        self._G_prof = Profile(default_value=G, data_type=float)
-        self._B_prof = Profile(default_value=B, data_type=float)
-        self._Ir_prof = Profile(default_value=Ir, data_type=float)
-        self._Ii_prof = Profile(default_value=Ii, data_type=float)
+        self._G_prof = Profile(default_value=self.G, data_type=float)
+        self._B_prof = Profile(default_value=self.B, data_type=float)
+        self._Ir_prof = Profile(default_value=self.Ir, data_type=float)
+        self._Ii_prof = Profile(default_value=self.Ii, data_type=float)
 
         self.register(key='Ir', units='MW', tpe=float,
                       definition='Active power of the current component at V=1.0 p.u.', profile_name='Ir_prof')

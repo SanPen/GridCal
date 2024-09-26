@@ -872,7 +872,7 @@ class ArrayTableModel(QAbstractTableModel):
         """
         return len(self._data)  # We have two columns, one for each array
 
-    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = Qt.DisplayRole) -> Any:
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
         """
 
         :param section:
@@ -880,14 +880,14 @@ class ArrayTableModel(QAbstractTableModel):
         :param role:
         :return:
         """
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
                 return self.headers[section]
-            if orientation == Qt.Vertical:
+            if orientation == Qt.Orientation.Vertical:
                 return section  # To show row numbers starting from 0
         return None
 
-    def data(self, index: QModelIndex, role: int = Qt.DisplayRole) -> Union[None, str]:
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Union[None, str]:
         """
 
         :param index:
@@ -897,14 +897,14 @@ class ArrayTableModel(QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             row = index.row()
             column = index.column()
             return str(self._data[column][row])
 
         return None
 
-    def setData(self, index: QModelIndex, value: float, role=Qt.EditRole):
+    def setData(self, index: QModelIndex, value: float, role=Qt.ItemDataRole.EditRole):
         """
 
         :param index:
@@ -925,20 +925,20 @@ class ArrayTableModel(QAbstractTableModel):
 
             self._data[column][row] = value
 
-            self.dataChanged.emit(index, index, [Qt.DisplayRole, Qt.EditRole])
+            self.dataChanged.emit(index, index, [Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole])
             return True
 
         return False
 
-    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         """
 
         :param index:
         :return:
         """
         if not index.isValid():
-            return Qt.NoItemFlags
-        return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+            return Qt.ItemFlag.NoItemFlags
+        return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
 
     def insertRows(self, position: int, rows=1, parent=QModelIndex()):
         """

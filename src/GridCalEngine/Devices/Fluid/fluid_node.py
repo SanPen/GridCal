@@ -58,21 +58,21 @@ class FluidNode(PhysicalDevice):
                                 code=code,
                                 device_type=DeviceType.FluidNodeDevice)
 
-        self.min_level = min_level  # hm3
-        self.max_level = max_level  # hm3
-        self.max_soc = max_soc  # p.u.
-        self.min_soc = min_soc  # p.u.
-        self.initial_level = current_level  # hm3
-        self.spillage_cost = spillage_cost  # m3/s
-        self.inflow = inflow  # m3/s
+        self.min_level = float(min_level)  # hm3
+        self.max_level = float(max_level)  # hm3
+        self.max_soc = float(max_soc)  # p.u.
+        self.min_soc = float(min_soc)  # p.u.
+        self.initial_level = float(current_level)  # hm3
+        self.spillage_cost = float(spillage_cost)  # m3/s
+        self.inflow = float(inflow)  # m3/s
         self._bus: Bus = bus
         self.build_status = build_status
 
-        self._inflow_prof = Profile(default_value=inflow, data_type=float)  # m3/s
-        self._spillage_cost_prof = Profile(default_value=spillage_cost, data_type=float)  # e/(m3/s)
+        self._inflow_prof = Profile(default_value=self.inflow, data_type=float)  # m3/s
+        self._spillage_cost_prof = Profile(default_value=self.spillage_cost, data_type=float)  # e/(m3/s)
 
-        self._max_soc_prof = Profile(default_value=max_soc, data_type=float)  # p.u.
-        self._min_soc_prof = Profile(default_value=min_soc, data_type=float)  # p.u.
+        self._max_soc_prof = Profile(default_value=self.max_soc, data_type=float)  # p.u.
+        self._min_soc_prof = Profile(default_value=self.min_soc, data_type=float)  # p.u.
 
         self.register(key='min_level', units='hm3', tpe=float,
                       definition="Minimum amount of fluid at the node/reservoir")

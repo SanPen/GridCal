@@ -34,6 +34,7 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
 from PySide6.QtWidgets import (QGraphicsView, QMessageBox, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
+from GridCal.Gui.Diagrams.graphics_manager import ALL_GRAPHICS
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, BRANCH_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -197,7 +198,7 @@ class SchematicLibraryModel(QStandardItemModel):
         mimedata = QMimeData()
         for idx in idxs:
             if idx.isValid():
-                txt = self.data(idx, Qt.DisplayRole)
+                txt = self.data(idx, Qt.ItemDataRole.DisplayRole)
 
                 data = QByteArray()
                 stream = QDataStream(data, QIODevice.WriteOnly)
@@ -277,17 +278,13 @@ class CustomGraphicsView(QGraphicsView):
         """
         super().__init__(scene)
         self._parent = parent
-        self.setRenderHint(QPainter.Antialiasing)
-        self.setRenderHint(QPainter.SmoothPixmapTransform)
-
         self.drag_mode = QGraphicsView.DragMode.RubberBandDrag
-
         self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-        self.setRubberBandSelectionMode(Qt.IntersectsItemShape)
+        self.setRubberBandSelectionMode(Qt.ItemSelectionMode.IntersectsItemShape)
         self.setMouseTracking(True)
         self.setInteractive(True)
-        self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
-        self.setAlignment(Qt.AlignCenter)
+        self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.SmoothPixmapTransform)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         """
@@ -348,7 +345,7 @@ class SchematicWidget(BaseDiagramWidget):
         Creates the Diagram Editor (DiagramEditorWidget)
         :param circuit: Circuit that is handling
         :param diagram: SchematicDiagram to use (optional)
-        :param default_bus_voltage: Default bus voltages (kV)
+        :param default_bus_voltage: Default bus voltages (KV)
         :param time_index: time index to represent
         :param prefer_node_breaker: Preffer the node breaker representation?
         """
@@ -377,7 +374,7 @@ class SchematicWidget(BaseDiagramWidget):
         self.setStretchFactor(0, 0)
         self.setStretchFactor(1, 2000)
 
-        # default_bus_voltage (kV)
+        # default_bus_voltage (KV)
         self.default_bus_voltage = default_bus_voltage
 
         # Preffer the node breaker representation?
@@ -508,7 +505,7 @@ class SchematicWidget(BaseDiagramWidget):
         :param event:
         :return:
         """
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key.Key_Delete:
             self.delete_Selected_from_widget_and_db()
 
     def zoom_in(self, scale_factor: float = 1.15) -> None:
@@ -547,7 +544,7 @@ class SchematicWidget(BaseDiagramWidget):
                                         draw_labels=draw_labels)
         return graphic_object
 
-    def create_transformer_3w_graphics(self, elm: Transformer3W, x: int, y: int) -> Transformer3WGraphicItem:
+    def create_transformer_3w_graphics(self, elm: Transformer3W, x: float, y: float) -> Transformer3WGraphicItem:
         """
         Add Transformer3W to the graphics
         :param elm: Transformer3W
@@ -556,10 +553,10 @@ class SchematicWidget(BaseDiagramWidget):
         :return: Transformer3WGraphicItem
         """
         graphic_object = Transformer3WGraphicItem(editor=self, elm=elm)
-        graphic_object.setPos(QPoint(x, y))
+        graphic_object.setPos(QPointF(x, y))
         return graphic_object
 
-    def create_fluid_node_graphics(self, node: FluidNode, x: int, y: int, h: int, w: int,
+    def create_fluid_node_graphics(self, node: FluidNode, x: float, y: float, h: int, w: int,
                                    draw_labels: bool = True) -> FluidNodeGraphicItem:
         """
         Add fluid node to graphics
@@ -577,7 +574,7 @@ class SchematicWidget(BaseDiagramWidget):
         return graphic_object
 
     def create_connectivity_node_graphics(self, node: ConnectivityNode,
-                                          x: int, y: int, h: int, w: int,
+                                          x: float, y: float, h: int, w: int,
                                           draw_labels: bool = True) -> CnGraphicItem:
         """
         Add connectivity node to graphics
@@ -595,7 +592,7 @@ class SchematicWidget(BaseDiagramWidget):
         return graphic_object
 
     def create_bus_bar_graphics(self, node: BusBar,
-                                x: int, y: int, h: int, w: int,
+                                x: float, y: float, h: int, w: int,
                                 draw_labels: bool = True) -> BusBarGraphicItem:
         """
         Add bus bar node to graphics
@@ -936,7 +933,7 @@ class SchematicWidget(BaseDiagramWidget):
                                      logger=self.logger)
 
     def update_diagram_element(self, device: ALL_DEV_TYPES,
-                               x: int = 0, y: int = 0, w: int = 0, h: int = 0, r: float = 0,
+                               x: float = 0, y: float = 0, w: int = 0, h: int = 0, r: float = 0,
                                draw_labels: bool = True,
                                graphic_object: QGraphicsItem = None) -> None:
         """
@@ -1719,7 +1716,7 @@ class SchematicWidget(BaseDiagramWidget):
         boundaries = QRectF(min_x, min_y, width, height)
 
         # Fit the view
-        self.editor_graphics_view.fitInView(boundaries, Qt.KeepAspectRatio)
+        self.editor_graphics_view.fitInView(boundaries, Qt.AspectRatioMode.KeepAspectRatio)
 
     def center_nodes(self, margin_factor: float = 0.1, elements: Union[None, List[Union[Bus, FluidNode]]] = None):
         """
@@ -1767,7 +1764,7 @@ class SchematicWidget(BaseDiagramWidget):
         boundaries = QRectF(min_x - mx, min_y - my, w, h)
 
         self.diagram_scene.setSceneRect(boundaries)
-        self.editor_graphics_view.fitInView(boundaries, Qt.KeepAspectRatio)
+        self.editor_graphics_view.fitInView(boundaries, Qt.AspectRatioMode.KeepAspectRatio)
         self.editor_graphics_view.scale(1.0, 1.0)
 
     def graphical_search(self, search_text: str):
@@ -1921,9 +1918,9 @@ class SchematicWidget(BaseDiagramWidget):
         transformer = pyproj.Transformer.from_crs(4326, 25830, always_xy=True)
 
         # the longitude is more reated to x, the latitude is more related to y
-        x, y = transformer.transform(xx=lon, yy=lat)
+        y, x = transformer.transform(xx=lon, yy=lat)
         x *= - factor
-        y *= factor
+        y *= - factor
 
         # remove the offset
         if remove_offset:
@@ -1951,14 +1948,14 @@ class SchematicWidget(BaseDiagramWidget):
         h = self.editor_graphics_view.height()
 
         if transparent:
-            image = QImage(w, h, QImage.Format_ARGB32_Premultiplied)
-            image.fill(Qt.transparent)
+            image = QImage(w, h, QImage.Format.Format_ARGB32_Premultiplied)
+            image.fill(QColor(0, 0, 0, 0))  # transparent
         else:
-            image = QImage(w, h, QImage.Format_RGB32)
+            image = QImage(w, h, QImage.Format.Format_RGB32)
             image.fill(ACTIVE['backgound'])
 
         painter = QPainter(image)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.editor_graphics_view.render(painter)
         painter.end()
         # image = self.editor_graphics_view.grab().toImage()
@@ -3222,9 +3219,9 @@ class SchematicWidget(BaseDiagramWidget):
         Set the dark theme
         :return:
         """
-        ACTIVE['color'] = Qt.white
-        ACTIVE['text'] = Qt.white
-        ACTIVE['backgound'] = Qt.black
+        ACTIVE['color'] = QColor(255, 255, 255, 255)  # white
+        ACTIVE['text'] = QColor(255, 255, 255, 255)  # white
+        ACTIVE['backgound'] = QColor(0, 0, 0, 255)  # black
         self.recolour_mode()
 
     def set_light_mode(self) -> None:
@@ -3232,9 +3229,9 @@ class SchematicWidget(BaseDiagramWidget):
         Set the light theme
         :return:
         """
-        ACTIVE['color'] = Qt.black
-        ACTIVE['text'] = Qt.black
-        ACTIVE['backgound'] = Qt.white
+        ACTIVE['color'] = QColor(0, 0, 0, 255)  # black
+        ACTIVE['text'] = QColor(0, 0, 0, 255)  # black
+        ACTIVE['backgound'] = QColor(255, 255, 255, 255)  # white
         self.recolour_mode()
 
     def colour_results(self,
@@ -3372,7 +3369,7 @@ class SchematicWidget(BaseDiagramWidget):
                             graphic_object.change_size(w=graphic_object.w)
 
                     else:
-                        graphic_object.set_tile_color(Qt.gray)
+                        graphic_object.set_tile_color(QColor(115, 115, 115, 255))  # gray
 
                 else:
                     # No graphic object found
@@ -3416,7 +3413,7 @@ class SchematicWidget(BaseDiagramWidget):
                                 else:
                                     w = graphic_object.pen_width
 
-                                style = Qt.SolidLine
+                                style = Qt.PenStyle.SolidLine
 
                                 a = 255
                                 if cmap == palettes.Colormaps.Green2Red:
@@ -3472,11 +3469,12 @@ class SchematicWidget(BaseDiagramWidget):
                                 if hasattr(graphic_object, 'set_arrows_with_power'):
                                     graphic_object.set_arrows_with_power(
                                         Sf=Sf[i] if Sf is not None else None,
-                                        St=St[i] if St is not None else None)
+                                        St=St[i] if St is not None else None
+                                    )
                             else:
                                 w = graphic_object.pen_width
-                                style = Qt.DashLine
-                                color = Qt.gray
+                                style = Qt.PenStyle.DashLine
+                                color = QColor(115, 115, 115, 255)  # gray
                                 graphic_object.set_pen(QPen(color, w, style))
                         else:
                             # No diagram object
@@ -3508,7 +3506,7 @@ class SchematicWidget(BaseDiagramWidget):
                                 w = graphic_object.pen_width
 
                             if elm.active:
-                                style = Qt.SolidLine
+                                style = Qt.PenStyle.SolidLine
 
                                 a = 1
                                 if cmap == palettes.Colormaps.Green2Red:
@@ -3530,8 +3528,8 @@ class SchematicWidget(BaseDiagramWidget):
 
                                 color = QColor(r, g, b, a)
                             else:
-                                style = Qt.DashLine
-                                color = Qt.gray
+                                style = Qt.PenStyle.DashLine
+                                color = QColor(115, 115, 115, 255)  # gray
 
                             tooltip = str(i) + ': ' + elm.name
                             tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
@@ -3550,8 +3548,8 @@ class SchematicWidget(BaseDiagramWidget):
                             graphic_object.set_colour(color, w, style)
                         else:
                             w = graphic_object.pen_width
-                            style = Qt.DashLine
-                            color = Qt.gray
+                            style = Qt.PenStyle.DashLine
+                            color = QColor(115, 115, 115, 255)  # gray
                             graphic_object.set_pen(QPen(color, w, style))
                     else:
                         # No diagram object
@@ -4124,6 +4122,25 @@ class SchematicWidget(BaseDiagramWidget):
             prefer_node_breaker=self.prefer_node_breaker,
             call_delete_db_element_func=self.call_delete_db_element_func
         )
+
+    def consolidate_coordinates(self):
+        """
+        Consolidate the graphic elements' x, y coordinates into the API DB values
+        """
+        graphics: List[BusGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusDevice)
+        for gelm in graphics:
+            gelm.api_object.x = gelm.x()
+            gelm.api_object.y = gelm.y()
+
+        graphics: List[BusBarGraphicItem] = self.graphics_manager.query(elm=DeviceType.BusBarDevice)
+        for gelm in graphics:
+            gelm.api_object.x = gelm.x()
+            gelm.api_object.y = gelm.y()
+
+        graphics: List[CnGraphicItem] = self.graphics_manager.query(elm=DeviceType.ConnectivityNodeDevice)
+        for gelm in graphics:
+            gelm.api_object.x = gelm.x()
+            gelm.api_object.y = gelm.y()
 
 
 def generate_schematic_diagram(buses: List[Bus],

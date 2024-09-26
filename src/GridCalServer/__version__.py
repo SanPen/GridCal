@@ -16,7 +16,7 @@ import datetime
 _current_year_ = datetime.datetime.now().year
 
 # do not forget to keep a three-number version!!!
-__GridCalServer_VERSION__ = "5.1.37"
+__GridCalServer_VERSION__ = "5.1.40"
 
 url = 'https://github.com/SanPen/GridCal'
 
@@ -48,7 +48,7 @@ contributors_msg += 'Bengt Lüers (Better testing)\n'
 contributors_msg += 'Josep Fanals Batllori (HELM, Sequence Short circuit, ACOPF)\n'
 contributors_msg += 'Carlos Alegre (ACOPF)\n'
 contributors_msg += 'Laurens Bliek (MVRSM)\n'
-contributors_msg += 'Jana Soler (Better MVRSM and investments)\n'
+contributors_msg += 'Jana Soler and Cristina Fray (Better MVRSM and investments)\n'
 contributors_msg += 'Manuel Navarro Catalán (Better documentation)\n'
 contributors_msg += 'Paul Schultz (Grid Generator)\n'
 contributors_msg += 'Andrés Ramiro (Optimal net transfer capacity)\n'

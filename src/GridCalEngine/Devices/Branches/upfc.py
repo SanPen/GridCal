@@ -96,24 +96,24 @@ class UPFC(BranchParent):
                               device_type=DeviceType.UpfcDevice)
 
         # total impedance and admittance in p.u.
-        self.Rs = rs
-        self.Xs = xs
-        self.Rsh = rp
-        self.Xsh = xp
+        self.Rs = float(rs)
+        self.Xs = float(xs)
+        self.Rsh = float(rp)
+        self.Xsh = float(xp)
 
-        self.Rs0 = rs0
-        self.Xs0 = xs0
-        self.Rsh0 = rp0
-        self.Xsh0 = xp0
+        self.Rs0 = float(rs0)
+        self.Xs0 = float(xs0)
+        self.Rsh0 = float(rp0)
+        self.Xsh0 = float(xp0)
 
-        self.Rs2 = rs2
-        self.Xs2 = xs2
-        self.Rsh2 = rp2
-        self.Xsh2 = xp2
+        self.Rs2 = float(rs2)
+        self.Xs2 = float(xs2)
+        self.Rsh2 = float(rp2)
+        self.Xsh2 = float(xp2)
 
-        self.Vsh = vp
-        self.Pfset = Pset
-        self.Qfset = Qset
+        self.Vsh = float(vp)
+        self.Pfset = float(Pset)
+        self.Qfset = float(Qset)
 
         self.register(key='Rs', units='p.u.', tpe=float, definition='Series positive sequence resistance.')
         self.register(key='Xs', units='p.u.', tpe=float, definition='Series positive sequence reactance.')
@@ -132,12 +132,24 @@ class UPFC(BranchParent):
         self.register(key='Qfset', units='MVAr', tpe=float, definition='Active power set point.')
 
     def get_ysh1(self):
+        """
+
+        :return:
+        """
         return 1.0 / complex(self.Rsh + 1e-20, self.Xsh)
 
     def get_ysh0(self):
+        """
+
+        :return:
+        """
         return 1.0 / complex(self.Rsh0 + 1e-20, self.Xsh0)
 
     def get_ysh2(self):
+        """
+
+        :return:
+        """
         return 1.0 / complex(self.Rsh2 + 1e-20, self.Xsh2)
 
     def get_max_bus_nominal_voltage(self):

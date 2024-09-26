@@ -82,8 +82,8 @@ class ControllableShunt(ShuntParent):
                              build_status=build_status,
                              device_type=DeviceType.ControllableShuntDevice)
 
-        self.is_controlled = is_controlled
-        self.is_nonlinear = is_nonlinear
+        self.is_controlled = bool(is_controlled)
+        self.is_nonlinear = bool(is_nonlinear)
         self._g_steps = np.zeros(number_of_steps)
         self._b_steps = np.zeros(number_of_steps)
 
@@ -93,17 +93,17 @@ class ControllableShunt(ShuntParent):
             self._g_steps[i] = g_per_step * (i + 1)
             self._b_steps[i] = b_per_step * (i + 1)
 
-        self._step = step
-        self._step_prof = Profile(default_value=step, data_type=int)
+        self._step = int(step)
+        self._step_prof = Profile(default_value=self._step, data_type=int)
 
         self.control_bus = control_bus
         self._control_bus_prof = Profile(default_value=control_bus, data_type=DeviceType.BusDevice)
 
         # Voltage module set point (p.u.)
-        self.Vset = vset
+        self.Vset = float(vset)
 
         # voltage set profile for this load in p.u.
-        self._Vset_prof = Profile(default_value=vset, data_type=float)
+        self._Vset_prof = Profile(default_value=self.Vset, data_type=float)
 
         self.register(key='is_nonlinear', units='', tpe=bool, definition='Is non-linear?')
         self.register(key='g_steps', units='', tpe=SubObjectType.Array,
