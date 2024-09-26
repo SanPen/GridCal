@@ -730,7 +730,7 @@ def get_tap_changer_values(windings):
             dV = rtc.stepVoltageIncrement / 100
             # self._tap_position = neutral_position  # index with respect to the neutral position = Step from SSH
             # self.tc_type = tc_type  # tap changer mode # TODO which enum to use for control
-            tap_module = 1 + (rtc.step - rtc.neutralStep) * rtc.stepVoltageIncrement
+            tap_module = round(1 + (rtc.step - rtc.neutralStep) * dV, 6)
         else:
             continue
     return tap_module, total_positions, neutral_position, dV

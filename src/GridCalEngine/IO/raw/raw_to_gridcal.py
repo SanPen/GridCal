@@ -371,11 +371,12 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                 mttr=0)
 
         if psse_elm.COD1 == 0:
-            elm.tc_total_positions = 2,
-            elm.tc_neutral_position = 0,
-            elm.tc_dV = 1 - tap_module,
-            elm.tc_asymmetry_angle = 90.0,
-            elm.tc_type = TapChangerTypes.NoRegulation
+            elm.tap_changer.total_positions = 2
+            elm.tap_changer.neutral_position = 0
+            elm.tap_changer.tap_position = -1
+            elm.tap_changer.dV = round(1 - tap_module, 6)
+            elm.tap_changer.asymmetry_angle = 90.0
+            elm.tap_changer.tc_type = TapChangerTypes.NoRegulation
         else:
             pass
 

@@ -1048,8 +1048,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         #                   TAP Changer SSH
         #     <cim:TapChanger.step>-2</cim:TapChanger.step>
-        tap_changer.step = mc_elm.tap_changer.tap_position
         # TODO def EA
+        tap_changer.step = mc_elm.tap_changer.tap_position
         #     <cim:TapChanger.controlEnabled>false</cim:TapChanger.controlEnabled>
         tap_changer.controlEnabled = False  # why, why not?
 
@@ -1058,9 +1058,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         object_template = cgmes_model.get_class_type("SvTapStep")
         sv_tap_step = object_template(rdfid=new_rdf_id, tpe="SvTapStep")
         #     <cim:SvTapStep.position>-2</cim:SvTapStep.position>
-        # same as step? should it come from the results?
+        # TODO def EA same as step? should it come from the results?
         sv_tap_step.position = mc_elm.tap_changer.tap_position
-        # TODO def EA
         #     <cim:SvTapStep.TapChanger rdf:resource="#_c1d5c14b8f8011e08e4d00247eb1f55e"/>
         sv_tap_step.TapChanger = tap_changer
 
