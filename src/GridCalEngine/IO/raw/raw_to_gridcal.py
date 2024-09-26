@@ -39,6 +39,7 @@ from GridCalEngine.IO.raw.devices.gne_device import RawGneDevice
 from GridCalEngine.IO.raw.devices.system_switching_device import RawSystemSwitchingDevice
 from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
+from GridCalEngine.enumerations import TapChangerTypes
 
 
 def get_gridcal_bus(psse_bus: RawBus,
@@ -368,6 +369,15 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
                                 active=bool(psse_elm.STAT),
                                 mttf=0,
                                 mttr=0)
+
+        if psse_elm.COD1 == 0:
+            elm.tc_total_positions = 2,
+            elm.tc_neutral_position = 0,
+            elm.tc_dV = 1 - tap_module,
+            elm.tc_asymmetry_angle = 90.0,
+            elm.tc_type = TapChangerTypes.NoRegulation
+        else:
+            pass
 
         return elm, 2
 

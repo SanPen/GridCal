@@ -5,8 +5,11 @@ from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile, WindGenUnitKind,
-                                                    RegulatingControlModeKind, UnitMultiplier)
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
+                                                    WindGenUnitKind,
+                                                    RegulatingControlModeKind,
+                                                    UnitMultiplier,
+                                                    TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, find_object_by_vnom, \
     get_ohm_values_power_transformer, find_tn_by_name, find_object_by_attribute
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
@@ -1006,11 +1009,64 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.ratedS = mc_elm.Sn
         pte2.endNumber = 2
 
-        # TODO: where are the taps? that is making the round trip fail...
+        # -----------------------------------------------------------------
+        #                   TAP Changer EQ
+        new_rdf_id = get_new_rdfid()
         object_template = cgmes_model.get_class_type("RatioTapChanger")
-        tap_changer = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        tap_changer.uuid = mc_elm.idtag
-        # tap_changer.total_pos = mc_elm.tap_changer.tap_position
+        tap_changer = object_template(rdfid=new_rdf_id)
+        tap_changer.name = mc_elm.name
+        tap_changer.shortName = mc_elm.name
+        tap_changer.total_pos = mc_elm.tap_changer.total_positions
+
+        # < cim: TapChanger.neutralU > 400.000000 < / cim: TapChanger.neutralU >
+        tap_changer.neutralU = pte1.BaseVoltage.nominalVoltage
+        # < cim: TapChanger.lowStep > -20 < / cim: TapChanger.lowStep >
+        tap_changer.lowStep = 0     # Lowest possible tap step position, retard from neutral
+        # < cim: TapChanger.highStep > 20 < / cim: TapChanger.highStep >
+        tap_changer.highStep = 1     # Highest possible tap step position, advance from neutral. The attribute shall be greater than lowStep.
+        # < cim: TapChanger.neutralStep > 0 < / cim: TapChanger.neutralStep >
+        tap_changer.neutralStep = mc_elm.tap_changer.neutral_position
+        # < cim: TapChanger.normalStep > -2 < / cim: TapChanger.normalStep >
+        tap_changer.normalStep = mc_elm.tap_changer.neutral_position     # TODO QA neutral or current step
+        # < cim: RatioTapChanger.stepVoltageIncrement > 0.800000 < / cim: RatioTapChanger.stepVoltageIncrement >
+        # Tap step increment, in per cent of nominal voltage, per step position.
+        tap_changer.stepVoltageIncrement = mc_elm.tap_changer.dV * 100
+        # if mc_elm.tap_changer.tap_position == mc_elm.tap_changer.neutral_position:
+        #     tap_changer.stepVoltageIncrement = 0
+        # else:
+        #     tap_changer.stepVoltageIncrement = (
+        #             (mc_elm.tap_module - 1) / (mc_elm.tap_changer.tap_position - mc_elm.tap_changer.neutral_position)
+        #     )
+        # < cim: TapChanger.ltcFlag > true < / cim: TapChanger.ltcFlag >
+        tap_changer.ltcFlag = False     # load tap changing capability
+        # < cim: TapChanger.TapChangerControl rdf: resource = "#_1aaa0997-7715-4400-9435-ce74a8f67a24" / >
+        # create Tap Changer instance like RegContr, not necessary
+        # < cim: RatioTapChanger.tculControlMode rdf: resource = "http://iec.ch/TC57/2013/CIM-schema-cim16#TransformerControlMode.volt" / >
+        tap_changer.tculControlMode = TransformerControlMode.volt
+        # < cim: RatioTapChanger.TransformerEnd rdf: resource = "#_c1d5c1448f8011e08e4d00247eb1f55e" / >
+        tap_changer.TransformerEnd = pte1
+
+        #                   TAP Changer SSH
+        #     <cim:TapChanger.step>-2</cim:TapChanger.step>
+        tap_changer.step = mc_elm.tap_changer.tap_position
+        # TODO def EA
+        #     <cim:TapChanger.controlEnabled>false</cim:TapChanger.controlEnabled>
+        tap_changer.controlEnabled = False  # why, why not?
+
+        #                   TAP Changer SV
+        new_rdf_id = get_new_rdfid()
+        object_template = cgmes_model.get_class_type("SvTapStep")
+        sv_tap_step = object_template(rdfid=new_rdf_id, tpe="SvTapStep")
+        #     <cim:SvTapStep.position>-2</cim:SvTapStep.position>
+        # same as step? should it come from the results?
+        sv_tap_step.position = mc_elm.tap_changer.tap_position
+        # TODO def EA
+        #     <cim:SvTapStep.TapChanger rdf:resource="#_c1d5c14b8f8011e08e4d00247eb1f55e"/>
+        sv_tap_step.TapChanger = tap_changer
+
+        # -----------------------------------------------------------------
+        cgmes_model.add(tap_changer)
+        cgmes_model.add(sv_tap_step)
 
         cm_transformer.PowerTransformerEnd.append(pte1)
         cgmes_model.add(pte1)

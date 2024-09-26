@@ -713,6 +713,7 @@ def get_tap_changer_values(windings):
     :param windings: List of transformer windings.
     :return:
     """
+    tap_module: float = 1.0
     total_positions, neutral_position, dV = 0, 0, 0
 
     for winding in windings:
@@ -723,10 +724,10 @@ def get_tap_changer_values(windings):
             dV = rtc.stepVoltageIncrement / 100
             # self._tap_position = neutral_position  # index with respect to the neutral position = Step from SSH
             # self.tc_type = tc_type  # tap changer mode # TODO which enum to use for control
+            tap_module = 1 + (rtc.step - rtc.neutralStep) * rtc.stepVoltageIncrement
         else:
             continue
-
-    return total_positions, neutral_position, dV
+    return tap_module, total_positions, neutral_position, dV
 
 
 def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
@@ -792,7 +793,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
                     rated_s = windings[0].ratedS
                     # get Tap data
-                    total_positions, neutral_position, dV = get_tap_changer_values(windings)
+                    tap_m, total_positions, neutral_position, dV = get_tap_changer_values(windings)
 
                     gcdev_elm = gcdev.Transformer2W(idtag=cgmes_elm.uuid,
                                                     code=cgmes_elm.description,
@@ -813,7 +814,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     x0=x0,
                                                     g0=g0,
                                                     b0=b0,
-                                                    # tap_module=1.0,     # TODO (how) should it be calculated?
+                                                    tap_module=tap_m,
                                                     # tap_phase=0.0,
                                                     # tap_module_control_mode=,  # leave fixed
                                                     # tap_angle_control_mode=,
@@ -821,6 +822,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     tc_neutral_position=neutral_position,
                                                     tc_dV=dV,
                                                     # tc_asymmetry_angle = 90,
+                                                    # tc_type: TapChangerTypes = TapChangerTypes.NoRegulation
                                                     rate=rate_mva)
 
                     gcdev_model.add_transformer2w(gcdev_elm)
