@@ -63,9 +63,15 @@ class PowerFlowDriver(DriverTemplate):
         self.results = PowerFlowResults(n=0,
                                         m=0,
                                         n_hvdc=0,
+                                        n_gen=0,
+                                        n_batt=0,
+                                        n_sh=0,
                                         bus_names=np.empty(0, dtype=object),
                                         branch_names=np.empty(0, dtype=object),
                                         hvdc_names=np.empty(0, dtype=object),
+                                        gen_names=np.empty(0, dtype=object),
+                                        batt_names=np.empty(0, dtype=object),
+                                        sh_names=np.empty(0, dtype=object),
                                         bus_types=np.empty(0))
 
         self.convergence_reports = list()
@@ -79,7 +85,7 @@ class PowerFlowDriver(DriverTemplate):
         """
         return list()
 
-    def add_report(self):
+    def add_report(self) -> None:
         """
         Add a report of the results (in-place)
         """
@@ -137,9 +143,15 @@ class PowerFlowDriver(DriverTemplate):
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
                                             m=self.grid.get_branch_number_wo_hvdc(),
                                             n_hvdc=self.grid.get_hvdc_number(),
+                                            n_gen=self.grid.get_generators_number(),
+                                            n_batt=self.grid.get_batteries_number(),
+                                            n_sh=self.grid.get_shunt_like_device_number(),
                                             bus_names=res.bus_names,
                                             branch_names=res.branch_names,
                                             hvdc_names=res.hvdc_names,
+                                            gen_names=self.grid.get_generator_names(),
+                                            batt_names=self.grid.get_battery_names(),
+                                            sh_names=self.grid.get_shunt_like_devices_names(),
                                             bus_types=res.bus_types)
 
             self.results = translate_newton_pa_pf_results(self.grid, res)
@@ -153,9 +165,15 @@ class PowerFlowDriver(DriverTemplate):
             self.results = PowerFlowResults(n=self.grid.get_bus_number(),
                                             m=self.grid.get_branch_number_wo_hvdc(),
                                             n_hvdc=self.grid.get_hvdc_number(),
+                                            n_gen=self.grid.get_generators_number(),
+                                            n_batt=self.grid.get_batteries_number(),
+                                            n_sh=self.grid.get_shunt_like_device_number(),
                                             bus_names=res.names,
                                             branch_names=res.names,
                                             hvdc_names=res.hvdc_names,
+                                            gen_names=self.grid.get_generator_names(),
+                                            batt_names=self.grid.get_battery_names(),
+                                            sh_names=self.grid.get_shunt_like_devices_names(),
                                             bus_types=res.bus_types)
 
             self.results = translate_bentayga_pf_results(self.grid, res)

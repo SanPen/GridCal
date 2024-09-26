@@ -4370,6 +4370,17 @@ class Assets:
             elms += lst
         return elms
 
+    def get_shunt_like_devices_names(self) -> StrVec:
+        """
+        Get a list of all devices names that can inject or subtract power from a node
+        :return: Array of Shunt devices' names
+        """
+        elms = list()
+        for lst in self.get_shunt_like_devices_lists():
+            for elm in lst:
+                elms.append(elm.name)
+        return np.array(elms)
+
     def get_shunt_like_device_number(self) -> int:
         """
         Get a list of all devices that can inject or subtract power from a node
@@ -4673,6 +4684,9 @@ class Assets:
 
         elif device_type == DeviceType.BranchDevice:
             return self.get_branches_wo_hvdc()
+
+        elif device_type == DeviceType.ShuntLikeDevice:
+            return self.get_shunt_like_devices()
 
         elif device_type == DeviceType.NoDevice:
             return list()

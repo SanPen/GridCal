@@ -669,9 +669,15 @@ def translate_pgm_results(grid: MultiCircuit, pf_res) -> PowerFlowResults:
     results = PowerFlowResults(n=nc.nbus,
                                m=nc.nbr,
                                n_hvdc=nc.nhvdc,
+                               n_gen=nc.ngen,
+                               n_batt=nc.nbatt,
+                               n_sh=nc.nshunt,
                                bus_names=nc.bus_names,
                                branch_names=nc.branch_names,
                                hvdc_names=nc.hvdc_names,
+                               gen_names=nc.generator_names,
+                               batt_names=nc.battery_names,
+                               sh_names=nc.shunt_names,
                                bus_types=nc.bus_types)
 
     if pf_res is None:

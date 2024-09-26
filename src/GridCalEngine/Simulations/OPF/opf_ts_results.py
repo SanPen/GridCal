@@ -106,7 +106,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
 
                                                     ResultTypes.LoadResults: [ResultTypes.LoadShedding],
 
-                                                    ResultTypes.BranchResults: [ResultTypes.BranchPower,
+                                                    ResultTypes.BranchResults: [ResultTypes.BranchActivePowerFrom,
                                                                                 ResultTypes.BranchLoading,
                                                                                 ResultTypes.BranchOverloads,
                                                                                 ResultTypes.BranchTapAngle],
@@ -363,7 +363,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 xlabel='',
                                 units='(MW)')
 
-        elif result_type == ResultTypes.BranchPower:
+        elif result_type == ResultTypes.BranchActivePowerFrom:
 
             return ResultsTable(data=self.Sf.real,
                                 index=pd.to_datetime(self.time_array),

@@ -82,9 +82,15 @@ class PowerFlowResults(ResultsTemplate):
             n: int,
             m: int,
             n_hvdc: int,
+            n_gen: int,
+            n_batt: int,
+            n_sh: int,
             bus_names: np.ndarray,
             branch_names: np.ndarray,
             hvdc_names: np.ndarray,
+            gen_names: np.ndarray,
+            batt_names: np.ndarray,
+            sh_names: np.ndarray,
             bus_types: np.ndarray,
             clustering_results=None):
         """
@@ -137,6 +143,19 @@ class PowerFlowResults(ResultsTemplate):
                     ResultTypes.HvdcPowerFrom,
                     ResultTypes.HvdcPowerTo
                 ],
+
+                ResultTypes.GeneratorResults: [
+                    ResultTypes.GeneratorReactivePower,
+                ],
+
+                ResultTypes.BatteryResults: [
+                    ResultTypes.BatteryReactivePower,
+                ],
+
+                ResultTypes.ShuntResults: [
+                    ResultTypes.ShuntReactivePower,
+                ],
+
                 ResultTypes.AreaResults: [
                     ResultTypes.InterAreaExchange,
                     ResultTypes.ActivePowerFlowPerArea,
@@ -156,6 +175,9 @@ class PowerFlowResults(ResultsTemplate):
         self.bus_names: StrVec = bus_names
         self.branch_names: StrVec = branch_names
         self.hvdc_names: StrVec = hvdc_names
+        self.gen_names = gen_names
+        self.batt_names = batt_names
+        self.sh_names = sh_names
         self.bus_types: IntVec = bus_types
 
         # vars for the inter-area computation
@@ -186,6 +208,10 @@ class PowerFlowResults(ResultsTemplate):
         self.hvdc_Pf: Vec = np.zeros(n_hvdc)
         self.hvdc_Pt: Vec = np.zeros(n_hvdc)
         self.hvdc_loading: Vec = np.zeros(n_hvdc)
+
+        self.gen_q: Vec = np.zeros(n_gen)
+        self.battery_q: Vec = np.zeros(n_batt)
+        self.shunt_q: Vec = np.zeros(n_sh)
 
         self.island_number = 0
 
@@ -754,6 +780,39 @@ class PowerFlowResults(ResultsTemplate):
                                 title=result_type.value,
                                 ylabel='(MW)',
                                 units='(MW)')
+
+        elif result_type == ResultTypes.GeneratorReactivePower:
+
+            return ResultsTable(data=self.gen_q,
+                                index=self.gen_names,
+                                idx_device_type=DeviceType.GeneratorDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.BatteryReactivePower:
+
+            return ResultsTable(data=self.battery_q,
+                                index=self.batt_names,
+                                idx_device_type=DeviceType.BatteryDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
+
+        elif result_type == ResultTypes.ShuntReactivePower:
+
+            return ResultsTable(data=self.shunt_q,
+                                index=self.sh_names,
+                                idx_device_type=DeviceType.ShuntLikeDevice,
+                                columns=[result_type.value],
+                                cols_device_type=DeviceType.NoDevice,
+                                title=result_type.value,
+                                ylabel='(MVAr)',
+                                units='(MVAr)')
 
         else:
             raise Exception('Unsupported result type: ' + str(result_type))

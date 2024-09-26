@@ -14,10 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 from uuid import uuid4
 import pandas as pd
 from PySide6.QtCore import QThread, Signal
-from typing import Dict, Union, List, Tuple, Any
+from typing import Dict, Union, List, Tuple, Any, Generator
 from collections.abc import Callable
 from warnings import warn
 
@@ -210,6 +212,17 @@ class SimulationSession:
         :return: List[Driver]
         """
         return [drv for driver_type, drv in self.drivers.items() if drv is not None]
+
+    def drivers_results_iter(self) -> Generator[Tuple[DRIVER_OBJECTS | None, RESULTS_OBJECTS | None]]:
+        """
+        Iterator returning driver and result types
+        :return: driver, result (both can be None)
+        """
+        for driver_type, drv in self.drivers.items():
+            if hasattr(drv, 'results'):
+                yield drv, drv.results
+            else:
+                yield drv, None
 
     def exists(self, driver_type: SimulationTypes):
         """
@@ -546,7 +559,7 @@ class SimulationSession:
 
     @property
     def net_transfer_capacity_ts(self) -> Tuple[AvailableTransferCapacityTimeSeriesDriver,
-                                                AvailableTransferCapacityTimeSeriesResults]:
+    AvailableTransferCapacityTimeSeriesResults]:
         """
 
         :return:
@@ -555,7 +568,8 @@ class SimulationSession:
         return drv, results
 
     @property
-    def optimal_net_transfer_capacity(self) -> Tuple[OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
+    def optimal_net_transfer_capacity(self) -> Tuple[
+        OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
         """
 
         :return:
@@ -564,7 +578,8 @@ class SimulationSession:
         return drv, results
 
     @property
-    def optimal_net_transfer_capacity_ts(self) -> Tuple[OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
+    def optimal_net_transfer_capacity_ts(self) -> Tuple[
+        OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
         """
 
         :return:
