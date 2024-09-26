@@ -36,7 +36,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 from GridCalEngine.Simulations.PowerFlow.NumericalMethods.discrete_controls import compute_slack_distribution
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Aggregation.area import Area
-from GridCalEngine.basic_structures import CxVec, CscMat
+from GridCalEngine.basic_structures import CxVec, CscMat, Vec
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
@@ -489,9 +489,15 @@ def single_island_pf(nc: NumericalCircuit,
     results = PowerFlowResults(n=nc.nbus,
                                m=nc.nbr,
                                n_hvdc=nc.nhvdc,
+                               n_gen=nc.ngen,
+                               n_batt=nc.nbatt,
+                               n_sh=nc.nshunt,
                                bus_names=nc.bus_names,
                                branch_names=nc.branch_names,
                                hvdc_names=nc.hvdc_names,
+                               gen_names=nc.generator_names,
+                               batt_names=nc.battery_names,
+                               sh_names=nc.shunt_names,
                                bus_types=bus_types)
 
     results.Sbus = solution.Scalc * nc.Sbase  # MVA
@@ -551,9 +557,9 @@ def power_flow_post_process(
         Sbus[vd] = V[vd] * np.conj(Ybus[vd, :] @ V)
 
         # Reactive power at the pv nodes
-        P = Sbus[pv].real
-        Q = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
-        Sbus[pv] = P + 1j * Q  # keep the original P injection and set the calculated reactive power
+        P_pv = Sbus[pv].real
+        Q_pv = (V[pv] * np.conj(Ybus[pv, :] @ V)).imag
+        Sbus[pv] = P_pv + 1j * Q_pv  # keep the original P injection and set the calculated reactive power for PV nodes
 
         # Branches current, loading, etc
         Vf = V[calculation_inputs.branch_data.F]
@@ -601,6 +607,35 @@ def power_flow_post_process(
     return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
 
 
+def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec) -> Tuple[Vec, Vec, Vec]:
+    """
+    This function splits the reactive power of the power flow solution (nbus) into reactive power per device that
+    is able to control reactive power as an injection (generators, batteries, shunts)
+    :param nc: NumericalCircuit
+    :param Qbus: Array of nodal reactive power (nbus)
+    :return: Qgen (ngen), Qbatt (nbatt), Qsh (nsh)
+    """
+    q_max_total = nc.generator_data.C_bus_elm @ (
+            nc.generator_data.qmax * nc.generator_data.active * nc.generator_data.controllable)
+
+    q_max_total += nc.battery_data.C_bus_elm @ (
+            nc.battery_data.qmax * nc.battery_data.active * nc.battery_data.controllable)
+
+    q_max_total += nc.shunt_data.C_bus_elm @ (
+            nc.shunt_data.qmax * nc.shunt_data.active * nc.shunt_data.controllable)
+
+    bus_idx = nc.generator_data.get_bus_indices()
+    Qgen = Qbus[bus_idx] * nc.generator_data.qmax / (q_max_total[bus_idx] + 1e-20)
+
+    bus_idx = nc.battery_data.get_bus_indices()
+    Qbatt = Qbus[bus_idx] * nc.battery_data.qmax / (q_max_total[bus_idx] + 1e-20)
+
+    bus_idx = nc.shunt_data.get_bus_indices()
+    Qsh = Qbus[bus_idx] * nc.shunt_data.qmax / (q_max_total[bus_idx] + 1e-20)
+
+    return Qgen, Qbatt, Qsh
+
+
 def multi_island_pf_nc(nc: NumericalCircuit,
                        options: PowerFlowOptions,
                        logger=Logger(),
@@ -621,9 +656,15 @@ def multi_island_pf_nc(nc: NumericalCircuit,
         n=nc.nbus,
         m=nc.nbr,
         n_hvdc=nc.nhvdc,
+        n_gen=nc.ngen,
+        n_batt=nc.nbatt,
+        n_sh=nc.nshunt,
         bus_names=nc.bus_data.names,
         branch_names=nc.branch_data.names,
         hvdc_names=nc.hvdc_data.names,
+        gen_names=nc.generator_names,
+        batt_names=nc.battery_names,
+        sh_names=nc.shunt_names,
         bus_types=nc.bus_data.bus_types,
     )
 
@@ -742,6 +783,9 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     results.hvdc_Pt = - Pt_hvdc * nc.Sbase  # we change the sign to keep the sign convention with AC lines
     results.hvdc_loading = loading_hvdc
     results.hvdc_losses = Losses_hvdc * nc.Sbase
+
+    # do the reactive power partition and store the values
+    results.gen_q, results.battery_q, results.shunt_q = split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag)
 
     return results
 

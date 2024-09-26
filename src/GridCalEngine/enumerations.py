@@ -974,6 +974,7 @@ class DeviceType(Enum):
     GeneratorDevice = 'Generator'
     StaticGeneratorDevice = 'Static Generator'
     ShuntDevice = 'Shunt'
+    ShuntLikeDevice = 'Shunt like devices'
     UpfcDevice = 'UPFC'  # unified power flow controller
     ExternalGridDevice = 'External grid'
     LoadLikeDevice = 'Load like'
@@ -1483,12 +1484,17 @@ class ResultTypes(Enum):
     LoadShedding = 'Load shedding'
     GeneratorShedding = 'Generator shedding'
     GeneratorPower = 'Generator power'
+    GeneratorReactivePower = 'Generator reactive power'
     GeneratorCost = 'Generator cost'
     GeneratorFuels = 'Generator fuels'
     GeneratorEmissions = 'Generator emissions'
     GeneratorProducing = 'Generator producing'
     GeneratorStartingUp = 'Generator starting up'
     GeneratorShuttingDown = 'Generator shutting down'
+
+    BatteryReactivePower = 'Battery reactive power'
+    ShuntReactivePower = 'Shunt reactive power'
+
     BusVoltagePolarPlot = 'Voltage plot'
     BusNodalCapacity = "Nodal capacity"
 
@@ -1663,6 +1669,7 @@ class ResultTypes(Enum):
     GeneratorResults = 'Generators'
     LoadResults = 'Loads'
     BatteryResults = 'Batteries'
+    ShuntResults = 'Shunt like devices'
     StatisticResults = 'Statistics'
 
     # fluid

@@ -270,7 +270,13 @@ class ObjectsModel(WrappableTableModel):
             if role == QtCore.Qt.ItemDataRole.DisplayRole:
                 return str(self.data_with_type(index))
             elif role == QtCore.Qt.ItemDataRole.BackgroundRole:
-                if 'color' in self.attributes[index.column()]:
+
+                if self.transposed:
+                    attr_idx = index.row()
+                else:
+                    attr_idx = index.column()
+
+                if 'color' in self.attributes[attr_idx]:
                     return QtGui.QColor(str(self.data_with_type(index)))
 
         return None
