@@ -896,7 +896,8 @@ class DiagramsMain(CompiledArraysMain):
         """
         diagram = SchematicDiagram(name=name)
 
-        diagram_widget = SchematicWidget(circuit=self.circuit,
+        diagram_widget = SchematicWidget(gui=self,
+                                         circuit=self.circuit,
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                          time_index=self.get_diagram_slider_index(),
@@ -980,7 +981,8 @@ class DiagramsMain(CompiledArraysMain):
                                              text_func=None,
                                              name=name)
 
-        diagram_widget = SchematicWidget(circuit=self.circuit,
+        diagram_widget = SchematicWidget(gui=self,
+                                         circuit=self.circuit,
                                          diagram=diagram,
                                          default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                          time_index=self.get_diagram_slider_index(),
@@ -1018,7 +1020,8 @@ class DiagramsMain(CompiledArraysMain):
             if isinstance(diagram_widget, SchematicWidget):
                 diagram = diagram_widget.get_selection_diagram()
 
-                diagram_widget = SchematicWidget(self.circuit,
+                diagram_widget = SchematicWidget(gui=self,
+                                                 circuit=self.circuit,
                                                  diagram=diagram,
                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                                  time_index=self.get_diagram_slider_index(),
@@ -1097,7 +1100,8 @@ class DiagramsMain(CompiledArraysMain):
                                                             root_bus=root_bus,
                                                             max_level=dlg.value)
 
-                            diagram_widget = SchematicWidget(self.circuit,
+                            diagram_widget = SchematicWidget(gui=self,
+                                                             circuit=self.circuit,
                                                              diagram=diagram,
                                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                                              time_index=self.get_diagram_slider_index(),
@@ -1121,7 +1125,8 @@ class DiagramsMain(CompiledArraysMain):
                                             prog_func=None,
                                             text_func=None)
 
-            diagram_widget = SchematicWidget(self.circuit,
+            diagram_widget = SchematicWidget(gui=self,
+                                             circuit=self.circuit,
                                              diagram=diagram,
                                              default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                              time_index=self.get_diagram_slider_index(),
@@ -1144,7 +1149,8 @@ class DiagramsMain(CompiledArraysMain):
         for diagram in self.circuit.diagrams:
 
             if isinstance(diagram, dev.SchematicDiagram):
-                diagram_widget = SchematicWidget(self.circuit,
+                diagram_widget = SchematicWidget(gui=self,
+                                                 circuit=self.circuit,
                                                  diagram=diagram,
                                                  default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
                                                  time_index=self.get_diagram_slider_index(),
@@ -1212,7 +1218,8 @@ class DiagramsMain(CompiledArraysMain):
         tile_source = self.tile_name_dict[self.ui.tile_provider_comboBox.currentText()]
 
         # create the map widget
-        map_widget = GridMapWidget(tile_src=tile_source,
+        map_widget = GridMapWidget(gui=self,
+                                   tile_src=tile_source,
                                    start_level=diagram.start_level,
                                    longitude=diagram.longitude,
                                    latitude=diagram.latitude,

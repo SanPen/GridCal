@@ -35,21 +35,25 @@ from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.Simulations import (PowerFlowTimeSeriesResults, LinearAnalysisTimeSeriesResults,
+                                       ContingencyAnalysisTimeSeriesResults, OptimalPowerFlowTimeSeriesResults,
+                                       StochasticPowerFlowResults)
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
 from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import SimulationTypes
+from GridCalEngine.enumerations import SimulationTypes, ResultTypes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
 import GridCalEngine.Devices.Diagrams.palettes as palettes
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.object_model import ObjectsModel
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel, SchematicWidget
+    from GridCal.Gui.Main.GridCalMain import MainGUI
 
 
 def change_font_size(obj, font_size: int):
@@ -71,6 +75,7 @@ class BaseDiagramWidget(QSplitter):
     """
 
     def __init__(self,
+                 gui: MainGUI,
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, MapDiagram],
                  library_model: Union[MapLibraryModel, SchematicLibraryModel],
@@ -85,6 +90,8 @@ class BaseDiagramWidget(QSplitter):
         :param call_delete_db_element_func:
         """
         QSplitter.__init__(self)
+
+        self.gui = gui
 
         # --------------------------------------------------------------------------------------------------------------
         # Widget creation
@@ -120,7 +127,7 @@ class BaseDiagramWidget(QSplitter):
         splitter2 = QSplitter(self)
         splitter2.addWidget(self.frame1)
         splitter2.addWidget(self.object_editor_table)
-        splitter2.setOrientation(Qt.Vertical)
+        splitter2.setOrientation(Qt.Orientation.Vertical)
         self.addWidget(splitter2)
         # self.addWidget(self.editor_graphics_view)
 
@@ -222,87 +229,74 @@ class BaseDiagramWidget(QSplitter):
         :param api_object: API object
         """
         fig = plt.figure(figsize=(12, 8))
+        fig.suptitle(api_object.name, fontsize=20)
+
         ax_1 = fig.add_subplot(211)
+        ax_1.set_title('Probability x < value', fontsize=14)
+        ax_1.set_ylabel('Loading [%]', fontsize=11)
+
         ax_2 = fig.add_subplot(212)
+        ax_2.set_title('Power', fontsize=14)
+        ax_2.set_ylabel('Power [MW]', fontsize=11)
 
-        # set time
-        x = self.circuit.get_time_array()
-        x_cl = x
+        any_plot = False
 
-        if x is not None:
-            if len(x) > 0:
+        for driver, results in self.gui.session.drivers_results_iter():
 
-                p = np.arange(len(x)).astype(float) / len(x)
+            if results is not None:
 
-                # search available results
-                power_data = dict()
-                loading_data = dict()
-                loading_st_data = None
-                loading_clustering_data = None
-                power_clustering_data = None
+                if isinstance(results, PowerFlowTimeSeriesResults):
 
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.PowerFlowTimeSeries_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                    Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                            elif key == SimulationTypes.LinearAnalysis_TS_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                            # elif key == SimulationTypes.NetTransferCapacityTS_run:
-                            #     power_data[key.value] = driver.results.atc[:, i]
-                            #     atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
-                            #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
+                elif isinstance(results, LinearAnalysisTimeSeriesResults):
 
-                            elif key == SimulationTypes.ContingencyAnalysisTS_run:
-                                power_data[key.value] = driver.results.max_flows.real[:, i]
-                                loading_data[key.value] = np.sort(
-                                    np.abs(driver.results.max_loading.real[:, i] * 100.0))
+                    Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                            elif key == SimulationTypes.OPFTimeSeries_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                            elif key == SimulationTypes.StochasticPowerFlow:
-                                loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
+                elif isinstance(results, ContingencyAnalysisTimeSeriesResults):
 
-                # add the rating
-                # power_data['Rates+'] = api_object.rate_prof
-                # power_data['Rates-'] = -api_object.rate_prof
+                    Sf_table = results.mdl(result_type=ResultTypes.MaxContingencyFlows)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                # loading
-                if len(loading_data.keys()):
-                    df = pd.DataFrame(data=loading_data, index=p)
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
+                    loading_table = results.mdl(result_type=ResultTypes.MaxContingencyLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                if loading_st_data is not None:
-                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
-                    df = pd.DataFrame(data=loading_st_data,
-                                      index=p_st,
-                                      columns=[SimulationTypes.StochasticPowerFlow.value])
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
+                elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
 
-                # power
-                if len(power_data.keys()):
-                    df = pd.DataFrame(data=power_data, index=x)
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+                    Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                plt.legend()
-                fig.suptitle(api_object.name, fontsize=20)
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                # plot the profiles
-                plt.show()
+                elif isinstance(results, StochasticPowerFlowResults):
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoadingAverage)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
+
+        if any_plot:
+            plt.legend()
+            plt.show()
+        else:
+            info_msg("No time series results to plot, run some time series results. Even partial results are fine",
+                     f"{api_object.name} results plot")
 
     def plot_hvdc_branch(self, i: int, api_object: HvdcLine):
         """
@@ -311,63 +305,48 @@ class BaseDiagramWidget(QSplitter):
         :param api_object: HvdcGraphicItem
         """
         fig = plt.figure(figsize=(12, 8))
+        fig.suptitle(api_object.name, fontsize=20)
+
         ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_1.set_title('Probability x < value', fontsize=14)
+        ax_1.set_ylabel('Loading [%]', fontsize=11)
+
         ax_2 = fig.add_subplot(212)
+        ax_2.set_title('Power', fontsize=14)
+        ax_2.set_ylabel('Power [MW]', fontsize=11)
 
-        # set time
-        x = self.circuit.time_profile
-        x_cl = x
+        any_plot = False
 
-        if x is not None:
-            if len(x) > 0:
+        for driver, results in self.gui.session.drivers_results_iter():
 
-                p = np.arange(len(x)).astype(float) / len(x)
+            if results is not None:
 
-                # search available results
-                power_data = dict()
-                loading_data = dict()
+                if isinstance(results, PowerFlowTimeSeriesResults):
 
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.PowerFlowTimeSeries_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+                    Sf_table = results.mdl(result_type=ResultTypes.HvdcPowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                            elif key == SimulationTypes.LinearAnalysis_TS_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+                    loading_table = results.mdl(result_type=ResultTypes.HvdcLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                            elif key == SimulationTypes.OPFTimeSeries_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+                elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
 
-                # add the rating
-                # power_data['Rates+'] = api_object.rate_prof
-                # power_data['Rates-'] = -api_object.rate_prof
+                    Sf_table = results.mdl(result_type=ResultTypes.HvdcPowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                # loading
-                if len(loading_data.keys()):
-                    df = pd.DataFrame(data=loading_data, index=p)
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
+                    loading_table = results.mdl(result_type=ResultTypes.HvdcLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                # power
-                if len(power_data.keys()):
-                    df = pd.DataFrame(data=power_data, index=x)
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
-
-                plt.legend()
-                fig.suptitle(api_object.name, fontsize=20)
-
-                # plot the profiles
-                plt.show()
+        if any_plot:
+            plt.legend()
+            plt.show()
+        else:
+            info_msg("No time series results to plot, run some time series results. Even partial results are fine",
+                     f"{api_object.name} results plot")
 
     @staticmethod
     def set_rate_to_profile(api_object: ALL_DEV_TYPES):

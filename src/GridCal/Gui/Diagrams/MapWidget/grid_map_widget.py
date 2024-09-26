@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import os
-from typing import Union, List, Tuple, Dict
+from typing import Union, List, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
@@ -58,6 +59,9 @@ from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.messages import error_msg
+
+if TYPE_CHECKING:
+    from GridCal.Gui.Main.GridCalMain import MainGUI
 
 MAP_BRANCH_GRAPHIC_TYPES = Union[
     MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine
@@ -203,6 +207,7 @@ class GridMapWidget(BaseDiagramWidget):
     """
 
     def __init__(self,
+                 gui: MainGUI,
                  tile_src: Tiles,
                  start_level: int,
                  longitude: float,
@@ -226,6 +231,7 @@ class GridMapWidget(BaseDiagramWidget):
         """
 
         BaseDiagramWidget.__init__(self,
+                                   gui=gui,
                                    circuit=circuit,
                                    diagram=MapDiagram(name=name,
                                                       tile_source=tile_src.TilesetName,

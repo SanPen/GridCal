@@ -444,6 +444,7 @@ class MIPSolvers(Enum):
     CPLEX = 'CPLEX'
     GUROBI = 'GUROBI'
     XPRESS = 'XPRESS'
+    PDLP = 'PDLP'
 
     def __str__(self):
         return self.value
