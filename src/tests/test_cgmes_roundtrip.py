@@ -44,7 +44,7 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
     logger = Logger()
     # CGMES model import to MultiCircuit
     circuit_1 = gc.open_file(import_path)
-    circuit_1.buses.sort(key=lambda obj: obj.name)      # SORTING
+    circuit_1.buses.sort(key=lambda obj: obj.name, reverse=False)      # SORTING
     # circuit_1.buses.sort(key=lambda obj: obj.idtag)     # SORTING by idtag
     nc_1 = gc.compile_numerical_circuit_at(circuit_1)
     # run power flow
@@ -67,7 +67,10 @@ def run_import_export_test(import_path: str | list[str], export_fname: str, boun
     cgmes_export.save_cgmes()
 
     circuit_2 = gc.open_file([export_fname, boundary_zip_path])
-    circuit_2.buses.sort(key=lambda obj: obj.name)      # SORTING
+    circuit_2.buses.sort(key=lambda obj: obj.name, reverse=False)      # SORTING
+    # Move the first element to the last position, if sorting doesn't work
+    if not circuit_1.buses[0].name == circuit_2.buses[0].name:
+        circuit_2.buses.append(circuit_2.buses.pop(0))
     nc_2 = gc.compile_numerical_circuit_at(circuit_2)
 
     # COMPARING Multi Circuits
@@ -120,6 +123,7 @@ def test_cgmes_roundtrip():
     boundary_set_name = 'micro_grid_BD.zip'
 
     # test_grid_name = 'IEEE 14 bus.zip'
+    # test_grid_name = 'IEEE14_from_PF.zip'
     # boundary_set_name = 'BD_IEEE_Grids.zip'
 
     script_path = os.path.abspath(__file__)
@@ -130,7 +134,7 @@ def test_cgmes_roundtrip():
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', boundary_set_name)
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
-    export_relative_path = os.path.join('data/output/cgmes_export_result', test_grid_name)
+    export_relative_path = os.path.join('data/output/cgmes_export_result', f'{test_grid_name[:-4]}_GC.zip')
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))

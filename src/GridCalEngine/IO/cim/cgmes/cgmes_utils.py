@@ -56,16 +56,42 @@ def find_object_by_idtag(object_list, target_idtag):
 
 def get_slack_id(machines):
     """
+    Retrieves the ID of a Topological Node from a list of SynchronousMachines.
 
-    @param machines: List[SynchronousMachine]
-    @return: ID of a Topological Node
+    @param machines: List of SynchronousMachine objects.
+    @return: ID of a Topological Node if found, None otherwise.
     """
+    # Check if machines is a list
+    if not isinstance(machines, list):
+        raise TypeError(
+            "Expected 'machines' to be a list of SynchronousMachine objects.")
+
     for m in machines:
-        if m.referencePriority == 1:
-            if not isinstance(m.Terminals, list):
-                return m.Terminals.TopologicalNode.rdfid
+        # Check if the machine has a referencePriority attribute
+        if hasattr(m, 'referencePriority') and m.referencePriority == 1:
+            # Check if Terminals attribute exists
+            if hasattr(m, 'Terminals'):
+                terminals = m.Terminals
+
+                # Check if terminals is a list or single object
+                if isinstance(terminals, list) and len(terminals) > 0:
+                    terminal = terminals[0]
+                elif not isinstance(terminals, list):
+                    terminal = terminals
+                else:
+                    continue  # Skip to the next machine if terminals is an empty list
+
+                # Check if TopologicalNode exists and has rdfid
+                if hasattr(terminal, 'TopologicalNode') and hasattr(
+                        terminal.TopologicalNode, 'rdfid'):
+                    return terminal.TopologicalNode.rdfid
+                else:
+                    print(
+                        f"Warning: TopologicalNode or rdfid missing in machine {m}.")
             else:
-                return m.Terminals[0].TopologicalNode.rdfid
+                print(f"Warning: Terminals attribute missing in machine {m}.")
+
+    # If no matching machine is found
     return None
 
 

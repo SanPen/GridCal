@@ -74,10 +74,37 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
 
     nc1 = gce.compile_numerical_circuit_at(circuit)
     nc2 = gce.compile_numerical_circuit_at(circuit2)
-    ok, logger = nc1.compare(nc2)
 
-    if not ok:
+    # COMPARING Numerical Circuits
+    ok, logger = nc1.compare(nc_2=nc2, tol=1e-6)        # 1e-6
+
+    if ok:
+        print("\nOK! SUCCESS for Numerical Circuit!\n")
+    else:
         logger.print()
+
+        # FOR DEBUG
+        print('Buses')
+        print(nc1.bus_names)
+        print(nc2.bus_names)
+        print('Loads')
+        print(nc1.load_names)
+        print(nc2.load_names)
+        print('Gens')
+        print(nc1.generator_names)
+        print(nc2.generator_names)
+        print('Sbus1')
+        print(nc1.Sbus)
+        print('Sbus2')
+        print(nc2.Sbus)
+        print('S_diff')
+        print(nc2.Sbus - nc1.Sbus)
+        print('Y1')
+        print(nc1.Ybus.A)
+        print('Y2')
+        print(nc2.Ybus.A)
+        print('Y_diff')
+        print(nc2.Ybus.A - nc1.Ybus.A)
 
     pf1_res = gce.power_flow(circuit)
     pf2_res = gce.power_flow(circuit2)
@@ -85,7 +112,7 @@ def run_raw_to_cgmes(import_path: str | list[str], export_fname: str, boundary_z
     assert np.allclose(np.abs(pf1_res.voltage), np.abs(pf2_res.voltage), atol=1e-5)
 
     assert ok
-    
+
     
 def test_raw_to_cgmes_cross_roundtrip():
     """
@@ -97,13 +124,16 @@ def test_raw_to_cgmes_cross_roundtrip():
     boundary_relative_path = os.path.join('data', 'grids', 'CGMES_2_4_15', 'ENTSOe_boundary_set.zip')
     boundary_path = os.path.abspath(os.path.join(os.path.dirname(script_path), boundary_relative_path))
 
-    test_grid_name = 'IEEE 14 bus'
-    # test_grid_name = 'IEEE 30 bus'
+    test_grid_name = 'IEEE 14 bus'            # PASSEED
+    # test_grid_name = 'IEEE 30 bus'              # FAILED
+    # Error     Different snapshot values    Transformer      rate  5.9091    65.0
+    # Converted line to trafo due to excessice voltage difference !??
+    # test_grid_name = 'IEEE 118 Bus' # v2?     # PASSEED
 
     raw_relative_path = os.path.join('data', 'grids', 'RAW', f"{test_grid_name}.raw")
     raw_path = os.path.abspath(os.path.join(os.path.dirname(script_path), raw_relative_path))
 
-    export_relative_path = os.path.join('output/cgmes_export_result', f'{test_grid_name}.zip')
+    export_relative_path = os.path.join('output/cgmes_export_result', f'{test_grid_name}_GC.zip')
     export_name = os.path.abspath(os.path.join(os.path.dirname(script_path), export_relative_path))
     if not os.path.exists(os.path.dirname(export_name)):
         os.makedirs(os.path.dirname(export_name))
