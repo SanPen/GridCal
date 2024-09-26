@@ -26,6 +26,7 @@ nptyping
 windpowerlib
 pvlib
 requests
+urllib3
 pytest>=7.2.0
 rdflib
 pymoo

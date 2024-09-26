@@ -1006,6 +1006,7 @@ An example on how to send a grid from a script to the server:
 
 ```python
 import os
+import asyncio
 import GridCalEngine.api as gce
 
 # path to your file
@@ -1026,9 +1027,11 @@ gce.get_certificate(base_url="https://localhost:8000",
                     pwd="")
 
 # send json
-reply_from_server = gce.send_json_data(json_data=model_data,
-                                       endpoint_url="https://localhost:8000/upload",
-                                       certificate=gce.get_certificate_path())
+reply_from_server = asyncio.get_event_loop().run_until_complete(
+    gce.send_json_data(json_data=model_data,
+                       endpoint_url="https://localhost:8000/upload",
+                       certificate=gce.get_certificate_path())
+)
 
 print(reply_from_server)
 ```

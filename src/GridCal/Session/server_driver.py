@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import time
 import requests
+import asyncio
 from urllib3 import disable_warnings, exceptions
 from typing import Callable, Dict, Union, List, Any
 from PySide6.QtCore import QThread, Signal
@@ -305,9 +306,11 @@ class ServerDriver(QThread):
         if self.is_running():
             model_data = gather_model_as_jsons_for_communication(circuit=circuit, instruction=instruction)
 
-            response = send_json_data(json_data=model_data,
-                                      endpoint_url=websocket_url,
-                                      certificate=self._certificate_path)
+            response = asyncio.get_event_loop().run_until_complete(
+                send_json_data(json_data=model_data,
+                               endpoint_url=websocket_url,
+                               certificate=self._certificate_path)
+            )
 
             self.get_jobs()
 
