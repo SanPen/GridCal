@@ -1021,9 +1021,9 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         # < cim: TapChanger.neutralU > 400.000000 < / cim: TapChanger.neutralU >
         tap_changer.neutralU = pte1.BaseVoltage.nominalVoltage
         # < cim: TapChanger.lowStep > -20 < / cim: TapChanger.lowStep >
-        tap_changer.lowStep = 0     # Lowest possible tap step position, retard from neutral
+        tap_changer.lowStep = -1     # Lowest possible tap step position, retard from neutral
         # < cim: TapChanger.highStep > 20 < / cim: TapChanger.highStep >
-        tap_changer.highStep = 1     # Highest possible tap step position, advance from neutral. The attribute shall be greater than lowStep.
+        tap_changer.highStep = 0     # Highest possible tap step position, advance from neutral. The attribute shall be greater than lowStep.
         # < cim: TapChanger.neutralStep > 0 < / cim: TapChanger.neutralStep >
         tap_changer.neutralStep = mc_elm.tap_changer.neutral_position
         # < cim: TapChanger.normalStep > -2 < / cim: TapChanger.normalStep >
@@ -1048,10 +1048,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
 
         #                   TAP Changer SSH
         #     <cim:TapChanger.step>-2</cim:TapChanger.step>
-        # TODO def EA
+        # Mechanism for changing transformer winding tap positions.
         tap_changer.step = mc_elm.tap_changer.tap_position
         #     <cim:TapChanger.controlEnabled>false</cim:TapChanger.controlEnabled>
-        tap_changer.controlEnabled = False  # why, why not?
+        tap_changer.controlEnabled = False      # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
+        # why, why not?
 
         #                   TAP Changer SV
         new_rdf_id = get_new_rdfid()
