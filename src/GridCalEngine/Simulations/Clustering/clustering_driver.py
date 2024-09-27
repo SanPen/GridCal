@@ -39,10 +39,10 @@ class ClusteringDriver(DriverTemplate):
 
         self.options: ClusteringAnalysisOptions = options
 
-        self.results: Union[ClusteringResults, None] = ClusteringResults(time_indices=np.empty(0, dtype=int),
-                                                                         sampled_probabilities=np.empty(0),
-                                                                         time_array=np.empty(0),
-                                                                         original_sample_idx=np.empty(0, dtype=int))
+        self.results: ClusteringResults = ClusteringResults(time_indices=np.empty(0, dtype=int),
+                                                            sampled_probabilities=np.empty(0),
+                                                            time_array=np.empty(0),
+                                                            original_sample_idx=np.empty(0, dtype=int))
 
     def run(self):
         """

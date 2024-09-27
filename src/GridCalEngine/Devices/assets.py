@@ -3115,6 +3115,13 @@ class Assets:
         """
         return self._contingency_groups
 
+    def get_contingency_groups_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self._contingency_groups)
+
     def add_contingency_group(self, obj: dev.ContingencyGroup):
         """
         Add contingency group
@@ -4134,12 +4141,12 @@ class Assets:
             lst += dev_list
         return lst
 
-    def get_branches_wo_hvdc_names(self) -> List[str]:
+    def get_branches_wo_hvdc_names(self) -> StrVec:
         """
         Get the non HVDC branches' names
         :return: list of names
         """
-        return [e.name for e in self.get_branches_wo_hvdc()]
+        return np.array([e.name for e in self.get_branches_wo_hvdc()])
 
     def get_branches(self) -> List[BRANCH_TYPES]:
         """

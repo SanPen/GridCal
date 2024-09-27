@@ -57,7 +57,7 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
-from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
+from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget, qimage_to_cv
 from GridCal.Gui.messages import error_msg
 
 if TYPE_CHECKING:
@@ -1192,6 +1192,14 @@ class GridMapWidget(BaseDiagramWidget):
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
+
+    def capture_video_frame(self):
+        """
+        Save video frame
+        """
+        image, w, h = self.get_image()
+        cv2_image = qimage_to_cv(image)
+        self._video.write(cv2_image)
 
     def new_substation_diagram(self, substation: Substation):
         """

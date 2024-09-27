@@ -17,7 +17,6 @@
 from __future__ import annotations
 from typing import List, Dict, Union, Tuple, Callable, TYPE_CHECKING
 import numpy as np
-import pandas as pd
 import cv2
 from matplotlib import pyplot as plt
 
@@ -42,11 +41,11 @@ from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.basic_structures import Logger
+from GridCalEngine.basic_structures import Logger, Mat
 from GridCalEngine.enumerations import SimulationTypes, ResultTypes
+import GridCalEngine.Devices.Diagrams.palettes as palettes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
-import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.object_model import ObjectsModel
 
@@ -66,6 +65,35 @@ def change_font_size(obj, font_size: int):
     font1 = obj.font()
     font1.setPointSize(font_size)
     obj.setFont(font1)
+
+
+def qimage_to_cv(qimage: QImage) -> Mat:
+    """
+    Convert a image from Qt to an OpenCV image
+    :param qimage: Qimage
+    :return:
+    """
+    width = qimage.width()
+    height = qimage.height()
+
+    # Convert the QImage to RGB format if it is not already in that format
+    qimage = qimage.convertToFormat(QImage.Format.Format_RGB888)
+
+    # Get the pointer to the data and stride (bytes per line)
+    ptr = qimage.bits()
+    # ptr.itemsize = qimage.sizeInBytes()  # Set the size of the memoryview
+    stride = qimage.bytesPerLine()  # Get the number of bytes per line (width * channels + padding)
+
+    # Create a numpy array with the correct shape based on the stride
+    arr = np.array(ptr).reshape((height, stride // 3, 3))  # Adjust for stride
+
+    # Crop the width to the actual image width (in case stride > width * channels)
+    arr = arr[:, :width, :]
+
+    # Convert RGB to BGR for OpenCV
+    cv_mat = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+
+    return cv_mat
 
 
 class BaseDiagramWidget(QSplitter):
@@ -545,13 +573,9 @@ class BaseDiagramWidget(QSplitter):
         """
         Save video frame
         """
-
         image, w, h = self.get_image()
-
-        # convert picture using the memory
-        # we need to remove the alpha channel, otherwise the video frame is not saved
-        frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
-        self._video.write(frame)
+        cv2_image = qimage_to_cv(image)
+        self._video.write(cv2_image)
 
     def end_video_recording(self):
         """

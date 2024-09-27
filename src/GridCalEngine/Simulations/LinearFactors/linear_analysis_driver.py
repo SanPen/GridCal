@@ -55,11 +55,11 @@ class LinearAnalysisDriver(DriverTemplate):
         self.opf_results = opf_results
 
         # Results
-        self.results: Union[LinearAnalysisResults, None] = LinearAnalysisResults(n_br=0,
-                                                                                 n_bus=0,
-                                                                                 br_names=(),
-                                                                                 bus_names=(),
-                                                                                 bus_types=())
+        self.results: LinearAnalysisResults = LinearAnalysisResults(n_br=self.grid.get_branch_number_wo_hvdc(),
+                                                                    n_bus=self.grid.get_bus_number(),
+                                                                    br_names=self.grid.get_branch_names_wo_hvdc(),
+                                                                    bus_names=self.grid.get_bus_names(),
+                                                                    bus_types=np.ones(self.grid.get_bus_number()))
 
         self.all_solved: bool = True
 

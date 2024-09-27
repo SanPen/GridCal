@@ -1995,6 +1995,18 @@ class SchematicWidget(BaseDiagramWidget):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
+    def capture_video_frame(self):
+        """
+        Save video frame
+        """
+        image, w, h = self.get_image()
+
+        # convert picture using the memory
+        # we need to remove the alpha channel, otherwise the video frame is not saved
+        frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
+
+        self._video.write(frame)
+
     def add_api_bus(self,
                     bus: Bus,
                     injections_by_tpe: Dict[DeviceType, List[ALL_DEV_TYPES]],

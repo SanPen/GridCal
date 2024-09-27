@@ -61,16 +61,16 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
         self.options = PowerFlowOptions() if options is None else options
 
         self.opf_time_series_results = opf_time_series_results
-
-        self.results = PowerFlowTimeSeriesResults(n=0,
-                                                  m=0,
-                                                  n_hvdc=0,
-                                                  bus_names=np.empty(0),
-                                                  branch_names=np.empty(0),
-                                                  hvdc_names=np.empty(0),
-                                                  time_array=np.empty(0),
-                                                  bus_types=np.empty(0),
-                                                  area_names=None,
+        n = grid.get_bus_number()
+        self.results = PowerFlowTimeSeriesResults(n=n,
+                                                  m=grid.get_branch_number_wo_hvdc(),
+                                                  n_hvdc=grid.get_hvdc_number(),
+                                                  bus_names=grid.get_bus_names(),
+                                                  branch_names=grid.get_branch_names_wo_hvdc(),
+                                                  hvdc_names=grid.get_hvdc_names(),
+                                                  time_array=self.grid.get_time_array()[self.time_indices],
+                                                  bus_types=np.ones(n),
+                                                  area_names=grid.get_area_names(),
                                                   clustering_results=None)
 
     def run_single_thread(self, time_indices) -> PowerFlowTimeSeriesResults:
@@ -142,7 +142,7 @@ class PowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                              branch_names=res.names,
                                              hvdc_names=res.hvdc_names,
                                              bus_types=res.bus_types,
-                                             time_array=self.grid.time_profile,
+                                             time_array=self.grid.get_time_array(),
                                              clustering_results=self.clustering_results)
 
         results.voltage = res.V

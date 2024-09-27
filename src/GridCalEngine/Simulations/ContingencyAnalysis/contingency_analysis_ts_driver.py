@@ -66,13 +66,13 @@ class ContingencyAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         # N-K results
         self.results: ContingencyAnalysisTimeSeriesResults = ContingencyAnalysisTimeSeriesResults(
-            n=0,
-            nbr=0,
-            time_array=(),
-            bus_names=(),
-            branch_names=(),
-            bus_types=(),
-            con_names=(),
+            n=self.grid.get_bus_number(),
+            nbr=self.grid.get_branch_number_wo_hvdc(),
+            time_array=self.grid.time_profile[time_indices],
+            bus_names=self.grid.get_bus_names(),
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            bus_types=np.ones(self.grid.get_bus_number()),
+            con_names=self.grid.get_contingency_group_names(),
             clustering_results=clustering_results
         )
 
