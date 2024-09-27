@@ -28,8 +28,10 @@ from pandas.plotting import register_matplotlib_converters
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
-                                           InputNumberDialogue)
+                                           InputNumberDialogue, LogsDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Utils.progress_bar import print_progress_bar
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
@@ -85,13 +87,15 @@ class VideoExportWorker(QtCore.QThread):
         self.current_study = current_study
         self.grid_colour_function = grid_colour_function
 
+        self.logger = Logger()
+
     def run(self):
         """
         Run function
         :return:
         """
         # start recording...
-        self.diagram.start_video_recording(fname=self.filename, fps=self.fps)
+        w, h = self.diagram.start_video_recording(fname=self.filename, fps=self.fps, logger=self.logger)
 
         # paint and capture
         for t_idx in range(self.start_idx, self.end_idx):
@@ -100,13 +104,18 @@ class VideoExportWorker(QtCore.QThread):
                                       t_idx=t_idx,
                                       allow_popups=False)
 
-            self.diagram.capture_video_frame()
+            self.diagram.capture_video_frame(w=w, h=h, logger=self.logger)
 
             self.progress_text.emit(f"Saving frame {t_idx} / {self.end_idx}")
             self.progress_signal.emit(t_idx / self.end_idx)
 
+            print_progress_bar(t_idx + 1, self.end_idx)
+
         # finalize
         self.diagram.end_video_recording()
+
+        self.logger.add_info(f"Video saved to {self.filename}")
+
         self.done_signal.emit()
 
 
@@ -1516,7 +1525,7 @@ class DiagramsMain(CompiledArraysMain):
                 if isinstance(diagram, (SchematicWidget, GridMapWidget)):
 
                     # declare the allowed file types
-                    files_types = "MP4 (*.mp4);;"
+                    files_types = "MP4 (*.mp4);;AVI (*.avi);;"
 
                     f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
@@ -1525,8 +1534,11 @@ class DiagramsMain(CompiledArraysMain):
                                                                                     f_name, files_types)
 
                     if filename != "":
-                        if not filename.endswith('.mp4'):
+                        if type_selected == "MP4 (*.mp4)" and not filename.endswith('.mp4'):
                             filename += ".mp4"
+
+                        if type_selected == "AVI (*.avi)" and not filename.endswith('.avi'):
+                            filename += ".avi"
 
                         # self.thread_pool.start(lambda: self.record_video_now(filename, diagram))
                         self.video_thread = VideoExportWorker(
@@ -1553,7 +1565,9 @@ class DiagramsMain(CompiledArraysMain):
 
         :return:
         """
-        info_msg(f"Video saved to {self.video_thread.filename}")
+        if self.video_thread.logger.has_logs():
+            dlg = LogsDialogue("Video export", self.video_thread.logger, True)
+            dlg.exec_()
 
     # def record_video_now(self, filename, diagram: SchematicWidget | GridMapWidget):
     #     """

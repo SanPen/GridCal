@@ -61,7 +61,7 @@ from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget, qimage_t
 from GridCal.Gui.messages import error_msg
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Main.GridCalMain import MainGUI
+    from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 
 MAP_BRANCH_GRAPHIC_TYPES = Union[
     MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine
@@ -207,7 +207,7 @@ class GridMapWidget(BaseDiagramWidget):
     """
 
     def __init__(self,
-                 gui: MainGUI,
+                 gui: DiagramsMain,
                  tile_src: Tiles,
                  start_level: int,
                  longitude: float,
@@ -1147,25 +1147,14 @@ class GridMapWidget(BaseDiagramWidget):
 
                     graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
 
-    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+    def get_image(self, transparent: bool = False) -> QImage:
         """
         get the current picture
         :return: QImage, width, height
         """
-        w = self.width()
-        h = self.height()
-
-        # image = QImage(w, h, QImage.Format_RGB32)
-        # image.fill(Qt.white)
-        #
-        # painter = QPainter(image)
-        # painter.setRenderHint(QPainter.Antialiasing)
-        # self.map.view.render(painter)  # self.view stores the grid widgets
-        # # self.render(painter)
-        # painter.end()
         image = self.map.grab().toImage()
 
-        return image, w, h
+        return image
 
     def take_picture(self, filename: str):
         """
@@ -1174,7 +1163,7 @@ class GridMapWidget(BaseDiagramWidget):
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image, _, _ = self.get_image()
+            image = self.get_image()
             image.save(filename)
 
         elif extension == '.svg':
@@ -1193,13 +1182,13 @@ class GridMapWidget(BaseDiagramWidget):
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
 
-    def capture_video_frame(self):
-        """
-        Save video frame
-        """
-        image, w, h = self.get_image()
-        cv2_image = qimage_to_cv(image)
-        self._video.write(cv2_image)
+    # def capture_video_frame(self):
+    #     """
+    #     Save video frame
+    #     """
+    #     image, w, h = self.get_image()
+    #     cv2_image = qimage_to_cv(image)
+    #     self._video.write(cv2_image)
 
     def new_substation_diagram(self, substation: Substation):
         """

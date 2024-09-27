@@ -52,7 +52,7 @@ from GridCal.Gui.object_model import ObjectsModel
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel, SchematicWidget
-    from GridCal.Gui.Main.GridCalMain import MainGUI
+    from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 
 
 def change_font_size(obj, font_size: int):
@@ -67,33 +67,82 @@ def change_font_size(obj, font_size: int):
     obj.setFont(font1)
 
 
-def qimage_to_cv(qimage: QImage) -> Mat:
+def qimage_tocv2_by_disk(qimage: QImage, logger: Logger, file_path):
+    """
+
+    :param qimage: Qimage
+    :param logger: Logger
+    :param file_path: temp file path
+    :return:
+    """
+    # Convert QImage to PNG format and save
+    if not qimage.save(file_path, "PNG"):
+        logger.add_error(msg=f"Error: Could not save QImage to {file_path}")
+        return None
+
+    # Use OpenCV to read the saved image
+    opencv_image = cv2.imread(file_path)
+    if opencv_image is None:
+        logger.add_error(msg=f"Error: Could not save QImage to {file_path}")
+        return None
+
+    return opencv_image
+
+
+def qimage_to_cv(qimage: QImage, logger: Logger, force_disk=False) -> np.ndarray:
     """
     Convert a image from Qt to an OpenCV image
     :param qimage: Qimage
-    :return:
+    :param logger: Logger
+    :param force_disk: if true, the image is converted by saving to disk and loading again with opencv
+    :return: OpenCv matrix
     """
     width = qimage.width()
     height = qimage.height()
 
-    # Convert the QImage to RGB format if it is not already in that format
-    qimage = qimage.convertToFormat(QImage.Format.Format_RGB888)
+    if force_disk:
+        opencv_image = qimage_tocv2_by_disk(qimage, logger, file_path="__img__.png")
 
-    # Get the pointer to the data and stride (bytes per line)
-    ptr = qimage.bits()
-    # ptr.itemsize = qimage.sizeInBytes()  # Set the size of the memoryview
-    stride = qimage.bytesPerLine()  # Get the number of bytes per line (width * channels + padding)
+        return opencv_image
+    else:
+        try:
+            # convert picture using the memory
+            # we need to remove the alpha channel, otherwise the video frame is not saved
+            cv_mat = np.array(qimage.constBits()).reshape(height, width, 4).astype(np.uint8)[:, :, :3]
 
-    # Create a numpy array with the correct shape based on the stride
-    arr = np.array(ptr).reshape((height, stride // 3, 3))  # Adjust for stride
+            return cv_mat
 
-    # Crop the width to the actual image width (in case stride > width * channels)
-    arr = arr[:, :width, :]
+        except ValueError as e:
 
-    # Convert RGB to BGR for OpenCV
-    cv_mat = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+            logger.add_error(msg=f"Could not convert frame: {e}, failed over to second image conversion method.")
 
-    return cv_mat
+            try:
+                # Convert the QImage to RGB format if it is not already in that format
+                qimage = qimage.convertToFormat(QImage.Format.Format_RGB888)
+
+                # Get the pointer to the data and stride (bytes per line)
+                ptr = qimage.bits()
+                # ptr.itemsize = qimage.sizeInBytes()  # Set the size of the memoryview
+                stride = qimage.bytesPerLine()  # Get the number of bytes per line (width * channels + padding)
+
+                # Create a numpy array with the correct shape based on the stride
+                arr = np.array(ptr).reshape((height, stride // 3, 3)).astype(np.uint8)  # Adjust for stride
+
+                # Crop the width to the actual image width (in case stride > width * channels)
+                arr = arr[:, :width, :]
+
+                # Convert RGB to BGR for OpenCV
+                cv_mat = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+
+                return cv_mat
+            except ValueError as e2:
+                logger.add_error(msg=f"Could not convert frame: {e2}, failed over to disk converison method")
+
+                # try the last method, saving to disk and reading again
+
+                opencv_image = qimage_tocv2_by_disk(qimage, logger, file_path="__img__.png")
+
+                return opencv_image
 
 
 class BaseDiagramWidget(QSplitter):
@@ -103,7 +152,7 @@ class BaseDiagramWidget(QSplitter):
     """
 
     def __init__(self,
-                 gui: MainGUI,
+                 gui: DiagramsMain,
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, MapDiagram],
                  library_model: Union[MapLibraryModel, SchematicLibraryModel],
@@ -536,7 +585,7 @@ class BaseDiagramWidget(QSplitter):
         """
         return 0
 
-    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+    def get_image(self, transparent: bool = False) -> QImage:
         """
         get the current picture
         :param transparent: Set a transparent background
@@ -551,37 +600,61 @@ class BaseDiagramWidget(QSplitter):
         """
         pass
 
-    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+    def start_video_recording(self, fname: str, fps: int = 30, logger: Logger = Logger()) -> Tuple[int, int]:
         """
         Save video
         :param fname: file name
         :param fps: frames per second
+        :param logger: LOgger
         :returns width, height
         """
 
-        w = self.get_picture_width()
-        h = self.get_picture_height()
+        image = self.get_image()
+        w = image.width()
+        h = image.height()
+        cv2_image = qimage_to_cv(image, logger)
+        w2, h2, _ = cv2_image.shape
 
-        self._video = cv2.VideoWriter(filename=fname,
-                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
-                                      fps=fps,
-                                      frameSize=(w, h))
+        if fname.endswith('.mp4'):
+            self._video = cv2.VideoWriter(filename=fname,
+                                          fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                          fps=fps,
+                                          frameSize=(w, h))
+        elif fname.endswith('.avi'):
+            self._video = cv2.VideoWriter(filename=fname + '.avi',
+                                          fourcc=cv2.VideoWriter_fourcc(*'XVID'),
+                                          fps=fps,
+                                          frameSize=(w, h))
+        else:
+            raise Exception(f"File format not recognized {fname}")
 
         return w, h
 
-    def capture_video_frame(self):
+    def capture_video_frame(self, w: int, h: int, logger: Logger):
         """
         Save video frame
         """
-        image, w, h = self.get_image()
-        cv2_image = qimage_to_cv(image)
-        self._video.write(cv2_image)
+        image = self.get_image()
+        w2 = image.width()
+        h2 = image.height()
+
+        if w != w2:
+            logger.add_error(f"Width {w2} different from expected width {w}")
+
+        if h != h2:
+            logger.add_error(f"Height {h2} different from expected width {h}")
+
+        cv2_image = qimage_to_cv(image, logger)
+
+        if cv2_image is not None:
+            self._video.write(cv2_image)
 
     def end_video_recording(self):
         """
         Finalize video recording
         """
         self._video.release()
+        print("Video released")
 
     def update_label_drwaing_status(self, device: ALL_DEV_TYPES, draw_labels: bool) -> None:
         """
