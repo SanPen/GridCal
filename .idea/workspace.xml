@@ -28,13 +28,8 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Plenty of changes to improve the session objects working: added results loadinf logger&#10;Improved / fixed the video saving">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/progress_bar.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/MapWidget/grid_map_widget.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed map and schematic video processing">
       <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/SchematicWidget/schematic_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/base_diagram_widget.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Diagrams/base_diagram_widget.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/SubClasses/Model/diagrams.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1375,7 +1370,7 @@
       <workItem from="1726220103624" duration="1011000" />
       <workItem from="1726654128819" duration="19000" />
       <workItem from="1726654159986" duration="7438000" />
-      <workItem from="1727420069197" duration="17216000" />
+      <workItem from="1727420069197" duration="17557000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1720,7 +1715,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="535" />
+    <option name="localTasksCounter" value="536" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1754,7 +1749,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="updated GUI" />
     <MESSAGE value="imported voltage level dictionary" />
     <MESSAGE value="separate statcom and upfc at facts raw import" />
     <MESSAGE value="controllable_shunt: set_blocks function corrected" />
@@ -1779,7 +1773,8 @@
     <MESSAGE value="transformer tap changer and rate corrections (CGMES)" />
     <MESSAGE value="default RatioTapChanger added to cgmes export" />
     <MESSAGE value="Plenty of changes to improve the session objects working: added results loadinf logger&#10;Improved / fixed the video saving" />
-    <option name="LAST_COMMIT_MESSAGE" value="Plenty of changes to improve the session objects working: added results loadinf logger&#10;Improved / fixed the video saving" />
+    <MESSAGE value="Fixed map and schematic video processing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed map and schematic video processing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

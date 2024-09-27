@@ -217,7 +217,7 @@ class SchematicLibraryModel(QStandardItemModel):
         :param index: 
         :return: 
         """
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
 class SchematicScene(QGraphicsScene):
@@ -440,7 +440,7 @@ class SchematicWidget(BaseDiagramWidget):
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
 
-            point0 = self.editor_graphics_view.mapToScene(event.position().x(), event.position().y())
+            point0 = self.editor_graphics_view.mapToScene(int(event.position().x()), int(event.position().y()))
             x0 = point0.x()
             y0 = point0.y()
 
