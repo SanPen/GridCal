@@ -372,11 +372,14 @@ class ResultsTemplate:
                         pass
                         # print(prop, value.ndim, value.dtype)
 
-    def parse_saved_data(self, grid: MultiCircuit, data_dict: Dict[str, pd.DataFrame]) -> None:
+    def parse_saved_data(self, grid: MultiCircuit,
+                         data_dict: Dict[str, pd.DataFrame],
+                         logger: Logger = Logger()) -> None:
         """
 
         :param grid: MultiCircuit
         :param data_dict: Dictionary with the info loaded from disk
+        :param logger: Logger
         :return:
         """
         self.time_array = grid.get_time_array()
@@ -410,7 +413,19 @@ class ResultsTemplate:
                     if array.size == 1:
                         array = array[0]
 
-                setattr(self, res_prop.name, array)
+                curr_value = getattr(self, res_prop.name)
+
+                if isinstance(curr_value, np.ndarray):
+                    if curr_value.shape == array.shape:
+                        setattr(self, res_prop.name, array)
+                    else:
+                        logger.add_error(msg="Wrong array shape",
+                                         device_class=self.name,
+                                         device_property=res_prop.name,
+                                         value=str(array.shape),
+                                         expected_value=str(curr_value.shape))
+                else:
+                    setattr(self, res_prop.name, array)
 
 
 class DriverToSave:

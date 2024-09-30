@@ -683,7 +683,6 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
     # compute islands
     islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
-    results.island_number = len(islands)
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time

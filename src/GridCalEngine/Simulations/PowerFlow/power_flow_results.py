@@ -213,14 +213,17 @@ class PowerFlowResults(ResultsTemplate):
         self.battery_q: Vec = np.zeros(n_batt)
         self.shunt_q: Vec = np.zeros(n_sh)
 
-        self.island_number = 0
-
         self.plot_bars_limit: int = 100
         self.convergence_reports = list()
 
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
+
+        self.register(name='gen_names', tpe=StrVec)
+        self.register(name='batt_names', tpe=StrVec)
+        self.register(name='sh_names', tpe=StrVec)
+
         self.register(name='bus_types', tpe=IntVec)
 
         self.register(name='F', tpe=IntVec)
@@ -249,7 +252,11 @@ class PowerFlowResults(ResultsTemplate):
         self.register(name='hvdc_Pt', tpe=Vec)
         self.register(name='hvdc_loading', tpe=Vec)
 
-        self.register(name='island_number', tpe=int)
+        self.register(name='gen_q', tpe=Vec)
+        self.register(name='battery_q', tpe=Vec)
+        self.register(name='shunt_q', tpe=Vec)
+
+        # self.register(name='island_number', tpe=int)
 
     def apply_new_rates(self, nc: NumericalCircuit):
         """

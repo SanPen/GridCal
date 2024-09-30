@@ -14,7 +14,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
+import numpy as np
 from typing import Union, List
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import EngineType, ContingencyMethod, SimulationTypes
@@ -44,7 +46,7 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
     def __init__(self,
                  grid: MultiCircuit,
-                 options: ContingencyAnalysisOptions,
+                 options: ContingencyAnalysisOptions | None,
                  linear_multiple_contingencies: Union[LinearMultiContingencies, None] = None,
                  engine: EngineType = EngineType.GridCal):
         """
@@ -78,13 +80,13 @@ class ContingencyAnalysisDriver(DriverTemplate):
 
         # N-K results
         self.results = ContingencyAnalysisResults(
-            ncon=0,
-            nbus=0,
-            nbr=0,
-            bus_names=(),
-            branch_names=(),
-            bus_types=(),
-            con_names=()
+            ncon=self.grid.get_contingency_groups_number(),
+            nbus=self.grid.get_bus_number(),
+            nbr=self.grid.get_branch_number_wo_hvdc(),
+            bus_names=self.grid.get_bus_names(),
+            branch_names=self.grid.get_branch_names_wo_hvdc(),
+            bus_types=np.ones(self.grid.get_bus_number()),
+            con_names=self.grid.get_contingency_group_names()
         )
 
     def get_steps(self) -> List[str]:

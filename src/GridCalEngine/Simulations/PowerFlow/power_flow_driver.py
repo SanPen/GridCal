@@ -60,19 +60,19 @@ class PowerFlowDriver(DriverTemplate):
 
         self.opf_results: Union[OptimalPowerFlowResults, None] = opf_results
 
-        self.results = PowerFlowResults(n=0,
-                                        m=0,
-                                        n_hvdc=0,
-                                        n_gen=0,
-                                        n_batt=0,
-                                        n_sh=0,
-                                        bus_names=np.empty(0, dtype=object),
-                                        branch_names=np.empty(0, dtype=object),
-                                        hvdc_names=np.empty(0, dtype=object),
-                                        gen_names=np.empty(0, dtype=object),
-                                        batt_names=np.empty(0, dtype=object),
-                                        sh_names=np.empty(0, dtype=object),
-                                        bus_types=np.empty(0))
+        self.results = PowerFlowResults(n=self.grid.get_bus_number(),
+                                        m=self.grid.get_branch_number_wo_hvdc(),
+                                        n_hvdc=self.grid.get_hvdc_number(),
+                                        n_gen=self.grid.get_generation_like_number(),
+                                        n_batt=self.grid.get_batteries_number(),
+                                        n_sh=self.grid.get_shunt_like_device_number(),
+                                        bus_names=self.grid.get_bus_names(),
+                                        branch_names=self.grid.get_branches_wo_hvdc_names(),
+                                        hvdc_names=self.grid.get_hvdc_names(),
+                                        gen_names=self.grid.get_generation_like_names(),
+                                        batt_names=self.grid.get_battery_names(),
+                                        sh_names=self.grid.get_shunt_like_devices_names(),
+                                        bus_types=np.ones(self.grid.get_bus_number()))
 
         self.convergence_reports = list()
 

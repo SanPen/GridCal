@@ -39,7 +39,7 @@ class PowerFlowTimeSeriesResults(ResultsTemplate):
                  bus_names: np.ndarray,
                  branch_names: np.ndarray,
                  hvdc_names: np.ndarray,
-                 time_array: np.ndarray,
+                 time_array: DateVec,
                  bus_types: np.ndarray,
                  area_names: Union[np.ndarray, None] = None,
                  clustering_results: Union[ClusteringResults, None] = None):

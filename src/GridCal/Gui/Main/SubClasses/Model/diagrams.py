@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import os
 from typing import List, Tuple, Union
 
@@ -26,8 +28,10 @@ from pandas.plotting import register_matplotlib_converters
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
-                                           InputNumberDialogue)
+                                           InputNumberDialogue, LogsDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
+from GridCalEngine.Utils.progress_bar import print_progress_bar
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import SimulationTypes
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 
@@ -50,6 +54,69 @@ from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import O
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
+
+
+class VideoExportWorker(QtCore.QThread):
+    """
+    VideoExportWorker
+    """
+    progress_signal = QtCore.Signal(float)
+    progress_text = QtCore.Signal(str)
+    done_signal = QtCore.Signal()
+
+    def __init__(self, filename, diagram: SchematicWidget | GridMapWidget,
+                 fps: int, start_idx: int, end_idx: int, current_study: str,
+                 grid_colour_function):
+        """
+
+        :param filename:
+        :param diagram:
+        :param fps:
+        :param start_idx:
+        :param end_idx:
+        :param current_study:
+        :param grid_colour_function:
+        """
+        QtCore.QThread.__init__(self)
+
+        self.filename = filename
+        self.diagram = diagram
+        self.fps = fps
+        self.start_idx = start_idx
+        self.end_idx = end_idx
+        self.current_study = current_study
+        self.grid_colour_function = grid_colour_function
+
+        self.logger = Logger()
+
+    def run(self):
+        """
+        Run function
+        :return:
+        """
+        # start recording...
+        w, h = self.diagram.start_video_recording(fname=self.filename, fps=self.fps, logger=self.logger)
+
+        # paint and capture
+        for t_idx in range(self.start_idx, self.end_idx):
+            self.grid_colour_function(diagram=self.diagram,
+                                      current_study=self.current_study,
+                                      t_idx=t_idx,
+                                      allow_popups=False)
+
+            self.diagram.capture_video_frame(w=w, h=h, logger=self.logger)
+
+            self.progress_text.emit(f"Saving frame {t_idx} / {self.end_idx}")
+            self.progress_signal.emit(t_idx / self.end_idx)
+
+            print_progress_bar(t_idx + 1, self.end_idx)
+
+        # finalize
+        self.diagram.end_video_recording()
+
+        self.logger.add_info(f"Video saved to {self.filename}")
+
+        self.done_signal.emit()
 
 
 class DiagramsMain(CompiledArraysMain):
@@ -155,6 +222,9 @@ class DiagramsMain(CompiledArraysMain):
 
         # configure matplotlib for pandas time series
         register_matplotlib_converters()
+
+        # task watcher for video export
+        self.video_thread: VideoExportWorker | None = None
 
         # --------------------------------------------------------------------------------------------------------------
         self.ui.actionTakePicture.triggered.connect(self.take_picture)
@@ -1167,6 +1237,7 @@ class DiagramsMain(CompiledArraysMain):
 
                 # create the map widget
                 map_widget = GridMapWidget(
+                    gui=self,
                     tile_src=tile_source,
                     start_level=diagram.start_level,
                     longitude=diagram.longitude,
@@ -1454,7 +1525,7 @@ class DiagramsMain(CompiledArraysMain):
                 if isinstance(diagram, (SchematicWidget, GridMapWidget)):
 
                     # declare the allowed file types
-                    files_types = "MP4 (*.mp4);;"
+                    files_types = "MP4 (*.mp4);;AVI (*.avi);;"
 
                     f_name = str(os.path.join(self.project_directory, self.ui.grid_name_line_edit.text()))
 
@@ -1463,37 +1534,70 @@ class DiagramsMain(CompiledArraysMain):
                                                                                     f_name, files_types)
 
                     if filename != "":
-                        if not filename.endswith('.mp4'):
+                        if type_selected == "MP4 (*.mp4)" and not filename.endswith('.mp4'):
                             filename += ".mp4"
 
-                        fps = self.ui.fps_spinBox.value()
-                        start_idx = self.get_simulation_start()
-                        end_idx = self.get_simulation_end()
-                        current_study = self.ui.available_results_to_color_comboBox.currentText()
+                        if type_selected == "AVI (*.avi)" and not filename.endswith('.avi'):
+                            filename += ".avi"
 
-                        # start recording...
-                        diagram.start_video_recording(fname=filename, fps=fps)
-
-                        # paint and capture
-                        for t_idx in range(start_idx, end_idx):
-                            self.grid_colour_function(diagram=diagram,
-                                                      current_study=current_study,
-                                                      t_idx=t_idx,
-                                                      allow_popups=False)
-
-                            diagram.capture_video_frame()
-
-                            print(f"Saving frame {t_idx} / {end_idx}")
-
-                        # finalize
-                        diagram.end_video_recording()
-                        print(f"Recording saved to {filename}")
-
+                        # self.thread_pool.start(lambda: self.record_video_now(filename, diagram))
+                        self.video_thread = VideoExportWorker(
+                            filename=filename,
+                            diagram=diagram,
+                            fps=self.ui.fps_spinBox.value(),
+                            start_idx=self.get_simulation_start(),
+                            end_idx=self.get_simulation_end(),
+                            current_study=self.ui.available_results_to_color_comboBox.currentText(),
+                            grid_colour_function=self.grid_colour_function
+                        )
+                        self.video_thread.progress_signal.connect(self.ui.progressBar.setValue)
+                        self.video_thread.progress_text.connect(self.ui.progress_label.setText)
+                        self.video_thread.done_signal.connect(self.post_video_export)
+                        self.video_thread.run()  # we cannot run another thread accesing the main thread objects...
             else:
                 info_msg("There is not diagram selected", "Record video")
 
         else:
             info_msg("There are no time series", "Record video")
+
+    def post_video_export(self):
+        """
+
+        :return:
+        """
+        if self.video_thread.logger.has_logs():
+            dlg = LogsDialogue("Video export", self.video_thread.logger, True)
+            dlg.exec_()
+
+    # def record_video_now(self, filename, diagram: SchematicWidget | GridMapWidget):
+    #     """
+    #
+    #     :param filename:
+    #     :param diagram:
+    #     :return:
+    #     """
+    #     fps = self.ui.fps_spinBox.value()
+    #     start_idx = self.get_simulation_start()
+    #     end_idx = self.get_simulation_end()
+    #     current_study = self.ui.available_results_to_color_comboBox.currentText()
+    #
+    #     # start recording...
+    #     diagram.start_video_recording(fname=filename, fps=fps)
+    #
+    #     # paint and capture
+    #     for t_idx in range(start_idx, end_idx):
+    #         self.grid_colour_function(diagram=diagram,
+    #                                   current_study=current_study,
+    #                                   t_idx=t_idx,
+    #                                   allow_popups=False)
+    #
+    #         diagram.capture_video_frame()
+    #
+    #         print(f"Saving frame {t_idx} / {end_idx}")
+    #
+    #     # finalize
+    #     diagram.end_video_recording()
+    #     print(f"Recording saved to {filename}")
 
     def set_xy_from_lat_lon(self):
         """

@@ -403,7 +403,7 @@ class AvailableTransferCapacityDriver(DriverTemplate):
     tpe = SimulationTypes.NetTransferCapacity_run
     name = tpe.value
 
-    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions):
+    def __init__(self, grid: MultiCircuit, options: AvailableTransferCapacityOptions | None):
         """
         Power Transfer Distribution Factors class constructor
         @param grid: MultiCircuit Object
@@ -416,10 +416,11 @@ class AvailableTransferCapacityDriver(DriverTemplate):
         self.options = options
 
         # OPF results
-        self.results = AvailableTransferCapacityResults(br_names=[],
-                                                        bus_names=[],
-                                                        rates=[],
-                                                        contingency_rates=[],
+        rates = self.grid.get_branch_rates_wo_hvdc()
+        self.results = AvailableTransferCapacityResults(br_names=self.grid.get_branch_names_wo_hvdc(),
+                                                        bus_names=self.grid.get_bus_names(),
+                                                        rates=rates,
+                                                        contingency_rates=rates,
                                                         clustering_results=None)
 
     def run(self) -> None:

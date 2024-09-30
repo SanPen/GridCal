@@ -35,7 +35,6 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
 from PySide6.QtWidgets import (QGraphicsView, QMessageBox, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCal.Gui.Diagrams.graphics_manager import ALL_GRAPHICS
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, BRANCH_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -55,7 +54,7 @@ from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
 from GridCalEngine.Simulations import PowerFlowTimeSeriesResults
-from GridCalEngine.enumerations import DeviceType, SimulationTypes, ResultTypes
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
@@ -84,7 +83,7 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Main.GridCalMain import MainGUI
+    from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 
 BRANCH_GRAPHICS = Union[
     LineGraphicItem,
@@ -218,7 +217,7 @@ class SchematicLibraryModel(QStandardItemModel):
         :param index: 
         :return: 
         """
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
 class SchematicScene(QGraphicsScene):
@@ -298,7 +297,7 @@ class CustomGraphicsView(QGraphicsView):
         """
 
         # By pressing ctrl while dragging, we can move the grid
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.drag_mode = QGraphicsView.DragMode.ScrollHandDrag
         else:
             self.drag_mode = QGraphicsView.DragMode.RubberBandDrag
@@ -340,7 +339,7 @@ class SchematicWidget(BaseDiagramWidget):
     """
 
     def __init__(self,
-                 gui: MainGUI,
+                 gui: DiagramsMain,
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, None],
                  default_bus_voltage: float = 10.0,
@@ -441,7 +440,7 @@ class SchematicWidget(BaseDiagramWidget):
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
 
-            point0 = self.editor_graphics_view.mapToScene(event.position().x(), event.position().y())
+            point0 = self.editor_graphics_view.mapToScene(int(event.position().x()), int(event.position().y()))
             x0 = point0.x()
             y0 = point0.y()
 
@@ -1945,7 +1944,7 @@ class SchematicWidget(BaseDiagramWidget):
                 bus.y = y[i]
             i += 1
 
-    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+    def get_image(self, transparent: bool = False) -> QImage:
         """
         get the current picture
         :param transparent: Set a transparent background
@@ -1967,7 +1966,7 @@ class SchematicWidget(BaseDiagramWidget):
         painter.end()
         # image = self.editor_graphics_view.grab().toImage()
 
-        return image, w, h
+        return image
 
     def take_picture(self, filename: str):
         """
@@ -1976,7 +1975,7 @@ class SchematicWidget(BaseDiagramWidget):
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image, _, _ = self.get_image(transparent=False)
+            image = self.get_image(transparent=False)
             image.save(filename)
 
         elif extension == '.svg':

@@ -14,13 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import numpy as np
-from typing import Union, List
+
+
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowResults, PowerFlowOptions
+from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_worker import (short_circuit_ph3,
                                                                                 short_circuit_unbalanced)
 from GridCalEngine.Simulations.ShortCircuitStudies.short_circuit_results import ShortCircuitResults
@@ -38,10 +41,10 @@ class ShortCircuitDriver(DriverTemplate):
     tpe = SimulationTypes.ShortCircuit_run
 
     def __init__(self, grid: MultiCircuit,
-                 options: ShortCircuitOptions,
-                 pf_options: PowerFlowOptions,
-                 pf_results: PowerFlowResults,
-                 opf_results=None):
+                 options: ShortCircuitOptions | None,
+                 pf_options: PowerFlowOptions | None,
+                 pf_results: PowerFlowResults | None,
+                 opf_results: OptimalPowerFlowResults | None = None):
         """
         ShortCircuitDriver class constructor
         :param grid: MultiCircuit Object
@@ -52,25 +55,23 @@ class ShortCircuitDriver(DriverTemplate):
         """
         DriverTemplate.__init__(self, grid=grid)
 
-        # power flow results
-        self.pf_results = pf_results
-
-        self.pf_options = pf_options
-
-        self.opf_results = opf_results
+        self.pf_results: PowerFlowResults | None = pf_results
+        self.pf_options: PowerFlowOptions | None = pf_options
+        self.opf_results: OptimalPowerFlowResults | None = opf_results
 
         # Options to use
-        self.options = options
+        self.options: ShortCircuitOptions | None = options
 
         # declare an empty results object
-        self.results: ShortCircuitResults = ShortCircuitResults(n=0,
-                                                                m=0,
-                                                                n_hvdc=0,
-                                                                bus_names=np.empty(0),
-                                                                branch_names=np.empty(0),
-                                                                hvdc_names=np.empty(0),
-                                                                bus_types=np.empty(0),
-                                                                area_names=None)
+        n = grid.get_bus_number()
+        self.results: ShortCircuitResults = ShortCircuitResults(n=n,
+                                                                m=grid.get_branch_number_wo_hvdc(),
+                                                                n_hvdc=grid.get_hvdc_number(),
+                                                                bus_names=grid.get_bus_names(),
+                                                                branch_names=grid.get_branch_names_wo_hvdc(),
+                                                                hvdc_names=grid.get_hvdc_names(),
+                                                                bus_types=np.ones(n),
+                                                                area_names=grid.get_area_names())
 
         self.logger = Logger()
 

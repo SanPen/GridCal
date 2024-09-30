@@ -20,7 +20,9 @@ from GridCalEngine.basic_structures import CxVec
 
 
 class ContinuationPowerFlowInput:
+    """
 
+    """
     def __init__(self, Sbase: CxVec, Vbase: CxVec, Starget: CxVec, base_overload_number=0):
         """
         ContinuationPowerFlowInput constructor
