@@ -122,7 +122,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.segments_list.append(segment)
 
-    def set_colour(self, color: QColor, w, style: Qt.PenStyle, tool_tip: str = '') -> None:
+    def set_colour(self, color: QColor, style: Qt.PenStyle, tool_tip: str = '') -> None:
         """
         Set color and style
         :param color: QColor instance
@@ -133,7 +133,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
         for segment in self.segments_list:
             segment.setToolTip(tool_tip)
-            segment.set_colour(color=color, w=w, style=style)
+            segment.set_colour(color=color, style=style)
 
     def update_connectors(self) -> None:
         """

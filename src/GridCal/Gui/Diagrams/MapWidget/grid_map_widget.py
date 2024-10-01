@@ -57,7 +57,7 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
-from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget, qimage_to_cv
+from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.messages import error_msg
 
 if TYPE_CHECKING:
@@ -873,7 +873,7 @@ class GridMapWidget(BaseDiagramWidget):
 
         self.update_device_sizes()
 
-    def update_device_sizes(self):
+    def get_branch_width(self):
         """
 
         :return:
@@ -882,6 +882,13 @@ class GridMapWidget(BaseDiagramWidget):
         min_zoom = self.map.min_level
         zoom = self.map.zoom_factor
         scale = self.diagram.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
+        return scale
+
+    def update_device_sizes(self):
+        """
+
+        :return:
+        """
 
         # rescale lines
         for dev_tpe in [DeviceType.LineDevice,
@@ -890,7 +897,7 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
             for key, lne in graphics_dict.items():
-                lne.set_width_scale(scale)
+                lne.set_width_scale(self.get_branch_width())
 
         # rescale substations
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
@@ -1070,9 +1077,9 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 0.5
+                        weight = self.get_branch_width()
 
-                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+                    graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
 
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
@@ -1130,7 +1137,7 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 0.5
+                        weight = self.get_branch_width()
 
                     tooltip = str(i) + ': ' + graphic_object.api_object.name
                     tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
@@ -1145,7 +1152,7 @@ class GridMapWidget(BaseDiagramWidget):
                     else:
                         graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
-                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+                    graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
 
     def get_image(self, transparent: bool = False) -> QImage:
         """
