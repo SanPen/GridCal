@@ -15,6 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
 import chardet
 import os
 from typing import List, AnyStr, Dict
@@ -559,6 +560,7 @@ class PowerWorldParser:
                              'dc bus data',
                              'dc line data',
                              'dc converter data',
+                             'vs converter data',
                              'z table data',
                              'gcd data',
                              'transaction data',
