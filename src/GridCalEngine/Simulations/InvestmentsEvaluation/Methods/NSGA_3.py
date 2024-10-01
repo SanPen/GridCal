@@ -15,15 +15,15 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
-from pymoo.core.problem import ElementwiseProblem
-from pymoo.util.ref_dirs import get_reference_directions
-from pymoo.optimize import minimize
-from pymoo.algorithms.moo.nsga3 import NSGA3
-from pymoo.operators.crossover.sbx import SBX
-from pymoo.operators.repair.rounding import RoundingRepair
-# from pymoo.operators.mutation.bitflip import BitflipMutation
-from pymoo.core.sampling import Sampling
-from pymoo.core.mutation import Mutation
+from GridCal.ThirdParty.pymoo.core.problem import ElementwiseProblem
+from GridCal.ThirdParty.pymoo.util.ref_dirs import get_reference_directions
+from GridCal.ThirdParty.pymoo.optimize import minimize
+from GridCal.ThirdParty.pymoo.algorithms.moo.nsga3 import NSGA3
+from GridCal.ThirdParty.pymoo.operators.crossover.sbx import SBX
+from GridCal.ThirdParty.pymoo.operators.repair.rounding import RoundingRepair
+# from GridCal.ThirdParty.pymoo.operators.mutation.bitflip import BitflipMutation
+from GridCal.ThirdParty.pymoo.core.sampling import Sampling
+from GridCal.ThirdParty.pymoo.core.mutation import Mutation
 
 
 class UniformBinarySampling(Sampling):

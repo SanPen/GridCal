@@ -22,7 +22,7 @@ from GridCalEngine.Devices.Parents.editable_device import EditableDevice, Device
 class SequenceLineType(EditableDevice):
 
     def __init__(self, name='SequenceLine', idtag=None, Imax=1, Vnom=1,
-                 R=0, X=0, B=0, R0=0, X0=0, B0=0):
+                 R=0, X=0, B=0, R0=0, X0=0, num_circuits=1, B0=0, Area=0.0):
         """
         Constructor
         :param name: name of the model
@@ -53,6 +53,9 @@ class SequenceLineType(EditableDevice):
         self.X0 = X0
         self.B0 = B0
 
+        self.Area = Area
+        self.num_circuits = num_circuits
+
         self.register(key='Imax', units='kA', tpe=float, definition='Current rating of the line', old_names=['rating'])
         self.register(key='Vnom', units='kV', tpe=float, definition='Voltage rating of the line')
         self.register(key='R', units='Ohm/km', tpe=float, definition='Positive-sequence resistance per km')
@@ -61,6 +64,8 @@ class SequenceLineType(EditableDevice):
         self.register(key='R0', units='Ohm/km', tpe=float, definition='Zero-sequence resistance per km')
         self.register(key='X0', units='Ohm/km', tpe=float, definition='Zero-sequence reactance per km')
         self.register(key='B0', units='uS/km', tpe=float, definition='Zero-sequence shunt susceptance per km')
+        self.register(key='Area', units='mm2', tpe=float, definition='Zero-sequence shunt susceptance per km')
+        self.register(key='num_circuits', units='', tpe=int, definition='Number of circuits in the line')
 
     def get_values(self, Sbase, length):
         """

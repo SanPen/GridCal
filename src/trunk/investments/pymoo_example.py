@@ -1,8 +1,8 @@
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.algorithms.moo.nsga3 import NSGA3
-from pymoo.problems import get_problem
-from pymoo.optimize import minimize
-from pymoo.visualization.scatter import Scatter
+from GridCal.ThirdParty.pymoo.algorithms.moo.nsga2 import NSGA2
+from GridCal.ThirdParty.pymoo.algorithms.moo.nsga3 import NSGA3
+from GridCal.ThirdParty.pymoo.problems import get_problem
+from GridCal.ThirdParty.pymoo.optimize import minimize
+from GridCal.ThirdParty.pymoo.visualization.scatter import Scatter
 
 problem = get_problem("zdt1")
 

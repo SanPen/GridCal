@@ -405,10 +405,10 @@ class InvestmentsEvaluationDriver(TimeSeriesDriverTemplate):
             raise Exception(f'Unknown investments objective function type {self.options.objf_tpe}')
 
         # revert to the initial state
-        self.grid.set_investments_status(investments_list=inv_list,
-                                         status=False,
-                                         all_elements_dict=self.get_all_elements_dict)
-
+        # self.grid.set_investments_status(investments_list=inv_list,
+        #                                  status=False,
+        #                                  all_elements_dict=self.get_all_elements_dict)
+        #
         # record the evaluation
         if record_results:
             self.results.add(capex=scores.capex_score,

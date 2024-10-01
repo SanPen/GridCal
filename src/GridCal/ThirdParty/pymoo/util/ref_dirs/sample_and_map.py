@@ -1,0 +1,24 @@
+import numpy as np
+
+from GridCal.ThirdParty.pymoo.core.problem import Problem
+from GridCal.ThirdParty.pymoo.operators.sampling.lhs import LatinHypercubeSampling
+from GridCal.ThirdParty.pymoo.util.reference_direction import ReferenceDirectionFactory, map_onto_unit_simplex
+
+
+class RandomSamplingAndMap(ReferenceDirectionFactory):
+
+    def __init__(self,
+                 n_dim,
+                 n_points,
+                 **kwargs):
+        super().__init__(n_dim, **kwargs)
+        self.n_points = n_points
+
+    def _do(self):
+        problem = Problem(n_var=self.n_dim, xl=0.0, xu=1.0)
+        sampling = LatinHypercubeSampling()
+
+        x = sampling(problem, self.n_points - self.n_dim, to_numpy=True)
+        x = map_onto_unit_simplex(x, "kraemer")
+        x = np.row_stack([x, np.eye(self.n_dim)])
+        return x

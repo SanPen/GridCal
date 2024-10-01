@@ -1883,6 +1883,7 @@ class SimulationsMain(TimeEventsMain):
         maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
         unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
         generate_report = self.ui.addOptimalPowerFlowReportCheckBox.isChecked()
+        ips_verbose = self.ui.ips_verbose_spinBox.value()
 
         if self.ui.save_mip_checkBox.isChecked():
             folder = self.opf_file_path()
@@ -1929,7 +1930,8 @@ class SimulationsMain(TimeEventsMain):
                                               ips_tolerance=ips_tolerance,
                                               ips_iterations=ips_iterations,
                                               ips_trust_radius=ips_trust_radius,
-                                              ips_init_with_pf=ips_init_with_pf)
+                                              ips_init_with_pf=ips_init_with_pf,
+                                              verbose=ips_verbose)
 
         return options
 

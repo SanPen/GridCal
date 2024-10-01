@@ -15,16 +15,16 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from typing import List, Dict, Union
-from pymoo.core.mixed import MixedVariableGA
-from pymoo.algorithms.moo.nsga2 import RankAndCrowding
-from pymoo.algorithms.moo.nsga2 import RankAndCrowdingSurvival
-from pymoo.core.mixed import MixedVariableMating
-# from pymoo.decomposition.asf import ASF
+from GridCal.ThirdParty.pymoo.core.mixed import MixedVariableGA
+from GridCal.ThirdParty.pymoo.algorithms.moo.nsga2 import RankAndCrowding
+from GridCal.ThirdParty.pymoo.algorithms.moo.nsga2 import RankAndCrowdingSurvival
+from GridCal.ThirdParty.pymoo.core.mixed import MixedVariableMating
+# from GridCal.ThirdParty.pymoo.decomposition.asf import ASF
 # import matplotlib.pyplot as plt  # this is going to be in results, here for now to show we need to include plots
-from pymoo.core.mixed import MixedVariableSampling
-from pymoo.optimize import minimize
-from pymoo.core.problem import ElementwiseProblem
-from pymoo.core.variable import Real, Integer, Choice, Binary
+from GridCal.ThirdParty.pymoo.core.mixed import MixedVariableSampling
+from GridCal.ThirdParty.pymoo.optimize import minimize
+from GridCal.ThirdParty.pymoo.core.problem import ElementwiseProblem
+from GridCal.ThirdParty.pymoo.core.variable import Real, Integer, Choice, Binary
 
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
