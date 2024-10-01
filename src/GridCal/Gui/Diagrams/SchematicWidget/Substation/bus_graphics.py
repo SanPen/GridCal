@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
                                                    FONT_SCALE, EMERGENCY, TRANSPARENT)
@@ -478,6 +478,10 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.expand_diagram_from_bus)
 
+        add_menu_entry(menu, text='Vecinity diagram from here',
+                       icon_path=":/Icons/icons/grid_icon.svg",
+                       function_ptr=self.new_vecinity_diagram_from_here)
+
         menu.addSection("Add")
 
         # Actions under the "Add" section
@@ -564,6 +568,16 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Expands the diagram from this bus
         """
         self.editor.expand_diagram_from_bus(root_bus=self.api_object)
+
+    def new_vecinity_diagram_from_here(self):
+        """
+        Create new vecinity diagram
+        :return:
+        """
+        if self.api_object is not None:
+            self.editor.gui.new_bus_branch_diagram_from_bus(root_bus=self.api_object)
+        else:
+            warning_msg("The api object is none :(")
 
     def enable_disable_toggle(self):
         """

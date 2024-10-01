@@ -1181,6 +1181,30 @@ class DiagramsMain(CompiledArraysMain):
                                                                 diagram=diagram)
                             self.set_diagrams_list_view()
 
+    def new_bus_branch_diagram_from_bus(self, root_bus: dev.Bus):
+        """
+        Add a bus-branch diagram of a particular selection of objects
+        """
+        dlg = InputNumberDialogue(min_value=1, max_value=99,
+                                  default_value=1, is_int=True,
+                                  title='Vecinity diagram',
+                                  text='Select the expansion level')
+
+        if dlg.exec():
+            diagram = make_vecinity_diagram(circuit=self.circuit,
+                                            root_bus=root_bus,
+                                            max_level=dlg.value)
+
+            diagram_widget = SchematicWidget(gui=self,
+                                             circuit=self.circuit,
+                                             diagram=diagram,
+                                             default_bus_voltage=self.ui.defaultBusVoltageSpinBox.value(),
+                                             time_index=self.get_diagram_slider_index(),
+                                             call_delete_db_element_func=self.call_delete_db_element)
+
+            self.add_diagram_widget_and_diagram(diagram_widget=diagram_widget, diagram=diagram)
+            self.set_diagrams_list_view()
+
     def new_bus_branch_diagram_from_substation(self, substation: dev.Substation):
         """
         Add a bus-branch diagram of a particular selection of objects
