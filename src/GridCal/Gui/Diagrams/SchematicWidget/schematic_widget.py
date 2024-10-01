@@ -53,7 +53,8 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
-from GridCalEngine.Simulations import PowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
@@ -3736,7 +3737,10 @@ class SchematicWidget(BaseDiagramWidget):
                     if results is not None:
                         if isinstance(results, PowerFlowTimeSeriesResults):
                             table = results.mdl(result_type=ResultTypes.BusVoltageModule)
-                            table.plot(ax=ax_2, selected_col_idx=[i])
+                            table.plot_device(ax=ax_2, device_idx=i)
+                        elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot_device(ax=ax_2, device_idx=i)
 
                 # Injections
                 # filter injections by bus

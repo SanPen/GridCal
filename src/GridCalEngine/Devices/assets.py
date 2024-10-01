@@ -504,11 +504,6 @@ class Assets:
         if self.time_profile is None:
             raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
 
-        # for key, tpe in self.device_type_name_dict.items():
-        #     elements = self.get_elements_by_type(device_type=tpe)
-        #     for elm in elements:
-        #         elm.ensure_profiles_exist(self.time_profile)
-
         for elm in self.items():
             elm.ensure_profiles_exist(self.time_profile)
 
@@ -4321,7 +4316,6 @@ class Assets:
             for elm in lst:
                 yield elm
 
-
     # ------------------------------------------------------------------------------------------------------------------
     # Load-like devices
     # ------------------------------------------------------------------------------------------------------------------
@@ -4508,28 +4502,28 @@ class Assets:
         """
 
         if device_type == DeviceType.LoadDevice:
-            return self.get_loads()
+            return self._loads
 
         elif device_type == DeviceType.StaticGeneratorDevice:
-            return self.get_static_generators()
+            return self._static_generators
 
         elif device_type == DeviceType.GeneratorDevice:
-            return self.get_generators()
+            return self._generators
 
         elif device_type == DeviceType.BatteryDevice:
-            return self.get_batteries()
+            return self._batteries
 
         elif device_type == DeviceType.ShuntDevice:
-            return self.get_shunts()
+            return self._shunts
 
         elif device_type == DeviceType.ExternalGridDevice:
-            return self.get_external_grids()
+            return self._external_grids
 
         elif device_type == DeviceType.CurrentInjectionDevice:
-            return self.get_current_injections()
+            return self._current_injections
 
         elif device_type == DeviceType.ControllableShuntDevice:
-            return self.get_controllable_shunts()
+            return self._controllable_shunts
 
         elif device_type == DeviceType.LineDevice:
             return self._lines
@@ -4640,15 +4634,6 @@ class Assets:
 
         elif device_type == DeviceType.EmissionGasDevice:
             return self._emission_gases
-
-        # elif device_type == DeviceType.GeneratorTechnologyAssociation:
-        #     return self._generators_technologies
-        #
-        # elif device_type == DeviceType.GeneratorFuelAssociation:
-        #     return self._generators_fuels
-        #
-        # elif device_type == DeviceType.GeneratorEmissionAssociation:
-        #     return self._generators_emissions
 
         elif device_type == DeviceType.ConnectivityNodeDevice:
             return self._connectivity_nodes
@@ -5296,7 +5281,7 @@ class Assets:
 
         return found
 
-    def get_all_elements_dict(self, logger = Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
+    def get_all_elements_dict(self, logger=Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
         """
         Get a dictionary of all elements
         :param: logger: Logger

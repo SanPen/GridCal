@@ -21,9 +21,10 @@ from PySide6 import QtWidgets
 from matplotlib import pyplot as plt
 
 import GridCal.Gui.gui_functions as gf
+from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
-from GridCal.Gui.general_dialogues import NewProfilesStructureDialogue, TimeReIndexDialogue
+from GridCal.Gui.general_dialogues import NewProfilesStructureDialogue, TimeReIndexDialogue, LogsDialogue
 from GridCal.Gui.messages import yes_no_question, warning_msg, info_msg
 from GridCal.Gui.Main.SubClasses.Model.objects import ObjectsTableMain
 from GridCal.Gui.ProfilesInput.models_dialogue import ModelsInputGUI
@@ -328,7 +329,7 @@ class TimeEventsMain(ObjectsTableMain):
         Edit profiles with a linear combination
         Returns: Nothing
         """
-
+        logger: Logger = Logger()
         # value = self.ui.profile_factor_doubleSpinBox.value()
 
         dev_type_text = self.get_db_object_selected_type()
@@ -356,13 +357,14 @@ class TimeEventsMain(ObjectsTableMain):
 
                     # Assign profiles
                     if len(objects) > 0:
-                        attr_from = objects[0].properties_with_profile[magnitude_from]
-                        attr_to = objects[0].properties_with_profile[magnitude_to]
 
                         for i, elm in enumerate(objects):
-                            profile_from = elm.get_profile(magnitude=attr_from)
-                            profile_to = elm.get_profile(magnitude=attr_to)
-                            profile_to.set(profile_from.toarray())
+                            profile_from = elm.get_profile(magnitude=magnitude_from)
+                            profile_to = elm.get_profile(magnitude=magnitude_to)
+                            if profile_from is not None and profile_to is not None:
+                                profile_to.set(profile_from.toarray())
+                            else:
+                                print(f"P or Q profile None in {elm.name}")
 
                         self.display_profiles()
 
@@ -373,6 +375,10 @@ class TimeEventsMain(ObjectsTableMain):
             else:
                 # no buses or no actual change
                 pass
+
+        if logger.has_logs():
+            dlg = LogsDialogue("Set profile", logger=logger)
+            dlg.exec_()
 
     def re_index_time(self):
         """

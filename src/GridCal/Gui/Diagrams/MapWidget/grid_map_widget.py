@@ -20,6 +20,9 @@ from typing import Union, List, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
+import pandas as pd
+from matplotlib import pyplot as plt
+
 from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
@@ -40,9 +43,11 @@ from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
@@ -57,7 +62,7 @@ import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
-from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget, qimage_to_cv
+from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
 from GridCal.Gui.messages import error_msg
 
 if TYPE_CHECKING:
@@ -870,10 +875,9 @@ class GridMapWidget(BaseDiagramWidget):
         """
 
         # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
-
         self.update_device_sizes()
 
-    def update_device_sizes(self):
+    def get_branch_width(self):
         """
 
         :return:
@@ -882,6 +886,13 @@ class GridMapWidget(BaseDiagramWidget):
         min_zoom = self.map.min_level
         zoom = self.map.zoom_factor
         scale = self.diagram.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
+        return scale
+
+    def update_device_sizes(self):
+        """
+
+        :return:
+        """
 
         # rescale lines
         for dev_tpe in [DeviceType.LineDevice,
@@ -889,14 +900,14 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.HVDCLineDevice,
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
-            for key, lne in graphics_dict.items():
-                lne.set_width_scale(scale)
+            for key, elm_graphics in graphics_dict.items():
+                elm_graphics.set_width_scale(self.get_branch_width())
 
         # rescale substations
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
-        for se_key, se in data.items():
-            se.set_api_object_color()
-            se.set_size(r=self.diagram.min_bus_width)
+        for se_key, elm_graphics in data.items():
+            elm_graphics.set_api_object_color()
+            elm_graphics.set_size(r=self.diagram.min_bus_width)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -1070,9 +1081,10 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 0.5
+                        weight = self.get_branch_width()
 
-                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+                    graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
+                    graphic_object.set_width_scale(weight)
 
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
@@ -1130,7 +1142,7 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 0.5
+                        weight = self.get_branch_width()
 
                     tooltip = str(i) + ': ' + graphic_object.api_object.name
                     tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
@@ -1145,7 +1157,8 @@ class GridMapWidget(BaseDiagramWidget):
                     else:
                         graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
-                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+                    graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
+                    graphic_object.set_width_scale(weight)
 
     def get_image(self, transparent: bool = False) -> QImage:
         """
@@ -1213,6 +1226,7 @@ class GridMapWidget(BaseDiagramWidget):
                           logger=self.logger)
 
         return GridMapWidget(
+            gui=self.gui,
             tile_src=self.map.tile_src,
             start_level=self.diagram.start_level,
             longitude=self.diagram.longitude,
@@ -1232,6 +1246,80 @@ class GridMapWidget(BaseDiagramWidget):
         for gelm in graphics:
             gelm.api_object.latitude = gelm.lat
             gelm.api_object.longitude = gelm.lon
+
+    def plot_substation(self, i: int, api_object: Substation):
+        """
+        Plot branch results
+        :param i: bus index
+        :param api_object: Substation API object
+        :return:
+        """
+
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        ax_1.set_title('Power', fontsize=14)
+        ax_1.set_ylabel('Injections [MW]', fontsize=11)
+
+        ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2.set_title('Time', fontsize=14)
+        ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
+
+        # set time
+        x = self.circuit.get_time_array()
+
+        if x is not None:
+            if len(x) > 0:
+
+                # Get all devices grouped by bus
+                all_data = self.circuit.get_injection_devices_grouped_by_substation()
+
+                # search drivers for voltage data
+                for driver, results in self.gui.session.drivers_results_iter():
+                    if results is not None:
+                        if isinstance(results, PowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot_device(ax=ax_2, device_idx=i)
+                        elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot_device(ax=ax_2, device_idx=i)
+
+                # Injections
+                # filter injections by bus
+                bus_devices = all_data.get(api_object, None)
+                if bus_devices:
+
+                    power_data = dict()
+                    for tpe_name, devices in bus_devices.items():
+                        for device in devices:
+                            if device.device_type == DeviceType.LoadDevice:
+                                power_data[device.name] = -device.P_prof.toarray()
+                            elif device.device_type == DeviceType.GeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ShuntDevice:
+                                power_data[device.name] = -device.G_prof.toarray()
+                            elif device.device_type == DeviceType.StaticGeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ExternalGridDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.BatteryDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            else:
+                                raise Exception("Missing shunt device for plotting")
+
+                    df = pd.DataFrame(data=power_data, index=x)
+
+                    try:
+                        # yt area plots
+                        df.plot.area(ax=ax_1)
+                    except ValueError:
+                        # use regular plots
+                        df.plot(ax=ax_1)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
 
 
 def generate_map_diagram(substations: List[Substation],
