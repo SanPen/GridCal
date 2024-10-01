@@ -875,7 +875,6 @@ class GridMapWidget(BaseDiagramWidget):
         """
 
         # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
-
         self.update_device_sizes()
 
     def get_branch_width(self):
@@ -901,14 +900,14 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.HVDCLineDevice,
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
-            for key, lne in graphics_dict.items():
-                lne.set_width_scale(self.get_branch_width())
+            for key, elm_graphics in graphics_dict.items():
+                elm_graphics.set_width_scale(self.get_branch_width())
 
         # rescale substations
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
-        for se_key, se in data.items():
-            se.set_api_object_color()
-            se.set_size(r=self.diagram.min_bus_width)
+        for se_key, elm_graphics in data.items():
+            elm_graphics.set_api_object_color()
+            elm_graphics.set_size(r=self.diagram.min_bus_width)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -1085,6 +1084,7 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = self.get_branch_width()
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
+                    graphic_object.set_width_scale(weight)
 
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
@@ -1158,6 +1158,7 @@ class GridMapWidget(BaseDiagramWidget):
                         graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
+                    graphic_object.set_width_scale(weight)
 
     def get_image(self, transparent: bool = False) -> QImage:
         """

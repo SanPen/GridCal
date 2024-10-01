@@ -384,7 +384,7 @@ class ResultsTable:
         """
         index, columns, data = self.get_data()
 
-        columns = columns[device_idx]
+        columns = [columns[device_idx]]
         data = data[:, device_idx]
 
         if ax is None:
