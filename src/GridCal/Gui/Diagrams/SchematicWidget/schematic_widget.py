@@ -14,12 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import sys
 import os
 import json
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, TYPE_CHECKING
 from collections.abc import Callable
 from warnings import warn
 import networkx as nx
@@ -34,7 +35,6 @@ from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel,
 from PySide6.QtWidgets import (QGraphicsView, QMessageBox, QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsItem)
 from PySide6.QtSvg import QSvgGenerator
 
-from GridCal.Gui.Diagrams.graphics_manager import ALL_GRAPHICS
 from GridCalEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES, FLUID_TYPES, BRANCH_TYPES
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -53,7 +53,8 @@ from GridCalEngine.Devices.Injections.generator import Generator
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.graphic_location import GraphicLocation
-from GridCalEngine.enumerations import DeviceType, SimulationTypes
+from GridCalEngine.Simulations import PowerFlowTimeSeriesResults
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec, Logger
 
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
@@ -80,6 +81,9 @@ from GridCal.Gui.general_dialogues import InputNumberDialogue
 import GridCal.Gui.Visualization.visualization as viz
 import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.messages import info_msg, error_msg, warning_msg, yes_no_question
+
+if TYPE_CHECKING:
+    from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 
 BRANCH_GRAPHICS = Union[
     LineGraphicItem,
@@ -213,7 +217,7 @@ class SchematicLibraryModel(QStandardItemModel):
         :param index: 
         :return: 
         """
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
 class SchematicScene(QGraphicsScene):
@@ -293,7 +297,7 @@ class CustomGraphicsView(QGraphicsView):
         """
 
         # By pressing ctrl while dragging, we can move the grid
-        if event.modifiers() & Qt.ControlModifier:
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.drag_mode = QGraphicsView.DragMode.ScrollHandDrag
         else:
             self.drag_mode = QGraphicsView.DragMode.RubberBandDrag
@@ -335,6 +339,7 @@ class SchematicWidget(BaseDiagramWidget):
     """
 
     def __init__(self,
+                 gui: DiagramsMain,
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, None],
                  default_bus_voltage: float = 10.0,
@@ -351,6 +356,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
 
         BaseDiagramWidget.__init__(self,
+                                   gui=gui,
                                    circuit=circuit,
                                    diagram=diagram,
                                    library_model=SchematicLibraryModel(),
@@ -434,7 +440,7 @@ class SchematicWidget(BaseDiagramWidget):
         if event.mimeData().hasFormat('component/name'):
             obj_type = event.mimeData().data('component/name')
 
-            point0 = self.editor_graphics_view.mapToScene(event.position().x(), event.position().y())
+            point0 = self.editor_graphics_view.mapToScene(int(event.position().x()), int(event.position().y()))
             x0 = point0.x()
             y0 = point0.y()
 
@@ -1938,7 +1944,7 @@ class SchematicWidget(BaseDiagramWidget):
                 bus.y = y[i]
             i += 1
 
-    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+    def get_image(self, transparent: bool = False) -> QImage:
         """
         get the current picture
         :param transparent: Set a transparent background
@@ -1960,7 +1966,7 @@ class SchematicWidget(BaseDiagramWidget):
         painter.end()
         # image = self.editor_graphics_view.grab().toImage()
 
-        return image, w, h
+        return image
 
     def take_picture(self, filename: str):
         """
@@ -1969,7 +1975,7 @@ class SchematicWidget(BaseDiagramWidget):
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image, _, _ = self.get_image(transparent=False)
+            image = self.get_image(transparent=False)
             image.save(filename)
 
         elif extension == '.svg':
@@ -3700,15 +3706,21 @@ class SchematicWidget(BaseDiagramWidget):
 
         return min_x, max_x, min_y, max_y
 
-    def plot_bus(self, i, api_object: Bus):
+    def plot_bus(self, i: int, api_object: Bus):
         """
         Plot branch results
-        :param i: branch index (not counting HVDC lines because those are not real Branches)
+        :param i: bus index
         :param api_object: Bus API object
         :return:
         """
         fig = plt.figure(figsize=(12, 8))
         ax_1 = fig.add_subplot(211)
+        ax_1.set_title('Power', fontsize=14)
+        ax_1.set_ylabel('Injections [MW]', fontsize=11)
+
+        ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2.set_title('Time', fontsize=14)
+        ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
 
         # set time
         x = self.circuit.get_time_array()
@@ -3719,18 +3731,16 @@ class SchematicWidget(BaseDiagramWidget):
                 # Get all devices grouped by bus
                 all_data = self.circuit.get_injection_devices_grouped_by_bus()
 
-                # filter injections by bus
-                bus_devices = all_data.get(api_object, None)
-
-                voltage = dict()
-
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.PowerFlowTimeSeries_run:
-                                voltage[key] = np.abs(driver.results.voltage[:, i])
+                # search drivers for voltage data
+                for driver, results in self.gui.session.drivers_results_iter():
+                    if results is not None:
+                        if isinstance(results, PowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot(ax=ax_2, selected_col_idx=[i])
 
                 # Injections
+                # filter injections by bus
+                bus_devices = all_data.get(api_object, None)
                 if bus_devices:
 
                     power_data = dict()
@@ -3752,22 +3762,13 @@ class SchematicWidget(BaseDiagramWidget):
                                 raise Exception("Missing shunt device for plotting")
 
                     df = pd.DataFrame(data=power_data, index=x)
-                    ax_1.set_title('Power', fontsize=14)
-                    ax_1.set_ylabel('Injections [MW]', fontsize=11)
+
                     try:
                         # yt area plots
                         df.plot.area(ax=ax_1)
                     except ValueError:
                         # use regular plots
                         df.plot(ax=ax_1)
-
-                # voltage
-                if len(voltage.keys()):
-                    ax_2 = fig.add_subplot(212, sharex=ax_1)
-                    df = pd.DataFrame(data=voltage, index=x)
-                    ax_2.set_title('Time', fontsize=14)
-                    ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
-                    df.plot(ax=ax_2)
 
                 plt.legend()
                 fig.suptitle(api_object.name, fontsize=20)
@@ -4115,6 +4116,7 @@ class SchematicWidget(BaseDiagramWidget):
                           logger=self.logger)
 
         return SchematicWidget(
+            gui=self.gui,
             circuit=self.circuit,
             diagram=self.diagram,
             default_bus_voltage=self.default_bus_voltage,

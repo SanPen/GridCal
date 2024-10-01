@@ -51,7 +51,9 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         """
         mdl: WrappableTableModel = self.model()
         if mdl:
-            headerText = mdl.headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
+            headerText = mdl.headerData(section=logicalIndex,
+                                        orientation=self.orientation(),
+                                        role=QtCore.Qt.ItemDataRole.DisplayRole)
             option = QtWidgets.QStyleOptionHeader()
             self.initStyleOption(option)
             option.section = logicalIndex

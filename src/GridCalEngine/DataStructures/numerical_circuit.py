@@ -766,6 +766,14 @@ class NumericalCircuit:
         return self.battery_data.names
 
     @property
+    def shunt_names(self):
+        """
+
+        :return:
+        """
+        return self.shunt_data.names
+
+    @property
     def hvdc_names(self):
         """
 

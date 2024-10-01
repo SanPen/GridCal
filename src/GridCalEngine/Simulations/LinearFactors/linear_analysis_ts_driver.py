@@ -103,13 +103,10 @@ class LinearAnalysisTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             driver_.run()
 
-            # Sf = driver_.get_flows(Sbus=Pbus[time_indices_, :])
-
-            self.results.S[it, :] = nc.Sbus
-            self.results.Sf[it, :] = driver_.get_flows(Sbus=nc.Sbus)
+            self.results.S[it, :] = nc.Sbus * nc.Sbase
+            self.results.Sf[it, :] = driver_.get_flows(Sbus=nc.Sbus) * nc.Sbase
 
         rates = self.grid.get_branch_rates_wo_hvdc()
         self.results.loading = self.results.Sf / (rates + 1e-9)
-        # self.results.S = Pbus[self.time_indices, :]
 
         self.toc()

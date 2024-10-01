@@ -263,14 +263,15 @@ class ProfilesModel(WrappableTableModel):
             return None
 
         if role == QtCore.Qt.ItemDataRole.DisplayRole:
-            if len(self.elements):
-                if orientation == QtCore.Qt.Orientation.Horizontal:
+
+            if orientation == QtCore.Qt.Orientation.Horizontal:
+                if section < len(self.elements):
                     return str(self.elements[section].name)
-                elif orientation == QtCore.Qt.Orientation.Vertical:
-                    if self.time_array is None:
-                        return str(section)
-                    else:
-                        return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M:%S')
+            elif orientation == QtCore.Qt.Orientation.Vertical:
+                if self.time_array is None:
+                    return str(section)
+                else:
+                    return pd.to_datetime(self.time_array[section]).strftime('%d-%m-%Y %H:%M:%S')
 
         return None
 

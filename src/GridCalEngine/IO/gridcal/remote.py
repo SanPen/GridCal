@@ -206,7 +206,7 @@ def gather_model_as_jsons_for_communication(circuit: MultiCircuit,
     return data
 
 
-def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
+async def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
                    endpoint_url: str,
                    certificate: str) -> Any:
     """
@@ -217,13 +217,11 @@ def send_json_data(json_data: Dict[str, Union[str, Dict[str, Dict[str, str]]]],
     :return service response
     """
 
-    response = asyncio.get_event_loop().run_until_complete(
-        requests.post(
-            url=endpoint_url,
-            json=json_data,
-            stream=True,
-            verify=certificate
-        )
+    response = requests.post(
+        url=endpoint_url,
+        json=json_data,
+        stream=True,
+        verify=certificate
     )
 
     # return server response

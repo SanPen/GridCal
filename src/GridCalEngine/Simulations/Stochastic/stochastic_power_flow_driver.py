@@ -69,12 +69,12 @@ class StochasticPowerFlowDriver(DriverTemplate):
 
         self.simulation_type = simulation_type
 
-        self.results = StochasticPowerFlowResults(n=0,
-                                                  m=0,
-                                                  p=0,
-                                                  bus_names=np.empty(0),
-                                                  branch_names=np.empty(0),
-                                                  bus_types=np.empty(0))
+        self.results = StochasticPowerFlowResults(n=self.grid.get_bus_number(),
+                                                  m=self.grid.get_branch_number_wo_hvdc(),
+                                                  p=self.max_sampling_points,
+                                                  bus_names=self.grid.get_bus_names(),
+                                                  branch_names=self.grid.get_branch_names_wo_hvdc(),
+                                                  bus_types=np.ones(self.grid.get_bus_number()))
 
         self.logger = Logger()
 
@@ -132,9 +132,15 @@ class StochasticPowerFlowDriver(DriverTemplate):
         avg_res = PowerFlowResults(n=numerical_circuit.nbus,
                                    m=numerical_circuit.nbr,
                                    n_hvdc=numerical_circuit.nhvdc,
+                                   n_gen=numerical_circuit.ngen,
+                                   n_batt=numerical_circuit.nbatt,
+                                   n_sh=numerical_circuit.nshunt,
                                    bus_names=numerical_circuit.bus_names,
                                    branch_names=numerical_circuit.branch_names,
                                    hvdc_names=numerical_circuit.hvdc_names,
+                                   gen_names=numerical_circuit.generator_names,
+                                   batt_names=numerical_circuit.battery_names,
+                                   sh_names=numerical_circuit.shunt_names,
                                    bus_types=numerical_circuit.bus_types)
 
         variance_sum = 0.0

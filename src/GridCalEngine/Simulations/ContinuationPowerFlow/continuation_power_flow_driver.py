@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+import numpy as np
 from typing import Union
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
@@ -58,11 +59,11 @@ class ContinuationPowerFlowDriver(DriverTemplate):
         self.t = t
 
         self.results = ContinuationPowerFlowResults(nval=0,
-                                                    nbus=0,
-                                                    nbr=0,
-                                                    bus_names=[],
-                                                    branch_names=[],
-                                                    bus_types=[])
+                                                    nbus=self.grid.get_bus_number(),
+                                                    nbr=self.grid.get_branch_number_wo_hvdc(),
+                                                    bus_names=self.grid.get_bus_names(),
+                                                    branch_names=self.grid.get_branch_names_wo_hvdc(),
+                                                    bus_types=np.ones(self.grid.get_bus_number()))
 
     def get_steps(self):
         """

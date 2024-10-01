@@ -376,7 +376,7 @@ class ArrowHead(QGraphicsPolygonItem):
         """
         self.setBrush(color)
         self.label.setDefaultTextColor(color)
-        self.label.setScale(w)
+        # self.label.setScale(w)
 
     def set_value(self, value: float, redraw=True, backwards=False, name="", units="", format_str="{:10.2f}",
                   draw_label: bool = True, visibility_filter_value=1e-4):

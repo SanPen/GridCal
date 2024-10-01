@@ -6,7 +6,7 @@ linear and non-linear optimization functions. Some of these functions are
 well known, while others you may have never heard of as they are a
 product of cutting-edge research.
 
-![](pics/GridCal.png)
+[![GridCal](pics/GridCal_yt.png)](https://www.youtube.com/watch?v=O-tb_um8YtU)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/75e794c9bcfd49bda1721b9ba8f6c790)](https://app.codacy.com/app/SanPen/GridCal?utm_source=github.com&utm_medium=referral&utm_content=SanPen/GridCal&utm_campaign=Badge_Grade_Dashboard)
 [![Documentation Status](https://readthedocs.org/projects/gridcal/badge/?version=latest)](https://gridcal.readthedocs.io/en/latest/?badge=latest) [![Build Status](https://travis-ci.org/SanPen/GridCal.svg?branch=master)](https://travis-ci.org/SanPen/GridCal)
@@ -1006,6 +1006,7 @@ An example on how to send a grid from a script to the server:
 
 ```python
 import os
+import asyncio
 import GridCalEngine.api as gce
 
 # path to your file
@@ -1026,9 +1027,11 @@ gce.get_certificate(base_url="https://localhost:8000",
                     pwd="")
 
 # send json
-reply_from_server = gce.send_json_data(json_data=model_data,
-                                       endpoint_url="https://localhost:8000/upload",
-                                       certificate=gce.get_certificate_path())
+reply_from_server = asyncio.get_event_loop().run_until_complete(
+    gce.send_json_data(json_data=model_data,
+                       endpoint_url="https://localhost:8000/upload",
+                       certificate=gce.get_certificate_path())
+)
 
 print(reply_from_server)
 ```

@@ -14,13 +14,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+import numpy as np
 from uuid import uuid4
 import pandas as pd
 from PySide6.QtCore import QThread, Signal
-from typing import Dict, Union, List, Tuple, Any
+from typing import Dict, Union, List, Tuple, Any, Generator
 from collections.abc import Callable
 from warnings import warn
 
+from GridCalEngine.Simulations import ContingencyAnalysisOptions, AvailableTransferCapacityOptions, \
+    ContinuationPowerFlowOptions, ContinuationPowerFlowInput, PowerFlowOptions, ClusteringAnalysisOptions, \
+    InvestmentsEvaluationOptions
 # Module imports
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import (AvailableTransferCapacityDriver,
                                                                               AvailableTransferCapacityResults)
@@ -211,6 +216,17 @@ class SimulationSession:
         """
         return [drv for driver_type, drv in self.drivers.items() if drv is not None]
 
+    def drivers_results_iter(self) -> Generator[Tuple[DRIVER_OBJECTS | None, RESULTS_OBJECTS | None]]:
+        """
+        Iterator returning driver and result types
+        :return: driver, result (both can be None)
+        """
+        for driver_type, drv in self.drivers.items():
+            if hasattr(drv, 'results'):
+                yield drv, drv.results
+            else:
+                yield drv, None
+
     def exists(self, driver_type: SimulationTypes):
         """
         Get the results of the driver
@@ -308,40 +324,46 @@ class SimulationSession:
     def register_driver_from_disk_data(self,
                                        grid: MultiCircuit,
                                        study_name: str,
-                                       data_dict: Dict[str, pd.DataFrame]) -> None:
+                                       data_dict: Dict[str, pd.DataFrame]) -> Logger:
         """
         Create driver with the results
         :param grid: MultiCircuit instance
         :param study_name: name of the study (i.e. Power Flow)
         :param data_dict: dictionary of data coming from the file
         """
+        logger = Logger()
 
         time_indices = data_dict.get('time_indices', grid.get_all_time_indices())
 
         # get the results' object dictionary
         if study_name == AvailableTransferCapacityDriver.tpe.value:
-            drv = AvailableTransferCapacityDriver(grid=grid, options=None)
+            drv = AvailableTransferCapacityDriver(grid=grid,
+                                                  options=AvailableTransferCapacityOptions())
 
         elif study_name == AvailableTransferCapacityTimeSeriesDriver.tpe.value:
             drv = AvailableTransferCapacityTimeSeriesDriver(grid=grid,
-                                                            options=None,
+                                                            options=AvailableTransferCapacityOptions(),
                                                             time_indices=time_indices,
                                                             clustering_results=None)
 
         elif study_name == ContingencyAnalysisDriver.tpe.value:
-            drv = ContingencyAnalysisDriver(grid=grid, options=None)
+            drv = ContingencyAnalysisDriver(grid=grid,
+                                            options=ContingencyAnalysisOptions())
 
         elif study_name == ContingencyAnalysisTimeSeriesDriver.tpe.value:
             drv = ContingencyAnalysisTimeSeriesDriver(grid=grid,
-                                                      options=None,
+                                                      options=ContingencyAnalysisOptions(),
                                                       time_indices=time_indices,
                                                       clustering_results=None)
 
         elif study_name == ContinuationPowerFlowDriver.tpe.value:
+            n = grid.get_bus_number()
             drv = ContinuationPowerFlowDriver(grid=grid,
-                                              options=None,
-                                              inputs=None,
-                                              pf_options=None,
+                                              options=ContinuationPowerFlowOptions(),
+                                              inputs=ContinuationPowerFlowInput(
+                                                  Sbase=np.zeros(n), Vbase=np.zeros(n), Starget=np.zeros(n)
+                                              ),
+                                              pf_options=PowerFlowOptions(),
                                               opf_results=None)
 
         elif study_name == LinearAnalysisDriver.tpe.value:
@@ -369,11 +391,11 @@ class SimulationSession:
                                                 clustering_results=None)
 
         elif study_name == PowerFlowDriver.tpe.value:
-            drv = PowerFlowDriver(grid=grid, options=None)
+            drv = PowerFlowDriver(grid=grid, options=PowerFlowOptions())
 
         elif study_name == PowerFlowTimeSeriesDriver.tpe.value:
             drv = PowerFlowTimeSeriesDriver(grid=grid,
-                                            options=None,
+                                            options=PowerFlowOptions(),
                                             time_indices=time_indices,
                                             clustering_results=None)
 
@@ -385,20 +407,22 @@ class SimulationSession:
                                      opf_results=None)
 
         elif study_name == StochasticPowerFlowDriver.tpe.value:
-            drv = StochasticPowerFlowDriver(grid=grid, options=None)
+            drv = StochasticPowerFlowDriver(grid=grid, options=PowerFlowOptions())
 
         elif study_name == ClusteringDriver.tpe.value:
-            drv = ClusteringDriver(grid=grid, options=None)
+            drv = ClusteringDriver(grid=grid, options=ClusteringAnalysisOptions(0))
 
         elif study_name == InvestmentsEvaluationDriver.tpe.value:
-            drv = InvestmentsEvaluationDriver(grid=grid, options=None)
+            drv = InvestmentsEvaluationDriver(grid=grid,
+                                              options=InvestmentsEvaluationOptions(max_eval=0,
+                                                                                   pf_options=PowerFlowOptions()),)
 
         else:
             warn(f"Session {study_name} not implemented for disk retrieval :/")
-            return
+            return logger
 
         # fill in the saved results
-        drv.results.parse_saved_data(grid=grid, data_dict=data_dict)
+        drv.results.parse_saved_data(grid=grid, data_dict=data_dict, logger=logger)
 
         # perform whatever operations are needed after loading
         drv.results.consolidate_after_loading()
@@ -410,6 +434,8 @@ class SimulationSession:
 
         # register the driver
         self.register(drv)
+
+        return logger
 
     def is_this_running(self, sim_tpe: SimulationTypes) -> bool:
         """
@@ -546,7 +572,7 @@ class SimulationSession:
 
     @property
     def net_transfer_capacity_ts(self) -> Tuple[AvailableTransferCapacityTimeSeriesDriver,
-                                                AvailableTransferCapacityTimeSeriesResults]:
+    AvailableTransferCapacityTimeSeriesResults]:
         """
 
         :return:
@@ -555,7 +581,8 @@ class SimulationSession:
         return drv, results
 
     @property
-    def optimal_net_transfer_capacity(self) -> Tuple[OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
+    def optimal_net_transfer_capacity(self) -> Tuple[
+        OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
         """
 
         :return:
@@ -564,7 +591,8 @@ class SimulationSession:
         return drv, results
 
     @property
-    def optimal_net_transfer_capacity_ts(self) -> Tuple[OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
+    def optimal_net_transfer_capacity_ts(self) -> Tuple[
+        OptimalNetTransferCapacityDriver, OptimalNetTransferCapacityResults]:
         """
 
         :return:

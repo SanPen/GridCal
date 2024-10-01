@@ -17,7 +17,6 @@
 from __future__ import annotations
 from typing import List, Dict, Union, Tuple, Callable, TYPE_CHECKING
 import numpy as np
-import pandas as pd
 import cv2
 from matplotlib import pyplot as plt
 
@@ -35,21 +34,25 @@ from GridCalEngine.Devices.Branches.transformer import Transformer2W
 from GridCalEngine.Devices.Branches.vsc import VSC
 from GridCalEngine.Devices.Branches.upfc import UPFC
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.Simulations import (PowerFlowTimeSeriesResults, LinearAnalysisTimeSeriesResults,
+                                       ContingencyAnalysisTimeSeriesResults, OptimalPowerFlowTimeSeriesResults,
+                                       StochasticPowerFlowResults)
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Diagrams.schematic_diagram import SchematicDiagram
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.basic_structures import Logger
-from GridCalEngine.enumerations import SimulationTypes
+from GridCalEngine.basic_structures import Logger, Mat
+from GridCalEngine.enumerations import SimulationTypes, ResultTypes
+import GridCalEngine.Devices.Diagrams.palettes as palettes
 
 from GridCal.Gui.Diagrams.graphics_manager import GraphicsManager
-import GridCalEngine.Devices.Diagrams.palettes as palettes
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, info_msg
 from GridCal.Gui.object_model import ObjectsModel
 
 if TYPE_CHECKING:
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapLibraryModel, GridMapWidget
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicLibraryModel, SchematicWidget
+    from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 
 
 def change_font_size(obj, font_size: int):
@@ -64,6 +67,84 @@ def change_font_size(obj, font_size: int):
     obj.setFont(font1)
 
 
+def qimage_tocv2_by_disk(qimage: QImage, logger: Logger, file_path):
+    """
+
+    :param qimage: Qimage
+    :param logger: Logger
+    :param file_path: temp file path
+    :return:
+    """
+    # Convert QImage to PNG format and save
+    if not qimage.save(file_path, "PNG"):
+        logger.add_error(msg=f"Error: Could not save QImage to {file_path}")
+        return None
+
+    # Use OpenCV to read the saved image
+    opencv_image = cv2.imread(file_path)
+    if opencv_image is None:
+        logger.add_error(msg=f"Error: Could not save QImage to {file_path}")
+        return None
+
+    return opencv_image
+
+
+def qimage_to_cv(qimage: QImage, logger: Logger, force_disk=False) -> np.ndarray:
+    """
+    Convert a image from Qt to an OpenCV image
+    :param qimage: Qimage
+    :param logger: Logger
+    :param force_disk: if true, the image is converted by saving to disk and loading again with opencv
+    :return: OpenCv matrix
+    """
+    width = qimage.width()
+    height = qimage.height()
+
+    if force_disk:
+        opencv_image = qimage_tocv2_by_disk(qimage, logger, file_path="__img__.png")
+
+        return opencv_image
+    else:
+        try:
+            # convert picture using the memory
+            # we need to remove the alpha channel, otherwise the video frame is not saved
+            cv_mat = np.array(qimage.constBits()).reshape(height, width, 4).astype(np.uint8)[:, :, :3]
+
+            return cv_mat
+
+        except ValueError as e:
+
+            logger.add_error(msg=f"Could not convert frame: {e}, failed over to second image conversion method.")
+
+            try:
+                # Convert the QImage to RGB format if it is not already in that format
+                qimage = qimage.convertToFormat(QImage.Format.Format_RGB888)
+
+                # Get the pointer to the data and stride (bytes per line)
+                ptr = qimage.bits()
+                # ptr.itemsize = qimage.sizeInBytes()  # Set the size of the memoryview
+                stride = qimage.bytesPerLine()  # Get the number of bytes per line (width * channels + padding)
+
+                # Create a numpy array with the correct shape based on the stride
+                arr = np.array(ptr).reshape((height, stride // 3, 3)).astype(np.uint8)  # Adjust for stride
+
+                # Crop the width to the actual image width (in case stride > width * channels)
+                arr = arr[:, :width, :]
+
+                # Convert RGB to BGR for OpenCV
+                cv_mat = cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+
+                return cv_mat
+            except ValueError as e2:
+                logger.add_error(msg=f"Could not convert frame: {e2}, failed over to disk converison method")
+
+                # try the last method, saving to disk and reading again
+
+                opencv_image = qimage_tocv2_by_disk(qimage, logger, file_path="__img__.png")
+
+                return opencv_image
+
+
 class BaseDiagramWidget(QSplitter):
     """
     Common diagram widget to host common functions
@@ -71,6 +152,7 @@ class BaseDiagramWidget(QSplitter):
     """
 
     def __init__(self,
+                 gui: DiagramsMain,
                  circuit: MultiCircuit,
                  diagram: Union[SchematicDiagram, MapDiagram],
                  library_model: Union[MapLibraryModel, SchematicLibraryModel],
@@ -85,6 +167,8 @@ class BaseDiagramWidget(QSplitter):
         :param call_delete_db_element_func:
         """
         QSplitter.__init__(self)
+
+        self.gui = gui
 
         # --------------------------------------------------------------------------------------------------------------
         # Widget creation
@@ -120,7 +204,7 @@ class BaseDiagramWidget(QSplitter):
         splitter2 = QSplitter(self)
         splitter2.addWidget(self.frame1)
         splitter2.addWidget(self.object_editor_table)
-        splitter2.setOrientation(Qt.Vertical)
+        splitter2.setOrientation(Qt.Orientation.Vertical)
         self.addWidget(splitter2)
         # self.addWidget(self.editor_graphics_view)
 
@@ -222,87 +306,74 @@ class BaseDiagramWidget(QSplitter):
         :param api_object: API object
         """
         fig = plt.figure(figsize=(12, 8))
+        fig.suptitle(api_object.name, fontsize=20)
+
         ax_1 = fig.add_subplot(211)
+        ax_1.set_title('Probability x < value', fontsize=14)
+        ax_1.set_ylabel('Loading [%]', fontsize=11)
+
         ax_2 = fig.add_subplot(212)
+        ax_2.set_title('Power', fontsize=14)
+        ax_2.set_ylabel('Power [MW]', fontsize=11)
 
-        # set time
-        x = self.circuit.get_time_array()
-        x_cl = x
+        any_plot = False
 
-        if x is not None:
-            if len(x) > 0:
+        for driver, results in self.gui.session.drivers_results_iter():
 
-                p = np.arange(len(x)).astype(float) / len(x)
+            if results is not None:
 
-                # search available results
-                power_data = dict()
-                loading_data = dict()
-                loading_st_data = None
-                loading_clustering_data = None
-                power_clustering_data = None
+                if isinstance(results, PowerFlowTimeSeriesResults):
 
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.PowerFlowTimeSeries_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                    Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                            elif key == SimulationTypes.LinearAnalysis_TS_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                            # elif key == SimulationTypes.NetTransferCapacityTS_run:
-                            #     power_data[key.value] = driver.results.atc[:, i]
-                            #     atc_perc = driver.results.atc[:, i] / (api_object.rate_prof + 1e-9)
-                            #     loading_data[key.value] = np.sort(np.abs(atc_perc * 100.0))
+                elif isinstance(results, LinearAnalysisTimeSeriesResults):
 
-                            elif key == SimulationTypes.ContingencyAnalysisTS_run:
-                                power_data[key.value] = driver.results.max_flows.real[:, i]
-                                loading_data[key.value] = np.sort(
-                                    np.abs(driver.results.max_loading.real[:, i] * 100.0))
+                    Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                            elif key == SimulationTypes.OPFTimeSeries_run:
-                                power_data[key.value] = driver.results.Sf.real[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.loading.real[:, i] * 100.0))
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                            elif key == SimulationTypes.StochasticPowerFlow:
-                                loading_st_data = np.sort(np.abs(driver.results.loading_points.real[:, i] * 100.0))
+                elif isinstance(results, ContingencyAnalysisTimeSeriesResults):
 
-                # add the rating
-                # power_data['Rates+'] = api_object.rate_prof
-                # power_data['Rates-'] = -api_object.rate_prof
+                    Sf_table = results.mdl(result_type=ResultTypes.MaxContingencyFlows)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                # loading
-                if len(loading_data.keys()):
-                    df = pd.DataFrame(data=loading_data, index=p)
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
+                    loading_table = results.mdl(result_type=ResultTypes.MaxContingencyLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                if loading_st_data is not None:
-                    p_st = np.arange(len(loading_st_data)).astype(float) / len(loading_st_data)
-                    df = pd.DataFrame(data=loading_st_data,
-                                      index=p_st,
-                                      columns=[SimulationTypes.StochasticPowerFlow.value])
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
+                elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
 
-                # power
-                if len(power_data.keys()):
-                    df = pd.DataFrame(data=power_data, index=x)
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
+                    Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                plt.legend()
-                fig.suptitle(api_object.name, fontsize=20)
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                # plot the profiles
-                plt.show()
+                elif isinstance(results, StochasticPowerFlowResults):
+                    loading_table = results.mdl(result_type=ResultTypes.BranchLoadingAverage)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
+
+        if any_plot:
+            plt.legend()
+            plt.show()
+        else:
+            info_msg("No time series results to plot, run some time series results. Even partial results are fine",
+                     f"{api_object.name} results plot")
 
     def plot_hvdc_branch(self, i: int, api_object: HvdcLine):
         """
@@ -311,63 +382,48 @@ class BaseDiagramWidget(QSplitter):
         :param api_object: HvdcGraphicItem
         """
         fig = plt.figure(figsize=(12, 8))
+        fig.suptitle(api_object.name, fontsize=20)
+
         ax_1 = fig.add_subplot(211)
-        # ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_1.set_title('Probability x < value', fontsize=14)
+        ax_1.set_ylabel('Loading [%]', fontsize=11)
+
         ax_2 = fig.add_subplot(212)
+        ax_2.set_title('Power', fontsize=14)
+        ax_2.set_ylabel('Power [MW]', fontsize=11)
 
-        # set time
-        x = self.circuit.time_profile
-        x_cl = x
+        any_plot = False
 
-        if x is not None:
-            if len(x) > 0:
+        for driver, results in self.gui.session.drivers_results_iter():
 
-                p = np.arange(len(x)).astype(float) / len(x)
+            if results is not None:
 
-                # search available results
-                power_data = dict()
-                loading_data = dict()
+                if isinstance(results, PowerFlowTimeSeriesResults):
 
-                for key, driver in self.results_dictionary.items():
-                    if hasattr(driver, 'results'):
-                        if driver.results is not None:
-                            if key == SimulationTypes.PowerFlowTimeSeries_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+                    Sf_table = results.mdl(result_type=ResultTypes.HvdcPowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                            elif key == SimulationTypes.LinearAnalysis_TS_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+                    loading_table = results.mdl(result_type=ResultTypes.HvdcLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                            elif key == SimulationTypes.OPFTimeSeries_run:
-                                power_data[key.value] = driver.results.hvdc_Pf[:, i]
-                                loading_data[key.value] = np.sort(np.abs(driver.results.hvdc_loading[:, i] * 100.0))
+                elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
 
-                # add the rating
-                # power_data['Rates+'] = api_object.rate_prof
-                # power_data['Rates-'] = -api_object.rate_prof
+                    Sf_table = results.mdl(result_type=ResultTypes.HvdcPowerFrom)
+                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
 
-                # loading
-                if len(loading_data.keys()):
-                    df = pd.DataFrame(data=loading_data, index=p)
-                    ax_1.set_title('Probability x < value', fontsize=14)
-                    ax_1.set_ylabel('Loading [%]', fontsize=11)
-                    df.plot(ax=ax_1)
+                    loading_table = results.mdl(result_type=ResultTypes.HvdcLoading)
+                    loading_table.convert_to_cdf()
+                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    any_plot = True
 
-                # power
-                if len(power_data.keys()):
-                    df = pd.DataFrame(data=power_data, index=x)
-                    ax_2.set_title('Power', fontsize=14)
-                    ax_2.set_ylabel('Power [MW]', fontsize=11)
-                    df.plot(ax=ax_2)
-                    ax_2.plot(x, api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
-                    ax_2.plot(x, -api_object.rate_prof.toarray(), c='gray', linestyle='dashed', linewidth=1)
-
-                plt.legend()
-                fig.suptitle(api_object.name, fontsize=20)
-
-                # plot the profiles
-                plt.show()
+        if any_plot:
+            plt.legend()
+            plt.show()
+        else:
+            info_msg("No time series results to plot, run some time series results. Even partial results are fine",
+                     f"{api_object.name} results plot")
 
     @staticmethod
     def set_rate_to_profile(api_object: ALL_DEV_TYPES):
@@ -529,7 +585,7 @@ class BaseDiagramWidget(QSplitter):
         """
         return 0
 
-    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+    def get_image(self, transparent: bool = False) -> QImage:
         """
         get the current picture
         :param transparent: Set a transparent background
@@ -544,41 +600,61 @@ class BaseDiagramWidget(QSplitter):
         """
         pass
 
-    def start_video_recording(self, fname: str, fps: int = 30) -> Tuple[int, int]:
+    def start_video_recording(self, fname: str, fps: int = 30, logger: Logger = Logger()) -> Tuple[int, int]:
         """
         Save video
         :param fname: file name
         :param fps: frames per second
+        :param logger: LOgger
         :returns width, height
         """
 
-        w = self.get_picture_width()
-        h = self.get_picture_height()
+        image = self.get_image()
+        w = image.width()
+        h = image.height()
+        cv2_image = qimage_to_cv(image, logger)
+        w2, h2, _ = cv2_image.shape
 
-        self._video = cv2.VideoWriter(filename=fname,
-                                      fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
-                                      fps=fps,
-                                      frameSize=(w, h))
+        if fname.endswith('.mp4'):
+            self._video = cv2.VideoWriter(filename=fname,
+                                          fourcc=cv2.VideoWriter_fourcc(*'mp4v'),
+                                          fps=fps,
+                                          frameSize=(w, h))
+        elif fname.endswith('.avi'):
+            self._video = cv2.VideoWriter(filename=fname + '.avi',
+                                          fourcc=cv2.VideoWriter_fourcc(*'XVID'),
+                                          fps=fps,
+                                          frameSize=(w, h))
+        else:
+            raise Exception(f"File format not recognized {fname}")
 
         return w, h
 
-    def capture_video_frame(self):
+    def capture_video_frame(self, w: int, h: int, logger: Logger):
         """
         Save video frame
         """
+        image = self.get_image()
+        w2 = image.width()
+        h2 = image.height()
 
-        image, w, h = self.get_image()
+        if w != w2:
+            logger.add_error(f"Width {w2} different from expected width {w}")
 
-        # convert picture using the memory
-        # we need to remove the alpha channel, otherwise the video frame is not saved
-        frame = np.array(image.constBits()).reshape(h, w, 4).astype(np.uint8)[:, :, :3]
-        self._video.write(frame)
+        if h != h2:
+            logger.add_error(f"Height {h2} different from expected width {h}")
+
+        cv2_image = qimage_to_cv(image, logger)
+
+        if cv2_image is not None:
+            self._video.write(cv2_image)
 
     def end_video_recording(self):
         """
         Finalize video recording
         """
         self._video.release()
+        print("Video released")
 
     def update_label_drwaing_status(self, device: ALL_DEV_TYPES, draw_labels: bool) -> None:
         """
