@@ -20,6 +20,9 @@ from typing import Union, List, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
+import pandas as pd
+from matplotlib import pyplot as plt
+
 from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
@@ -40,9 +43,11 @@ from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
@@ -1220,6 +1225,7 @@ class GridMapWidget(BaseDiagramWidget):
                           logger=self.logger)
 
         return GridMapWidget(
+            gui=self.gui,
             tile_src=self.map.tile_src,
             start_level=self.diagram.start_level,
             longitude=self.diagram.longitude,
@@ -1239,6 +1245,80 @@ class GridMapWidget(BaseDiagramWidget):
         for gelm in graphics:
             gelm.api_object.latitude = gelm.lat
             gelm.api_object.longitude = gelm.lon
+
+    def plot_substation(self, i: int, api_object: Substation):
+        """
+        Plot branch results
+        :param i: bus index
+        :param api_object: Substation API object
+        :return:
+        """
+
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        ax_1.set_title('Power', fontsize=14)
+        ax_1.set_ylabel('Injections [MW]', fontsize=11)
+
+        ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2.set_title('Time', fontsize=14)
+        ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
+
+        # set time
+        x = self.circuit.get_time_array()
+
+        if x is not None:
+            if len(x) > 0:
+
+                # Get all devices grouped by bus
+                all_data = self.circuit.get_injection_devices_grouped_by_substation()
+
+                # search drivers for voltage data
+                for driver, results in self.gui.session.drivers_results_iter():
+                    if results is not None:
+                        if isinstance(results, PowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot_device(ax=ax_2, device_idx=i)
+                        elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot_device(ax=ax_2, device_idx=i)
+
+                # Injections
+                # filter injections by bus
+                bus_devices = all_data.get(api_object, None)
+                if bus_devices:
+
+                    power_data = dict()
+                    for tpe_name, devices in bus_devices.items():
+                        for device in devices:
+                            if device.device_type == DeviceType.LoadDevice:
+                                power_data[device.name] = -device.P_prof.toarray()
+                            elif device.device_type == DeviceType.GeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ShuntDevice:
+                                power_data[device.name] = -device.G_prof.toarray()
+                            elif device.device_type == DeviceType.StaticGeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ExternalGridDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.BatteryDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            else:
+                                raise Exception("Missing shunt device for plotting")
+
+                    df = pd.DataFrame(data=power_data, index=x)
+
+                    try:
+                        # yt area plots
+                        df.plot.area(ax=ax_1)
+                    except ValueError:
+                        # use regular plots
+                        df.plot(ax=ax_1)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
 
 
 def generate_map_diagram(substations: List[Substation],

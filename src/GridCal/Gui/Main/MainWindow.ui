@@ -311,7 +311,7 @@ QProgressBar::chunk{
                       <enum>QTabWidget::North</enum>
                      </property>
                      <property name="currentIndex">
-                      <number>0</number>
+                      <number>1</number>
                      </property>
                      <widget class="QWidget" name="tab_3">
                       <attribute name="icon">
@@ -1076,10 +1076,13 @@ QProgressBar::chunk{
                              <string> px</string>
                             </property>
                             <property name="decimals">
-                             <number>1</number>
+                             <number>3</number>
                             </property>
                             <property name="minimum">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>9999.000000000000000</double>
                             </property>
                             <property name="singleStep">
                              <double>0.100000000000000</double>
@@ -1100,7 +1103,13 @@ QProgressBar::chunk{
                              <string> px</string>
                             </property>
                             <property name="decimals">
-                             <number>1</number>
+                             <number>3</number>
+                            </property>
+                            <property name="minimum">
+                             <double>0.010000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>9999.000000000000000</double>
                             </property>
                             <property name="singleStep">
                              <double>0.100000000000000</double>
@@ -1133,16 +1142,19 @@ QProgressBar::chunk{
                              <string> px</string>
                             </property>
                             <property name="decimals">
-                             <number>1</number>
+                             <number>3</number>
                             </property>
                             <property name="minimum">
-                             <double>0.100000000000000</double>
+                             <double>0.010000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>9999.000000000000000</double>
                             </property>
                             <property name="singleStep">
                              <double>0.100000000000000</double>
                             </property>
                             <property name="value">
-                             <double>20.000000000000000</double>
+                             <double>5.000000000000000</double>
                             </property>
                            </widget>
                           </item>
@@ -1157,7 +1169,13 @@ QProgressBar::chunk{
                              <string> px</string>
                             </property>
                             <property name="decimals">
-                             <number>1</number>
+                             <number>3</number>
+                            </property>
+                            <property name="minimum">
+                             <double>0.010000000000000</double>
+                            </property>
+                            <property name="maximum">
+                             <double>9999.000000000000000</double>
                             </property>
                             <property name="singleStep">
                              <double>0.100000000000000</double>

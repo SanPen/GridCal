@@ -374,3 +374,36 @@ class ResultsTable:
             df.plot(ax=ax, legend=plot_legend, stacked=stacked)
         except TypeError:
             print('No numeric data to plot...')
+
+    def plot_device(self, ax=None, device_idx: int = 0, stacked=False):
+        """
+        Plot the data model
+        :param ax: Matplotlib axis
+        :param device_idx: list of selected column indices
+        :param stacked: Stack plot?
+        """
+        index, columns, data = self.get_data()
+
+        columns = columns[device_idx]
+        data = data[:, device_idx]
+
+        if ax is None:
+            fig = plt.figure(figsize=(12, 6))
+            ax = fig.add_subplot(111)
+
+        if 'voltage' in self.title.lower():
+            data[data == 0] = 'nan'  # to avoid plotting the zeros
+
+        if len(columns) > 15:
+            plot_legend = False
+        else:
+            plot_legend = True
+
+        df = pd.DataFrame(data=data, index=index, columns=columns)
+        ax.set_title(self.title, fontsize=14)
+        ax.set_ylabel(self.y_label, fontsize=11)
+        ax.set_xlabel(self.x_label, fontsize=11)
+        try:
+            df.plot(ax=ax, legend=plot_legend, stacked=stacked)
+        except TypeError:
+            print('No numeric data to plot...')

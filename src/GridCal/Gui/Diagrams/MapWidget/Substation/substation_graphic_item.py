@@ -289,33 +289,38 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         add_menu_entry(menu=menu,
                        text="Add voltage level",
-                       icon_path="",
+                       icon_path=":/Icons/icons/plus.svg",
                        function_ptr=self.add_voltage_level)
 
         add_menu_entry(menu=menu,
                        text="Create line from here",
-                       icon_path="",
+                       icon_path=":/Icons/icons/plus.svg",
                        function_ptr=self.create_new_line)
 
         add_menu_entry(menu=menu,
-                       text="Move to API coordinates",
-                       icon_path="",
+                       text="Set coordinates to DB",
+                       icon_path=":/Icons/icons/down.svg",
                        function_ptr=self.move_to_api_coordinates)
 
         add_menu_entry(menu=menu,
-                       text="Remove",
-                       icon_path="",
+                       text="Remove from schematic",
+                       icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove_function)
 
-        add_menu_entry(menu=menu,
-                       text="ADD node",
-                       icon_path=":/Icons/icons/divide.svg",
-                       function_ptr=self.add_function)
+        # add_menu_entry(menu=menu,
+        #                text="ADD node",
+        #                icon_path=":/Icons/icons/plus.svg",
+        #                function_ptr=self.add_function)
 
         add_menu_entry(menu=menu,
                        text="Show diagram",
-                       icon_path="",
+                       icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.new_substation_diagram)
+
+        add_menu_entry(menu=menu,
+                       text="Plot",
+                       icon_path=":/Icons/icons/plot.svg",
+                       function_ptr=self.plot)
 
         menu.exec_(event.screenPos())
 
@@ -366,7 +371,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                              "Remove substation graphics")
 
         if ok:
-            self.editor.removeSubstation(self)
+            self.editor.removeSubstation(substation=self)
 
     def move_to_api_coordinates(self):
         """
@@ -386,6 +391,13 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :return:
         """
         self.editor.new_substation_diagram(substation=self.api_object)
+
+    def plot(self):
+        """
+        Plot the substations data
+        """
+        i = self.editor.circuit.get_substations().index(self.api_object)
+        self.editor.plot_substation(i, self.api_object)
 
     def add_voltage_level(self) -> None:
         """
