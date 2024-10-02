@@ -1,24 +1,30 @@
 import numpy as np
 
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import \
+    compile_numerical_circuit_at
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, rfid2uuid
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, \
+    rfid2uuid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     WindGenUnitKind,
                                                     RegulatingControlModeKind,
                                                     UnitMultiplier,
                                                     TransformerControlMode)
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, find_object_by_vnom, \
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, \
+    find_object_by_vnom, \
     get_ohm_values_power_transformer, find_tn_by_name, find_object_by_attribute
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import \
+    FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import \
+    PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingMode,
-                                                    SynchronousMachineKind)
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
+    SynchronousMachineOperatingMode,
+    SynchronousMachineKind)
 
 from GridCalEngine.data_logger import DataLogger
 from typing import Dict, List, Tuple, Union
@@ -26,22 +32,30 @@ from typing import Dict, List, Tuple, Union
 
 # region create new classes for CC
 
-def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgmesProfile], desc: str = "",
+def create_cgmes_headers(cgmes_model: CgmesCircuit,
+                         profiles_to_export: List[cgmesProfile],
+                         desc: str = "",
                          scenariotime: str = "",
                          modelingauthorityset: str = "", version: str = ""):
     from datetime import datetime
 
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
-        fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
-                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+        fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
                    FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
     elif cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
-        fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
-                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
-                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"), FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+        fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
+                   FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
                    FullModel(rdfid=get_new_rdfid(), tpe="FullModel")]
     else:
-        raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
+        raise ValueError(
+            f"CGMES format not supported {cgmes_model.cgmes_version}")
 
     for fm in fm_list:
         fm.scenarioTime = scenariotime
@@ -74,7 +88,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
             "GL": ["http://iec.ch/TC57/ns/CIM/GeographicalLocation-EU/3.0"]
         }
     else:
-        raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
+        raise ValueError(
+            f"CGMES format not supported {cgmes_model.cgmes_version}")
 
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
         prof = profile_uris.get("EQ")
@@ -88,7 +103,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
         fm_list[5].profile = profile_uris.get("OP")
         fm_list[6].profile = profile_uris.get("SC")
     else:
-        raise ValueError(f"CGMES format not supported {cgmes_model.cgmes_version}")
+        raise ValueError(
+            f"CGMES format not supported {cgmes_model.cgmes_version}")
 
     fm_list[1].profile = profile_uris.get("SSH")
     fm_list[2].profile = profile_uris.get("TP")
@@ -112,7 +128,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
         fm_list[1].DependentOn = [fm_list[0].rdfid]
         fm_list[2].DependentOn = [fm_list[0].rdfid]
         if tpbd_id != "":
-            fm_list[3].DependentOn = [tpbd_id, fm_list[1].rdfid, fm_list[2].rdfid]
+            fm_list[3].DependentOn = [tpbd_id, fm_list[1].rdfid,
+                                      fm_list[2].rdfid]
         else:
             fm_list[3].DependentOn = [fm_list[1].rdfid, fm_list[2].rdfid]
         fm_list[2].DependentOn = [fm_list[0].rdfid, eqbd_id]
@@ -124,7 +141,8 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit, profiles_to_export: List[cgm
         print("Missing default boundary files")
         fm_list[1].DependentOn = [fm_list[0].rdfid]
         fm_list[2].DependentOn = [fm_list[0].rdfid]
-        fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid, fm_list[2].rdfid]
+        fm_list[3].DependentOn = [fm_list[0].rdfid, fm_list[1].rdfid,
+                                  fm_list[2].rdfid]
         fm_list[4].DependentOn = [fm_list[0].rdfid]
         if cgmes_model.cgmes_version == CGMESVersions.v3_0_0:
             fm_list[5].DependentOn = [fm_list[0].rdfid]
@@ -252,39 +270,45 @@ def create_cgmes_generating_unit(gen: gcdev.Generator,
                 return sm
 
             if tech_association.api_object.name == 'Thermal':
-                object_template = cgmes_model.get_class_type("ThermalGeneratingUnit")
+                object_template = cgmes_model.get_class_type(
+                    "ThermalGeneratingUnit")
                 tgu = object_template(new_rdf_id)
                 cgmes_model.add(tgu)
                 return tgu
 
             if tech_association.api_object.name == 'Hydro':
-                object_template = cgmes_model.get_class_type("HydroGeneratingUnit")
+                object_template = cgmes_model.get_class_type(
+                    "HydroGeneratingUnit")
                 hgu = object_template(new_rdf_id)
                 cgmes_model.add(hgu)
                 return hgu
 
             if tech_association.api_object.name == 'Solar':
-                object_template = cgmes_model.get_class_type("SolarGeneratingUnit")
+                object_template = cgmes_model.get_class_type(
+                    "SolarGeneratingUnit")
                 sgu = object_template(new_rdf_id)
                 cgmes_model.add(sgu)
                 return sgu
 
             if tech_association.api_object.name == 'Wind Onshore':
-                object_template = cgmes_model.get_class_type("WindGeneratingUnit")
+                object_template = cgmes_model.get_class_type(
+                    "WindGeneratingUnit")
                 wgu = object_template(new_rdf_id)
                 wgu.windGenUnitType = WindGenUnitKind.onshore
                 cgmes_model.add(wgu)
                 return wgu
 
             if tech_association.api_object.name == 'Wind Offshore':
-                object_template = cgmes_model.get_class_type("WindGeneratingUnit")
+                object_template = cgmes_model.get_class_type(
+                    "WindGeneratingUnit")
                 wgu = object_template(new_rdf_id)
                 wgu.windGenUnitType = WindGenUnitKind.offshore
                 cgmes_model.add(wgu)
                 return wgu
 
             if tech_association.api_object.name == 'Nuclear':
-                object_template = cgmes_model.get_class_type("NuclearGeneratingUnit")
+                object_template = cgmes_model.get_class_type(
+                    "NuclearGeneratingUnit")
                 ngu = object_template(new_rdf_id)
                 cgmes_model.add(ngu)
                 return ngu
@@ -330,6 +354,43 @@ def create_cgmes_regulating_control(cgmes_syn,
     cgmes_model.add(rc)
 
     return rc
+
+
+def create_cgmes_tap_changer_control(tap_changer,
+                                     mc_trafo: Union[
+                                         gcdev.Transformer2W, gcdev.Transformer3W],
+                                     cgmes_model: CgmesCircuit,
+                                     logger: DataLogger):
+    """
+    Create Tap Changer Control for Tap changers.
+
+    :param tap_changer: Cgmes tap Changer
+    :param mc_trafo: MultiCircuit Transformer
+    :param cgmes_model: CgmesCircuit
+    :param logger: DataLogger
+    :return:
+    """
+    new_rdf_id = get_new_rdfid()
+    object_template = cgmes_model.get_class_type("TapChangerControl")
+    tcc = object_template(rdfid=new_rdf_id)
+
+    # EQ
+    tcc.name = f'_tcc_{mc_trafo.name}'
+    tcc.shortName = tcc.name
+    tcc.mode = RegulatingControlModeKind.voltage
+    tcc.Terminal = tap_changer.TransformerEnd.Terminal
+    # SSH
+    tcc.discrete = True
+    tcc.targetDeadband = 0.5
+    tcc.targetValueUnitMultiplier = UnitMultiplier.k
+    tcc.enabled = False
+    tcc.targetValue = 0.0  # TODO # if enabled it should be calculated
+    # tcc.RegulatingCondEq not required .?
+    # control_cn.Vnom ?
+
+    cgmes_model.add(tcc)
+
+    return tcc
 
 
 def create_cgmes_current_limit(terminal,
@@ -398,7 +459,8 @@ def add_location(cgmes_model: CgmesCircuit,
     object_template = cgmes_model.get_class_type("Location")
     location = object_template(rdfid=get_new_rdfid(), tpe="Location")
 
-    location.CoordinateSystem = cgmes_model.cgmes_assets.CoordinateSystem_list[0]
+    location.CoordinateSystem = cgmes_model.cgmes_assets.CoordinateSystem_list[
+        0]
     location.PowerSystemResource = device
 
     position_point_t = cgmes_model.get_class_type("PositionPoint")
@@ -408,7 +470,8 @@ def add_location(cgmes_model: CgmesCircuit,
     pos_point.xPosition = str(longitude)
     pos_point.yPosition = str(latitude)
     location.PositionPoint = pos_point
-    cgmes_model.cgmes_assets.CoordinateSystem_list[0].Locations.append(location)
+    cgmes_model.cgmes_assets.CoordinateSystem_list[0].Locations.append(
+        location)
     cgmes_model.add(location)
     cgmes_model.add(pos_point)
 
@@ -432,17 +495,20 @@ def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
 
             cgmes_model.add(geo_region)
     if len(cgmes_model.cgmes_assets.GeographicalRegion_list) == 0:
-        logger.add_error(msg='Country or Area is not defined and GeographicalRegion cannot be exported',
-                         device_class="GeographicalRegion",
-                         comment="The CGMES export will not be valid!")
+        logger.add_error(
+            msg='Country or Area is not defined and GeographicalRegion cannot be exported',
+            device_class="GeographicalRegion",
+            comment="The CGMES export will not be valid!")
 
 
 def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
                                      cgmes_model: CgmesCircuit,
                                      logger: DataLogger):
-    for mc_class in [multi_circuit_model.communities, multi_circuit_model.zones]:
+    for mc_class in [multi_circuit_model.communities,
+                     multi_circuit_model.zones]:
         for mc_elm in mc_class:
-            object_template = cgmes_model.get_class_type("SubGeographicalRegion")
+            object_template = cgmes_model.get_class_type(
+                "SubGeographicalRegion")
             sub_geo_region = object_template(rdfid=form_rdfid(mc_elm.idtag))
             sub_geo_region.name = mc_elm.name
             sub_geo_region.description = mc_elm.code
@@ -464,17 +530,20 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
                 sub_geo_region.Region = region
             else:
                 try:
-                    sub_geo_region.Region = cgmes_model.cgmes_assets.GeographicalRegion_list[0]
+                    sub_geo_region.Region = \
+                    cgmes_model.cgmes_assets.GeographicalRegion_list[0]
                 except:
                     sub_geo_region.Region = None
-                logger.add_warning(msg='GeographicalRegion not found for SubGeographicalRegion',
-                                   device_class="SubGeographicalRegion")
+                logger.add_warning(
+                    msg='GeographicalRegion not found for SubGeographicalRegion',
+                    device_class="SubGeographicalRegion")
 
             cgmes_model.add(sub_geo_region)
     if len(cgmes_model.cgmes_assets.SubGeographicalRegion_list) == 0:
-        logger.add_error(msg='Community or Zone is not defined and SubGeographicalRegion cannot be exported',
-                         device_class="SubGeographicalRegion",
-                         comment="The CGMES export will not be valid!")
+        logger.add_error(
+            msg='Community or Zone is not defined and SubGeographicalRegion cannot be exported',
+            device_class="SubGeographicalRegion",
+            comment="The CGMES export will not be valid!")
 
 
 def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
@@ -492,7 +561,8 @@ def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
     base_volt_set = set()
     for bus in multi_circuit_model.buses:
 
-        if bus.Vnom not in base_volt_set and get_base_voltage_from_boundary(cgmes_model, vnom=bus.Vnom) is None:
+        if bus.Vnom not in base_volt_set and get_base_voltage_from_boundary(
+                cgmes_model, vnom=bus.Vnom) is None:
             base_volt_set.add(bus.Vnom)
 
             new_rdf_id = get_new_rdfid()
@@ -515,20 +585,23 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
         region = find_object_by_uuid(
             cgmes_model=cgmes_model,
             object_list=cgmes_model.cgmes_assets.SubGeographicalRegion_list,
-            target_uuid=mc_elm.community.idtag if mc_elm.community is not None else ""  # TODO Community.idtag!
+            target_uuid=mc_elm.community.idtag if mc_elm.community is not None else ""
+            # TODO Community.idtag!
         )
 
         if region is not None:
             substation.Region = region
         else:
             try:
-                substation.Region = cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
+                substation.Region = \
+                cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
             except:
                 substation.Region = None
             logger.add_warning(msg='Region not found for Substation',
                                device_class="SubGeographicalRegion")
 
-        add_location(cgmes_model, substation, mc_elm.longitude, mc_elm.latitude, logger)
+        add_location(cgmes_model, substation, mc_elm.longitude,
+                     mc_elm.latitude, logger)
 
         cgmes_model.add(substation)
 
@@ -681,7 +754,8 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
     for mc_elm in multicircuit_model.loads:
         object_template = cgmes_model.get_class_type("ConformLoad")
         cl = object_template(rdfid=form_rdfid(mc_elm.idtag))
-        cl.Terminals = create_cgmes_terminal(mc_elm.bus, None, cl, cgmes_model, logger)
+        cl.Terminals = create_cgmes_terminal(mc_elm.bus, None, cl, cgmes_model,
+                                             logger)
         cl.name = mc_elm.name
 
         if mc_elm.bus.voltage_level:
@@ -697,7 +771,9 @@ def get_cgmes_loads(multicircuit_model: MultiCircuit,
                                              target_vnom=mc_elm.bus.Vnom)
 
         if mc_elm.Ii != 0.0:
-            cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm, cgmes_model=cgmes_model, logger=logger)
+            cl.LoadResponse = create_cgmes_load_response_char(load=mc_elm,
+                                                              cgmes_model=cgmes_model,
+                                                              logger=logger)
             # cl.LoadGroup = ConformLoadGroup ..?
             cl.p = mc_elm.P / cl.LoadResponse.pConstantPower
             cl.q = mc_elm.Q / cl.LoadResponse.qConstantPower
@@ -733,7 +809,8 @@ def get_cgmes_equivalent_injections(multicircuit_model: MultiCircuit,
         ei.BaseVoltage = find_object_by_vnom(cgmes_model=cgmes_model,
                                              object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                              target_vnom=mc_elm.bus.Vnom)
-        ei.Terminals = create_cgmes_terminal(mc_elm.bus, None, ei, cgmes_model, logger)
+        ei.Terminals = create_cgmes_terminal(mc_elm.bus, None, ei, cgmes_model,
+                                             logger)
         ei.regulationCapability = False
 
         cgmes_model.add(ei)
@@ -761,14 +838,19 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
                                                object_list=cgmes_model.cgmes_assets.BaseVoltage_list,
                                                target_vnom=mc_elm.get_max_bus_nominal_voltage()
                                                )  # which Vnom we need?
-        line.Terminals = [create_cgmes_terminal(mc_elm.bus_from, 1, line, cgmes_model, logger),
-                          create_cgmes_terminal(mc_elm.bus_to, 2, line, cgmes_model, logger)]
+        line.Terminals = [
+            create_cgmes_terminal(mc_elm.bus_from, 1, line, cgmes_model,
+                                  logger),
+            create_cgmes_terminal(mc_elm.bus_to, 2, line, cgmes_model, logger)]
         line.length = mc_elm.length
 
-        current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+        current_rate = mc_elm.rate * 1e3 / (
+                    mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
         current_rate = np.round(current_rate, 4)
-        create_cgmes_current_limit(line.Terminals[0], current_rate, cgmes_model, logger)
-        create_cgmes_current_limit(line.Terminals[1], current_rate, cgmes_model, logger)
+        create_cgmes_current_limit(line.Terminals[0], current_rate,
+                                   cgmes_model, logger)
+        create_cgmes_current_limit(line.Terminals[1], current_rate,
+                                   cgmes_model, logger)
 
         vnom = line.BaseVoltage.nominalVoltage
 
@@ -849,7 +931,8 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
         # is_controlled: enabling flag (already have)
         if mc_elm.is_controlled:
             cgmes_syn.RegulatingControl = (
-                create_cgmes_regulating_control(cgmes_syn, mc_elm, cgmes_model, logger))
+                create_cgmes_regulating_control(cgmes_syn, mc_elm, cgmes_model,
+                                                logger))
             cgmes_syn.controlEnabled = True
         else:
             cgmes_syn.controlEnabled = False
@@ -931,8 +1014,11 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
-        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus_from, 1, cm_transformer, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus_to, 2, cm_transformer, cgmes_model, logger)]
+        cm_transformer.Terminals = [
+            create_cgmes_terminal(mc_elm.bus_from, 1, cm_transformer,
+                                  cgmes_model, logger),
+            create_cgmes_terminal(mc_elm.bus_to, 2, cm_transformer,
+                                  cgmes_model, logger)]
         cm_transformer.aggregate = False  # what is this?
         if mc_elm.bus_from.substation:
             cm_transformer.EquipmentContainer = find_object_by_uuid(
@@ -952,10 +1038,13 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             target_vnom=mc_elm.bus_from.Vnom
         )
 
-        current_rate = mc_elm.rate * 1e3 / (mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+        current_rate = mc_elm.rate * 1e3 / (
+                    mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
         current_rate = np.round(current_rate, 4)
-        create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate, cgmes_model, logger)
-        create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate, cgmes_model, logger)
+        create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate,
+                                   cgmes_model, logger)
+        create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate,
+                                   cgmes_model, logger)
 
         (r_ohm,
          x_ohm,
@@ -1016,52 +1105,54 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         tap_changer = object_template(rdfid=new_rdf_id)
         tap_changer.name = mc_elm.name
         tap_changer.shortName = mc_elm.name
-        tap_changer.total_pos = mc_elm.tap_changer.total_positions
 
-        # < cim: TapChanger.neutralU > 400.000000 < / cim: TapChanger.neutralU >
         tap_changer.neutralU = pte1.BaseVoltage.nominalVoltage
-        # < cim: TapChanger.lowStep > -20 < / cim: TapChanger.lowStep >
-        tap_changer.lowStep = -1     # Lowest possible tap step position, retard from neutral
-        # < cim: TapChanger.highStep > 20 < / cim: TapChanger.highStep >
-        tap_changer.highStep = 0     # Highest possible tap step position, advance from neutral. The attribute shall be greater than lowStep.
-        # < cim: TapChanger.neutralStep > 0 < / cim: TapChanger.neutralStep >
-        tap_changer.neutralStep = mc_elm.tap_changer.neutral_position
-        # < cim: TapChanger.normalStep > -2 < / cim: TapChanger.normalStep >
-        tap_changer.normalStep = mc_elm.tap_changer.neutral_position     # TODO QA neutral or current step
-        # < cim: RatioTapChanger.stepVoltageIncrement > 0.800000 < / cim: RatioTapChanger.stepVoltageIncrement >
+        tap_changer.TransformerEnd = pte1
+
+        # STEPs
+        tap_changer.total_pos = mc_elm.tap_changer.total_positions
+        (tap_changer.lowStep,
+         tap_changer.highStep,
+         tap_changer.normalStep,
+         tap_changer.neutralStep,
+         tap_changer.stepVoltageIncrement,
+         tap_changer.step) = mc_elm.tap_changer.get_cgmes_values()
+
+        # tap_changer.lowStep = mc_elm.tap_changer.get_tap_low_step()
+        # tap_changer.highStep = mc_elm.tap_changer.get_tap_high_step()
+        # tap_changer.neutralStep = mc_elm.tap_changer.neutral_position + tap_changer.lowStep
+        # tap_changer.normalStep = mc_elm.tap_changer.normal_position + tap_changer.lowStep
+
         # Tap step increment, in per cent of nominal voltage, per step position.
-        tap_changer.stepVoltageIncrement = mc_elm.tap_changer.dV * 100
         # if mc_elm.tap_changer.tap_position == mc_elm.tap_changer.neutral_position:
         #     tap_changer.stepVoltageIncrement = 0
         # else:
         #     tap_changer.stepVoltageIncrement = (
         #             (mc_elm.tap_module - 1) / (mc_elm.tap_changer.tap_position - mc_elm.tap_changer.neutral_position)
         #     )
-        # < cim: TapChanger.ltcFlag > true < / cim: TapChanger.ltcFlag >
-        tap_changer.ltcFlag = False     # load tap changing capability
-        # < cim: TapChanger.TapChangerControl rdf: resource = "#_1aaa0997-7715-4400-9435-ce74a8f67a24" / >
-        # create Tap Changer instance like RegContr, not necessary
-        # < cim: RatioTapChanger.tculControlMode rdf: resource = "http://iec.ch/TC57/2013/CIM-schema-cim16#TransformerControlMode.volt" / >
+
+        # CONTROL
+        tap_changer.ltcFlag = False  # load tap changing capability
+        tap_changer.TapChangerControl = create_cgmes_tap_changer_control(
+            tap_changer=tap_changer,
+            mc_trafo=cm_transformer,
+            cgmes_model=cgmes_model,
+            logger=logger
+        )
+        # tculControlMode not used, but be set to something: volt/react ..
         tap_changer.tculControlMode = TransformerControlMode.volt
-        # < cim: RatioTapChanger.TransformerEnd rdf: resource = "#_c1d5c1448f8011e08e4d00247eb1f55e" / >
-        tap_changer.TransformerEnd = pte1
 
         #                   TAP Changer SSH
-        #     <cim:TapChanger.step>-2</cim:TapChanger.step>
-        # Mechanism for changing transformer winding tap positions.
         tap_changer.step = mc_elm.tap_changer.tap_position
-        #     <cim:TapChanger.controlEnabled>false</cim:TapChanger.controlEnabled>
-        tap_changer.controlEnabled = False      # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
+        tap_changer.controlEnabled = False  # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
         # why, why not?
 
         #                   TAP Changer SV
         new_rdf_id = get_new_rdfid()
         object_template = cgmes_model.get_class_type("SvTapStep")
         sv_tap_step = object_template(rdfid=new_rdf_id, tpe="SvTapStep")
-        #     <cim:SvTapStep.position>-2</cim:SvTapStep.position>
         # TODO def EA same as step? should it come from the results?
         sv_tap_step.position = mc_elm.tap_changer.tap_position
-        #     <cim:SvTapStep.TapChanger rdf:resource="#_c1d5c14b8f8011e08e4d00247eb1f55e"/>
         sv_tap_step.TapChanger = tap_changer
 
         # -----------------------------------------------------------------
@@ -1085,9 +1176,13 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         cm_transformer.uuid = mc_elm.idtag
         cm_transformer.description = mc_elm.code
         cm_transformer.name = mc_elm.name
-        cm_transformer.Terminals = [create_cgmes_terminal(mc_elm.bus1, 1, cm_transformer, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus2, 2, cm_transformer, cgmes_model, logger),
-                                    create_cgmes_terminal(mc_elm.bus3, 3, cm_transformer, cgmes_model, logger)]
+        cm_transformer.Terminals = [
+            create_cgmes_terminal(mc_elm.bus1, 1, cm_transformer, cgmes_model,
+                                  logger),
+            create_cgmes_terminal(mc_elm.bus2, 2, cm_transformer, cgmes_model,
+                                  logger),
+            create_cgmes_terminal(mc_elm.bus3, 3, cm_transformer, cgmes_model,
+                                  logger)]
 
         cm_transformer.PowerTransformerEnd = []
         object_template = cgmes_model.get_class_type("PowerTransformerEnd")
@@ -1257,7 +1352,8 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
             lsc.sections = 0
         lsc.normalSections = lsc.sections
 
-        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, None, lsc, cgmes_model, logger)
+        lsc.Terminals = create_cgmes_terminal(mc_elm.bus, None, lsc,
+                                              cgmes_model, logger)
 
         cgmes_model.add(lsc)
 
@@ -1284,8 +1380,10 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         new_rdf_id = get_new_rdfid()
         sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
 
-        tp_list_with_boundary = (cgmes_model.cgmes_assets.TopologicalNode_list +
-                                 cgmes_model.elements_by_type_boundary.get('TopologicalNode', None))
+        tp_list_with_boundary = (
+                    cgmes_model.cgmes_assets.TopologicalNode_list +
+                    cgmes_model.elements_by_type_boundary.get(
+                        'TopologicalNode', None))
         sv_voltage.TopologicalNode = tp_list_with_boundary[i]
         # todo include boundary?
         # as the order of the results is the same as the order of buses (=tn)
@@ -1341,17 +1439,22 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
             tn = find_tn_by_name(cgmes_model, tn_name)
             if tn:
                 new_island.TopologicalNodes.append(tn)
-                mc_bus = find_object_by_attribute(multicircuit_model.buses, "name", tn_name)
+                mc_bus = find_object_by_attribute(multicircuit_model.buses,
+                                                  "name", tn_name)
                 mc_buses.append(mc_bus)
         slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
         if slack_bus:
-            slack_tn = find_object_by_uuid(cgmes_model, cgmes_model.cgmes_assets.TopologicalNode_list, slack_bus.idtag)
+            slack_tn = find_object_by_uuid(cgmes_model,
+                                           cgmes_model.cgmes_assets.TopologicalNode_list,
+                                           slack_bus.idtag)
             new_island.AngleRefTopologicalNode = slack_tn
             for tn in new_island.TopologicalNodes:
                 tn.AngleRefTopologicalIsland = slack_tn
         else:
-            logger.add_warning(msg="AngleRefTopologicalNode missing from TopologicalIsland!", device=new_island.name,
-                               device_property="AngleRefTopologicalNode")
+            logger.add_warning(
+                msg="AngleRefTopologicalNode missing from TopologicalIsland!",
+                device=new_island.name,
+                device_property="AngleRefTopologicalNode")
         cgmes_model.add(new_island)
 
 

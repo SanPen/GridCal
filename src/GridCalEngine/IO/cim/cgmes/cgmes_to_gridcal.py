@@ -715,32 +715,40 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
 
 def get_tap_changer_values(windings):
     """
-    Get Tap Changer values for given windings.
+    Get Tap Changer values from one of the given windings (that is not None).
 
     :param windings: List of transformer windings.
     :return:
     """
     tap_module: float = 1.0
-    total_positions, neutral_position, dV, tap_step = 0, 0, 0, 0
+    total_positions, neutral_pos, normal, tap_step, dV = 0, 0, 0, 0, 0.0
     tc_type = TapChangerTypes.NoRegulation
 
     for winding in windings:
         rtc = winding.RatioTapChanger
         if rtc is not None:
             total_positions = rtc.highStep - rtc.lowStep + 1    # lowStep generally negative
-            neutral_position = rtc.neutralStep
+            neutral_pos = rtc.neutralStep - rtc.lowStep
+            normal = rtc.normalStep - rtc.lowStep
             dV = round(rtc.stepVoltageIncrement / 100, 6)
-            # self._tap_position = neutral_position  # index with respect to the neutral position = Step from SSH
+            # tc._tap_position = neutral_position  # index with respect to the neutral position = Step from SSH
             # set after initialisation
             tap_step = rtc.step
             tap_module = round(1 + (rtc.step - rtc.neutralStep) * dV, 6)
 
-            if rtc.tculControlMode == cgmes_enums.TransformerControlMode.volt:
+            # Control from Control object
+            if (getattr(rtc, 'TapChangerControl', None) and
+                    rtc.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage):
                 tc_type = TapChangerTypes.VoltageRegulation
+
+            # tculControlMode is not relevant
+            # if (hasattr(rtc, 'tculControlMode') and
+            #         rtc.tculControlMode == cgmes_enums.TransformerControlMode.volt):
+            #     tc_type = TapChangerTypes.VoltageRegulation
 
         else:
             continue
-    return tap_module, total_positions, neutral_position, dV, tc_type, tap_step
+    return tap_module, total_positions, neutral_pos, normal, dV, tc_type, tap_step
 
 
 def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
@@ -806,7 +814,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
                     rated_s = windings[0].ratedS
                     # get Tap data
-                    tap_m, total_positions, neutral_position, dV, tc_type, tap_pos = get_tap_changer_values(windings)
+                    tap_m, total_pos, neutral_pos, normal_pos, dV, tc_type, tap_pos = get_tap_changer_values(windings)
 
                     gcdev_elm = gcdev.Transformer2W(idtag=cgmes_elm.uuid,
                                                     code=cgmes_elm.description,
@@ -831,14 +839,17 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     # tap_phase=0.0,
                                                     # tap_module_control_mode=,  # leave fixed
                                                     # tap_angle_control_mode=,
-                                                    tc_total_positions=total_positions,
-                                                    tc_neutral_position=neutral_position,
+                                                    tc_total_positions=total_pos,
+                                                    tc_neutral_position=neutral_pos,
+                                                    tc_normal_position=normal_pos,
                                                     tc_dV=dV,
                                                     # tc_asymmetry_angle = 90,
                                                     tc_type=tc_type,
                                                     rate=rate_mva)
 
+                    # TAP Changer INIT from CGMES
                     gcdev_elm.tap_changer.tap_position = tap_pos
+                    print(f'Tap_module is {gcdev_elm.tap_changer.get_tap_module()} , {tap_m}')
                     # TODO add highest step, plus attr needed
 
                     gcdev_model.add_transformer2w(gcdev_elm)
