@@ -375,16 +375,18 @@ class ResultsTable:
         except TypeError:
             print('No numeric data to plot...')
 
-    def plot_device(self, ax=None, device_idx: int = 0, stacked=False):
+    def plot_device(self, ax=None, device_idx: int = 0, stacked=False, title: str = ""):
         """
         Plot the data model
         :param ax: Matplotlib axis
         :param device_idx: list of selected column indices
         :param stacked: Stack plot?
+        :param title: Title of the plot
         """
         index, columns, data = self.get_data()
 
-        columns = [columns[device_idx]]
+        # columns = [columns[device_idx]]
+        columns = [self.title] if title == "" else [title]
         data = data[:, device_idx]
 
         if ax is None:

@@ -3737,10 +3737,10 @@ class SchematicWidget(BaseDiagramWidget):
                     if results is not None:
                         if isinstance(results, PowerFlowTimeSeriesResults):
                             table = results.mdl(result_type=ResultTypes.BusVoltageModule)
-                            table.plot_device(ax=ax_2, device_idx=i)
+                            table.plot_device(ax=ax_2, device_idx=i, title="Power flow")
                         elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
                             table = results.mdl(result_type=ResultTypes.BusVoltageModule)
-                            table.plot_device(ax=ax_2, device_idx=i)
+                            table.plot_device(ax=ax_2, device_idx=i, title="Optimal power flow")
 
                 # Injections
                 # filter injections by bus
