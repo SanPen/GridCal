@@ -131,6 +131,8 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
             self.update_diagram()
 
+            self.resize_voltage_levels()
+
     def resize_voltage_levels(self):
         """
 

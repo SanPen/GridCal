@@ -3779,6 +3779,8 @@ class SchematicWidget(BaseDiagramWidget):
 
                 # plot the profiles
                 plt.show()
+        else:
+            info_msg("There are no time series, so nothing to plot :/")
 
     def split_line_now(self, line_graphics: LineGraphicItem, position: float, extra_km: float):
         """

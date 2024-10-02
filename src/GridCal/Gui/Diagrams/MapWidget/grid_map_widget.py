@@ -63,7 +63,7 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.messages import error_msg
+from GridCal.Gui.messages import error_msg, info_msg
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
@@ -1320,6 +1320,8 @@ class GridMapWidget(BaseDiagramWidget):
 
                 # plot the profiles
                 plt.show()
+        else:
+            info_msg("There are no time series, so nothing to plot :/")
 
 
 def generate_map_diagram(substations: List[Substation],
