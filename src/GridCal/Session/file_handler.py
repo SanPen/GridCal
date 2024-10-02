@@ -116,7 +116,6 @@ class FileOpenThread(QThread):
             self.circuit = file_handler.open(text_func=self.progress_text.emit,
                                              progress_func=self.progress_signal.emit)
         except ValueError as e:
-            # error_msg(text=str(e), title='File open')
             self.valid = False
             self.logger.add_error(msg=str(e))
             self.progress_text.emit('Error loading')

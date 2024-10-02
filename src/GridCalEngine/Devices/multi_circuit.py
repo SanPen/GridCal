@@ -1309,6 +1309,32 @@ class MultiCircuit(Assets):
         # assign the new base
         self.Sbase = Sbase_new
 
+    def get_injection_devices_grouped_by_substation(self) -> Dict[dev.Substation, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        """
+        groups: Dict[dev.Substation, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
+
+        for lst in self.get_injection_devices_lists():
+
+            for elm in lst:
+
+                if elm.bus.substation is not None:
+
+                    devices_by_type = groups.get(elm.bus.substation, None)
+
+                    if devices_by_type is None:
+                        groups[elm.bus.substation] = {elm.device_type: [elm]}
+                    else:
+                        lst = devices_by_type.get(elm.device_type, None)
+                        if lst is None:
+                            devices_by_type[elm.device_type] = [elm]
+                        else:
+                            devices_by_type[elm.device_type].append(elm)
+
+        return groups
+
     def get_injection_devices_grouped_by_bus(self) -> Dict[dev.Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type

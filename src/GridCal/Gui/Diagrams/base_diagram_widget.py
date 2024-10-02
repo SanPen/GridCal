@@ -18,6 +18,7 @@ from __future__ import annotations
 from typing import List, Dict, Union, Tuple, Callable, TYPE_CHECKING
 import numpy as np
 import cv2
+from docutils.nodes import title
 from matplotlib import pyplot as plt
 
 from PySide6.QtCore import Qt
@@ -325,47 +326,47 @@ class BaseDiagramWidget(QSplitter):
                 if isinstance(results, PowerFlowTimeSeriesResults):
 
                     Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
-                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
+                    Sf_table.plot_device(ax=ax_1, device_idx=i, title="Power flow")
 
                     loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
                     loading_table.convert_to_cdf()
-                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    loading_table.plot_device(ax=ax_2, device_idx=i, title="Power loading")
                     any_plot = True
 
                 elif isinstance(results, LinearAnalysisTimeSeriesResults):
 
                     Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
-                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
+                    Sf_table.plot_device(ax=ax_1, device_idx=i, title="Linear flow")
 
                     loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
                     loading_table.convert_to_cdf()
-                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    loading_table.plot_device(ax=ax_2, device_idx=i, title="Linear loading")
                     any_plot = True
 
                 elif isinstance(results, ContingencyAnalysisTimeSeriesResults):
 
                     Sf_table = results.mdl(result_type=ResultTypes.MaxContingencyFlows)
-                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
+                    Sf_table.plot_device(ax=ax_1, device_idx=i, title="Contingency flow")
 
                     loading_table = results.mdl(result_type=ResultTypes.MaxContingencyLoading)
                     loading_table.convert_to_cdf()
-                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    loading_table.plot_device(ax=ax_2, device_idx=i, title="Contingency loading")
                     any_plot = True
 
                 elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
 
                     Sf_table = results.mdl(result_type=ResultTypes.BranchActivePowerFrom)
-                    Sf_table.plot(ax=ax_1, selected_col_idx=[i])
+                    Sf_table.plot_device(ax=ax_1, device_idx=i, title="Optimal power flow")
 
                     loading_table = results.mdl(result_type=ResultTypes.BranchLoading)
                     loading_table.convert_to_cdf()
-                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    loading_table.plot_device(ax=ax_2, device_idx=i, title="Optimal loading")
                     any_plot = True
 
                 elif isinstance(results, StochasticPowerFlowResults):
                     loading_table = results.mdl(result_type=ResultTypes.BranchLoadingAverage)
                     loading_table.convert_to_cdf()
-                    loading_table.plot(ax=ax_2, selected_col_idx=[i])
+                    loading_table.plot_device(ax=ax_2, device_idx=i, title="Stochastic loading")
                     any_plot = True
 
         if any_plot:

@@ -76,7 +76,7 @@ class MapLineSegment(QGraphicsLineItem):
         self.first.add_position_change_callback(self.set_from_side_coordinates)
         self.second.add_position_change_callback(self.set_to_side_coordinates)
 
-        self.set_colour(self.color, self.width, self.style)
+        self.set_colour(self.color, self.style)
         self.update_endings()
         self.needsUpdate = True
         self.setZValue(0)
@@ -115,7 +115,7 @@ class MapLineSegment(QGraphicsLineItem):
         self.arrow_p_to.label.setScale(width)
         self.arrow_q_to.label.setScale(width)
 
-    def set_colour(self, color: QColor, w: float, style: Qt.PenStyle):
+    def set_colour(self, color: QColor, style: Qt.PenStyle):
         """
         Set color and style
         :param color: QColor instance
@@ -124,14 +124,13 @@ class MapLineSegment(QGraphicsLineItem):
         :return:
         """
 
-        pen = QPen(color, w, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
-        pen.setWidthF(w)
+        pen = QPen(color, self.width, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
 
         self.setPen(pen)
-        self.arrow_p_from.set_colour(color, w, style)
-        self.arrow_q_from.set_colour(color, w, style)
-        self.arrow_p_to.set_colour(color, w, style)
-        self.arrow_q_to.set_colour(color, w, style)
+        self.arrow_p_from.set_colour(color, self.arrow_p_from.w, style)
+        self.arrow_q_from.set_colour(color, self.arrow_q_from.w, style)
+        self.arrow_p_to.set_colour(color, self.arrow_p_to.w, style)
+        self.arrow_q_to.set_colour(color, self.arrow_q_to.w, style)
 
     def set_from_side_coordinates(self, x: float, y: float):
         """
@@ -286,7 +285,7 @@ class MapLineSegment(QGraphicsLineItem):
             self.color = OTHER['color']
 
         # Set pen for everyone
-        self.set_colour(self.color, self.width, self.style)
+        self.set_colour(self.color, self.style)
 
     def enable_disable_label_drawing(self):
         """

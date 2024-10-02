@@ -19,6 +19,8 @@ from typing import Union, Dict, Tuple, List, Any
 from collections import Counter
 import numpy as np
 import numba as nb
+from numpy import dtype
+
 from GridCalEngine.basic_structures import Numeric, NumericVec, IntVec
 from GridCalEngine.enumerations import DeviceType
 from GridCalEngine.Utils.Sparse.sparse_array import SparseArray, PROFILE_TYPES, check_type
@@ -336,7 +338,16 @@ class Profile:
         if self._is_sparse:
             return self._sparse_array[key]
         else:
-            return self._dense_array[key]
+
+            if self._dense_array is None:
+                # WTF, initialize sparse
+                self._is_sparse = True
+                self._sparse_array = SparseArray(data_type=self.dtype)
+                self._sparse_array.default_value = self.default_value
+                print("Initializing sparse when querying, this signals a mis initilaization")
+                return self.default_value
+            else:
+                return self._dense_array[key]
 
     def __setitem__(self, key: int, value):
         """
@@ -392,7 +403,12 @@ class Profile:
                 if self._is_sparse:
                     self._sparse_array.resize(n=n)
                 else:
-                    self._dense_array.resize(n)
+                    try:
+                        self._dense_array.resize(n)
+                    except ValueError:
+                        new_arr = np.zeros(n, dtype=self._dense_array.dtype)
+                        new_arr[:len(self._dense_array)] = self._dense_array
+                        self._dense_array = new_arr  # this is to avoid ValueError when resizing a numpy array of Objects
             else:
                 self._initialized = True
                 self.create_sparse(size=n, default_value=self.default_value)
