@@ -1309,6 +1309,32 @@ class MultiCircuit(Assets):
         # assign the new base
         self.Sbase = Sbase_new
 
+    def get_injection_devices_grouped_by_substation(self) -> Dict[dev.Substation, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
+        """
+        Get the injection devices grouped by bus and by device type
+        :return: Dict[bus, Dict[DeviceType, List[Injection devs]]
+        """
+        groups: Dict[dev.Substation, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = dict()
+
+        for lst in self.get_injection_devices_lists():
+
+            for elm in lst:
+
+                if elm.bus.substation is not None:
+
+                    devices_by_type = groups.get(elm.bus.substation, None)
+
+                    if devices_by_type is None:
+                        groups[elm.bus.substation] = {elm.device_type: [elm]}
+                    else:
+                        lst = devices_by_type.get(elm.device_type, None)
+                        if lst is None:
+                            devices_by_type[elm.device_type] = [elm]
+                        else:
+                            devices_by_type[elm.device_type].append(elm)
+
+        return groups
+
     def get_injection_devices_grouped_by_bus(self) -> Dict[dev.Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:
         """
         Get the injection devices grouped by bus and by device type
@@ -1813,7 +1839,8 @@ class MultiCircuit(Assets):
 
     def compare_circuits(self, grid2: "MultiCircuit",
                          detailed_profile_comparison: bool = True,
-                         skip_internals: bool = False) -> Tuple[bool, Logger]:
+                         skip_internals: bool = False,
+                         tolerance: float = 1e-06) -> Tuple[bool, Logger]:
         """
         Compare this circuit with another circuits for equality
         :param grid2: MultiCircuit
@@ -1870,12 +1897,21 @@ class MultiCircuit(Assets):
                         v1 = elm1.get_property_value(prop=prop, t_idx=None)
                         v2 = elm2.get_property_value(prop=prop, t_idx=None)
 
-                        if v1 != v2:
-                            logger.add_error(msg="Different snapshot values",
-                                             device_class=template_elm.device_type.value,
-                                             device_property=prop.name,
-                                             value=v2,
-                                             expected_value=v1)
+                        if prop.tpe == float:
+                            if not np.isclose(v1, v2, atol=tolerance):
+                                logger.add_error(
+                                    msg="Different snapshot values",
+                                    device_class=template_elm.device_type.value,
+                                    device_property=prop.name,
+                                    value=v2,
+                                    expected_value=v1)
+                        else:
+                            if v1 != v2:
+                                logger.add_error(msg="Different snapshot values",
+                                                 device_class=template_elm.device_type.value,
+                                                 device_property=prop.name,
+                                                 value=v2,
+                                                 expected_value=v1)
 
                         if prop.has_profile():
                             p1 = elm1.get_profile_by_prop(prop=prop)

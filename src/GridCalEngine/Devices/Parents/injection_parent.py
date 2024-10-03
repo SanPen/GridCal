@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import Union, TYPE_CHECKING
+from typing import Union, List, TYPE_CHECKING
 import numpy as np
 
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
@@ -28,6 +28,7 @@ from GridCalEngine.Devices.profile import Profile
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices import Technology
+    from GridCalEngine.Devices.types import ALL_DEV_TYPES
 
 
 class InjectionParent(PhysicalDevice):
@@ -236,3 +237,11 @@ class InjectionParent(PhysicalDevice):
         :return:
         """
         self.technologies.add_object(tech, val=val)
+
+    @property
+    def tech_list(self) -> List[ALL_DEV_TYPES]:
+        """
+        Bus
+        :return: Bus
+        """
+        return self.technologies.to_list()

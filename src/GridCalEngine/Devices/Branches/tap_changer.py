@@ -30,6 +30,7 @@ class TapChanger:
     def __init__(self,
                  total_positions: int = 5,
                  neutral_position: int = 2,
+                 normal_position: int = 2,
                  dV: float = 0.01,
                  asymmetry_angle: float = 90.0,
                  tc_type: TapChangerTypes = TapChangerTypes.NoRegulation) -> None:
@@ -46,8 +47,10 @@ class TapChanger:
         self._total_positions = int(total_positions)  # total number of positions
         self.dV = float(dV)  # voltage increment in p.u.
         self.neutral_position = int(neutral_position)  # neutral position
+        self.normal_position = int(normal_position)     # normal position
         self._tap_position = int(neutral_position)  # index with respect to the neutral position
         self.tc_type: TapChangerTypes = tc_type  # tap changer mode
+        self._negative_low = False  # for CGMES compatibility we store if the low step is negative
 
         # Calculated arrays
         self._ndv = np.zeros(self._total_positions)
@@ -85,7 +88,7 @@ class TapChanger:
         Set the tap position
         :param val: tap value
         """
-        self._tap_position = val
+        self._tap_position = int(val)
 
     @property
     def tap_modules_array(self):
@@ -123,8 +126,10 @@ class TapChanger:
             "total_positions": self.total_positions,
             "dV": self.dV,
             "neutral_position": self.neutral_position,
+            "normal_position": self.normal_position,
             "tap_position": self._tap_position,
-            "type": str(self.tc_type)
+            "type": str(self.tc_type),
+            "negative_low": self._negative_low
         }
 
     def parse(self, data: Dict[str, Union[str, float]]):
@@ -136,8 +141,10 @@ class TapChanger:
         self.total_positions = data.get("total_positions", 5)
         self.dV = data.get("dV", 0.01)
         self.neutral_position = data.get("neutral_position", 2)
+        self.normal_position = data.get("normal_position", 2)
         self.tap_position = data.get("tap_position", 2)
         self.tc_type = TapChangerTypes(data.get("type", TapChangerTypes.NoRegulation.value))
+        self._negative_low = data.get("negative_low", False)
         self.recalc()
 
     def to_df(self) -> pd.DataFrame:
@@ -279,7 +286,7 @@ class TapChanger:
 
     def get_tap_phase_min(self) -> float:
         """
-        Min tap phase, cputed on the fly
+        Min tap phase, computed on the fly
         :return: float
         """
         return self.get_tap_phase2(tap_position=0)
@@ -299,8 +306,9 @@ class TapChanger:
         """
         return ((self.asymmetry_angle == other.asymmetry_angle)
                 and (self.total_positions == other.total_positions)
-                and (self.dV == other.dV)
+                and np.allclose(self.dV, other.dV, atol=1e-06)
                 and (self.neutral_position == other.neutral_position)
+                and (self.normal_position == other.normal_position)
                 and (self.tap_position == other.tap_position)
                 and (self.tc_type == other.tc_type))
 
@@ -310,3 +318,76 @@ class TapChanger:
         :return:
         """
         return "Tap changer"
+
+    def init_from_cgmes(self,
+                        low: int,
+                        high: int,
+                        normal: int,
+                        neutral: int,
+                        stepVoltageIncrement: float,
+                        step: int,
+                        asymmetry_angle: float = 0.0,
+                        tc_type: TapChangerTypes = TapChangerTypes.NoRegulation) -> None:
+        """
+        Import TapChanger object from CGMES
+
+        :param asymmetry_angle: 
+        :param low:
+        :param high:
+        :param normal:
+        :param neutral:
+        :param stepVoltageIncrement:
+        :param step:
+        :return:
+        """
+
+        self._negative_low = low < 0
+
+        if self._negative_low:
+            self.asymmetry_angle = float(asymmetry_angle)  # assymetry angle (Theta)
+            self._total_positions = int(high-low)  # total number of positions
+            self.dV = float(stepVoltageIncrement / 100)  # voltage increment in p.u.
+            self.neutral_position = int(neutral - low + 1)  # neutral position
+            self.normal_position = int(normal - low + 1)  # normal position
+            self._tap_position = int(self.neutral_position + step)  # index with respect to the neutral position
+            self.tc_type = tc_type  # tap changer mode
+
+        else:
+            self.asymmetry_angle = float(asymmetry_angle)  # assymetry angle (Theta)
+            self._total_positions = int(high-low)  # total number of positions
+            self.dV = float(stepVoltageIncrement / 100)  # voltage increment in p.u.
+            self.neutral_position = int(neutral)  # neutral position
+            self.normal_position = int(normal)  # normal position
+            self._tap_position = int(step)  # index with respect to the neutral position
+            self.tc_type: TapChangerTypes = tc_type  # tap changer mode
+
+        # Calculated arrays
+        self._ndv = np.zeros(self._total_positions)
+        self._tau_array = np.zeros(self._total_positions)
+        self._m_array = np.zeros(self._total_positions)
+        self.recalc()
+
+    def get_cgmes_values(self):
+        """
+        Returns with values of a Tap Changer in CGMES
+        
+        :return: 
+        :rtype: 
+        """
+
+        if self._negative_low:
+            low = -self.neutral_position + 1
+            high = self.total_positions - self.neutral_position + 1
+            normal = self.normal_position + low - 1
+            neutral = self.neutral_position + low - 1
+            sVI = self.dV * 100
+            step = self.tap_position + low - 1
+        else:
+            low = 0
+            high = self.total_positions
+            normal = self.normal_position
+            neutral = self.neutral_position
+            sVI = self.dV * 100
+            step = self.tap_position
+
+        return low, high, normal, neutral, sVI, step

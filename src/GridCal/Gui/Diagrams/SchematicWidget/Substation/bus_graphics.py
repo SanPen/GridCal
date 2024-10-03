@@ -22,7 +22,7 @@ from PySide6.QtCore import Qt, QRectF, QRect, QPointF
 from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
 from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, warning_msg
 from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.generic_graphics import (GenericDiagramWidget, ACTIVE, DEACTIVATED,
                                                    FONT_SCALE, EMERGENCY, TRANSPARENT)
@@ -452,87 +452,6 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                        icon_path=":/Icons/icons/plot.svg",
                        function_ptr=self.plot_profiles)
 
-
-        # arr = menu.addAction('Arrange')
-        # arr_icon = QIcon()
-        # arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
-        # arr.setIcon(arr_icon)
-        # arr.triggered.connect(self.arrange_children)
-        #
-        # ra5 = menu.addAction('Assign active state to profile')
-        # ra5_icon = QIcon()
-        # ra5_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-        # ra5.setIcon(ra5_icon)
-        # ra5.triggered.connect(self.assign_status_to_profile)
-        #
-        # ra3 = menu.addAction('Delete all the connections')
-        # del2_icon = QIcon()
-        # del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
-        # ra3.setIcon(del2_icon)
-        # ra3.triggered.connect(self.delete_all_connections)
-        #
-        # da = menu.addAction('Delete')
-        # del_icon = QIcon()
-        # del_icon.addPixmap(QPixmap(":/Icons/icons/delete_db.svg"))
-        # da.setIcon(del_icon)
-        # da.triggered.connect(self.remove)
-        #
-        # re = menu.addAction('Expand schematic')
-        # re_icon = QIcon()
-        # re_icon.addPixmap(QPixmap(":/Icons/icons/grid_icon.svg"))
-        # re.setIcon(re_icon)
-        # re.triggered.connect(self.expand_diagram_from_bus)
-        #
-        # menu.addSection("Add")
-        #
-        # al = menu.addAction('Load')
-        # al_icon = QIcon()
-        # al_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
-        # al.setIcon(al_icon)
-        # al.triggered.connect(self.add_load)
-        #
-        # ac_i = menu.addAction('Current injection')
-        # ac_i_icon = QIcon()
-        # ac_i_icon.addPixmap(QPixmap(":/Icons/icons/add_load.svg"))
-        # ac_i.setIcon(ac_i_icon)
-        # ac_i.triggered.connect(self.add_current_injection)
-        #
-        # ash = menu.addAction('Shunt')
-        # ash_icon = QIcon()
-        # ash_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
-        # ash.setIcon(ash_icon)
-        # ash.triggered.connect(self.add_shunt)
-        #
-        # acsh = menu.addAction('Controllable shunt')
-        # acsh_icon = QIcon()
-        # acsh_icon.addPixmap(QPixmap(":/Icons/icons/add_shunt.svg"))
-        # acsh.setIcon(acsh_icon)
-        # acsh.triggered.connect(self.add_controllable_shunt)
-        #
-        # acg = menu.addAction('Generator')
-        # acg_icon = QIcon()
-        # acg_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
-        # acg.setIcon(acg_icon)
-        # acg.triggered.connect(self.add_generator)
-        #
-        # asg = menu.addAction('Static generator')
-        # asg_icon = QIcon()
-        # asg_icon.addPixmap(QPixmap(":/Icons/icons/add_stagen.svg"))
-        # asg.setIcon(asg_icon)
-        # asg.triggered.connect(self.add_static_generator)
-        #
-        # ab = menu.addAction('Battery')
-        # ab_icon = QIcon()
-        # ab_icon.addPixmap(QPixmap(":/Icons/icons/add_batt.svg"))
-        # ab.setIcon(ab_icon)
-        # ab.triggered.connect(self.add_battery)
-        #
-        # aeg = menu.addAction('External grid')
-        # aeg_icon = QIcon()
-        # aeg_icon.addPixmap(QPixmap(":/Icons/icons/add_external_grid.svg"))
-        # aeg.setIcon(aeg_icon)
-        # aeg.triggered.connect(self.add_external_grid)
-
         add_menu_entry(menu,
                        text='Arrange',
                        icon_path=":/Icons/icons/automatic_layout.svg",
@@ -558,6 +477,10 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         add_menu_entry(menu, text='Expand schematic',
                        icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.expand_diagram_from_bus)
+
+        add_menu_entry(menu, text='Vecinity diagram from here',
+                       icon_path=":/Icons/icons/grid_icon.svg",
+                       function_ptr=self.new_vecinity_diagram_from_here)
 
         menu.addSection("Add")
 
@@ -645,6 +568,16 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         Expands the diagram from this bus
         """
         self.editor.expand_diagram_from_bus(root_bus=self.api_object)
+
+    def new_vecinity_diagram_from_here(self):
+        """
+        Create new vecinity diagram
+        :return:
+        """
+        if self.api_object is not None:
+            self.editor.gui.new_bus_branch_diagram_from_bus(root_bus=self.api_object)
+        else:
+            warning_msg("The api object is none :(")
 
     def enable_disable_toggle(self):
         """
