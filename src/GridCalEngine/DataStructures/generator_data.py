@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Tuple
+
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
@@ -46,6 +48,7 @@ class GeneratorData:
 
         self.qmin: Vec = np.zeros(nelm, dtype=float)
         self.qmax: Vec = np.zeros(nelm, dtype=float)
+        self.q_share: Vec = np.zeros(nelm, dtype=float)
 
         # reliabilty
         self.mttf: Vec = np.zeros(nelm, dtype=float)
@@ -103,6 +106,7 @@ class GeneratorData:
 
         data.qmin = self.qmin[elm_idx]
         data.qmax = self.qmax[elm_idx]
+        data.q_share = self.q_share[elm_idx]
 
         data.mttf = self.mttf[elm_idx]
         data.mttr = self.mttr[elm_idx]
@@ -164,6 +168,7 @@ class GeneratorData:
 
         data.qmin = self.qmin.copy()
         data.qmax = self.qmax.copy()
+        data.q_share = self.q_share.copy()
 
         data.mttf = self.mttf.copy()
         data.mttr = self.mttr.copy()
@@ -216,6 +221,17 @@ class GeneratorData:
         pf_sign = (self.pf + 1e-20) / np.abs(self.pf + 1e-20)
         Q = pf_sign * self.p * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
         return self.p + 1.0j * Q
+
+    def get_q_at(self, i) -> float:
+        """
+
+        :param i:
+        :return:
+        """
+        pf2 = np.power(self.pf[i], 2.0)
+        pf_sign = (self.pf[i] + 1e-20) / np.abs(self.pf[i] + 1e-20)
+        Q = pf_sign * self.p[i] * np.sqrt((1.0 - pf2) / (pf2 + 1e-20))
+        return Q
 
     def get_Yshunt(self, seq: int = 1) -> CxVec:
         """
@@ -323,3 +339,10 @@ class GeneratorData:
         """
         x = (~self.dispatchable * self.active).astype(int)
         return np.where(x == 1)[0]
+
+    def get_controllable_and_not_controllable_indices(self) -> Tuple[IntVec, IntVec]:
+        """
+        Get the indices of controllable generators
+        :return: idx_controllable, idx_non_controllable
+        """
+        return np.where(self.controllable == 1)[0], np.where(self.controllable == 0)[0]
