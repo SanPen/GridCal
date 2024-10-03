@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import Tuple
 import numpy as np
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
@@ -46,6 +47,7 @@ class ShuntData:
 
         self.qmin: Vec = np.zeros(nelm, dtype=float)
         self.qmax: Vec = np.zeros(nelm, dtype=float)
+        self.q_share: Vec = np.zeros(nelm, dtype=float)
 
         self.cost: Vec = np.zeros(nelm, dtype=float)
 
@@ -88,6 +90,7 @@ class ShuntData:
 
         data.qmax = self.qmax[elm_idx]
         data.qmin = self.qmin[elm_idx]
+        data.q_share = self.q_share[elm_idx]
 
         data.cost = self.cost[elm_idx]
 
@@ -119,6 +122,7 @@ class ShuntData:
 
         data.qmax = self.qmax.copy()
         data.qmin = self.qmin.copy()
+        data.q_share = self.q_share.copy()
 
         data.cost = self.cost.copy()
 
@@ -162,6 +166,13 @@ class ShuntData:
         """
         return self.C_bus_elm * (self.Y * self.active)
 
+    def get_fix_injections_per_bus(self) -> CxVec:
+        """
+        Get fixed Injections per bus
+        :return:
+        """
+        return self.C_bus_elm * (self.Y * self.active * (1 - self.controllable))
+
     def get_qmax_per_bus(self) -> Vec:
         """
         Get generator Qmax per bus
@@ -185,3 +196,10 @@ class ShuntData:
         :return: array with the bus indices
         """
         return tp.get_csr_bus_indices(self.C_bus_elm.tocsr())
+
+    def get_controllable_and_not_controllable_indices(self) -> Tuple[IntVec, IntVec]:
+        """
+        Get the indices of controllable generators
+        :return: idx_controllable, idx_non_controllable
+        """
+        return np.where(self.controllable == 1)[0], np.where(self.controllable == 0)[0]
