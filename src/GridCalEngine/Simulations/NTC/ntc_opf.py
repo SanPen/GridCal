@@ -1085,26 +1085,39 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
             # declare the linear analysis
-            ls = LinearAnalysis(numerical_circuit=nc, distributed_slack=False, correct_values=True)
+            ls = LinearAnalysis(numerical_circuit=nc,
+                                distributed_slack=False,
+                                correct_values=True)
+
             # compute the PTDF and LODF
             ls.run()
 
             # compute exchange sensitivities
-            if monitor_only_sensitive_branches or monitor_only_ntc_load_rule_branches:
+            # if monitor_only_sensitive_branches or monitor_only_ntc_load_rule_branches:
+            #
+            #     # TODO, these conditions are confusing and maybe conflicting with the consider_contingencies option
+            #
+            #     alpha = compute_alpha(ptdf=ls.PTDF,
+            #                           lodf=ls.LODF,
+            #                           P0=nc.Sbus.real,
+            #                           Pinstalled=nc.bus_installed_power,
+            #                           Pgen=nc.generator_data.get_injections_per_bus().real,
+            #                           Pload=nc.load_data.get_injections_per_bus().real,
+            #                           idx1=bus_idx_from,
+            #                           idx2=bus_idx_to,
+            #                           mode=mode_2_int[transfer_method])
+            # else:
+            #     alpha = None
 
-                # TODO, these conditions are confusing and maybe conflicting with the consider_contingencies option
-
-                alpha = compute_alpha(ptdf=ls.PTDF,
-                                      lodf=ls.LODF,
-                                      P0=nc.Sbus.real,
-                                      Pinstalled=nc.bus_installed_power,
-                                      Pgen=nc.generator_data.get_injections_per_bus().real,
-                                      Pload=nc.load_data.get_injections_per_bus().real,
-                                      idx1=bus_idx_from,
-                                      idx2=bus_idx_to,
-                                      mode=mode_2_int[transfer_method])
-            else:
-                alpha = None
+            alpha = compute_alpha(ptdf=ls.PTDF,
+                                  lodf=ls.LODF,
+                                  P0=nc.Sbus.real,
+                                  Pinstalled=nc.bus_installed_power,
+                                  Pgen=nc.generator_data.get_injections_per_bus().real,
+                                  Pload=nc.load_data.get_injections_per_bus().real,
+                                  idx1=bus_idx_from,
+                                  idx2=bus_idx_to,
+                                  mode=mode_2_int[transfer_method])
 
             # compute the structural NTC: this is the sum of ratings in the inter area
             structural_ntc = nc.get_structural_ntc(bus_idx_from=bus_idx_from, bus_idx_to=bus_idx_to)
@@ -1138,13 +1151,9 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             # formulate contingencies --------------------------------------------------------------------------------
 
             if consider_contingencies:
-                # if we want to include contingencies, we'll need the LODF at this time step
-                if ls.PTDF is None:
-                    ls.run()
 
-                mctg = LinearMultiContingencies(grid=grid,
-                                                contingency_groups_used=contingency_groups_used)
-
+                # declare the multi-contingencies analysis and compute
+                mctg = LinearMultiContingencies(grid=grid, contingency_groups_used=contingency_groups_used)
                 mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
                 # formulate the contingencies
