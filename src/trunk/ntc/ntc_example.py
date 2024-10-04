@@ -30,4 +30,7 @@ drv = gce.OptimalNetTransferCapacityDriver(grid, ntc_options)
 
 drv.run()
 
+res = drv.results
 
+drv.logger.print("Logger:")
+print()

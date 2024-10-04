@@ -109,20 +109,22 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
         for t_idx, t in enumerate(self.time_indices):
 
-            opf_vars = run_linear_ntc_opf_ts(grid=self.grid,
-                                             time_indices=[t],  # only one time index at a time
-                                             solver_type=self.options.opf_options.mip_solver,
-                                             zonal_grouping=self.options.opf_options.zonal_grouping,
-                                             skip_generation_limits=self.options.skip_generation_limits,
-                                             consider_contingencies=self.options.consider_contingencies,
-                                             contingency_groups_used=self.options.opf_options.contingency_groups_used,
-                                             lodf_threshold=self.options.lin_options.lodf_threshold,
-                                             bus_idx_from=self.options.area_from_bus_idx,
-                                             bus_idx_to=self.options.area_to_bus_idx,
-                                             logger=self.logger,
-                                             progress_text=None,
-                                             progress_func=None,
-                                             export_model_fname=self.options.opf_options.export_model_fname)
+            opf_vars = run_linear_ntc_opf_ts(
+                grid=self.grid,
+                time_indices=[t],  # only one time index at a time
+                solver_type=self.options.opf_options.mip_solver,
+                zonal_grouping=self.options.opf_options.zonal_grouping,
+                skip_generation_limits=self.options.skip_generation_limits,
+                consider_contingencies=self.options.consider_contingencies,
+                contingency_groups_used=self.options.opf_options.contingency_groups_used,
+                lodf_threshold=self.options.lin_options.lodf_threshold,
+                bus_idx_from=self.options.area_from_bus_idx,
+                bus_idx_to=self.options.area_to_bus_idx,
+                logger=self.logger,
+                progress_text=None,
+                progress_func=None,
+                export_model_fname=self.options.opf_options.export_model_fname
+            )
 
             self.results.voltage[t_idx, :] = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices[t_idx, :] = opf_vars.bus_vars.shadow_prices
