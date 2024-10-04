@@ -453,6 +453,7 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
             for k, elm in enumerate(lists_of_objects):
                 obj_data = gridcal_object_to_json(elm)
                 object_json.append(obj_data)
+                print("element to save: {}".format(elm))
 
         data[object_type_name] = object_json
 
@@ -959,7 +960,7 @@ def searc_property_into_json(json_entry: dict, prop: GCProp):
             property_value = json_entry.get(p_name, None)
             if property_value is not None:
                 return property_value
-
+            else: print("Property {} not found".format(p_name))
         # we couldn't find the property or the old names...
         return None
 
@@ -1019,16 +1020,18 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
         idtag = json_entry['idtag']
         elm = type(template_elm)(idtag=idtag)
 
+        #print("template: {} , B: {}".format(elm.template, elm.B))
+
         # ensure the profiles existence
         if time_profile is not None:
             elm.ensure_profiles_exist(index=time_profile)
 
         # for property_name_, property_value in json_entry.items():
         for property_name, gc_prop in template_elm.registered_properties.items():
-
+            #print("property: {}".format(property_name))
             # search for the property in the json
             property_value = searc_property_into_json(json_entry=json_entry, prop=gc_prop)
-
+            #print(property_name, property_value)
             if property_value is not None:
 
                 if property_name != 'idtag':  # idtag was set already
@@ -1042,7 +1045,16 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                                 # this is a hyperlink to another object
                                 # we must look for the reference in elements_dict
-                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
+                                if gc_prop.tpe.name == DeviceType.LineTypeDevice.name:
+                                    subcollection1 = DeviceType.SequenceLineDevice
+                                    subcollection2 = DeviceType.UnderGroundLineDevice
+                                    subcollection3 = DeviceType.OverheadLineTypeDevice
+                                    collection = elements_dict_by_type.get(subcollection1, None)
+                                    collection2 = elements_dict_by_type.get(subcollection2, None)
+                                    collection3 = elements_dict_by_type.get(subcollection3, None)
+                                    collection = collection | collection2 | collection3
+                                else:
+                                    collection = elements_dict_by_type.get(gc_prop.tpe, None)
 
                                 if collection is not None:
                                     ref_idtag = str(property_value)
@@ -1383,13 +1395,13 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
             item_count = 0
             n_data_types = len(template_object_types)
             for object_type_key, template_elm in template_object_types.items():
-
+                #print("-------------------{}---------------------".format(template_elm))
                 if text_func is not None:
                     text_func(f"Parsing {object_type_key} model data...")
 
                 # query the device type into the data set
                 data_list = model_data.get(object_type_key, None)
-
+                # model_data.get('line',None)
                 if data_list is not None:
                     devices, devices_dict = parse_object_type_from_json(template_elm=template_elm,
                                                                         data_list=data_list,

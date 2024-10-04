@@ -176,7 +176,7 @@ class Line(BranchParent):
                                  '0 would be at the "from" side,'
                                  '1 would be at the "to" side,'
                                  'therefore 0.5 is at the middle.')
-        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
+        self.register(key='template', units='', tpe=DeviceType.LineTypeDevice, definition='', editable=False) #tpe=DeviceType.SequenceLineDevice, #Union[DeviceType.SequenceLineDevice, DeviceType.UnderGroundLineDevice]
         self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 
         self.register(key='possible_tower_types', units='', tpe=SubObjectType.Associations,

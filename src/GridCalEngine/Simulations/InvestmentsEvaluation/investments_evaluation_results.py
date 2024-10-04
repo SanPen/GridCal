@@ -266,7 +266,10 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             self.__eval_index += 1
         else:
-            print('Evaluation index out of range')
+            # print('Evaluation index out of range')
+            print("End of evaluation")
+            # print(self.max_eval)
+            # print(self.__eval_index)
 
     def trim(self):
         """
@@ -452,9 +455,11 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             labels = self._index_names
 
             self.calculate_tech_score_magnitudes()
-
-            max_magnitude = max(filter(None, [self.overload_majority_magnitude, self.losses_majority_magnitude,
-                                              self.voltage_majority_magnitude]))
+            if self.overload_majority_magnitude==0 and self.losses_majority_magnitude==0 and self.voltage_majority_magnitude ==0:
+                max_magnitude = 0
+            else:
+                max_magnitude = max(filter(None, [self.overload_majority_magnitude, self.losses_majority_magnitude,
+                                                self.voltage_majority_magnitude]))
 
             if max_magnitude is not None:
                 self.losses_scale = self.scaling_factor(max_magnitude, self.losses_majority_magnitude)
@@ -476,12 +481,12 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             # Match magnitude of technical score with investment score
             technical_score = self._losses * self.losses_scale + self._voltage_score * self.voltage_scale + self._overload_score
             max_x_order_of_magnitude = 2  # set to 2 so that costs are in the hundreds of millions
-            print(self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude,
-                  self.overload_scale, self.losses_scale, self.voltage_scale)
+            # print(self.overload_majority_magnitude, self.losses_majority_magnitude, self.voltage_majority_magnitude,
+            #       self.overload_scale, self.losses_scale, self.voltage_scale)
             max_y_order_of_magnitude = InvestmentsEvaluationResults.calculate_magnitude(max(technical_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
-            scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
-            scaled_financial_score = self._financial * 10 ** -2
+            scaled_technical_score = technical_score #* 10 ** order_of_magnitude_difference
+            scaled_financial_score = self._financial #* 10 ** -2
 
             # Plot 1: Technical vs investment
             sc1 = ax3[0, 0].scatter(scaled_financial_score, scaled_technical_score,
@@ -661,8 +666,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
             max_x_order_of_magnitude = 2
             max_y_order_of_magnitude = InvestmentsEvaluationResults.calculate_magnitude(max(technical_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
-            scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
-            scaled_financial_score = self._financial * 10 ** -2
+            scaled_technical_score = technical_score #* 10 ** order_of_magnitude_difference
+            scaled_financial_score = self._financial #* 10 ** -2
 
             # This data will actually be the capex and opex that come out of computation
             data = np.c_[self._financial, technical_score]
