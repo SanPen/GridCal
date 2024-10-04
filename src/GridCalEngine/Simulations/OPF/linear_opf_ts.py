@@ -1849,7 +1849,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         logger.add_info("LP model saved as", value=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve(robust=False)
+    status = lp_model.solve(robust=True)
 
     # gather the results
     logger.add_info("Status", value=str(status))

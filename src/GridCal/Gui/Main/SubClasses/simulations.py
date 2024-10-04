@@ -2109,7 +2109,7 @@ class SimulationsMain(TimeEventsMain):
         idx_br = info.idx_branches
 
         if len(idx_from) == 0:
-            error_msg('The area "from" has no buses!')
+            error_msg('The "from" aggregation has no buses!')
             return None
 
         if len(idx_to) == 0:

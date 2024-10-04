@@ -23,6 +23,7 @@ import numpy as np
 from typing import List, Union, Tuple, Callable
 from GridCalEngine.enumerations import MIPSolvers, ZonalGrouping
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
+from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
 from GridCalEngine.DataStructures.numerical_circuit import NumericalCircuit, compile_numerical_circuit_at
 from GridCalEngine.DataStructures.generator_data import GeneratorData
 from GridCalEngine.DataStructures.load_data import LoadData
@@ -993,6 +994,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                           skip_generation_limits: bool = False,
                           consider_contingencies: bool = False,
+                          contingency_groups_used: List[ContingencyGroup] = (),
                           alpha_threshold: float = 0.001,
                           lodf_threshold: float = 0.001,
                           buses_areas_1: IntVec = None,
@@ -1013,6 +1015,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     :param zonal_grouping: Zonal grouping?
     :param skip_generation_limits: Skip the generation limits?
     :param consider_contingencies: Consider the contingencies?
+    :param contingency_groups_used: List of contingency groups to simulate
     :param alpha_threshold: threshold to consider the exchange sensitivity
     :param lodf_threshold: threshold to consider LODF sensitivities
     :param buses_areas_1: array of bus indices in the area 1
@@ -1105,18 +1108,23 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
 
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
-            structural_ntc = nc.branch_data.get_inter_areas(buses_areas_1=buses_areas_1, buses_areas_2=buses_areas_2)
+            inter_area_branches_info = nc.branch_data.get_inter_areas(buses_areas_1=buses_areas_1,
+                                                                      buses_areas_2=buses_areas_2)
+            inter_area_br_indices = [info[0] for info in inter_area_branches_info]
 
             # declare the linear analysis
             ls = LinearAnalysis(numerical_circuit=nc, distributed_slack=False, correct_values=True)
+            # compute the PTDF and LODF
+            ls.run()
+
+            # base flows
+            base_flows = ls.get_flows(nc.Sbus.real)
+            structural_ntc = np.sum(base_flows[inter_area_br_indices])
 
             # compute exchange sensitivities
             if monitor_only_sensitive_branches or monitor_only_ntc_load_rule_branches:
 
                 # TODO, these conditions are confusing and maybe conflicting with the consider_contingencies option
-
-                # compute the PTDF and LODF
-                ls.run()
 
                 alpha = compute_alpha(ptdf=ls.PTDF,
                                       lodf=ls.LODF,
@@ -1142,7 +1150,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
                 alpha=alpha,
                 alpha_threshold=alpha_threshold,
-                structural_ntc=structural_ntc,
+                structural_ntc=float(structural_ntc),
                 ntc_load_rule=ntc_load_rule,
                 inf=1e20
             )
@@ -1162,8 +1170,9 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 if ls.PTDF is None:
                     ls.run()
 
-                # Compute the more generalistic contingency structures
-                mctg = LinearMultiContingencies(grid=grid)
+                mctg = LinearMultiContingencies(grid=grid,
+                                                contingency_groups_used=contingency_groups_used)
+
                 mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
 
                 # formulate the contingencies
@@ -1203,7 +1212,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve()
+    status = lp_model.solve(robust=True)
 
     # gather the results
     if status == LpModel.OPTIMAL:
