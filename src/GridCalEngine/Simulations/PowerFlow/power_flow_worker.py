@@ -607,33 +607,40 @@ def power_flow_post_process(
     return Sfb, Stb, If, It, Vbranch, loading, losses, Sbus
 
 
-def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec) -> Tuple[Vec, Vec, Vec]:
+def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: PowerFlowResults) -> None:
     """
     This function splits the reactive power of the power flow solution (nbus) into reactive power per device that
     is able to control reactive power as an injection (generators, batteries, shunts)
     :param nc: NumericalCircuit
     :param Qbus: Array of nodal reactive power (nbus)
-    :return: Qgen (ngen), Qbatt (nbatt), Qsh (nsh)
+    :param results: PowerFlowResults (values are written to it)
+    :return: Nothing, the results are set in the results object
     """
-    q_max_total = nc.generator_data.C_bus_elm @ (
-            nc.generator_data.qmax * nc.generator_data.active * nc.generator_data.controllable)
 
-    q_max_total += nc.battery_data.C_bus_elm @ (
-            nc.battery_data.qmax * nc.battery_data.active * nc.battery_data.controllable)
+    # generation
+    bus_idx_gen = nc.generator_data.get_bus_indices()
+    gen_q_share = nc.generator_data.q_share / (nc.bus_data.q_shared_total[bus_idx_gen] + 1e-20)
 
-    q_max_total += nc.shunt_data.C_bus_elm @ (
-            nc.shunt_data.qmax * nc.shunt_data.active * nc.shunt_data.controllable)
+    # batteries
+    bus_idx_bat = nc.battery_data.get_bus_indices()
+    batt_q_share = nc.battery_data.q_share / (nc.bus_data.q_shared_total[bus_idx_bat] + 1e-20)
 
-    bus_idx = nc.generator_data.get_bus_indices()
-    Qgen = Qbus[bus_idx] * nc.generator_data.qmax / (q_max_total[bus_idx] + 1e-20)
+    # shunts
+    bus_idx_sh = nc.shunt_data.get_bus_indices()
+    sh_q_share = nc.shunt_data.q_share / (nc.bus_data.q_shared_total[bus_idx_sh] + 1e-20)
 
-    bus_idx = nc.battery_data.get_bus_indices()
-    Qbatt = Qbus[bus_idx] * nc.battery_data.qmax / (q_max_total[bus_idx] + 1e-20)
+    # Fixed injection of reactive power
+    # Zip formul: S0 + np.conj(I0 + Y0 * Vm) * Vm
+    Vm = np.abs(results.voltage)
+    Qfix = nc.bus_data.q_fixed - (nc.bus_data.ii_fixed + nc.bus_data.b_fixed * Vm) * Vm
 
-    bus_idx = nc.shunt_data.get_bus_indices()
-    Qsh = Qbus[bus_idx] * nc.shunt_data.qmax / (q_max_total[bus_idx] + 1e-20)
+    # the remaining Q to share is the total Q computed (Qbus) minus the part that we know is fixed
+    Qvar = Qbus - Qfix
 
-    return Qgen, Qbatt, Qsh
+    # set the results
+    results.gen_q = Qvar[bus_idx_gen] * gen_q_share
+    results.battery_q = Qvar[bus_idx_bat] * batt_q_share
+    results.shunt_q = Qvar[bus_idx_sh] * sh_q_share
 
 
 def multi_island_pf_nc(nc: NumericalCircuit,
@@ -784,7 +791,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     results.hvdc_losses = Losses_hvdc * nc.Sbase
 
     # do the reactive power partition and store the values
-    results.gen_q, results.battery_q, results.shunt_q = split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag)
+    split_reactive_power_into_devices(nc=nc, Qbus=results.Sbus.imag, results=results)
 
     return results
 
