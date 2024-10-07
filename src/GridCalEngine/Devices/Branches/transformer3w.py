@@ -49,6 +49,9 @@ class Transformer3W(PhysicalDevice):
                  name: str = 'Branch',
                  bus0: Union[None, Bus] = None,
                  bus1: Bus = None, bus2: Bus = None, bus3: Bus = None,
+                 w1_idtag: Union[str, None] = None,
+                 w2_idtag: Union[str, None] = None,
+                 w3_idtag: Union[str, None] = None,
                  V1=10.0, V2=10.0, V3=10.0, active=True,
                  r12=0.0, r23=0.0, r31=0.0, x12=0.0, x23=0.0, x31=0.0,
                  rate12=0.0, rate23=0.0, rate31=0.0,
@@ -113,9 +116,9 @@ class Transformer3W(PhysicalDevice):
         self._rate23 = float(rate23)
         self._rate31 = float(rate31)
 
-        self.winding1 = Winding(bus_from=self.bus0, bus_to=bus1, HV=V1, LV=1.0, name=name + "_W1")
-        self.winding2 = Winding(bus_from=self.bus0, bus_to=bus2, HV=V2, LV=1.0, name=name + "_W2")
-        self.winding3 = Winding(bus_from=self.bus0, bus_to=bus3, HV=V3, LV=1.0, name=name + "_W3")
+        self.winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag, bus_to=bus1, HV=V1, LV=1.0, name=name + "_W1")
+        self.winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag, bus_to=bus2, HV=V2, LV=1.0, name=name + "_W2")
+        self.winding3 = Winding(bus_from=self.bus0, idtag=w3_idtag, bus_to=bus3, HV=V3, LV=1.0, name=name + "_W3")
 
         self.x = float(x)
         self.y = float(y)

@@ -1002,6 +1002,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
     """
+    Creates all transformer related CGMES classes from GridCal transformer.
 
     :param multicircuit_model:
     :param cgmes_model:
@@ -1098,7 +1099,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.ratedS = mc_elm.Sn
         pte2.endNumber = 2
 
-        # -----------------------------------------------------------------
+        # TODO -------------------- PHASE TAP ------------------------------
+        # -------------------- RATIO TAP ------------------------------
         #                   TAP Changer EQ
         new_rdf_id = get_new_rdfid()
         object_template = cgmes_model.get_class_type("RatioTapChanger")
@@ -1118,19 +1120,6 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
          tap_changer.stepVoltageIncrement,
          tap_changer.step) = mc_elm.tap_changer.get_cgmes_values()
 
-        # tap_changer.lowStep = mc_elm.tap_changer.get_tap_low_step()
-        # tap_changer.highStep = mc_elm.tap_changer.get_tap_high_step()
-        # tap_changer.neutralStep = mc_elm.tap_changer.neutral_position + tap_changer.lowStep
-        # tap_changer.normalStep = mc_elm.tap_changer.normal_position + tap_changer.lowStep
-
-        # Tap step increment, in per cent of nominal voltage, per step position.
-        # if mc_elm.tap_changer.tap_position == mc_elm.tap_changer.neutral_position:
-        #     tap_changer.stepVoltageIncrement = 0
-        # else:
-        #     tap_changer.stepVoltageIncrement = (
-        #             (mc_elm.tap_module - 1) / (mc_elm.tap_changer.tap_position - mc_elm.tap_changer.neutral_position)
-        #     )
-
         # CONTROL
         tap_changer.ltcFlag = False  # load tap changing capability
         tap_changer.TapChangerControl = create_cgmes_tap_changer_control(
@@ -1141,9 +1130,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         )
         # tculControlMode not used, but be set to something: volt/react ..
         tap_changer.tculControlMode = TransformerControlMode.volt
-
         #                   TAP Changer SSH
-        tap_changer.step = mc_elm.tap_changer.tap_position
         tap_changer.controlEnabled = False  # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
         # why, why not?
 
@@ -1442,19 +1429,20 @@ def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
                 mc_bus = find_object_by_attribute(multicircuit_model.buses,
                                                   "name", tn_name)
                 mc_buses.append(mc_bus)
-        slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
-        if slack_bus:
-            slack_tn = find_object_by_uuid(cgmes_model,
-                                           cgmes_model.cgmes_assets.TopologicalNode_list,
-                                           slack_bus.idtag)
-            new_island.AngleRefTopologicalNode = slack_tn
-            for tn in new_island.TopologicalNodes:
-                tn.AngleRefTopologicalIsland = slack_tn
-        else:
-            logger.add_warning(
-                msg="AngleRefTopologicalNode missing from TopologicalIsland!",
-                device=new_island.name,
-                device_property="AngleRefTopologicalNode")
+        if mc_buses:
+            slack_bus = find_object_by_attribute(mc_buses, "is_slack", True)
+            if slack_bus:
+                slack_tn = find_object_by_uuid(cgmes_model,
+                                               cgmes_model.cgmes_assets.TopologicalNode_list,
+                                               slack_bus.idtag)
+                new_island.AngleRefTopologicalNode = slack_tn
+                for tn in new_island.TopologicalNodes:
+                    tn.AngleRefTopologicalIsland = slack_tn
+            else:
+                logger.add_warning(
+                    msg="AngleRefTopologicalNode missing from TopologicalIsland!",
+                    device=new_island.name,
+                    device_property="AngleRefTopologicalNode")
         cgmes_model.add(new_island)
 
 
