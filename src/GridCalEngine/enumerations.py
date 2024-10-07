@@ -993,6 +993,7 @@ class DeviceType(Enum):
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'
     OverheadLineTypeDevice = 'Tower'
+    AnyLineTemplateDevice = "Any line template"
     TransformerTypeDevice = 'Transformer type'
     SwitchDevice = 'Switch'
 

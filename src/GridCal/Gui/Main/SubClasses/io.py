@@ -292,6 +292,12 @@ class IoMain(ConfigurationMain):
         :return: Nothing
         """
         if len(filenames) > 0:
+
+            for fname in filenames:
+                if not os.path.exists(fname):
+                    error_msg(text=f"The file does not exists :(\n{fname}", title="File opening")
+                    return
+
             self.file_name = filenames[0]
 
             # store the working directory

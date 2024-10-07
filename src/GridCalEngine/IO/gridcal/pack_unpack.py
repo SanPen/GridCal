@@ -1040,7 +1040,7 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                             if isinstance(gc_prop.tpe, DeviceType):
 
-                                if isinstance(elm, dev.Line) and gc_prop.name == "template":
+                                if gc_prop.tpe == DeviceType.AnyLineTemplateDevice:
                                     # this is an exception, when dealing with line templates we need to look for
                                     # several types, not only one
                                     seq_templates = elements_dict_by_type.get(DeviceType.OverheadLineTypeDevice, dict())
