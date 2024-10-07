@@ -83,6 +83,8 @@ class IoMain(ConfigurationMain):
         self.ui.cgmes_profiles_listView.setModel(gf.get_list_model(list(self.cgmes_profiles_dict.keys()),
                                                                    checks=True, check_value=True))
 
+        self.ui.raw_export_version_comboBox.addItems(["33", "35"])
+
         self.ui.actionNew_project.triggered.connect(self.new_project)
         self.ui.actionOpen_file.triggered.connect(self.open_file)
         self.ui.actionAdd_circuit.triggered.connect(self.add_circuit)
@@ -688,13 +690,19 @@ class IoMain(ConfigurationMain):
 
         one_file_per_profile = self.ui.cgmes_single_profile_per_file_checkBox.isChecked()
 
+        cgmes_map_areas_like_raw = self.ui.cgmes_map_regions_like_raw_checkBox.isChecked()
+
+        raw_version = self.ui.raw_export_version_comboBox.currentText()
+
         options = filedrv.FileSavingOptions(cgmes_boundary_set=self.current_boundary_set,
                                             simulation_drivers=self.get_simulations(),
                                             sessions_data=sessions_data,
                                             dictionary_of_json_files=json_files,
                                             cgmes_version=cgmes_version,
                                             cgmes_profiles=cgmes_profiles,
-                                            one_file_per_profile=one_file_per_profile)
+                                            cgmes_one_file_per_profile=one_file_per_profile,
+                                            cgmes_map_areas_like_raw=cgmes_map_areas_like_raw,
+                                            raw_version=raw_version)
 
         return options
 

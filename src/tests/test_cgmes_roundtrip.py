@@ -20,7 +20,7 @@ def create_file_save_options(boundary_zip_path: str) -> FileSavingOptions:
     :return:
     """
     options = FileSavingOptions()
-    options.one_file_per_profile = False
+    options.cgmes_one_file_per_profile = False
     options.cgmes_profiles = [cgmesProfile.EQ,
                               cgmesProfile.OP,
                               cgmesProfile.TP,

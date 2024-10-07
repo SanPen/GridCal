@@ -30,6 +30,7 @@ from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, 
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor,
                            QDropEvent, QWheelEvent)
 
+from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
 from GridCalEngine.Devices.Branches.line import Line
@@ -857,15 +858,46 @@ class GridMapWidget(BaseDiagramWidget):
             y0 = point0.y()
             lat, lon = self.to_lat_lon(x=x0, y=y0)
 
-            # print(f"Dropped at x:{x0}, y:{y0}, lat:{lat}, lon:{lon}")
-
             if obj_type == self.library_model.get_substation_mime_data():
-                api_object = Substation(name=f"Substation {self.circuit.get_substation_number()}",
-                                        latitude=lat,
-                                        longitude=lon)
-                self.circuit.add_substation(obj=api_object)
-                substation_graphics = self.add_api_substation(api_object=api_object, lat=lat, lon=lon)
-                substation_graphics.add_voltage_level()
+                self.create_substation_with_dialogue(lat=lat, lon=lon)
+
+    def create_substation_with_dialogue(self, lat, lon):
+        """
+        Create a substation using the dialogue
+        :param lat:
+        :param lon:
+        :return:
+        """
+        kv = self.gui.get_default_voltage()
+        dlg = SubstationDesigner(grid=self.circuit, default_voltage=kv)
+        dlg.exec()
+        if dlg.was_ok():
+
+            # create the SE
+            se_object = Substation(name=dlg.get_name(), latitude=lat, longitude=lon)
+
+            self.circuit.add_substation(obj=se_object)
+            substation_graphics = self.add_api_substation(api_object=se_object, lat=lat, lon=lon)
+
+            for vl_template in dlg.get_voltage_levels():
+
+                # substation_graphics.add_voltage_level()
+                vl = VoltageLevel(name=f"{se_object.name} @{kv}KV VL",
+                                  Vnom=vl_template.voltage,
+                                  substation=se_object)
+                self.circuit.add_voltage_level(vl)
+
+                bus = Bus(name=f"{se_object.name} @{kv}KV bus",
+                          Vnom=vl_template.voltage,
+                          substation=se_object,
+                          voltage_level=vl)
+                self.circuit.add_bus(obj=bus)
+
+                # add the vl graphics
+                self.add_api_voltage_level(substation_graphics=substation_graphics, api_object=vl)
+
+            # sort voltage levels
+            substation_graphics.sort_voltage_levels()
 
     def wheelEvent(self, event: QWheelEvent):
         """
@@ -874,12 +906,12 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
 
-        # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
+        # SANTIAGO: DO NOT TOUCH, THIS IS THE DESIRED BEHAVIOUR
         self.update_device_sizes()
 
-    def get_branch_width(self):
+    def get_branch_width(self) -> float:
         """
-
+        Get the desired branch width
         :return:
         """
         max_zoom = self.map.max_level
@@ -888,9 +920,9 @@ class GridMapWidget(BaseDiagramWidget):
         scale = self.diagram.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
         return scale
 
-    def update_device_sizes(self):
+    def update_device_sizes(self) -> None:
         """
-
+        Updat ethe devices' sizes
         :return:
         """
 

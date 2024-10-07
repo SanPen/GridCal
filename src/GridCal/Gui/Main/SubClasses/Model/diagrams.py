@@ -290,6 +290,13 @@ class DiagramsMain(CompiledArraysMain):
         # Set context menu policy to CustomContextMenu
         self.ui.diagramsListView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
 
+    def get_default_voltage(self) -> float:
+        """
+        Get the defualt marked voltage
+        :return:
+        """
+        return self.ui.defaultBusVoltageSpinBox.value()
+
     def auto_layout(self):
         """
         Automatic layout of the nodes

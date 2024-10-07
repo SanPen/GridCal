@@ -95,12 +95,12 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
         'transformer3w': dev.Transformer3W(),
 
         'line': dev.Line(),
-        'dc_line': dev.DcLine(None, None),
+        'dc_line': dev.DcLine(),
 
         'hvdc': dev.HvdcLine(),
 
-        'vsc': dev.VSC(None, None),
-        'upfc': dev.UPFC(None, None),
+        'vsc': dev.VSC(),
+        'upfc': dev.UPFC(),
 
         'series_reactance': dev.SeriesReactance(),
 
@@ -111,11 +111,6 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
         'investments_group': dev.InvestmentsGroup(),
         'investment': dev.Investment(),
-
-        # TODO: Handle these legacy types
-        # 'generator_technology': dev.GeneratorTechnology(),
-        # 'generator_fuel': dev.GeneratorFuel(),
-        # 'generator_emission': dev.GeneratorEmission(),
 
         'fluid_node': dev.FluidNode(),
         'fluid_path': dev.FluidPath(),
@@ -1045,9 +1040,17 @@ def parse_object_type_from_json(template_elm: ALL_DEV_TYPES,
 
                             if isinstance(gc_prop.tpe, DeviceType):
 
-                                # this is a hyperlink to another object
-                                # we must look for the reference in elements_dict
-                                collection = elements_dict_by_type.get(gc_prop.tpe, None)
+                                if isinstance(elm, dev.Line) and gc_prop.name == "template":
+                                    # this is an exception, when dealing with line templates we need to look for
+                                    # several types, not only one
+                                    seq_templates = elements_dict_by_type.get(DeviceType.OverheadLineTypeDevice, dict())
+                                    oh_templates = elements_dict_by_type.get(DeviceType.SequenceLineDevice, dict())
+                                    ug_templates = elements_dict_by_type.get(DeviceType.UnderGroundLineDevice, dict())
+                                    collection = {**seq_templates, **oh_templates, **ug_templates}
+                                else:
+                                    # this is a hyperlink to another object
+                                    # we must look for the reference in elements_dict
+                                    collection = elements_dict_by_type.get(gc_prop.tpe, None)
 
                                 if collection is not None:
                                     ref_idtag = str(property_value)
