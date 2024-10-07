@@ -658,64 +658,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             contingency_rates=self.contingency_rates
         )
 
-        # # Add exchange sensitivities
-        # y, columns = add_exchange_sensitivities(
-        #     y=y,
-        #     columns=columns,
-        #     mc_idx=self.contingency_branch_indices_list,
-        #     alpha=self.alpha,
-        #     alpha_n1=self.contingency_branch_alpha_list,
-        #     report_contigency_alpha=False,
-        # )
-        #
-        # # Add TTC, TRM and NTC
-        # y, columns = add_ntc_data(
-        #     y=y,
-        #     columns=columns,
-        #     ttc=self.get_exchange_power(),
-        #     trm=self.trm,
-        # )
-        #
-        # # Add MACZT (margin available for cross-zonal trade) data
-        # y, columns = add_maczt(
-        #     y=y,
-        #     columns=columns,
-        #     ttc=self.get_exchange_power(),
-        #     trm=self.trm,
-        # )
-        #
-        # # Add min ntc to be considered as critical element
-        # y, columns = add_min_ntc(
-        #     y=y,
-        #     columns=columns,
-        #     ntc_load_rule=self.ntc_load_rule,
-        # )
-        #
-        # # Add interarea Branches data
-        # y, columns = add_inter_area_branches_data(
-        #     y=y,
-        #     columns=columns,
-        #     inter_area_branches=self.inter_area_branches,
-        #     Sf=self.Sf,
-        #     names=self.branch_names,
-        # )
-        #
-        # # Add hvdc Branches data
-        # y, columns = add_hvdc_data(
-        #     y=y,
-        #     columns=columns,
-        #     hvdc_Pf=self.hvdc_Pf,
-        #     hvdc_names=self.hvdc_names,
-        # )
-        #
-        # # Add controlled shifter data
-        # y, columns = self.add_shifter_data(
-        #     y=y,
-        #     columns=columns,
-        #     controlled_shifters=self.get_controlled_shifters_as_pt(),
-        #     phase_shift=self.phase_shift,
-        # )
-
         c_name = [c for c in columns if 'contingency' in c.lower() and '%' in c.lower()][0]
 
         # filter results if required

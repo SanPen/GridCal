@@ -18,7 +18,6 @@ from __future__ import annotations
 from typing import List, Dict, Union, Tuple, Callable, TYPE_CHECKING
 import numpy as np
 import cv2
-from docutils.nodes import title
 from matplotlib import pyplot as plt
 
 from PySide6.QtCore import Qt
