@@ -20,7 +20,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 
 
 class SvStatus(Base):
-	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
+	def __init__(self, rdfid, tpe='SvStatus', resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
 		from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.conducting_equipment import ConductingEquipment

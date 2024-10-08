@@ -20,7 +20,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol
 
 
 class SvVoltage(Base):
-	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
+	def __init__(self, rdfid, tpe='SvVoltage', resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
 		self.angle: float = None
