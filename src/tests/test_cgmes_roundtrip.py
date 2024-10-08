@@ -119,8 +119,8 @@ def test_cgmes_roundtrip():
 
     :return:
     """
-    # test_grid_name = 'micro_grid_NL_T1.zip'
-    test_grid_name = 'micro_grid_assmb_base.zip'
+    test_grid_name = 'micro_grid_NL_T1.zip'
+    # test_grid_name = 'micro_grid_assmb_base.zip'
     boundary_set_name = 'micro_grid_BD.zip'
 
     # test_grid_name = 'IEEE 14 bus.zip'
