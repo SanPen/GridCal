@@ -2018,6 +2018,25 @@ class NumericalCircuit:
         # if any error in the logger, bad
         return logger.error_count() == 0, logger
 
+    def get_structural_ntc(self, bus_idx_from: IntVec, bus_idx_to: IntVec) -> float:
+        """
+        Get the structural NTC
+        :param bus_idx_from: list of buses of the area from
+        :param bus_idx_to: list of buses of the area to
+        :return: structural NTC in MVA
+        """
+
+        inter_area_branches = self.branch_data.get_inter_areas(bus_idx_from=bus_idx_from, bus_idx_to=bus_idx_to)
+        sum_ratings = 0.0
+        for k, sense in inter_area_branches:
+            sum_ratings += self.branch_data.rates[k]
+
+        inter_area_hvdcs = self.hvdc_data.get_inter_areas(bus_idx_from=bus_idx_from, bus_idx_to=bus_idx_to)
+        for k, sense in inter_area_hvdcs:
+            sum_ratings += self.hvdc_data.rate[k]
+
+        return sum_ratings
+
 
 def compile_numerical_circuit_at(circuit: MultiCircuit,
                                  t_idx: Union[int, None] = None,

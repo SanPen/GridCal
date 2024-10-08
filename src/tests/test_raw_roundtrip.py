@@ -17,7 +17,7 @@ def run_import_export_test(import_path: str, export_fname: str):
     """
     logger = Logger()
 
-    # CGMES model import to MultiCircuit
+    # RAW model import to MultiCircuit
     circuit_1 = gc.open_file(import_path)
     nc_1 = gc.compile_numerical_circuit_at(circuit_1)
 

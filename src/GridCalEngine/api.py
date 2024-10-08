@@ -61,7 +61,7 @@ def save_cgmes_file(grid: MultiCircuit,
 
     # define the export options
     options = FileSavingOptions()
-    options.one_file_per_profile = False
+    options.cgmes_one_file_per_profile = False
     options.cgmes_profiles = [cgmesProfile.EQ,
                               cgmesProfile.OP,
                               cgmesProfile.TP,

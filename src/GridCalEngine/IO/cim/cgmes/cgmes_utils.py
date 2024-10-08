@@ -56,16 +56,42 @@ def find_object_by_idtag(object_list, target_idtag):
 
 def get_slack_id(machines):
     """
+    Retrieves the ID of a Topological Node from a list of SynchronousMachines.
 
-    @param machines: List[SynchronousMachine]
-    @return: ID of a Topological Node
+    @param machines: List of SynchronousMachine objects.
+    @return: ID of a Topological Node if found, None otherwise.
     """
+    # Check if machines is a list
+    if not isinstance(machines, list):
+        raise TypeError(
+            "Expected 'machines' to be a list of SynchronousMachine objects.")
+
     for m in machines:
-        if m.referencePriority == 1:
-            if not isinstance(m.Terminals, list):
-                return m.Terminals.TopologicalNode.rdfid
+        # Check if the machine has a referencePriority attribute
+        if hasattr(m, 'referencePriority') and m.referencePriority == 1:
+            # Check if Terminals attribute exists
+            if hasattr(m, 'Terminals'):
+                terminals = m.Terminals
+
+                # Check if terminals is a list or single object
+                if isinstance(terminals, list) and len(terminals) > 0:
+                    terminal = terminals[0]
+                elif not isinstance(terminals, list):
+                    terminal = terminals
+                else:
+                    continue  # Skip to the next machine if terminals is an empty list
+
+                # Check if TopologicalNode exists and has rdfid
+                if hasattr(terminal, 'TopologicalNode') and hasattr(
+                        terminal.TopologicalNode, 'rdfid'):
+                    return terminal.TopologicalNode.rdfid
+                else:
+                    print(
+                        f"Warning: TopologicalNode or rdfid missing in machine {m}.")
             else:
-                return m.Terminals[0].TopologicalNode.rdfid
+                print(f"Warning: Terminals attribute missing in machine {m}.")
+
+    # If no matching machine is found
     return None
 
 
@@ -92,7 +118,7 @@ def build_rates_dict(cgmes_model, device_type, logger):
             if isinstance(cl.OperationalLimitSet, list):
                 for ols in cl.OperationalLimitSet:
                     volt = get_voltage_terminal(ols.Terminal, logger)
-                    rate_mva = np.round(cl.value * volt / 1000, 4)
+                    rate_mva = np.round(cl.value * volt * 1.73205080756888 / 1000, 4)
                     # TODO rate in MVA = kA * kV * sqrt(3), is sqrt(3) needed?
                     # TODO type check: put min PATL to the dict
                     if isinstance(ols.Terminal.ConductingEquipment,
@@ -108,7 +134,7 @@ def build_rates_dict(cgmes_model, device_type, logger):
                               device_type):
                     volt = get_voltage_terminal(cl.OperationalLimitSet.Terminal,
                                                 logger)
-                    rate_mva = np.round(cl.value * volt / 1000, 4)
+                    rate_mva = np.round(cl.value * volt * 1.73205080756888 / 1000, 4)
 
                     branch_id = cl.OperationalLimitSet.Terminal.ConductingEquipment.uuid
                     act_lim = rates_dict.get(branch_id, None)
@@ -222,24 +248,24 @@ def get_pu_values_power_transformer_end(power_transformer_end, Sbase_system=100)
         G = power_transformer_end.g / Ybase * machine_to_sys
         B = power_transformer_end.b / Ybase * machine_to_sys
         if hasattr(power_transformer_end, "r0"):
-            R0 = power_transformer_end.r0 / Zbase * machine_to_sys if power_transformer_end.r0 is not None else 0
-            X0 = power_transformer_end.x0 / Zbase * machine_to_sys if power_transformer_end.x0 is not None else 0
-            G0 = power_transformer_end.g0 / Ybase * machine_to_sys if power_transformer_end.g0 is not None else 0
-            B0 = power_transformer_end.b0 / Ybase * machine_to_sys if power_transformer_end.b0 is not None else 0
+            R0 = power_transformer_end.r0 / Zbase * machine_to_sys if power_transformer_end.r0 is not None else 1e-20
+            X0 = power_transformer_end.x0 / Zbase * machine_to_sys if power_transformer_end.x0 is not None else 1e-20
+            G0 = power_transformer_end.g0 / Ybase * machine_to_sys if power_transformer_end.g0 is not None else 1e-20
+            B0 = power_transformer_end.b0 / Ybase * machine_to_sys if power_transformer_end.b0 is not None else 1e-20
         else:
-            R0 = 0
-            X0 = 0
-            G0 = 0
-            B0 = 0
+            R0 = 1e-20
+            X0 = 1e-20
+            G0 = 1e-20
+            B0 = 1e-20
     else:
-        R = 0
-        X = 0
-        G = 0
-        B = 0
-        R0 = 0
-        X0 = 0
-        G0 = 0
-        B0 = 0
+        R = 1e-20
+        X = 1e-20
+        G = 1e-20
+        B = 1e-20
+        R0 = 1e-20
+        X0 = 1e-20
+        G0 = 1e-20
+        B0 = 1e-20
 
     return R, X, G, B, R0, X0, G0, B0
 
@@ -288,36 +314,36 @@ def get_pu_values_ac_line_segment(ac_line_segment, logger: DataLogger, Sbase: fl
             # at this point r, x, g, b are the complete values for all the line length
             R = ac_line_segment.r / Zbase
             X = ac_line_segment.x / Zbase
-            G = ac_line_segment.gch / Ybase if ac_line_segment.gch is not None else 0
-            B = ac_line_segment.bch / Ybase if ac_line_segment.bch is not None else 0
+            G = ac_line_segment.gch / Ybase if ac_line_segment.gch is not None else 1e-20
+            B = ac_line_segment.bch / Ybase if ac_line_segment.bch is not None else 1e-20
             if hasattr(ac_line_segment, "r0"):
-                R0 = ac_line_segment.r0 / Zbase if ac_line_segment.r0 is not None else 0
-                X0 = ac_line_segment.x0 / Zbase if ac_line_segment.x0 is not None else 0
-                G0 = ac_line_segment.g0ch / Ybase if ac_line_segment.g0ch is not None else 0
-                B0 = ac_line_segment.b0ch / Ybase if ac_line_segment.b0ch is not None else 0
+                R0 = ac_line_segment.r0 / Zbase if ac_line_segment.r0 is not None else 1e-20
+                X0 = ac_line_segment.x0 / Zbase if ac_line_segment.x0 is not None else 1e-20
+                G0 = ac_line_segment.g0ch / Ybase if ac_line_segment.g0ch is not None else 1e-20
+                B0 = ac_line_segment.b0ch / Ybase if ac_line_segment.b0ch is not None else 1e-20
             else:
-                R0 = 0
-                X0 = 0
-                G0 = 0
-                B0 = 0
+                R0 = 1e-20
+                X0 = 1e-20
+                G0 = 1e-20
+                B0 = 1e-20
         else:
-            R = 0
-            X = 0
-            G = 0
-            B = 0
-            R0 = 0
-            X0 = 0
-            G0 = 0
-            B0 = 0
+            R = 1e-20
+            X = 0.00001
+            G = 1e-20
+            B = 1e-20
+            R0 = 1e-20
+            X0 = 1e-20
+            G0 = 1e-20
+            B0 = 1e-20
     else:
-        R = 0
-        X = 0
-        G = 0
-        B = 0
-        R0 = 0
-        X0 = 0
-        G0 = 0
-        B0 = 0
+        R = 1e-20
+        X = 0.00001
+        G = 1e-20
+        B = 1e-20
+        R0 = 1e-20
+        X0 = 1e-20
+        G0 = 1e-20
+        B0 = 1e-20
 
     return R, X, G, B, R0, X0, G0, B0
 

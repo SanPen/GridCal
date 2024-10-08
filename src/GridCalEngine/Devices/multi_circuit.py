@@ -1839,7 +1839,8 @@ class MultiCircuit(Assets):
 
     def compare_circuits(self, grid2: "MultiCircuit",
                          detailed_profile_comparison: bool = True,
-                         skip_internals: bool = False) -> Tuple[bool, Logger]:
+                         skip_internals: bool = False,
+                         tolerance: float = 1e-06) -> Tuple[bool, Logger]:
         """
         Compare this circuit with another circuits for equality
         :param grid2: MultiCircuit
@@ -1896,21 +1897,21 @@ class MultiCircuit(Assets):
                         v1 = elm1.get_property_value(prop=prop, t_idx=None)
                         v2 = elm2.get_property_value(prop=prop, t_idx=None)
 
-                        if type(v1) == type(v2):
-
+                        if prop.tpe == float:
+                            if not np.isclose(v1, v2, atol=tolerance):
+                                logger.add_error(
+                                    msg="Different snapshot values",
+                                    device_class=template_elm.device_type.value,
+                                    device_property=prop.name,
+                                    value=v2,
+                                    expected_value=v1)
+                        else:
                             if v1 != v2:
                                 logger.add_error(msg="Different snapshot values",
                                                  device_class=template_elm.device_type.value,
                                                  device_property=prop.name,
                                                  value=v2,
                                                  expected_value=v1)
-                        else:
-                            # we update the type of the property...no error for now
-                            logger.add_warning(msg="Different snapshot value types",
-                                               device_class=template_elm.device_type.value,
-                                               device_property=prop.name,
-                                               value=str(type(v2)),
-                                               expected_value=str(type(v1)))
 
                         if prop.has_profile():
                             p1 = elm1.get_profile_by_prop(prop=prop)

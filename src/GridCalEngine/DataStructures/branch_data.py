@@ -372,19 +372,19 @@ class BranchData:
         """
         return np.where(self.contingency_enabled == 1)[0]
 
-    def get_inter_areas(self, buses_areas_1, buses_areas_2):
+    def get_inter_areas(self, bus_idx_from, bus_idx_to):
         """
         Get the Branches that join two areas
-        :param buses_areas_1: Area from
-        :param buses_areas_2: Area to
+        :param bus_idx_from: Area from
+        :param bus_idx_to: Area to
         :return: List of (branch index, flow sense w.r.t the area exchange)
         """
 
         lst: List[Tuple[int, float]] = list()
         for k in range(self.nelm):
-            if self.F[k] in buses_areas_1 and self.T[k] in buses_areas_2:
+            if self.F[k] in bus_idx_from and self.T[k] in bus_idx_to:
                 lst.append((k, 1.0))
-            elif self.F[k] in buses_areas_2 and self.T[k] in buses_areas_1:
+            elif self.F[k] in bus_idx_to and self.T[k] in bus_idx_from:
                 lst.append((k, -1.0))
         return lst
 

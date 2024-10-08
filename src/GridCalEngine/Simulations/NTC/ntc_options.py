@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 from GridCalEngine.Simulations.options_template import OptionsTemplate
 from GridCalEngine.Simulations.OPF.opf_options import OptimalPowerFlowOptions
@@ -30,17 +31,17 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
     def __init__(self,
                  area_from_bus_idx: IntVec,
                  area_to_bus_idx: IntVec,
-                 transfer_method: AvailableTransferMode,
-                 loading_threshold_to_report: float,
-                 skip_generation_limits: bool,
-                 transmission_reliability_margin: float,
-                 branch_exchange_sensitivity: float,
-                 use_branch_exchange_sensitivity: bool,
-                 branch_rating_contribution: float,
-                 use_branch_rating_contribution: bool,
-                 consider_contingencies: bool,
-                 opf_options: OptimalPowerFlowOptions,
-                 lin_options: LinearAnalysisOptions):
+                 transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower ,
+                 loading_threshold_to_report: float = 98.0,
+                 skip_generation_limits: bool = True,
+                 transmission_reliability_margin: float = 400.0,
+                 branch_exchange_sensitivity: float = 5.0 / 100.0,
+                 use_branch_exchange_sensitivity: bool = True,
+                 branch_rating_contribution: float = 70 / 100.0,
+                 use_branch_rating_contribution: bool = False,
+                 consider_contingencies: bool = False,
+                 opf_options: OptimalPowerFlowOptions | None = None,
+                 lin_options: LinearAnalysisOptions | None = None,):
         """
 
         :param area_from_bus_idx: array of area "from" bus indices
@@ -72,8 +73,15 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         self.use_branch_rating_contribution: bool = use_branch_rating_contribution
         self.consider_contingencies: bool = consider_contingencies
 
-        self.opf_options: OptimalPowerFlowOptions = opf_options
-        self.lin_options: LinearAnalysisOptions = lin_options
+        if opf_options is None:
+            self.opf_options = OptimalPowerFlowOptions()
+        else:
+            self.opf_options: OptimalPowerFlowOptions = opf_options
+
+        if lin_options is None:
+            self.lin_options = LinearAnalysisOptions()
+        else:
+            self.lin_options: LinearAnalysisOptions = lin_options
 
         self.register(key="area_from_bus_idx", tpe=SubObjectType.Array)
         self.register(key="area_to_bus_idx", tpe=SubObjectType.Array)
