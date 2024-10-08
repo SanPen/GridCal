@@ -245,7 +245,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
                     templates.append(temp)
 
         current_template = self.api_object.template
-        dlg = LineEditor(self.api_object, Sbase, templates, current_template)
+        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
+                         templates=templates, current_template=current_template)
         if dlg.exec_():
             pass
 
@@ -256,7 +257,8 @@ class LineGraphicItem(LineGraphicTemplateItem):
         """
         Sbase = self.editor.circuit.Sbase
 
-        dlg = LineEditor(self.api_object, Sbase)
+        dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
+                         templates=None, current_template=None)
         if dlg.exec_():
             pass
 
@@ -269,7 +271,7 @@ class LineGraphicItem(LineGraphicTemplateItem):
 
         if ok:
             # rate = I
-            rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = kA * kV * sqrt(3)
+            rated_current = self.api_object.rate / (self.api_object.Vf * 1.73205080757)  # MVA = KA * KV * sqrt(3)
 
             tpe = SequenceLineType(name='SequenceLine from ' + self.api_object.name,
                                    idtag=None,

@@ -124,7 +124,7 @@ class MapView(QGraphicsView):
         # Create a QGraphicsProxyWidget for the QLabel
         self.label_proxy_widget = QGraphicsProxyWidget()
         self.label_proxy_widget.setWidget(self.attribution_label)
-        self.label_proxy_widget.setFlag(QGraphicsItem.ItemIgnoresTransformations)
+        self.label_proxy_widget.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIgnoresTransformations)
         self.update_label_position()
 
         # Add the proxy widget to the scene
@@ -149,6 +149,8 @@ class MapView(QGraphicsView):
         self.schema_zoom = 1.0
 
         self.scale(initial_zoom_factor, initial_zoom_factor)
+
+        self.setRenderHints(QPainter.RenderHint.Antialiasing | QPainter.RenderHint.SmoothPixmapTransform)
 
     def set_notice(self, val: str):
         """

@@ -414,7 +414,7 @@ def test_mlodf() -> None:
         linear_multi_contingency = gce.LinearMultiContingencies(grid=main_circuit,
                                                                 contingency_groups_used=main_circuit.get_contingency_groups())
         linear_multi_contingency.compute(ptdf=linear_analysis.results.PTDF, lodf=linear_analysis.results.LODF)
-        mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.toarray()  # TODO: Suponemos que son los MLODF
+        mlodf = linear_multi_contingency.multi_contingencies[0].mlodf_factors.toarray()
 
         # Power flow per branches after multicontingency using MLODF method
         Sfmlodf = Sf0 + np.matmul(mlodf, Sf0red)
@@ -426,7 +426,7 @@ def test_mlodf() -> None:
         cont_analysis_driver = gce.ContingencyAnalysisDriver(grid=main_circuit, options=options,
                                                              linear_multiple_contingencies=linear_multi_contingency)
         cont_analysis_driver.run()
-        Sfnr = cont_analysis_driver.results.Sf.real * 1e-2  # TODO: pensamos que las unidades son erróneas
+        Sfnr = cont_analysis_driver.results.Sf.real
 
         assert np.allclose(Sfmlodf, Sfnr, atol=1e-5)
 

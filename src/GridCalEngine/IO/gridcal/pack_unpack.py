@@ -267,8 +267,7 @@ def profile_todict(profile: Profile) -> Dict[str, str]:
         return {
             'is_sparse': True,
             'size': s,
-            'default': profile.default_value
-            if profile.sparse_array is None else profile.sparse_array.default_value,
+            'default': profile.default_value if profile.sparse_array is None else profile.sparse_array.default_value,
             'sparse_data': {
                 'map': dict()
             }
@@ -288,8 +287,9 @@ def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
             'size': profile.size(),
             'default': default,
             'sparse_data': {
-                'map': {key: val.idtag for key, val in profile.sparse_array.get_map().items()}
-                if profile.sparse_array else dict()
+                'map': {key: val.idtag if hasattr(val, 'idtag') else None
+                        for key, val in profile.sparse_array.get_map().items()}
+                if profile.sparse_array is not None else dict()
             }
         }
     else:
@@ -297,7 +297,8 @@ def profile_todict_idtag(profile: Profile) -> Dict[str, str]:
             'is_sparse': profile.is_sparse,
             'size': profile.size(),
             'default': default,
-            'dense_data': [e.idtag for e in profile.dense_array] if profile.dense_array else list(),
+            'dense_data': [e.idtag if hasattr(e, 'idtag') else None for e in profile.dense_array]
+            if profile.dense_array is not None else list(),
         }
 
 
@@ -434,6 +435,10 @@ def gather_model_as_jsons(circuit: MultiCircuit) -> Dict[str, Dict[str, str]]:
     :param circuit:
     :return:
     """
+
+    if circuit.has_time_series:
+        circuit.ensure_profiles_exist()
+
     data: Dict[str, Union[Dict[str, str], List[Dict[str, str]]]] = dict()
 
     # declare objects to iterate  name: [sample object, list of objects, headers]
@@ -1468,5 +1473,8 @@ def parse_gridcal_data(data: Dict[str, Union[str, float, pd.DataFrame, Dict[str,
 
     if text_func is not None:
         text_func("Done!")
+
+    if circuit.has_time_series:
+        circuit.ensure_profiles_exist()
 
     return circuit

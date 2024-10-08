@@ -91,17 +91,17 @@ class GeneratorParent(InjectionParent):
 
         self.control_cn = control_cn
 
-        self.P = P
-        self._P_prof = Profile(default_value=P, data_type=float)
+        self.P = float(P)
+        self._P_prof = Profile(default_value=self.P, data_type=float)
 
-        self.srap_enabled = srap_enabled
-        self._srap_enabled_prof = Profile(default_value=srap_enabled, data_type=bool)
+        self.srap_enabled = bool(srap_enabled)
+        self._srap_enabled_prof = Profile(default_value=self.srap_enabled, data_type=bool)
 
         # Minimum dispatched power in MW
-        self.Pmin = Pmin
+        self.Pmin = float(Pmin)
 
         # Maximum dispatched power in MW
-        self.Pmax = Pmax
+        self.Pmax = float(Pmax)
 
         self.register(key='control_bus', units='', tpe=DeviceType.BusDevice, definition='Control bus',
                       editable=True, profile_name="control_bus_prof")

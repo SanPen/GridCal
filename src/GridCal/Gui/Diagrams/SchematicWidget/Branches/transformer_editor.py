@@ -186,8 +186,8 @@ class TransformerEditor(QDialog):
         :return: TransformerType instance
         """
         eps = 1e-20
-        Vf = self.transformer_obj.bus_from.Vnom  # kV
-        Vt = self.transformer_obj.bus_to.Vnom  # kV
+        Vf = self.transformer_obj.bus_from.Vnom  # KV
+        Vt = self.transformer_obj.bus_to.Vnom  # KV
         Sn = self.sn_spinner.value() + eps  # MVA
         Pcu = self.pcu_spinner.value() + eps  # kW
         Pfe = self.pfe_spinner.value() + eps  # kW

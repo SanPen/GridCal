@@ -73,7 +73,7 @@ class DcLineEditor(QDialog):
         # X = self.branch.X * Zbase
         # B = self.branch.B * Ybase
 
-        I = self.branch.rate / Vf  # current in kA
+        I = self.branch.rate / Vf  # current in KA
 
         # ------------------------------------------------------------------------------------------
 
@@ -177,7 +177,7 @@ class DcLineEditor(QDialog):
         Vf = self.branch.bus_from.Vnom
         Vt = self.branch.bus_to.Vnom
 
-        Sn = np.round(I * Vf, 2)  # nominal power in MVA = kA * kV
+        Sn = np.round(I * Vf, 2)  # nominal power in MVA = KA * KV
 
         Zbase = self.Sbase / (Vf * Vf)
         Ybase = 1.0 / Zbase

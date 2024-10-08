@@ -46,6 +46,15 @@ class BusData:
         self.areas: IntVec = np.empty(nbus, dtype=int)
         self.substations: IntVec = np.empty(nbus, dtype=int)
 
+        # This is the total value used to compute the q_share in generators, batteries and shunts
+        self.q_shared_total = np.zeros(nbus, dtype=float)
+
+        # This is the fixed amount of Q that is Subtrated from Qbus to compute
+        # the Q of each generator, battery and shunt controlling
+        self.q_fixed = np.zeros(nbus, dtype=float)
+        self.ii_fixed = np.zeros(nbus, dtype=float)  # same concept, but imag current from loads
+        self.b_fixed = np.zeros(nbus, dtype=float)  # same concept, but susceptance from shunts
+
         self.original_idx: IntVec = np.zeros(nbus, dtype=int)
 
     def slice(self, elm_idx: IntVec) -> "BusData":
@@ -75,6 +84,11 @@ class BusData:
         data.is_dc = self.is_dc[elm_idx]
         data.areas = self.areas[elm_idx]
         data.substations = self.substations[elm_idx]
+
+        data.q_shared_total = self.q_shared_total[elm_idx]
+        data.q_fixed = self.q_fixed[elm_idx]
+        data.ii_fixed = self.ii_fixed[elm_idx]
+        data.b_fixed = self.b_fixed[elm_idx]
 
         data.original_idx = elm_idx
 
@@ -114,6 +128,11 @@ class BusData:
         data.is_dc = self.is_dc.copy()
         data.areas = self.areas.copy()
         data.substations = self.substations.copy()
+
+        data.q_shared_total = self.q_shared_total.copy()
+        data.q_fixed = self.q_fixed.copy()
+        data.ii_fixed = self.ii_fixed.copy()
+        data.b_fixed = self.b_fixed.copy()
 
         data.original_idx = self.original_idx.copy()
 

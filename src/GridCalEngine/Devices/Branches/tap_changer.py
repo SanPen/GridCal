@@ -42,17 +42,17 @@ class TapChanger:
         :param tc_type: Tap changer type
         """
 
-        self.asymmetry_angle = asymmetry_angle  # assymetry angle (Theta)
-        self._total_positions = total_positions  # total number of positions
-        self.dV = dV  # voltage increment in p.u.
-        self.neutral_position = neutral_position  # neutral position
-        self._tap_position = neutral_position  # index with respect to the neutral position
-        self.tc_type = tc_type  # tap changer mode
+        self.asymmetry_angle = float(asymmetry_angle)  # assymetry angle (Theta)
+        self._total_positions = int(total_positions)  # total number of positions
+        self.dV = float(dV)  # voltage increment in p.u.
+        self.neutral_position = int(neutral_position)  # neutral position
+        self._tap_position = int(neutral_position)  # index with respect to the neutral position
+        self.tc_type: TapChangerTypes = tc_type  # tap changer mode
 
         # Calculated arrays
-        self._ndv = np.zeros(total_positions)
-        self._tau_array = np.zeros(total_positions)
-        self._m_array = np.zeros(total_positions)
+        self._ndv = np.zeros(self._total_positions)
+        self._tau_array = np.zeros(self._total_positions)
+        self._m_array = np.zeros(self._total_positions)
         self.recalc()
 
     @property

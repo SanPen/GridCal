@@ -14,15 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
+from __future__ import annotations
 import numpy as np
 from GridCalEngine.Devices.Parents.editable_device import EditableDevice, DeviceType
 
 
 class UndergroundLineType(EditableDevice):
 
-    def __init__(self, name='UndergroundLine', idtag=None, Imax=1, Vnom=1, R=0, X=0, B=0, R0=0, X0=0, B0=0,
-                 num_circuits=1, Area=0):
+    def __init__(self, name: str = 'UndergroundLine', idtag: None | str = None, Imax: float = 1.0,
+                 Vnom: float = 1.0, R: float = 0.0, X: float = 0.0, B: float = 0.0,
+                 R0: float = 0.0, X0: float = 0.0, B0: float = 0.0, num_circuits=1, Area=0) -> None:
         """
         Constructor
         :param name: name of the device
@@ -41,17 +42,17 @@ class UndergroundLineType(EditableDevice):
                                 code='',
                                 device_type=DeviceType.UnderGroundLineDevice)
 
-        self.Imax = Imax
-        self.Vnom = Vnom
+        self.Imax = float(Imax)
+        self.Vnom = float(Vnom)
 
         # impudence and admittance per unit of length
-        self.R = R
-        self.X = X
-        self.B = B
+        self.R = float(R)
+        self.X = float(X)
+        self.B = float(B)
 
-        self.R0 = R0
-        self.X0 = X0
-        self.B0 = B0
+        self.R0 = float(R0)
+        self.X0 = float(X0)
+        self.B0 = float(B0)
 
         self.num_circuits = num_circuits
         self.Area = Area
@@ -81,11 +82,12 @@ class UndergroundLineType(EditableDevice):
 
         R = np.round(self.R * length / Zbase, 6)
         X = np.round(self.X * length / Zbase, 6)
-        B = np.round(self.B * 1e-6 * length / Ybase, 6)
+        B = np.round(self.B * 1e6 * length / Ybase, 6)
 
         R0 = np.round(self.R0 * length / Zbase, 6)
         X0 = np.round(self.X0 * length / Zbase, 6)
-        B0 = np.round(self.B0 * 1e-6 * length /Ybase, 6)
+        B0 = np.round(self.B0 * 1e6 * length / Ybase, 6)
+
         # get the rating in MVA = kA * kV
         rate = self.Imax * Vn * np.sqrt(3)
 

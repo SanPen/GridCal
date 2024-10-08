@@ -98,8 +98,8 @@ class BranchParent(PhysicalDevice):
         self.cn_from = cn_from
         self.cn_to = cn_to
 
-        self.active = active
-        self._active_prof = Profile(default_value=active, data_type=bool)
+        self.active = bool(active)
+        self._active_prof = Profile(default_value=self.active, data_type=bool)
 
         self.contingency_enabled: bool = contingency_enabled
 

@@ -50,15 +50,15 @@ class ConnectivityNode(PhysicalDevice):
                                 idtag=idtag,
                                 device_type=DeviceType.ConnectivityNodeDevice)
 
-        self.dc = dc
+        self.dc = bool(dc)
 
         self.default_bus: Union[None, Bus] = default_bus
 
         self._voltage_level: Union[VoltageLevel, None] = voltage_level
 
-        self.internal: bool = internal
+        self.internal: bool = bool(internal)
 
-        self.Vnom = Vnom if voltage_level is None else voltage_level.Vnom
+        self.Vnom = float(Vnom) if voltage_level is None else voltage_level.Vnom
 
         self.register(key='Vnom', units='kV', tpe=float, definition='Nominal line voltage of the cn.')
 

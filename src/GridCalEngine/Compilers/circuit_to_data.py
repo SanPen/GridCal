@@ -189,6 +189,12 @@ def get_load_data(circuit: MultiCircuit,
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
 
+        # reactive power sharing data
+        if data.active[ii]:
+            bus_data.q_fixed[i] -= data.S[ii].imag
+            bus_data.ii_fixed[i] -= data.I[ii].imag
+            bus_data.b_fixed[i] -= data.Y[ii].imag
+
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
@@ -208,6 +214,12 @@ def get_load_data(circuit: MultiCircuit,
             data.S[ii] -= complex(elm.P, elm.Q)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
+
+        # reactive power sharing data
+        if data.active[ii]:
+            bus_data.q_fixed[i] += data.S[ii].imag
+            # bus_data.ii_fixed[i] += data.I[ii].imag
+            # bus_data.b_fixed[i] += data.Y[ii].imag
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -243,6 +255,12 @@ def get_load_data(circuit: MultiCircuit,
             data.S[ii] += complex(elm.P, elm.Q)
             data.active[ii] = elm.active
 
+        # reactive power sharing data
+        if data.active[ii]:
+            bus_data.q_fixed[i] += data.S[ii].imag
+            bus_data.ii_fixed[i] += data.I[ii].imag
+            bus_data.b_fixed[i] += data.Y[ii].imag
+
         data.C_bus_elm[i, ii] = 1
         ii += 1
 
@@ -265,6 +283,12 @@ def get_load_data(circuit: MultiCircuit,
             data.I[ii] += complex(elm.Ir, elm.Ii)
             data.active[ii] = elm.active
             data.cost[ii] = elm.Cost
+
+        # reactive power sharing data
+        if data.active[ii]:
+            bus_data.q_fixed[i] += data.S[ii].imag
+            bus_data.ii_fixed[i] += data.I[ii].imag
+            bus_data.b_fixed[i] += data.Y[ii].imag
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -293,15 +317,15 @@ def get_shunt_data(
     :param t_idx:
     :param time_series:
     :param use_stored_guess:
+    :param control_remote_voltage:
     :return:
     """
-    devices = circuit.get_shunts()
 
     data = ds.ShuntData(nelm=circuit.get_shunt_like_device_number(),
                         nbus=circuit.get_bus_number())
 
     ii = 0
-    for k, elm in enumerate(devices):
+    for k, elm in enumerate(circuit.get_shunts()):
 
         i = bus_dict[elm.bus]
 
@@ -317,6 +341,10 @@ def get_shunt_data(
         else:
             data.active[k] = elm.active
             data.Y[k] = complex(elm.G, elm.B)
+
+        # reactive power sharing data
+        if data.active[ii]:
+            bus_data.b_fixed[i] += data.Y[ii].imag
 
         data.C_bus_elm[i, k] = 1
         ii += 1
@@ -381,6 +409,14 @@ def get_shunt_data(
                                         candidate_Vm=elm.Vset,
                                         use_stored_guess=use_stored_guess,
                                         logger=logger)
+
+        # reactive power sharing data
+        if data.active[ii]:
+            if data.controllable[ii]:
+                bus_data.q_shared_total[i] += data.Y[ii].imag
+                data.q_share[ii] = data.Y[ii].imag
+            else:
+                bus_data.b_fixed[i] += data.Y[ii].imag
 
         data.C_bus_elm[i, ii] = 1
         ii += 1
@@ -535,6 +571,14 @@ def get_generator_data(
         else:
             data.qmin[k] = elm.Qmin
             data.qmax[k] = elm.Qmax
+
+        # reactive power sharing data
+        if data.active[k]:
+            if data.controllable[k]:
+                bus_data.q_shared_total[i] += data.p[k]
+                data.q_share[k] = data.p[k]
+            else:
+                bus_data.q_fixed[i] += data.get_q_at(k)
 
         data.C_bus_elm[i, k] = 1
 
@@ -695,6 +739,14 @@ def get_battery_data(
         else:
             data.qmin[k] = elm.Qmin
             data.qmax[k] = elm.Qmax
+
+        # reactive power sharing data
+        if data.active[k]:
+            if data.controllable[k]:
+                bus_data.q_shared_total[i] += data.p[k]
+                data.q_share[k] = data.p[k]
+            else:
+                bus_data.q_fixed[i] += data.get_q_at(k)
 
         data.C_bus_elm[i, k] = 1
 

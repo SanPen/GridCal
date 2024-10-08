@@ -53,11 +53,11 @@ class Wire(EditableDevice):
         # self.wire_name = name
         self._stranding = str(stranding)
         self._material = str(material)
-        self.diameter = diameter
-        self.R = r
-        self.X = x
-        self.GMR = gmr
-        self.max_current = max_current
+        self.diameter = float(diameter)
+        self.R = float(r)
+        self.X = float(x)
+        self.GMR = float(gmr)
+        self.max_current = float(max_current)
 
         self.register(key='R', units='Ohm/km', tpe=float, definition='resistance of the conductor', old_names=['r'])
         self.register(key='X', units='Ohm/km', tpe=float, definition='reactance of the conductor', old_names=['x'])

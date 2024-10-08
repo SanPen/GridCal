@@ -111,6 +111,7 @@ class SimulationsMain(TimeEventsMain):
         self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
         self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
         self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
+        self.mip_solvers_dict[MIPSolvers.PDLP.value] = MIPSolvers.PDLP
 
         # opf solvers dictionary
         self.nodal_capacity_methods_dict = OrderedDict()

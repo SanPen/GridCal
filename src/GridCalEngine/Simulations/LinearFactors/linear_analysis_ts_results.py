@@ -135,10 +135,17 @@ class LinearAnalysisTimeSeriesResults(ResultsTemplate):
             )
 
         elif result_type == ResultTypes.BranchActivePowerFrom:
-            labels = self.branch_names
-            data = self.Sf.real
-            y_label = '(MW)'
-            title = 'Branch power '
+
+            return ResultsTable(
+                data=self.Sf.real,
+                index=self.time_array,
+                idx_device_type=DeviceType.TimeDevice,
+                columns=self.branch_names,
+                cols_device_type=DeviceType.BranchDevice,
+                title=result_type.value,
+                ylabel='(MW)',
+                units='(MW)'
+            )
 
         elif result_type == ResultTypes.BranchLoading:
 

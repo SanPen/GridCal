@@ -26,7 +26,6 @@ from GridCal.Gui.gui_functions import add_menu_entry
 
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
@@ -64,21 +63,25 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
                                       api_object=api_object,
                                       editor=editor,
                                       draw_labels=draw_labels)
-        QGraphicsEllipseItem.__init__(self, parent_center.x(), parent_center.y(), r * api_object.Vnom * 0.01,
-                                      r * api_object.Vnom * 0.01, parent)
+        QGraphicsEllipseItem.__init__(self,
+                                      parent_center.x(),
+                                      parent_center.y(),
+                                      r * api_object.Vnom * 0.01,
+                                      r * api_object.Vnom * 0.01,
+                                      parent)
 
         parent.register_voltage_level(vl=self)
 
         self.editor: GridMapWidget = editor  # to reinforce the type
+
         self.api_object: VoltageLevel = api_object  # to reinforce the type
 
         self.radius = r * api_object.Vnom * 0.01
-        # print(f"VL created at x:{parent_center.x()}, y:{parent_center.y()}")
 
         self.setAcceptHoverEvents(True)  # Enable hover events for the item
-        # self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
-        self.setFlag(
-            self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)  # Allow selecting the node
+
+        # Allow moving the node
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
@@ -114,6 +117,26 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.setRect(x, y, self.rect().width(), self.rect().height())
         return x, y
 
+    def set_size(self, r: float):
+        """
+
+        :param r: radius in pixels
+        :return:
+        """
+        # if r != self.radius:
+        rect = self.rect()
+        rect.setWidth(r)
+        rect.setHeight(r)
+        self.radius = r
+
+        # change the width and height while keeping the same center
+        r2 = r / 2
+        new_x = rect.x() - r2
+        new_y = rect.y() - r2
+
+        # Set the new rectangle with the updated dimensions
+        self.setRect(new_x, new_y, r, r)
+
     def updateDiagram(self) -> None:
         """
 
@@ -123,8 +146,6 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         center_point = self.getPos()
         lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
                                            y=center_point.y() + real_position.y())
-
-        print(f'Updating VL position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
 
         self.editor.update_diagram_element(device=self.api_object,
                                            latitude=lat,

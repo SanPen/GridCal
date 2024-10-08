@@ -78,32 +78,85 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         self.lon = lon
         self.radius = r
         x, y = self.editor.to_x_y(lat=lat, lon=lon)
-        self.setRect(x, y, r, r)
+        self.setRect(x, y, self.radius, self.radius)
 
-        # ellipse_item = QGraphicsEllipseItem(0, 0, r, r)
-        # ellipse_item.setBrush(QBrush(QColor(0, 0, 255, 127)))
-        # ellipse_item.setParentItem(self)
-        # ellipse_item.setPos(QPointF(-84.287109, -1007.726563))
+        # Enable hover events for the item
+        self.setAcceptHoverEvents(True)
 
-        # self.resize(r)
-        self.setAcceptHoverEvents(True)  # Enable hover events for the item
-        # self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
-        self.setFlag(
-            self.GraphicsItemFlag.ItemIsSelectable | QGraphicsRectItem.ItemIsMovable)  # Allow selecting the node
+        # Allow selecting the node
+        self.setFlag(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
 
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
-        self.colorInner = QColor(255, 100, 100, 100)
-        self.colorBorder = QColor(255, 100, 100, 100)
-
-        # Assign color to the node
+        self.color = QColor(self.api_object.color)
+        self.color.setAlpha(128)
+        self.hoover_color = QColor(self.api_object.color)
+        self.hoover_color.setAlpha(180)
+        self.border_color = QColor(self.api_object.color)  # No Alpha
         self.setDefaultColor()
+
         self.hovered = False
         self.needsUpdate = False
-        # self.setZValue(1)
+
+        # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
+
+    def set_size(self, r: float):
+        """
+
+        :param r: radius in pixels
+        :return:
+        """
+        if r != self.radius:
+            rect = self.rect()
+            rect.setWidth(r)
+            rect.setHeight(r)
+            self.radius = r
+
+            # change the width and height while keeping the same center
+            r2 = r / 2
+            new_x = rect.x() - r2
+            new_y = rect.y() - r2
+
+            # Set the new rectangle with the updated dimensions
+            self.setRect(new_x, new_y, r, r)
+
+            # update the callbacks position for the lines to move accordingly
+            self.set_callabacks(new_x + r2, new_y + r2)
+
+            for vl_graphics in self.voltage_level_graphics:
+                vl_graphics.center_on_substation()
+
+            self.update_diagram()
+
+            self.resize_voltage_levels()
+
+    def resize_voltage_levels(self):
+        """
+
+        :return:
+        """
+        max_vl = 1.0  # 1 KV
+        for vl_graphics in self.voltage_level_graphics:
+            max_vl = max(max_vl, vl_graphics.api_object.Vnom)
+
+        for vl_graphics in self.voltage_level_graphics:
+            # radius here is the width, therefore we need to send W/2
+            scale = vl_graphics.api_object.Vnom / max_vl * 0.5
+            vl_graphics.set_size(r=self.radius * scale)
+
+    def set_api_object_color(self) -> None:
+        """
+        Gather the API object color and update this objects
+        """
+        self.color = QColor(self.api_object.color)
+        self.color.setAlpha(128)
+        self.hoover_color = QColor(self.api_object.color)
+        self.hoover_color.setAlpha(180)
+        self.border_color = QColor(self.api_object.color)  # No Alpha
+        self.setDefaultColor()
 
     def move_to(self, lat: float, lon: float) -> Tuple[float, float]:
         """
@@ -133,12 +186,20 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         Set the Zorder based on the voltage level voltage
         """
-        # TODO: Check this
-        sorted_objects = sorted(self.voltage_level_graphics, key=lambda x: x.api_object.Vnom)
+        max_vl = 1.0  # 1 KV
+        for vl_graphics in self.voltage_level_graphics:
+            max_vl = max(max_vl, vl_graphics.api_object.Vnom)
+
+        for vl_graphics in self.voltage_level_graphics:
+            scale = vl_graphics.api_object.Vnom / max_vl * 0.8
+            vl_graphics.set_size(r=self.radius * scale)
+            vl_graphics.center_on_substation()
+
+        sorted_objects = sorted(self.voltage_level_graphics, key=lambda x: -x.api_object.Vnom)
         for i, vl_graphics in enumerate(sorted_objects):
             vl_graphics.setZValue(i)
 
-    def update_diagram(self):
+    def update_diagram(self) -> None:
         """
         Updates the element position in the diagram (to save)
         :return: 
@@ -202,16 +263,15 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         # super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.update_diagram()  # always update
-        print("SE mouse release")
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
         # self.editor.map.view.in_item = True
-        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
+        self.set_color(self.hoover_color, self.color)
         self.hovered = True
-        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
+        QApplication.instance().setOverrideCursor(Qt.CursorShape.PointingHandCursor)
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
@@ -231,33 +291,38 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         add_menu_entry(menu=menu,
                        text="Add voltage level",
-                       icon_path="",
+                       icon_path=":/Icons/icons/plus.svg",
                        function_ptr=self.add_voltage_level)
 
         add_menu_entry(menu=menu,
                        text="Create line from here",
-                       icon_path="",
+                       icon_path=":/Icons/icons/plus.svg",
                        function_ptr=self.create_new_line)
 
         add_menu_entry(menu=menu,
-                       text="Move to API coordinates",
-                       icon_path="",
+                       text="Set coordinates to DB",
+                       icon_path=":/Icons/icons/down.svg",
                        function_ptr=self.move_to_api_coordinates)
 
         add_menu_entry(menu=menu,
-                       text="Remove",
-                       icon_path="",
+                       text="Remove from schematic",
+                       icon_path=":/Icons/icons/delete_schematic.svg",
                        function_ptr=self.remove_function)
 
-        add_menu_entry(menu=menu,
-                       text="ADD node",
-                       icon_path=":/Icons/icons/divide.svg",
-                       function_ptr=self.add_function)
+        # add_menu_entry(menu=menu,
+        #                text="ADD node",
+        #                icon_path=":/Icons/icons/plus.svg",
+        #                function_ptr=self.add_function)
 
         add_menu_entry(menu=menu,
                        text="Show diagram",
-                       icon_path="",
+                       icon_path=":/Icons/icons/grid_icon.svg",
                        function_ptr=self.new_substation_diagram)
+
+        add_menu_entry(menu=menu,
+                       text="Plot",
+                       icon_path=":/Icons/icons/plot.svg",
+                       function_ptr=self.plot)
 
         menu.exec_(event.screenPos())
 
@@ -308,7 +373,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
                              "Remove substation graphics")
 
         if ok:
-            self.editor.removeSubstation(self)
+            self.editor.removeSubstation(substation=self)
 
     def move_to_api_coordinates(self):
         """
@@ -329,24 +394,31 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         """
         self.editor.new_substation_diagram(substation=self.api_object)
 
+    def plot(self):
+        """
+        Plot the substations data
+        """
+        i = self.editor.circuit.get_substations().index(self.api_object)
+        self.editor.plot_substation(i, self.api_object)
+
     def add_voltage_level(self) -> None:
         """
         Add Voltage Level
         """
 
         inpt = InputNumberDialogue(
-            min_value=1.0,
+            min_value=0.1,
             max_value=100000.0,
             default_value=self.editor.diagram.default_bus_voltage,
             title="Add voltage level",
-            text="Voltage (kV)",
+            text="Voltage (KV)",
         )
 
         inpt.exec()
 
         if inpt.is_accepted:
             kv = inpt.value
-            vl = VoltageLevel(name=f'{kv}kV @ {self.api_object.name}',
+            vl = VoltageLevel(name=f'{kv}KV @ {self.api_object.name}',
                               Vnom=kv,
                               substation=self.api_object)
 
@@ -357,11 +429,10 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
             self.editor.circuit.add_voltage_level(vl)
             self.editor.circuit.add_bus(obj=bus)
+            self.editor.add_api_voltage_level(substation_graphics=self, api_object=vl)
+            self.sort_voltage_levels()
 
-            self.editor.add_api_voltage_level(substation_graphics=self,
-                                              api_object=vl)
-
-    def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+    def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
 
         :param inner_color:
@@ -383,7 +454,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         :return:
         """
         # Example: color assignment
-        self.setNodeColor(self.colorInner, self.colorBorder)
+        self.set_color(self.color, self.border_color)
 
     def getPos(self) -> QPointF:
         """
@@ -397,14 +468,6 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         center_point = bounding_rect.center()
 
         return center_point
-
-    # def resize(self, new_radius: float) -> None:
-    #     """
-    #     Resize the node.
-    #     :param new_radius: New radius for the node.
-    #     """
-    #     self.radius = new_radius
-    #     self.setRect(self.x - new_radius, self.y - new_radius, new_radius * 2, new_radius * 2)
 
     def change_pen_width(self, width: float) -> None:
         """

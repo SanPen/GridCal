@@ -23,8 +23,25 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
     HeaderViewWithWordWrap
     """
 
-    def __init__(self) -> None:
-        QtWidgets.QHeaderView.__init__(self, QtCore.Qt.Orientation.Horizontal)
+    def __init__(self, parent) -> None:
+        """
+        THe parent must be passed on
+        :param parent:
+        """
+        super().__init__(QtCore.Qt.Orientation.Horizontal, parent)
+
+        # Get the table view (assumes the header's parent is a QTableView)
+        self.tableView = self.parentWidget()
+
+        if isinstance(self.tableView, QtWidgets.QTableView):
+
+            self.setSectionsClickable(True)  # Enable section clickability
+            self.setHighlightSections(True)  # Ensure visual feedback when sections are clicked
+
+            # Connect the sectionClicked signal to the select_column method
+            self.sectionClicked.connect(self.select_column)
+        else:
+            raise Exception("The parent is not a QTableView :(" + str(type(self.tableView)) + ")")
 
     def sectionSizeFromContents(self, logicalIndex: int) -> QtCore.QSize:
         """
@@ -34,7 +51,9 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
         """
         mdl: WrappableTableModel = self.model()
         if mdl:
-            headerText = mdl.headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
+            headerText = mdl.headerData(section=logicalIndex,
+                                        orientation=self.orientation(),
+                                        role=QtCore.Qt.ItemDataRole.DisplayRole)
             option = QtWidgets.QStyleOptionHeader()
             self.initStyleOption(option)
             option.section = logicalIndex
@@ -69,7 +88,6 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
             headerText = mdl.headerData(logicalIndex, self.orientation(), QtCore.Qt.ItemDataRole.DisplayRole)
 
             if headerText is not None:
-
                 headerText = headerText.replace("_", " ")
 
                 # Define text indentation
@@ -81,3 +99,11 @@ class HeaderViewWithWordWrap(QtWidgets.QHeaderView):
                                  headerText)
         else:
             QtWidgets.QHeaderView.paintSection(self, painter, rect, logicalIndex)
+
+    def select_column(self, logicalIndex: int):
+        """
+        Select the column corresponding to the clicked header.
+        :param logicalIndex: Index of the clicked header section (column)
+        """
+        # Select the column
+        self.tableView.selectColumn(logicalIndex)

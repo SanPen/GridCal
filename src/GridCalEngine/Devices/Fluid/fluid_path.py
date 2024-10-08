@@ -55,8 +55,8 @@ class FluidPath(PhysicalDevice):
 
         self.source = source
         self.target = target
-        self.min_flow = min_flow
-        self.max_flow = max_flow
+        self.min_flow = float(min_flow)
+        self.max_flow = float(max_flow)
 
         # Line locations
         self._locations: LineLocations = LineLocations()

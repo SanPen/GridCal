@@ -42,7 +42,7 @@ def get_available_mip_solvers() -> List[str]:
     Get a list of candidate solvers
     :return:
     """
-    candidates = ['SCIP', 'CBC', 'CPLEX', 'GUROBI', 'XPRESS', 'HIGHS', 'GLOP']
+    candidates = ['SCIP', 'CBC', 'CPLEX', 'GUROBI', 'XPRESS', 'HIGHS', 'GLOP', 'PDLP']
     res = list()
     for c in candidates:
         solver = ort.Solver.CreateSolver(c)

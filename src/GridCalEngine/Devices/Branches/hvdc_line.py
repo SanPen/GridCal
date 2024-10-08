@@ -191,30 +191,30 @@ class HvdcLine(BranchParent):
                               device_type=DeviceType.HVDCLineDevice)
 
         # line length in km
-        self.length = length
+        self.length = float(length)
 
-        self.dispatchable = dispatchable
+        self.dispatchable = bool(dispatchable)
 
-        self.Pset = Pset
+        self.Pset = float(Pset)
 
-        self.r = r
+        self.r = float(r)
 
-        self.angle_droop = angle_droop
+        self.angle_droop = float(angle_droop)
 
-        self.loss_factor = loss_factor
+        self.loss_factor = float(loss_factor)
 
-        self.mttf = mttf
+        self.mttf = float(mttf)
 
-        self.mttr = mttr
+        self.mttr = float(mttr)
 
-        self.Vset_f = Vset_f
-        self.Vset_t = Vset_t
+        self.Vset_f = float(Vset_f)
+        self.Vset_t = float(Vset_t)
 
         # converter / inverter firing angles
-        self.min_firing_angle_f = min_firing_angle_f
-        self.max_firing_angle_f = max_firing_angle_f
-        self.min_firing_angle_t = min_firing_angle_t
-        self.max_firing_angle_t = max_firing_angle_t
+        self.min_firing_angle_f = float(min_firing_angle_f)
+        self.max_firing_angle_f = float(max_firing_angle_f)
+        self.min_firing_angle_t = float(min_firing_angle_t)
+        self.max_firing_angle_t = float(max_firing_angle_t)
 
         self.Qmin_f, self.Qmax_f = firing_angles_to_reactive_limits(self.Pset,
                                                                     self.min_firing_angle_f,
@@ -224,13 +224,13 @@ class HvdcLine(BranchParent):
                                                                     self.min_firing_angle_t,
                                                                     self.max_firing_angle_t)
 
-        self.capex = capex
+        self.capex = float(capex)
 
-        self.opex = opex
+        self.opex = float(opex)
 
         self.build_status = build_status
 
-        self.control_mode = control_mode
+        self.control_mode: HvdcControlType = control_mode
 
         self._Pset_prof: Vec = Profile(default_value=Pset, data_type=float)
         self._active_prof: IntVec = Profile(default_value=active, data_type=bool)

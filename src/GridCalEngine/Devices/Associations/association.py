@@ -88,7 +88,7 @@ class Associations:
         self._device_type = device_type
 
     @property
-    def data(self):
+    def data(self) -> Dict[str, Association]:
         """
 
         :return:
@@ -167,6 +167,13 @@ class Associations:
         :return:
         """
         return [val.to_dict() for _, val in self._data.items()]
+
+    def to_list(self) -> List[ALL_DEV_TYPES]:
+        """
+        Get a list of the associated api objects
+        :return:
+        """
+        return [val.api_object for _, val in self._data.items()]
 
     def parse(self,
               data: List[Dict[str, Union[str, float]]],

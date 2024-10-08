@@ -14,11 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 import os
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Dict, TYPE_CHECKING
 import json
 import numpy as np
 import math
+import pandas as pd
+from matplotlib import pyplot as plt
+
 from PySide6.QtWidgets import QGraphicsItem
 from collections.abc import Callable
 from PySide6.QtSvg import QSvgGenerator
@@ -39,9 +43,11 @@ from GridCalEngine.Devices.Substation.substation import Substation
 from GridCalEngine.Devices.Substation.voltage_level import VoltageLevel
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.enumerations import DeviceType
+from GridCalEngine.enumerations import DeviceType, ResultTypes
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+from GridCalEngine.Simulations.PowerFlow.power_flow_ts_results import PowerFlowTimeSeriesResults
 
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
@@ -57,7 +63,10 @@ import GridCalEngine.Devices.Diagrams.palettes as palettes
 from GridCal.Gui.Diagrams.graphics_manager import ALL_MAP_GRAPHICS
 from GridCal.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from GridCal.Gui.Diagrams.base_diagram_widget import BaseDiagramWidget
-from GridCal.Gui.messages import error_msg
+from GridCal.Gui.messages import error_msg, info_msg
+
+if TYPE_CHECKING:
+    from GridCal.Gui.Main.SubClasses.Model.diagrams import DiagramsMain
 
 MAP_BRANCH_GRAPHIC_TYPES = Union[
     MapAcLine, MapDcLine, MapHvdcLine, MapFluidPathLine
@@ -179,7 +188,7 @@ class MapLibraryModel(QStandardItemModel):
         mimedata = QMimeData()
         for idx in idxs:
             if idx.isValid():
-                txt = self.data(idx, Qt.DisplayRole)
+                txt = self.data(idx, Qt.ItemDataRole.DisplayRole)
 
                 data = QByteArray()
                 stream = QDataStream(data, QIODevice.WriteOnly)
@@ -194,7 +203,7 @@ class MapLibraryModel(QStandardItemModel):
         :param index:
         :return:
         """
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsDragEnabled
 
 
 class GridMapWidget(BaseDiagramWidget):
@@ -203,6 +212,7 @@ class GridMapWidget(BaseDiagramWidget):
     """
 
     def __init__(self,
+                 gui: DiagramsMain,
                  tile_src: Tiles,
                  start_level: int,
                  longitude: float,
@@ -226,6 +236,7 @@ class GridMapWidget(BaseDiagramWidget):
         """
 
         BaseDiagramWidget.__init__(self,
+                                   gui=gui,
                                    circuit=circuit,
                                    diagram=MapDiagram(name=name,
                                                       tile_source=tile_src.TilesetName,
@@ -245,7 +256,7 @@ class GridMapWidget(BaseDiagramWidget):
                              position_callback=self.position_callback)
 
         # Any representation on the map must be done after this Goto Function
-        self.map.GotoLevelAndPosition(level=6, longitude=0, latitude=40)
+        self.map.GotoLevelAndPosition(level=6, longitude=longitude, latitude=latitude)
 
         self.map.startLev = 6
         self.map.startLat = 0
@@ -678,12 +689,9 @@ class GridMapWidget(BaseDiagramWidget):
         :param lon:
         :return:
         """
-        graphic_object = SubstationGraphicItem(editor=self,
-                                               api_object=api_object,
-                                               lat=lat,
-                                               lon=lon)
+        graphic_object = SubstationGraphicItem(editor=self, api_object=api_object, lat=lat, lon=lon,
+                                               r=self.diagram.min_bus_width)
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
-
         self.add_to_scene(graphic_object=graphic_object)
 
         return graphic_object
@@ -867,15 +875,24 @@ class GridMapWidget(BaseDiagramWidget):
         """
 
         # SANTIAGO: NO TOCAR ESTO ES EL COMPORTAMIENTO DESEADO
+        self.update_device_sizes()
 
-        self.Update_widths()
+    def get_branch_width(self):
+        """
 
-    def Update_widths(self):
-
+        :return:
+        """
         max_zoom = self.map.max_level
         min_zoom = self.map.min_level
         zoom = self.map.zoom_factor
         scale = self.diagram.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
+        return scale
+
+    def update_device_sizes(self):
+        """
+
+        :return:
+        """
 
         # rescale lines
         for dev_tpe in [DeviceType.LineDevice,
@@ -883,8 +900,14 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.HVDCLineDevice,
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
-            for key, lne in graphics_dict.items():
-                lne.setWidthScale(scale)
+            for key, elm_graphics in graphics_dict.items():
+                elm_graphics.set_width_scale(self.get_branch_width())
+
+        # rescale substations
+        data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
+        for se_key, elm_graphics in data.items():
+            elm_graphics.set_api_object_color()
+            elm_graphics.set_size(r=self.diagram.min_bus_width)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -988,7 +1011,7 @@ class GridMapWidget(BaseDiagramWidget):
         #
         #     tooltip = str(i) + ': ' + bus.name + '\n' \
         #               + 'V:' + "{:10.4f}".format(vabs[i]) + " <{:10.4f}".format(vang[i]) + 'º [p.u.]\n' \
-        #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [kV]'
+        #               + 'V:' + "{:10.4f}".format(vabs[i] * bus.Vnom) + " <{:10.4f}".format(vang[i]) + 'º [KV]'
         #     if Sbus is not None:
         #         tooltip += '\nS: ' + "{:10.4f}".format(Sbus[i] * Sbase) + ' [MVA]'
         #     if types is not None:
@@ -1053,14 +1076,24 @@ class GridMapWidget(BaseDiagramWidget):
                         a *= 255
 
                     color = QColor(r, g, b, a)
-                    style = Qt.SolidLine
+                    style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 0.5
+                        weight = self.get_branch_width()
 
-                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+                    graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
+                    graphic_object.set_width_scale(weight)
+
+                    if hasattr(graphic_object, 'set_arrows_with_power'):
+                        graphic_object.set_arrows_with_power(
+                            Sf=Sf[i] if Sf is not None else None,
+                            St=St[i] if St is not None else None
+                        )
+                else:
+                    # the graphic object is None
+                    pass
 
         # try colouring the HVDC lines
         if len(hvdc_lines) > 0:
@@ -1104,34 +1137,37 @@ class GridMapWidget(BaseDiagramWidget):
                         a *= 255
 
                     color = QColor(r, g, b, a)
-                    style = Qt.SolidLine
+                    style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
                             np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
                     else:
-                        weight = 0.5
+                        weight = self.get_branch_width()
 
-                    graphic_object.set_colour(color=color, w=weight, style=style, tool_tip=tooltip)
+                    tooltip = str(i) + ': ' + graphic_object.api_object.name
+                    tooltip += '\n' + loading_label + ': ' + "{:10.4f}".format(
+                        abs(hvdc_loading[i]) * 100) + ' [%]'
 
-    def get_image(self, transparent: bool = False) -> Tuple[QImage, int, int]:
+                    tooltip += '\nPower (from):\t' + "{:10.4f}".format(hvdc_Pf[i]) + ' [MW]'
+
+                    if hvdc_losses is not None:
+                        tooltip += '\nPower (to):\t' + "{:10.4f}".format(hvdc_Pt[i]) + ' [MW]'
+                        tooltip += '\nLosses: \t\t' + "{:10.4f}".format(hvdc_losses[i]) + ' [MW]'
+                        graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=hvdc_Pt[i])
+                    else:
+                        graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
+
+                    graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
+                    graphic_object.set_width_scale(weight)
+
+    def get_image(self, transparent: bool = False) -> QImage:
         """
         get the current picture
         :return: QImage, width, height
         """
-        w = self.width()
-        h = self.height()
-
-        # image = QImage(w, h, QImage.Format_RGB32)
-        # image.fill(Qt.white)
-        #
-        # painter = QPainter(image)
-        # painter.setRenderHint(QPainter.Antialiasing)
-        # self.map.view.render(painter)  # self.view stores the grid widgets
-        # # self.render(painter)
-        # painter.end()
         image = self.map.grab().toImage()
 
-        return image, w, h
+        return image
 
     def take_picture(self, filename: str):
         """
@@ -1140,7 +1176,7 @@ class GridMapWidget(BaseDiagramWidget):
         name, extension = os.path.splitext(filename.lower())
 
         if extension == '.png':
-            image, _, _ = self.get_image()
+            image = self.get_image()
             image.save(filename)
 
         elif extension == '.svg':
@@ -1158,6 +1194,14 @@ class GridMapWidget(BaseDiagramWidget):
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
+
+    # def capture_video_frame(self):
+    #     """
+    #     Save video frame
+    #     """
+    #     image, w, h = self.get_image()
+    #     cv2_image = qimage_to_cv(image)
+    #     self._video.write(cv2_image)
 
     def new_substation_diagram(self, substation: Substation):
         """
@@ -1182,6 +1226,7 @@ class GridMapWidget(BaseDiagramWidget):
                           logger=self.logger)
 
         return GridMapWidget(
+            gui=self.gui,
             tile_src=self.map.tile_src,
             start_level=self.diagram.start_level,
             longitude=self.diagram.longitude,
@@ -1192,6 +1237,91 @@ class GridMapWidget(BaseDiagramWidget):
             call_new_substation_diagram_func=self.call_new_substation_diagram_func,
             call_delete_db_element_func=self.call_delete_db_element_func
         )
+
+    def consolidate_coordinates(self):
+        """
+        Consolidate the graphic elements' x, y coordinates into the API DB values
+        """
+        graphics: List[SubstationGraphicItem] = self.graphics_manager.query(elm=DeviceType.SubstationDevice)
+        for gelm in graphics:
+            gelm.api_object.latitude = gelm.lat
+            gelm.api_object.longitude = gelm.lon
+
+    def plot_substation(self, i: int, api_object: Substation):
+        """
+        Plot branch results
+        :param i: bus index
+        :param api_object: Substation API object
+        :return:
+        """
+
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        ax_1.set_title('Power', fontsize=14)
+        ax_1.set_ylabel('Injections [MW]', fontsize=11)
+
+        ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2.set_title('Time', fontsize=14)
+        ax_2.set_ylabel('Voltage [p.u]', fontsize=11)
+
+        # set time
+        x = self.circuit.get_time_array()
+
+        if x is not None:
+            if len(x) > 0:
+
+                # Get all devices grouped by bus
+                all_data = self.circuit.get_injection_devices_grouped_by_substation()
+
+                # search drivers for voltage data
+                for driver, results in self.gui.session.drivers_results_iter():
+                    if results is not None:
+                        if isinstance(results, PowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot_device(ax=ax_2, device_idx=i, title="Power flow")
+                        elif isinstance(results, OptimalPowerFlowTimeSeriesResults):
+                            table = results.mdl(result_type=ResultTypes.BusVoltageModule)
+                            table.plot_device(ax=ax_2, device_idx=i, title="Optimal power flow")
+
+                # Injections
+                # filter injections by bus
+                bus_devices = all_data.get(api_object, None)
+                if bus_devices:
+
+                    power_data = dict()
+                    for tpe_name, devices in bus_devices.items():
+                        for device in devices:
+                            if device.device_type == DeviceType.LoadDevice:
+                                power_data[device.name] = -device.P_prof.toarray()
+                            elif device.device_type == DeviceType.GeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ShuntDevice:
+                                power_data[device.name] = -device.G_prof.toarray()
+                            elif device.device_type == DeviceType.StaticGeneratorDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.ExternalGridDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            elif device.device_type == DeviceType.BatteryDevice:
+                                power_data[device.name] = device.P_prof.toarray()
+                            else:
+                                raise Exception("Missing shunt device for plotting")
+
+                    df = pd.DataFrame(data=power_data, index=x)
+
+                    try:
+                        # yt area plots
+                        df.plot.area(ax=ax_1)
+                    except ValueError:
+                        # use regular plots
+                        df.plot(ax=ax_1)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
+        else:
+            info_msg("There are no time series, so nothing to plot :/")
 
 
 def generate_map_diagram(substations: List[Substation],

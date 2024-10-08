@@ -114,9 +114,15 @@ class StateEstimationResults(PowerFlowResults):
                                   n=n,
                                   m=m,
                                   n_hvdc=0,
+                                  n_gen=0,
+                                  n_batt=0,
+                                  n_sh=0,
                                   bus_names=bus_names,
                                   branch_names=branch_names,
                                   hvdc_names=hvdc_names,
+                                  gen_names=np.empty(0, dtype=object),
+                                  batt_names=np.empty(0, dtype=object),
+                                  sh_names=np.empty(0, dtype=object),
                                   bus_types=bus_types)
 
 

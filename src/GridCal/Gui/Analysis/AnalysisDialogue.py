@@ -63,6 +63,7 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
         # declare logs
         self.fixable_errors = grid_analysis(
             circuit=self.circuit,
+            analyze_ts=self.ui.fixTimeSeriesCheckBox.isChecked(),
             imbalance_threshold=self.ui.activePowerImbalanceSpinBox.value() / 100.0,
             v_low=self.ui.genVsetMinSpinBox.value(),
             v_high=self.ui.genVsetMaxSpinBox.value(),
@@ -72,6 +73,8 @@ class GridAnalysisGUI(QtWidgets.QMainWindow):
             branch_connection_voltage_tolerance=self.ui.lineNominalVoltageToleranceSpinBox.value() / 100.0,
             min_vcc=self.ui.transformerVccMinSpinBox.value(),
             max_vcc=self.ui.transformerVccMaxSpinBox.value(),
+            branch_x_threshold=1e-4,
+            condition_number_thrshold=1e-4,
             logger=self.log
         )
 

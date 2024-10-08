@@ -936,9 +936,13 @@ class IoMain(ConfigurationMain):
                     data_dict = self.last_file_driver.load_session_objects(session_name=session_name,
                                                                            study_name=study_name)
 
-                    self.session.register_driver_from_disk_data(grid=self.circuit,
-                                                                study_name=study_name,
-                                                                data_dict=data_dict)
+                    logger = self.session.register_driver_from_disk_data(grid=self.circuit,
+                                                                         study_name=study_name,
+                                                                         data_dict=data_dict)
+
+                    if logger.has_logs():
+                        dlg = LogsDialogue(name="Results parsing", logger=logger, expand_all=True)
+                        dlg.exec()
 
                     self.update_available_results()
                 else:

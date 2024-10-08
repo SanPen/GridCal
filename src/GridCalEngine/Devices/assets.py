@@ -504,11 +504,6 @@ class Assets:
         if self.time_profile is None:
             raise Exception('Cannot ensure profiles existence without a time index. Try format_profiles instead')
 
-        # for key, tpe in self.device_type_name_dict.items():
-        #     elements = self.get_elements_by_type(device_type=tpe)
-        #     for elm in elements:
-        #         elm.ensure_profiles_exist(self.time_profile)
-
         for elm in self.items():
             elm.ensure_profiles_exist(self.time_profile)
 
@@ -3115,6 +3110,13 @@ class Assets:
         """
         return self._contingency_groups
 
+    def get_contingency_groups_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self._contingency_groups)
+
     def add_contingency_group(self, obj: dev.ContingencyGroup):
         """
         Add contingency group
@@ -4134,12 +4136,12 @@ class Assets:
             lst += dev_list
         return lst
 
-    def get_branches_wo_hvdc_names(self) -> List[str]:
+    def get_branches_wo_hvdc_names(self) -> StrVec:
         """
         Get the non HVDC branches' names
         :return: list of names
         """
-        return [e.name for e in self.get_branches_wo_hvdc()]
+        return np.array([e.name for e in self.get_branches_wo_hvdc()])
 
     def get_branches(self) -> List[BRANCH_TYPES]:
         """
@@ -4305,6 +4307,15 @@ class Assets:
             elms += lst
         return elms
 
+    def injection_items(self) -> Generator[INJECTION_DEVICE_TYPES, None, None]:
+        """
+        Get a list of all devices that can inject or subtract power from a node
+        :return: List of EditableDevice
+        """
+        for lst in self.get_injection_devices_lists():
+            for elm in lst:
+                yield elm
+
     # ------------------------------------------------------------------------------------------------------------------
     # Load-like devices
     # ------------------------------------------------------------------------------------------------------------------
@@ -4359,6 +4370,17 @@ class Assets:
         for lst in self.get_shunt_like_devices_lists():
             elms += lst
         return elms
+
+    def get_shunt_like_devices_names(self) -> StrVec:
+        """
+        Get a list of all devices names that can inject or subtract power from a node
+        :return: Array of Shunt devices' names
+        """
+        elms = list()
+        for lst in self.get_shunt_like_devices_lists():
+            for elm in lst:
+                elms.append(elm.name)
+        return np.array(elms)
 
     def get_shunt_like_device_number(self) -> int:
         """
@@ -4480,28 +4502,28 @@ class Assets:
         """
 
         if device_type == DeviceType.LoadDevice:
-            return self.get_loads()
+            return self._loads
 
         elif device_type == DeviceType.StaticGeneratorDevice:
-            return self.get_static_generators()
+            return self._static_generators
 
         elif device_type == DeviceType.GeneratorDevice:
-            return self.get_generators()
+            return self._generators
 
         elif device_type == DeviceType.BatteryDevice:
-            return self.get_batteries()
+            return self._batteries
 
         elif device_type == DeviceType.ShuntDevice:
-            return self.get_shunts()
+            return self._shunts
 
         elif device_type == DeviceType.ExternalGridDevice:
-            return self.get_external_grids()
+            return self._external_grids
 
         elif device_type == DeviceType.CurrentInjectionDevice:
-            return self.get_current_injections()
+            return self._current_injections
 
         elif device_type == DeviceType.ControllableShuntDevice:
-            return self.get_controllable_shunts()
+            return self._controllable_shunts
 
         elif device_type == DeviceType.LineDevice:
             return self._lines
@@ -4613,15 +4635,6 @@ class Assets:
         elif device_type == DeviceType.EmissionGasDevice:
             return self._emission_gases
 
-        # elif device_type == DeviceType.GeneratorTechnologyAssociation:
-        #     return self._generators_technologies
-        #
-        # elif device_type == DeviceType.GeneratorFuelAssociation:
-        #     return self._generators_fuels
-        #
-        # elif device_type == DeviceType.GeneratorEmissionAssociation:
-        #     return self._generators_emissions
-
         elif device_type == DeviceType.ConnectivityNodeDevice:
             return self._connectivity_nodes
 
@@ -4663,6 +4676,9 @@ class Assets:
 
         elif device_type == DeviceType.BranchDevice:
             return self.get_branches_wo_hvdc()
+
+        elif device_type == DeviceType.ShuntLikeDevice:
+            return self.get_shunt_like_devices()
 
         elif device_type == DeviceType.NoDevice:
             return list()
@@ -5265,7 +5281,7 @@ class Assets:
 
         return found
 
-    def get_all_elements_dict(self, logger = Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
+    def get_all_elements_dict(self, logger=Logger()) -> Tuple[Dict[str, ALL_DEV_TYPES], bool]:
         """
         Get a dictionary of all elements
         :param: logger: Logger
