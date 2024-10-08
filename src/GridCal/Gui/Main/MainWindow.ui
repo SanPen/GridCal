@@ -9063,6 +9063,189 @@ QProgressBar::chunk{
                <enum>QFrame::Raised</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_11">
+               <item row="10" column="1">
+                <widget class="QComboBox" name="raw_export_version_comboBox"/>
+               </item>
+               <item row="4" column="0" colspan="2">
+                <widget class="QLabel" name="model_version_label">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QLabel" name="label_131">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>85</red>
+                       <green>87</green>
+                       <blue>83</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>0</red>
+                       <green>0</green>
+                       <blue>0</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Raw files</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="label_145">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/new2c.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="2">
+                <widget class="QLabel" name="label_39">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>File path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_136">
+                 <property name="minimumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>24</width>
+                   <height>24</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="pixmap">
+                  <pixmap resource="icons.qrc">:/Icons/icons/new2c.svg</pixmap>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="QLabel" name="file_information_label">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
+                 <property name="textInteractionFlags">
+                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QLabel" name="user_name_label">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <widget class="QCheckBox" name="saveResultsCheckBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>If checked, the results are stored inside the gridcal file in a compressed format.</string>
+                 </property>
+                 <property name="text">
+                  <string>Save results in .gridcal files</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="QLabel" name="label_112">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Export version</string>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="1">
                 <widget class="QLabel" name="label_115">
                  <property name="palette">
@@ -9112,7 +9295,7 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="11" column="1">
                 <spacer name="verticalSpacer_20">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -9124,43 +9307,6 @@ QProgressBar::chunk{
                   </size>
                  </property>
                 </spacer>
-               </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_136">
-                 <property name="minimumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="pixmap">
-                  <pixmap resource="icons.qrc">:/Icons/icons/new2c.svg</pixmap>
-                 </property>
-                 <property name="scaledContents">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0" colspan="2">
-                <widget class="QLabel" name="label_39">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>File path</string>
-                 </property>
-                </widget>
                </item>
                <item row="1" column="0" colspan="2">
                 <widget class="Line" name="line_28">
@@ -9212,60 +9358,60 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0" colspan="2">
-                <widget class="QCheckBox" name="saveResultsCheckBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
+               <item row="9" column="0" colspan="2">
+                <widget class="Line" name="line_33">
+                 <property name="palette">
+                  <palette>
+                   <active>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </active>
+                   <inactive>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>186</red>
+                       <green>189</green>
+                       <blue>182</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </inactive>
+                   <disabled>
+                    <colorrole role="WindowText">
+                     <brush brushstyle="SolidPattern">
+                      <color alpha="255">
+                       <red>190</red>
+                       <green>190</green>
+                       <blue>190</blue>
+                      </color>
+                     </brush>
+                    </colorrole>
+                   </disabled>
+                  </palette>
                  </property>
-                 <property name="toolTip">
-                  <string>If checked, the results are stored inside the gridcal file in a compressed format.</string>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
                  </property>
-                 <property name="text">
-                  <string>Save results in .gridcal files</string>
+                 <property name="lineWidth">
+                  <number>4</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0" colspan="2">
-                <widget class="QLabel" name="user_name_label">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
+               <item row="7" column="0">
+                <widget class="QLabel" name="label_24">
                  <property name="text">
-                  <string>...</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0" colspan="2">
-                <widget class="QLabel" name="model_version_label">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="2">
-                <widget class="QLabel" name="file_information_label">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                 <property name="textInteractionFlags">
-                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                  <string/>
                  </property>
                 </widget>
                </item>
@@ -9336,45 +9482,18 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0" colspan="3">
-                <widget class="QLabel" name="label_135">
+               <item row="9" column="0" colspan="2">
+                <widget class="QLabel" name="cgmes_boundary_set_label">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Path of the CGMES default boundary set (single zip file)</string>
                  </property>
                  <property name="text">
-                  <string>Export version</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="12" column="0" colspan="3">
-                <widget class="QListView" name="cgmes_profiles_listView">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="0" colspan="3">
-                <widget class="QLabel" name="label_90">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Boundary set</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0" colspan="3">
-                <widget class="QComboBox" name="cgmes_version_comboBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
+                  <string>...</string>
                  </property>
                 </widget>
                </item>
@@ -9387,18 +9506,6 @@ QProgressBar::chunk{
                  </property>
                  <property name="text">
                   <string>Profiles to export</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="0" colspan="3">
-                <widget class="QCheckBox" name="cgmes_single_profile_per_file_checkBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>One file per profile</string>
                  </property>
                 </widget>
                </item>
@@ -9424,6 +9531,25 @@ QProgressBar::chunk{
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="QLabel" name="label_102">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0" colspan="3">
+                <widget class="QLabel" name="label_135">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Export version</string>
                  </property>
                 </widget>
                </item>
@@ -9477,6 +9603,15 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
+               <item row="12" column="0" colspan="3">
+                <widget class="QListView" name="cgmes_profiles_listView">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                </widget>
+               </item>
                <item row="9" column="2">
                 <widget class="QPushButton" name="selectCGMESBoundarySetButton">
                  <property name="maximumSize">
@@ -9498,25 +9633,46 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0" colspan="2">
-                <widget class="QLabel" name="cgmes_boundary_set_label">
+               <item row="3" column="0" colspan="3">
+                <widget class="QComboBox" name="cgmes_version_comboBox">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
                   </font>
                  </property>
-                 <property name="toolTip">
-                  <string>Path of the CGMES default boundary set (single zip file)</string>
+                </widget>
+               </item>
+               <item row="8" column="0" colspan="3">
+                <widget class="QLabel" name="label_90">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
                  </property>
                  <property name="text">
-                  <string>...</string>
+                  <string>Boundary set</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="label_102">
+               <item row="13" column="0" colspan="3">
+                <widget class="QCheckBox" name="cgmes_single_profile_per_file_checkBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
                  <property name="text">
-                  <string/>
+                  <string>One file per profile</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="14" column="0">
+                <widget class="QCheckBox" name="cgmes_map_regions_like_raw_checkBox">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If active the CGMEs mapping will be:&lt;/p&gt;&lt;p&gt;GeographicalRegion &amp;lt;-&amp;gt; Area&lt;/p&gt;&lt;p&gt;SubGeographicalRegion &amp;lt;-&amp;gt; Zone&lt;/p&gt;&lt;p&gt;Otherwise:&lt;/p&gt;&lt;p&gt;GeographicalRegion &amp;lt;-&amp;gt; Country&lt;/p&gt;&lt;p&gt;SubGeographicalRegion &amp;lt;-&amp;gt; Community&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>Map regions like raw files</string>
                  </property>
                 </widget>
                </item>

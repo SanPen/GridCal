@@ -142,7 +142,7 @@ class DcLine(BranchParent):
         self.register(key='fault_pos', units='p.u.', tpe=float,
                       definition='Per-unit positioning of the fault:0 would be at the "from" side,1 would '
                                  'be at the "to" side,therefore 0.5 is at the middle.')
-        self.register(key='template', units='', tpe=DeviceType.SequenceLineDevice, definition='', editable=False)
+        self.register(key='template', units='', tpe=DeviceType.AnyLineTemplateDevice, definition='', editable=False)
 
         self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='', editable=False)
 

@@ -469,12 +469,12 @@ class MapWidget(QWidget):
         self.view_tlat = 0
 
         # some cursors
-        self.standard_cursor = QCursor(Qt.ArrowCursor)
-        self.box_select_cursor = QCursor(Qt.CrossCursor)
-        self.wait_cursor = QCursor(Qt.WaitCursor)
-        self.drag_cursor = QCursor(Qt.OpenHandCursor)
+        self.standard_cursor = QCursor(Qt.CursorShape.ArrowCursor)
+        self.box_select_cursor = QCursor(Qt.CursorShape.CrossCursor)
+        self.wait_cursor = QCursor(Qt.CursorShape.WaitCursor)
+        self.drag_cursor = QCursor(Qt.CursorShape.OpenHandCursor)
 
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setMinimumSize(self.tile_width, self.tile_height)
 
         self.setMouseTracking(True)
@@ -672,9 +672,9 @@ class MapWidget(QWidget):
         self.setCursor(self.default_cursor)
 
         b = event.button()
-        if b == Qt.NoButton:
+        if b == Qt.MouseButton.NoButton:
             pass
-        elif b == Qt.LeftButton:
+        elif b == Qt.MouseButton.LeftButton:
             self.left_mbutton_down = False
 
             if self.start_drag_x is None:
@@ -688,10 +688,10 @@ class MapWidget(QWidget):
             longitude, latitude = self.view_to_geo(x, y)
             self.position_callback(latitude, longitude, x, y)
 
-        elif b == Qt.MidButton:
+        elif b == Qt.MouseButton.MiddleButton:
             self.mid_mbutton_down = False
 
-        elif b == Qt.RightButton:
+        elif b == Qt.MouseButton.RightButton:
             self.right_mbutton_down = False
 
         else:
@@ -705,13 +705,13 @@ class MapWidget(QWidget):
         :return:
         """
         b = event.button()
-        if b == Qt.NoButton:
+        if b == Qt.MouseButton.NoButton:
             pass
-        elif b == Qt.LeftButton:
+        elif b == Qt.MouseButton.LeftButton:
             pass
-        elif b == Qt.MidButton:
+        elif b == Qt.MouseButton.MiddleButton:
             pass
-        elif b == Qt.RightButton:
+        elif b == Qt.MouseButton.RightButton:
             pass
         else:
             pass
@@ -781,7 +781,7 @@ class MapWidget(QWidget):
     def keyPressEvent(self, event: QKeyEvent):
         """Capture a key press."""
 
-        if event.key() == Qt.Key_Shift:
+        if event.key() == Qt.Key.Key_Shift:
             self.shift_down = True
             self.default_cursor = self.box_select_cursor
             self.setCursor(self.default_cursor)
@@ -792,7 +792,7 @@ class MapWidget(QWidget):
         """Capture a key release."""
 
         key = event.key()
-        if event.key() == Qt.Key_Shift:
+        if event.key() == Qt.Key.Key_Shift:
             self.shift_down = False
             self.default_cursor = self.standard_cursor
             self.setCursor(self.default_cursor)

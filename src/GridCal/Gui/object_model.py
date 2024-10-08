@@ -172,6 +172,7 @@ class ObjectsModel(WrappableTableModel):
         """
         update table
         """
+        self.r = len(self.objects)
         row = self.rowCount()
         self.beginInsertRows(QtCore.QModelIndex(), row, row)
         # whatever code

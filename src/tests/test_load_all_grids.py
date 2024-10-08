@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os
-
 from GridCalEngine.IO.file_handler import FileOpen
 
 
@@ -54,3 +53,20 @@ def test_all_grids():
         circuit = file_handler.open()
 
     assert len(failed) == 0
+
+
+def test_line_templates_finding():
+    """
+    Test that checks that a line assigned a line template that is not a Sequence line can open it
+    :return:
+    """
+    # get the directory of this file
+    current_path = os.path.dirname(__file__)
+
+    # navigate to the grids folder
+    fname = os.path.join(current_path, 'data', 'grids', 'test_line_templates.gridcal')
+
+    opener = FileOpen(fname)
+    grid = opener.open()
+
+    assert not opener.logger.has_logs()

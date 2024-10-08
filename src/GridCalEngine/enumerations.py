@@ -993,6 +993,7 @@ class DeviceType(Enum):
     SequenceLineDevice = 'Sequence line'
     UnderGroundLineDevice = 'Underground line'
     OverheadLineTypeDevice = 'Tower'
+    AnyLineTemplateDevice = "Any line template"
     TransformerTypeDevice = 'Transformer type'
     SwitchDevice = 'Switch'
 
@@ -1007,6 +1008,7 @@ class DeviceType(Enum):
     MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
     VoltageLevelDevice = 'Voltage level'
+    VoltageLevelTemplate = 'Voltage level template'
 
     Technology = 'Technology'
     TechnologyGroup = 'Technology Group'
@@ -1832,6 +1834,9 @@ class ContingencyFilteringMethods(Enum):
 
 
 class Colormaps(Enum):
+    """
+    Available colormaps
+    """
     GridCal = 'GridCal'
     TSO = 'TSO'  # -1, 1
     TSO2 = 'TSO 2'  # -1, 1
@@ -1860,3 +1865,44 @@ class Colormaps(Enum):
             return Colormaps[s]
         except KeyError:
             return s
+
+
+class SubstationTypes(Enum):
+    """
+    Types of substation types
+    """
+    SingleBar = 'Single bar'
+    SingleBarWithBypass = 'Single bar with bypass'
+    SingleBarWithSplitter = 'Single bar with splitter'
+    DoubleBar = "Double bar"
+    DoubleBarWithBypass = "Double bar with bypass"
+    DoubleBarWithTransference = "Double bar with transference bar"
+    DoubleBarDuplex = "Double bar duplex"
+    Ring = 'Ring'
+    BreakerAndAHalf = 'Breaker and a half'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return SubstationTypes[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))

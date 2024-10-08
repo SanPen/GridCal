@@ -68,7 +68,9 @@ class FileSavingOptions:
                  dictionary_of_json_files: Dict[str, Dict[str, Any]] = None,
                  cgmes_version: CGMESVersions = CGMESVersions.v2_4_15,
                  cgmes_profiles: Union[None, List[cgmesProfile]] = None,
-                 one_file_per_profile: bool = False):
+                 cgmes_one_file_per_profile: bool = False,
+                 cgmes_map_areas_like_raw: bool = False,
+                 raw_version: str = "33"):
         """
         Constructor
         :param cgmes_boundary_set: CGMES boundary set zip file path
@@ -77,7 +79,9 @@ class FileSavingOptions:
         :param dictionary_of_json_files: Dictionary of json files
         :param cgmes_version: Version to use with CGMES
         :param cgmes_profiles: CGMES profile list to export
-        :param one_file_per_profile: use one file per profile?
+        :param cgmes_one_file_per_profile: use one file per profile?
+        :param cgmes_map_areas_like_raw: use map areas like raw?
+        :param raw_version: Version to use when exporting raw/rawx files
         """
 
         self.cgmes_version: CGMESVersions = cgmes_version
@@ -105,7 +109,11 @@ class FileSavingOptions:
                                                                                  cgmesProfile.GL]
 
         # use one file per profile?
-        self.one_file_per_profile = one_file_per_profile
+        self.cgmes_one_file_per_profile = cgmes_one_file_per_profile
+
+        self.cgmes_map_areas_like_raw = cgmes_map_areas_like_raw
+
+        self.raw_version = raw_version
 
     def get_power_flow_results(self) -> Union[None, PowerFlowResults]:
         """
@@ -542,7 +550,7 @@ class FileSave:
         data_parser.load_files(files=[self.options.cgmes_boundary_set])
         cgmes_circuit.parse_files(data_parser=data_parser)
         profiles_to_export = self.options.cgmes_profiles
-        one_file_per_profile = self.options.one_file_per_profile
+        one_file_per_profile = self.options.cgmes_one_file_per_profile
         pf_results = self.options.get_power_flow_results()
         # TODO get nc used for PF, recompile can be avoided?
         from GridCalEngine.DataStructures.numerical_circuit import \
