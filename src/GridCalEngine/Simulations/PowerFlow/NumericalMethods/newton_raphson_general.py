@@ -95,6 +95,18 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
     Vm0 = np.abs(V0)
     Va0 = np.angle(V0)
 
+    #print Vm0, Va0
+    #find the index of the Vm0 that is not 1
+    # print("(newton_raphson_general.py) where Vm0 is not exactly 1")
+    print("(newton_raphson_general.py) where Vm0 is not exactly 1")
+    print(np.where(Vm0 != 1.0))
+    Vm0[np.where(Vm0 != 1.0)] = 1.0
+    print("(newton_raphson_general.py) Vm0")
+    print(Vm0)
+    print("(newton_raphson_general.py) Va0")
+    print(Va0)
+
+
     '''
     Initialising more specific from and to powers
     '''
@@ -125,7 +137,8 @@ def NR_LS_GENERAL(nc: NumericalCircuit,
         p_zip_gen, q_zip_gen = update_gen_setpoints(nc, p_zip_gen, q_zip_gen)
         p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo = update_contTrafo_setpoints(nc, p_from_contTrafo, q_from_contTrafo, p_to_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)
 
-        _x0 = var2x_gpf2(nc)
+        #this is dumb, you should be passing through the initial V0
+        _x0 = var2x_gpf2(nc, V0, verbose=0)
 
         logger = Logger()
 
@@ -608,7 +621,7 @@ def pf_function_gpf2(x: Vec,
     startTime = time.time()
     g = compute_fx_gpf2(V, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p_zip_gen, q_zip_gen, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo, nc)
     endTime = time.time()
-    print("(newton_raphson_general.py) buildilng g time", endTime - startTime)	
+    # print("(newton_raphson_general.py) buildilng g time", endTime - startTime)	
     # print("(newton_raphson_general.py) g", g)
 
     if compute_jac:
@@ -1625,7 +1638,7 @@ def compute_gx_gpf2(x, V, g, Ybus, S0, I0, Y0, p_from_vsc, p_to_vsc, q_to_vsc, p
         startTime = time.time()
         J = compute_gx_gpf_symbolic(x, V, g, Ybus, S0, I0, Y0, nc, p_from_vsc, p_to_vsc, q_to_vsc, p_from_contTrafo, p_to_contTrafo, q_from_contTrafo, q_to_contTrafo, tapMod_contTrafo, tapAng_contrTrafo)         
         endTime = time.time()
-        print("(newton_raphson_general.py) buildilng Gx time", endTime - startTime)
+        # print("(newton_raphson_general.py) buildilng Gx time", endTime - startTime)
         #print length of x 
         print("(newton_raphson_general.py) length of x", len(x))
         assert J.shape == (len(x), len(x))
@@ -2255,7 +2268,7 @@ def var2x(nc: NumericalCircuit):
     return x
 
 
-def var2x_gpf2(nc: NumericalCircuit, verbose = 0):
+def var2x_gpf2(nc: NumericalCircuit, V0, verbose = 0):
     """
     Generates an initial state vector 'x' for a numerical circuit simulation,
     with each element set to a default value based on the type of variable.
@@ -2283,8 +2296,14 @@ def var2x_gpf2(nc: NumericalCircuit, verbose = 0):
 
     x = []
     x_names = []
-    x.extend([1.0] * len(nc.gpf_un_volt_idx))
-    x.extend([0.0] * len(nc.gpf_un_angle_idx))
+    Vm0 = np.abs(V0)
+    Va0 = np.angle(V0)
+    voltage_guesses = Vm0[nc.gpf_un_volt_idx]
+    # x.extend([1.0] * len(nc.gpf_un_volt_idx))
+    x.extend(voltage_guesses)
+    angle_guesses = Va0[nc.gpf_un_angle_idx]
+    x.extend(angle_guesses)
+    # x.extend([0.0] * len(nc.gpf_un_angle_idx))
     x.extend([0.0] * len(nc.gpf_un_pzip_gen_idx))
     x.extend([0.0] * len(nc.gpf_un_qzip_gen_idx))
     x.extend([0.0] * len(nc.gpf_un_pfrom_vsc_kdx))
@@ -2337,8 +2356,8 @@ def var2x_gpf2(nc: NumericalCircuit, verbose = 0):
         for i in range (len(nc.gpf_un_tau_trafo_kdx)):
             x_names.append(f"Tau_trafo_{nc.gpf_un_tau_trafo_kdx[i]}")
 
-        # print("(newton_raphson_general.py) var2x_gpf2 x_names: ", x_names)
-        # print("(newton_raphson_general.py) var2x_gpf2 x: ", x)
+        print("(newton_raphson_general.py) var2x_gpf2 x_names: ", x_names)
+        print("(newton_raphson_general.py) var2x_gpf2 x: ", x)
 
     return x
 

@@ -67,6 +67,11 @@ def NR_LS_ACDC(nc: NumericalCircuit,
     Va = np.angle(V)
     Vm = np.abs(V)
 
+    #print the initial voltage
+    print("Initial Voltage: ", Va)
+    print("Initial Voltage: ", Vm)
+
+
     # compute the ZIP power injection
     Sbus = compute_zip_power(S0=S0, I0=I0, Y0=Y0, Vm=Vm)
 

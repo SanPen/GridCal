@@ -68,6 +68,11 @@ def NR_LS(Ybus, S0, V0, I0, Y0, pv_, pq_, Qmin, Qmax, tol, max_it=15, mu_0=1.0,
     dVa = np.zeros_like(Va)
     dVm = np.zeros_like(Vm)
 
+    #print the initial voltage
+    print("Initial Voltage: ", Va)
+    Vm[np.where(Vm != 1.0)] = 1.0
+    print("Initial Voltage: ", Vm)
+
     # set up indexing for updating V
     pq = pq_.copy()
     pv = pv_.copy()

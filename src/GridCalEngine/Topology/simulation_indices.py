@@ -917,6 +917,9 @@ class SimulationIndices2:
         # (Generalised PF 2) indices of the PASSIVE BRANCHES where Qto are UNKNOWN
         self.gpf_un_qto_passive_kdx: IntVec = np.zeros(0, dtype=int)
 
+        self.Sbase = Sbase
+        self.adj = adj
+        self.idx_islands = idx_islands
 
         self.gen_data = gen_data
         self.vsc_data = vsc_data
@@ -967,7 +970,7 @@ class SimulationIndices2:
         self.gpf_un_pzip_gen_idx = np.append(self.gpf_un_pzip_gen_idx, self.gen_ac)
         self.gpf_un_pzip_gen_idx = np.append(self.gpf_un_pzip_gen_idx, self.gen_dc)
         self.gpf_un_qzip_gen_idx = np.append(self.gpf_un_qzip_gen_idx, self.gen_ac)
-        
+  
         self.gpf_un_pfrom_vsc_kdx = np.append(self.gpf_un_pfrom_vsc_kdx, np.arange(vsc_data.nelm))
         self.gpf_un_pto_vsc_kdx = np.append(self.gpf_un_pto_vsc_kdx, np.arange(vsc_data.nelm))
         self.gpf_un_qto_vsc_kdx = np.append(self.gpf_un_qto_vsc_kdx, np.arange(vsc_data.nelm))
@@ -1002,7 +1005,7 @@ class SimulationIndices2:
 
 
         dict_known_idx = {"Voltage": self.gpf_kn_volt_idx, "Angle": self.gpf_kn_angle_idx}
-        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 0)
+        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 1)
         self.check_unknowns_vs_equations(verbose = 1)
     
 
@@ -1456,7 +1459,7 @@ class SimulationIndices2:
             print(df)
 
         
-        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 0)
+        self.check_subsystem_slacks(idx_islands, dict_known_idx, bus_data, verbose = 1, strict = 1)
 
         self.kn_volt_idx = dict_known_idx["Voltage"]
         self.kn_angle_idx = dict_known_idx["Angle"]
@@ -1497,7 +1500,7 @@ class SimulationIndices2:
     def check_subsystem_slacks(self, systems, dict_known_idx, bus_data, verbose=0, strict=0):
         subSystemSlacks = np.zeros(len(systems), dtype=bool)
         # Data list for DataFrame
-        data = {"System": [], "Slack Buses": [], "Remarks": []}
+        data = {"Index":[], "System": [], "No of Buses":[], "Slack Buses": [], "Remarks": []}
 
         for i, system in enumerate(systems):
             isSlack = []
@@ -1513,7 +1516,9 @@ class SimulationIndices2:
 
             # Append system info to data list
             _buses_in_system = [bus_data.names[busIndex] for busIndex in system]
+            data["Index"].append(system)
             data["System"].append(f"Subsystem {_buses_in_system}")
+            data["No of Buses"].append(len(_buses_in_system))
             data["Slack Buses"].append(isSlack)
             data["Remarks"].append("All good" if len(isSlack) == 1 else "No good")
 
@@ -1528,9 +1533,229 @@ class SimulationIndices2:
 
         if strict:
             # if adding up lengthwise does not equal the length of the buses, then assert an error
-            assert sum(subSystemSlacks) == len(systems), "You do not have exactly one slack bus for each subsystem"
+            try:
+                assert sum(subSystemSlacks) == len(systems), "You do not have exactly one slack bus for each subsystem"
+            except AssertionError as e:
+                # print (changing controls and trying again)
+                print(e)
+                print("Changing controls and trying again")
+                #go through data["Remarks"] and look for the first No Good, then use that index to fix the controls
+                for i, remark in enumerate(data["Remarks"]):
+                    if remark == "No good":
+                        # print(f"System {data['System'][i]} has no slack bus")
+                        #self.fix_controls(subSystemSlacks, isSlack, _buses_in_system)
+                        self.fix_controls(subSystemSlacks, isSlack, data["Slack Buses"][i], data["Index"][i])
+                        break
+                        
 
         return
+
+
+    def fix_controls(self, subSystemSlacks, isSlack, _buses_in_system, idx):
+        #get the gen_data
+        #print all the inputs
+        # print("subSystemSlacks", subSystemSlacks)
+        # print("isSlack", isSlack)
+        print("_buses_in_system", _buses_in_system)
+        print("idx", idx)
+        print("self.gen_data.bus_idx", self.gen_data.bus_idx)
+        # use the bus dict to get the bus object
+        #look for any indices in idx that is also in self.gen_data.bus_idx
+        indices_incommon = np.intersect1d(idx, self.gen_data.bus_idx)
+        print("indices_incommon", indices_incommon)
+        #lets just take the first one
+        if len(indices_incommon) > 0:
+            slackBusIdx = indices_incommon[0]
+            #set the corresponding generator index
+            genIdx = np.where(self.gen_data.bus_idx == slackBusIdx)
+            self.gen_data.gpf_ctrl1_elm[genIdx] = str(self.bus_data.names[slackBusIdx])
+            self.gen_data.gpf_ctrl1_mode[genIdx] = GpfControlType.type_Vm
+            self.gen_data.gpf_ctrl1_val[genIdx] = self.gen_data.v[genIdx]
+            self.gen_data.gpf_ctrl2_elm[genIdx] = str(self.bus_data.names[slackBusIdx])
+            self.gen_data.gpf_ctrl2_mode[genIdx] = GpfControlType.type_Va
+            self.gen_data.gpf_ctrl2_val[genIdx] = 0.0 #magic number here for the angle reference
+            self.resetIndices()
+            self.compile_control_indices_generalised_pf2(self.Sbase, self.gen_data, self.vsc_data, self.bus_data, self.controllable_trafo_data, self.branch_data, self.adj, self.idx_islands, verbose = 1)
+        else:
+            print("No common indices found, I am not sure what to set as a slack bus")
+            slackBusIdx = idx[0]
+            self.gen_data.nelm +=1
+            self.gen_ac = np.append(self.gen_ac, self.gen_data.nelm-1)
+            self.gen_data.names = np.append(self.gen_data.names, f"gen{self.gen_data.nelm-1}")
+            self.gen_data.gpf_ctrl1_elm = np.append(self.gen_data.gpf_ctrl1_elm, str(self.bus_data.names[slackBusIdx]))
+            self.gen_data.gpf_ctrl1_mode = np.append(self.gen_data.gpf_ctrl1_mode, GpfControlType.type_Vm)
+            self.gen_data.gpf_ctrl1_val = np.append(self.gen_data.gpf_ctrl1_val, 1.0)
+            self.gen_data.gpf_ctrl2_elm = np.append(self.gen_data.gpf_ctrl2_elm, str(self.bus_data.names[slackBusIdx]))
+            self.gen_data.gpf_ctrl2_mode = np.append(self.gen_data.gpf_ctrl2_mode, GpfControlType.type_Va)
+            self.gen_data.gpf_ctrl2_val = np.append(self.gen_data.gpf_ctrl2_val, 0.0) #magic number here for the angle reference
+            self.resetIndices()
+            self.compile_control_indices_generalised_pf2(self.Sbase, self.gen_data, self.vsc_data, self.bus_data, self.controllable_trafo_data, self.branch_data, self.adj, self.idx_islands, verbose = 1)
+            # self.gen_data.gpf_ctrl1_val.append(1.0)
+            # self.gen_data.gpf_ctrl2_elm.append(str(self.bus_data.names[slackBusIdx]))
+            # self.gen_data.gpf_ctrl2_mode.append(GpfControlType.type_Va)
+            # self.gen_data.gpf_ctrl2_val.append(0.0) #magic number here for the angle reference
+        
+    def resetIndices(self):
+        ###### Generalised PF 2 ######
+
+        # (Generalised PF 2)  indices of the buses where voltage is known (controlled)
+        self.gpf_kn_volt_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the buses where angle is known (controlled)
+        self.gpf_kn_angle_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Pzip is known (controlled)
+        self.gpf_kn_pzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Qzip is known (controlled)
+        self.gpf_kn_qzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pto is known (controlled)
+        self.gpf_kn_pto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Qto is known (controlled)
+        self.gpf_kn_qto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pto is known (controlled)
+        self.gpf_kn_pto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qfrom is known (controlled)
+        self.gpf_kn_qfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qto is known (controlled)
+        self.gpf_kn_qto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap module is known (controlled)
+        self.gpf_kn_mod_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap angle is known (controlled)
+        self.gpf_kn_tau_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the passive branches where Pfrom are known (controlled)
+        self.gpf_kn_pfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the branches where Qfrom are known (controlled)
+        self.gpf_kn_qfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the branches where Pto are known (controlled)
+        self.gpf_kn_pto_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the branches where Qto are known (controlled)
+        self.gpf_kn_qto_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+
+
+
+        # (Generalised PF 2) SETPOINTS of the buses where voltage is known (controlled)
+        self.gpf_kn_volt_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the buses where angle is known (controlled)
+        self.gpf_kn_angle_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the GENERATORS, not buses, where Pzip is known (controlled)
+        self.gpf_kn_pzip_gen_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the GENERATORS, not buses, where Qzip is known (controlled)
+        self.gpf_kn_qzip_gen_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the VSCs where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_vsc_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the VSCs where Pto is known (controlled)
+        self.gpf_kn_pto_vsc_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the VSCs where Qto is known (controlled)
+        self.gpf_kn_qto_vsc_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Pfrom is known (controlled)
+        self.gpf_kn_pfrom_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Pto is known (controlled)
+        self.gpf_kn_pto_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Qfrom is known (controlled)
+        self.gpf_kn_qfrom_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where Qto is known (controlled)
+        self.gpf_kn_qto_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where tap module is known (controlled)
+        self.gpf_kn_mod_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the CONTROLLABLE TRAFOS where tap angle is known (controlled)
+        self.gpf_kn_tau_trafo_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the passive branches where Pfrom are known (controlled)
+        self.gpf_kn_pfrom_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the branches where Qfrom are known (controlled)
+        self.gpf_kn_qfrom_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the branches where Pto are known (controlled)
+        self.gpf_kn_pto_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+        # (Generalised PF 2) SETPOINTS of the branches where Qto are known (controlled)
+        self.gpf_kn_qto_passive_setpoints: Vec = np.zeros(0, dtype=float)
+
+
+
+
+        # (Generalised PF 2) indices of the buses where voltage is UNKNOWN
+        self.gpf_un_volt_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the buses where angle is UNKNOWN
+        self.gpf_un_angle_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Pzip is UNKNOWN
+        self.gpf_un_pzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the GENERATORS, not buses, where Qzip is UNKNOWN
+        self.gpf_un_qzip_gen_idx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pfrom is UNKNOWN
+        self.gpf_un_pfrom_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Pto is UNKNOWN
+        self.gpf_un_pto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the VSCs where Qto is UNKNOWN
+        self.gpf_un_qto_vsc_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pfrom is UNKNOWN
+        self.gpf_un_pfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Pto is UNKNOWN
+        self.gpf_un_pto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qfrom is UNKNOWN
+        self.gpf_un_qfrom_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where Qto is UNKNOWN
+        self.gpf_un_qto_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap module is UNKNOWN
+        self.gpf_un_mod_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the CONTROLLABLE TRAFOS where tap angle is UNKNOWN
+        self.gpf_un_tau_trafo_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Pfrom are UNKNOWN
+        self.gpf_un_pfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Qfrom are UNKNOWN
+        self.gpf_un_qfrom_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Pto are UNKNOWN
+        self.gpf_un_pto_passive_kdx: IntVec = np.zeros(0, dtype=int)
+
+        # (Generalised PF 2) indices of the PASSIVE BRANCHES where Qto are UNKNOWN
+        self.gpf_un_qto_passive_kdx: IntVec = np.zeros(0, dtype=int)
 
 
     def check_control_modes(self, control_mode: List[Union[TransformerControlType, ConverterControlType]]):

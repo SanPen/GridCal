@@ -347,7 +347,6 @@ def get_generator_data(circuit: MultiCircuit,
     gen_index_dict: Dict[str, int] = dict()
     gen_name_to_idx: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
-
         gen_index_dict[elm.idtag] = k  # associate the idtag to the index
         gen_name_to_idx[elm.name] = k  # associate the name to the index
 

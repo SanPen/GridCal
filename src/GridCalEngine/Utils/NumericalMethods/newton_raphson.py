@@ -140,16 +140,17 @@ def newton_raphson(func: Callable[[Vec, bool, Any], ConvexFunctionResult],
                     # accept the solution
                     x = x2
 
-            if back_track_condition:
+            # if back_track_condition:
                 # this means that not even the backtracking was able to correct
                 # the solution, so terminate
-                logger.add_warning(f"Newton-Raphson's stagnated @iter {iteration}:")
-                return ConvexMethodResult(x=x,
-                                          error=error,
-                                          converged=converged,
-                                          iterations=iteration,
-                                          elapsed=time.time() - start,
-                                          error_evolution=error_evolution)
+                # logger.add_warning(f"Newton-Raphson's stagnated @iter {iteration}:")
+                # continue
+                # return ConvexMethodResult(x=x,
+                #                           error=error,
+                #                           converged=converged,
+                #                           iterations=iteration,
+                #                           elapsed=time.time() - start,
+                #                           error_evolution=error_evolution)
 
             # update equalities increment and the jacobian
             ret = func(x, True, *func_args)

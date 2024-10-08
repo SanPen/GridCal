@@ -464,7 +464,12 @@ def simple3busacdc():
 
 def complex6bus():
     # file_path = 'C:/Users/raiya/Desktop/gridcal_models/pegase89.gridcal'
-    file_path = 'C:/Users/raiya/Desktop/gpf_testers/complex6bus.gridcal'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/BEST6CASE/final.gridcal'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/importantComparison/fubm_caseHVDC_vt.m'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/importantComparison/fubm_caseHVDC_vt.gridcal'
+    # file_path = 'C:/Users/raiya/Desktop/gridsForTechMeeting/experiments/IEEE 118.xlsx'
+    # file_path = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/ESPGRID.gridcal'
+    file_path = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/entrada_a_aopf.raw'
     grid = gce.FileOpen(file_path).open()
     assert grid is not None
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-10)
@@ -528,12 +533,16 @@ def ieee14():
 
 def entsoE():
     file0 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/20211216T1459Z_ENTSO-E_BD_1346.zip'
-    file1 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/PT_3PQT_v2.zip'
+    file1 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/ES_3PQT.zip'
+    file2 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/FR_3PQT_v3.zip'
+    file3 = 'C:/Users/raiya/Documents/8. eRoots/entsoEmodels/PT_3PQT_v2.zip'
                                
-    file_list = [file0, file1]
+    file_list = [file0, file1, file2, file3]
+    # file_list = [file0, file2, file3]
+    # file_list = [file0, file1]
     grid = gce.FileOpen(file_list).open()
     assert grid is not None
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-7, retry_with_other_methods=True)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.GENERALISED, verbose=1, tolerance=1e-7, retry_with_other_methods=True, use_stored_guess=False)
     startTime = timeit.default_timer()
     results = gce.power_flow(grid, options=pf_options)
     print("Time:", timeit.default_timer() - startTime)
@@ -1386,11 +1395,11 @@ if __name__ == '__main__':
     # simple4busacdc_wControllableTrafo() #converges true when controlling the powers across the transformer, lessons learnt, when you are controlling a branch power, if you try a setpont that goes agaisnt the natural flow of power ie from slack to load, youll have a hard time converging
                                         # nodal power balances derivatives look good tho
     # simple4busacdc_wControllableTrafo_remoteControl() #converges true, nodal power balances derivatives look good too
-    # complex6bus() #converges true, derivatives at least the nodal power balances look good
+    complex6bus() #converges true, derivatives at least the nodal power balances look good
     # complex10bus()
     # ieee14() #converges true, derivatives look good   
     # bigBus()
-    entsoE()
+    # entsoE()
 
     # system_1_5_Subsystem()
 
