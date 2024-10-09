@@ -341,7 +341,7 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
     # Print LP representation
     # print(solver.ExportModelAsLpFormat(obfuscated=False))
 
-    if status == solver.OPTIMAL and not solver.originally_infesible:
+    if status == solver.OPTIMAL and not solver.originally_infeasible:
 
         print('Optimal solution found:')
         for node in fluid_nodes:

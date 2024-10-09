@@ -69,7 +69,7 @@ class LpModel:
     """
     OPTIMAL = ort.Solver.OPTIMAL
     INFINITY = 1e20
-    originally_infesible = False
+    originally_infeasible = False
 
     def __init__(self, solver_type: MIPSolvers):
 
@@ -162,7 +162,7 @@ class LpModel:
         # if it failed...
         if status != LpModel.OPTIMAL:
 
-            self.originally_infesible = True
+            self.originally_infeasible = True
 
             if robust:
                 """
@@ -186,7 +186,8 @@ class LpModel:
                 debugging_f_obj = 0
                 for i, cst in enumerate(debug_model.get_linear_constraints()):
                     # create a new slack var in the problem
-                    sl = debug_model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
+                    sl = debug_model.new_var(0, 1e20, is_integer=False,
+                                             name=f'Slack_{cst.name}')
 
                     # add the variable to the new objective function
                     debugging_f_obj += sl
@@ -207,11 +208,11 @@ class LpModel:
                 del debug_model
 
                 # clear the relaxed slacks list
-                self.relaxed_slacks = list()
+                self.relaxed_slacks.clear()
 
                 if status_d == LpModel.OPTIMAL:
 
-                    # pick the original objectve function
+                    # pick the original objective function
                     main_f = self.model.objective_expression()
 
                     for i, sl in enumerate(slacks):
@@ -220,8 +221,11 @@ class LpModel:
                         val = self.solver.value(sl)
 
                         if val > 1e-10:
+                            cst_name = self.model.linear_constraint_from_index(i).name
+
                             # add the slack in the main model
-                            sl2 = self.model.new_var(0, 1e20, is_integer=False, name='Slackkk{}'.format(i))
+                            sl2 = self.model.new_var(0, 1e20, is_integer=False,
+                                                     name=f'Slack_relaxed_{cst_name}')
                             self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
 
                             # add the slack to the original objective function
@@ -229,10 +233,6 @@ class LpModel:
 
                             # alter the matching constraint
                             self.model.linear_constraint_from_index(i).add_term(sl2, 1.0)
-
-                            # logg this
-                            # self.logger.add_warning("Relaxed problem",
-                            #                         device=self.model.linear_constraint_from_index(i).name)
 
                     # set the modified (original) objective function
                     self.model.minimize(main_f)

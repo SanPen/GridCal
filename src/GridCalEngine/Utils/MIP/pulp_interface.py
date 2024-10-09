@@ -91,8 +91,9 @@ def set_var_bounds(var: LpVar, lb: float, ub: float):
     :param lb: lower bound value
     :param ub: upper bound value
     """
-    var.upBound = ub
-    var.lowBound = lb
+    if isinstance(var, LpVar):
+        var.upBound = ub
+        var.lowBound = lb
 
 
 class LpModel:
@@ -101,13 +102,15 @@ class LpModel:
     """
     OPTIMAL = pulp.LpStatusOptimal
     INFINITY = 1e20
-    originally_infesible = False
+    originally_infeasible = False
 
     def __init__(self, solver_type: MIPSolvers):
 
         self.solver_type: MIPSolvers = solver_type
 
         self.model = pulp.LpProblem("myProblem", pulp.LpMinimize)
+
+        self.relaxed_slacks = list()
 
         self.logger = Logger()
 
@@ -212,7 +215,111 @@ class LpModel:
         status = self.model.solve(solver=pulp.getSolver(solver))
 
         if status != self.OPTIMAL:
-            self.originally_infesible = True
+            self.originally_infeasible = True
+
+            if robust:
+                """
+                We are going to create a deep clone of the model,
+                add a slack variable to each constraint and minimize
+                the sum of the newly added slack vars.
+                This LP model will be always optimal.
+                After the solution, we inspect the slack vars added
+                if any of those is > 0, then the constraint where it
+                was added needs "slacking", therefore we add that slack
+                to the original model, and add the slack to the original 
+                objective function. This way we relax the model while
+                bringing it to optimality.
+                """
+
+                # deep copy of the original model
+                debug_model = self.model.copy()
+
+                # modify the original to detect the bad constraints
+                slacks = list()
+                debugging_f_obj = 0
+                for i, (cst_name, cst) in enumerate(debug_model.constraints.items()):
+                    # create a new slack var in the problem
+                    sl = pulp.LpVariable(name=f'Slack_{cst_name}',
+                                         lowBound=0,
+                                         upBound=1e20,
+                                         cat=pulp.LpContinuous)
+                    debug_model.addVariable(sl)
+
+                    # add the variable to the new objective function
+                    debugging_f_obj += sl
+
+                    # add the variable to the current constraint
+                    cst += sl
+
+                    # store for later
+                    slacks.append((cst_name, sl))
+
+                # set the objective function as the summation of the new slacks
+                debug_model.setObjective(debugging_f_obj)
+
+                # solve the debug model
+                print("SOLVING SLACKS MODEL -------------------------------")
+                status_d = debug_model.solve(solver=pulp.getSolver(solver))
+
+                # at this point we can delete the debug model
+                del debug_model
+
+                # clear the relaxed slacks list
+                self.relaxed_slacks = list()
+
+                if status_d == LpModel.OPTIMAL:
+
+                    # pick the original objective function
+                    cst_slack_map = list()
+                    for i, (cst_name, sl) in enumerate(slacks):
+
+                        # get the debugging slack value
+                        val = sl.value()
+
+                        if val > 1e-10:
+                            # add the slack in the main model
+                            sl2 = pulp.LpVariable(name=f'Slack_relax_{cst_name}',
+                                                  lowBound=0,
+                                                  upBound=1e20,
+                                                  cat=pulp.LpContinuous)
+                            self.model.addVariable(sl2)
+                            self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
+
+                            # add the slack to the original objective function
+                            self.model.objective += sl2
+
+                            # alter the matching constraint
+                            self.model.constraints[cst_name] += sl2
+
+                        # register the relation for later
+                        cst_slack_map.append(cst_name)
+
+
+                    # set the modified (original) objective function
+                    self.model.setObjective(self.model.objective)
+
+                    # solve the modified (original) model
+                    print("SOLVING RELAXED MODEL -------------------------------")
+                    status = self.model.solve(solver=pulp.getSolver(solver))
+
+                    if status == LpModel.OPTIMAL:
+
+                        for i in range(len(self.relaxed_slacks)):
+                            k, var, _ = self.relaxed_slacks[i]
+                            val = var.value()
+                            self.relaxed_slacks[i] = (k, var, val)
+
+                            # logg this
+                            if val > 1e-10:
+                                self.logger.add_warning(
+                                    msg="Relaxed problem",
+                                    device=self.model.constraints[cst_slack_map[i]].name,
+                                    value=val
+                                )
+
+                else:
+                    self.logger.add_warning("Unable to relax the model, the debug model failed")
+
 
         return status
 

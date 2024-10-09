@@ -596,17 +596,20 @@ def add_linear_injections_formulation(t: Union[int, None],
 
             prob.add_cst(
                 cst=ntc_vars.bus_vars.inj_delta[t, k] == ntc_vars.power_shift[t] * proportions[k],
-                name='bus_{0}_assignment'.format(bus_data_t.names[k]))
+                name=join(f'bus_{bus_data_t.names[k]}_assignment', [t, k], "_")
+            )
 
             # declare bus injections
             ntc_vars.bus_vars.Pcalc[t, k] = prob.add_var(
                 lb=bus_pmin_t[k],
                 ub=bus_pmax_t[k],
-                name=join("inj_p", [t, k], "_"))
+                name=join("inj_p", [t, k], "_")
+            )
 
             prob.add_cst(
                 cst=ntc_vars.bus_vars.Pcalc[t, k] == p_bus_t[k] + ntc_vars.bus_vars.inj_delta[t, k],
-                name=join("bus_balance", [t, k], "_"))
+                name=join("bus_balance", [t, k], "_")
+            )
 
     return f_obj
 
@@ -1092,23 +1095,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             # compute the PTDF and LODF
             ls.run()
 
-            # compute exchange sensitivities
-            # if monitor_only_sensitive_branches or monitor_only_ntc_load_rule_branches:
-            #
-            #     # TODO, these conditions are confusing and maybe conflicting with the consider_contingencies option
-            #
-            #     alpha = compute_alpha(ptdf=ls.PTDF,
-            #                           lodf=ls.LODF,
-            #                           P0=nc.Sbus.real,
-            #                           Pinstalled=nc.bus_installed_power,
-            #                           Pgen=nc.generator_data.get_injections_per_bus().real,
-            #                           Pload=nc.load_data.get_injections_per_bus().real,
-            #                           idx1=bus_idx_from,
-            #                           idx2=bus_idx_to,
-            #                           mode=mode_2_int[transfer_method])
-            # else:
-            #     alpha = None
-
+            # compute the sensitivity to the exchange
             alpha = compute_alpha(ptdf=ls.PTDF,
                                   lodf=ls.LODF,
                                   P0=nc.Sbus.real,
@@ -1152,25 +1139,31 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
 
             if consider_contingencies:
 
-                # declare the multi-contingencies analysis and compute
-                mctg = LinearMultiContingencies(grid=grid, contingency_groups_used=contingency_groups_used)
-                mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
+                if len(contingency_groups_used) > 0:
 
-                # formulate the contingencies
-                f_obj += add_linear_branches_contingencies_formulation(
-                    t_idx=t_idx,
-                    Sbase=nc.Sbase,
-                    branch_data_t=nc.branch_data,
-                    branch_vars=mip_vars.branch_vars,
-                    bus_vars=mip_vars.bus_vars,
-                    prob=lp_model,
-                    linear_multicontingencies=mctg,
-                    monitor_only_sensitive_branches=monitor_only_sensitive_branches,
-                    monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
-                    structural_ntc=structural_ntc,
-                    ntc_load_rule=ntc_load_rule,
-                    alpha_threshold=alpha_threshold,
-                )
+                    # declare the multi-contingencies analysis and compute
+                    mctg = LinearMultiContingencies(grid=grid, contingency_groups_used=contingency_groups_used)
+                    mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
+
+                    # formulate the contingencies
+                    f_obj += add_linear_branches_contingencies_formulation(
+                        t_idx=t_idx,
+                        Sbase=nc.Sbase,
+                        branch_data_t=nc.branch_data,
+                        branch_vars=mip_vars.branch_vars,
+                        bus_vars=mip_vars.bus_vars,
+                        prob=lp_model,
+                        linear_multicontingencies=mctg,
+                        monitor_only_sensitive_branches=monitor_only_sensitive_branches,
+                        monitor_only_ntc_load_rule_branches=monitor_only_ntc_load_rule_branches,
+                        structural_ntc=structural_ntc,
+                        ntc_load_rule=ntc_load_rule,
+                        alpha_threshold=alpha_threshold,
+                    )
+
+                else:
+                    logger.add_warning(msg="Contingencies enabled, but no contingency groups provided")
+
 
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
@@ -1196,17 +1189,22 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     status = lp_model.solve(robust=True)
 
     # gather the results
+    logger.add_info("Status", value=str(status))
     if status == LpModel.OPTIMAL:
         # print('Solution:')
         # print('Objective value =', lp_model.fobj_value())
+        logger.add_info("Objective function", value=lp_model.fobj_value())
         mip_vars.acceptable_solution = True
     else:
         logger.add_error('The problem does not have an optimal solution.')
         mip_vars.acceptable_solution = False
-        # lp_file_name = grid.name + "_debug.lp"
-        # lp_model.save_model(file_name=lp_file_name)
-        # print("Debug LP model saved as:", lp_file_name)
+        lp_file_name = grid.name + "_debug.lp"
+        lp_model.save_model(file_name=lp_file_name)
+        logger.add_info("Debug LP model saved", value=lp_file_name)
 
     vars_v = mip_vars.get_values(grid.Sbase, model=lp_model)
+
+    # add the model logger to the main logger
+    logger += lp_model.logger
 
     return vars_v

@@ -58,7 +58,7 @@ class LpModel:
     """
     OPTIMAL = 100
     INFINITY = 1e20
-    originally_infesible = False
+    originally_infeasible = False
 
     def __init__(self, solver_type: MIPSolvers = MIPSolvers.HIGHS):
 
@@ -464,7 +464,7 @@ class LpModel:
 
         if not self.is_optimal():
 
-            self.originally_infesible = True
+            self.originally_infeasible = True
 
             if robust:
                 """
@@ -551,9 +551,10 @@ class LpModel:
                             self.relaxed_slacks[i] = (k, var, val)
 
                             # logg this
-                            self.logger.add_warning("Relaxed problem",
-                                                    device=self.constraints[i].name,
-                                                    value=val)
+                            if val > 1e-10:
+                                self.logger.add_warning("Relaxed problem",
+                                                        device=self.constraints[i].name,
+                                                        value=val)
 
                 else:
                     self.logger.add_warning("Unable to relax the model, the debug model failed")
