@@ -1,5 +1,6 @@
 import os
 import json
+from typing import Dict
 
 from GridCalEngine.IO.file_system import get_create_gridcal_folder
 
@@ -20,15 +21,17 @@ def solvers_config_file_exists() -> bool:
     return os.path.exists(solvers_config_file_path())
 
 
-def get_solvers_config_data():
+def get_solvers_config_data() -> Dict[str, str]:
     """
     Get server data from the GUI
     :return:
     """
-    return {"cplex_bin": "cplex", }
+    return {"cplex_bin": "cplex", 
+            "xpress_bin": "optimizer",
+            "gurobi_bin": "gurobi_cl"}
 
 
-def save_solvers_config():
+def save_solvers_config() -> None:
     """
     Save the GUI configuration
     :return:
@@ -38,7 +41,7 @@ def save_solvers_config():
         f.write(json.dumps(data, indent=4))
 
 
-def get_solvers_config():
+def get_solvers_config() -> Dict[str, str]:
     """
 
     :return:

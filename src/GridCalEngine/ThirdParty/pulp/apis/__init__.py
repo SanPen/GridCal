@@ -1,11 +1,12 @@
 import json
-from GridCalEngine.ThirdParty.pulp.apis.cplex_api import *
-from GridCalEngine.ThirdParty.pulp.apis.gurobi_api import *
-from GridCalEngine.ThirdParty.pulp.apis.scip_api import *
-from GridCalEngine.ThirdParty.pulp.apis.xpress_api import *
-from GridCalEngine.ThirdParty.pulp.apis.highs_api import *
-from GridCalEngine.ThirdParty.pulp.apis.copt_api import *
-from GridCalEngine.ThirdParty.pulp.apis.core import *
+from GridCalEngine.ThirdParty.pulp.apis.cplex_api import CPLEX_CMD, CPLEX_PY
+from GridCalEngine.ThirdParty.pulp.apis.gurobi_api import GUROBI, GUROBI_CMD
+from GridCalEngine.ThirdParty.pulp.apis.scip_api import SCIP_PY, SCIP_CMD, FSCIP_CMD
+from GridCalEngine.ThirdParty.pulp.apis.xpress_api import XPRESS_CMD, XPRESS, XPRESS_PY
+from GridCalEngine.ThirdParty.pulp.apis.highs_api import HiGHS, HiGHS_CMD
+from GridCalEngine.ThirdParty.pulp.apis.copt_api import COPT, COPT_DLL, COPT_CMD
+from GridCalEngine.ThirdParty.pulp.apis.core import (Parser, config_filename, cplex_dll_path, coinMP_path,
+                                                     PulpSolverError)
 
 _all_solvers = [
     CPLEX_CMD,

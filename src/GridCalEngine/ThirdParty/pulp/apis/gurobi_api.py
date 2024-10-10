@@ -28,8 +28,11 @@ import os
 import sys
 import GridCalEngine.ThirdParty.pulp.constants as constants
 import warnings
+
+
 from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver_CMD, LpSolver, subprocess, PulpSolverError, clock, log
 from GridCalEngine.ThirdParty.pulp.apis.core import gurobi_path
+from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
 
 
 # to import the gurobipy name into the module scope
@@ -376,7 +379,9 @@ class GUROBI(LpSolver):
 
 
 class GUROBI_CMD(LpSolver_CMD):
-    """The GUROBI_CMD solver"""
+    """
+    The GUROBI_CMD solver
+    """
 
     name = "GUROBI_CMD"
 
@@ -423,8 +428,23 @@ class GUROBI_CMD(LpSolver_CMD):
             logPath=logPath,
         )
 
-    def defaultPath(self):
-        return self.executableExtension("gurobi_cl")
+    def defaultPath(self) -> str:
+        """
+
+        :return:
+        """
+        # try to get the executable path from the json config file in the .GridCal folder
+        data = get_solvers_config()
+
+        bin_path = data.get('gurobi_bin', None)
+
+        if bin_path is None:
+            return self.executableExtension("gurobi_cl")
+        else:
+            if os.path.exists(bin_path):
+                return bin_path
+            else:
+                return self.executableExtension("gurobi_cl")
 
     def available(self):
         """True if the solver is available"""

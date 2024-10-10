@@ -28,11 +28,13 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Included PuLP as a third party dependency and modified it to suite GridCal needs">
-      <change afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/paths.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved cplex interfacing with pulp">
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/core.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/cplex_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/cplex_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/gurobi_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/gurobi_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/xpress_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/xpress_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/paths.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/paths.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1388,7 +1390,7 @@
       <workItem from="1728286755292" duration="15804000" />
       <workItem from="1728333679044" duration="1190000" />
       <workItem from="1728549320247" duration="15138000" />
-      <workItem from="1728573881493" duration="1237000" />
+      <workItem from="1728573881493" duration="2105000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1733,7 +1735,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="553" />
+    <option name="localTasksCounter" value="554" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1767,7 +1769,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="cgmes export: regulating control corrected" />
     <MESSAGE value="cgmes: import control bus for regulating control" />
     <MESSAGE value="build rates dict when cgmes transformer import" />
     <MESSAGE value="lrc Ii, Ir: round" />
@@ -1792,7 +1793,8 @@
     <MESSAGE value="Deprecated ortools because of its bug-prone policy&#10;Reinstaurated pulp as the default solver" />
     <MESSAGE value="Removed ortools from license and requirements" />
     <MESSAGE value="Included PuLP as a third party dependency and modified it to suite GridCal needs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Included PuLP as a third party dependency and modified it to suite GridCal needs" />
+    <MESSAGE value="Improved cplex interfacing with pulp" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved cplex interfacing with pulp" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2303,23 +2305,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/__init__.py</url>
-          <line>86</line>
+          <line>87</line>
           <option name="timeStamp" value="2174" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/cplex_api.py</url>
-          <line>69</line>
-          <option name="timeStamp" value="2176" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/cplex_api.py</url>
-          <line>78</line>
+          <line>89</line>
           <option name="timeStamp" value="2177" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/cplex_api.py</url>
-          <line>72</line>
-          <option name="timeStamp" value="2180" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -2684,7 +2676,7 @@
     <SUITE FILE_PATH="coverage/GridCal$dc_linear_opf_ts_example.coverage" NAME="dc_linear_opf_ts_example Coverage Results" MODIFIED="1688480027790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$contingency_planner_dialogue.coverage" NAME="contingency_planner_dialogue Coverage Results" MODIFIED="1687935669832" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/ContingencyPlanner" />
     <SUITE FILE_PATH="coverage/GridCal$demo_sum_of_int.coverage" NAME="demo_sum_of_int Coverage Results" MODIFIED="1663317493075" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
-    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1728575032985" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
+    <SUITE FILE_PATH="coverage/GridCal$ExecuteGridCal.coverage" NAME="ExecuteGridCal Coverage Results" MODIFIED="1728575981292" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_hydro_test_hydro_opf2.coverage" NAME="Nosetests for tests.test_hydro.test_hydro_opf2 Coverage Results" MODIFIED="1704897106653" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$vispy_graph.coverage" NAME="vispy_graph Coverage Results" MODIFIED="1647609573310" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/visualization" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_test_set_snapshot_test_set_snapshot.coverage" NAME="pytest for test_set_snapshot.test_set_snapshot Coverage Results" MODIFIED="1725888937432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
