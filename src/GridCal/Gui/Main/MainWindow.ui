@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1196</width>
-    <height>741</height>
+    <height>813</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -9861,7 +9861,7 @@ QProgressBar::chunk{
      <x>0</x>
      <y>0</y>
      <width>1196</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <property name="font">
@@ -10005,26 +10005,27 @@ QProgressBar::chunk{
       </font>
      </property>
      <property name="title">
-      <string>Current schematic</string>
+      <string>Select buses by</string>
      </property>
-     <addaction name="actionBigger_nodes"/>
-     <addaction name="actionSmaller_nodes"/>
-     <addaction name="actionAutoatic_layout"/>
-     <addaction name="actionTry_to_fix_buses_location"/>
-     <addaction name="actionDisable_all_results_tags"/>
-     <addaction name="actionEnable_all_results_tags"/>
-     <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
      <addaction name="separator"/>
-     <addaction name="actionNew_bus_branch_diagram_from_selection"/>
      <addaction name="actionSelect_buses_by_area"/>
      <addaction name="actionSelect_buses_by_zone"/>
      <addaction name="actionSelect_buses_by_country"/>
      <addaction name="separator"/>
-     <addaction name="actionDelete_from_the_diagram"/>
-     <addaction name="actionDelete_selected"/>
     </widget>
     <addaction name="actionAdd_general_bus_branch_diagram"/>
+    <addaction name="actionNew_bus_branch_diagram_from_selection"/>
+    <addaction name="actionBigger_nodes"/>
+    <addaction name="actionSmaller_nodes"/>
+    <addaction name="actionAutoatic_layout"/>
+    <addaction name="actionTry_to_fix_buses_location"/>
+    <addaction name="actionDisable_all_results_tags"/>
+    <addaction name="actionEnable_all_results_tags"/>
+    <addaction name="actionSet_schematic_positions_from_GPS_coordinates"/>
+    <addaction name="actionDelete_from_the_diagram"/>
+    <addaction name="actionDelete_selected"/>
     <addaction name="menuBus_Branch_options"/>
+    <addaction name="separator"/>
     <addaction name="actionAdd_map"/>
     <addaction name="actionConsolidate_diagram_coordinates"/>
     <addaction name="separator"/>
@@ -11304,7 +11305,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/schematic.svg</normaloff>:/Icons/icons/schematic.svg</iconset>
    </property>
    <property name="text">
-    <string>New diagram from selection</string>
+    <string>New schematic from selection</string>
    </property>
    <property name="font">
     <font>

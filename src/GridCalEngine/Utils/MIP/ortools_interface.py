@@ -75,9 +75,9 @@ class LpModel:
 
         # self.model: ort.Solver = ort.Solver.CreateSolver(solver_type.value)
 
-        self.solver = model_builder.Solver("scip")
+        self.solver = model_builder.Solver(solver_type.value)
         if not self.solver.solver_is_supported():
-            raise Exception("The solver {} is not supported".format(solver_type.value))
+            raise Exception(f"The solver {solver_type.value} is not supported")
 
         self.model = model_builder.Model()
 
@@ -86,6 +86,8 @@ class LpModel:
         self.logger = Logger()
 
         self.relaxed_slacks: List[Tuple[int, LpVar, float]] = list()
+
+        self._var_names = set()
 
     def save_model(self, file_name="ntc_opf_problem.lp"):
         """
@@ -121,6 +123,11 @@ class LpModel:
         :param name: name (optional)
         :return: LpVar
         """
+        if name in self._var_names:
+            raise Exception(f'Variable name already defined: {name}')
+        else:
+            self._var_names.add(name)
+
         return self.model.new_var(lb=lb, ub=ub, is_integer=False, name=name)
 
     def add_cst(self, cst: Union[LpCstBounded, LpExp, bool], name: str = "") -> Union[LpCst, int]:
@@ -130,6 +137,11 @@ class LpModel:
         :param name: name of the constraint (optional)
         :return: Constraint object
         """
+        if name in self._var_names:
+            raise Exception(f'Constraint name already defined: {name}')
+        else:
+            self._var_names.add(name)
+
         if isinstance(cst, bool):
             return 0
         else:
@@ -151,13 +163,35 @@ class LpModel:
         """
         self.model.minimize(linear_expr=obj_function)
 
+    def pass_through_file(self, fname="pass_thought_file.lp"):
+        """
+
+        :param fname:
+        :return:
+        """
+        self.save_model(fname)
+
+        mdl = model_builder.Model()
+
+        if fname.lower().endswith('.lp'):
+            mdl.import_from_lp_file(fname)
+        elif fname.lower().endswith('.mps'):
+            mdl.import_from_mps_file(fname)
+        else:
+            raise Exception('Unsupported file format')
+        return mdl
+
     def solve(self, robust=True) -> int:
         """
         Solve the model
         :param robust: Relax the problem if infeasible
         :return: integer value matching OPTIMAL or not
         """
-        status = self.solver.solve(self.model)
+
+        print("SOLVING ORIGINAL MODEL ------------------------------")
+        # original_mdl = self.model
+        original_mdl = self.pass_through_file(fname="pass_thought_file.mps")
+        status = self.solver.solve(original_mdl)
 
         # if it failed...
         if status != LpModel.OPTIMAL:
@@ -179,14 +213,14 @@ class LpModel:
                 """
 
                 # deep copy of the original model
-                debug_model = self.model.clone()
+                debug_model = original_mdl.clone()
 
                 # modify the original to detect the bad constraints
                 slacks = list()
                 debugging_f_obj = 0
                 for i, cst in enumerate(debug_model.get_linear_constraints()):
                     # create a new slack var in the problem
-                    sl = debug_model.new_var(0, 1e20, is_integer=False,
+                    sl = debug_model.new_var(lb=0.0, ub=1e20, is_integer=False,
                                              name=f'Slack_{cst.name}')
 
                     # add the variable to the new objective function
@@ -202,6 +236,7 @@ class LpModel:
                 debug_model.minimize(debugging_f_obj)
 
                 # solve the debug model
+                print("SOLVING DEBUG MODEL ------------------------------")
                 status_d = self.solver.solve(debug_model)
 
                 # at this point we can delete the debug model
@@ -213,7 +248,7 @@ class LpModel:
                 if status_d == LpModel.OPTIMAL:
 
                     # pick the original objective function
-                    main_f = self.model.objective_expression()
+                    main_f = original_mdl.objective_expression()
 
                     for i, sl in enumerate(slacks):
 
@@ -221,10 +256,10 @@ class LpModel:
                         val = self.solver.value(sl)
 
                         if val > 1e-10:
-                            cst_name = self.model.linear_constraint_from_index(i).name
+                            cst_name = original_mdl.linear_constraint_from_index(i).name
 
                             # add the slack in the main model
-                            sl2 = self.model.new_var(0, 1e20, is_integer=False,
+                            sl2 = original_mdl.new_var(0, 1e20, is_integer=False,
                                                      name=f'Slack_relaxed_{cst_name}')
                             self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
 
@@ -232,13 +267,14 @@ class LpModel:
                             main_f += sl2
 
                             # alter the matching constraint
-                            self.model.linear_constraint_from_index(i).add_term(sl2, 1.0)
+                            original_mdl.linear_constraint_from_index(i).add_term(sl2, 1.0)
 
                     # set the modified (original) objective function
-                    self.model.minimize(main_f)
+                    original_mdl.minimize(main_f)
 
                     # solve the modified (original) model
-                    status = self.solver.solve(self.model)
+                    print("SOLVING RELAXED MODEL ------------------------------")
+                    status = self.solver.solve(original_mdl)
 
                     if status == LpModel.OPTIMAL:
 
@@ -249,7 +285,7 @@ class LpModel:
 
                             # logg this
                             self.logger.add_warning("Relaxed problem",
-                                                    device=self.model.linear_constraint_from_index(i).name,
+                                                    device=original_mdl.linear_constraint_from_index(i).name,
                                                     value=val)
 
                 else:

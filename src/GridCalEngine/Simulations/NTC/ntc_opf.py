@@ -162,7 +162,7 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
             p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
 
-        dispachable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
 
     elif transfer_method == AvailableTransferMode.Generation:
         p_ref = gen_per_bus
@@ -175,7 +175,7 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_min = gen_data_t.C_bus_elm * gen_data_t.pmin / Sbase
             p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
 
-        dispachable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
+        dispatchable_bus = (gen_data_t.C_bus_elm * gen_data_t.dispatchable).astype(bool).astype(float)
 
     elif transfer_method == AvailableTransferMode.Load:
         p_ref = load_per_bus
@@ -183,7 +183,7 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
         p_max = inf_value
 
         # todo check
-        dispachable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
 
     elif transfer_method == AvailableTransferMode.GenerationAndLoad:
         p_ref = gen_per_bus - load_per_bus
@@ -195,12 +195,12 @@ def get_transfer_power_scaling_per_bus(bus_data_t: BusData,
             p_max = gen_data_t.C_bus_elm * gen_data_t.pmax / Sbase
 
         # todo check
-        dispachable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
+        dispatchable_bus = (load_data_t.C_bus_elm * load_data_t.S).astype(bool).astype(float)
 
     else:
         raise Exception('Undefined available transfer mode')
 
-    return p_ref * dispachable_bus, p_max, p_min
+    return p_ref * dispatchable_bus, p_max, p_min
 
 
 def get_sensed_proportions(power: Vec,
@@ -942,7 +942,7 @@ def add_linear_node_balance(t_idx: int,
                             bus_vars: BusNtcVars,
                             prob: LpModel):
     """
-    Add the kirchoff nodal equality
+    Add the kirchhoff nodal equality
     :param t_idx: time step
     :param Bbus: susceptance matrix (complete)
     :param vd: Array of slack indices
@@ -954,14 +954,14 @@ def add_linear_node_balance(t_idx: int,
 
     P_esp = bus_vars.Pcalc[t_idx, :]
 
-    # calculate the linear nodal inyection
+    # calculate the linear nodal injection
     P_calc = lpDot(B, bus_vars.theta[t_idx, :])
 
     # add the equality restrictions
     for k in range(bus_data.nbus):
         bus_vars.kirchhoff[t_idx, k] = prob.add_cst(
             cst=P_calc[k] == P_esp[k],
-            name=join("kirchoff_", [t_idx, k], "_"))
+            name=join("kirchhoff_", [t_idx, k], "_"))
 
     for i in vd:
         set_var_bounds(var=bus_vars.theta[t_idx, i], lb=0.0, ub=0.0)
