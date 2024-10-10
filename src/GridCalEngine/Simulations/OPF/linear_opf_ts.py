@@ -1534,7 +1534,7 @@ def add_hydro_formulation(t: Union[int, None],
 
 def run_linear_opf_ts(grid: MultiCircuit,
                       time_indices: Union[IntVec, None],
-                      solver_type: MIPSolvers = MIPSolvers.CBC,
+                      solver_type: MIPSolvers = MIPSolvers.HIGHS,
                       zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                       skip_generation_limits: bool = False,
                       consider_contingencies: bool = False,

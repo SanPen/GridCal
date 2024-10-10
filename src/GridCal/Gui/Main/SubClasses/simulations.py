@@ -104,14 +104,11 @@ class SimulationsMain(TimeEventsMain):
 
         # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
         self.mip_solvers_dict = OrderedDict()
-        self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
         self.mip_solvers_dict[MIPSolvers.HIGHS.value] = MIPSolvers.HIGHS
-        self.mip_solvers_dict[MIPSolvers.GLOP.value] = MIPSolvers.GLOP
         self.mip_solvers_dict[MIPSolvers.SCIP.value] = MIPSolvers.SCIP
         self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
         self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
         self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
-        self.mip_solvers_dict[MIPSolvers.PDLP.value] = MIPSolvers.PDLP
 
         # opf solvers dictionary
         self.nodal_capacity_methods_dict = OrderedDict()

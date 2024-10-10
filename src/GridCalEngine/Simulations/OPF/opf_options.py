@@ -35,7 +35,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
                  solver: SolverType = SolverType.LINEAR_OPF,
                  time_grouping: TimeGrouping = TimeGrouping.NoGrouping,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
-                 mip_solver=MIPSolvers.CBC,
+                 mip_solver=MIPSolvers.HIGHS,
                  power_flow_options: Union[None, PowerFlowOptions] = None,
                  consider_contingencies=False,
                  contingency_groups_used: List[ContingencyGroup] = (),
