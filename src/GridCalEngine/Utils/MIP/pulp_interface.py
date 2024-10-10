@@ -16,7 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-This module abstracts the synthax of ORTOOLS out
+This module abstracts the synthax of PuLP out
 so that in the future it can be exchanged with some
 other solver interface easily
 """
@@ -86,7 +86,7 @@ def set_var_bounds(var: LpVar, lb: float, ub: float):
 
 class LpModel:
     """
-    LPModel implementation for ORTOOLS
+    LPModel implementation for PuLP
     """
     OPTIMAL = pulp.LpStatusOptimal
     INFINITY = 1e20

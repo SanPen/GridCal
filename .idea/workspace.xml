@@ -28,19 +28,16 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Deleted large files">
-      <change afterPath="$PROJECT_DIR$/src/trunk/mip/cplex_interface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Deprecated ortools because of its bug-prone policy&#10;Reinstaurated pulp as the default solver">
+      <change beforePath="$PROJECT_DIR$/doc/rst_source/license.rst" beforeDir="false" afterPath="$PROJECT_DIR$/doc/rst_source/license.rst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/ConsoleLog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/MainWindow.ui" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpmodel.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/SimpleMip/lpmodel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/ortools_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/LICENSE.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCal/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/LICENSE.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Simulations/OPF/linear_opf_ts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/pulp_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/pulp_interface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/selected_interface.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/GridCalEngine/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalServer/LICENSE.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalServer/LICENSE.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -1399,7 +1396,7 @@
       <workItem from="1728026983875" duration="12694000" />
       <workItem from="1728286755292" duration="15804000" />
       <workItem from="1728333679044" duration="1190000" />
-      <workItem from="1728549320247" duration="11337000" />
+      <workItem from="1728549320247" duration="11765000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1744,7 +1741,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="550" />
+    <option name="localTasksCounter" value="551" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1778,7 +1775,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="create op limits and curr lim for cgmes export" />
     <MESSAGE value="seqence num added for cgmes terminal export" />
     <MESSAGE value="line rate export correction, sv.angle, sv.TP added" />
     <MESSAGE value="cgmes export: regulating control corrected" />
@@ -1803,7 +1799,8 @@
     <MESSAGE value="Fixed issue with line templates loading&#10;Added substation creation dialogue&#10;Added cgmes_map_areas_like_raw and raw_version to FileSavingOptions" />
     <MESSAGE value="Created the AnyLineTemplateDevice type to properly handle multiple template types" />
     <MESSAGE value="Deleted large files" />
-    <option name="LAST_COMMIT_MESSAGE" value="Deleted large files" />
+    <MESSAGE value="Deprecated ortools because of its bug-prone policy&#10;Reinstaurated pulp as the default solver" />
+    <option name="LAST_COMMIT_MESSAGE" value="Deprecated ortools because of its bug-prone policy&#10;Reinstaurated pulp as the default solver" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -680,7 +680,7 @@ def add_linear_generation_formulation(t: Union[int, None],
     :param time_array: complete time array
     :param gen_data_t: GeneratorData structure
     :param gen_vars: GenerationVars structure
-    :param prob: ORTools problem
+    :param prob: LpModel
     :param unit_commitment: formulate unit commitment?
     :param ramp_constraints: formulate ramp constraints?
     :param skip_generation_limits: skip the generation limits?
