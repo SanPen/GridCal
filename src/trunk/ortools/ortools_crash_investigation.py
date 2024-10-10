@@ -1,11 +1,11 @@
 import ortools.linear_solver.pywraplp as ort
 from ortools.linear_solver.python import model_builder
 
-fname = "mip__2024-10-09 19:33:10.284816.lp"
-# fname = "pass_thought_file.mps"
+# fname = "mip__2024-10-09 19:33:10.284816.lp"
+fname = "pass_through_file.lp"
 
 
-solver = model_builder.Solver("cbc")
+solver = model_builder.Solver("highs")
 mdl = model_builder.Model()
 if fname.endswith(".lp"):
     mdl.import_from_lp_file(fname)
