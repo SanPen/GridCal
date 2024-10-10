@@ -437,14 +437,11 @@ class MIPSolvers(Enum):
     """
     MIP solvers enumeration
     """
-    GLOP = "GLOP"
-    CBC = 'CBC'
     HIGHS = 'HIGHS'
     SCIP = 'SCIP'
     CPLEX = 'CPLEX'
     GUROBI = 'GUROBI'
     XPRESS = 'XPRESS'
-    PDLP = 'PDLP'
 
     def __str__(self):
         return self.value
@@ -462,7 +459,7 @@ class MIPSolvers(Enum):
         try:
             return MIPSolvers[s]
         except KeyError:
-            return s
+            return MIPSolvers.HIGHS
 
 
 class TimeGrouping(Enum):

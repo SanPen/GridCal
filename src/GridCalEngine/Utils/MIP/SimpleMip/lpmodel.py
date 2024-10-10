@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import uuid
 import warnings
 from typing import List, Union, Tuple, Iterable
 import numpy as np
@@ -489,7 +488,7 @@ class LpModel:
                 for i, cst in enumerate(debug_model.constraints):
 
                     # create a new slack var in the problem
-                    sl = debug_model.add_var(0, 1e20, name='Slackkk{}'.format(i))
+                    sl = debug_model.add_var(lb=0, ub=1e20, name=f'Slk_{i}_{cst.name}')
 
                     # add the variable to the new objective function
                     debugging_f_obj += sl
@@ -522,9 +521,10 @@ class LpModel:
                         val = debug_model.get_value(sl)
 
                         if val > 1e-10:
+                            cst_name = self.constraints[i].name
 
                             # add the slack in the main model
-                            sl2 = self.add_var(0, 1e20, name='Slackkk{}'.format(i))
+                            sl2 = self.add_var(lb=0, ub=1e20, name=f'Slk_rlx_{i}_{cst_name}')
                             self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
 
                             # add the slack to the original objective function
@@ -532,10 +532,6 @@ class LpModel:
 
                             # alter the matching constraint
                             self.constraints[i].add_var(sl2)
-
-                            # logg this
-                            # self.logger.add_warning("Relaxed problem",
-                            #                         device=self.model.linear_constraint_from_index(i).name)
 
                     # set the modified (original) objective function
                     self.minimize(main_f)

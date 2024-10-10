@@ -16,17 +16,16 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 """
-This module abstracts the synthax of ORTOOLS out
+This module abstracts the synthax of PuLP out
 so that in the future it can be exchanged with some
 other solver interface easily
 """
 
 from typing import List, Union
-import pulp
-from pulp import LpAffineExpression as LpExp
-from pulp import LpConstraint as LpCst
-from pulp import LpVariable as LpVar
-# from GridCalEngine.basic_structures import MIPSolvers
+import GridCalEngine.ThirdParty.pulp as pulp
+from GridCalEngine.ThirdParty.pulp.pulp import LpAffineExpression as LpExp
+from GridCalEngine.ThirdParty.pulp.pulp import LpConstraint as LpCst
+from GridCalEngine.ThirdParty.pulp.pulp import LpVariable as LpVar
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
@@ -37,11 +36,11 @@ def get_lp_var_value(x: Union[float, LpVar]) -> float:
     :param x: soe object (it may be a LP var or a number)
     :return: result or previous numeric value
     """
-    if isinstance(x, pulp.LpVariable):
+    if isinstance(x, LpVar):
         return x.value()
-    elif isinstance(x, pulp.LpAffineExpression):
+    elif isinstance(x, LpExp):
         return x.value()
-    elif isinstance(x, pulp.LpConstraint):
+    elif isinstance(x, LpCst):
         return x.pi
     else:
         return x
@@ -54,25 +53,9 @@ def get_available_mip_solvers() -> List[str]:
     """
     solvers = pulp.listSolvers(onlyAvailable=True)
 
-    # elif self.solver_type == MIPSolvers.CBC:
-    # solver = 'PULP_CBC_CMD'
-    #
-    # elif self.solver_type == MIPSolvers.HIGHS:
-    # raise Exception("HiGHS is not supported by PuLP")
-    # elif self.solver_type == MIPSolvers.SCIP:
-    # solver = 'SCIP_CMD'
-    # elif self.solver_type == MIPSolvers.CPLEX:
-    # solver = 'CPLEX_CMD'
-    # elif self.solver_type == MIPSolvers.GUROBI:
-    # solver = 'GUROBI'
-    # elif self.solver_type == MIPSolvers.XPRESS:
-    # solver = 'XPRESS'
-
     solvers2 = list()
     for slv in solvers:
-        if slv == 'PULP_CBC_CMD':
-            solvers2.append(MIPSolvers.CBC.value)
-        elif slv == 'SCIP_CMD':
+        if slv == 'SCIP_CMD':
             solvers2.append(MIPSolvers.SCIP.value)
         elif slv == 'CPLEX_CMD':
             solvers2.append(MIPSolvers.CPLEX.value)
@@ -80,6 +63,8 @@ def get_available_mip_solvers() -> List[str]:
             solvers2.append(MIPSolvers.GUROBI.value)
         elif slv == 'XPRESS':
             solvers2.append(MIPSolvers.XPRESS.value)
+        elif slv == 'HiGHS':
+            solvers2.append(MIPSolvers.HIGHS.value)
 
     return solvers2
 
@@ -98,7 +83,7 @@ def set_var_bounds(var: LpVar, lb: float, ub: float):
 
 class LpModel:
     """
-    LPModel implementation for ORTOOLS
+    LPModel implementation for PuLP
     """
     OPTIMAL = pulp.LpStatusOptimal
     INFINITY = 1e20
@@ -195,12 +180,8 @@ class LpModel:
         # 'GLPK_CMD', 'PYGLPK', 'CPLEX_CMD', 'CPLEX_PY', 'CPLEX_DLL', 'GUROBI', 'GUROBI_CMD',
         # 'MOSEK', 'XPRESS', 'PULP_CBC_CMD', 'COIN_CMD', 'COINMP_DLL', 'CHOCO_CMD', 'MIPCL_CMD', 'SCIP_CMD'
 
-        if self.solver_type == MIPSolvers.GLOP:
-            raise Exception("GLOP is not supported by PuLP")
-        elif self.solver_type == MIPSolvers.CBC:
-            solver = 'PULP_CBC_CMD'
-        elif self.solver_type == MIPSolvers.HIGHS:
-            raise Exception("HiGHS is not supported by PuLP")
+        if self.solver_type == MIPSolvers.HIGHS:
+            solver = 'HiGHS'
         elif self.solver_type == MIPSolvers.SCIP:
             solver = 'SCIP_CMD'
         elif self.solver_type == MIPSolvers.CPLEX:

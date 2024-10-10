@@ -969,7 +969,7 @@ def add_linear_node_balance(t_idx: int,
 
 def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           time_indices: Union[IntVec, None],
-                          solver_type: MIPSolvers = MIPSolvers.CBC,
+                          solver_type: MIPSolvers = MIPSolvers.HIGHS,
                           zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                           skip_generation_limits: bool = False,
                           consider_contingencies: bool = False,

@@ -33,6 +33,7 @@ from ortools.linear_solver.python.model_builder import _Sum as LpSum
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 
+
 # this avoids displaying all the solver logger information, should only be called once
 # init.CppBridge.init_logging("")
 
@@ -221,7 +222,7 @@ class LpModel:
                 for i, cst in enumerate(debug_model.get_linear_constraints()):
                     # create a new slack var in the problem
                     sl = debug_model.new_var(lb=0.0, ub=1e20, is_integer=False,
-                                             name=f'Slack_{cst.name}')
+                                             name=f'Slk_{i}_{cst.name}')
 
                     # add the variable to the new objective function
                     debugging_f_obj += sl
@@ -260,7 +261,7 @@ class LpModel:
 
                             # add the slack in the main model
                             sl2 = original_mdl.new_var(0, 1e20, is_integer=False,
-                                                     name=f'Slack_relaxed_{cst_name}')
+                                                       name=f'Slk_rlx_{i}_{cst_name}')
                             self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
 
                             # add the slack to the original objective function
