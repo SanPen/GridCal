@@ -3,28 +3,28 @@ import GridCalEngine.ThirdParty.pulp.constants as constants
 import os
 import warnings
 
+from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
+
 
 class CPLEX_CMD(LpSolver_CMD):
     """The CPLEX LP solver"""
 
     name = "CPLEX_CMD"
 
-    def __init__(
-        self,
-        mip=True,
-        msg=True,
-        timeLimit=None,
-        gapRel=None,
-        gapAbs=None,
-        options=None,
-        warmStart=False,
-        keepFiles=False,
-        path=None,
-        threads=None,
-        logPath=None,
-        maxMemory=None,
-        maxNodes=None,
-    ):
+    def __init__(self,
+                 mip=True,
+                 msg=True,
+                 timeLimit=None,
+                 gapRel=None,
+                 gapAbs=None,
+                 options=None,
+                 warmStart=False,
+                 keepFiles=False,
+                 path=None,
+                 threads=None,
+                 logPath=None,
+                 maxMemory=None,
+                 maxNodes=None):
         """
         :param bool mip: if False, assume LP even if integer variables
         :param bool msg: if False, no log is shown
@@ -57,8 +57,22 @@ class CPLEX_CMD(LpSolver_CMD):
             logPath=logPath,
         )
 
-    def defaultPath(self):
-        return self.executableExtension("cplex")
+    def defaultPath(self) -> str:
+        """
+
+        :return:
+        """
+        data = get_solvers_config()
+
+        bin_path = data.get('cplex_bin', None)
+
+        if bin_path is None:
+            return self.executableExtension("cplex")
+        else:
+            if os.path.exists(bin_path):
+                return bin_path
+            else:
+                return self.executableExtension("cplex")
 
     def available(self):
         """True if the solver is available"""
@@ -159,13 +173,14 @@ class CPLEX_CMD(LpSolver_CMD):
         statusString = solutionheader.get("solutionStatusString")
         statusValue = solutionheader.get("solutionStatusValue")
         cplexStatus = {
-            "1": constants.LpStatusOptimal,  #  optimal
-            "101": constants.LpStatusOptimal,  #  mip optimal
-            "102": constants.LpStatusOptimal,  #  mip optimal tolerance
-            "104": constants.LpStatusOptimal,  #  max solution limit
-            "105": constants.LpStatusOptimal,  #  node limit feasible
+            "1": constants.LpStatusOptimal,  # optimal
+            "3": constants.LpStatusInfeasible,  # infeasible
+            "101": constants.LpStatusOptimal,  # mip optimal
+            "102": constants.LpStatusOptimal,  # mip optimal tolerance
+            "104": constants.LpStatusOptimal,  # max solution limit
+            "105": constants.LpStatusOptimal,  # node limit feasible
             "107": constants.LpStatusOptimal,  # time lim feasible
-            "109": constants.LpStatusOptimal,  #  fail but feasible
+            "109": constants.LpStatusOptimal,  # fail but feasible
             "113": constants.LpStatusOptimal,  # abort feasible
         }
         if statusValue not in cplexStatus:
@@ -266,14 +281,14 @@ class CPLEX_PY(LpSolver):
     else:
 
         def __init__(
-            self,
-            mip=True,
-            msg=True,
-            timeLimit=None,
-            gapRel=None,
-            warmStart=False,
-            logPath=None,
-            threads=None,
+                self,
+                mip=True,
+                msg=True,
+                timeLimit=None,
+                gapRel=None,
+                warmStart=False,
+                logPath=None,
+                threads=None,
         ):
             """
             :param bool mip: if False, assume LP even if integer variables
@@ -442,7 +457,7 @@ class CPLEX_PY(LpSolver):
             """
             self.solverModel.parameters.threads.set(threads or 0)
 
-        def changeEpgap(self, epgap=10**-4):
+        def changeEpgap(self, epgap=10 ** -4):
             """
             Change cplex solver integer bound gap tolerence
             """

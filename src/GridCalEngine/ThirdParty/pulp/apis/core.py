@@ -42,7 +42,6 @@ from time import monotonic as clock
 from uuid import uuid4
 import configparser
 from typing import Union
-
 import GridCalEngine.ThirdParty.pulp.sparse as sparse
 import GridCalEngine.ThirdParty.pulp.constants as const
 
