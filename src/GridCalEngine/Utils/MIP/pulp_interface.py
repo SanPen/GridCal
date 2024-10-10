@@ -54,20 +54,6 @@ def get_available_mip_solvers() -> List[str]:
     """
     solvers = pulp.listSolvers(onlyAvailable=True)
 
-    # elif self.solver_type == MIPSolvers.CBC:
-    # solver = 'PULP_CBC_CMD'
-    #
-    # elif self.solver_type == MIPSolvers.HIGHS:
-    # raise Exception("HiGHS is not supported by PuLP")
-    # elif self.solver_type == MIPSolvers.SCIP:
-    # solver = 'SCIP_CMD'
-    # elif self.solver_type == MIPSolvers.CPLEX:
-    # solver = 'CPLEX_CMD'
-    # elif self.solver_type == MIPSolvers.GUROBI:
-    # solver = 'GUROBI'
-    # elif self.solver_type == MIPSolvers.XPRESS:
-    # solver = 'XPRESS'
-
     solvers2 = list()
     for slv in solvers:
         if slv == 'PULP_CBC_CMD':
@@ -80,6 +66,8 @@ def get_available_mip_solvers() -> List[str]:
             solvers2.append(MIPSolvers.GUROBI.value)
         elif slv == 'XPRESS':
             solvers2.append(MIPSolvers.XPRESS.value)
+        elif slv == 'HiGHS':
+            solvers2.append(MIPSolvers.HIGHS.value)
 
     return solvers2
 
@@ -200,7 +188,7 @@ class LpModel:
         elif self.solver_type == MIPSolvers.CBC:
             solver = 'PULP_CBC_CMD'
         elif self.solver_type == MIPSolvers.HIGHS:
-            raise Exception("HiGHS is not supported by PuLP")
+            solver = 'HiGHS'
         elif self.solver_type == MIPSolvers.SCIP:
             solver = 'SCIP_CMD'
         elif self.solver_type == MIPSolvers.CPLEX:

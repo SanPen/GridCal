@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1196</width>
-    <height>813</height>
+    <width>1202</width>
+    <height>746</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -9860,8 +9860,8 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1196</width>
-     <height>24</height>
+     <width>1202</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="font">
@@ -9873,41 +9873,24 @@ QProgressBar::chunk{
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuExport">
-     <property name="title">
-      <string>Export</string>
-     </property>
-     <property name="icon">
-      <iconset resource="icons.qrc">
-       <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
-     </property>
-     <addaction name="actionExport_all_the_device_s_profiles"/>
-     <addaction name="actionExport_contingencies"/>
-     <addaction name="actionExport_all_results"/>
-     <addaction name="actionExport_circuit_differential"/>
-     <addaction name="actionExportCatalogue"/>
-    </widget>
-    <widget class="QMenu" name="menuImport">
-     <property name="title">
-      <string>Import</string>
-     </property>
-     <property name="icon">
-      <iconset resource="icons.qrc">
-       <normaloff>:/Icons/icons/loadc.svg</normaloff>:/Icons/icons/loadc.svg</iconset>
-     </property>
-     <addaction name="actionAdd_circuit"/>
-     <addaction name="actionImport_bus_coordinates"/>
-     <addaction name="actionImport_contingencies"/>
-     <addaction name="actionAdd_custom_catalogue"/>
-    </widget>
     <addaction name="actionNew_project"/>
     <addaction name="actiongrid_Generator"/>
     <addaction name="actionOpen_file"/>
+    <addaction name="actionAdd_circuit"/>
+    <addaction name="actionImport_bus_coordinates"/>
+    <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
+    <addaction name="actionExport_circuit_differential"/>
     <addaction name="separator"/>
-    <addaction name="menuExport"/>
-    <addaction name="menuImport"/>
+    <addaction name="actionExport_all_the_device_s_profiles"/>
+    <addaction name="actionExport_all_results"/>
+    <addaction name="separator"/>
+    <addaction name="actionExport_contingencies"/>
+    <addaction name="actionImport_contingencies"/>
+    <addaction name="separator"/>
+    <addaction name="actionExportCatalogue"/>
+    <addaction name="actionAdd_custom_catalogue"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -10466,7 +10449,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
    </property>
    <property name="text">
-    <string>All the devices' profiles</string>
+    <string>Export devices' profiles</string>
    </property>
    <property name="font">
     <font>
@@ -10537,7 +10520,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/export_pickle.svg</normaloff>:/Icons/icons/export_pickle.svg</iconset>
    </property>
    <property name="text">
-    <string>All results</string>
+    <string>Export results</string>
    </property>
    <property name="toolTip">
     <string>Export all the results</string>
@@ -10696,7 +10679,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/load_add.svg</normaloff>:/Icons/icons/load_add.svg</iconset>
    </property>
    <property name="text">
-    <string>Add circuit</string>
+    <string>Import circuit</string>
    </property>
    <property name="toolTip">
     <string>Add circuit to the current circuit</string>
@@ -11126,7 +11109,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/load_add.svg</normaloff>:/Icons/icons/load_add.svg</iconset>
    </property>
    <property name="text">
-    <string>Contingencies</string>
+    <string>Import contingencies</string>
    </property>
    <property name="font">
     <font>
@@ -11157,7 +11140,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/save.svg</normaloff>:/Icons/icons/save.svg</iconset>
    </property>
    <property name="text">
-    <string>Contingencies</string>
+    <string>Export contingencies</string>
    </property>
    <property name="font">
     <font>
@@ -11624,7 +11607,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/export_pickle.svg</normaloff>:/Icons/icons/export_pickle.svg</iconset>
    </property>
    <property name="text">
-    <string>Circuit differential</string>
+    <string>Save  differential</string>
    </property>
    <property name="font">
     <font>
@@ -11638,7 +11621,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
    </property>
    <property name="text">
-    <string>Catalogue</string>
+    <string>Import catalogue</string>
    </property>
    <property name="iconText">
     <string>Catalogue</string>
@@ -11655,7 +11638,7 @@ QProgressBar::chunk{
      <normaloff>:/Icons/icons/CataloguePrivate.svg</normaloff>:/Icons/icons/CataloguePrivate.svg</iconset>
    </property>
    <property name="text">
-    <string>Catalogue</string>
+    <string>Export catalogue</string>
    </property>
    <property name="font">
     <font>
