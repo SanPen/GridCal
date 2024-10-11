@@ -42,15 +42,35 @@ class TapChanger:
         :param asymmetry_angle: Asymmetry angle (deg)
         :param tc_type: Tap changer type
         """
+        neutral_position = int(neutral_position)
+        total_positions = int(total_positions)
+        if neutral_position >= total_positions:
+            neutral_position = total_positions - 1
+            print(f"Neutral position exceeding the total positions {neutral_position} >= {total_positions}")
 
-        self.asymmetry_angle = float(asymmetry_angle)  # assymetry angle (Theta)
-        self._total_positions = int(total_positions)  # total number of positions
-        self.dV = float(dV)  # voltage increment in p.u.
-        self.neutral_position = int(neutral_position)  # neutral position
-        self.normal_position = int(normal_position)     # normal position
-        self._tap_position = int(neutral_position)  # index with respect to the neutral position
-        self.tc_type: TapChangerTypes = tc_type  # tap changer mode
-        self._negative_low = False  # for CGMES compatibility we store if the low step is negative
+        # assymetry angle (Theta)
+        self.asymmetry_angle = float(asymmetry_angle)
+
+        # total number of positions
+        self._total_positions = int(total_positions)
+
+        # voltage increment in p.u.
+        self.dV = float(dV)
+
+        # neutral position
+        self.neutral_position = int(neutral_position)
+
+        # normal position
+        self.normal_position = int(normal_position)
+
+        # index with respect to the neutral position
+        self._tap_position = int(neutral_position)
+
+        # tap changer mode
+        self.tc_type: TapChangerTypes = tc_type
+
+        # for CGMES compatibility we store if the low step is negative
+        self._negative_low = False
 
         # Calculated arrays
         self._ndv = np.zeros(self._total_positions)
@@ -85,17 +105,28 @@ class TapChanger:
     @tap_position.setter
     def tap_position(self, val: int):
         """
-        Set the tap position
+        Set the tap position (zero indexing)
         :param val: tap value
         """
-        self._tap_position = int(val)
+        if val < self._total_positions:
+            self._tap_position = int(val)
+        else:
+            print(f"Max tap changer value exceeded {val} > {self._total_positions}")
 
     @property
     def tap_modules_array(self):
+        """
+        Get the tap modules array
+        :return:
+        """
         return self._m_array
 
     @property
     def tap_angles_array(self):
+        """
+
+        :return:
+        """
         return self._tau_array
 
     def resize(self) -> None:
@@ -252,14 +283,22 @@ class TapChanger:
         Get the tap phase in radians
         :return: phase in radians
         """
-        return self._tau_array[self.tap_position]
+        if self.tap_position < len(self._tau_array):
+            return self._tau_array[self.tap_position]
+        else:
+            print("tap position out of range")
+            return 0.0
 
     def get_tap_module(self) -> float:
         """
         Get the tap voltage regulation module
         :return: voltage regulation module
         """
-        return self._m_array[self.tap_position]
+        if self.tap_position < len(self._m_array):
+            return self._m_array[self.tap_position]
+        else:
+            print("tap position out of range")
+            return 1.0
 
     def set_tap_module(self, tap_module: float) -> float:
         """

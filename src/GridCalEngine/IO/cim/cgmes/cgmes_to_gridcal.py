@@ -538,8 +538,8 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
                                                 Pmin=cgmes_elm.GeneratingUnit.minOperatingP,
                                                 Pmax=cgmes_elm.GeneratingUnit.maxOperatingP,
                                                 power_factor=pf,
-                                                Qmax=cgmes_elm.maxQ,
-                                                Qmin=cgmes_elm.minQ,
+                                                Qmax=cgmes_elm.maxQ if cgmes_elm.maxQ is not None else 9999.0,
+                                                Qmin=cgmes_elm.minQ if cgmes_elm.minQ is not None else -9999.0,
                                                 vset=v_set,
                                                 is_controlled=is_controlled,
                                                 # controlled_bus
@@ -1092,7 +1092,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 )
 
                 # SET tap_module and tap_phase from its own TapChanger object
-                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()  # TODO: mind the zero indexing!
                 # gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
