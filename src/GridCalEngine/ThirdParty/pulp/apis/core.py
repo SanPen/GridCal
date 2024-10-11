@@ -42,7 +42,6 @@ from time import monotonic as clock
 from uuid import uuid4
 import configparser
 from typing import Union
-
 import GridCalEngine.ThirdParty.pulp.sparse as sparse
 import GridCalEngine.ThirdParty.pulp.constants as const
 
@@ -410,6 +409,7 @@ class LpSolver_CMD(LpSolver):
         else:
             self.path = path
         self.keepFiles = keepFiles
+        self.tmpDir = ""
         self.setTmpDir()
 
     def copy(self):
@@ -439,6 +439,12 @@ class LpSolver_CMD(LpSolver):
             self.tmpDir = ""
 
     def create_tmp_files(self, name, *args):
+        """
+
+        :param name:
+        :param args:
+        :return:
+        """
         if self.keepFiles:
             prefix = name
         else:
@@ -446,22 +452,39 @@ class LpSolver_CMD(LpSolver):
         return (f"{prefix}-pulp.{n}" for n in args)
 
     def silent_remove(self, file: Union[str, bytes, os.PathLike]) -> None:
+        """
+
+        :param file:
+        """
         try:
             os.remove(file)
         except FileNotFoundError:
             pass
 
     def delete_tmp_files(self, *args):
+        """
+
+        :param args:
+        :return:
+        """
         if self.keepFiles:
             return
         for file in args:
             self.silent_remove(file)
 
-    def defaultPath(self):
+    def defaultPath(self) -> str:
+        """
+        Get the default path
+        """
         raise NotImplementedError
 
     @staticmethod
     def executableExtension(name):
+        """
+
+        :param name:
+        :return:
+        """
         if os.name != "nt":
             return name
         else:

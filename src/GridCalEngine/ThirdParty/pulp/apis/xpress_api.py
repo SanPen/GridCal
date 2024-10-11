@@ -23,9 +23,11 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."""
-
+import os
 import sys
 import re
+
+from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
 from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver, LpSolver_CMD, subprocess, PulpSolverError
 import GridCalEngine.ThirdParty.pulp.constants as constants
 
@@ -92,7 +94,23 @@ class XPRESS(LpSolver_CMD):
         )
 
     def defaultPath(self):
-        return self.executableExtension("optimizer")
+        """
+
+        :return:
+        """
+
+        # try to get the executable path from the json config file in the .GridCal folder
+        data = get_solvers_config()
+
+        bin_path = data.get('xpress_bin', None)
+
+        if bin_path is None:
+            return self.executableExtension("optimizer")
+        else:
+            if os.path.exists(bin_path):
+                return bin_path
+            else:
+                return self.executableExtension("optimizer")
 
     def available(self):
         """True if the solver is available"""

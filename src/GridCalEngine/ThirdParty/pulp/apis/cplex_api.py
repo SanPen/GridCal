@@ -1,7 +1,15 @@
-from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver_CMD, LpSolver, subprocess, PulpSolverError, clock, log
-import GridCalEngine.ThirdParty.pulp.constants as constants
+
 import os
 import warnings
+
+try:
+    import xml.etree.ElementTree as et
+except ImportError:
+    import elementtree.ElementTree as et
+
+from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver_CMD, LpSolver, subprocess, PulpSolverError, clock, log
+import GridCalEngine.ThirdParty.pulp.constants as constants
+from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
 
 
 class CPLEX_CMD(LpSolver_CMD):
@@ -9,22 +17,20 @@ class CPLEX_CMD(LpSolver_CMD):
 
     name = "CPLEX_CMD"
 
-    def __init__(
-        self,
-        mip=True,
-        msg=True,
-        timeLimit=None,
-        gapRel=None,
-        gapAbs=None,
-        options=None,
-        warmStart=False,
-        keepFiles=False,
-        path=None,
-        threads=None,
-        logPath=None,
-        maxMemory=None,
-        maxNodes=None,
-    ):
+    def __init__(self,
+                 mip=True,
+                 msg=True,
+                 timeLimit=None,
+                 gapRel=None,
+                 gapAbs=None,
+                 options=None,
+                 warmStart=False,
+                 keepFiles=False,
+                 path=None,
+                 threads=None,
+                 logPath=None,
+                 maxMemory=None,
+                 maxNodes=None):
         """
         :param bool mip: if False, assume LP even if integer variables
         :param bool msg: if False, no log is shown
@@ -57,15 +63,39 @@ class CPLEX_CMD(LpSolver_CMD):
             logPath=logPath,
         )
 
-    def defaultPath(self):
-        return self.executableExtension("cplex")
+    def defaultPath(self) -> str:
+        """
 
-    def available(self):
-        """True if the solver is available"""
+        :return:
+        """
+
+        # try to get the executable path from the json config file in the .GridCal folder
+        data = get_solvers_config()
+
+        bin_path = data.get('cplex_bin', None)
+
+        if bin_path is None:
+            return self.executableExtension("cplex")
+        else:
+            if os.path.exists(bin_path):
+                return bin_path
+            else:
+                return self.executableExtension("cplex")
+
+    def available(self) -> str:
+        """
+        True if the solver is available
+        :return:
+        """
         return self.executable(self.path)
 
     def actualSolve(self, lp):
-        """Solve a well formulated lp problem"""
+        """
+        Solve a well formulated lp problem
+        :param lp:
+        :return:
+        """
+        """"""
         if not self.executable(self.path):
             raise PulpSolverError("PuLP: cannot execute " + self.path)
         tmpLp, tmpSol, tmpMst = self.create_tmp_files(lp.name, "lp", "sol", "mst")
@@ -75,14 +105,14 @@ class CPLEX_CMD(LpSolver_CMD):
         except:
             pass
         if not self.msg:
-            cplex = subprocess.Popen(
+            cplex_process = subprocess.Popen(
                 self.path,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
         else:
-            cplex = subprocess.Popen(self.path, stdin=subprocess.PIPE)
+            cplex_process = subprocess.Popen(self.path, stdin=subprocess.PIPE)
         cplex_cmds = "read " + tmpLp + "\n"
         if self.optionsDict.get("warmStart", False):
             self.writesol(filename=tmpMst, vs=vs)
@@ -104,8 +134,8 @@ class CPLEX_CMD(LpSolver_CMD):
         cplex_cmds += "write " + tmpSol + "\n"
         cplex_cmds += "quit\n"
         cplex_cmds = cplex_cmds.encode("UTF-8")
-        cplex.communicate(cplex_cmds)
-        if cplex.returncode != 0:
+        cplex_process.communicate(cplex_cmds)
+        if cplex_process.returncode != 0:
             raise PulpSolverError("PuLP: Error while trying to execute " + self.path)
         if not os.path.exists(tmpSol):
             status = constants.LpStatusInfeasible
@@ -131,6 +161,10 @@ class CPLEX_CMD(LpSolver_CMD):
         return status
 
     def getOptions(self):
+        """
+
+        :return:
+        """
         # CPLEX parameters: https://www.ibm.com/support/knowledgecenter/en/SSSA5P_12.6.0/ilog.odms.cplex.help/CPLEX/GettingStarted/topics/tutorials/InteractiveOptimizer/settingParams.html
         # CPLEX status: https://www.ibm.com/support/knowledgecenter/en/SSSA5P_12.10.0/ilog.odms.cplex.help/refcallablelibrary/macros/Solution_status_codes.html
         params_eq = dict(
@@ -148,24 +182,26 @@ class CPLEX_CMD(LpSolver_CMD):
         ]
 
     def readsol(self, filename):
-        """Read a CPLEX solution file"""
+        """
+        Read a CPLEX solution file
+        :param filename:
+        :return:
+        """
+
         # CPLEX solution codes: http://www-eio.upc.es/lceio/manuals/cplex-11/html/overviewcplex/statuscodes.html
-        try:
-            import xml.etree.ElementTree as et
-        except ImportError:
-            import elementtree.ElementTree as et
         solutionXML = et.parse(filename).getroot()
         solutionheader = solutionXML.find("header")
         statusString = solutionheader.get("solutionStatusString")
         statusValue = solutionheader.get("solutionStatusValue")
         cplexStatus = {
-            "1": constants.LpStatusOptimal,  #  optimal
-            "101": constants.LpStatusOptimal,  #  mip optimal
-            "102": constants.LpStatusOptimal,  #  mip optimal tolerance
-            "104": constants.LpStatusOptimal,  #  max solution limit
-            "105": constants.LpStatusOptimal,  #  node limit feasible
+            "1": constants.LpStatusOptimal,  # optimal
+            "3": constants.LpStatusInfeasible,  # infeasible
+            "101": constants.LpStatusOptimal,  # mip optimal
+            "102": constants.LpStatusOptimal,  # mip optimal tolerance
+            "104": constants.LpStatusOptimal,  # max solution limit
+            "105": constants.LpStatusOptimal,  # node limit feasible
             "107": constants.LpStatusOptimal,  # time lim feasible
-            "109": constants.LpStatusOptimal,  #  fail but feasible
+            "109": constants.LpStatusOptimal,  # fail but feasible
             "113": constants.LpStatusOptimal,  # abort feasible
         }
         if statusValue not in cplexStatus:
@@ -216,10 +252,7 @@ class CPLEX_CMD(LpSolver_CMD):
 
     def writesol(self, filename, vs):
         """Writes a CPLEX solution file"""
-        try:
-            import xml.etree.ElementTree as et
-        except ImportError:
-            import elementtree.ElementTree as et
+
         root = et.Element("CPLEXSolution", version="1.2")
         attrib_head = dict()
         attrib_quality = dict()
@@ -266,14 +299,14 @@ class CPLEX_PY(LpSolver):
     else:
 
         def __init__(
-            self,
-            mip=True,
-            msg=True,
-            timeLimit=None,
-            gapRel=None,
-            warmStart=False,
-            logPath=None,
-            threads=None,
+                self,
+                mip=True,
+                msg=True,
+                timeLimit=None,
+                gapRel=None,
+                warmStart=False,
+                logPath=None,
+                threads=None,
         ):
             """
             :param bool mip: if False, assume LP even if integer variables
@@ -442,7 +475,7 @@ class CPLEX_PY(LpSolver):
             """
             self.solverModel.parameters.threads.set(threads or 0)
 
-        def changeEpgap(self, epgap=10**-4):
+        def changeEpgap(self, epgap=10 ** -4):
             """
             Change cplex solver integer bound gap tolerence
             """
