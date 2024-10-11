@@ -27,7 +27,7 @@ _all_solvers = [
 ]
 
 # Default solver selection
-LpSolverDefault = HiGHS()
+LpSolverDefault = HiGHS(msg=False)
 
 
 def setConfigInformation(**keywords):

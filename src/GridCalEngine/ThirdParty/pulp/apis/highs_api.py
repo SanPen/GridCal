@@ -1,6 +1,5 @@
 # PuLP : Python LP Modeler
 # Version 2.4
-from math import inf
 
 # Copyright (c) 2002-2005, Jean-Sebastien Roy (js@jeannot.org)
 # Modifications Copyright (c) 2007- Stuart Anthony Mitchell (s.mitchell@auckland.ac.nz)
@@ -28,10 +27,15 @@ from math import inf
 # Modified by Sam Mathew (@samiit on Github)
 # Users would need to install HiGHS on their machine and provide the path to the executable. Please look at this thread: https://github.com/ERGO-Code/HiGHS/issues/527#issuecomment-894852288
 # More instructions on: https://www.highs.dev
+from __future__ import annotations
+from math import inf
 import os
-from typing import List
+from typing import List, TYPE_CHECKING
 import GridCalEngine.ThirdParty.pulp.constants as constants
 from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver, LpSolver_CMD, subprocess, PulpSolverError
+
+if TYPE_CHECKING:
+    from GridCalEngine.ThirdParty.pulp import LpProblem
 
 
 class HiGHS_CMD(LpSolver_CMD):
@@ -41,20 +45,18 @@ class HiGHS_CMD(LpSolver_CMD):
 
     SOLUTION_STYLE: int = 0
 
-    def __init__(
-            self,
-            path=None,
-            keepFiles=False,
-            mip=True,
-            msg=True,
-            options=None,
-            timeLimit=None,
-            gapRel=None,
-            gapAbs=None,
-            threads=None,
-            logPath=None,
-            warmStart=False,
-    ):
+    def __init__(self,
+                 path=None,
+                 keepFiles=False,
+                 mip=True,
+                 msg=True,
+                 options=None,
+                 timeLimit=None,
+                 gapRel=None,
+                 gapAbs=None,
+                 threads=None,
+                 logPath=None,
+                 warmStart=False):
         """
         :param bool mip: if False, assume LP even if integer variables
         :param bool msg: if False, no log is shown
@@ -90,7 +92,7 @@ class HiGHS_CMD(LpSolver_CMD):
         """True if the solver is available"""
         return self.executable(self.path)
 
-    def actualSolve(self, lp):
+    def actualSolve(self, lp: LpProblem):
         """Solve a well formulated lp problem"""
         if not self.executable(self.path):
             raise PulpSolverError("PuLP: cannot execute " + self.path)
@@ -101,7 +103,7 @@ class HiGHS_CMD(LpSolver_CMD):
         )
         lp.writeMPS(tmpMps, with_objsense=True)
 
-        file_options: List[str] = []
+        file_options: List[str] = list()
         file_options.append(f"solution_file={tmpSol}")
         file_options.append("write_solution_to_file=true")
         file_options.append(f"write_solution_style={HiGHS_CMD.SOLUTION_STYLE}")
@@ -119,7 +121,7 @@ class HiGHS_CMD(LpSolver_CMD):
             highs_log_file = tmpLog
         file_options.append(f"log_file={highs_log_file}")
 
-        command: List[str] = []
+        command: List[str] = list()
         command.append(self.path)
         command.append(tmpMps)
         command.append(f"--options_file={tmpOptions}")
@@ -223,7 +225,8 @@ class HiGHS_CMD(LpSolver_CMD):
 
         return status
 
-    def writesol(self, filename, lp):
+    @staticmethod
+    def writesol(filename: str, lp: LpProblem):
         """Writes a HiGHS solution file"""
 
         variable_rows = []
@@ -245,7 +248,8 @@ class HiGHS_CMD(LpSolver_CMD):
         with open(filename, "w") as file:
             file.write("\n".join(all_rows))
 
-    def readsol(self, filename):
+    @staticmethod
+    def readsol(filename: str):
         """Read a HiGHS solution file"""
         with open(filename) as file:
             lines = file.readlines()
@@ -291,17 +295,15 @@ class HiGHS(LpSolver):
         )
         DEFAULT_CALLBACK_VALUE = ""
 
-        def __init__(
-                self,
-                mip=True,
-                msg=True,
-                callbackTuple=None,
-                gapAbs=None,
-                gapRel=None,
-                threads=None,
-                timeLimit=None,
-                **solverParams,
-        ):
+        def __init__(self,
+                     mip=True,
+                     msg=True,
+                     callbackTuple=None,
+                     gapAbs=None,
+                     gapRel=None,
+                     threads=None,
+                     timeLimit=None,
+                     **solverParams):
             """
             :param bool mip: if False, assume LP even if integer variables
             :param bool msg: if False, no log is shown
@@ -320,12 +322,26 @@ class HiGHS(LpSolver):
             self.threads = threads
 
         def available(self):
+            """
+            True if the solver is available
+            :return:
+            """
             return True
 
         def callSolver(self, lp):
+            """
+
+            :param lp:
+            :return:
+            """
             lp.solverModel.run()
 
-        def createAndConfigureSolver(self, lp):
+        def createAndConfigureSolver(self, lp: LpProblem):
+            """
+
+            :param lp:
+            :return:
+            """
             lp.solverModel = highspy.Highs()
 
             if self.msg and self.callbackTuple:
@@ -354,7 +370,7 @@ class HiGHS(LpSolver):
             for key, value in self.optionsDict.items():
                 lp.solverModel.setOptionValue(key, value)
 
-        def buildSolverModel(self, lp):
+        def buildSolverModel(self, lp: LpProblem):
             inf = highspy.kHighsInf
 
             obj_mult = -1 if lp.sense == constants.LpMaximize else 1
@@ -400,6 +416,11 @@ class HiGHS(LpSolver):
                 )
 
         def findSolutionValues(self, lp):
+            """
+
+            :param lp:
+            :return:
+            """
             status = lp.solverModel.getModelStatus()
             obj_value = lp.solverModel.getObjectiveValue()
 

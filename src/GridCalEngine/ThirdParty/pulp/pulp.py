@@ -122,21 +122,22 @@ References
 [5] http://www.mosek.com/
 
 """
-
+from typing import List, Dict
 from collections import Counter
 import sys
 import warnings
 import math
+import re
 from time import time
+from collections.abc import Iterable
+import logging
+import json
 
 from GridCalEngine.ThirdParty.pulp.apis import LpSolverDefault
 from GridCalEngine.ThirdParty.pulp.apis.core import clock
 from GridCalEngine.ThirdParty.pulp.utilities import value
 import GridCalEngine.ThirdParty.pulp.constants as const
 import GridCalEngine.ThirdParty.pulp.mps_lp as mpslp
-
-from collections.abc import Iterable
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -163,12 +164,7 @@ if sys.platform not in ["cli"]:
     except ImportError:
         pass
 
-try:
-    import ujson as json
-except ImportError:
-    import json
 
-import re
 
 
 class LpElement:
@@ -1346,6 +1342,7 @@ class LpProblem:
         self.dummyVar = None
         self.solutionTime = 0
         self.solutionCpuTime = 0
+        self.solverModel = None  # pointer to the implementation
 
         # locals
         self.lastUnused = 0
@@ -1571,7 +1568,7 @@ class LpProblem:
                 gap = max(abs(c.value()), gap)
         return gap
 
-    def addVariable(self, variable):
+    def addVariable(self, variable: LpVariable):
         """
         Adds a variable to the problem before a constraint is added
 
@@ -1581,7 +1578,7 @@ class LpProblem:
             self._variables.append(variable)
             self._variable_ids[variable.hash] = variable
 
-    def addVariables(self, variables):
+    def addVariables(self, variables: List[LpVariable]):
         """
         Adds variables to the problem before a constraint is added
 
@@ -1605,7 +1602,11 @@ class LpProblem:
         return self._variables
 
     def variablesDict(self):
-        variables = {}
+        """
+
+        :return:
+        """
+        variables = dict()
         if self.objective:
             for v in self.objective:
                 variables[v.name] = v
@@ -1614,10 +1615,22 @@ class LpProblem:
                 variables[v.name] = v
         return variables
 
-    def add(self, constraint, name=None):
+    def add(self, constraint: LpConstraint, name=None):
+        """
+        Adds a constraint to the problem.
+        :param constraint:
+        :param name:
+        :return:
+        """
         self.addConstraint(constraint, name)
 
-    def addConstraint(self, constraint, name=None):
+    def addConstraint(self, constraint: LpConstraint, name=None):
+        """
+
+        :param constraint:
+        :param name:
+        :return:
+        """
         if not isinstance(constraint, LpConstraint):
             raise TypeError("Can only add LpConstraint objects")
         if name:
@@ -1642,7 +1655,7 @@ class LpProblem:
         self.modifiedConstraints.append(constraint)
         self.addVariables(list(constraint.keys()))
 
-    def setObjective(self, obj):
+    def setObjective(self, obj: LpAffineExpression | LpVariable | LpConstraintVar):
         """
         Sets the input variable as the objective function. Used in Columnwise Modelling
 
@@ -1654,13 +1667,15 @@ class LpProblem:
         if isinstance(obj, LpVariable):
             # allows the user to add a LpVariable as an objective
             obj = obj + 0.0
+
         try:
             obj = obj.constraint
             name = obj.name
+            self.objective.name = name
         except AttributeError:
             name = None
+
         self.objective = obj
-        self.objective.name = name
         self.resolveOK = False
 
     def __iadd__(self, other):
@@ -1888,10 +1903,12 @@ class LpProblem:
               :meth:`~pulp.solver.LpSolver.actualSolve()` to reflect the Lp solution
         """
 
-        if not (solver):
+        if not solver:
             solver = self.solver
-        if not (solver):
+
+        if not solver:
             solver = LpSolverDefault
+
         wasNone, dummyVar = self.fixObjective()
         # time it
         self.startClock()
