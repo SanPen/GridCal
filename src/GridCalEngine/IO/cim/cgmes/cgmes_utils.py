@@ -707,6 +707,25 @@ def find_object_by_uuid(cgmes_model: CgmesCircuit, object_list, target_uuid):
     return None
 
 
+def find_object_by_cond_eq_uuid(object_list, cond_eq_target_uuid):
+    """
+    Finds a conducting equipment object with the specified uuid
+    in the given object_list from a CGMES Circuit.
+
+    Args:
+        object_list (list[MyObject]): List of MyObject instances.
+        cond_eq_target_uuid (str): The uuid to search for.
+
+    Returns:
+        MyObject or None: The found object or None if not found.
+    """
+
+    for obj in object_list:
+        if obj.ConductingEquipment.uuid == cond_eq_target_uuid:
+            return obj
+    return None
+
+
 def find_tn_by_name(cgmes_model: CgmesCircuit, target_name):
     """
     Finds the topological node with the specified name

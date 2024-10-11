@@ -825,7 +825,7 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
     trafo_type = cgmes_model.get_class_type("PowerTransformer")
     rates_dict = build_rates_dict(cgmes_model, trafo_type, logger)
 
-    # convert ac lines
+    # convert transformers
     for device_list in [cgmes_model.cgmes_assets.PowerTransformer_list]:
 
         for cgmes_elm in device_list:
@@ -1031,111 +1031,142 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
     :param logger:
     :return:
     """
-    # Ratio Tap Changer
-    for ratio_tc in cgmes_model.cgmes_assets.RatioTapChanger_list:
-        trafo_id = ratio_tc.TransformerEnd.PowerTransformer.uuid
+    ratio_tc_class = cgmes_model.get_class_type("RatioTapChanger")
+    phase_sy_class = cgmes_model.get_class_type("PhaseTapChangerSymmetrical")
+    phase_as_class = cgmes_model.get_class_type("PhaseTapChangerAsymmetrical")
 
-        gcdev_trafo = find_object_by_idtag(
-            object_list=gcdev_model.transformers2w + gcdev_model.transformers3w,
-            target_idtag=trafo_id
-        )
+    # convert ac lines
+    for device_list in [cgmes_model.cgmes_assets.RatioTapChanger_list,
+                        cgmes_model.cgmes_assets.PhaseTapChangerSymmetrical_list,
+                        cgmes_model.cgmes_assets.PhaseTapChangerAsymmetrical_list]:
 
-        # Control from Control object
-        if (getattr(ratio_tc, 'TapChangerControl', None) and
-                ratio_tc.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage):
-            tc_type = TapChangerTypes.VoltageRegulation
-        else:
+        for tap_changer in device_list:
+
+            # Different attributes
+            asymmetry_angle = 90
             tc_type = TapChangerTypes.NoRegulation
 
-        if isinstance(gcdev_trafo, gcdev.Transformer2W):
+            if isinstance(tap_changer, ratio_tc_class):
+                # Control from Control object
+                if (getattr(tap_changer, 'TapChangerControl', None) and
+                        tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage):
+                    tc_type = TapChangerTypes.VoltageRegulation
+            elif isinstance(tap_changer, phase_sy_class):
+                tc_type = TapChangerTypes.Symmetrical
+            elif isinstance(tap_changer, phase_as_class):
+                tc_type = TapChangerTypes.Asymmetrical
+                # The phase angle between the in-phase winding and the out-of -phase winding
+                # used for creating phase shift. The out-of-phase winding produces
+                # what is known as the difference voltage.
+                # Setting this angle to 90 degrees is not the same as a symmemtrical transformer.
+                asymmetry_angle = tap_changer.windingConnectionAngle
+            else:
+                logger.add_warning(msg="No control found for TapChanger",
+                                   device=tap_changer.rdfid,
+                                   device_class=tap_changer.tpe,
+                                   device_property="control for TapChanger",
+                                   value=type(tap_changer))
 
-            gcdev_trafo.tap_changer.init_from_cgmes(
-                low=ratio_tc.lowStep,
-                high=ratio_tc.highStep,
-                normal=ratio_tc.normalStep,
-                neutral=ratio_tc.neutralStep,
-                stepVoltageIncrement=ratio_tc.stepVoltageIncrement,
-                step=int(ratio_tc.step),
-                # asymmetry_angle=90,
-                tc_type=tc_type
+            # attribute handling
+            if isinstance(tap_changer, cgmes_model.get_class_type("PhaseTapChanger")):
+                tap_changer.stepVoltageIncrement = tap_changer.voltageStepIncrement
+
+            trafo_id = tap_changer.TransformerEnd.PowerTransformer.uuid
+
+            gcdev_trafo = find_object_by_idtag(
+                object_list=gcdev_model.transformers2w + gcdev_model.transformers3w,
+                target_idtag=trafo_id
             )
 
-            # SET tap_module and tap_phase from its own TapChanger object
-            gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-            # gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+            if isinstance(gcdev_trafo, gcdev.Transformer2W):
 
-        elif isinstance(gcdev_trafo, gcdev.Transformer3W):
-            winding_id = ratio_tc.TransformerEnd.uuid
-            # get the winding with the TapChanger
-            winding_w_tc = find_object_by_idtag(
-                object_list=[gcdev_trafo.winding1,
-                             gcdev_trafo.winding2,
-                             gcdev_trafo.winding3],
-                target_idtag=winding_id
-            )
+                gcdev_trafo.tap_changer.init_from_cgmes(
+                    low=tap_changer.lowStep,
+                    high=tap_changer.highStep,
+                    normal=tap_changer.normalStep,
+                    neutral=tap_changer.neutralStep,
+                    stepVoltageIncrement=tap_changer.stepVoltageIncrement,
+                    step=int(tap_changer.step),
+                    asymmetry_angle=asymmetry_angle,
+                    tc_type=tc_type
+                )
 
-            winding_w_tc.tap_changer.init_from_cgmes(
-                low=ratio_tc.lowStep,
-                high=ratio_tc.highStep,
-                normal=ratio_tc.normalStep,
-                neutral=ratio_tc.neutralStep,
-                stepVoltageIncrement=ratio_tc.stepVoltageIncrement,
-                step=int(ratio_tc.step),
-                # asymmetry_angle=90,
-                tc_type=tc_type
-            )
+                # SET tap_module and tap_phase from its own TapChanger object
+                gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+                # gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
 
-            # SET tap_module and tap_phase from its own TapChanger object
-            winding_w_tc.tap_module = winding_w_tc.tap_changer.get_tap_module()
-            # gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
-            
-        else:
-            logger.add_error(msg='Transformer not found for RatioTapChanger',
-                             device=ratio_tc.rdfid,
-                             device_class=ratio_tc.tpe,
-                             device_property="transformer for powertransformerend",
-                             value=None,
-                             expected_value=trafo_id)
+            elif isinstance(gcdev_trafo, gcdev.Transformer3W):
+                winding_id = tap_changer.TransformerEnd.uuid
+                # get the winding with the TapChanger
+                winding_w_tc = find_object_by_idtag(
+                    object_list=[gcdev_trafo.winding1,
+                                 gcdev_trafo.winding2,
+                                 gcdev_trafo.winding3],
+                    target_idtag=winding_id
+                )
+
+                winding_w_tc.tap_changer.init_from_cgmes(
+                    low=tap_changer.lowStep,
+                    high=tap_changer.highStep,
+                    normal=tap_changer.normalStep,
+                    neutral=tap_changer.neutralStep,
+                    stepVoltageIncrement=tap_changer.stepVoltageIncrement,
+                    step=int(tap_changer.step),
+                    # asymmetry_angle=90,
+                    tc_type=tc_type
+                )
+
+                # SET tap_module and tap_phase from its own TapChanger object
+                winding_w_tc.tap_module = winding_w_tc.tap_changer.get_tap_module()
+                # gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+
+            else:
+                logger.add_error(msg='Transformer not found for TapChanger',
+                                 device=tap_changer.rdfid,
+                                 device_class=tap_changer.tpe,
+                                 device_property="transformer for powertransformerend",
+                                 value=None,
+                                 expected_value=trafo_id)
 
 
-    # # PHASE
-    # for phase_tc_s in cgmes_model.cgmes_assets.PhaseTapChangerSymmetrical_list:
-    #     trafo_id = phase_tc_s.TransformerEnd.PowerTransformer.uuid
-    #
-    #     gcdev_trafo = find_object_by_idtag(
-    #         object_list=gcdev_model.transformers2w,
-    #         target_idtag=trafo_id
-    #     )
-    #     if isinstance(gcdev_trafo, gcdev.Transformer2W):
-    #
-    #         gcdev_trafo.tap_changer.init_from_cgmes(
-    #             low=phase_tc_s.lowStep,
-    #             high=phase_tc_s.highStep,
-    #             normal=phase_tc_s.normalStep,
-    #             neutral=phase_tc_s.neutralStep,
-    #             stepVoltageIncrement=phase_tc_s.stepVoltageIncrement,
-    #             step=phase_tc_s.step,
-    #             # asymmetry_angle=90,
-    #         )
-    #
-    #         # Control from Control object
-    #         if (getattr(phase_tc_s, 'TapChangerControl', None) and
-    #                 phase_tc_s.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage):
-    #             gcdev_trafo.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
-    #
-    #     else:
-    #         logger.add_error(
-    #             msg='Transformer not found for RatioTapChanger',
-    #             device=phase_tc_s.rdfid,
-    #             device_class=phase_tc_s.tpe,
-    #             device_property="transformer for powertransformerend",
-    #             value=None,
-    #             expected_value=trafo_id)
-    #
-    #     # SET tap_module and tap_phase from its own TapChanger object
-    #     gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-    #     gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
-        
+        # # PHASE SYMMETRICAL
+        # for phase_tc_s in cgmes_model.cgmes_assets.PhaseTapChangerSymmetrical_list:
+        #     trafo_id = phase_tc_s.TransformerEnd.PowerTransformer.uuid
+        #
+        #     gcdev_trafo = find_object_by_idtag(
+        #         object_list=gcdev_model.transformers2w+gcdev_model.transformers3w,
+        #         target_idtag=trafo_id
+        #     )
+        #     if isinstance(gcdev_trafo, gcdev.Transformer2W):
+        #
+        #         gcdev_trafo.tap_changer.init_from_cgmes(
+        #             low=phase_tc_s.lowStep,
+        #             high=phase_tc_s.highStep,
+        #             normal=phase_tc_s.normalStep,
+        #             neutral=phase_tc_s.neutralStep,
+        #             stepVoltageIncrement=phase_tc_s.voltageStepIncrement,
+        #             step=phase_tc_s.step,
+        #             # asymmetry_angle=90,
+        #         )
+        #
+        #         # Control from Control object
+        #         if (getattr(phase_tc_s, 'TapChangerControl', None) and
+        #                 phase_tc_s.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage):
+        #             gcdev_trafo.tap_changer.tc_type = TapChangerTypes.VoltageRegulation
+        #
+        #     else:
+        #         logger.add_error(
+        #             msg='Transformer not found for RatioTapChanger',
+        #             device=phase_tc_s.rdfid,
+        #             device_class=phase_tc_s.tpe,
+        #             device_property="transformer for powertransformerend",
+        #             value=None,
+        #             expected_value=trafo_id)
+        #
+        #     # SET tap_module and tap_phase from its own TapChanger object
+        #     gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
+        #     gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+
 
 
 def get_gcdev_shunts(cgmes_model: CgmesCircuit,
@@ -1651,9 +1682,9 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     cgmes_model.emit_progress(100)
     cgmes_model.emit_text("Cgmes import done!")
 
-    import os
-    print(os.getcwd())
-    cgmes_model.to_excel(fname="cgmes_circuit.xlsx")
+    # import os
+    # print(os.getcwd())
+    # cgmes_model.to_excel(fname="cgmes_circuit.xlsx")
 
     # Run topology progcessing
     # tp_info = gc_model.process_topology_at()

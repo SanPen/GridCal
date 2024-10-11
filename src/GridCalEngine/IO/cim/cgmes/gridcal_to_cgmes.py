@@ -1,7 +1,7 @@
 import numpy as np
 
 from GridCalEngine.DataStructures.numerical_circuit import \
-    compile_numerical_circuit_at
+    compile_numerical_circuit_at, NumericalCircuit
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, \
@@ -13,12 +13,14 @@ from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     UnitMultiplier,
                                                     TransformerControlMode)
 from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, \
-    find_object_by_vnom, \
+    find_object_by_vnom, find_object_by_cond_eq_uuid, \
     get_ohm_values_power_transformer, find_tn_by_name, find_object_by_attribute
 from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import \
     FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import \
+    compute_zip_power
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import \
     PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions
@@ -627,7 +629,8 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                 object_list=cgmes_model.cgmes_assets.Substation_list,
                 target_uuid=mc_elm.substation.idtag
             )
-            if substation:
+
+            if isinstance(substation, cgmes_model.get_class_type("Substation")):
                 vl.Substation = substation
 
                 # link back
@@ -635,7 +638,10 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                     substation.VoltageLevels = list()
                 substation.VoltageLevels.append(vl)
             else:
-                print(f'Substation not found for VoltageLevel {vl.name}')
+                logger.add_error(
+                    msg=f'Substation not found for VoltageLevel {vl.name}',
+                    device=mc_elm,
+                    device_class=gcdev.Bus)
         cgmes_model.add(vl)
 
 
@@ -643,7 +649,9 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
     for bus in multi_circuit_model.buses:
+
         if not bus.is_internal:
+
             tn = find_object_by_uuid(
                 cgmes_model=cgmes_model,
                 object_list=cgmes_model.cgmes_assets.TopologicalNode_list,
@@ -651,6 +659,7 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
             )
             if tn is not None:
                 continue
+
             object_template = cgmes_model.get_class_type("TopologicalNode")
             tn = object_template(rdfid=form_rdfid(bus.idtag))
             tn.name = bus.name
@@ -1047,32 +1056,24 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         create_cgmes_current_limit(cm_transformer.Terminals[1], current_rate,
                                    cgmes_model, logger)
 
-        (r_ohm,
-         x_ohm,
-         g_ohm,
-         b_ohm,
-         r0_ohm,
-         x0_ohm,
-         g0_ohm,
-         b0_ohm) = get_ohm_values_power_transformer(r=mc_elm.R,
-                                                    x=mc_elm.X,
-                                                    g=mc_elm.G,
-                                                    b=mc_elm.B,
-                                                    r0=mc_elm.R0,
-                                                    x0=mc_elm.X0,
-                                                    g0=mc_elm.G0,
-                                                    b0=mc_elm.B0,
-                                                    nominal_power=mc_elm.Sn,
-                                                    rated_voltage=mc_elm.HV)
+        (pte1.r,
+         pte1.x,
+         pte1.g,
+         pte1.b,
+         pte1.r0,
+         pte1.x0,
+         pte1.g0,
+         pte1.b0) = get_ohm_values_power_transformer(r=mc_elm.R,
+                                                     x=mc_elm.X,
+                                                     g=mc_elm.G,
+                                                     b=mc_elm.B,
+                                                     r0=mc_elm.R0,
+                                                     x0=mc_elm.X0,
+                                                     g0=mc_elm.G0,
+                                                     b0=mc_elm.B0,
+                                                     nominal_power=mc_elm.Sn,
+                                                     rated_voltage=mc_elm.HV)
 
-        pte1.r = r_ohm
-        pte1.x = x_ohm
-        pte1.g = g_ohm
-        pte1.b = b_ohm
-        pte1.r0 = r0_ohm
-        pte1.x0 = x0_ohm
-        pte1.g0 = g0_ohm
-        pte1.b0 = b0_ohm
         pte1.ratedU = mc_elm.HV
         pte1.ratedS = mc_elm.Sn
         pte1.endNumber = 1
@@ -1139,6 +1140,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         object_template = cgmes_model.get_class_type("SvTapStep")
         sv_tap_step = object_template(rdfid=new_rdf_id, tpe="SvTapStep")
         # TODO def EA same as step? should it come from the results?
+        # PowerFlowResults: tap_module, tap_angle (for SvTapStep), get the closest tap pos for the object.
         sv_tap_step.position = mc_elm.tap_changer.tap_position
         sv_tap_step.TapChanger = tap_changer
 
@@ -1372,8 +1374,8 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
                     cgmes_model.elements_by_type_boundary.get(
                         'TopologicalNode', None))
         sv_voltage.TopologicalNode = tp_list_with_boundary[i]
-        # todo include boundary?
-        # as the order of the results is the same as the order of buses (=tn)
+
+        # as the ORDER of the results is the same as the order of buses (=tn)
         bv = tp_list_with_boundary[i].BaseVoltage
         sv_voltage.v = np.abs(voltage) * bv.nominalVoltage
         sv_voltage.angle = np.angle(voltage, deg=True)
@@ -1382,35 +1384,149 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         cgmes_model.add(sv_voltage)
 
 
-def get_cgmes_sv_power_flow(cgmes_model: CgmesCircuit,
+def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
+                            nc: NumericalCircuit,
+                            cgmes_model: CgmesCircuit,
                             pf_results: PowerFlowResults,
-                            logger: DataLogger):
+                            logger: DataLogger) -> None:
     """
-    Creates a CgmesCircuit SvPowerFlow_list
-    from PowerFlow results of the numerical circuit.
+    Creates a CgmesCircuit SvPowerFlow_list from PowerFlow results of the numerical circuit.
 
-    Args:
-        cgmes_model: CgmesCircuit
-        pf_results: PowerFlowResults
-        logger (DataLogger): The data logger for error handling.
-
-    Returns:
-        CgmesCircuit: A CgmesCircuit object with SvVoltage_list populated.
+    :param multi_circuit:
+    :param nc:
+    :param cgmes_model:
+    :param pf_results:
+    :param logger:
+    :return: SvVoltage_list is populated in CgmesCircuit.
     """
     # SVPowerFlow: p, q -> Terminals
+    # SvPowerFlow class is required to be instantiated for the following classes:
+    # subclasses of the RotatingMachine,
+    # subclasses of the EnergyConsumer,
+    # EquivalentInjection,
+    # ShuntCompensator,
+    # StaticVarCompensator and
+    # EnergySource.
 
-    for voltage in pf_results.loading:  # TODO loading?
+    # Generators ------------------------------------------------------------
+    gen_objects = multi_circuit.generators
 
-        object_template = cgmes_model.get_class_type("SvPowerFlow")
-        new_rdf_id = get_new_rdfid()
-        sv_pf = object_template(rdfid=new_rdf_id)
+    gen_ps = nc.generator_data.p
+    gen_qs = pf_results.gen_q
 
-        cgmes_model.add(sv_pf)
+    for (gen, gen_p, gen_q) in zip(gen_objects, gen_ps, gen_qs):
+
+        term = find_object_by_cond_eq_uuid(
+            object_list=cgmes_model.cgmes_assets.Terminal_list,
+            cond_eq_target_uuid=gen.idtag
+        )
+        if isinstance(term, cgmes_model.get_class_type("Terminal")):
+
+            create_sv_power_flow(
+                cgmes_model=cgmes_model,
+                p=gen_p,
+                q=gen_q,
+                terminal=term
+            )
+
+        else:
+            logger.add_error(msg='No Terminal found for Generator',
+                             device=gen,
+                             device_class=gcdev.Generator,
+                             value=gen.idtag)
+
+    # Load-like devices -----------------------------------------------------
+    # loads, static_generators, external_grids, current_injections
+    load_objects = multi_circuit.get_load_like_devices()
+
+    load_power = compute_zip_power(
+        S0=nc.load_data.S,
+        I0=nc.load_data.I,
+        Y0=nc.load_data.Y,
+        Vm=np.abs(pf_results.voltage[nc.load_data.get_bus_indices()])
+    )
+    
+    for (mc_load_like, load_power) in zip(load_objects, load_power):
+
+        term = find_object_by_cond_eq_uuid(
+            object_list=cgmes_model.cgmes_assets.Terminal_list,
+            cond_eq_target_uuid=mc_load_like.idtag      # missing Load uuid
+        )
+        if isinstance(term, cgmes_model.get_class_type("Terminal")):
+
+            create_sv_power_flow(
+                cgmes_model=cgmes_model,
+                p=load_power.real,
+                q=load_power.imag,
+                terminal=term
+            )
+
+        else:
+            logger.add_error(msg='No Terminal found for Load-like device',
+                             device=mc_load_like,
+                             device_class=gcdev.Load,
+                             value=mc_load_like.idtag)
+
+    # Shunts ----------------------------------------------------------------
+    # shunts, controllable shunts
+    shunt_objects = multi_circuit.get_shunt_like_devices()
+
+    shunt_qs = pf_results.shunt_q
+
+    for (mc_shunt_like, shunt_q) in zip(shunt_objects, shunt_qs):
+
+        term = find_object_by_cond_eq_uuid(
+            object_list=cgmes_model.cgmes_assets.Terminal_list,
+            cond_eq_target_uuid=mc_shunt_like.idtag  # missing Load uuid
+        )
+        if isinstance(term, cgmes_model.get_class_type("Terminal")):
+
+            create_sv_power_flow(
+                cgmes_model=cgmes_model,
+                p=0.0,
+                q=shunt_q,
+                terminal=term
+            )
+
+        else:
+            logger.add_error(msg='No Terminal found for Shunt-like device',
+                             device=mc_shunt_like,
+                             device_class=gcdev.Load,
+                             value=mc_shunt_like.idtag)
+
+    # TODO pf_results.loading is what?
+
+
+def create_sv_power_flow(cgmes_model: CgmesCircuit,
+                         p: float,
+                         q: float,
+                         terminal) -> None:
+    """
+    Creates a SvPowerFlow instance
+
+    :param cgmes_model:
+    :param p: The active power flow. Load sign convention is used,
+                i.e. positive sign means flow out
+                from a TopologicalNode (bus) into the conducting equipment.
+    :param q:
+    :param terminal:
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvPowerFlow")
+    new_rdf_id = get_new_rdfid()
+    sv_pf = object_template(rdfid=new_rdf_id)
+
+    sv_pf.p = p
+    sv_pf.q = q
+    sv_pf.Terminal = terminal
+
+    cgmes_model.add(sv_pf)
 
 
 def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
+    # TODO get nc as an input
     nc = compile_numerical_circuit_at(multicircuit_model)
     nc_islands = nc.split_into_islands()
     tpi_template = cgmes_model.get_class_type("TopologicalIsland")
@@ -1462,13 +1578,15 @@ def make_coordinate_system(cgmes_model: CgmesCircuit,
 
 
 def gridcal_to_cgmes(gc_model: MultiCircuit,
-                     cgmes_model: CgmesCircuit,
+                     num_circ: NumericalCircuit,
                      pf_results: Union[None, PowerFlowResults],
+                     cgmes_model: CgmesCircuit,
                      logger: DataLogger) -> CgmesCircuit:
     """
     Converts the input Multi circuit to a new CGMES Circuit.
 
     :param gc_model: Multi circuit object
+    :param num_circ: Numerical circuit complied from MC
     :param cgmes_model: CGMES circuit object
     :param pf_results: power flow results from GridCal
     :param logger: Logger object
@@ -1504,12 +1622,24 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
     # results: sv classes
     if pf_results:
         # if converged == True...
+
+        # SvVoltage for every TopoNode
         get_cgmes_sv_voltages(cgmes_model, pf_results, logger)
-        # get_cgmes_sv_power_flow()
+
+        # PowerFlow: P, Q results for every terminal
+        get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results, logger)
+
+        # SV Status: for ConductingEquipment
+        # active parameter
+
+        # SVTapStep: handled at transformer function
+
+        # Topo Islands
         get_cgmes_topological_island(gc_model, cgmes_model, logger)
 
     else:
         # abort export on gui ?
         # strategy?: option to export it with default data
         print("No PowerFlow result for CGMES export.")
+        logger.add_error(msg="Missing power flow result for CGMES export.")
     return cgmes_model

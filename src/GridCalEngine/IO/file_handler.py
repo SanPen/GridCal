@@ -552,7 +552,12 @@ class FileSave:
         profiles_to_export = self.options.cgmes_profiles
         one_file_per_profile = self.options.cgmes_one_file_per_profile
         pf_results = self.options.get_power_flow_results()
+        # TODO get nc used for PF, recompile can be avoided?
+        from GridCalEngine.DataStructures.numerical_circuit import \
+            compile_numerical_circuit_at
+        nc = compile_numerical_circuit_at(self.circuit)
         cgmes_circuit = gridcal_to_cgmes(gc_model=self.circuit,
+                                         num_circ=nc,
                                          cgmes_model=cgmes_circuit,
                                          pf_results=pf_results,
                                          logger=logger)
