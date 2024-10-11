@@ -81,7 +81,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             logger=self.logger,
             progress_text=self.report_text,
             progress_func=self.report_progress,
-            export_model_fname=self.options.opf_options.export_model_fname
+            export_model_fname=self.options.opf_options.export_model_fname,
+            verbose=self.options.opf_options.verbose
         )
 
         inter_area_branches = self.grid.get_inter_areas_branches(a1=self.options.area_from_bus_idx,
@@ -94,27 +95,22 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results = OptimalNetTransferCapacityResults(
             bus_names=self.grid.get_bus_names(),
             branch_names=self.grid.get_branch_names_wo_hvdc(),
-            load_names=self.grid.get_load_names(),
-            generator_names=self.grid.get_generator_names(),
-            battery_names=self.grid.get_battery_names(),
             hvdc_names=self.grid.get_hvdc_names(),
-            trm=self.options.transmission_reliability_margin,
-            ntc_load_rule=self.options.branch_rating_contribution,
-            Sbus=opf_vars.bus_vars.Pcalc[0, :],
-            voltage=opf_vars.get_voltages()[0, :],
-            Sf=opf_vars.branch_vars.flows[0, :],
-            loading=opf_vars.branch_vars.loading[0, :],
-            solved=bool(opf_vars.acceptable_solution),
-            bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
-            hvdc_flow=opf_vars.hvdc_vars.flows[0, :],
-            hvdc_loading=opf_vars.hvdc_vars.loading[0, :],
-            phase_shift=opf_vars.branch_vars.tap_angles[0, :],
-            inter_area_branches=inter_area_branches,
-            inter_area_hvdc=inter_area_hvdc,
-            # alpha=alpha,
+            # trm=self.options.transmission_reliability_margin,
+            # ntc_load_rule=self.options.branch_rating_contribution,
+            # Sf=opf_vars.branch_vars.flows[0, :],
+            # loading=opf_vars.branch_vars.loading[0, :],
+            # solved=bool(opf_vars.acceptable_solution),
+            # bus_types=np.ones(self.grid.get_bus_number(), dtype=int),
+            # hvdc_flow=opf_vars.hvdc_vars.flows[0, :],
+            # hvdc_loading=opf_vars.hvdc_vars.loading[0, :],
+            # phase_shift=opf_vars.branch_vars.tap_angles[0, :],
+            # inter_area_branches=inter_area_branches,
+            # inter_area_hvdc=inter_area_hvdc,
+            # alpha=opf_vars.branch_vars.alpha[0, :],
             # alpha_n1=alpha_n1,
-            monitor=opf_vars.branch_vars.monitor,
-            monitor_type=opf_vars.branch_vars.monitor_type,
+            # monitor=opf_vars.branch_vars.monitor[0, :],
+            # monitor_type=opf_vars.branch_vars.monitor_type[0, :],
             # contingency_branch_flows_list=problem.get_contingency_flows_list(),
             # contingency_branch_indices_list=problem.contingency_indices_list,
             # contingency_branch_alpha_list=problem.contingency_branch_alpha_list,
@@ -125,30 +121,29 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             # contingency_hvdc_indices_list=problem.contingency_hvdc_indices_list,
             # contingency_hvdc_alpha_list=problem.contingency_hvdc_alpha_list,
             # branch_ntc_load_rule=problem.get_branch_ntc_load_rule(),
-            rates=opf_vars.branch_vars.rates,
-            contingency_rates=opf_vars.branch_vars.rates,  # TODO set contingency rates
-            area_from_bus_idx=self.options.area_from_bus_idx,
-            area_to_bus_idx=self.options.area_to_bus_idx,
-            # structural_ntc=problem.structural_ntc,
-            sbase=self.grid.Sbase,
-            loading_threshold=self.options.loading_threshold_to_report,
-            reversed_sort_loading=False,
-            branch_control_modes=[],
-            hvdc_control_modes=[],
+            # rates=opf_vars.branch_vars.rates[0, :],
+            # contingency_rates=opf_vars.branch_vars.rates[0, :],
+            # area_from_bus_idx=self.options.area_from_bus_idx,
+            # area_to_bus_idx=self.options.area_to_bus_idx,
+            # structural_ntc=opf_vars.structural_ntc[0],
+            # sbase=self.grid.Sbase,
+            # loading_threshold=self.options.loading_threshold_to_report,
+            # reversed_sort_loading=False,
         )
 
-        self.results.voltage = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta[0, :])
+        self.results.voltage = opf_vars.get_voltages()[0, :]
+        self.results.Sbus = opf_vars.bus_vars.Pcalc[0, :]
         self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
-        # self.results.load_shedding = opf_vars.load_vars.shedding
-        # self.results.battery_power = opf_vars.batt_vars.p[0, :]
-        # self.results.battery_energy = opf_vars.batt_vars.e[0, :]
-        # self.results.generator_power = opf_vars.gen_vars.p[0, :]
+        self.results.load_shedding = opf_vars.bus_vars.load_shedding[0, :]
+
         self.results.Sf = opf_vars.branch_vars.flows[0, :]
         self.results.St = -opf_vars.branch_vars.flows[0, :]
         self.results.overloads = opf_vars.branch_vars.flow_slacks_pos[0, :] - opf_vars.branch_vars.flow_slacks_neg[0, :]
         self.results.loading = opf_vars.branch_vars.loading[0, :]
         self.results.phase_shift = opf_vars.branch_vars.tap_angles[0, :]
-        # self.results.Sbus = problem.get_power_injections()
+        self.results.rates = opf_vars.branch_vars.rates[0, :]
+        self.results.contingency_rates = opf_vars.branch_vars.contingency_rates[0, :]
+
         self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
         self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 

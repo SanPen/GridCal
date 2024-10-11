@@ -1,7 +1,7 @@
-
+from __future__ import annotations
 import os
 import warnings
-
+from typing import List, TYPE_CHECKING
 try:
     import xml.etree.ElementTree as et
 except ImportError:
@@ -10,6 +10,9 @@ except ImportError:
 from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver_CMD, LpSolver, subprocess, PulpSolverError, clock, log
 import GridCalEngine.ThirdParty.pulp.constants as constants
 from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
+
+if TYPE_CHECKING:
+    from GridCalEngine.ThirdParty.pulp import LpProblem
 
 
 class CPLEX_CMD(LpSolver_CMD):
@@ -89,7 +92,7 @@ class CPLEX_CMD(LpSolver_CMD):
         """
         return self.executable(self.path)
 
-    def actualSolve(self, lp):
+    def actualSolve(self, lp: LpProblem):
         """
         Solve a well formulated lp problem
         :param lp:

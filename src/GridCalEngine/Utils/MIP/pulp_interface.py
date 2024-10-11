@@ -117,7 +117,7 @@ class LpModel:
             raise Exception('Unsupported file format')
 
         # with open(file_name, "w") as f:
-            # f.write(lp_content)
+        # f.write(lp_content)
 
     def add_int(self, lb: int, ub: int, name: str = "") -> LpVar:
         """
@@ -143,7 +143,7 @@ class LpModel:
         self.model.addVariable(var)
         return var
 
-    def add_cst(self, cst: pulp.LpConstraint, name: str = "") -> Union[LpCst, int]:
+    def add_cst(self, cst: LpCst, name: str = "") -> Union[LpCst, int]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
@@ -164,7 +164,7 @@ class LpModel:
         """
         return pulp.lpSum(cst)
 
-    def minimize(self, obj_function):
+    def minimize(self, obj_function: LpExp):
         """
         Set the objective function with minimization sense
         :param obj_function: expression to minimize
@@ -172,20 +172,26 @@ class LpModel:
         self.model.setObjective(obj=obj_function)
 
     def get_solver(self, show_logs: bool = False):
+        """
 
+        :param show_logs:
+        :return:
+        """
         if self.solver_type == MIPSolvers.HIGHS:
-            # solver = 'HiGHS'
-            solver = HiGHS(mip=self.model.isMIP(), msg=show_logs)
+            return HiGHS(mip=self.model.isMIP(), msg=show_logs)
 
         elif self.solver_type == MIPSolvers.SCIP:
-            solver = pulp.getSolver('SCIP_CMD')
+            return pulp.getSolver('SCIP_CMD')
+
         elif self.solver_type == MIPSolvers.CPLEX:
-            # solver = 'CPLEX_CMD'
-            solver = CPLEX_CMD(mip=self.model.isMIP(), msg=show_logs)
+            return CPLEX_CMD(mip=self.model.isMIP(), msg=show_logs)
+
         elif self.solver_type == MIPSolvers.GUROBI:
-            solver = pulp.getSolver('GUROBI')
+            return pulp.getSolver('GUROBI')
+
         elif self.solver_type == MIPSolvers.XPRESS:
-            solver = pulp.getSolver('XPRESS')
+            return pulp.getSolver('XPRESS')
+
         else:
             raise Exception('PuLP Unsupported MIP solver ' + self.solver_type.value)
 
@@ -301,7 +307,6 @@ class LpModel:
 
                 else:
                     self.logger.add_warning("Unable to relax the model, the debug model failed")
-
 
         return status
 

@@ -137,7 +137,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          logger=self.logger,
                                          progress_text=self.report_text,
                                          progress_func=self.report_progress,
-                                         export_model_fname=self.options.export_model_fname)
+                                         export_model_fname=self.options.export_model_fname,
+                                         verbose=self.options.verbose)
 
             self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)
             self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices
@@ -300,7 +301,8 @@ class OptimalPowerFlowTimeSeriesDriver(TimeSeriesDriverTemplate):
                                          energy_0=energy_0,
                                          fluid_level_0=fluid_level_0,
                                          logger=self.logger,
-                                         export_model_fname=self.options.export_model_fname)
+                                         export_model_fname=self.options.export_model_fname,
+                                         verbose=self.options.verbose)
 
             self.results.voltage[time_indices, :] = (np.ones((opf_vars.nt, opf_vars.nbus))
                                                      * np.exp(1j * opf_vars.bus_vars.theta))
