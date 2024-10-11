@@ -680,7 +680,7 @@ def add_linear_generation_formulation(t: Union[int, None],
     :param time_array: complete time array
     :param gen_data_t: GeneratorData structure
     :param gen_vars: GenerationVars structure
-    :param prob: ORTools problem
+    :param prob: LpModel
     :param unit_commitment: formulate unit commitment?
     :param ramp_constraints: formulate ramp constraints?
     :param skip_generation_limits: skip the generation limits?
@@ -1534,7 +1534,7 @@ def add_hydro_formulation(t: Union[int, None],
 
 def run_linear_opf_ts(grid: MultiCircuit,
                       time_indices: Union[IntVec, None],
-                      solver_type: MIPSolvers = MIPSolvers.CBC,
+                      solver_type: MIPSolvers = MIPSolvers.HIGHS,
                       zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
                       skip_generation_limits: bool = False,
                       consider_contingencies: bool = False,
@@ -1624,8 +1624,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
         inter_area_hvdc = list()
 
     # declare structures of LP vars
-    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc,
-                       n_fluid_node=n_fluid_node, n_fluid_path=n_fluid_path, n_fluid_inj=n_fluid_inj,
+    mip_vars = OpfVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl,
+                       nbr=nbr, n_hvdc=n_hvdc,
+                       n_fluid_node=n_fluid_node,
+                       n_fluid_path=n_fluid_path,
+                       n_fluid_inj=n_fluid_inj,
                        n_cap_buses=len(capacity_nodes_idx))
 
     # create the MIP problem object
@@ -1645,62 +1648,74 @@ def run_linear_opf_ts(grid: MultiCircuit,
         # compile the circuit at the master time index ------------------------------------------------------------
         # note: There are very little chances of simplifying this step and experience shows
         #       it is not worth the effort, so compile every time step
-        nc: NumericalCircuit = compile_numerical_circuit_at(circuit=grid,
-                                                            t_idx=global_t_idx,  # yes, this is not a bug
-                                                            bus_dict=bus_dict,
-                                                            areas_dict=areas_dict,
-                                                            logger=logger)
+        nc: NumericalCircuit = compile_numerical_circuit_at(
+            circuit=grid,
+            t_idx=global_t_idx,  # yes, this is not a bug
+            bus_dict=bus_dict,
+            areas_dict=areas_dict,
+            logger=logger
+        )
 
         # formulate the bus angles ---------------------------------------------------------------------------------
         for k in range(nc.bus_data.nbus):
-            mip_vars.bus_vars.theta[local_t_idx, k] = lp_model.add_var(lb=nc.bus_data.angle_min[k],
-                                                                       ub=nc.bus_data.angle_max[k],
-                                                                       name=join("th_", [local_t_idx, k], "_"))
+            mip_vars.bus_vars.theta[local_t_idx, k] = lp_model.add_var(
+                lb=nc.bus_data.angle_min[k],
+                ub=nc.bus_data.angle_max[k],
+                name=join("th_", [local_t_idx, k], "_")
+            )
 
         # formulate loads ------------------------------------------------------------------------------------------
-        f_obj += add_linear_load_formulation(t=local_t_idx,
-                                             Sbase=nc.Sbase,
-                                             load_data_t=nc.load_data,
-                                             load_vars=mip_vars.load_vars,
-                                             prob=lp_model)
+        f_obj += add_linear_load_formulation(
+            t=local_t_idx,
+            Sbase=nc.Sbase,
+            load_data_t=nc.load_data,
+            load_vars=mip_vars.load_vars,
+            prob=lp_model
+        )
 
         # formulate generation -------------------------------------------------------------------------------------
-        f_obj += add_linear_generation_formulation(t=local_t_idx,
-                                                   Sbase=nc.Sbase,
-                                                   time_array=grid.time_profile,
-                                                   gen_data_t=nc.generator_data,
-                                                   gen_vars=mip_vars.gen_vars,
-                                                   prob=lp_model,
-                                                   unit_commitment=unit_Commitment,
-                                                   ramp_constraints=ramp_constraints,
-                                                   skip_generation_limits=skip_generation_limits,
-                                                   all_generators_fixed=all_generators_fixed,
-                                                   vd=nc.vd,
-                                                   nodal_capacity_active=active_nodal_capacity)
+        f_obj += add_linear_generation_formulation(
+            t=local_t_idx,
+            Sbase=nc.Sbase,
+            time_array=grid.time_profile,
+            gen_data_t=nc.generator_data,
+            gen_vars=mip_vars.gen_vars,
+            prob=lp_model,
+            unit_commitment=unit_Commitment,
+            ramp_constraints=ramp_constraints,
+            skip_generation_limits=skip_generation_limits,
+            all_generators_fixed=all_generators_fixed,
+            vd=nc.vd,
+            nodal_capacity_active=active_nodal_capacity
+        )
 
         # formulate batteries --------------------------------------------------------------------------------------
         if local_t_idx == 0 and energy_0 is None:
             # declare the initial energy of the batteries
             energy_0 = nc.battery_data.soc_0 * nc.battery_data.enom  # in MWh here
 
-        f_obj += add_linear_battery_formulation(t=local_t_idx,
-                                                Sbase=nc.Sbase,
-                                                time_array=grid.time_profile,
-                                                batt_data_t=nc.battery_data,
-                                                batt_vars=mip_vars.batt_vars,
-                                                prob=lp_model,
-                                                unit_commitment=unit_Commitment,
-                                                ramp_constraints=ramp_constraints,
-                                                skip_generation_limits=skip_generation_limits,
-                                                energy_0=energy_0)
+        f_obj += add_linear_battery_formulation(
+            t=local_t_idx,
+            Sbase=nc.Sbase,
+            time_array=grid.time_profile,
+            batt_data_t=nc.battery_data,
+            batt_vars=mip_vars.batt_vars,
+            prob=lp_model,
+            unit_commitment=unit_Commitment,
+            ramp_constraints=ramp_constraints,
+            skip_generation_limits=skip_generation_limits,
+            energy_0=energy_0
+        )
 
         # formulate batteries --------------------------------------------------------------------------------------
         if optimize_nodal_capacity:
-            f_obj += add_nodal_capacity_formulation(t=local_t_idx,
-                                                    nodal_capacity_vars=mip_vars.nodal_capacity_vars,
-                                                    nodal_capacity_sign=nodal_capacity_sign,
-                                                    capacity_nodes_idx=capacity_nodes_idx,
-                                                    prob=lp_model)
+            f_obj += add_nodal_capacity_formulation(
+                t=local_t_idx,
+                nodal_capacity_vars=mip_vars.nodal_capacity_vars,
+                nodal_capacity_sign=nodal_capacity_sign,
+                capacity_nodes_idx=capacity_nodes_idx,
+                prob=lp_model
+            )
 
         # add emissions ------------------------------------------------------------------------------------------------
         if gen_emissions_rates_matrix.shape[0] > 0:
@@ -1721,38 +1736,44 @@ def run_linear_opf_ts(grid: MultiCircuit,
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
             # formulate hvdc -------------------------------------------------------------------------------------------
-            f_obj += add_linear_hvdc_formulation(t=local_t_idx,
-                                                 Sbase=nc.Sbase,
-                                                 hvdc_data_t=nc.hvdc_data,
-                                                 hvdc_vars=mip_vars.hvdc_vars,
-                                                 vars_bus=mip_vars.bus_vars,
-                                                 prob=lp_model)
+            f_obj += add_linear_hvdc_formulation(
+                t=local_t_idx,
+                Sbase=nc.Sbase,
+                hvdc_data_t=nc.hvdc_data,
+                hvdc_vars=mip_vars.hvdc_vars,
+                vars_bus=mip_vars.bus_vars,
+                prob=lp_model
+            )
 
             # formulate branches ---------------------------------------------------------------------------------------
-            f_obj += add_linear_branches_formulation(t=local_t_idx,
-                                                     Sbase=nc.Sbase,
-                                                     branch_data_t=nc.branch_data,
-                                                     branch_vars=mip_vars.branch_vars,
-                                                     bus_vars=mip_vars.bus_vars,
-                                                     prob=lp_model,
-                                                     inf=1e20)
+            f_obj += add_linear_branches_formulation(
+                t=local_t_idx,
+                Sbase=nc.Sbase,
+                branch_data_t=nc.branch_data,
+                branch_vars=mip_vars.branch_vars,
+                bus_vars=mip_vars.bus_vars,
+                prob=lp_model,
+                inf=1e20
+            )
 
             # formulate nodes ------------------------------------------------------------------------------------------
-            add_linear_node_balance(t_idx=local_t_idx,
-                                    Bbus=nc.Bbus,
-                                    vd=nc.vd,
-                                    bus_data=nc.bus_data,
-                                    generator_data=nc.generator_data,
-                                    battery_data=nc.battery_data,
-                                    load_data=nc.load_data,
-                                    bus_vars=mip_vars.bus_vars,
-                                    gen_vars=mip_vars.gen_vars,
-                                    batt_vars=mip_vars.batt_vars,
-                                    load_vars=mip_vars.load_vars,
-                                    nodal_capacity_vars=mip_vars.nodal_capacity_vars,
-                                    capacity_nodes_idx=capacity_nodes_idx,
-                                    prob=lp_model,
-                                    logger=logger)
+            add_linear_node_balance(
+                t_idx=local_t_idx,
+                Bbus=nc.Bbus,
+                vd=nc.vd,
+                bus_data=nc.bus_data,
+                generator_data=nc.generator_data,
+                battery_data=nc.battery_data,
+                load_data=nc.load_data,
+                bus_vars=mip_vars.bus_vars,
+                gen_vars=mip_vars.gen_vars,
+                batt_vars=mip_vars.batt_vars,
+                load_vars=mip_vars.load_vars,
+                nodal_capacity_vars=mip_vars.nodal_capacity_vars,
+                capacity_nodes_idx=capacity_nodes_idx,
+                prob=lp_model,
+                logger=logger
+            )
 
             # add branch contingencies ---------------------------------------------------------------------------------
             if consider_contingencies:
@@ -1777,13 +1798,15 @@ def run_linear_opf_ts(grid: MultiCircuit,
                                  lodf_threshold=lodf_threshold)
 
                     # formulate the contingencies
-                    f_obj += add_linear_branches_contingencies_formulation(t_idx=local_t_idx,
-                                                                           Sbase=nc.Sbase,
-                                                                           branch_data_t=nc.branch_data,
-                                                                           branch_vars=mip_vars.branch_vars,
-                                                                           bus_vars=mip_vars.bus_vars,
-                                                                           prob=lp_model,
-                                                                           linear_multicontingencies=mctg)
+                    f_obj += add_linear_branches_contingencies_formulation(
+                        t_idx=local_t_idx,
+                        Sbase=nc.Sbase,
+                        branch_data_t=nc.branch_data,
+                        branch_vars=mip_vars.branch_vars,
+                        bus_vars=mip_vars.bus_vars,
+                        prob=lp_model,
+                        linear_multicontingencies=mctg
+                    )
                 else:
                     logger.add_warning(msg="Contingencies enabled, but no contingency groups provided")
 
@@ -1829,7 +1852,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
                               lp_model.sum(mip_vars.nodal_capacity_vars.P[local_t_idx, :]) >=
                               mip_vars.load_vars.p[local_t_idx, :].sum() - mip_vars.load_vars.shedding[
                                   local_t_idx].sum()),
-                         name="satisfy_demand_at_{0}".format(local_t_idx))
+                         name=f"satisfy_demand_at_{local_t_idx}")
 
         if progress_func is not None:
             progress_func((local_t_idx + 1) / nt * 100.0)

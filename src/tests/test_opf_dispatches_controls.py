@@ -32,7 +32,7 @@ def test_opf_hvdc():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
-                                          mip_solver=MIPSolvers.CBC,
+                                          mip_solver=MIPSolvers.HIGHS,
                                           generate_report=True)
 
     # HVDC dispatch on
@@ -72,7 +72,7 @@ def test_opf_gen():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
-                                          mip_solver=MIPSolvers.CBC,
+                                          mip_solver=MIPSolvers.HIGHS,
                                           generate_report=True)
 
     # Gen dispatch on
@@ -114,7 +114,7 @@ def test_opf_line_monitoring():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
-                                          mip_solver=MIPSolvers.CBC,
+                                          mip_solver=MIPSolvers.HIGHS,
                                           generate_report=True)
 
     # branch 2 monitoring on
@@ -158,7 +158,7 @@ def test_opf_hvdc_controls():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
-                                          mip_solver=MIPSolvers.CBC,
+                                          mip_solver=MIPSolvers.HIGHS,
                                           generate_report=True)
 
     # HVDC free mode
@@ -204,7 +204,7 @@ def test_opf_trafo_controls():
     opf_options = OptimalPowerFlowOptions(verbose=0,
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
-                                          mip_solver=MIPSolvers.CBC,
+                                          mip_solver=MIPSolvers.HIGHS,
                                           generate_report=True)
 
     # trafo fixed
