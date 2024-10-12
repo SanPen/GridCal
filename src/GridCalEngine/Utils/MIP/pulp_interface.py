@@ -103,7 +103,7 @@ class LpModel:
         if self.model is None:
             raise Exception("{} is not present".format(solver_type.value))
 
-    def save_model(self, file_name="ntc_opf_problem.lp"):
+    def save_model(self, file_name: str = "ntc_opf_problem.lp") -> None:
         """
         Save problem in LP format
         :param file_name: name of the file (.lp or .mps supported)
