@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/add_remedial_action.svg</file>
     <file>icons/plugin.svg</file>
     <file>icons/picture.svg</file>
     <file>icons/CataloguePrivate.svg</file>

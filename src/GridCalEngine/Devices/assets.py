@@ -3342,7 +3342,7 @@ class Assets:
         """
         return len(self._remedial_action_groups)
 
-    def add_remedial_action_groups(self, obj: dev.RemedialActionGroup):
+    def add_remedial_action_group(self, obj: dev.RemedialActionGroup):
         """
         Add _remedial_action group
         :param obj: ContingencyGroup
@@ -5209,7 +5209,7 @@ class Assets:
             self.add_remedial_action(obj=obj)
 
         elif obj.device_type == DeviceType.RemedialActionGroupDevice:
-            self.add_remedial_action_groups(obj=obj)
+            self.add_remedial_action_group(obj=obj)
 
         elif obj.device_type == DeviceType.Technology:
             self.add_technology(obj=obj)

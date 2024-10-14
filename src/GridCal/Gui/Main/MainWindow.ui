@@ -9945,6 +9945,7 @@ QProgressBar::chunk{
     <addaction name="actionContingency_analysis"/>
     <addaction name="actionInitialize_contingencies"/>
     <addaction name="actionAdd_selected_to_contingency"/>
+    <addaction name="actionAdd_selected_as_remedial_action"/>
     <addaction name="separator"/>
     <addaction name="actionInputs_analysis"/>
     <addaction name="actionStorage_location_suggestion"/>
@@ -10071,24 +10072,26 @@ QProgressBar::chunk{
    <addaction name="actionInputs_analysis"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionLinearAnalysis"/>
-   <addaction name="actionAdd_selected_to_contingency"/>
-   <addaction name="actionContingency_analysis"/>
    <addaction name="actionSigma_analysis"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
+   <addaction name="actionContingency_analysis"/>
    <addaction name="separator"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
    <addaction name="actionNodal_capacity"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
-   <addaction name="actionAdd_selected_as_new_investment"/>
    <addaction name="actionInvestments_evaluation"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionClustering"/>
    <addaction name="actionUse_clustering"/>
    <addaction name="actionEdit_simulation_time_limits"/>
    <addaction name="actionactivate_time_series"/>
+   <addaction name="separator"/>
+   <addaction name="actionAdd_selected_to_contingency"/>
+   <addaction name="actionAdd_selected_as_remedial_action"/>
+   <addaction name="actionAdd_selected_as_new_investment"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -10098,6 +10101,7 @@ QProgressBar::chunk{
    <addaction name="actionDelete_from_the_diagram"/>
    <addaction name="separator"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
+   <addaction name="separator"/>
   </widget>
   <action name="actionOpen_file">
    <property name="icon">
@@ -11658,6 +11662,18 @@ QProgressBar::chunk{
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionAdd_selected_as_remedial_action">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/add_remedial_action.svg</normaloff>:/Icons/icons/add_remedial_action.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add selected as new remedial action</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
  </widget>

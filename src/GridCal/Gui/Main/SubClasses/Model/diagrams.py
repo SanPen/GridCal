@@ -240,6 +240,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionSelect_buses_by_zone.triggered.connect(lambda: self.select_buses_by_property('zone'))
         self.ui.actionSelect_buses_by_country.triggered.connect(lambda: self.select_buses_by_property('country'))
         self.ui.actionAdd_selected_to_contingency.triggered.connect(self.add_selected_to_contingency)
+        self.ui.actionAdd_selected_as_remedial_action.triggered.connect(self.add_selected_to_remedial_action)
         self.ui.actionAdd_selected_as_new_investment.triggered.connect(self.add_selected_to_investment)
         self.ui.actionZoom_in.triggered.connect(self.zoom_in)
         self.ui.actionZoom_out.triggered.connect(self.zoom_out)
@@ -1747,7 +1748,7 @@ class DiagramsMain(CompiledArraysMain):
 
             if len(selected) > 0:
                 names = [elm.type_name + ": " + elm.name for elm in selected]
-                group_text = "Contingency " + str(len(self.circuit.get_contingency_groups()))
+                group_text = "Contingency " + selected[0].name
                 self.contingency_checks_diag = CheckListDialogue(objects_list=names,
                                                                  title="Add contingency",
                                                                  ask_for_group_name=True,
@@ -1767,13 +1768,52 @@ class DiagramsMain(CompiledArraysMain):
                         elm = selected[i]
                         con = dev.Contingency(device_idtag=elm.idtag,
                                               code=elm.code,
-                                              name=elm.name,
+                                              name="Contingency " + elm.name,
                                               prop="active",
                                               value=0,
                                               group=group)
                         self.circuit.add_contingency(con)
             else:
                 info_msg("Select some elements in the schematic first", "Add selected to contingency")
+
+    def add_selected_to_remedial_action(self):
+        """
+        Add contingencies from the schematic selection
+        """
+        if self.circuit.valid_for_simulation():
+
+            # get the selected buses
+            selected = self.get_selected_devices()
+
+            if len(selected) > 0:
+                names = [elm.type_name + ": " + elm.name for elm in selected]
+                group_text = "RA " + selected[0].name
+                self.ra_checks_diag = CheckListDialogue(objects_list=names,
+                                                        title="Add remedial action",
+                                                        ask_for_group_name=True,
+                                                        group_label="Remedial action name",
+                                                        group_text=group_text)
+                self.ra_checks_diag.setModal(True)
+                self.ra_checks_diag.exec_()
+
+                if self.ra_checks_diag.is_accepted:
+
+                    ra_group = dev.RemedialActionGroup(idtag=None,
+                                                       name=self.ra_checks_diag.get_group_text(),
+                                                       category="single" if len(selected) == 1 else "multiple")
+                    self.circuit.add_remedial_action_group(ra_group)
+
+                    for i in self.ra_checks_diag.selected_indices:
+                        elm = selected[i]
+                        ra = dev.RemedialAction(device_idtag=elm.idtag,
+                                                code=elm.code,
+                                                name="RA " + elm.name,
+                                                prop="active",
+                                                value=0,
+                                                group=ra_group)
+                        self.circuit.add_remedial_action(ra)
+            else:
+                info_msg("Select some elements in the schematic first", "Add selected to remedial action")
 
     def add_selected_to_investment(self) -> None:
         """
