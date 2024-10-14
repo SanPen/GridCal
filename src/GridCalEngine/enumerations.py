@@ -1014,6 +1014,9 @@ class DeviceType(Enum):
     ContingencyDevice = 'Contingency'
     ContingencyGroupDevice = 'Contingency Group'
 
+    RemedialActionDevice = 'Remedial action'
+    RemedialActionGroupDevice = 'Remedial action Group'
+
     InvestmentDevice = 'Investment'
     InvestmentsGroupDevice = 'Investments Group'
 

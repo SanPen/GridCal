@@ -69,4 +69,7 @@ def test_line_templates_finding():
     opener = FileOpen(fname)
     grid = opener.open()
 
+    if opener.logger.has_logs():
+        opener.logger.print()
+
     assert not opener.logger.has_logs()
