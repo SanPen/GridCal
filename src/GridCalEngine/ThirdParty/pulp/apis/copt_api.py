@@ -5,13 +5,11 @@ import subprocess
 import warnings
 
 from uuid import uuid4
-from GridCalEngine.ThirdParty.pulp.apis.core import (
-    sparse,
+from time import monotonic as clock
+from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import (
     ctypesArrayFill,
-    PulpSolverError,
     LpSolver,
     LpSolver_CMD,
-    clock,
     operating_system,
 )
 from GridCalEngine.ThirdParty.pulp.constants import (
@@ -20,11 +18,12 @@ from GridCalEngine.ThirdParty.pulp.constants import (
     LpStatusInfeasible,
     LpStatusUnbounded,
     LpStatusUndefined,
+    PulpSolverError
 )
+from GridCalEngine.ThirdParty.pulp.sparse import Matrix
 from GridCalEngine.ThirdParty.pulp.constants import LpContinuous, LpBinary, LpInteger
 from GridCalEngine.ThirdParty.pulp.constants import LpConstraintEQ, LpConstraintLE, LpConstraintGE
 from GridCalEngine.ThirdParty.pulp.constants import LpMinimize, LpMaximize
-
 
 # COPT string convention
 if sys.version_info >= (3, 0):
@@ -43,15 +42,15 @@ class COPT_CMD(LpSolver_CMD):
     name = "COPT_CMD"
 
     def __init__(
-        self,
-        path=None,
-        keepFiles=0,
-        mip=True,
-        msg=True,
-        mip_start=False,
-        warmStart=False,
-        logfile=None,
-        **params,
+            self,
+            path=None,
+            keepFiles=0,
+            mip=True,
+            msg=True,
+            mip_start=False,
+            warmStart=False,
+            logfile=None,
+            **params,
     ):
         """
         Initialize command-line solver
@@ -318,13 +317,13 @@ class COPT_DLL(LpSolver):
         SetLogFile = coptlib.COPT_SetLogFile
 
         def __init__(
-            self,
-            mip=True,
-            msg=True,
-            mip_start=False,
-            warmStart=False,
-            logfile=None,
-            **params,
+                self,
+                mip=True,
+                msg=True,
+                mip_start=False,
+                warmStart=False,
+                logfile=None,
+                **params,
         ):
             """
             Initialize COPT solver
@@ -480,7 +479,7 @@ class COPT_DLL(LpSolver):
             rowsense = (ctypes.c_char * nrow)()
             rowname = (ctypes.c_char_p * nrow)()
 
-            spmat = sparse.Matrix(list(range(nrow)), list(range(ncol)))
+            spmat = Matrix(list(range(nrow)), list(range(ncol)))
 
             # Objective sense and constant offset
             objsen = coptobjsen[lp.sense]
@@ -872,14 +871,14 @@ class COPT(LpSolver):
     else:
 
         def __init__(
-            self,
-            mip=True,
-            msg=True,
-            timeLimit=None,
-            gapRel=None,
-            warmStart=False,
-            logPath=None,
-            **solverParams,
+                self,
+                mip=True,
+                msg=True,
+                timeLimit=None,
+                gapRel=None,
+                warmStart=False,
+                logPath=None,
+                **solverParams,
         ):
             """
             :param bool mip: if False, assume LP even if integer variables

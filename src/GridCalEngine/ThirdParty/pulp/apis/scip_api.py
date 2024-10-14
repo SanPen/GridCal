@@ -29,8 +29,8 @@ import os
 import sys
 import warnings
 
-from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver_CMD, LpSolver, subprocess, PulpSolverError
-from GridCalEngine.ThirdParty.pulp.apis.core import scip_path, fscip_path
+from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, LpSolver, subprocess
+from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import scip_path, fscip_path
 import GridCalEngine.ThirdParty.pulp.constants as constants
 
 from typing import Dict, List, Optional, Tuple
@@ -116,7 +116,7 @@ class SCIP_CMD(LpSolver_CMD):
     def actualSolve(self, lp):
         """Solve a well formulated lp problem"""
         if not self.executable(self.path):
-            raise PulpSolverError("PuLP: cannot execute " + self.path)
+            raise constants.PulpSolverError("PuLP: cannot execute " + self.path)
 
         tmpLp, tmpSol, tmpOptions = self.create_tmp_files(lp.name, "lp", "sol", "set")
         lp.writeLP(tmpLp)
@@ -170,7 +170,7 @@ class SCIP_CMD(LpSolver_CMD):
         subprocess.check_call(command, stdout=sys.stdout, stderr=sys.stderr)
 
         if not os.path.exists(tmpSol):
-            raise PulpSolverError("PuLP: Error while executing " + self.path)
+            raise constants.PulpSolverError("PuLP: Error while executing " + self.path)
         status, values = self.readsol(tmpSol)
         # Make sure to add back in any 0-valued variables SCIP leaves out.
         finalVals = {}
@@ -193,7 +193,7 @@ class SCIP_CMD(LpSolver_CMD):
                 assert comps[0] == "solution status"
                 assert len(comps) == 2
             except Exception:
-                raise PulpSolverError(f"Can't get SCIP solver status: {line!r}")
+                raise constants.PulpSolverError(f"Can't get SCIP solver status: {line!r}")
 
             status = SCIP_CMD.SCIP_STATUSES.get(
                 comps[1].strip(), constants.LpStatusUndefined
@@ -211,7 +211,7 @@ class SCIP_CMD(LpSolver_CMD):
                 assert len(comps) == 2
                 float(comps[1].strip())
             except Exception:
-                raise PulpSolverError(f"Can't get SCIP solver objective: {line!r}")
+                raise constants.PulpSolverError(f"Can't get SCIP solver objective: {line!r}")
 
             # Parse the variable values.
             for line in f:
@@ -219,7 +219,7 @@ class SCIP_CMD(LpSolver_CMD):
                     comps = line.split()
                     values[comps[0]] = float(comps[1])
                 except:
-                    raise PulpSolverError(f"Can't read SCIP solver output: {line!r}")
+                    raise constants.PulpSolverError(f"Can't read SCIP solver output: {line!r}")
 
             return status, values
 
@@ -294,7 +294,7 @@ class FSCIP_CMD(LpSolver_CMD):
     def actualSolve(self, lp):
         """Solve a well formulated lp problem"""
         if not self.executable(self.path):
-            raise PulpSolverError("PuLP: cannot execute " + self.path)
+            raise constants.PulpSolverError("PuLP: cannot execute " + self.path)
 
         tmpLp, tmpSol, tmpOptions, tmpParams = self.create_tmp_files(
             lp.name, "lp", "sol", "set", "prm"
@@ -364,7 +364,7 @@ class FSCIP_CMD(LpSolver_CMD):
         )
 
         if not os.path.exists(tmpSol):
-            raise PulpSolverError("PuLP: Error while executing " + self.path)
+            raise constants.PulpSolverError("PuLP: Error while executing " + self.path)
         status, values = self.readsol(tmpSol)
         # Make sure to add back in any 0-valued variables SCIP leaves out.
         finalVals = {}
@@ -423,7 +423,7 @@ class FSCIP_CMD(LpSolver_CMD):
             status_line = file.readline()
             status = FSCIP_CMD.parse_status(status_line)
             if status is None:
-                raise PulpSolverError(f"Can't get FSCIP solver status: {status_line!r}")
+                raise constants.PulpSolverError(f"Can't get FSCIP solver status: {status_line!r}")
 
             if status in FSCIP_CMD.NO_SOLUTION_STATUSES:
                 return status, {}
@@ -432,7 +432,7 @@ class FSCIP_CMD(LpSolver_CMD):
             objective_line = file.readline()
             objective = FSCIP_CMD.parse_objective(objective_line)
             if objective is None:
-                raise PulpSolverError(
+                raise constants.PulpSolverError(
                     f"Can't get FSCIP solver objective: {objective_line!r}"
                 )
 
@@ -441,7 +441,7 @@ class FSCIP_CMD(LpSolver_CMD):
             for variable_line in file:
                 variable = FSCIP_CMD.parse_variable(variable_line)
                 if variable is None:
-                    raise PulpSolverError(
+                    raise constants.PulpSolverError(
                         f"Can't read FSCIP solver output: {variable_line!r}"
                     )
 
@@ -478,7 +478,7 @@ class SCIP_PY(LpSolver):
 
         def actualSolve(self, lp):
             """Solve a well formulated lp problem"""
-            raise PulpSolverError(f"The {self.name} solver is not available")
+            raise constants.PulpSolverError(f"The {self.name} solver is not available")
 
     else:
 
@@ -707,6 +707,6 @@ class SCIP_PY(LpSolver):
             # TODO: add ability to resolve pysciptopt models
             # - http://listserv.zib.de/pipermail/scip/2020-May/003977.html
             # - https://scipopt.org/doc-8.0.0/html/REOPT.php
-            raise PulpSolverError(
+            raise constants.PulpSolverError(
                 f"The {self.name} solver does not implement resolving"
             )

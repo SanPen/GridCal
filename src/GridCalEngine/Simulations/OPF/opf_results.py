@@ -237,7 +237,7 @@ class OptimalPowerFlowResults(ResultsTemplate):
                                   'Loading': self.hvdc_loading},
                             index=self.hvdc_names)
 
-    def mdl(self, result_type) -> "ResultsTable":
+    def mdl(self, result_type) -> ResultsTable:
         """
         Plot the results
         :param result_type: type of results (string)

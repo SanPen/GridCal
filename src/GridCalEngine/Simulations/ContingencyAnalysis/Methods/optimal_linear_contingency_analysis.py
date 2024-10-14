@@ -120,7 +120,8 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
                                  energy_0=None,
                                  fluid_level_0=None,
                                  logger=logger,
-                                 export_model_fname=None)
+                                 export_model_fname=None,
+                                 verbose=opf_options.verbose)
 
     # for each contingency group
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):

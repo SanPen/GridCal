@@ -21,6 +21,7 @@ That means that solves the OPF problem for a complete time series at once
 """
 import numpy as np
 from typing import List, Union, Tuple, Callable
+
 from GridCalEngine.enumerations import MIPSolvers, ZonalGrouping
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
@@ -350,7 +351,9 @@ class BranchNtcVars:
         self.flow_constraints_lb = np.zeros((nt, n_elm), dtype=object)
 
         self.rates = np.zeros((nt, n_elm), dtype=float)
+        self.contingency_rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
+        self.alpha = np.zeros((nt, n_elm), dtype=float)
 
         self.monitor = np.zeros((nt, n_elm), dtype=bool)
         self.monitor_type = np.zeros((nt, n_elm), dtype=object)
@@ -367,6 +370,8 @@ class BranchNtcVars:
         data = BranchNtcVars(nt=nt, n_elm=n_elm)
 
         data.rates = self.rates
+        data.contingency_rates = self.contingency_rates
+        data.alpha = self.alpha
 
         for t in range(nt):
             for i in range(n_elm):
@@ -488,7 +493,10 @@ class NtcVars:
         self.hvdc_vars = HvdcNtcVars(nt=nt, n_elm=n_hvdc)
 
         # power shift
-        self.power_shift = np.zeros(nt, dtype=object)
+        self.power_shift = np.zeros(nt, dtype=object)  # array of vars at the beginning
+
+        # structural NTC
+        self.structural_ntc = np.zeros(nt, dtype=float)
 
     def get_values(self, Sbase: float, model: LpModel) -> "NtcVars":
         """
@@ -840,13 +848,13 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
 
                     # add upper rate constraint
                     prob.add_cst(
-                        cst=contingency_flow + pos_slack - neg_slack <= branch_data_t.rates[m] / Sbase,
+                        cst=contingency_flow + pos_slack - neg_slack <= branch_data_t.contingency_rates[m] / Sbase,
                         name=join("br_cst_flow_upper_lim_", [t_idx, m, c])
                     )
 
                     # add lower rate constraint
                     prob.add_cst(
-                        cst=contingency_flow + pos_slack - neg_slack >= -branch_data_t.rates[m] / Sbase,
+                        cst=contingency_flow + pos_slack - neg_slack >= -branch_data_t.contingency_rates[m] / Sbase,
                         name=join("br_cst_flow_lower_lim_", [t_idx, m, c])
                     )
 
@@ -985,7 +993,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           logger: Logger = Logger(),
                           progress_text: Union[None, Callable[[str], None]] = None,
                           progress_func: Union[None, Callable[[float], None]] = None,
-                          export_model_fname: Union[None, str] = None) -> NtcVars:
+                          export_model_fname: Union[None, str] = None,
+                          verbose: int = 0) -> NtcVars:
     """
 
     :param grid: MultiCircuit instance
@@ -1007,6 +1016,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     :param progress_text: function to report text messages
     :param progress_func: function to report progress
     :param export_model_fname: Export the model into LP and MPS?
+    :param verbose: Verbosity level
     :return: NtcVars class with the results
     """
     mode_2_int = {AvailableTransferMode.Generation: 0,
@@ -1074,7 +1084,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             skip_generation_limits=skip_generation_limits,
             ntc_vars=mip_vars,
             prob=lp_model,
-            logger=logger)
+            logger=logger
+        )
 
         # formulate hvdc -------------------------------------------------------------------------------------------
         f_obj += add_linear_hvdc_formulation(
@@ -1083,7 +1094,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             hvdc_data_t=nc.hvdc_data,
             hvdc_vars=mip_vars.hvdc_vars,
             vars_bus=mip_vars.bus_vars,
-            prob=lp_model)
+            prob=lp_model
+        )
 
         if zonal_grouping == ZonalGrouping.NoGrouping:
 
@@ -1105,9 +1117,11 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                                   idx1=bus_idx_from,
                                   idx2=bus_idx_to,
                                   mode=mode_2_int[transfer_method])
+            mip_vars.branch_vars.alpha[t_idx, :] = alpha
 
             # compute the structural NTC: this is the sum of ratings in the inter area
             structural_ntc = nc.get_structural_ntc(bus_idx_from=bus_idx_from, bus_idx_to=bus_idx_to)
+            mip_vars.structural_ntc[t_idx] = structural_ntc
 
             # formulate branches -----------------------------------------------------------------------------------
 
@@ -1126,6 +1140,9 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 ntc_load_rule=ntc_load_rule,
                 inf=1e20
             )
+
+            mip_vars.branch_vars.rates[t_idx, :] = nc.branch_data.rates
+            mip_vars.branch_vars.contingency_rates[t_idx, :] = nc.branch_data.contingency_rates
 
             # formulate nodes ---------------------------------------------------------------------------------------
             add_linear_node_balance(t_idx=t_idx,
@@ -1164,7 +1181,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 else:
                     logger.add_warning(msg="Contingencies enabled, but no contingency groups provided")
 
-
         elif zonal_grouping == ZonalGrouping.All:
             # this is the copper plate approach
             pass
@@ -1186,7 +1202,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve(robust=True)
+    status = lp_model.solve(robust=True, show_logs=verbose>0)
 
     # gather the results
     logger.add_info("Status", value=str(status))

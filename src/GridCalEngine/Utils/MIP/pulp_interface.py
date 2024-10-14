@@ -23,6 +23,7 @@ other solver interface easily
 
 from typing import List, Union
 import GridCalEngine.ThirdParty.pulp as pulp
+from GridCalEngine.ThirdParty.pulp import HiGHS, CPLEX_CMD
 from GridCalEngine.ThirdParty.pulp.pulp import LpAffineExpression as LpExp
 from GridCalEngine.ThirdParty.pulp.pulp import LpConstraint as LpCst
 from GridCalEngine.ThirdParty.pulp.pulp import LpVariable as LpVar
@@ -102,7 +103,7 @@ class LpModel:
         if self.model is None:
             raise Exception("{} is not present".format(solver_type.value))
 
-    def save_model(self, file_name="ntc_opf_problem.lp"):
+    def save_model(self, file_name: str = "ntc_opf_problem.lp") -> None:
         """
         Save problem in LP format
         :param file_name: name of the file (.lp or .mps supported)
@@ -116,7 +117,7 @@ class LpModel:
             raise Exception('Unsupported file format')
 
         # with open(file_name, "w") as f:
-            # f.write(lp_content)
+        # f.write(lp_content)
 
     def add_int(self, lb: int, ub: int, name: str = "") -> LpVar:
         """
@@ -142,7 +143,7 @@ class LpModel:
         self.model.addVariable(var)
         return var
 
-    def add_cst(self, cst: pulp.LpConstraint, name: str = "") -> Union[LpCst, int]:
+    def add_cst(self, cst: LpCst, name: str = "") -> Union[LpCst, int]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)
@@ -163,37 +164,46 @@ class LpModel:
         """
         return pulp.lpSum(cst)
 
-    def minimize(self, obj_function):
+    def minimize(self, obj_function: LpExp):
         """
         Set the objective function with minimization sense
         :param obj_function: expression to minimize
         """
         self.model.setObjective(obj=obj_function)
 
-    def solve(self, robust: bool = False) -> int:
+    def get_solver(self, show_logs: bool = False):
         """
-        Solve the model
-        :param robust: In this interface, this is useless
+
+        :param show_logs:
         :return:
         """
-
-        # 'GLPK_CMD', 'PYGLPK', 'CPLEX_CMD', 'CPLEX_PY', 'CPLEX_DLL', 'GUROBI', 'GUROBI_CMD',
-        # 'MOSEK', 'XPRESS', 'PULP_CBC_CMD', 'COIN_CMD', 'COINMP_DLL', 'CHOCO_CMD', 'MIPCL_CMD', 'SCIP_CMD'
-
         if self.solver_type == MIPSolvers.HIGHS:
-            solver = 'HiGHS'
+            return HiGHS(mip=self.model.isMIP(), msg=show_logs)
+
         elif self.solver_type == MIPSolvers.SCIP:
-            solver = 'SCIP_CMD'
+            return pulp.getSolver('SCIP_CMD')
+
         elif self.solver_type == MIPSolvers.CPLEX:
-            solver = 'CPLEX_CMD'
+            return CPLEX_CMD(mip=self.model.isMIP(), msg=show_logs)
+
         elif self.solver_type == MIPSolvers.GUROBI:
-            solver = 'GUROBI'
+            return pulp.getSolver('GUROBI')
+
         elif self.solver_type == MIPSolvers.XPRESS:
-            solver = 'XPRESS'
+            return pulp.getSolver('XPRESS')
+
         else:
             raise Exception('PuLP Unsupported MIP solver ' + self.solver_type.value)
 
-        status = self.model.solve(solver=pulp.getSolver(solver))
+    def solve(self, robust: bool = False, show_logs: bool = False) -> int:
+        """
+        Solve the model
+        :param robust: In this interface, this is useless
+        :param show_logs: In this interface, this is useless
+        :return:
+        """
+        # solve the model
+        status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
 
         if status != self.OPTIMAL:
             self.originally_infeasible = True
@@ -239,8 +249,7 @@ class LpModel:
                 debug_model.setObjective(debugging_f_obj)
 
                 # solve the debug model
-                print("SOLVING SLACKS MODEL -------------------------------")
-                status_d = debug_model.solve(solver=pulp.getSolver(solver))
+                status_d = debug_model.solve(solver=self.get_solver(show_logs=show_logs))
 
                 # at this point we can delete the debug model
                 del debug_model
@@ -275,13 +284,11 @@ class LpModel:
                         # register the relation for later
                         cst_slack_map.append(cst_name)
 
-
                     # set the modified (original) objective function
                     self.model.setObjective(self.model.objective)
 
                     # solve the modified (original) model
-                    print("SOLVING RELAXED MODEL -------------------------------")
-                    status = self.model.solve(solver=pulp.getSolver(solver))
+                    status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
 
                     if status == LpModel.OPTIMAL:
 
@@ -300,7 +307,6 @@ class LpModel:
 
                 else:
                     self.logger.add_warning("Unable to relax the model, the debug model failed")
-
 
         return status
 

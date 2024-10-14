@@ -3,9 +3,13 @@
 @author: Franco Peschiera
 
 """
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import re
 import GridCalEngine.ThirdParty.pulp.constants as const
+
+if TYPE_CHECKING:
+    from GridCalEngine.ThirdParty.pulp import LpProblem
 
 CORE_FILE_ROW_MODE = "ROWS"
 CORE_FILE_COL_MODE = "COLUMNS"
@@ -159,13 +163,31 @@ def readMPS(path, sense, dropConsNames=False):
 
 
 def readMPSSetBounds(line, variable_dict):
+    """
+
+    :param line:
+    :param variable_dict:
+    :return:
+    """
     bound = line[0]
     var_name = line[2]
 
     def set_one_bound(bound_type, value):
+        """
+
+        :param bound_type:
+        :param value:
+        :return:
+        """
         variable_dict[var_name][BOUNDS_EQUIV[bound_type]] = value
 
     def set_both_bounds(value_low, value_up):
+        """
+
+        :param value_low:
+        :param value_up:
+        :return:
+        """
         set_one_bound("LO", value_low)
         set_one_bound("UP", value_up)
 
@@ -188,32 +210,46 @@ def readMPSSetBounds(line, variable_dict):
 
 
 def readMPSSetRhs(line, constraintsDict):
+    """
+
+    :param line:
+    :param constraintsDict:
+    :return:
+    """
     constraintsDict[line[1]]["constant"] = -float(line[2])
     if len(line) == 5:  # read fields 5, 6
         constraintsDict[line[3]]["constant"] = -float(line[4])
     return
 
 
-def writeMPS(
-    LpProblem, filename, mpsSense=0, rename=0, mip=1, with_objsense: bool = False
-):
-    wasNone, dummyVar = LpProblem.fixObjective()
+def writeMPS(lp_problem: LpProblem, filename: str, mpsSense=0, rename=0, mip=1, with_objsense: bool = False):
+    """
+
+    :param lp_problem:
+    :param filename:
+    :param mpsSense:
+    :param rename:
+    :param mip:
+    :param with_objsense:
+    :return:
+    """
+    wasNone, dummyVar = lp_problem.fixObjective()
     if mpsSense == 0:
-        mpsSense = LpProblem.sense
-    cobj = LpProblem.objective
-    if mpsSense != LpProblem.sense:
+        mpsSense = lp_problem.sense
+    cobj = lp_problem.objective
+    if mpsSense != lp_problem.sense:
         n = cobj.name
         cobj = -cobj
         cobj.name = n
     if rename:
-        constrNames, varNames, cobj.name = LpProblem.normalisedNames()
+        constrNames, varNames, cobj.name = lp_problem.normalisedNames()
         # No need to call self.variables() again, we have just filled self._variables:
-        vs = LpProblem._variables
+        vs = lp_problem.get_variables()
     else:
-        vs = LpProblem.variables()
+        vs = lp_problem.variables()
         varNames = {v.name: v.name for v in vs}
-        constrNames = {c: c for c in LpProblem.constraints}
-    model_name = LpProblem.name
+        constrNames = {c: c for c in lp_problem.constraints}
+    model_name = lp_problem.name
     if rename:
         model_name = "MODEL"
     objName = cobj.name
@@ -223,12 +259,12 @@ def writeMPS(
     # constraints
     row_lines = [
         " " + const.LpConstraintTypeToMps[c.sense] + "  " + constrNames[k] + "\n"
-        for k, c in LpProblem.constraints.items()
+        for k, c in lp_problem.constraints.items()
     ]
     # Creation of a dict of dict:
     # coefs[variable_name][constraint_name] = coefficient
     coefs = {varNames[v.name]: {} for v in vs}
-    for k, c in LpProblem.constraints.items():
+    for k, c in lp_problem.constraints.items():
         k = constrNames[k]
         for v, value in c.items():
             coefs[varNames[v.name]][k] = value
@@ -245,7 +281,7 @@ def writeMPS(
     rhs_lines = [
         "    RHS       %-8s  % .12e\n"
         % (constrNames[k], -c.constant if c.constant != 0 else 0)
-        for k, c in LpProblem.constraints.items()
+        for k, c in lp_problem.constraints.items()
     ]
     # bounds
     bound_lines = []
@@ -269,7 +305,7 @@ def writeMPS(
         f.write("BOUNDS\n")
         f.write("".join(bound_lines))
         f.write("ENDATA\n")
-    LpProblem.restoreObjective(wasNone, dummyVar)
+    lp_problem.restoreObjective(wasNone, dummyVar)
     # returns the variables, in writing order
     if rename == 0:
         return vs
@@ -278,6 +314,16 @@ def writeMPS(
 
 
 def writeMPSColumnLines(cv, variable, mip, name, cobj, objName):
+    """
+
+    :param cv:
+    :param variable:
+    :param mip:
+    :param name:
+    :param cobj:
+    :param objName:
+    :return:
+    """
     columns_lines = []
     if mip and variable.cat == const.LpInteger:
         columns_lines.append("    MARK      'MARKER'                 'INTORG'\n")
@@ -296,6 +342,13 @@ def writeMPSColumnLines(cv, variable, mip, name, cobj, objName):
 
 
 def writeMPSBoundLines(name, variable, mip):
+    """
+
+    :param name:
+    :param variable:
+    :param mip:
+    :return:
+    """
     if variable.lowBound is not None and variable.lowBound == variable.upBound:
         return [" FX BND       %-8s  % .12e\n" % (name, variable.lowBound)]
     elif (
@@ -326,27 +379,36 @@ def writeMPSBoundLines(name, variable, mip):
     return bound_lines
 
 
-def writeLP(LpProblem, filename, writeSOS=1, mip=1, max_length=100):
+def writeLP(lp_problem: LpProblem, filename: str, writeSOS=1, mip=1, max_length=100):
+    """
+
+    :param lp_problem:
+    :param filename:
+    :param writeSOS:
+    :param mip:
+    :param max_length:
+    :return:
+    """
     f = open(filename, "w")
-    f.write("\\* " + LpProblem.name + " *\\\n")
-    if LpProblem.sense == 1:
+    f.write("\\* " + lp_problem.name + " *\\\n")
+    if lp_problem.sense == 1:
         f.write("Minimize\n")
     else:
         f.write("Maximize\n")
-    wasNone, objectiveDummyVar = LpProblem.fixObjective()
-    objName = LpProblem.objective.name
+    wasNone, objectiveDummyVar = lp_problem.fixObjective()
+    objName = lp_problem.objective.name
     if not objName:
         objName = "OBJ"
-    f.write(LpProblem.objective.asCplexLpAffineExpression(objName, constant=0))
+    f.write(lp_problem.objective.asCplexLpAffineExpression(objName, constant=0))
     f.write("Subject To\n")
-    ks = list(LpProblem.constraints.keys())
+    ks = list(lp_problem.constraints.keys())
     ks.sort()
     dummyWritten = False
     for k in ks:
-        constraint = LpProblem.constraints[k]
+        constraint = lp_problem.constraints[k]
         if not list(constraint.keys()):
             # empty constraint add the dummyVar
-            dummyVar = LpProblem.get_dummyVar()
+            dummyVar = lp_problem.get_dummyVar()
             constraint += dummyVar
             # set this dummyvar to zero so infeasible problems are not made feasible
             if not dummyWritten:
@@ -354,10 +416,10 @@ def writeLP(LpProblem, filename, writeSOS=1, mip=1, max_length=100):
                 dummyWritten = True
         f.write(constraint.asCplexLpConstraint(k))
     # check if any names are longer than 100 characters
-    LpProblem.checkLengthVars(max_length)
-    vs = LpProblem.variables()
+    lp_problem.checkLengthVars(max_length)
+    vs = lp_problem.variables()
     # check for repeated names
-    LpProblem.checkDuplicateVars()
+    lp_problem.checkDuplicateVars()
     # Bounds on non-"positive" variables
     # Note: XPRESS and CPLEX do not interpret integer variables without
     # explicit bounds
@@ -387,19 +449,19 @@ def writeLP(LpProblem, filename, writeSOS=1, mip=1, max_length=100):
             for v in vg:
                 f.write(f"{v.name}\n")
     # Special Ordered Sets
-    if writeSOS and (LpProblem.sos1 or LpProblem.sos2):
+    if writeSOS and (lp_problem.sos1 or lp_problem.sos2):
         f.write("SOS\n")
-        if LpProblem.sos1:
-            for sos in LpProblem.sos1.values():
+        if lp_problem.sos1:
+            for sos in lp_problem.sos1.values():
                 f.write("S1:: \n")
                 for v, val in sos.items():
                     f.write(f" {v.name}: {val:.12g}\n")
-        if LpProblem.sos2:
-            for sos in LpProblem.sos2.values():
+        if lp_problem.sos2:
+            for sos in lp_problem.sos2.values():
                 f.write("S2:: \n")
                 for v, val in sos.items():
                     f.write(f" {v.name}: {val:.12g}\n")
     f.write("End\n")
     f.close()
-    LpProblem.restoreObjective(wasNone, objectiveDummyVar)
+    lp_problem.restoreObjective(wasNone, objectiveDummyVar)
     return vs

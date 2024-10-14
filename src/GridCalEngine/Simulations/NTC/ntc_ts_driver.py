@@ -123,7 +123,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 logger=self.logger,
                 progress_text=None,
                 progress_func=None,
-                export_model_fname=self.options.opf_options.export_model_fname
+                export_model_fname=self.options.opf_options.export_model_fname,
+                verbose=self.options.opf_options.verbose
             )
 
             self.results.voltage[t_idx, :] = np.ones(opf_vars.nbus) * np.exp(1j * opf_vars.bus_vars.theta)
