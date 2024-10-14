@@ -1359,6 +1359,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
     """
 
     for mc_elm in multicircuit_model.shunts:
+
         object_template = cgmes_model.get_class_type("LinearShuntCompensator")
         lsc = object_template(rdfid=form_rdfid(mc_elm.idtag))
         lsc.name = mc_elm.name
@@ -1569,6 +1570,49 @@ def create_sv_power_flow(cgmes_model: CgmesCircuit,
     cgmes_model.add(sv_pf)
 
 
+def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
+                                         section: int,
+                                         cgmes_shunt_compensator) -> None:
+    """
+    Creates a SvShuntCompensatorSections instance
+
+    :param cgmes_model: Cgmes Circuit
+    :param section:
+    :param cgmes_shunt_compensator: Linear or Non-linear
+        ShuntCompensator instance from cgmes model
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvShuntCompensatorSections")
+    new_rdf_id = get_new_rdfid()
+    sv_scs = object_template(rdfid=new_rdf_id)
+
+    sv_scs.sections = section
+    sv_scs.ShuntCompensator = cgmes_shunt_compensator
+
+    cgmes_model.add(sv_scs)
+
+
+def create_sv_status(cgmes_model: CgmesCircuit,
+                     in_service: int,
+                     cgmes_conducting_equipment) -> None:
+    """
+    Creates a SvStatus instance
+
+    :param cgmes_model: Cgmes Circuit
+    :param in_service: is active paramater
+    :param cgmes_conducting_equipment: cgmes CondEq
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvStatus")
+    new_rdf_id = get_new_rdfid()
+    sv_status = object_template(rdfid=new_rdf_id)
+
+    sv_status.inService = in_service
+    # TODO sv_status.ConductingEquipment = cgmes_conducting_equipment
+
+    cgmes_model.add(sv_status)
+
+
 def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
                           nc: NumericalCircuit,
                           cgmes_model: CgmesCircuit,
@@ -1695,10 +1739,14 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results, logger)
 
         # SV Status: for ConductingEquipment
-        # active parameter
+        # TODO create_sv_status() elements.active parameter
 
         # SVTapStep: handled at transformer function
         get_cgmes_sv_tap_step(gc_model, num_circ, cgmes_model, pf_results, logger)
+
+        # SvShuntCompensatorSections:
+        # create_sv_shunt_compensator_sections()
+        # TODO call it from shunt function or write get_cgmes.. func
 
         # Topo Islands
         get_cgmes_topological_island(gc_model, cgmes_model, logger)
@@ -1709,5 +1757,5 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         logger.add_error(msg="Missing power flow result for CGMES export.")
 
     if logger.__len__() != 0:
-        print("Logger!")
+        print("Logger is not empty! (cgmes export)")
     return cgmes_model

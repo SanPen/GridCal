@@ -33,7 +33,7 @@ from GridCalEngine.IO.cim.cgmes.cgmes_utils import (get_nominal_voltage,
                                                     build_rates_dict)
 from GridCalEngine.data_logger import DataLogger
 from GridCalEngine.IO.cim.cgmes.base import Base
-from GridCalEngine.enumerations import TapChangerTypes
+from GridCalEngine.enumerations import TapChangerTypes, TapPhaseControl, TapModuleControl
 
 
 class CnLookup:
@@ -1042,24 +1042,59 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
 
         for tap_changer in device_list:
 
-            # Different attributes
+            # Transformer attributes
+            tap_module_control_mode: TapModuleControl = TapModuleControl.fixed
+            tap_phase_control_mode: TapPhaseControl = TapPhaseControl.fixed
+            # TapChanger attributes
             asymmetry_angle = 90
             tc_type = TapChangerTypes.NoRegulation
 
             if isinstance(tap_changer, ratio_tc_class):
                 # Control from Control object
-                if (getattr(tap_changer, 'TapChangerControl', None) and
-                        tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage):
-                    tc_type = TapChangerTypes.VoltageRegulation
+                if getattr(tap_changer, 'TapChangerControl', None):
+                    if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.voltage
+                            and tap_changer.TapChangerControl.enabled):
+                        tc_type = TapChangerTypes.VoltageRegulation
+                else:
+                    logger.add_warning(msg="No TapChangerControl found for RatioTapChanger",
+                                       device=tap_changer.rdfid,
+                                       device_class=tap_changer.tpe,
+                                       device_property="control for TapChanger",
+                                       value=type(tap_changer))
             elif isinstance(tap_changer, phase_sy_class):
                 tc_type = TapChangerTypes.Symmetrical
+
+                if getattr(tap_changer, 'TapChangerControl', None):
+                    if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
+                            and tap_changer.TapChangerControl.enabled):
+                        tap_phase_control_mode = TapPhaseControl.Pf     # TODO Pf ot Pt
+                else:
+                    logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerSymmetrical",
+                                       device=tap_changer.rdfid,
+                                       device_class=tap_changer.tpe,
+                                       device_property="control for TapChanger",
+                                       value=type(tap_changer))
+
             elif isinstance(tap_changer, phase_as_class):
                 tc_type = TapChangerTypes.Asymmetrical
+                # windingConnectionAngle def in CGMES:
                 # The phase angle between the in-phase winding and the out-of -phase winding
                 # used for creating phase shift. The out-of-phase winding produces
                 # what is known as the difference voltage.
                 # Setting this angle to 90 degrees is not the same as a symmemtrical transformer.
                 asymmetry_angle = tap_changer.windingConnectionAngle
+
+                if getattr(tap_changer, 'TapChangerControl', None):
+                    if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
+                            and tap_changer.TapChangerControl.enabled):
+                        tap_phase_control_mode = TapPhaseControl.Pf     # TODO Pf ot Pt
+                else:
+                    logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerAsymmetrical",
+                                       device=tap_changer.rdfid,
+                                       device_class=tap_changer.tpe,
+                                       device_property="control for TapChanger",
+                                       value=type(tap_changer))
+
             else:
                 logger.add_warning(msg="No control found for TapChanger",
                                    device=tap_changer.rdfid,
@@ -1067,7 +1102,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                                    device_property="control for TapChanger",
                                    value=type(tap_changer))
 
-            # attribute handling
+            # attribute handling sVI
             if isinstance(tap_changer, cgmes_model.get_class_type("PhaseTapChanger")):
                 tap_changer.stepVoltageIncrement = tap_changer.voltageStepIncrement
 
@@ -1079,6 +1114,9 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
             )
 
             if isinstance(gcdev_trafo, gcdev.Transformer2W):
+
+                gcdev_trafo.tap_module_control_mode = tap_module_control_mode
+                gcdev_trafo.tap_phase_control_mode = tap_phase_control_mode
 
                 gcdev_trafo.tap_changer.init_from_cgmes(
                     low=tap_changer.lowStep,
@@ -1093,7 +1131,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
 
                 # SET tap_module and tap_phase from its own TapChanger object
                 gcdev_trafo.tap_module = gcdev_trafo.tap_changer.get_tap_module()
-                # gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
 
             elif isinstance(gcdev_trafo, gcdev.Transformer3W):
                 winding_id = tap_changer.TransformerEnd.uuid
@@ -1118,7 +1156,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
 
                 # SET tap_module and tap_phase from its own TapChanger object
                 winding_w_tc.tap_module = winding_w_tc.tap_changer.get_tap_module()
-                # gcdev_trafo.tap_phase = gcdev_trafo.tap_changer.get_tap_phase()
+                gcdev_trafo.tap_phase = winding_w_tc.tap_changer.get_tap_phase()
 
             else:
                 logger.add_error(msg='Transformer not found for TapChanger',
