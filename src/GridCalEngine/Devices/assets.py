@@ -164,6 +164,12 @@ class Assets:
         # contingency group
         self._contingency_groups: List[dev.ContingencyGroup] = list()
 
+        # remedial actions
+        self._remedial_actions: List[dev.RemedialAction] = list()
+
+        # remedial actions group
+        self._remedial_action_groups: List[dev.RemedialActionGroup] = list()
+
         # investments
         self._investments: List[dev.Investment] = list()
 
@@ -255,6 +261,8 @@ class Assets:
             "Groups": [
                 dev.ContingencyGroup(),
                 dev.Contingency(),
+                dev.RemedialActionGroup(),
+                dev.RemedialAction(),
                 dev.InvestmentsGroup(),
                 dev.Investment(),
                 dev.BranchGroup(),
@@ -3268,6 +3276,196 @@ class Assets:
         self._investments.remove(obj)
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Remedial action
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def remedial_actions(self) -> List[dev.RemedialAction]:
+        """
+        Get list of remedial actions
+        :return:
+        """
+        return self._remedial_actions
+
+    @remedial_actions.setter
+    def remedial_actions(self, value: List[dev.RemedialAction]):
+        self._remedial_actions = value
+
+    def get_remedial_action_number(self) -> int:
+        """
+        Get number of remedial actions
+        :return:
+        """
+        return len(self._remedial_actions)
+
+    def add_remedial_action(self, obj: dev.RemedialAction):
+        """
+        Add a remedial actions
+        :param obj: RemedialAction
+        """
+        self._remedial_actions.append(obj)
+
+    def delete_remedial_action(self, obj):
+        """
+        Delete RemedialAction
+        :param obj: index
+        """
+        self._remedial_actions.remove(obj)
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Remedial Actions group
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def remedial_action_groups(self) -> List[dev.RemedialActionGroup]:
+        """
+        Get list of contingency groups
+        :return:
+        """
+        return self._remedial_action_groups
+
+    @remedial_action_groups.setter
+    def remedial_action_groups(self, value: List[dev.RemedialActionGroup]):
+        self._remedial_action_groups = value
+
+    def get_rmedial_action_groups(self) -> List[dev.RemedialActionGroup]:
+        """
+        Get contingency_groups
+        :return:List[dev.ContingencyGroup]
+        """
+        return self._remedial_action_groups
+
+    def get_remedial_action_groups_number(self) -> int:
+        """
+
+        :return:
+        """
+        return len(self._remedial_action_groups)
+
+    def add_remedial_action_groups(self, obj: dev.RemedialActionGroup):
+        """
+        Add _remedial_action group
+        :param obj: ContingencyGroup
+        """
+        self._remedial_action_groups.append(obj)
+
+    def delete_remedial_action_group(self, obj: dev.RemedialActionGroup):
+        """
+        Delete contingency group
+        :param obj: ContingencyGroup
+        """
+        self._remedial_action_groups.remove(obj)
+
+        to_del = [con for con in self._contingencies if con.group == obj]
+        for con in to_del:
+            self.delete_contingency(con)
+
+    def get_remedial_action_group_names(self) -> List[str]:
+        """
+        Get list of contingency group names
+        :return:
+        """
+        return [e.name for e in self._remedial_action_groups]
+
+    def get_remedial_action_groups_dict(self) -> Dict[str, List[dev.RemedialAction]]:
+        """
+        Get a dictionary of group idtags related to list of contingencies
+        :return:
+        """
+        d = dict()
+
+        for cnt in self._remedial_actions:
+            if cnt.group.idtag not in d:
+                d[cnt.group.idtag] = [cnt]
+            else:
+                d[cnt.group.idtag].append(cnt)
+
+        return d
+
+    def set_remedial_actions(self, remedial_actions: List[dev.RemedialAction]):
+        """
+        Set contingencies and contingency groups to circuit
+        :param remedial_actions: List of contingencies
+        :return:
+        """
+
+        # Get a list of devices susceptible to be included in contingencies / remedial actions
+        devices = self.get_contingency_devices()
+        groups = dict()
+
+        devices_code_dict = {d.code: d for d in devices}
+        devices_key_dict = {d.idtag: d for d in devices}
+        devices_dict = {**devices_code_dict, **devices_key_dict}
+
+        logger = Logger()
+
+        for ra in remedial_actions:
+            if ra.code in devices_dict.keys() or ra.idtag in devices_dict.keys():
+                # ensure proper device_idtag and code
+                element = devices_dict[ra.code]
+                ra.device_idtag = element.idtag
+                ra.code = element.code
+
+                self._remedial_actions.append(ra)
+
+                if ra.group.idtag not in groups.keys():
+                    groups[ra.group.idtag] = ra.group
+            else:
+                logger.add_info(
+                    msg='Remedial action element not found in circuit',
+                    device=ra.code,
+                )
+
+        for group in groups.values():
+            self._remedial_action_groups.append(group)
+
+        return logger
+
+    def get_remedial_action_groups_in(
+            self,
+            grouping_elements: List[Union[dev.Area, dev.Country, dev.Zone]]
+    ) -> List[dev.RemedialActionGroup]:
+        """
+        Get a filtered set of ContingencyGroups
+        :param grouping_elements: list of zones, areas or countries where to locate the contingencies
+        :return: Sorted group filtered ContingencyGroup elements
+        """
+
+        # declare the reults
+        filtered_groups_idx: Set[int] = set()
+
+        group2index = {g: i for i, g in enumerate(self._remedial_action_groups)}
+
+        # get a dictionary of all objects
+        all_devices, dict_ok = self.get_all_elements_dict()
+
+        # get the buses that match the filtering
+        buses = self.get_buses_by(filter_elements=grouping_elements)
+
+        for contingency in self._remedial_actions:
+
+            group_idx = group2index[contingency.group]
+
+            if group_idx not in filtered_groups_idx:
+
+                # get the contingency device
+                contingency_device = all_devices.get(contingency.device_idtag, None)
+
+                if contingency_device is not None:
+
+                    if hasattr(contingency_device, "bus_from"):
+                        # it is likely a branch
+                        if contingency_device.bus_from in buses or contingency_device.bus_to in buses:
+                            filtered_groups_idx.add(group_idx)
+
+                    elif hasattr(contingency_device, "bus"):
+                        # it is likely an injection
+                        if contingency_device.bus in buses:
+                            filtered_groups_idx.add(group_idx)
+
+        return [self._remedial_action_groups[i] for i in sorted(filtered_groups_idx)]
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Investment group
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -4481,7 +4679,7 @@ class Assets:
 
     def get_contingency_devices(self) -> List[ALL_DEV_TYPES]:
         """
-        Get a list of devices susceptible to be included in contingencies
+        Get a list of devices susceptible to be included in contingencies / remedial actions
         :return: list of devices
         """
         return self.get_branches() + self.get_injection_devices()
@@ -4619,6 +4817,12 @@ class Assets:
 
         elif device_type == DeviceType.ContingencyGroupDevice:
             return self._contingency_groups
+
+        elif device_type == DeviceType.RemedialActionDevice:
+            return self._remedial_actions
+
+        elif device_type == DeviceType.RemedialActionGroupDevice:
+            return self._remedial_action_groups
 
         elif device_type == DeviceType.Technology:
             return self._technologies
@@ -4819,6 +5023,12 @@ class Assets:
         elif device_type == DeviceType.ContingencyGroupDevice:
             self._contingency_groups = devices
 
+        elif device_type == DeviceType.RemedialActionDevice:
+            self._remedial_actions = devices
+
+        elif device_type == DeviceType.RemedialActionGroupDevice:
+            self._remedial_action_groups = devices
+
         elif device_type == DeviceType.Technology:
             self._technologies = devices
 
@@ -4833,15 +5043,6 @@ class Assets:
 
         elif device_type == DeviceType.EmissionGasDevice:
             self._emission_gases = devices
-
-        # elif device_type == DeviceType.GeneratorTechnologyAssociation:
-        #     self._generators_technologies = devices
-        #
-        # elif device_type == DeviceType.GeneratorFuelAssociation:
-        #     self._generators_fuels = devices
-        #
-        # elif device_type == DeviceType.GeneratorEmissionAssociation:
-        #     self._generators_emissions = devices
 
         elif device_type == DeviceType.ConnectivityNodeDevice:
             self._connectivity_nodes = devices
@@ -5004,6 +5205,12 @@ class Assets:
         elif obj.device_type == DeviceType.ContingencyGroupDevice:
             self.add_contingency_group(obj=obj)
 
+        elif obj.device_type == DeviceType.RemedialActionDevice:
+            self.add_remedial_action(obj=obj)
+
+        elif obj.device_type == DeviceType.RemedialActionGroupDevice:
+            self.add_remedial_action_groups(obj=obj)
+
         elif obj.device_type == DeviceType.Technology:
             self.add_technology(obj=obj)
 
@@ -5018,15 +5225,6 @@ class Assets:
 
         elif obj.device_type == DeviceType.EmissionGasDevice:
             self.add_emission_gas(obj=obj)
-
-        # elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
-        #     self.add_generator_technology(obj=obj)
-        #
-        # elif obj.device_type == DeviceType.GeneratorFuelAssociation:
-        #     self.add_generator_fuel(obj=obj)
-        #
-        # elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
-        #     self.add_generator_emission(obj=obj)
 
         elif obj.device_type == DeviceType.FluidNodeDevice:
             self.add_fluid_node(obj=obj)
@@ -5182,6 +5380,12 @@ class Assets:
         elif obj.device_type == DeviceType.ContingencyGroupDevice:
             self.delete_contingency_group(obj)
 
+        elif obj.device_type == DeviceType.RemedialActionDevice:
+            self.delete_remedial_action(obj)
+
+        elif obj.device_type == DeviceType.RemedialActionGroupDevice:
+            self.delete_remedial_action_group(obj)
+
         elif obj.device_type == DeviceType.Technology:
             self.delete_technology(obj)
 
@@ -5196,15 +5400,6 @@ class Assets:
 
         elif obj.device_type == DeviceType.EmissionGasDevice:
             self.delete_emission_gas(obj)
-
-        # elif obj.device_type == DeviceType.GeneratorTechnologyAssociation:
-        #     self.delete_generator_technology(obj)
-        #
-        # elif obj.device_type == DeviceType.GeneratorFuelAssociation:
-        #     self.delete_generator_fuel(obj)
-        #
-        # elif obj.device_type == DeviceType.GeneratorEmissionAssociation:
-        #     self.delete_generator_emission(obj)
 
         elif obj.device_type == DeviceType.FluidNodeDevice:
             self.delete_fluid_node(obj)
@@ -5357,8 +5552,10 @@ class Assets:
             for elm in elm_list:
                 self.get_elements_by_type(device_type=elm.device_type).clear()
 
-    def get_dictionary_of_lists(self, elm_type: DeviceType) -> Tuple[
-        ALL_DEV_TYPES, Dict[DeviceType, List[ALL_DEV_TYPES]]]:
+    def get_dictionary_of_lists(
+            self,
+            elm_type: DeviceType
+    ) -> Tuple[ALL_DEV_TYPES, Dict[DeviceType, List[ALL_DEV_TYPES]]]:
         """
 
         :param elm_type:
@@ -5553,6 +5750,14 @@ class Assets:
 
         elif elm_type == DeviceType.ContingencyGroupDevice:
             elm = dev.ContingencyGroup()
+
+        elif elm_type == DeviceType.RemedialActionDevice:
+            elm = dev.Contingency()
+            dictionary_of_lists = {DeviceType.RemedialActionDevice: self.remedial_action_groups, }
+
+        elif elm_type == DeviceType.RemedialActionGroupDevice:
+            elm = dev.RemedialActionGroup()
+            dictionary_of_lists = {DeviceType.ContingencyGroupDevice: self.get_contingency_groups(), }
 
         elif elm_type == DeviceType.InvestmentDevice:
             elm = dev.Investment()

@@ -407,8 +407,16 @@ class ObjectsTableMain(DiagramsMain):
                 self.circuit.add_bus(dev.Bus(name=f'Bus {self.circuit.get_bus_number() + 1}'))
 
             elif elm_type == DeviceType.ContingencyGroupDevice.value:
-                group = dev.ContingencyGroup(name=f"Contingency group {len(self.circuit.get_contingency_groups()) + 1}")
+                group = dev.ContingencyGroup(
+                    name=f"Contingency group {self.circuit.get_contingency_groups_number() + 1}"
+                )
                 self.circuit.add_contingency_group(group)
+
+            elif elm_type == DeviceType.RemedialActionGroupDevice.value:
+                group = dev.RemedialActionGroup(
+                    name=f"Remedial actions group {self.circuit.get_remedial_action_groups_number() + 1}"
+                )
+                self.circuit.add_remedial_action_groups(group)
 
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:
                 group = dev.InvestmentsGroup(name=f"Investments group {len(self.circuit.investments_groups) + 1}")
@@ -467,21 +475,6 @@ class ObjectsTableMain(DiagramsMain):
                 name = f'Gas {len(self.circuit.emission_gases) + 1}'
                 obj = dev.EmissionGas(name=name)
                 self.circuit.add_emission_gas(obj)
-
-            # elif elm_type == DeviceType.GeneratorTechnologyAssociation.value:
-            #
-            #     obj = dev.GeneratorTechnology()
-            #     self.circuit.add_generator_technology(obj)
-            #
-            # elif elm_type == DeviceType.GeneratorFuelAssociation.value:
-            #
-            #     obj = dev.GeneratorFuel()
-            #     self.circuit.add_generator_fuel(obj)
-            #
-            # elif elm_type == DeviceType.GeneratorEmissionAssociation.value:
-            #
-            #     obj = dev.GeneratorEmission()
-            #     self.circuit.add_generator_emission(obj)
 
             elif elm_type == DeviceType.ModellingAuthority.value:
 

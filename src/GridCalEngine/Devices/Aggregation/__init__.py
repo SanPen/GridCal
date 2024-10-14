@@ -17,6 +17,8 @@
 
 from GridCalEngine.Devices.Aggregation.contingency import Contingency
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
+from GridCalEngine.Devices.Aggregation.remedial_action import RemedialAction
+from GridCalEngine.Devices.Aggregation.remedial_action_group import RemedialActionGroup
 from GridCalEngine.Devices.Aggregation.investment import Investment
 from GridCalEngine.Devices.Aggregation.investments_group import InvestmentsGroup
 from GridCalEngine.Devices.Aggregation.area import Area

@@ -112,6 +112,8 @@ ALL_DEV_TYPES = Union[
     InvestmentsGroup,
     Contingency,
     ContingencyGroup,
+    RemedialAction,
+    RemedialActionGroup,
     Technology,
     UndergroundLineType,
     SequenceLineType
