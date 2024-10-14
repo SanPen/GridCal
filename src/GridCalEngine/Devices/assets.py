@@ -4462,6 +4462,21 @@ class Assets:
             T[i] = bus_dict[elm.bus_to]
         return F, T
 
+    def get_all_branches_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator through all branches, including HVDC and switches
+        :return: BRANCH_TYPES
+        """
+        for lst in self.get_branch_lists_wo_hvdc():
+            for elm in lst:
+                yield elm
+
+        for elm in self.hvdc_lines:
+            yield elm
+
+        for elm in self.switch_devices:
+            yield elm
+
     # ------------------------------------------------------------------------------------------------------------------
     # Injections
     # ------------------------------------------------------------------------------------------------------------------
