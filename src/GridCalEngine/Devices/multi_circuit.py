@@ -2262,6 +2262,41 @@ class MultiCircuit(Assets):
                             device=elm.idtag,
                             device_class=elm.device_type.value)
 
+    def clean_remedial_actions(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
+        """
+        Clean the remedial actons and remedial actons groups
+        :param all_dev:
+        :param logger: Logger
+        """
+        ra_to_delete = list()
+
+        # pass 1: detect the "null" contingencies
+        for elm in self._remedial_actions:
+            if elm.device_idtag not in all_dev.keys():
+                ra_to_delete.append(elm)
+
+        # pass 2: delete the "null" contingencies
+        for elm in ra_to_delete:
+            self.delete_remedial_action(obj=elm)
+            logger.add_info("Deleted isolated remedial action",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
+        # pass 3: count how many times a group is refferenced
+        group_counter = np.zeros(len(self._remedial_action_groups), dtype=int)
+        group_dict = {elm: i for i, elm in enumerate(self._remedial_action_groups)}
+        for elm in self._remedial_actions:
+            group_idx = group_dict[elm.group]
+            group_counter[group_idx] += 1
+
+        # pass 4: delete unrefferenced groups
+        groups_to_delete = [elm for i, elm in enumerate(self._remedial_action_groups) if group_counter[i] == 0]
+        for elm in groups_to_delete:
+            self.delete_remedial_action_group(obj=elm)
+            logger.add_info("Deleted isolated remedial action group",
+                            device=elm.idtag,
+                            device_class=elm.device_type.value)
+
     def clean_investments(self, all_dev: Dict[str, ALL_DEV_TYPES], logger: Logger) -> None:
         """
         Clean the investments and investment groups
