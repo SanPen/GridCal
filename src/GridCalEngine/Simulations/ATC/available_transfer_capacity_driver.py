@@ -518,14 +518,15 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                                   base_exchange=base_exchange,
                                   time_idx=0,
                                   threshold=self.options.threshold)
-        report = np.array(report, dtype=object)
-
-        # sort by NTC
-        report = report[report[:, 9].argsort()]
-
-        # curtail report
-        if self.options.max_report_elements > 0:
-            report = report[:self.options.max_report_elements, :]
+        if len(report):
+            report = np.array(report, dtype=object)
+            # sort by NTC
+            report = report[report[:, 9].argsort()]
+            # curtail report
+            if self.options.max_report_elements > 0:
+                report = report[:self.options.max_report_elements, :]
+        else:
+            report = np.zeros((0, 15), dtype=object)
 
         # post-process and store the results
         self.results.raw_report = report

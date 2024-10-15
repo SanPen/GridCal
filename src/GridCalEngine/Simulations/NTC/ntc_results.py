@@ -107,6 +107,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.hvdc_loading = np.zeros(nhvdc, dtype=float)
         self.hvdc_losses = np.zeros(nhvdc, dtype=float)
 
+        self.inter_space_branches: list[tuple[int, object, float]] = list()
+        self.inter_space_hvdc: list[tuple[int, object, float]] = list()
+
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flows_list = list()
 
@@ -137,6 +140,9 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.register(name='converged', tpe=bool)
         self.register(name='contingency_flows_list', tpe=list)
+
+        self.register(name='inter_space_branches', tpe=list)
+        self.register(name='inter_space_hvdc', tpe=list)
 
     def get_bus_df(self) -> pd.DataFrame:
         """

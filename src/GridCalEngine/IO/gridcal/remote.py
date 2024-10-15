@@ -58,7 +58,7 @@ class RemoteInstruction:
             self.mac = ""
             self.parse_data(data)
 
-    def get_data(self):
+    def get_data(self) -> Dict[str, str]:
         """
 
         :return:

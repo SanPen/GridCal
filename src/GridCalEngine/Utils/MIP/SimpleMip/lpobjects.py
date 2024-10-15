@@ -167,8 +167,7 @@ class LpCst:
     """
     Constraint
     """
-    def __init__(self, linear_expression: LpExp, sense: str, coefficient: float,
-                 name="", internal_index: int = 0):
+    def __init__(self, linear_expression: LpExp, sense: str, coefficient: float, name="", internal_index: int = 0):
         """
         constraint (<=, ==, >=) rhs
 
@@ -205,18 +204,26 @@ class LpCst:
                      name=self.name,
                      internal_index=self._index)
 
+    def get_rhs(self) -> float:
+        """
+        get the final right-hand side
+        :return: coefficient minus the expression offset
+        """
+        return self.coefficient - self.linear_expression.offset
+
     def get_bounds(self) -> Tuple[float, float]:
         """
         Get the constraint bounds
         :return: lhs <= constraint <= rhs
         """
         MIP_INF = 1e20
+        val = self.get_rhs()
         if self.sense == '==':
-            return self.coefficient, self.coefficient
+            return val, val
         elif self.sense == '<=':
-            return -MIP_INF, self.coefficient
+            return -MIP_INF, val
         elif self.sense == '>=':
-            return self.coefficient, MIP_INF
+            return val, MIP_INF
         else:
             raise Exception(f"Invalid sense: {self.sense}")
 

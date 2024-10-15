@@ -1555,7 +1555,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       progress_text: Union[None, Callable[[str], None]] = None,
                       progress_func: Union[None, Callable[[float], None]] = None,
                       export_model_fname: Union[None, str] = None,
-                      verbose: int = 0) -> OpfVars:
+                      verbose: int = 0,
+                      robust: bool = False) -> OpfVars:
     """
     Run linear optimal power flow
     :param grid: MultiCircuit instance
@@ -1582,6 +1583,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param progress_func: Numerical progress callback
     :param export_model_fname: Export the model into LP and MPS?
     :param verbose: verbosity level
+    :param robust: Robust optimization?
     :return: OpfVars
     """
     bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
@@ -1875,7 +1877,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         logger.add_info("LP model saved as", value=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve(robust=True, show_logs=verbose > 0)
+    status = lp_model.solve(robust=robust, show_logs=verbose > 0)
 
     # gather the results
     logger.add_info("Status", value=str(status))
