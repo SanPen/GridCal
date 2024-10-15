@@ -453,7 +453,10 @@ class InvestmentsEvaluationResults(ResultsTemplate):
 
             self.calculate_tech_score_magnitudes()
 
-            max_magnitude = max(filter(None, [self.overload_majority_magnitude, self.losses_majority_magnitude,
+            if self.overload_majority_magnitude==0 and self.losses_majority_magnitude==0 and self.voltage_majority_magnitude==0:
+                max_magnitude = 0
+            else:
+                max_magnitude = max(filter(None, [self.overload_majority_magnitude, self.losses_majority_magnitude,
                                               self.voltage_majority_magnitude]))
 
             if max_magnitude is not None:
@@ -480,8 +483,8 @@ class InvestmentsEvaluationResults(ResultsTemplate):
                   self.overload_scale, self.losses_scale, self.voltage_scale)
             max_y_order_of_magnitude = InvestmentsEvaluationResults.calculate_magnitude(max(technical_score))
             order_of_magnitude_difference = max_x_order_of_magnitude - max_y_order_of_magnitude
-            scaled_technical_score = technical_score * 10 ** order_of_magnitude_difference
-            scaled_financial_score = self._financial * 10 ** -2
+            scaled_technical_score = technical_score #* 10 ** order_of_magnitude_difference
+            scaled_financial_score = self._financial #* 10 ** -2
 
             # Plot 1: Technical vs investment
             sc1 = ax3[0, 0].scatter(scaled_financial_score, scaled_technical_score,
