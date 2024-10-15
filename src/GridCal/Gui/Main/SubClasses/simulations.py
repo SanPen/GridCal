@@ -40,7 +40,7 @@ import GridCalEngine.Simulations as sim
 import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
-from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
@@ -1851,18 +1851,6 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    @staticmethod
-    def opf_file_path() -> str:
-        """
-        get the OPF files folder path
-        :return: str
-        """
-        d = os.path.join(get_create_gridcal_folder(), 'mip_files')
-
-        if not os.path.exists(d):
-            os.makedirs(d)
-        return d
-
     def get_opf_options(self) -> Union[None, sim.OptimalPowerFlowOptions]:
         """
         Get the GUI OPF options
@@ -1882,7 +1870,7 @@ class SimulationsMain(TimeEventsMain):
         generate_report = self.ui.addOptimalPowerFlowReportCheckBox.isChecked()
 
         if self.ui.save_mip_checkBox.isChecked():
-            folder = self.opf_file_path()
+            folder = opf_file_path()
             fname = f'mip_{self.circuit.name}_{datetime.datetime.now()}.lp'
             export_model_fname = os.path.join(folder, fname)
         else:
