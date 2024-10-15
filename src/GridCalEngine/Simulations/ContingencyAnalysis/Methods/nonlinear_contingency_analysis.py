@@ -103,7 +103,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         contingencies = cg_dict[contingency_group.idtag]
 
         # set the status
-        numerical_circuit.set_contingency_status(contingencies)
+        numerical_circuit.set_con_or_ra_status(contingencies)
 
         # report progress
         if t is None and calling_class is not None:
@@ -147,7 +147,7 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                top_n=options.srap_top_n)
 
         # set the status
-        numerical_circuit.set_contingency_status(contingencies, revert=True)
+        numerical_circuit.set_con_or_ra_status(contingencies, revert=True)
 
         if calling_class is not None:
             if calling_class.is_cancel():

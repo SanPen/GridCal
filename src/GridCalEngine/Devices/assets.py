@@ -3139,6 +3139,12 @@ class Assets:
         """
         self._contingency_groups.remove(obj)
 
+        # delete references in the remedial action groups
+        for rag in self._remedial_action_groups:
+            if rag.conn_group is not None:
+                if rag.conn_group == obj:
+                    rag.conn_group = None
+
         to_del = [con for con in self._contingencies if con.group == obj]
         for con in to_del:
             self.delete_contingency(con)

@@ -20,6 +20,7 @@ import pandas as pd
 import scipy.sparse as sp
 from typing import List, Tuple, Dict, Union, TYPE_CHECKING
 
+from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
@@ -477,68 +478,78 @@ class NumericalCircuit:
             else:
                 raise Exception('Could not find the idtag, is this a programming bug?')
 
-    def set_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+    def set_con_or_ra_status(self, event_list: List[Contingency | RemedialAction],
+                             revert: bool = False):
         """
         Set the status of a list of contingencies
-        :param contingencies_list: list of contingencies
+        :param event_list: list of contingencies and or remedial actions
         :param revert: if false, the contingencies are applied, else they are reversed
         """
         # apply the contingencies
-        for cnt in contingencies_list:
+        for cnt in event_list:
 
-            # search the investment device
-            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+            if isinstance(cnt, (Contingency, RemedialAction)):
 
-            if structure is not None:
-                if cnt.prop == 'active':
-                    if revert:
-                        structure.active[idx] = int(not bool(cnt.value))
+                # search the investment device
+                structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+                if structure is not None:
+                    if cnt.prop == 'active':
+                        if revert:
+                            structure.active[idx] = int(not bool(cnt.value))
+                        else:
+                            structure.active[idx] = int(cnt.value)
+                    elif cnt.prop == '%':
+                        if revert:
+                            structure.p[idx] /= float(cnt.value / 100.0)
+                        else:
+                            structure.p[idx] *= float(cnt.value / 100.0)
                     else:
-                        structure.active[idx] = int(cnt.value)
-                elif cnt.prop == '%':
-                    if revert:
-                        structure.p[idx] /= float(cnt.value / 100.0)
-                    else:
-                        structure.p[idx] *= float(cnt.value / 100.0)
+                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
                 else:
-                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+                    print(f'contingency device not found {cnt.name} {cnt.idtag}')
             else:
-                print(f'contingency device not found {cnt.name} {cnt.idtag}')
+                raise Exception(f"The object {cnt} is not a Contingency or a remedial action")
 
-    def set_linear_contingency_status(self, contingencies_list: List[Contingency], revert: bool = False):
+    def set_linear_con_or_ra_status(self, event_list: List[Contingency | RemedialAction],
+                                    revert: bool = False):
         """
         Set the status of a list of contingencies
-        :param contingencies_list: list of contingencies
+        :param event_list: list of contingencies and or remedial actions
         :param revert: if false, the contingencies are applied, else they are reversed
         """
         injections = np.zeros(self.nbus)
         # apply the contingencies
-        for cnt in contingencies_list:
+        for cnt in event_list:
 
-            # search the investment device
-            structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+            if isinstance(cnt, (Contingency, RemedialAction)):
 
-            if structure is not None:
-                if cnt.prop == 'active':
-                    if revert:
-                        structure.active[idx] = int(not bool(cnt.value))
+                # search the investment device
+                structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
+
+                if structure is not None:
+                    if cnt.prop == 'active':
+                        if revert:
+                            structure.active[idx] = int(not bool(cnt.value))
+                        else:
+                            structure.active[idx] = int(cnt.value)
+                    elif cnt.prop == '%':
+                        # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
+                        assert not isinstance(structure, ds.HvdcData)  # TODO Arreglar esto
+                        dev_injections = np.zeros(structure.size())
+                        dev_injections[idx] -= structure.p[idx]
+                        if revert:
+                            structure.p[idx] /= float(cnt.value / 100.0)
+                        else:
+                            structure.p[idx] *= float(cnt.value / 100.0)
+                        dev_injections[idx] += structure.p[idx]
+                        injections += structure.get_array_per_bus(dev_injections)
                     else:
-                        structure.active[idx] = int(cnt.value)
-                elif cnt.prop == '%':
-                    # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
-                    assert not isinstance(structure, ds.HvdcData)  # TODO Arreglar esto
-                    dev_injections = np.zeros(structure.size())
-                    dev_injections[idx] -= structure.p[idx]
-                    if revert:
-                        structure.p[idx] /= float(cnt.value / 100.0)
-                    else:
-                        structure.p[idx] *= float(cnt.value / 100.0)
-                    dev_injections[idx] += structure.p[idx]
-                    injections += structure.get_array_per_bus(dev_injections)
+                        print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
                 else:
-                    print(f'Unknown contingency property {cnt.prop} at {cnt.name} {cnt.idtag}')
+                    print(f'contingency device not found {cnt.name} {cnt.idtag}')
             else:
-                print(f'contingency device not found {cnt.name} {cnt.idtag}')
+                raise Exception(f"The object {cnt} is not a Contingency or a remedial action")
 
         return injections
 
