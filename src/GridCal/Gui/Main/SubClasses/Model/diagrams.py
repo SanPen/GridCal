@@ -26,7 +26,7 @@ from matplotlib import pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
 import GridCalEngine.Devices.Diagrams.palettes as palettes
-from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.file_system import tiles_path
 from GridCal.Gui.general_dialogues import (CheckListDialogue, StartEndSelectionDialogue, InputSearchDialogue,
                                            InputNumberDialogue, LogsDialogue)
 from GridCalEngine.Devices.types import ALL_DEV_TYPES
@@ -152,7 +152,7 @@ class DiagramsMain(CompiledArraysMain):
         self.tile_sources = [
             BlueMarbleTiles(
                 name='Blue Marble',
-                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'blue_marble')
+                tiles_dir=os.path.join(tiles_path(), 'blue_marble')
             ),
 
             # Carto layers:
@@ -169,22 +169,22 @@ class DiagramsMain(CompiledArraysMain):
 
             CartoDbTiles(
                 name='Carto voyager',
-                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_voyager'),
+                tiles_dir=os.path.join(tiles_path(), 'carto_db_voyager'),
                 tile_servers=["http://basemaps.cartocdn.com/rastertiles/voyager/"]
             ),
             CartoDbTiles(
                 name='Carto positron',
-                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_positron'),
+                tiles_dir=os.path.join(tiles_path(), 'carto_db_positron'),
                 tile_servers=['http://basemaps.cartocdn.com/light_all/']
             ),
             CartoDbTiles(
                 name='Carto dark matter',
-                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'carto_db_dark_matter'),
+                tiles_dir=os.path.join(tiles_path(), 'carto_db_dark_matter'),
                 tile_servers=["http://basemaps.cartocdn.com/dark_all/"]
             ),
             OsmTiles(
                 name='Open Street Map',
-                tiles_dir=os.path.join(get_create_gridcal_folder(), 'tiles', 'osm'),
+                tiles_dir=os.path.join(tiles_path(), 'osm'),
                 tile_servers=["https://tile.openstreetmap.org"]
             )
         ]

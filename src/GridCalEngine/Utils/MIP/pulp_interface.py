@@ -143,7 +143,7 @@ class LpModel:
         self.model.addVariable(var)
         return var
 
-    def add_cst(self, cst: LpCst, name: str = "") -> Union[LpCst, int]:
+    def add_cst(self, cst: LpCst | bool, name: str = "") -> Union[LpCst, int]:
         """
         Add constraint to the model
         :param cst: constraint object (or general expression)

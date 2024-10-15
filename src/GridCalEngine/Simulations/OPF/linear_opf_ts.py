@@ -20,11 +20,12 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from __future__ import annotations
-
+import os
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
 
+from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
@@ -1884,7 +1885,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     else:
         logger.add_error("The problem does not have an optimal solution.")
         mip_vars.acceptable_solution = False
-        lp_file_name = grid.name + "_debug.lp"
+        lp_file_name = os.path.join(opf_file_path(), f"{grid.name} opf debug.lp")
         lp_model.save_model(file_name=lp_file_name)
         logger.add_info("Debug LP model saved", value=lp_file_name)
 

@@ -24,23 +24,10 @@ from typing import List, Dict, TYPE_CHECKING, Callable
 import json
 from PySide6.QtGui import QPixmap
 
-from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.file_system import plugins_path
 
 if TYPE_CHECKING:
     from GridCal.Gui.Main.GridCalMain import MainGUI
-
-
-def plugins_path() -> str:
-    """
-    get the config file path
-    :return: config file path
-    """
-    pth = os.path.join(get_create_gridcal_folder(), 'plugins')
-
-    if not os.path.exists(pth):
-        os.makedirs(pth)
-
-    return pth
 
 
 class PluginFunction:

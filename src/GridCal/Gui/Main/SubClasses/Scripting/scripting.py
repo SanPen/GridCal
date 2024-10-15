@@ -17,6 +17,7 @@
 import os
 from PySide6.QtGui import QFont, QFontMetrics, Qt
 from PySide6 import QtWidgets, QtCore
+from GridCalEngine.IO.file_system import scripts_path
 from GridCal.Gui.Main.SubClasses.io import IoMain
 from GridCal.Gui.Main.SubClasses.Scripting.python_highlighter import PythonHighlighter
 from GridCal.Gui.gui_functions import CustomFileSystemModel
@@ -51,10 +52,9 @@ class ScriptingMain(IoMain):
         self.ui.sourceCodeTextEdit.highlighter = PythonHighlighter(self.ui.sourceCodeTextEdit.document())
 
         # scripts tree view
-        scripts_path = self.scripts_path()
-        self.python_fs_model = CustomFileSystemModel(root_path=self.scripts_path(), ext_filter=['*.py'])
+        self.python_fs_model = CustomFileSystemModel(root_path=scripts_path(), ext_filter=['*.py'])
         self.ui.sourceCodeTreeView.setModel(self.python_fs_model)
-        self.ui.sourceCodeTreeView.setRootIndex(self.python_fs_model.index(scripts_path))
+        self.ui.sourceCodeTreeView.setRootIndex(self.python_fs_model.index(scripts_path()))
 
         # actions ------------------------------------------------------------------------------------------------------
         self.ui.actionReset_console.triggered.connect(self.create_console)
@@ -119,7 +119,7 @@ class ScriptingMain(IoMain):
 
         if name != '':
             fname = name + '.py'
-            pth = os.path.join(self.scripts_path(), fname)
+            pth = os.path.join(scripts_path(), fname)
             with open(pth, 'w') as f:
                 f.write(self.ui.sourceCodeTextEdit.toPlainText())
         else:

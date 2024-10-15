@@ -19,6 +19,7 @@
 This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
+import os
 import numpy as np
 from typing import List, Union, Tuple, Callable
 
@@ -36,6 +37,7 @@ from GridCalEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lp
 from GridCalEngine.enumerations import TapPhaseControl, HvdcControlType, AvailableTransferMode
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ATC.available_transfer_capacity_driver import compute_alpha
+from GridCalEngine.IO.file_system import opf_file_path
 
 
 def formulate_monitorization_logic(monitor_only_sensitive_branches: bool,
@@ -686,7 +688,8 @@ def add_linear_branches_formulation(t_idx: int,
                 branch_vars.tap_angles[t_idx, m] = prob.add_var(
                     lb=branch_data_t.tap_angle_min[m],
                     ub=branch_data_t.tap_angle_max[m],
-                    name=join("tap_ang_", [t_idx, m], "_"))
+                    name=join("tap_ang_", [t_idx, m], "_")
+                )
 
                 # is a phase shifter device (like phase shifter transformer or VSC with P control)
                 prob.add_cst(
@@ -736,12 +739,14 @@ def add_linear_branches_formulation(t_idx: int,
                 branch_vars.flow_slacks_pos[t_idx, m] = prob.add_var(
                     lb=0,
                     ub=inf,
-                    name=join("flow_slack_pos_", [t_idx, m], "_"))
+                    name=join("flow_slack_pos_", [t_idx, m], "_")
+                )
 
                 branch_vars.flow_slacks_neg[t_idx, m] = prob.add_var(
                     lb=0,
                     ub=inf,
-                    name=join("flow_slack_neg_", [t_idx, m], "_"))
+                    name=join("flow_slack_neg_", [t_idx, m], "_")
+                )
 
                 # add upper rate constraint
                 branch_vars.flow_constraints_ub[t_idx, m] = ((branch_vars.flows[t_idx, m] +
@@ -750,7 +755,8 @@ def add_linear_branches_formulation(t_idx: int,
                                                              <= branch_data_t.rates[m] / Sbase)
                 prob.add_cst(
                     cst=branch_vars.flow_constraints_ub[t_idx, m],
-                    name=join("br_flow_upper_lim_", [t_idx, m]))
+                    name=join("br_flow_upper_lim_", [t_idx, m])
+                )
 
                 # add lower rate constraint
                 branch_vars.flow_constraints_lb[t_idx, m] = ((branch_vars.flows[t_idx, m] +
@@ -760,7 +766,8 @@ def add_linear_branches_formulation(t_idx: int,
 
                 prob.add_cst(
                     cst=branch_vars.flow_constraints_lb[t_idx, m],
-                    name=join("br_flow_lower_lim_", [t_idx, m]))
+                    name=join("br_flow_lower_lim_", [t_idx, m])
+                )
 
                 # add to the objective function
                 f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t_idx, m]
@@ -859,6 +866,9 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                     )
 
                     f_obj += pos_slack + neg_slack
+
+    # copy the contingency rates
+    branch_vars.contingency_rates[t_idx, :] = branch_data_t.contingency_rates
 
     return f_obj
 
@@ -1019,10 +1029,12 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     :param verbose: Verbosity level
     :return: NtcVars class with the results
     """
-    mode_2_int = {AvailableTransferMode.Generation: 0,
-                  AvailableTransferMode.InstalledPower: 1,
-                  AvailableTransferMode.Load: 2,
-                  AvailableTransferMode.GenerationAndLoad: 3}
+    mode_2_int = {
+        AvailableTransferMode.Generation: 0,
+        AvailableTransferMode.InstalledPower: 1,
+        AvailableTransferMode.Load: 2,
+        AvailableTransferMode.GenerationAndLoad: 3
+    }
 
     bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
     areas_dict = {elm: i for i, elm in enumerate(grid.areas)}
@@ -1068,7 +1080,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             mip_vars.bus_vars.theta[t_idx, k] = lp_model.add_var(
                 lb=nc.bus_data.angle_min[k],
                 ub=nc.bus_data.angle_max[k],
-                name=join("th_", [t_idx, k], "_"))
+                name=join("th_", [t_idx, k], "_")
+            )
 
         # formulate injections -------------------------------------------------------------------------------------
         f_obj += add_linear_injections_formulation(
@@ -1141,9 +1154,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 inf=1e20
             )
 
-            mip_vars.branch_vars.rates[t_idx, :] = nc.branch_data.rates
-            mip_vars.branch_vars.contingency_rates[t_idx, :] = nc.branch_data.contingency_rates
-
             # formulate nodes ---------------------------------------------------------------------------------------
             add_linear_node_balance(t_idx=t_idx,
                                     Bbus=nc.Bbus,
@@ -1159,8 +1169,12 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 if len(contingency_groups_used) > 0:
 
                     # declare the multi-contingencies analysis and compute
-                    mctg = LinearMultiContingencies(grid=grid, contingency_groups_used=contingency_groups_used)
-                    mctg.compute(lodf=ls.LODF, ptdf=ls.PTDF, ptdf_threshold=lodf_threshold, lodf_threshold=lodf_threshold)
+                    mctg = LinearMultiContingencies(grid=grid,
+                                                    contingency_groups_used=contingency_groups_used)
+                    mctg.compute(lodf=ls.LODF,
+                                 ptdf=ls.PTDF,
+                                 ptdf_threshold=lodf_threshold,
+                                 lodf_threshold=lodf_threshold)
 
                     # formulate the contingencies
                     f_obj += add_linear_branches_contingencies_formulation(
@@ -1202,23 +1216,21 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve(robust=True, show_logs=verbose>0)
+    status = lp_model.solve(robust=True, show_logs=verbose > 0)
 
     # gather the results
     logger.add_info("Status", value=str(status))
     if status == LpModel.OPTIMAL:
-        # print('Solution:')
-        # print('Objective value =', lp_model.fobj_value())
         logger.add_info("Objective function", value=lp_model.fobj_value())
         mip_vars.acceptable_solution = True
     else:
         logger.add_error('The problem does not have an optimal solution.')
         mip_vars.acceptable_solution = False
-        lp_file_name = grid.name + "_debug.lp"
+        lp_file_name = os.path.join(opf_file_path(), f"{grid.name} ntc debug.lp")
         lp_model.save_model(file_name=lp_file_name)
         logger.add_info("Debug LP model saved", value=lp_file_name)
 
-    vars_v = mip_vars.get_values(grid.Sbase, model=lp_model)
+    vars_v = mip_vars.get_values(Sbase=grid.Sbase, model=lp_model)
 
     # add the model logger to the main logger
     logger += lp_model.logger
