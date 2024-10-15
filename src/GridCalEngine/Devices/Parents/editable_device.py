@@ -764,7 +764,7 @@ class EditableDevice:
         """
         Create a deep copy of this object
         """
-        tpe = type(self)
+        tpe = self.__class__
 
         try:
             new_obj = tpe(name=self.name,
@@ -772,12 +772,13 @@ class EditableDevice:
                           code=self.code,
                           device_type=self.device_type)
         except TypeError:
-            new_obj = tpe(name=self.name,
-                          idtag=uuid.uuid4().hex if forced_new_idtag else self.idtag,
-                          code=self.code)
+            new_obj = tpe()
 
         for prop_name, value in self.__dict__.items():
             setattr(new_obj, prop_name, value)
+
+        if forced_new_idtag:
+            new_obj.idtag = uuid.uuid4().hex
 
         return new_obj
 

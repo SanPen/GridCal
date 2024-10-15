@@ -320,6 +320,43 @@ class ObjectsTableMain(DiagramsMain):
                 self.update_from_to_list_views()
                 self.update_date_dependent_combos()
 
+    def duplicate_selected_objects(self):
+        """
+        Delete selection
+        """
+
+        selected_objects = self.get_selected_objects()
+
+        if len(selected_objects):
+
+            ok = yes_no_question('Are you sure that you want to duplicate the selected elements?',
+                                 'Duplicate')
+            if ok:
+                for obj in selected_objects:
+
+                    cpy = obj.copy(forced_new_idtag=True)
+                    cpy.name += ' copy'
+                    self.circuit.add_element(obj=cpy)
+
+                # update the view
+                self.view_objects_data()
+                self.update_from_to_list_views()
+                self.update_date_dependent_combos()
+
+    def copy_selected_idtag(self):
+        """
+        Copy selected idtags
+        """
+
+        selected_objects = self.get_selected_objects()
+
+        if len(selected_objects):
+            # copy to clipboard
+            cb = QtWidgets.QApplication.clipboard()
+            cb.clear()
+            lst = list()
+            cb.setText("\n".join([obj.idtag for obj in selected_objects]))
+
     def add_objects_to_current_diagram(self):
         """
         Add selected DB objects to current diagram
@@ -416,7 +453,7 @@ class ObjectsTableMain(DiagramsMain):
                 group = dev.RemedialActionGroup(
                     name=f"Remedial actions group {self.circuit.get_remedial_action_groups_number() + 1}"
                 )
-                self.circuit.add_remedial_action_groups(group)
+                self.circuit.add_remedial_action_group(group)
 
             elif elm_type == DeviceType.InvestmentsGroupDevice.value:
                 group = dev.InvestmentsGroup(name=f"Investments group {len(self.circuit.investments_groups) + 1}")
@@ -927,6 +964,16 @@ class ObjectsTableMain(DiagramsMain):
                           text="Delete",
                           icon_path=":/Icons/icons/minus.svg",
                           function_ptr=self.delete_selected_objects)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Duplicate object",
+                          icon_path=":/Icons/icons/copy.svg",
+                          function_ptr=self.duplicate_selected_objects)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Copy idtag",
+                          icon_path=":/Icons/icons/copy.svg",
+                          function_ptr=self.copy_selected_idtag)
 
         context_menu.addSeparator()
 

@@ -3342,7 +3342,7 @@ class Assets:
         """
         return len(self._remedial_action_groups)
 
-    def add_remedial_action_groups(self, obj: dev.RemedialActionGroup):
+    def add_remedial_action_group(self, obj: dev.RemedialActionGroup):
         """
         Add _remedial_action group
         :param obj: ContingencyGroup
@@ -4462,6 +4462,21 @@ class Assets:
             T[i] = bus_dict[elm.bus_to]
         return F, T
 
+    def get_all_branches_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator through all branches, including HVDC and switches
+        :return: BRANCH_TYPES
+        """
+        for lst in self.get_branch_lists_wo_hvdc():
+            for elm in lst:
+                yield elm
+
+        for elm in self.hvdc_lines:
+            yield elm
+
+        for elm in self.switch_devices:
+            yield elm
+
     # ------------------------------------------------------------------------------------------------------------------
     # Injections
     # ------------------------------------------------------------------------------------------------------------------
@@ -5209,7 +5224,7 @@ class Assets:
             self.add_remedial_action(obj=obj)
 
         elif obj.device_type == DeviceType.RemedialActionGroupDevice:
-            self.add_remedial_action_groups(obj=obj)
+            self.add_remedial_action_group(obj=obj)
 
         elif obj.device_type == DeviceType.Technology:
             self.add_technology(obj=obj)

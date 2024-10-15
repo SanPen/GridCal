@@ -179,6 +179,7 @@ class BaseMainGui(QMainWindow):
         self.tower_builder_window: Union[TowerBuilderGUI, None] = None
         self.investment_checks_diag: Union[CheckListDialogue, None] = None
         self.contingency_checks_diag: Union[CheckListDialogue, None] = None
+        self.ra_checks_diag: Union[CheckListDialogue, None] = None
         self.start_end_dialogue_window: Union[StartEndSelectionDialogue, None] = None
 
         # available engines --------------------------------------------------------------------------------------------
