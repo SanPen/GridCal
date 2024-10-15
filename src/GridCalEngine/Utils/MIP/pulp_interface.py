@@ -222,6 +222,8 @@ class LpModel:
                 bringing it to optimality.
                 """
 
+                self.logger.add_warning(msg="Base probrem is not optimal")
+
                 # deep copy of the original model
                 debug_model = self.model.copy()
 
@@ -230,7 +232,7 @@ class LpModel:
                 debugging_f_obj = 0
                 for i, (cst_name, cst) in enumerate(debug_model.constraints.items()):
                     # create a new slack var in the problem
-                    sl = pulp.LpVariable(name=f'Slack_{cst_name}',
+                    sl = pulp.LpVariable(name=f'Relax_{cst_name}',
                                          lowBound=0,
                                          upBound=1e20,
                                          cat=pulp.LpContinuous)
@@ -266,9 +268,9 @@ class LpModel:
                         # get the debugging slack value
                         val = sl.value()
 
-                        if val > 1e-10:
+                        if abs(val) > 1e-10:
                             # add the slack in the main model
-                            sl2 = pulp.LpVariable(name=f'Slack_relax_{cst_name}',
+                            sl2 = pulp.LpVariable(name=f'Relax_final_{cst_name}',
                                                   lowBound=0,
                                                   upBound=1e20,
                                                   cat=pulp.LpContinuous)
@@ -298,15 +300,18 @@ class LpModel:
                             self.relaxed_slacks[i] = (k, var, val)
 
                             # logg this
-                            if val > 1e-10:
+                            if abs(val) > 1e-10:
                                 self.logger.add_warning(
                                     msg="Relaxed problem",
                                     device=self.model.constraints[cst_slack_map[i]].name,
                                     value=val
                                 )
 
+                    else:
+                        self.logger.add_warning(msg="Relaxed probrem is not optimal :(")
+
                 else:
-                    self.logger.add_warning("Unable to relax the model, the debug model failed")
+                    self.logger.add_warning("Unable to relax the model, the debug model failed :(")
 
         return status
 

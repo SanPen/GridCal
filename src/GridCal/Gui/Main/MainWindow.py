@@ -2811,11 +2811,34 @@ class Ui_mainWindow(object):
 
         self.gridLayout_18.addWidget(self.label_103, 2, 0, 1, 1)
 
-        self.label_104 = QLabel(self.groupBox)
-        self.label_104.setObjectName(u"label_104")
-        self.label_104.setFont(font7)
+        self.label_132 = QLabel(self.groupBox)
+        self.label_132.setObjectName(u"label_132")
 
-        self.gridLayout_18.addWidget(self.label_104, 3, 0, 1, 1)
+        self.gridLayout_18.addWidget(self.label_132, 4, 0, 1, 2)
+
+        self.opf_time_grouping_comboBox = QComboBox(self.groupBox)
+        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
+        self.opf_time_grouping_comboBox.setFont(font7)
+
+        self.gridLayout_18.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
+
+        self.label_4 = QLabel(self.groupBox)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setFont(font7)
+
+        self.gridLayout_18.addWidget(self.label_4, 1, 0, 1, 1)
+
+        self.considerContingenciesOpfCheckBox = QCheckBox(self.groupBox)
+        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
+        self.considerContingenciesOpfCheckBox.setFont(font7)
+
+        self.gridLayout_18.addWidget(self.considerContingenciesOpfCheckBox, 5, 0, 1, 2)
+
+        self.label_10 = QLabel(self.groupBox)
+        self.label_10.setObjectName(u"label_10")
+        self.label_10.setFont(font7)
+
+        self.gridLayout_18.addWidget(self.label_10, 0, 0, 1, 1)
 
         self.opfContingencyToleranceSpinBox = QDoubleSpinBox(self.groupBox)
         self.opfContingencyToleranceSpinBox.setObjectName(u"opfContingencyToleranceSpinBox")
@@ -2826,17 +2849,9 @@ class Ui_mainWindow(object):
 
         self.gridLayout_18.addWidget(self.opfContingencyToleranceSpinBox, 3, 1, 1, 1)
 
-        self.label_10 = QLabel(self.groupBox)
-        self.label_10.setObjectName(u"label_10")
-        self.label_10.setFont(font7)
+        self.verticalSpacer_18 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_18.addWidget(self.label_10, 0, 0, 1, 1)
-
-        self.label_4 = QLabel(self.groupBox)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setFont(font7)
-
-        self.gridLayout_18.addWidget(self.label_4, 1, 0, 1, 1)
+        self.gridLayout_18.addItem(self.verticalSpacer_18, 10, 0, 1, 1)
 
         self.opfZonalGroupByComboBox = QComboBox(self.groupBox)
         self.opfZonalGroupByComboBox.setObjectName(u"opfZonalGroupByComboBox")
@@ -2844,38 +2859,29 @@ class Ui_mainWindow(object):
 
         self.gridLayout_18.addWidget(self.opfZonalGroupByComboBox, 2, 1, 1, 1)
 
-        self.opf_time_grouping_comboBox = QComboBox(self.groupBox)
-        self.opf_time_grouping_comboBox.setObjectName(u"opf_time_grouping_comboBox")
-        self.opf_time_grouping_comboBox.setFont(font7)
-
-        self.gridLayout_18.addWidget(self.opf_time_grouping_comboBox, 1, 1, 1, 1)
-
         self.mip_solver_comboBox = QComboBox(self.groupBox)
         self.mip_solver_comboBox.setObjectName(u"mip_solver_comboBox")
         self.mip_solver_comboBox.setFont(font7)
 
         self.gridLayout_18.addWidget(self.mip_solver_comboBox, 0, 1, 1, 1)
 
-        self.verticalSpacer_18 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.label_104 = QLabel(self.groupBox)
+        self.label_104.setObjectName(u"label_104")
+        self.label_104.setFont(font7)
 
-        self.gridLayout_18.addItem(self.verticalSpacer_18, 10, 0, 1, 1)
-
-        self.label_132 = QLabel(self.groupBox)
-        self.label_132.setObjectName(u"label_132")
-
-        self.gridLayout_18.addWidget(self.label_132, 4, 0, 1, 2)
-
-        self.considerContingenciesOpfCheckBox = QCheckBox(self.groupBox)
-        self.considerContingenciesOpfCheckBox.setObjectName(u"considerContingenciesOpfCheckBox")
-        self.considerContingenciesOpfCheckBox.setFont(font7)
-
-        self.gridLayout_18.addWidget(self.considerContingenciesOpfCheckBox, 5, 0, 1, 2)
+        self.gridLayout_18.addWidget(self.label_104, 3, 0, 1, 1)
 
         self.save_mip_checkBox = QCheckBox(self.groupBox)
         self.save_mip_checkBox.setObjectName(u"save_mip_checkBox")
         self.save_mip_checkBox.setFont(font7)
 
         self.gridLayout_18.addWidget(self.save_mip_checkBox, 9, 0, 1, 2)
+
+        self.fixOpfCheckBox = QCheckBox(self.groupBox)
+        self.fixOpfCheckBox.setObjectName(u"fixOpfCheckBox")
+        self.fixOpfCheckBox.setFont(font7)
+
+        self.gridLayout_18.addWidget(self.fixOpfCheckBox, 6, 0, 1, 2)
 
 
         self.gridLayout_10.addWidget(self.groupBox, 3, 3, 1, 1)
@@ -4652,10 +4658,10 @@ class Ui_mainWindow(object):
         self.toolBar.addAction(self.actionInputs_analysis)
         self.toolBar.addAction(self.actionPower_flow)
         self.toolBar.addAction(self.actionLinearAnalysis)
-        self.toolBar.addAction(self.actionContingency_analysis)
         self.toolBar.addAction(self.actionSigma_analysis)
         self.toolBar.addAction(self.actionShort_Circuit)
         self.toolBar.addAction(self.actionVoltage_stability)
+        self.toolBar.addAction(self.actionContingency_analysis)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionOptimal_Net_Transfer_Capacity)
         self.toolBar.addAction(self.actionNodal_capacity)
@@ -5476,24 +5482,31 @@ class Ui_mainWindow(object):
         self.label_130.setText("")
         self.groupBox.setTitle(QCoreApplication.translate("mainWindow", u"Linear settings", None))
         self.label_103.setText(QCoreApplication.translate("mainWindow", u"Zone grouping", None))
-        self.label_104.setText(QCoreApplication.translate("mainWindow", u"Contingency tolerance", None))
-#if QT_CONFIG(tooltip)
-        self.opfContingencyToleranceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"LODF matrix tolerance choosing contingencies", None))
-#endif // QT_CONFIG(tooltip)
-        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
-        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
+        self.label_132.setText("")
 #if QT_CONFIG(tooltip)
         self.opf_time_grouping_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Choose the time grouping to possibly shorten the solution time.</p><p>This splits the time series by week, month, etc. and the subproblems are solved sequentially.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_4.setText(QCoreApplication.translate("mainWindow", u"Time grouping", None))
+#if QT_CONFIG(tooltip)
+        self.considerContingenciesOpfCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Consider the contingencies, only applies to OPF", None))
+#endif // QT_CONFIG(tooltip)
+        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
+        self.label_10.setText(QCoreApplication.translate("mainWindow", u"MIP solver", None))
+#if QT_CONFIG(tooltip)
+        self.opfContingencyToleranceSpinBox.setToolTip(QCoreApplication.translate("mainWindow", u"LODF matrix tolerance choosing contingencies", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.mip_solver_comboBox.setToolTip(QCoreApplication.translate("mainWindow", u"Choose the external mixed integer programming solver", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_132.setText("")
-        self.considerContingenciesOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Consider contingencies", None))
+        self.label_104.setText(QCoreApplication.translate("mainWindow", u"Contingency tolerance", None))
 #if QT_CONFIG(tooltip)
         self.save_mip_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>The program will save the MIP file in .lp format in the user GridCal folder before running a linear optimization study.</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.save_mip_checkBox.setText(QCoreApplication.translate("mainWindow", u"Save MIP file", None))
+#if QT_CONFIG(tooltip)
+        self.fixOpfCheckBox.setToolTip(QCoreApplication.translate("mainWindow", u"Fix infeasible problems and rey with the relaxed problem. Applies to OPF and NTC", None))
+#endif // QT_CONFIG(tooltip)
+        self.fixOpfCheckBox.setText(QCoreApplication.translate("mainWindow", u"Fix infeasibilities and retry", None))
         self.label_73.setText(QCoreApplication.translate("mainWindow", u"Optimal Power Flow", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("mainWindow", u"General settings", None))
         self.label_128.setText(QCoreApplication.translate("mainWindow", u"Verbose", None))

@@ -82,3 +82,16 @@ def scripts_path() -> str:
         os.makedirs(pth)
 
     return pth
+
+
+def api_keys_path() -> str:
+    """
+    get the api keys file path
+    :return: api keys file path
+    """
+    pth = os.path.join(get_create_gridcal_folder(), 'api_keys')
+
+    if not os.path.exists(pth):
+        os.makedirs(pth)
+
+    return pth

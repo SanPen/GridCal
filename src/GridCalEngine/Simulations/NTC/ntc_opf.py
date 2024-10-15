@@ -574,7 +574,7 @@ def add_linear_injections_formulation(t: Union[int, None],
     """
 
     ntc_vars.power_shift[t] = prob.add_var(
-        lb=-prob.INFINITY,
+        lb=0,
         ub=prob.INFINITY,
         name=join("power_shift_", [t], "_"))
 
@@ -585,15 +585,17 @@ def add_linear_injections_formulation(t: Union[int, None],
         transfer_method=transfer_method,
         skip_generation_limits=skip_generation_limits,
         inf_value=prob.INFINITY,
-        Sbase=Sbase)
+        Sbase=Sbase
+    )
 
     proportions = get_exchange_proportions(
         power=bus_pref_t,
         bus_a1=bus_a1,
         bus_a2=bus_a2,
-        logger=logger)
+        logger=logger
+    )
 
-    f_obj = 0.0
+    f_obj = -1.0 * ntc_vars.power_shift[t]
 
     for k in range(bus_data_t.nbus):
 
@@ -636,7 +638,8 @@ def add_linear_branches_formulation(t_idx: int,
                                     alpha_threshold: float,
                                     structural_ntc: float,
                                     ntc_load_rule: float,
-                                    inf=1e20):
+                                    inf=1e20,
+                                    add_flow_slacks: bool = True):
     """
     Formulate the branches
     :param t_idx: time index
@@ -652,6 +655,7 @@ def add_linear_branches_formulation(t_idx: int,
     :param alpha_threshold
     :param alpha
     :param inf: number considered infinte
+    :param add_flow_slacks: add aslacks to the branch flows?
     :return objective function
     """
     f_obj = 0.0
@@ -736,42 +740,62 @@ def add_linear_branches_formulation(t_idx: int,
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m] and monitor_by_sensitivity_n and monitor_by_load_rule_n:
-                branch_vars.flow_slacks_pos[t_idx, m] = prob.add_var(
-                    lb=0,
-                    ub=inf,
-                    name=join("flow_slack_pos_", [t_idx, m], "_")
-                )
 
-                branch_vars.flow_slacks_neg[t_idx, m] = prob.add_var(
-                    lb=0,
-                    ub=inf,
-                    name=join("flow_slack_neg_", [t_idx, m], "_")
-                )
+                if add_flow_slacks:
+                    branch_vars.flow_slacks_pos[t_idx, m] = prob.add_var(
+                        lb=0,
+                        ub=inf,
+                        name=join("flow_slack_pos_", [t_idx, m], "_")
+                    )
 
-                # add upper rate constraint
-                branch_vars.flow_constraints_ub[t_idx, m] = ((branch_vars.flows[t_idx, m] +
-                                                              branch_vars.flow_slacks_pos[t_idx, m] -
-                                                              branch_vars.flow_slacks_neg[t_idx, m])
-                                                             <= branch_data_t.rates[m] / Sbase)
-                prob.add_cst(
-                    cst=branch_vars.flow_constraints_ub[t_idx, m],
-                    name=join("br_flow_upper_lim_", [t_idx, m])
-                )
+                    branch_vars.flow_slacks_neg[t_idx, m] = prob.add_var(
+                        lb=0,
+                        ub=inf,
+                        name=join("flow_slack_neg_", [t_idx, m], "_")
+                    )
 
-                # add lower rate constraint
-                branch_vars.flow_constraints_lb[t_idx, m] = ((branch_vars.flows[t_idx, m] +
-                                                              branch_vars.flow_slacks_pos[t_idx, m] -
-                                                              branch_vars.flow_slacks_neg[t_idx, m])
-                                                             >= -branch_data_t.rates[m] / Sbase)
+                    # add upper rate constraint
+                    branch_vars.flow_constraints_ub[t_idx, m] = ((branch_vars.flows[t_idx, m] +
+                                                                  branch_vars.flow_slacks_pos[t_idx, m] -
+                                                                  branch_vars.flow_slacks_neg[t_idx, m])
+                                                                 <= branch_data_t.rates[m] / Sbase)
+                    prob.add_cst(
+                        cst=branch_vars.flow_constraints_ub[t_idx, m],
+                        name=join("br_flow_upper_lim_", [t_idx, m])
+                    )
 
-                prob.add_cst(
-                    cst=branch_vars.flow_constraints_lb[t_idx, m],
-                    name=join("br_flow_lower_lim_", [t_idx, m])
-                )
+                    # add lower rate constraint
+                    branch_vars.flow_constraints_lb[t_idx, m] = ((branch_vars.flows[t_idx, m] +
+                                                                  branch_vars.flow_slacks_pos[t_idx, m] -
+                                                                  branch_vars.flow_slacks_neg[t_idx, m])
+                                                                 >= -branch_data_t.rates[m] / Sbase)
 
-                # add to the objective function
-                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t_idx, m]
-                f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t_idx, m]
+                    prob.add_cst(
+                        cst=branch_vars.flow_constraints_lb[t_idx, m],
+                        name=join("br_flow_lower_lim_", [t_idx, m])
+                    )
+
+                    # add to the objective function
+                    f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t_idx, m]
+                    f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t_idx, m]
+                else:
+
+                    # add upper rate constraint
+                    branch_vars.flow_constraints_ub[t_idx, m] = (branch_vars.flows[t_idx, m]
+                                                                 <= branch_data_t.rates[m] / Sbase)
+                    prob.add_cst(
+                        cst=branch_vars.flow_constraints_ub[t_idx, m],
+                        name=join("br_flow_upper_lim_", [t_idx, m])
+                    )
+
+                    # add lower rate constraint
+                    branch_vars.flow_constraints_lb[t_idx, m] = (branch_vars.flows[t_idx, m]
+                                                                 >= -branch_data_t.rates[m] / Sbase)
+
+                    prob.add_cst(
+                        cst=branch_vars.flow_constraints_lb[t_idx, m],
+                        name=join("br_flow_lower_lim_", [t_idx, m])
+                    )
 
     return f_obj
 
@@ -1004,7 +1028,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                           progress_text: Union[None, Callable[[str], None]] = None,
                           progress_func: Union[None, Callable[[float], None]] = None,
                           export_model_fname: Union[None, str] = None,
-                          verbose: int = 0) -> NtcVars:
+                          verbose: int = 0,
+                          robust: bool = False) -> NtcVars:
     """
 
     :param grid: MultiCircuit instance
@@ -1027,6 +1052,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     :param progress_func: function to report progress
     :param export_model_fname: Export the model into LP and MPS?
     :param verbose: Verbosity level
+    :param robust: Robust optimization?
     :return: NtcVars class with the results
     """
     mode_2_int = {
@@ -1151,7 +1177,8 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                 alpha_threshold=alpha_threshold,
                 structural_ntc=float(structural_ntc),
                 ntc_load_rule=ntc_load_rule,
-                inf=1e20
+                inf=1e20,
+                add_flow_slacks=False,
             )
 
             # formulate nodes ---------------------------------------------------------------------------------------
@@ -1216,7 +1243,7 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
         lp_model.save_model(file_name=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve(robust=True, show_logs=verbose > 0)
+    status = lp_model.solve(robust=robust, show_logs=verbose > 0)
 
     # gather the results
     logger.add_info("Status", value=str(status))
