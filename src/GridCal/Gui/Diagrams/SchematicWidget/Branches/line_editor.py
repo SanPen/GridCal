@@ -58,7 +58,7 @@ class LineEditor(QDialog):
 
         self.setObjectName("self")
 
-        self.setContextMenuPolicy(Qt.NoContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
         self.layout = QVBoxLayout(self)
 
@@ -84,10 +84,10 @@ class LineEditor(QDialog):
         if length == 0:
             length = 1.0
 
-        R = self.line.R * Zbase / length
-        X = self.line.X * Zbase / length
-        B = self.line.B * Ybase / length
-        I = np.round(self.line.rate / (Vf * 1.73205080757), 6)  # current in KA
+        r_ohm = self.line.R * Zbase / length
+        x_ohm = self.line.X * Zbase / length
+        b_us = self.line.B * Ybase / length * 1e6
+        I_KA = np.round(self.line.rate / (Vf * 1.73205080757), 6)  # current in KA
 
         # ------------------------------------------------------------------------------------------
 
@@ -103,22 +103,22 @@ class LineEditor(QDialog):
                         self.catalogue_combo.setCurrentIndex(idx)
 
                         if isinstance(self.current_template, SequenceLineType):
-                            I = self.current_template.Imax
-                            R = self.current_template.R
-                            X = self.current_template.X
-                            B = self.current_template.B
+                            I_KA = self.current_template.Imax
+                            r_ohm = self.current_template.R
+                            x_ohm = self.current_template.X
+                            b_us = self.current_template.B
 
                         if isinstance(self.current_template, UndergroundLineType):
-                            I = self.current_template.Imax
-                            R = self.current_template.R
-                            X = self.current_template.X
-                            B = self.current_template.B
+                            I_KA = self.current_template.Imax
+                            r_ohm = self.current_template.R
+                            x_ohm = self.current_template.X
+                            b_us = self.current_template.B
 
                         elif isinstance(self.current_template, OverheadLineType):
-                            I = self.current_template.Imax
-                            R = self.current_template.R1
-                            X = self.current_template.X1
-                            B = self.current_template.Bsh1
+                            I_KA = self.current_template.Imax
+                            r_ohm = self.current_template.R1
+                            x_ohm = self.current_template.X1
+                            b_us = self.current_template.Bsh1
 
                     except:
                         pass
@@ -141,7 +141,7 @@ class LineEditor(QDialog):
         self.i_spinner.setMinimum(0)
         self.i_spinner.setMaximum(9999999)
         self.i_spinner.setDecimals(2)
-        self.i_spinner.setValue(I)
+        self.i_spinner.setValue(I_KA)
         self.i_spinner.setSuffix(' KA')
 
         # R
@@ -149,7 +149,7 @@ class LineEditor(QDialog):
         self.r_spinner.setMinimum(0)
         self.r_spinner.setMaximum(9999999)
         self.r_spinner.setDecimals(6)
-        self.r_spinner.setValue(R)
+        self.r_spinner.setValue(r_ohm)
         self.r_spinner.setSuffix(' Ω/Km')
 
         # X
@@ -157,7 +157,7 @@ class LineEditor(QDialog):
         self.x_spinner.setMinimum(0)
         self.x_spinner.setMaximum(9999999)
         self.x_spinner.setDecimals(6)
-        self.x_spinner.setValue(X)
+        self.x_spinner.setValue(x_ohm)
         self.x_spinner.setSuffix(' Ω/Km')
 
         # B
@@ -165,7 +165,7 @@ class LineEditor(QDialog):
         self.b_spinner.setMinimum(0)
         self.b_spinner.setMaximum(9999999)
         self.b_spinner.setDecimals(6)
-        self.b_spinner.setValue(B)
+        self.b_spinner.setValue(b_us)
         self.b_spinner.setSuffix(" uS/Km")
 
         # apply to profile

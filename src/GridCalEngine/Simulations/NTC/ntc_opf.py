@@ -1110,13 +1110,19 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
             )
 
         # formulate injections -------------------------------------------------------------------------------------
+
+        # magic scaling: the demand must be exactly the same as the demand
+        Pbus = nc.Pbus.copy()
+        Ptotal = np.sum(Pbus)
+        Pbus[nc.vd] -= Ptotal / len(nc.vd)
+
         f_obj += add_linear_injections_formulation(
             t=t_idx,
             Sbase=nc.Sbase,
             gen_data_t=nc.generator_data,
             load_data_t=nc.load_data,
             bus_data_t=nc.bus_data,
-            p_bus_t=nc.Pbus,
+            p_bus_t=Pbus,
             bus_a1=bus_idx_from,
             bus_a2=bus_idx_to,
             transfer_method=transfer_method,

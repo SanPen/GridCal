@@ -1872,7 +1872,8 @@ class SimulationsMain(TimeEventsMain):
 
         if self.ui.save_mip_checkBox.isChecked():
             folder = opf_file_path()
-            fname = f'mip_{self.circuit.name}_{datetime.datetime.now()}.lp'
+            dte_str = str(datetime.datetime.now()).replace(":", "_").replace("/", "-")
+            fname = f'mip_{self.circuit.name}_{dte_str}.lp'
             export_model_fname = os.path.join(folder, fname)
         else:
             export_model_fname = None
