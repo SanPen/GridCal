@@ -181,7 +181,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
                                 modify_on_accept=True,
                                 templates=templates,
                                 current_template=current_template)
-        if dlg.exec_():
+        if dlg.exec():
             pass
 
     def edit_tap_changer(self):
@@ -191,7 +191,7 @@ class TransformerGraphicItem(LineGraphicTemplateItem):
         """
 
         dlg = TransformerTapsEditor(api_object=self.api_object.tap_changer)
-        if dlg.exec_():
+        if dlg.exec():
             pass
 
     def show_transformer_editor(self):

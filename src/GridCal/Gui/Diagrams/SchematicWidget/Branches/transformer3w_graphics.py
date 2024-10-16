@@ -21,11 +21,14 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
-from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_editor import Transformer3WEditor
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
+from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.enumerations import DeviceType
+from GridCal.Gui.gui_functions import add_menu_entry
 
 if TYPE_CHECKING:
     # Only imports the below statements during type checking
@@ -210,6 +213,18 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object)
 
+    def mouseDoubleClickEvent(self, event):
+        """
+        On double click, edit
+        :param event:
+        :return:
+        """
+
+        if self.api_object is not None:
+            if self.api_object.device_type in [DeviceType.Transformer3WDevice]:
+                # trigger the editor
+                self.edit()
+
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -222,11 +237,15 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
             # menu.addSeparator()
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
+            add_menu_entry(menu=menu,
+                           text="Edit template",
+                           function_ptr=self.edit,
+                           icon_path=":/Icons/icons/edit.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Delete",
+                           function_ptr=self.remove,
+                           icon_path=":/Icons/icons/delete3.svg")
 
             menu.exec_(event.screenPos())
         else:
@@ -419,3 +438,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         if ok:
             self.delete_all_connections()
             self.editor.remove_element(device=self.api_object, graphic_object=self)
+
+    def edit(self):
+        """
+        Open the appropriate editor dialogue
+        :return:
+        """
+        Sbase = self.editor.circuit.Sbase
+        dlg = Transformer3WEditor(self.api_object, Sbase, modify_on_accept=True)
+        if dlg.exec():
+            pass
