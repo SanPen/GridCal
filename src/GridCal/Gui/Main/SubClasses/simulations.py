@@ -596,6 +596,8 @@ class SimulationsMain(TimeEventsMain):
             SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg',
             SimulationTypes.InvestmentsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
             SimulationTypes.NodalCapacityTimeSeries_run.value: ':/Icons/icons/nodal_capacity.svg',
+            SimulationTypes.OPF_NTC_run.value: ':/Icons/icons/ntc_opf.svg',
+            SimulationTypes.OPF_NTC_TS_run.value: ':/Icons/icons/ntc_opf_ts.svg',
         }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))

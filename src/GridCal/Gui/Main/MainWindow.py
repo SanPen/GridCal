@@ -1739,6 +1739,14 @@ class Ui_mainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.results_as_abs_checkBox)
 
+        self.stacked_plot_checkBox = QCheckBox(self.frame_8)
+        self.stacked_plot_checkBox.setObjectName(u"stacked_plot_checkBox")
+        icon100 = QIcon()
+        icon100.addFile(u":/Icons/icons/stacked_plot.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.stacked_plot_checkBox.setIcon(icon100)
+
+        self.horizontalLayout_2.addWidget(self.stacked_plot_checkBox)
+
         self.copy_results_pushButton = QPushButton(self.frame_8)
         self.copy_results_pushButton.setObjectName(u"copy_results_pushButton")
         self.copy_results_pushButton.setIcon(icon86)
@@ -1869,9 +1877,9 @@ class Ui_mainWindow(object):
 
         self.runSourceCodeButton = QPushButton(self.frame_55)
         self.runSourceCodeButton.setObjectName(u"runSourceCodeButton")
-        icon100 = QIcon()
-        icon100.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.runSourceCodeButton.setIcon(icon100)
+        icon101 = QIcon()
+        icon101.addFile(u":/Icons/icons/next.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.runSourceCodeButton.setIcon(icon101)
 
         self.horizontalLayout_3.addWidget(self.runSourceCodeButton)
 
@@ -1906,9 +1914,9 @@ class Ui_mainWindow(object):
         self.verticalLayout_33 = QVBoxLayout(self.pythonConsoleTab)
         self.verticalLayout_33.setObjectName(u"verticalLayout_33")
         self.verticalLayout_33.setContentsMargins(0, 0, 0, 0)
-        icon101 = QIcon()
-        icon101.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget_2.addTab(self.pythonConsoleTab, icon101, "")
+        icon102 = QIcon()
+        icon102.addFile(u":/Icons/icons/console.svg", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget_2.addTab(self.pythonConsoleTab, icon102, "")
         self.sourceCodeTab = QWidget()
         self.sourceCodeTab.setObjectName(u"sourceCodeTab")
         self.verticalLayout_39 = QVBoxLayout(self.sourceCodeTab)
@@ -1932,7 +1940,7 @@ class Ui_mainWindow(object):
 
         self.verticalLayout_22.addWidget(self.frame_10)
 
-        self.tabWidget.addTab(self.main_console_tab, icon101, "")
+        self.tabWidget.addTab(self.main_console_tab, icon102, "")
         self.SettingsTab = QWidget()
         self.SettingsTab.setObjectName(u"SettingsTab")
         self.gridLayout_8 = QGridLayout(self.SettingsTab)
@@ -5253,6 +5261,13 @@ class Ui_mainWindow(object):
         self.results_as_abs_checkBox.setStatusTip("")
 #endif // QT_CONFIG(statustip)
         self.results_as_abs_checkBox.setText("")
+#if QT_CONFIG(tooltip)
+        self.stacked_plot_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"Stacked plot", None))
+#endif // QT_CONFIG(tooltip)
+#if QT_CONFIG(statustip)
+        self.stacked_plot_checkBox.setStatusTip("")
+#endif // QT_CONFIG(statustip)
+        self.stacked_plot_checkBox.setText("")
 #if QT_CONFIG(tooltip)
         self.copy_results_pushButton.setToolTip(QCoreApplication.translate("mainWindow", u"Copy to data frame to clipboard", None))
 #endif // QT_CONFIG(tooltip)
