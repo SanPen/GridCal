@@ -18,6 +18,8 @@ import io
 import numpy as np
 import pandas as pd
 from PySide6 import QtCore, QtWidgets
+
+from GridCal.Gui.messages import error_msg
 from GridCal.Gui.wrappable_table_model import WrappableTableModel
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Utils.Filtering.results_table_filtering import FilterResultsTable
@@ -314,8 +316,10 @@ class ResultsModel(WrappableTableModel):
         :param selected_rows: list of rows to plot
         :param stacked: stack the data?
         """
-
-        self.table.plot(ax=ax,
-                        selected_col_idx=selected_col_idx,
-                        selected_rows=selected_rows,
-                        stacked=stacked)
+        try:
+            self.table.plot(ax=ax,
+                            selected_col_idx=selected_col_idx,
+                            selected_rows=selected_rows,
+                            stacked=stacked)
+        except ValueError as e:
+            error_msg(text=str(e), title="Plotting error")

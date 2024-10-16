@@ -1877,10 +1877,11 @@ def run_linear_opf_ts(grid: MultiCircuit,
         logger.add_info("LP model saved as", value=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve(robust=robust, show_logs=verbose > 0)
+    status = lp_model.solve(robust=robust, show_logs=verbose > 0, progress_text=progress_text)
 
     # gather the results
-    logger.add_info("Status", value=str(status))
+    logger.add_info(msg="Status", value=lp_model.status2string(status))
+
     if status == LpModel.OPTIMAL:
         logger.add_info("Objective function", value=lp_model.fobj_value())
         mip_vars.acceptable_solution = True
