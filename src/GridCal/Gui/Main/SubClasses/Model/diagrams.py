@@ -1445,7 +1445,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.OptimalNetTransferCapacityDriver.tpe.value:
             if t_idx is None:
                 results: sim.OptimalNetTransferCapacityResults = self.session.get_results(
-                    SimulationTypes.NetTransferCapacity_run
+                    SimulationTypes.OPF_NTC_run
                 )
                 self.ntc_colouring(diagram_widget=diagram_widget,
                                    results=results,
@@ -1462,7 +1462,7 @@ class DiagramsMain(CompiledArraysMain):
         elif current_study == sim.OptimalNetTransferCapacityTimeSeriesDriver.tpe.value:
             if t_idx is not None:
                 results: sim.OptimalNetTransferCapacityTimeSeriesResults = self.session.get_results(
-                    SimulationTypes.NetTransferCapacityTS_run
+                    SimulationTypes.OPF_NTC_TS_run
                 )
                 self.ntc_ts_colouring(t_idx=t_idx,
                                       diagram_widget=diagram_widget,

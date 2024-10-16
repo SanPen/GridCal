@@ -238,7 +238,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             # menu.addSeparator()
 
             add_menu_entry(menu=menu,
-                           text="Edit template",
+                           text="Edit",
                            function_ptr=self.edit,
                            icon_path=":/Icons/icons/edit.svg")
 

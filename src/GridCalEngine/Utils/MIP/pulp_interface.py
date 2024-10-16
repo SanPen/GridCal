@@ -20,8 +20,9 @@ This module abstracts the synthax of PuLP out
 so that in the future it can be exchanged with some
 other solver interface easily
 """
+from __future__ import annotations
 
-from typing import List, Union
+from typing import List, Union, Callable
 import GridCalEngine.ThirdParty.pulp as pulp
 from GridCalEngine.ThirdParty.pulp import HiGHS, CPLEX_CMD
 from GridCalEngine.ThirdParty.pulp.pulp import LpAffineExpression as LpExp
@@ -195,13 +196,18 @@ class LpModel:
         else:
             raise Exception('PuLP Unsupported MIP solver ' + self.solver_type.value)
 
-    def solve(self, robust: bool = False, show_logs: bool = False) -> int:
+    def solve(self, robust: bool = False, show_logs: bool = False,
+              progress_text: Callable[[str], None] | None = None) -> int:
         """
         Solve the model
         :param robust: In this interface, this is useless
         :param show_logs: In this interface, this is useless
+        :param progress_text: progress function pointer
         :return:
         """
+        if progress_text is not None:
+            progress_text(f"Solving model with {self.solver_type.value}...")
+
         # solve the model
         status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
 
@@ -250,6 +256,9 @@ class LpModel:
                 # set the objective function as the summation of the new slacks
                 debug_model.setObjective(debugging_f_obj)
 
+                if progress_text is not None:
+                    progress_text(f"Solving debug model with {self.solver_type.value}...")
+
                 # solve the debug model
                 status_d = debug_model.solve(solver=self.get_solver(show_logs=show_logs))
 
@@ -288,6 +297,9 @@ class LpModel:
 
                     # set the modified (original) objective function
                     self.model.setObjective(self.model.objective)
+
+                    if progress_text is not None:
+                        progress_text(f"Solving relaxed model with {self.solver_type.value}...")
 
                     # solve the modified (original) model
                     status = self.model.solve(solver=self.get_solver(show_logs=show_logs))

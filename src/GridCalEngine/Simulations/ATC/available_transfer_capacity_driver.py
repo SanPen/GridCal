@@ -91,7 +91,7 @@ def scale_proportional_sensed(P, idx1, idx2, dT=1.0):
 
 
 @nb.njit()
-def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0, lodf=None):
+def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, bus_a1_idx, bus_a2_idx, dT=1.0, mode=0, lodf=None):
     """
     Compute line sensitivity to power transfer
     :param ptdf: Power transfer distribution factors (n-branch, n-bus)
@@ -100,8 +100,8 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
     :param Pinstalled: bus generation installed power [p.u.]
     :param Pgen: bus generation current power [p.u.]
     :param Pload: bus load power [p.u.]
-    :param idx1: bus indices of the sending region
-    :param idx2: bus indices of the receiving region
+    :param bus_a1_idx: bus indices of the sending region
+    :param bus_a2_idx: bus indices of the receiving region
     :param dT: Exchange amount
     :param mode: Type of power shift
                  0: shift generation based on the current generated power
@@ -129,8 +129,8 @@ def compute_alpha(ptdf, P0, Pgen, Pinstalled, Pload, idx1, idx2, dT=1.0, mode=0,
         P = P0
 
     # compute the bus injection increments due to the exchange
-    dPu = get_proportional_deltas_sensed(P, idx1, dP=dT)
-    dPd = get_proportional_deltas_sensed(P, idx2, dP=-dT)
+    dPu = get_proportional_deltas_sensed(P, bus_a1_idx, dP=dT)
+    dPd = get_proportional_deltas_sensed(P, bus_a2_idx, dP=-dT)
 
     dP = dPu + dPd
 
@@ -479,8 +479,8 @@ class AvailableTransferCapacityDriver(DriverTemplate):
                               Pinstalled=nc.bus_installed_power,
                               Pgen=nc.generator_data.get_injections_per_bus().real,
                               Pload=nc.load_data.get_injections_per_bus().real,
-                              idx1=idx1b,
-                              idx2=idx2b,
+                              bus_a1_idx=idx1b,
+                              bus_a2_idx=idx2b,
                               mode=mode_2_int[self.options.mode])
 
         # get flow
