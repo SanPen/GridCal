@@ -27,7 +27,7 @@ def test_export_results():
                                               solver=gce.SolverType.LINEAR_OPF,
                                               power_flow_options=power_flow_options,
                                               time_grouping=gce.TimeGrouping.Daily,
-                                              mip_solver=gce.MIPSolvers.CBC,
+                                              mip_solver=gce.MIPSolvers.HIGHS,
                                               generate_report=True)
 
     # run the opf time series
