@@ -677,37 +677,39 @@ class SchematicWidget(BaseDiagramWidget):
                         self.add_to_scene(graphic_object=graphic_object)
 
                         bus_1_graphic = self.graphics_manager.query(elm.bus1)
+
+                        if bus_1_graphic is not None:
+                            conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
+                                                       to_port=bus_1_graphic.get_terminal(),
+                                                       editor=self)
+
+                            graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=False)
+                            self.add_to_scene(graphic_object=conn1)
+                            self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
+
                         bus_2_graphic = self.graphics_manager.query(elm.bus2)
+                        if bus_2_graphic is not None:
+                            conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
+                                                       to_port=bus_2_graphic.get_terminal(),
+                                                       editor=self)
+                            graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=False)
+                            self.add_to_scene(graphic_object=conn2)
+                            self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
+
                         bus_3_graphic = self.graphics_manager.query(elm.bus3)
-
-                        conn1 = WindingGraphicItem(from_port=graphic_object.terminals[0],
-                                                   to_port=bus_1_graphic.get_terminal(),
-                                                   editor=self)
-
-                        graphic_object.set_connection(i=0, bus=elm.bus1, conn=conn1, set_voltage=False)
-
-                        conn2 = WindingGraphicItem(from_port=graphic_object.terminals[1],
-                                                   to_port=bus_2_graphic.get_terminal(),
-                                                   editor=self)
-                        graphic_object.set_connection(i=1, bus=elm.bus2, conn=conn2, set_voltage=False)
-
-                        conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
-                                                   to_port=bus_3_graphic.get_terminal(),
-                                                   editor=self)
-                        graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=False)
+                        if bus_3_graphic is not None:
+                            conn3 = WindingGraphicItem(from_port=graphic_object.terminals[2],
+                                                       to_port=bus_3_graphic.get_terminal(),
+                                                       editor=self)
+                            graphic_object.set_connection(i=2, bus=elm.bus3, conn=conn3, set_voltage=False)
+                            self.add_to_scene(graphic_object=conn3)
+                            self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
 
                         graphic_object.set_position(x=location.x, y=location.y)
                         graphic_object.change_size(h=location.h, w=location.w)
 
-                        self.add_to_scene(graphic_object=conn1)
-                        self.add_to_scene(graphic_object=conn2)
-                        self.add_to_scene(graphic_object=conn3)
-
                         graphic_object.update_conn()
                         self.graphics_manager.add_device(elm=elm, graphic=graphic_object)
-                        self.graphics_manager.add_device(elm=elm.winding1, graphic=conn1)
-                        self.graphics_manager.add_device(elm=elm.winding2, graphic=conn2)
-                        self.graphics_manager.add_device(elm=elm.winding3, graphic=conn3)
 
                         # register the windings for the branches pass
                         # windings_dict[elm.winding1.idtag] = conn1

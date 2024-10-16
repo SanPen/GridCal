@@ -1199,11 +1199,9 @@ def get_newton_pa_nonlinear_opf_options(pf_opt: PowerFlowOptions,
     q_control_dict = {False: npa.ReactivePowerControlMode.NoControl,
                       True: npa.ReactivePowerControlMode.Direct}
 
-    solver_dict = {MIPSolvers.CBC: npa.LpSolvers.Highs,
-                   MIPSolvers.HIGHS: npa.LpSolvers.Highs,
+    solver_dict = {MIPSolvers.HIGHS: npa.LpSolvers.Highs,
                    MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
                    MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
-                   MIPSolvers.GLOP: npa.LpSolvers.Highs,
                    MIPSolvers.SCIP: npa.LpSolvers.Highs,
                    MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
 
@@ -1230,11 +1228,9 @@ def get_newton_pa_linear_opf_options(opf_opt: OptimalPowerFlowOptions,
     :param area_dict:
     :return:
     """
-    solver_dict = {MIPSolvers.CBC: npa.LpSolvers.Highs,
-                   MIPSolvers.HIGHS: npa.LpSolvers.Highs,
+    solver_dict = {MIPSolvers.HIGHS: npa.LpSolvers.Highs,
                    MIPSolvers.XPRESS: npa.LpSolvers.Xpress,
                    MIPSolvers.CPLEX: npa.LpSolvers.CPLEX,
-                   MIPSolvers.GLOP: npa.LpSolvers.Highs,
                    MIPSolvers.SCIP: npa.LpSolvers.Scip,
                    MIPSolvers.GUROBI: npa.LpSolvers.Gurobi}
 

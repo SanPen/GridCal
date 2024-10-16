@@ -26,7 +26,7 @@ except ImportError:
     HIGHSPY_AVAILABLE = False
 
 
-def test_linear_formulation():
+def test_linear_formulation() -> None:
 
     prob = LpModel()
 

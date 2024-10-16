@@ -35,7 +35,7 @@ class OptimalPowerFlowOptions(OptionsTemplate):
                  solver: SolverType = SolverType.LINEAR_OPF,
                  time_grouping: TimeGrouping = TimeGrouping.NoGrouping,
                  zonal_grouping: ZonalGrouping = ZonalGrouping.NoGrouping,
-                 mip_solver=MIPSolvers.CBC,
+                 mip_solver=MIPSolvers.HIGHS,
                  power_flow_options: Union[None, PowerFlowOptions] = None,
                  consider_contingencies=False,
                  contingency_groups_used: List[ContingencyGroup] = (),
@@ -51,7 +51,8 @@ class OptimalPowerFlowOptions(OptionsTemplate):
                  ips_iterations: int = 100,
                  ips_trust_radius: float = 1.0,
                  ips_init_with_pf: bool = False,
-                 acopf_mode: AcOpfMode = AcOpfMode.ACOPFstd):
+                 acopf_mode: AcOpfMode = AcOpfMode.ACOPFstd,
+                 robust: bool = False,):
         """
         Optimal power flow options
         :param verbose:
@@ -114,6 +115,8 @@ class OptimalPowerFlowOptions(OptionsTemplate):
 
         self.acopf_mode = acopf_mode
 
+        self.robust = robust
+
         # IPS settings
         self.ips_method: SolverType = ips_method
         self.ips_tolerance = ips_tolerance
@@ -143,4 +146,4 @@ class OptimalPowerFlowOptions(OptionsTemplate):
         self.register(key="ips_iterations", tpe=int)
         self.register(key="ips_trust_radius", tpe=float)
         self.register(key="ips_init_with_pf", tpe=bool)
-
+        self.register(key="robust", tpe=bool)

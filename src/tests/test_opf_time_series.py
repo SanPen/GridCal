@@ -34,7 +34,7 @@ def test_opf_ts():
                                           solver=SolverType.LINEAR_OPF,
                                           power_flow_options=power_flow_options,
                                           time_grouping=TimeGrouping.Daily,
-                                          mip_solver=MIPSolvers.CBC,
+                                          mip_solver=MIPSolvers.HIGHS,
                                           generate_report=True)
 
     # run the opf time series

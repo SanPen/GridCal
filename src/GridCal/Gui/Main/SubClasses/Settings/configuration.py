@@ -159,19 +159,6 @@ class ConfigurationMain(ResultsMain):
         """
         return os.path.exists(self.config_file_path())
 
-    @staticmethod
-    def scripts_path() -> str:
-        """
-        get the config file path
-        :return: config file path
-        """
-        pth = os.path.join(get_create_gridcal_folder(), 'scripts')
-
-        if not os.path.exists(pth):
-            os.makedirs(pth)
-
-        return pth
-
     def get_config_structure(self) -> Dict[str, Dict[str, any]]:
         """
         Get the settings configuration dictionary
@@ -251,6 +238,7 @@ class ConfigurationMain(ResultsMain):
                 "maximize_area_exchange": self.ui.opfMaximizeExcahngeCheckBox,
                 "unit_commitment": self.ui.opfUnitCommitmentCheckBox,
                 "add_opf_report": self.ui.addOptimalPowerFlowReportCheckBox,
+                "robust_mip": self.ui.fixOpfCheckBox,
                 "save_mip": self.ui.save_mip_checkBox,
                 "ips_method": self.ui.ips_method_comboBox,
                 "ips_tolerance": self.ui.ips_tolerance_spinBox,
@@ -309,7 +297,9 @@ class ConfigurationMain(ResultsMain):
                 "store_results_in_file": self.ui.saveResultsCheckBox,
                 "current_boundary_set": self.current_boundary_set,
                 "cgmes_selected_version": self.ui.cgmes_version_comboBox,
-                "cgmes_single_profile_per_file": self.ui.cgmes_single_profile_per_file_checkBox
+                "cgmes_single_profile_per_file": self.ui.cgmes_single_profile_per_file_checkBox,
+                "map_regions_like_raw": self.ui.cgmes_map_regions_like_raw_checkBox,
+                "raw_selected_version": self.ui.raw_export_version_comboBox,
             }
         }
 
@@ -435,10 +425,6 @@ class ConfigurationMain(ResultsMain):
         date_time_value = self.ui.snapshot_dateTimeEdit.dateTime().toPython()
 
         self.circuit.snapshot_time = date_time_value
-
-    def plugin_main_function_triggered(self, arg):
-
-        print(arg)
 
     def add_plugins(self):
         """

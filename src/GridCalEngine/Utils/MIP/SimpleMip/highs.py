@@ -28,10 +28,10 @@ except ImportError:
     HIGHS_AVAILABLE = False
 
 
-def solve_with_highs(mip: LpModel, verbose: int = 0):
+def solve_with_highs(problem: LpModel, verbose: int = 0):
     """
     Solve MIP using Highs via its python interface
-    :param mip: Problem to be solved (results are inserted in-place)
+    :param problem: Problem to be solved (results are inserted in-place)
     :param verbose: print info? for values > 0
     """
     if highspy is None:
@@ -44,17 +44,17 @@ def solve_with_highs(mip: LpModel, verbose: int = 0):
     lp = highspy.highs.HighsLp()
 
     # set the sense
-    lp.sense_ = highspy.highs.ObjSense.kMinimize if mip.is_minimize() else highspy.highs.ObjSense.kMaximize
+    lp.sense_ = highspy.highs.ObjSense.kMinimize if problem.is_minimize() else highspy.highs.ObjSense.kMaximize
 
     # set the var information
-    lp.col_lower_, lp.col_cost_, lp.col_upper_, is_int_list = mip.get_var_data()
-    lp.offset_ = mip.objective.offset
+    lp.col_lower_, lp.col_cost_, lp.col_upper_, is_int_list = problem.get_var_data()
+    lp.offset_ = problem.objective.offset
 
     for i in is_int_list:
         lp.integrality_.append(i)
 
     # set the constraints information
-    lp.row_lower_, A, lp.row_upper_ = mip.get_coefficients_data()
+    lp.row_lower_, A, lp.row_upper_ = problem.get_coefficients_data()
     lp.num_col_ = A.shape[1]
     lp.num_row_ = A.shape[0]
 
@@ -80,9 +80,9 @@ def solve_with_highs(mip: LpModel, verbose: int = 0):
         print("Iteration count = ", info.simplex_iteration_count)
         print("Primal solution status = ", h.solutionStatusToString(info.primal_solution_status))
 
-    mip.set_solution(col_values=solution.col_value,
-                     col_duals=solution.col_dual,
-                     row_values=solution.row_value,
-                     row_duals=solution.row_dual,
-                     f_obj=info.objective_function_value,
-                     is_optimal=model_status == highspy.highs.HighsModelStatus.kOptimal)
+    problem.set_solution(col_values=solution.col_value,
+                         col_duals=solution.col_dual,
+                         row_values=solution.row_value,
+                         row_duals=solution.row_dual,
+                         f_obj=info.objective_function_value,
+                         is_optimal=model_status == highspy.highs.HighsModelStatus.kOptimal)

@@ -310,8 +310,8 @@ class AvailableTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                   Pinstalled=nc.bus_installed_power,
                                   Pgen=nc.generator_data.get_injections_per_bus().real,
                                   Pload=nc.load_data.get_injections_per_bus().real,
-                                  idx1=self.options.bus_idx_from,
-                                  idx2=self.options.bus_idx_to,
+                                  bus_a1_idx=self.options.bus_idx_from,
+                                  bus_a2_idx=self.options.bus_idx_to,
                                   mode=mode_2_int[self.options.mode])
 
             # base exchange

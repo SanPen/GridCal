@@ -191,7 +191,12 @@ class ResultsMain(SimulationsMain):
                 rows = None
 
             # none selected, plot all
-            mdl.plot(ax=ax, selected_col_idx=cols, selected_rows=rows, stacked=False)
+            mdl.plot(
+                ax=ax,
+                selected_col_idx=cols,
+                selected_rows=rows,
+                stacked=self.ui.stacked_plot_checkBox.isChecked()
+            )
 
             plt.show()
 

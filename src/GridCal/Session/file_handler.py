@@ -21,7 +21,7 @@ from PySide6.QtCore import QThread, Signal
 from GridCal.Session.session import SimulationSession
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.gridcal.zip_interface import get_session_tree, load_session_driver_objects
-from GridCalEngine.IO.file_handler import FileOpen, FileSave, FileSavingOptions
+from GridCalEngine.IO.file_handler import FileOpen, FileSave, FileSavingOptions, FileOpenOptions
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.data_logger import DataLogger
@@ -37,7 +37,8 @@ class FileOpenThread(QThread):
 
     def __init__(self,
                  file_name: Union[str, List[str]],
-                 previous_circuit: Union[MultiCircuit, None] = None):
+                 previous_circuit: Union[MultiCircuit, None] = None,
+                 options: FileOpenOptions = None):
         """
         Constructor
         :param file_name: file name (s)
@@ -53,6 +54,8 @@ class FileOpenThread(QThread):
         self.logger = Logger()
 
         self.circuit: Union[MultiCircuit, None] = None
+
+        self.options = options
 
         self.cgmes_circuit: Union[CgmesCircuit, None] = None
 
@@ -110,7 +113,8 @@ class FileOpenThread(QThread):
         self.logger = Logger()
 
         file_handler = FileOpen(file_name=self.file_name,
-                                previous_circuit=self._previous_circuit)
+                                previous_circuit=self._previous_circuit,
+                                options=self.options)
 
         try:
             self.circuit = file_handler.open(text_func=self.progress_text.emit,

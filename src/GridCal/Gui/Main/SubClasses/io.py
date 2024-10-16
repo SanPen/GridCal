@@ -306,10 +306,13 @@ class IoMain(ConfigurationMain):
             # lock the ui
             self.LOCK()
 
+            options = self.get_file_open_options()
+
             # create thread
             self.open_file_thread_object = filedrv.FileOpenThread(
                 file_name=filenames if len(filenames) > 1 else filenames[0],
-                previous_circuit=self.circuit
+                previous_circuit=self.circuit,
+                options=options
             )
 
             # make connections
@@ -709,6 +712,18 @@ class IoMain(ConfigurationMain):
                                             cgmes_one_file_per_profile=one_file_per_profile,
                                             cgmes_map_areas_like_raw=cgmes_map_areas_like_raw,
                                             raw_version=raw_version)
+
+        return options
+
+    def get_file_open_options(self) -> filedrv.FileOpenOptions:
+        """
+        Compose the file open options
+        :return: FileOpenOptions
+        """
+
+        cgmes_map_areas_like_raw = self.ui.cgmes_map_regions_like_raw_checkBox.isChecked()
+
+        options = filedrv.FileOpenOptions(cgmes_map_areas_like_raw=cgmes_map_areas_like_raw)
 
         return options
 

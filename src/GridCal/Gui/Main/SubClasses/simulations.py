@@ -40,11 +40,10 @@ import GridCalEngine.Simulations as sim
 import GridCalEngine.Simulations.PowerFlow.grid_analysis as grid_analysis
 from GridCalEngine.Compilers.circuit_to_newton_pa import get_newton_mip_solvers_list
 from GridCalEngine.Utils.MIP.selected_interface import get_available_mip_solvers
-from GridCalEngine.IO.file_system import get_create_gridcal_folder
+from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
@@ -104,14 +103,11 @@ class SimulationsMain(TimeEventsMain):
 
         # the MIP combobox models assigning is done in modify_ui_options_according_to_the_engine
         self.mip_solvers_dict = OrderedDict()
-        self.mip_solvers_dict[MIPSolvers.CBC.value] = MIPSolvers.CBC
         self.mip_solvers_dict[MIPSolvers.HIGHS.value] = MIPSolvers.HIGHS
-        self.mip_solvers_dict[MIPSolvers.GLOP.value] = MIPSolvers.GLOP
         self.mip_solvers_dict[MIPSolvers.SCIP.value] = MIPSolvers.SCIP
         self.mip_solvers_dict[MIPSolvers.CPLEX.value] = MIPSolvers.CPLEX
         self.mip_solvers_dict[MIPSolvers.GUROBI.value] = MIPSolvers.GUROBI
         self.mip_solvers_dict[MIPSolvers.XPRESS.value] = MIPSolvers.XPRESS
-        self.mip_solvers_dict[MIPSolvers.PDLP.value] = MIPSolvers.PDLP
 
         # opf solvers dictionary
         self.nodal_capacity_methods_dict = OrderedDict()
@@ -600,6 +596,8 @@ class SimulationsMain(TimeEventsMain):
             SimulationTypes.ClusteringAnalysis_run.value: ':/Icons/icons/clustering.svg',
             SimulationTypes.InvestmentsEvaluation_run.value: ':/Icons/icons/expansion_planning.svg',
             SimulationTypes.NodalCapacityTimeSeries_run.value: ':/Icons/icons/nodal_capacity.svg',
+            SimulationTypes.OPF_NTC_run.value: ':/Icons/icons/ntc_opf.svg',
+            SimulationTypes.OPF_NTC_TS_run.value: ':/Icons/icons/ntc_opf_ts.svg',
         }
 
         self.ui.results_treeView.setModel(gf.get_tree_model(d, 'Results', icons=icons))
@@ -1854,18 +1852,6 @@ class SimulationsMain(TimeEventsMain):
         if not self.session.is_anything_running():
             self.UNLOCK()
 
-    @staticmethod
-    def opf_file_path() -> str:
-        """
-        get the OPF files folder path
-        :return: str
-        """
-        d = os.path.join(get_create_gridcal_folder(), 'mip_files')
-
-        if not os.path.exists(d):
-            os.makedirs(d)
-        return d
-
     def get_opf_options(self) -> Union[None, sim.OptimalPowerFlowOptions]:
         """
         Get the GUI OPF options
@@ -1883,10 +1869,12 @@ class SimulationsMain(TimeEventsMain):
         maximize_flows = self.ui.opfMaximizeExcahngeCheckBox.isChecked()
         unit_commitment = self.ui.opfUnitCommitmentCheckBox.isChecked()
         generate_report = self.ui.addOptimalPowerFlowReportCheckBox.isChecked()
+        robust = self.ui.fixOpfCheckBox.isChecked()
 
         if self.ui.save_mip_checkBox.isChecked():
-            folder = self.opf_file_path()
-            fname = f'mip_{self.circuit.name}_{datetime.datetime.now()}.lp'
+            folder = opf_file_path()
+            dte_str = str(datetime.datetime.now()).replace(":", "_").replace("/", "-")
+            fname = f'mip_{self.circuit.name}_{dte_str}.lp'
             export_model_fname = os.path.join(folder, fname)
         else:
             export_model_fname = None
@@ -1910,7 +1898,7 @@ class SimulationsMain(TimeEventsMain):
         ips_iterations = self.ui.ips_iterations_spinBox.value()
         ips_trust_radius = self.ui.ips_trust_radius_doubleSpinBox.value()
         ips_init_with_pf = self.ui.ips_initialize_with_pf_checkBox.isChecked()
-
+        verbose = self.ui.ips_verbose_spinBox.value()
         options = sim.OptimalPowerFlowOptions(solver=solver,
                                               time_grouping=time_grouping,
                                               zonal_grouping=zonal_grouping,
@@ -1929,7 +1917,9 @@ class SimulationsMain(TimeEventsMain):
                                               ips_tolerance=ips_tolerance,
                                               ips_iterations=ips_iterations,
                                               ips_trust_radius=ips_trust_radius,
-                                              ips_init_with_pf=ips_init_with_pf)
+                                              ips_init_with_pf=ips_init_with_pf,
+                                              robust=robust,
+                                              verbose=verbose)
 
         return options
 

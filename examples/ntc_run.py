@@ -49,8 +49,8 @@ alpha = compute_alpha(
     Pinstalled=numerical_circuit_.bus_installed_power,
     Pgen=numerical_circuit_.generator_data.get_injections_per_bus()[:, 0].real,
     Pload=numerical_circuit_.load_data.get_injections_per_bus()[:, 0].real,
-    idx1=a1,
-    idx2=a2,
+    bus_a1_idx=a1,
+    bus_a2_idx=a2,
     mode=AvailableTransferMode.InstalledPower.value,
 )
 

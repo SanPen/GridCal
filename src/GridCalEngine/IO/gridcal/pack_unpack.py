@@ -109,6 +109,9 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
         'contingency_group': dev.ContingencyGroup(),
         'contingency': dev.Contingency(),
 
+        'remedial_action_group': dev.RemedialActionGroup(),
+        'remedial_action': dev.RemedialAction(),
+
         'investments_group': dev.InvestmentsGroup(),
         'investment': dev.Investment(),
 

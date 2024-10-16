@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-import uuid
 import warnings
 from typing import List, Union, Tuple, Iterable
 import numpy as np
@@ -47,8 +46,9 @@ def set_var_bounds(var: LpVar, lb: float, ub: float):
     :param lb: lower bound value
     :param ub: upper bound value
     """
-    var.lower_bound = lb
-    var.upper_bound = ub
+    if isinstance(var, LpVar):
+        var.lower_bound = lb
+        var.upper_bound = ub
 
 
 class LpModel:
@@ -57,7 +57,7 @@ class LpModel:
     """
     OPTIMAL = 100
     INFINITY = 1e20
-    originally_infesible = False
+    originally_infeasible = False
 
     def __init__(self, solver_type: MIPSolvers = MIPSolvers.HIGHS):
 
@@ -66,10 +66,11 @@ class LpModel:
             self.solver_type = MIPSolvers.HIGHS
         else:
             self.solver_type = solver_type
-        self.objective: Union[LpExp, None] = None
-        self.constraints: List[LpCst] = []
-        self.variables: List[LpVar] = []
-        self.relaxed_slacks: List[Tuple[int, LpVar, float]] = []
+
+        self.objective: LpExp = LpExp()
+        self.constraints: List[LpCst] = list()
+        self.variables: List[LpVar] = list()
+        self.relaxed_slacks: List[Tuple[int, LpVar, float]] = list()
         self._is_minimize = True
         self._is_mip = False
 
@@ -444,26 +445,27 @@ class LpModel:
         """
         return self._is_optimal
 
-    def _solve(self, model: "LpModel"):
+    def _solve(self, model: "LpModel", verbose: int = 0):
 
         if self.solver_type == MIPSolvers.HIGHS:
-            solve_with_highs(model)
+            solve_with_highs(problem=model, verbose=verbose)
 
         else:
             raise Exception(f"Unsupported solver {self.solver_type.value}")
 
-    def solve(self, robust=True) -> int:
+    def solve(self, robust=True, show_logs=False) -> int:
         """
         Solve the model
         :param robust: Relax the problem if infeasible
+        :param show_logs: Show logs
         :return: integer value matching OPTIMAL or not
         """
 
-        self._solve(model=self)
+        self._solve(model=self, verbose=int(show_logs))
 
         if not self.is_optimal():
 
-            self.originally_infesible = True
+            self.originally_infeasible = True
 
             if robust:
                 """
@@ -488,7 +490,7 @@ class LpModel:
                 for i, cst in enumerate(debug_model.constraints):
 
                     # create a new slack var in the problem
-                    sl = debug_model.add_var(0, 1e20, name='Slackkk{}'.format(i))
+                    sl = debug_model.add_var(lb=0, ub=1e20, name=f'Slk_{i}_{cst.name}')
 
                     # add the variable to the new objective function
                     debugging_f_obj += sl
@@ -503,7 +505,7 @@ class LpModel:
                 debug_model.minimize(debugging_f_obj)
 
                 # solve the debug model
-                self._solve(debug_model)
+                self._solve(debug_model, verbose=int(show_logs))
 
                 debug_optimal = debug_model.is_optimal()
 
@@ -520,10 +522,11 @@ class LpModel:
                         # get the debugging slack value
                         val = debug_model.get_value(sl)
 
-                        if val > 1e-10:
+                        if abs(val) > 1e-10:
+                            cst_name = self.constraints[i].name
 
                             # add the slack in the main model
-                            sl2 = self.add_var(0, 1e20, name='Slackkk{}'.format(i))
+                            sl2 = self.add_var(lb=0, ub=1e20, name=f'Slk_rlx_{i}_{cst_name}')
                             self.relaxed_slacks.append((i, sl2, 0.0))  # the 0.0 value will be read later
 
                             # add the slack to the original objective function
@@ -532,15 +535,11 @@ class LpModel:
                             # alter the matching constraint
                             self.constraints[i].add_var(sl2)
 
-                            # logg this
-                            # self.logger.add_warning("Relaxed problem",
-                            #                         device=self.model.linear_constraint_from_index(i).name)
-
                     # set the modified (original) objective function
                     self.minimize(main_f)
 
                     # solve the modified (original) model
-                    self._solve(self)
+                    self._solve(self, verbose=int(show_logs))
 
                     if self.is_optimal():
 
@@ -550,9 +549,10 @@ class LpModel:
                             self.relaxed_slacks[i] = (k, var, val)
 
                             # logg this
-                            self.logger.add_warning("Relaxed problem",
-                                                    device=self.constraints[i].name,
-                                                    value=val)
+                            if abs(val) > 1e-10:
+                                self.logger.add_warning("Relaxed problem",
+                                                        device=self.constraints[i].name,
+                                                        value=val)
 
                 else:
                     self.logger.add_warning("Unable to relax the model, the debug model failed")
