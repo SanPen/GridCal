@@ -145,7 +145,7 @@ class FileOpen:
     def __init__(self,
                  file_name: Union[str, List[str]],
                  previous_circuit: Union[MultiCircuit, None] = None,
-                 options: FileOpenOptions = None):
+                 options: FileOpenOptions | None = None):
         """
         File open handler
         :param file_name: name of the file
@@ -156,7 +156,7 @@ class FileOpen:
 
         self.circuit: Union[MultiCircuit, None] = None
 
-        self.options: FileOpenOptions = options
+        self.options: FileOpenOptions = options if options is not None else FileOpenOptions()
 
         self.cgmes_circuit: Union[CgmesCircuit, None] = None
 
