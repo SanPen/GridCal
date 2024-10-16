@@ -1571,13 +1571,13 @@ def create_sv_power_flow(cgmes_model: CgmesCircuit,
 
 
 def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
-                                         section: int,
+                                         sections: int,
                                          cgmes_shunt_compensator) -> None:
     """
     Creates a SvShuntCompensatorSections instance
 
     :param cgmes_model: Cgmes Circuit
-    :param section:
+    :param sections:
     :param cgmes_shunt_compensator: Linear or Non-linear
         ShuntCompensator instance from cgmes model
     :return:
@@ -1586,7 +1586,9 @@ def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
     new_rdf_id = get_new_rdfid()
     sv_scs = object_template(rdfid=new_rdf_id)
 
-    sv_scs.sections = section
+    # sections: The number of sections in service as a continous variable.
+    # To get integer value scale with ShuntCompensator.bPerSection.
+    sv_scs.sections = sections
     sv_scs.ShuntCompensator = cgmes_shunt_compensator
 
     cgmes_model.add(sv_scs)
@@ -1737,6 +1739,7 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
         # PowerFlow: P, Q results for every terminal
         get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results, logger)
+        # TODO check: two elements on one bus! (loads or gens, shunts)
 
         # SV Status: for ConductingEquipment
         # TODO create_sv_status() elements.active parameter
@@ -1752,8 +1755,6 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
         get_cgmes_topological_island(gc_model, cgmes_model, logger)
 
     else:
-        # abort export on gui ?
-        # strategy?: option to export it with default data
         logger.add_error(msg="Missing power flow result for CGMES export.")
 
     if logger.__len__() != 0:
