@@ -27,7 +27,8 @@ from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
 
-if TYPE_CHECKING:  # Only imports the below statements during type checking
+if TYPE_CHECKING:
+    # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
@@ -84,11 +85,11 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        self.setBrush(Qt.transparent)
+        self.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style))
+        self.setBrush(Qt.GlobalColor.transparent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         # index
         self.index = index
@@ -231,7 +232,7 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         else:
             pass
 
-    def add_big_marker(self, color=Qt.red, tool_tip_text=""):
+    def add_big_marker(self, color=Qt.GlobalColor.red, tool_tip_text=""):
         """
         Add a big marker to the bus
         :param color: Qt Color ot the marker

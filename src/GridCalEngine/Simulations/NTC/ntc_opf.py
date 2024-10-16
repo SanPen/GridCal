@@ -670,11 +670,15 @@ def add_linear_branches_formulation(t_idx: int,
 
         if branch_data_t.active[m]:
 
+            # compute rate in per unit
+            rate_pu = branch_data_t.rates[m] / Sbase
+
             # declare the flow LPVar
             branch_vars.flows[t_idx, m] = prob.add_var(
                 lb=-inf,
                 ub=inf,
-                name=join("flow_", [t_idx, m], "_"))
+                name=join("flow_", [t_idx, m], "_")
+            )
 
             # compute the branch susceptance
             if branch_data_t.X[m] == 0.0:
@@ -740,62 +744,8 @@ def add_linear_branches_formulation(t_idx: int,
 
             # add the flow constraint if monitored
             if branch_data_t.monitor_loading[m] and monitor_by_sensitivity_n and monitor_by_load_rule_n:
-
-                if add_flow_slacks:
-                    branch_vars.flow_slacks_pos[t_idx, m] = prob.add_var(
-                        lb=0,
-                        ub=inf,
-                        name=join("flow_slack_pos_", [t_idx, m], "_")
-                    )
-
-                    branch_vars.flow_slacks_neg[t_idx, m] = prob.add_var(
-                        lb=0,
-                        ub=inf,
-                        name=join("flow_slack_neg_", [t_idx, m], "_")
-                    )
-
-                    # add upper rate constraint
-                    branch_vars.flow_constraints_ub[t_idx, m] = ((branch_vars.flows[t_idx, m] +
-                                                                  branch_vars.flow_slacks_pos[t_idx, m] -
-                                                                  branch_vars.flow_slacks_neg[t_idx, m])
-                                                                 <= branch_data_t.rates[m] / Sbase)
-                    prob.add_cst(
-                        cst=branch_vars.flow_constraints_ub[t_idx, m],
-                        name=join("br_flow_upper_lim_", [t_idx, m])
-                    )
-
-                    # add lower rate constraint
-                    branch_vars.flow_constraints_lb[t_idx, m] = ((branch_vars.flows[t_idx, m] +
-                                                                  branch_vars.flow_slacks_pos[t_idx, m] -
-                                                                  branch_vars.flow_slacks_neg[t_idx, m])
-                                                                 >= -branch_data_t.rates[m] / Sbase)
-
-                    prob.add_cst(
-                        cst=branch_vars.flow_constraints_lb[t_idx, m],
-                        name=join("br_flow_lower_lim_", [t_idx, m])
-                    )
-
-                    # add to the objective function
-                    f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_pos[t_idx, m]
-                    f_obj += branch_data_t.overload_cost[m] * branch_vars.flow_slacks_neg[t_idx, m]
-                else:
-
-                    # add upper rate constraint
-                    branch_vars.flow_constraints_ub[t_idx, m] = (branch_vars.flows[t_idx, m]
-                                                                 <= branch_data_t.rates[m] / Sbase)
-                    prob.add_cst(
-                        cst=branch_vars.flow_constraints_ub[t_idx, m],
-                        name=join("br_flow_upper_lim_", [t_idx, m])
-                    )
-
-                    # add lower rate constraint
-                    branch_vars.flow_constraints_lb[t_idx, m] = (branch_vars.flows[t_idx, m]
-                                                                 >= -branch_data_t.rates[m] / Sbase)
-
-                    prob.add_cst(
-                        cst=branch_vars.flow_constraints_lb[t_idx, m],
-                        name=join("br_flow_lower_lim_", [t_idx, m])
-                    )
+                if isinstance(branch_vars.flows[t_idx, m], LpVar):
+                    branch_vars.flows[t_idx, m].bounds(low=-rate_pu, up=rate_pu)
 
     return f_obj
 
