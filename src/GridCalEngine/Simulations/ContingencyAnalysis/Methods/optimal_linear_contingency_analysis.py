@@ -120,14 +120,16 @@ def optimal_linear_contingency_analysis(grid: MultiCircuit,
                                  energy_0=None,
                                  fluid_level_0=None,
                                  logger=logger,
-                                 export_model_fname=None)
+                                 export_model_fname=None,
+                                 verbose=opf_options.verbose,
+                                 robust=opf_options.robust)
 
     # for each contingency group
     for ic, multi_contingency in enumerate(linear_multiple_contingencies.multi_contingencies):
 
         if multi_contingency.has_injection_contingencies():
             cnt = grid.contingencies
-            injections = numerical_circuit.set_linear_contingency_status(contingencies_list=cnt)
+            injections = numerical_circuit.set_linear_con_or_ra_status(event_list=cnt)
         else:
             injections = None
 

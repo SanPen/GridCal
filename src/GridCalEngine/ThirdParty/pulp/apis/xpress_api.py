@@ -28,7 +28,7 @@ import sys
 import re
 
 from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
-from GridCalEngine.ThirdParty.pulp.apis.core import LpSolver, LpSolver_CMD, subprocess, PulpSolverError
+from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver, LpSolver_CMD, subprocess
 import GridCalEngine.ThirdParty.pulp.constants as constants
 
 
@@ -119,7 +119,7 @@ class XPRESS(LpSolver_CMD):
     def actualSolve(self, lp):
         """Solve a well formulated lp problem"""
         if not self.executable(self.path):
-            raise PulpSolverError("PuLP: cannot execute " + self.path)
+            raise constants.PulpSolverError("PuLP: cannot execute " + self.path)
         tmpLp, tmpSol, tmpCmd, tmpAttr, tmpStart = self.create_tmp_files(
             lp.name, "lp", "prt", "cmd", "attr", "slx"
         )
@@ -228,7 +228,7 @@ class XPRESS(LpSolver_CMD):
                     pass
 
             if xpress.wait() != 0:
-                raise PulpSolverError("PuLP: Error while executing " + self.path)
+                raise constants.PulpSolverError("PuLP: Error while executing " + self.path)
         values, redcost, slacks, duals, attrs = self.readsol(tmpSol, tmpAttr)
         self.delete_tmp_files(tmpLp, tmpSol, tmpCmd, tmpAttr)
         status = statusmap.get(attrs.get(statuskey, -1), constants.LpStatusUndefined)
@@ -438,7 +438,7 @@ class XPRESS_PY(LpSolver):
                 # In all other cases, solve() does the correct thing
                 model.solve()
         except (xpress.ModelError, xpress.InterfaceError, xpress.SolverError) as err:
-            raise PulpSolverError(str(err))
+            raise constants.PulpSolverError(str(err))
 
     def findSolutionValues(self, lp):
         try:
@@ -503,7 +503,7 @@ class XPRESS_PY(LpSolver):
             return status
 
         except (xpress.ModelError, xpress.InterfaceError, xpress.SolverError) as err:
-            raise PulpSolverError(str(err))
+            raise constants.PulpSolverError(str(err))
 
     def actualSolve(self, lp, prepare=None):
         """Solve a well formulated lp problem"""
@@ -514,7 +514,7 @@ class XPRESS_PY(LpSolver):
                 import xpress
             except ImportError as err:
                 message = str(err)
-            raise PulpSolverError(message)
+            raise constants.PulpSolverError(message)
 
         self.buildSolverModel(lp)
         self.callSolver(lp, prepare)
@@ -559,7 +559,7 @@ class XPRESS_PY(LpSolver):
                 else:
                     fields = option.split("=", 1)
                     if len(fields) != 2:
-                        raise PulpSolverError("Invalid option " + str(option))
+                        raise constants.PulpSolverError("Invalid option " + str(option))
                     name = fields[0].strip()
                     value = fields[1].strip()
                 try:
@@ -600,7 +600,7 @@ class XPRESS_PY(LpSolver):
 
                 model.addcbmessage(message)
         except (xpress.ModelError, xpress.InterfaceError, xpress.SolverError) as err:
-            raise PulpSolverError(str(err))
+            raise constants.PulpSolverError(str(err))
 
     def actualResolve(self, lp, prepare=None):
         """Resolve a problem that was previously solved by actualSolve()."""
@@ -613,7 +613,7 @@ class XPRESS_PY(LpSolver):
                     continue
                 if not hasattr(con, "_xprs"):
                     # Adding constraints is not implemented at the moment
-                    raise PulpSolverError("Cannot add new constraints")
+                    raise constants.PulpSolverError("Cannot add new constraints")
                 # At the moment only RHS can change in pulp.py
                 rhsind.append(con._xprs[0])
                 rhsval.append(-con.constant)
@@ -628,7 +628,7 @@ class XPRESS_PY(LpSolver):
                     continue
                 if not hasattr(v, "_xprs"):
                     # Adding variables is not implemented at the moment
-                    raise PulpSolverError("Cannot add new variables")
+                    raise constants.PulpSolverError("Cannot add new variables")
                 # At the moment only bounds can change in pulp.py
                 bndind.append(v._xprs[0])
                 bndtype.append("L")
@@ -642,7 +642,7 @@ class XPRESS_PY(LpSolver):
             self.callSolver(lp, prepare)
             return self.findSolutionValues(lp)
         except (xpress.ModelError, xpress.InterfaceError, xpress.SolverError) as err:
-            raise PulpSolverError(str(err))
+            raise constants.PulpSolverError(str(err))
 
     @staticmethod
     def _reset(lp):
@@ -713,7 +713,7 @@ class XPRESS_PY(LpSolver):
                 elif con.sense == constants.LpConstraintEQ:
                     c = xpress.constraint(body=lhs, sense=xpress.eq, rhs=rhs)
                 else:
-                    raise PulpSolverError(
+                    raise constants.PulpSolverError(
                         "Unsupprted constraint type " + str(con.sense)
                     )
                 cons.append((i, c, con))
@@ -751,7 +751,7 @@ class XPRESS_PY(LpSolver):
         except (xpress.ModelError, xpress.InterfaceError, xpress.SolverError) as err:
             # Undo everything
             self._reset(lp)
-            raise PulpSolverError(str(err))
+            raise constants.PulpSolverError(str(err))
 
     def getAttribute(self, lp, which):
         """Get an arbitrary attribute for the model that was previously

@@ -20,11 +20,12 @@ This file implements a DC-OPF for time series
 That means that solves the OPF problem for a complete time series at once
 """
 from __future__ import annotations
-
+import os
 import numpy as np
 from typing import List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
 
+from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo
 from GridCalEngine.Devices.Aggregation.contingency_group import ContingencyGroup
@@ -731,11 +732,11 @@ def add_linear_generation_formulation(t: Union[int, None],
                         prob.add_cst(
                             cst=gen_vars.p[t, k] >= (gen_data_t.availability[k] * gen_data_t.pmin[k] /
                                                      Sbase * gen_vars.producing[t, k]),
-                            name=join("gen>=Pmin", [t, k], "_"))
+                            name=join("gen_geq_Pmin", [t, k], "_"))
                         prob.add_cst(
                             cst=gen_vars.p[t, k] <= (gen_data_t.availability[k] * gen_data_t.pmax[k] /
                                                      Sbase * gen_vars.producing[t, k]),
-                            name=join("gen<=Pmax", [t, k], "_"))
+                            name=join("gen_leq_Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
@@ -882,32 +883,32 @@ def add_linear_battery_formulation(t: Union[int, None],
                         prob.add_cst(
                             cst=(batt_vars.p[t, k] >= (batt_data_t.availability[k] * batt_data_t.pmin[k] /
                                                        Sbase * batt_vars.producing[t, k])),
-                            name=join("batt>=Pmin", [t, k], "_"))
+                            name=join("batt_geq_Pmin", [t, k], "_"))
 
                         prob.add_cst(
                             cst=(batt_vars.p[t, k] <= (batt_data_t.availability[k] * batt_data_t.pmax[k] /
                                                        Sbase * batt_vars.producing[t, k])),
-                            name=join("batt<=Pmax", [t, k], "_"))
+                            name=join("batt_leq_Pmax", [t, k], "_"))
 
                     if t is not None:
                         if t == 0:
                             prob.add_cst(
                                 cst=(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
                                      batt_vars.producing[t, k] - float(batt_data_t.active[k])),
-                                name=join("binary_alg1_", [t, k], "_"))
+                                name=join("binary_bat_alg1_", [t, k], "_"))
 
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
-                                name=join("binary_alg2_", [t, k], "_"))
+                                name=join("binary_bat_alg2_", [t, k], "_"))
                         else:
                             prob.add_cst(
                                 cst=(batt_vars.starting_up[t, k] - batt_vars.shutting_down[t, k] ==
                                      batt_vars.producing[t, k] - batt_vars.producing[t - 1, k]),
-                                name=join("binary_alg3_", [t, k], "_"))
+                                name=join("binary_bat_alg3_", [t, k], "_"))
 
                             prob.add_cst(
                                 cst=batt_vars.starting_up[t, k] + batt_vars.shutting_down[t, k] <= 1,
-                                name=join("binary_alg4_", [t, k], "_"))
+                                name=join("binary_bat_alg4_", [t, k], "_"))
                 else:
                     # No unit commitment
 
@@ -1553,7 +1554,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
                       logger: Logger = Logger(),
                       progress_text: Union[None, Callable[[str], None]] = None,
                       progress_func: Union[None, Callable[[float], None]] = None,
-                      export_model_fname: Union[None, str] = None) -> OpfVars:
+                      export_model_fname: Union[None, str] = None,
+                      verbose: int = 0,
+                      robust: bool = False) -> OpfVars:
     """
     Run linear optimal power flow
     :param grid: MultiCircuit instance
@@ -1579,6 +1582,8 @@ def run_linear_opf_ts(grid: MultiCircuit,
     :param progress_text: Text progress callback
     :param progress_func: Numerical progress callback
     :param export_model_fname: Export the model into LP and MPS?
+    :param verbose: verbosity level
+    :param robust: Robust optimization?
     :return: OpfVars
     """
     bus_dict = {bus: i for i, bus in enumerate(grid.buses)}
@@ -1872,7 +1877,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
         logger.add_info("LP model saved as", value=export_model_fname)
         print('LP model saved as:', export_model_fname)
 
-    status = lp_model.solve(robust=True)
+    status = lp_model.solve(robust=robust, show_logs=verbose > 0)
 
     # gather the results
     logger.add_info("Status", value=str(status))
@@ -1882,7 +1887,7 @@ def run_linear_opf_ts(grid: MultiCircuit,
     else:
         logger.add_error("The problem does not have an optimal solution.")
         mip_vars.acceptable_solution = False
-        lp_file_name = grid.name + "_debug.lp"
+        lp_file_name = os.path.join(opf_file_path(), f"{grid.name} opf debug.lp")
         lp_model.save_model(file_name=lp_file_name)
         logger.add_info("Debug LP model saved", value=lp_file_name)
 

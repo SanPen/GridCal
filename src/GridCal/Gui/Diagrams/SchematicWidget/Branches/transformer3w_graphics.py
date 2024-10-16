@@ -21,13 +21,17 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QPen, QCursor, QColor, QIcon, QPixmap
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem, QMenu, QGraphicsSceneMouseEvent
 
-from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
+from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_editor import Transformer3WEditor
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import RoundTerminalItem
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.winding_graphics import WindingGraphicItem
 from GridCal.Gui.messages import yes_no_question
+from GridCalEngine.Devices.Branches.transformer3w import Transformer3W
+from GridCalEngine.enumerations import DeviceType
+from GridCal.Gui.gui_functions import add_menu_entry
 
-if TYPE_CHECKING:  # Only imports the below statements during type checking
+if TYPE_CHECKING:
+    # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
@@ -84,11 +88,11 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.color = ACTIVE['color']
             self.style = ACTIVE['style']
 
-        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        self.setBrush(Qt.transparent)
+        self.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style))
+        self.setBrush(Qt.GlobalColor.transparent)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable)
         self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         # index
         self.index = index
@@ -159,9 +163,11 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         for i in range(self.n_windings):
             self.winding_circles[i].setPen(pen)
             self.terminals[i].setPen(pen)
-            self.connection_lines[i].recolour_mode()
 
-    def set_winding_tool_tips(self):
+            if self.connection_lines[i] is not None:
+                self.connection_lines[i].recolour_mode()
+
+    def set_winding_tool_tips(self) -> None:
         """
         Set
         :return:
@@ -170,7 +176,6 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
             self.winding_circles[0].setToolTip("Winding 1: {0} KV".format(self.api_object.V1))
             self.winding_circles[1].setToolTip("Winding 2: {0} KV".format(self.api_object.V2))
             self.winding_circles[2].setToolTip("Winding 3: {0} KV".format(self.api_object.V3))
-        pass
 
     def set_label(self, val: str):
         """
@@ -208,6 +213,18 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object)
 
+    def mouseDoubleClickEvent(self, event):
+        """
+        On double click, edit
+        :param event:
+        :return:
+        """
+
+        if self.api_object is not None:
+            if self.api_object.device_type in [DeviceType.Transformer3WDevice]:
+                # trigger the editor
+                self.edit()
+
     def contextMenuEvent(self, event):
         """
         Show context menu
@@ -220,17 +237,21 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
 
             # menu.addSeparator()
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
+            add_menu_entry(menu=menu,
+                           text="Edit",
+                           function_ptr=self.edit,
+                           icon_path=":/Icons/icons/edit.svg")
+
+            add_menu_entry(menu=menu,
+                           text="Delete",
+                           function_ptr=self.remove,
+                           icon_path=":/Icons/icons/delete3.svg")
 
             menu.exec_(event.screenPos())
         else:
             pass
 
-    def add_big_marker(self, color=Qt.red, tool_tip_text=""):
+    def add_big_marker(self, color=Qt.GlobalColor.red, tool_tip_text=""):
         """
         Add a big marker to the bus
         :param color: Qt Color ot the marker
@@ -417,3 +438,13 @@ class Transformer3WGraphicItem(QGraphicsRectItem):
         if ok:
             self.delete_all_connections()
             self.editor.remove_element(device=self.api_object, graphic_object=self)
+
+    def edit(self):
+        """
+        Open the appropriate editor dialogue
+        :return:
+        """
+        Sbase = self.editor.circuit.Sbase
+        dlg = Transformer3WEditor(self.api_object, Sbase, modify_on_accept=True)
+        if dlg.exec():
+            pass

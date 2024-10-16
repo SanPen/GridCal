@@ -27,41 +27,65 @@
 This file contains the constant definitions for PuLP
 Note that hopefully these will be changed into something more pythonic
 """
+import logging
+__logger = logging.getLogger(__name__)
+
 VERSION = "2.9.0"
 EPS = 1e-7
 
 # variable categories
 LpContinuous = "Continuous"
+
 LpInteger = "Integer"
+
 LpBinary = "Binary"
+
 LpCategories = {LpContinuous: "Continuous", LpInteger: "Integer", LpBinary: "Binary"}
 
 # objective sense
 LpMinimize = 1
+
 LpMaximize = -1
+
 LpSenses = {LpMaximize: "Maximize", LpMinimize: "Minimize"}
+
 LpSensesMPS = {LpMaximize: "MAX", LpMinimize: "MIN"}
 
 # problem status
+LpUnknown = 1000
 LpStatusNotSolved = 0
+
 LpStatusOptimal = 1
+
+LpStatusOptimalWithUnscalesInfeasibilities = 5
+
 LpStatusInfeasible = -1
+
 LpStatusUnbounded = -2
+
 LpStatusUndefined = -3
+
 LpStatus = {
+    LpUnknown: "Unknown",
     LpStatusNotSolved: "Not Solved",
     LpStatusOptimal: "Optimal",
     LpStatusInfeasible: "Infeasible",
     LpStatusUnbounded: "Unbounded",
     LpStatusUndefined: "Undefined",
+    LpStatusOptimalWithUnscalesInfeasibilities: "optimal with unscaled infeasibilities"
 }
 
 # solution status
 LpSolutionNoSolutionFound = 0
+
 LpSolutionOptimal = 1
+
 LpSolutionIntegerFeasible = 2
+
 LpSolutionInfeasible = -1
+
 LpSolutionUnbounded = -2
+
 LpSolution = {
     LpSolutionNoSolutionFound: "No Solution Found",
     LpSolutionOptimal: "Optimal Solution Found",
@@ -69,6 +93,7 @@ LpSolution = {
     LpSolutionInfeasible: "No Solution Exists",
     LpSolutionUnbounded: "Solution is Unbounded",
 }
+
 LpStatusToSolution = {
     LpStatusNotSolved: LpSolutionInfeasible,
     LpStatusOptimal: LpSolutionOptimal,
@@ -83,6 +108,7 @@ LpConstraintEQ = 0
 LpConstraintGE = 1
 LpConstraintTypeToMps = {LpConstraintLE: "L", LpConstraintEQ: "E", LpConstraintGE: "G"}
 LpConstraintSenses = {LpConstraintEQ: "=", LpConstraintLE: "<=", LpConstraintGE: ">="}
+
 # LP line size
 LpCplexLPLineSize = 78
 
@@ -93,3 +119,29 @@ class PulpError(Exception):
     """
 
     pass
+
+
+class PulpSolverError(PulpError):
+    """
+    Pulp Solver-related exceptions
+    """
+
+    pass
+
+
+def to_string(_obj: str):
+    """
+
+    :param _obj:
+    :return:
+    """
+    return str(_obj).encode()
+
+
+def debug_log(txt: str):
+    """
+
+    :param txt:
+    :return:
+    """
+    __logger.debug(txt)

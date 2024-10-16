@@ -5383,8 +5383,28 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_104">
+               <item row="4" column="0" colspan="2">
+                <widget class="QLabel" name="label_132">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="opf_time_grouping_comboBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_4">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -5392,7 +5412,36 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="text">
-                  <string>Contingency tolerance</string>
+                  <string>Time grouping</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="0" colspan="2">
+                <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Consider the contingencies, only applies to OPF</string>
+                 </property>
+                 <property name="text">
+                  <string>Consider contingencies</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_10">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>MIP solver</string>
                  </property>
                 </widget>
                </item>
@@ -5418,31 +5467,18 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_10">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                   <bold>false</bold>
-                  </font>
+               <item row="10" column="0">
+                <spacer name="verticalSpacer_18">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
                  </property>
-                 <property name="text">
-                  <string>MIP solver</string>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
                  </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="label_4">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Time grouping</string>
-                 </property>
-                </widget>
+                </spacer>
                </item>
                <item row="2" column="1">
                 <widget class="QComboBox" name="opfZonalGroupByComboBox">
@@ -5451,19 +5487,6 @@ QProgressBar::chunk{
                    <pointsize>9</pointsize>
                    <bold>false</bold>
                   </font>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QComboBox" name="opf_time_grouping_comboBox">
-                 <property name="font">
-                  <font>
-                   <pointsize>9</pointsize>
-                   <bold>false</bold>
-                  </font>
-                 </property>
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the time grouping to possibly shorten the solution time.&lt;/p&gt;&lt;p&gt;This splits the time series by week, month, etc. and the subproblems are solved sequentially.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
@@ -5480,28 +5503,8 @@ QProgressBar::chunk{
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
-                <spacer name="verticalSpacer_18">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="4" column="0" colspan="2">
-                <widget class="QLabel" name="label_132">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="0" colspan="2">
-                <widget class="QCheckBox" name="considerContingenciesOpfCheckBox">
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_104">
                  <property name="font">
                   <font>
                    <pointsize>9</pointsize>
@@ -5509,7 +5512,7 @@ QProgressBar::chunk{
                   </font>
                  </property>
                  <property name="text">
-                  <string>Consider contingencies</string>
+                  <string>Contingency tolerance</string>
                  </property>
                 </widget>
                </item>
@@ -5526,6 +5529,22 @@ QProgressBar::chunk{
                  </property>
                  <property name="text">
                   <string>Save MIP file</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0" colspan="2">
+                <widget class="QCheckBox" name="fixOpfCheckBox">
+                 <property name="font">
+                  <font>
+                   <pointsize>9</pointsize>
+                   <bold>false</bold>
+                  </font>
+                 </property>
+                 <property name="toolTip">
+                  <string>Fix infeasible problems and rey with the relaxed problem. Applies to OPF and NTC</string>
+                 </property>
+                 <property name="text">
+                  <string>Fix infeasibilities and retry</string>
                  </property>
                 </widget>
                </item>
@@ -9945,6 +9964,7 @@ QProgressBar::chunk{
     <addaction name="actionContingency_analysis"/>
     <addaction name="actionInitialize_contingencies"/>
     <addaction name="actionAdd_selected_to_contingency"/>
+    <addaction name="actionAdd_selected_as_remedial_action"/>
     <addaction name="separator"/>
     <addaction name="actionInputs_analysis"/>
     <addaction name="actionStorage_location_suggestion"/>
@@ -10071,24 +10091,26 @@ QProgressBar::chunk{
    <addaction name="actionInputs_analysis"/>
    <addaction name="actionPower_flow"/>
    <addaction name="actionLinearAnalysis"/>
-   <addaction name="actionAdd_selected_to_contingency"/>
-   <addaction name="actionContingency_analysis"/>
    <addaction name="actionSigma_analysis"/>
    <addaction name="actionShort_Circuit"/>
    <addaction name="actionVoltage_stability"/>
+   <addaction name="actionContingency_analysis"/>
    <addaction name="separator"/>
    <addaction name="actionOptimal_Net_Transfer_Capacity"/>
    <addaction name="actionNodal_capacity"/>
    <addaction name="actionOPF"/>
    <addaction name="actionOpf_to_Power_flow"/>
    <addaction name="separator"/>
-   <addaction name="actionAdd_selected_as_new_investment"/>
    <addaction name="actionInvestments_evaluation"/>
    <addaction name="actionPower_flow_Stochastic"/>
    <addaction name="actionClustering"/>
    <addaction name="actionUse_clustering"/>
    <addaction name="actionEdit_simulation_time_limits"/>
    <addaction name="actionactivate_time_series"/>
+   <addaction name="separator"/>
+   <addaction name="actionAdd_selected_to_contingency"/>
+   <addaction name="actionAdd_selected_as_remedial_action"/>
+   <addaction name="actionAdd_selected_as_new_investment"/>
    <addaction name="separator"/>
    <addaction name="actionBigger_nodes"/>
    <addaction name="actionSmaller_nodes"/>
@@ -10098,6 +10120,7 @@ QProgressBar::chunk{
    <addaction name="actionDelete_from_the_diagram"/>
    <addaction name="separator"/>
    <addaction name="actionLaunch_data_analysis_tool"/>
+   <addaction name="separator"/>
   </widget>
   <action name="actionOpen_file">
    <property name="icon">
@@ -11658,6 +11681,18 @@ QProgressBar::chunk{
     <font>
      <pointsize>10</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionAdd_selected_as_remedial_action">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/Icons/icons/add_remedial_action.svg</normaloff>:/Icons/icons/add_remedial_action.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add selected as new remedial action</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Add remedial action&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Create a new remedial action from the schematic selection&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
  </widget>

@@ -167,7 +167,9 @@ class NodalCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                                      logger=self.logger,
                                      progress_text=self.report_text,
                                      progress_func=self.report_progress,
-                                     export_model_fname=self.opf_options.export_model_fname)
+                                     export_model_fname=self.opf_options.export_model_fname,
+                                     verbose=self.opf_options.verbose,
+                                     robust=self.opf_options.robust)
 
         self.results.Sbus = opf_vars.bus_vars.Pcalc + 1j * np.zeros_like(opf_vars.bus_vars.Pcalc)
         self.results.voltage = np.ones((opf_vars.nt, opf_vars.nbus)) * np.exp(1j * opf_vars.bus_vars.theta)

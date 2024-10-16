@@ -99,7 +99,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
 
         if multi_contingency.has_injection_contingencies():
             cnt = grid.contingencies
-            injections = numerical_circuit.set_linear_contingency_status(contingencies_list=cnt)
+            injections = numerical_circuit.set_linear_con_or_ra_status(event_list=cnt)
         else:
             injections = None
 
