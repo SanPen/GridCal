@@ -127,6 +127,16 @@ class FileSavingOptions:
         return None
 
 
+class FileOpenOptions:
+    """
+    This class is to store the extra stuff that needs to be passed to open more complex files
+    """
+
+    def __init__(self,
+                 cgmes_map_areas_like_raw: bool = False):
+        self.cgmes_map_areas_like_raw = cgmes_map_areas_like_raw
+
+
 class FileOpen:
     """
     File open interface
@@ -134,15 +144,19 @@ class FileOpen:
 
     def __init__(self,
                  file_name: Union[str, List[str]],
-                 previous_circuit: Union[MultiCircuit, None] = None):
+                 previous_circuit: Union[MultiCircuit, None] = None,
+                 options: FileOpenOptions = None):
         """
         File open handler
         :param file_name: name of the file
         :param previous_circuit: previous circuit
+        :param options: FileOpenOptions
         """
         self.file_name: Union[str, List[str]] = file_name
 
         self.circuit: Union[MultiCircuit, None] = None
+
+        self.options: FileOpenOptions = options
 
         self.cgmes_circuit: Union[CgmesCircuit, None] = None
 
@@ -185,6 +199,7 @@ class FileOpen:
             data_parser = CgmesDataParser(text_func=text_func, progress_func=progress_func, logger=self.cgmes_logger)
             data_parser.load_files(files=self.file_name)
             self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                              cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
                                               progress_func=progress_func, logger=self.cgmes_logger)
             self.cgmes_circuit.parse_files(data_parser=data_parser)
             self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)
@@ -342,6 +357,7 @@ class FileOpen:
 
                     if is_valid_cgmes(data_parser.cgmes_version):
                         self.cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version, text_func=text_func,
+                                                          cgmes_map_areas_like_raw=self.options.cgmes_map_areas_like_raw,
                                                           progress_func=progress_func, logger=self.cgmes_logger)
                         self.cgmes_circuit.parse_files(data_parser=data_parser)
                         self.circuit = cgmes_to_gridcal(cgmes_model=self.cgmes_circuit, logger=self.cgmes_logger)

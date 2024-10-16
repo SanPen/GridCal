@@ -20,6 +20,8 @@ from collections.abc import Callable
 from typing import Dict, List, Union, Tuple
 from enum import Enum, EnumMeta
 
+from numba.core.cgutils import false_bit
+
 from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_2_4_15_assets import Cgmes_2_4_15_Assets
 from GridCalEngine.IO.cim.cgmes.cgmes_assets.cgmes_3_0_0_assets import Cgmes_3_0_0_Assets
 # from GridCalEngine.IO.cim.cgmes.cgmes_utils import check_load_response_characteristic, check
@@ -316,6 +318,7 @@ class CgmesCircuit(BaseCircuit):
 
     def __init__(self,
                  cgmes_version: Union[None, CGMESVersions] = None,
+                 cgmes_map_areas_like_raw: bool = False,
                  text_func: Union[Callable, None] = None,
                  progress_func: Union[Callable, None] = None,
                  logger=DataLogger()):
