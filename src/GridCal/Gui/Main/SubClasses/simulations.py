@@ -44,7 +44,6 @@ from GridCalEngine.IO.file_system import opf_file_path
 from GridCalEngine.IO.gridcal.remote import RemoteInstruction
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.types import DRIVER_OBJECTS
-from GridCalEngine.basic_structures import Logger
 from GridCalEngine.enumerations import (DeviceType, AvailableTransferMode, SolverType, MIPSolvers, TimeGrouping,
                                         ZonalGrouping, ContingencyMethod, InvestmentEvaluationMethod, EngineType,
                                         BranchImpedanceMode, ResultTypes, SimulationTypes, NodalCapacityMethod,
