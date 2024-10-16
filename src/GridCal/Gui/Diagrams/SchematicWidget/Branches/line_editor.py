@@ -209,29 +209,36 @@ class LineEditor(QDialog):
 
         self.setWindowTitle('Line editor')
 
-    def accept_click(self):
+    def accept_click(self) -> None:
         """
         Set the values
         :return:
         """
 
-        if self.selected_template is not None:
-            self.line.length = self.l_spinner.value()
-            self.line.apply_template(self.selected_template, Sbase=self.Sbase)
-        else:
-            wf = 2 * np.pi * self.frequency
-            self.line.fill_design_properties(
-                r_ohm=self.r_spinner.value(),  # ohm / km
-                x_ohm=self.x_spinner.value(),  # ohm / km
-                c_nf=self.b_spinner.value() * 1e3 / wf,  # nF / km
-                length=self.l_spinner.value(),  # km
-                Imax=self.i_spinner.value(),  # KA
-                freq=self.frequency,  # Hz
-                Sbase=self.Sbase,  # MVA
-                apply_to_profile=self.apply_to_profile.isChecked()
-            )
+        length = self.l_spinner.value()
 
-        self.accept()
+        if length != 0.0:
+
+            if self.selected_template is not None:
+                self.line.set_length(val=length, update_electrical_values=False)
+                self.line.apply_template(obj=self.selected_template, Sbase=self.Sbase)
+
+            else:
+                wf = 2 * np.pi * self.frequency
+                self.line.fill_design_properties(
+                    r_ohm=self.r_spinner.value(),  # ohm / km
+                    x_ohm=self.x_spinner.value(),  # ohm / km
+                    c_nf=self.b_spinner.value() * 1e3 / wf,  # nF / km
+                    length=length,  # km
+                    Imax=self.i_spinner.value(),  # KA
+                    freq=self.frequency,  # Hz
+                    Sbase=self.Sbase,  # MVA
+                    apply_to_profile=self.apply_to_profile.isChecked()
+                )
+
+            self.accept()
+        else:
+            error_msg(text="The length cannot be 0!", title="Accept line design values")
 
     def load_template(self, template: Union[SequenceLineType, OverheadLineType, UndergroundLineType]):
         """

@@ -439,14 +439,13 @@ class HvdcLine(BranchParent):
             if val > 0.0:
 
                 if self._length != 0:
-                    factor = np.floor(val / self._length, 6)  # new length / old length
+                    factor = np.round(val / self._length, 6)  # new length / old length
 
                     self.r *= factor
 
                 self._length = val
             else:
-                print('The length cannot be zero, setting it to 1.0 km')
-                self._length = 1.0
+                print('The length cannot be zero, ignoring value')
         else:
             raise Exception('The length must be a float value')
 
