@@ -52,9 +52,12 @@ LpSenses = {LpMaximize: "Maximize", LpMinimize: "Minimize"}
 LpSensesMPS = {LpMaximize: "MAX", LpMinimize: "MIN"}
 
 # problem status
+LpUnknown = 1000
 LpStatusNotSolved = 0
 
 LpStatusOptimal = 1
+
+LpStatusOptimalWithUnscalesInfeasibilities = 5
 
 LpStatusInfeasible = -1
 
@@ -63,11 +66,13 @@ LpStatusUnbounded = -2
 LpStatusUndefined = -3
 
 LpStatus = {
+    LpUnknown: "Unknown",
     LpStatusNotSolved: "Not Solved",
     LpStatusOptimal: "Optimal",
     LpStatusInfeasible: "Infeasible",
     LpStatusUnbounded: "Unbounded",
     LpStatusUndefined: "Undefined",
+    LpStatusOptimalWithUnscalesInfeasibilities: "optimal with unscaled infeasibilities"
 }
 
 # solution status

@@ -228,20 +228,18 @@ class LpModel:
                 bringing it to optimality.
                 """
 
-                self.logger.add_warning(msg="Base probrem is not optimal")
+                self.logger.add_error(msg="Base probrem could not be solved", value=self.status2string(status))
 
                 # deep copy of the original model
-                debug_model = self.model.copy()
+                debug_model = self.model.deepcopy()
 
                 # modify the original to detect the bad constraints
                 slacks = list()
                 debugging_f_obj = 0
                 for i, (cst_name, cst) in enumerate(debug_model.constraints.items()):
+
                     # create a new slack var in the problem
-                    sl = pulp.LpVariable(name=f'Relax_{cst_name}',
-                                         lowBound=0,
-                                         upBound=1e20,
-                                         cat=pulp.LpContinuous)
+                    sl = pulp.LpVariable(name=f'Relax_{cst_name}', lowBound=0, upBound=1e20, cat=pulp.LpContinuous)
                     debug_model.addVariable(sl)
 
                     # add the variable to the new objective function
@@ -261,9 +259,6 @@ class LpModel:
 
                 # solve the debug model
                 status_d = debug_model.solve(solver=self.get_solver(show_logs=show_logs))
-
-                # at this point we can delete the debug model
-                del debug_model
 
                 # clear the relaxed slacks list
                 self.relaxed_slacks = list()
@@ -297,6 +292,9 @@ class LpModel:
 
                     # set the modified (original) objective function
                     self.model.setObjective(self.model.objective)
+
+                    # at this point we can delete the debug model
+                    del debug_model
 
                     if progress_text is not None:
                         progress_text(f"Solving relaxed model with {self.solver_type.value}...")
@@ -381,3 +379,11 @@ class LpModel:
             return val
         else:
             return 0.0
+
+    def status2string(self, stat: int) -> str:
+        """
+        Convert the PuLP status to a string
+        :param stat:
+        :return:
+        """
+        return pulp.LpStatus[stat]

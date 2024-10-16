@@ -1,6 +1,5 @@
 from __future__ import annotations
 import os
-import warnings
 from typing import List, TYPE_CHECKING
 import xml.etree.ElementTree as et
 
@@ -10,6 +9,7 @@ from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
 
 if TYPE_CHECKING:
     from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.ThirdParty.pulp import LpVariable
 
 
 class CPLEX_CMD(LpSolver_CMD):
@@ -183,7 +183,8 @@ class CPLEX_CMD(LpSolver_CMD):
             if k in self.optionsDict and self.optionsDict[k] is not None
         ]
 
-    def readsol(self, filename):
+    @staticmethod
+    def readsol(filename: str):
         """
         Read a CPLEX solution file
         :param filename:
@@ -198,6 +199,7 @@ class CPLEX_CMD(LpSolver_CMD):
         cplexStatus = {
             "1": constants.LpStatusOptimal,  # optimal
             "3": constants.LpStatusInfeasible,  # infeasible
+            "5": constants.LpStatusOptimalWithUnscalesInfeasibilities,
             "101": constants.LpStatusOptimal,  # mip optimal
             "102": constants.LpStatusOptimal,  # mip optimal tolerance
             "104": constants.LpStatusOptimal,  # max solution limit
@@ -206,13 +208,8 @@ class CPLEX_CMD(LpSolver_CMD):
             "109": constants.LpStatusOptimal,  # fail but feasible
             "113": constants.LpStatusOptimal,  # abort feasible
         }
-        if statusValue not in cplexStatus:
-            raise constants.PulpSolverError(
-                "Unknown status returned by CPLEX: \ncode: '{}', string: '{}'".format(
-                    statusValue, statusString
-                )
-            )
-        status = cplexStatus[statusValue]
+        status = cplexStatus.get(statusValue, constants.LpUnknown)
+
         # we check for integer feasible status to differentiate from optimal in solution status
         cplexSolStatus = {
             "104": constants.LpSolutionIntegerFeasible,  # max solution limit
@@ -252,8 +249,14 @@ class CPLEX_CMD(LpSolver_CMD):
 
         return status, values, reducedCosts, shadowPrices, slacks, solStatus
 
-    def writesol(self, filename, vs):
-        """Writes a CPLEX solution file"""
+    @staticmethod
+    def writesol(filename: str, vs: List[LpVariable]):
+        """
+        Writes a CPLEX solution file
+        :param filename:
+        :param vs:
+        :return:
+        """
 
         root = et.Element("CPLEXSolution", version="1.2")
         attrib_head = dict()
@@ -266,6 +269,7 @@ class CPLEX_CMD(LpSolver_CMD):
         for index, (name, value) in enumerate(values):
             attrib_vars = dict(name=name, value=str(value), index=str(index))
             et.SubElement(variables, "variable", attrib=attrib_vars)
+
         mst = et.ElementTree(root)
         mst.write(filename, encoding="utf-8", xml_declaration=True)
 
