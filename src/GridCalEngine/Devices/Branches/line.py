@@ -203,6 +203,20 @@ class Line(BranchParent):
     def length(self, val: float):
         if isinstance(val, float):
             if val > 0.0:
+
+                if self._length != 0:
+                    factor = np.floor(val / self._length, 6)  # new length / old length
+
+                    self.R *= factor
+                    self.X *= factor
+                    self.B *= factor
+                    self.R0 *= factor
+                    self.X0 *= factor
+                    self.B0 *= factor
+                    self.R2 *= factor
+                    self.X2 *= factor
+                    self.B2 *= factor
+
                 self._length = val
             else:
                 print('The length cannot be zero, setting it to 1.0 km')

@@ -191,7 +191,7 @@ class HvdcLine(BranchParent):
                               device_type=DeviceType.HVDCLineDevice)
 
         # line length in km
-        self.length = float(length)
+        self._length = float(length)
 
         self.dispatchable = bool(dispatchable)
 
@@ -424,6 +424,31 @@ class HvdcLine(BranchParent):
             self._locations.set(data=val)
         else:
             raise Exception(str(type(val)) + 'not supported to be set into a locations')
+
+    @property
+    def length(self) -> float:
+        """
+        Line length in km
+        :return: float
+        """
+        return self._length
+
+    @length.setter
+    def length(self, val: float):
+        if isinstance(val, float):
+            if val > 0.0:
+
+                if self._length != 0:
+                    factor = np.floor(val / self._length, 6)  # new length / old length
+
+                    self.r *= factor
+
+                self._length = val
+            else:
+                print('The length cannot be zero, setting it to 1.0 km')
+                self._length = 1.0
+        else:
+            raise Exception('The length must be a float value')
 
     def get_from_and_to_power(self, theta_f, theta_t, Sbase, in_pu=False):
         """

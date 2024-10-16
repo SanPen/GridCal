@@ -109,7 +109,7 @@ class DcLine(BranchParent):
         self.measurements = list()
 
         # line length in km
-        self.length = float(length)
+        self._length = float(length)
 
         # line impedance tolerance
         self.tolerance = float(tolerance)
@@ -189,6 +189,31 @@ class DcLine(BranchParent):
         (version of 2019-01-03 at 15:20 EST).
         """
         return self.R * (1 + self.alpha * (self.temp_oper - self.temp_base))
+
+    @property
+    def length(self) -> float:
+        """
+        Line length in km
+        :return: float
+        """
+        return self._length
+
+    @length.setter
+    def length(self, val: float):
+        if isinstance(val, float):
+            if val > 0.0:
+
+                if self._length != 0:
+                    factor = np.floor(val / self._length, 6)  # new length / old length
+
+                    self.R *= factor
+
+                self._length = val
+            else:
+                print('The length cannot be zero, setting it to 1.0 km')
+                self._length = 1.0
+        else:
+            raise Exception('The length must be a float value')
 
     def change_base(self, Sbase_old, Sbase_new):
 
