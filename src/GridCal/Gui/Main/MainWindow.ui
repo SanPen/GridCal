@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1202</width>
-    <height>746</height>
+    <width>1372</width>
+    <height>743</height>
    </rect>
   </property>
   <property name="baseSize">
@@ -9896,7 +9896,7 @@ QProgressBar::chunk{
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1202</width>
+     <width>1372</width>
      <height>21</height>
     </rect>
    </property>

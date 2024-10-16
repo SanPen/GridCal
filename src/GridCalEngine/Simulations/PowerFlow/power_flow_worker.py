@@ -39,7 +39,7 @@ from GridCalEngine.Devices.Aggregation.area import Area
 from GridCalEngine.basic_structures import CxVec, CscMat, Vec
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
-    from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+    from GridCalEngine.Compilers.circuit_to_data import VALID_OPF_RESULTS
 
 
 def solve(nc: NumericalCircuit,
@@ -798,7 +798,7 @@ def multi_island_pf_nc(nc: NumericalCircuit,
 
 def multi_island_pf(multi_circuit: MultiCircuit,
                     options: PowerFlowOptions,
-                    opf_results: Union[OptimalPowerFlowResults, None] = None,
+                    opf_results: VALID_OPF_RESULTS | None = None,
                     t: Union[int, None] = None,
                     logger: Logger = Logger(),
                     bus_dict: Union[Dict[Bus, int], None] = None,

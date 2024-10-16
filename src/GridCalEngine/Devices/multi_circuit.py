@@ -1121,6 +1121,8 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
                 lst.append((k, branch, -1.0))
+            else:
+                pass
         return lst
 
     def get_inter_buses_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:
@@ -1151,6 +1153,8 @@ class MultiCircuit(Assets):
                 lst.append((k, branch, 1.0))
             elif branch.bus_from.area in a2 and branch.bus_to.area in a1:
                 lst.append((k, branch, -1.0))
+            else:
+                pass
         return lst
 
     def get_inter_buses_hvdc_branches(self, a1: Set[dev.Bus], a2: Set[dev.Bus]) -> List[Tuple[int, object, float]]:

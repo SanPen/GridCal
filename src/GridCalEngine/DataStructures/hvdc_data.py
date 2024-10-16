@@ -242,7 +242,24 @@ class HvdcData:
         :param Sbase: base power
         :return:
         """
+        # convert MW/deg to pu/rad
+        # MW    180 deg    1
+        # --- x ------- x ------ = 360 * 180 / pi / 100 = 206.26 aprox
+        # deg   pi rad    100 MVA
         return self.angle_droop * 57.295779513 / Sbase
+
+    def get_angle_droop_in_pu_rad_at(self, i: int, Sbase: float):
+        """
+        Get the angle droop in pu/rad
+        :param i: index
+        :param Sbase: base power
+        :return:
+        """
+        # convert MW/deg to pu/rad
+        # MW    180 deg    1
+        # --- x ------- x ------ = 360 * 180 / pi / 100 = 206.26 aprox
+        # deg   pi rad    100 MVA
+        return self.angle_droop[i] * 57.295779513 / Sbase
 
     def get_power(self, Sbase: float, theta: Vec) -> Tuple[Vec, Vec, Vec, Vec, Vec, int]:
         """

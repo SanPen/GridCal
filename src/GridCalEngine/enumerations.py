@@ -1431,6 +1431,8 @@ class ResultTypes(Enum):
     BusVoltagePolar = 'Voltage (polar)'
     BusActivePower = 'P: Active power'
     BusReactivePower = 'Q: Reactive power'
+    BusActivePowerIncrement = "ΔP: Active power increment"
+
     BranchPower = 'Sf: Power'
     BranchActivePowerFrom = 'Pf: Active power "from"'
     BranchReactivePowerFrom = 'Qf: Reactive power "from"'
