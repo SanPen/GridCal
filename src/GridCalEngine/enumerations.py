@@ -1000,7 +1000,7 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
-    CommunityDevice = 'Comunity'
+    CommunityDevice = 'Community'
     RegionDevice = 'Region'
     MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'

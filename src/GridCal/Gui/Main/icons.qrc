@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/country.svg</file>
+    <file>icons/region.svg</file>
+    <file>icons/community.svg</file>
+    <file>icons/municipality.svg</file>
     <file>icons/investment_group.svg</file>
     <file>icons/investment_dev.svg</file>
     <file>icons/modelling_authority.svg</file>
@@ -20,7 +24,6 @@
     <file>icons/remedial_action.svg</file>
     <file>icons/fuel.svg</file>
     <file>icons/emission.svg</file>
-    <file>icons/technology.svg</file>
     <file>icons/voltage_level.svg</file>
     <file>icons/substation.svg</file>
     <file>icons/ac_line.svg</file>

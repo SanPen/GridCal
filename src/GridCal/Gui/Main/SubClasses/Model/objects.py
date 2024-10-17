@@ -104,10 +104,10 @@ class ObjectsTableMain(DiagramsMain):
         """
         icons = {
             "Regions": ":/Icons/icons/map.svg",
-            DeviceType.CountryDevice.value: ":/Icons/icons/grid_icon.svg",
-            DeviceType.CommunityDevice.value: ":/Icons/icons/grid_icon.svg",
-            DeviceType.RegionDevice.value: ":/Icons/icons/grid_icon.svg",
-            DeviceType.MunicipalityDevice.value: ":/Icons/icons/grid_icon.svg",
+            DeviceType.CountryDevice.value: ":/Icons/icons/country.svg",
+            DeviceType.CommunityDevice.value: ":/Icons/icons/community.svg",
+            DeviceType.RegionDevice.value: ":/Icons/icons/region.svg",
+            DeviceType.MunicipalityDevice.value: ":/Icons/icons/municipality.svg",
             DeviceType.AreaDevice.value: ":/Icons/icons/grid_icon.svg",
             DeviceType.ZoneDevice.value: ":/Icons/icons/grid_icon.svg",
 
