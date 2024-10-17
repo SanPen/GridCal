@@ -13,8 +13,6 @@ from GridCalEngine.IO.gridcal.results_export import export_drivers, export_resul
 
 from GridCalEngine.IO.matpower.matpower_parser import parse_matpower_file, get_matpower_case_data
 
-from GridCalEngine.IO.raw.raw_parser_legacy import PSSeParser
-
 from GridCalEngine.IO.file_handler import FileOpen, FileSave, FileSavingOptions
 
 from GridCalEngine.IO.gridcal.remote import (gather_model_as_jsons_for_communication, RemoteInstruction,
