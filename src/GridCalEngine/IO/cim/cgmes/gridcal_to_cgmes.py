@@ -1244,7 +1244,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             target_vnom=mc_elm.bus1.Vnom
         )
         pte1.ratedU = mc_elm.V1
-        pte1.ratedS = mc_elm.rate12
+        pte1.ratedS = mc_elm.rate1
         pte1.endNumber = 1
 
         (pte1.r,
@@ -1275,7 +1275,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             target_vnom=mc_elm.bus2.Vnom
         )
         pte2.ratedU = mc_elm.V2
-        pte2.ratedS = mc_elm.rate23
+        pte2.ratedS = mc_elm.rate2
         pte2.endNumber = 2
 
         (pte2.r,
@@ -1313,7 +1313,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
             target_vnom=mc_elm.bus3.Vnom
         )
         pte3.ratedU = mc_elm.V3
-        pte3.ratedS = mc_elm.rate31
+        pte3.ratedS = mc_elm.rate3
         pte3.endNumber = 3
 
         (pte3.r,
