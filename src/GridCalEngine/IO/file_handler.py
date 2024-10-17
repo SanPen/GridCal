@@ -51,6 +51,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.results_template import DriverToSave
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions, SimulationTypes
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.types import DRIVER_OBJECTS
@@ -567,11 +568,9 @@ class FileSave:
         cgmes_circuit.parse_files(data_parser=data_parser)
         profiles_to_export = self.options.cgmes_profiles
         one_file_per_profile = self.options.cgmes_one_file_per_profile
-        pf_results = self.options.get_power_flow_results()
-        # TODO get nc used for PF, recompile can be avoided?
-        from GridCalEngine.DataStructures.numerical_circuit import \
-            compile_numerical_circuit_at
         nc = compile_numerical_circuit_at(self.circuit)
+        pf_results = self.options.get_power_flow_results()
+
         cgmes_circuit = gridcal_to_cgmes(gc_model=self.circuit,
                                          num_circ=nc,
                                          cgmes_model=cgmes_circuit,

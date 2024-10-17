@@ -23,7 +23,7 @@ from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions impor
     compute_zip_power
 from GridCalEngine.Simulations.PowerFlow.power_flow_results import \
     PowerFlowResults
-from GridCalEngine.enumerations import CGMESVersions
+from GridCalEngine.enumerations import CGMESVersions, TapChangerTypes
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
     SynchronousMachineOperatingMode,
     SynchronousMachineKind)
@@ -358,15 +358,19 @@ def create_cgmes_regulating_control(cgmes_syn,
     return rc
 
 
-def create_cgmes_tap_changer_control(tap_changer,
-                                     mc_trafo: Union[
-                                         gcdev.Transformer2W, gcdev.Transformer3W],
-                                     cgmes_model: CgmesCircuit,
-                                     logger: DataLogger):
+def create_cgmes_tap_changer_control(
+        tap_changer,
+        tcc_mode,
+        tcc_enabled,
+        mc_trafo: Union[gcdev.Transformer2W, gcdev.Transformer3W],
+        cgmes_model: CgmesCircuit,
+        logger: DataLogger):
     """
     Create Tap Changer Control for Tap changers.
 
     :param tap_changer: Cgmes tap Changer
+    :param tcc_mode: TapChangerContol mode attr (RegulatingControlModeKind.voltage)
+    :param tcc_enabled: TapChangerContol enabled
     :param mc_trafo: MultiCircuit Transformer
     :param cgmes_model: CgmesCircuit
     :param logger: DataLogger
@@ -379,14 +383,17 @@ def create_cgmes_tap_changer_control(tap_changer,
     # EQ
     tcc.name = f'_tcc_{mc_trafo.name}'
     tcc.shortName = tcc.name
-    tcc.mode = RegulatingControlModeKind.voltage
+    tcc.mode = tcc_mode
     tcc.Terminal = tap_changer.TransformerEnd.Terminal
     # SSH
     tcc.discrete = True
     tcc.targetDeadband = 0.5
     tcc.targetValueUnitMultiplier = UnitMultiplier.k
-    tcc.enabled = False
-    tcc.targetValue = 0.0  # TODO # if enabled it should be calculated
+    tcc.enabled = tcc_enabled
+    if tcc.enabled:
+        tcc.targetValue = 0.0  # TODO # if enabled it should be calculated
+    else:
+        tcc.targetValue = None
     # tcc.RegulatingCondEq not required .?
     # control_cn.Vnom ?
 
@@ -682,6 +689,7 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                 vl.TopologicalNode = tn
             else:
                 print(f'Bus.voltage_level.idtag is None for {bus.name}')
+                # TODO logger
 
             add_location(cgmes_model, tn, bus.longitude, bus.latitude, logger)
 
@@ -916,6 +924,7 @@ def get_cgmes_generators(multicircuit_model: MultiCircuit,
                     subs.Equipment = [cgmes_gen]
             else:
                 print(f'No substation found for generator {mc_elm.name}')
+                # TODO logger
 
         cgmes_gen.initialP = mc_elm.P
         cgmes_gen.maxOperatingP = mc_elm.Pmax
@@ -1100,14 +1109,38 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         pte2.ratedS = mc_elm.Sn
         pte2.endNumber = 2
 
-        # TODO -------------------- PHASE TAP ------------------------------
-        # -------------------- RATIO TAP ------------------------------
-        #                   TAP Changer EQ
+        # -------------------- RATIO TAP  & PHASE TAP -----------------------
+        # RatioTapChanger (tcc: voltage, disabled)	<--	-->	NoRegulation
+        # RatioTapChanger (tcc: voltage, enabled)	<--	-->	Voltage
+        # PhaseTapChangerSymmetrical	<--	-->	Symmetrical
+        # PhaseTapChangerAsymmetrical	<--	-->	Asymmetrical
+        #                         TAP Changer EQ
+
+        tcc_mode = RegulatingControlModeKind.voltage
+        tcc_enabled = False
+
+        if mc_elm.tap_changer.tc_type == TapChangerTypes.NoRegulation:
+            object_template = cgmes_model.get_class_type("RatioTapChanger")
+        elif mc_elm.tap_changer.tc_type == TapChangerTypes.VoltageRegulation:
+            object_template = cgmes_model.get_class_type("RatioTapChanger")
+            tcc_enabled = True
+        elif mc_elm.tap_changer.tc_type == TapChangerTypes.Symmetrical:
+            object_template = cgmes_model.get_class_type("PhaseTapChangerSymmetrical")
+            tcc_enabled = True
+            tcc_mode = RegulatingControlModeKind.activePower
+        elif mc_elm.tap_changer.tc_type == TapChangerTypes.Asymmetrical:
+            object_template = cgmes_model.get_class_type("PhaseTapChangerAsymmetrical")
+            tcc_enabled = True
+            tcc_mode = RegulatingControlModeKind.activePower
+        else:
+            logger.add_error(msg='No TapChangerType found for TapChanger',
+                             device=mc_elm.tap_changer,
+                             device_class=gcdev.TapChanger,
+                             value=mc_elm.tap_changer)
         new_rdf_id = get_new_rdfid()
-        object_template = cgmes_model.get_class_type("RatioTapChanger")
         tap_changer = object_template(rdfid=new_rdf_id)
-        tap_changer.name = mc_elm.name
-        tap_changer.shortName = mc_elm.name
+        tap_changer.name = f'_tc_{mc_elm.name}'
+        tap_changer.shortName = f'_tc_{mc_elm.name}'
 
         tap_changer.neutralU = pte1.BaseVoltage.nominalVoltage
         tap_changer.TransformerEnd = pte1
@@ -1118,13 +1151,25 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
          tap_changer.highStep,
          tap_changer.normalStep,
          tap_changer.neutralStep,
-         tap_changer.stepVoltageIncrement,
+         voltageIncr,
          tap_changer.step) = mc_elm.tap_changer.get_cgmes_values()
+
+        try:
+            tap_changer.stepVoltageIncrement = voltageIncr
+        except:
+            tap_changer.voltageStepIncrement = voltageIncr
+        finally:
+            logger.add_error(msg='stepVoltageIncerment cannot be filled fot TapChanger',
+                             device=mc_elm,
+                             device_class=gcdev.Transformer2W,
+                             value=mc_elm.idtag)
 
         # CONTROL
         tap_changer.ltcFlag = False  # load tap changing capability
         tap_changer.TapChangerControl = create_cgmes_tap_changer_control(
             tap_changer=tap_changer,
+            tcc_mode=tcc_mode,
+            tcc_enabled=tcc_enabled,
             mc_trafo=cm_transformer,
             cgmes_model=cgmes_model,
             logger=logger
@@ -1132,7 +1177,8 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         # tculControlMode not used, but be set to something: volt/react ..
         tap_changer.tculControlMode = TransformerControlMode.volt
         #                   TAP Changer SSH
-        tap_changer.controlEnabled = False  # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
+        tap_changer.controlEnabled = tcc_enabled
+        # Specifies the regulation status of the equipment.  True is regulating, false is not regulating.
         # why, why not?
 
         #                   TAP Changer SV
@@ -1313,6 +1359,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
     """
 
     for mc_elm in multicircuit_model.shunts:
+
         object_template = cgmes_model.get_class_type("LinearShuntCompensator")
         lsc = object_template(rdfid=form_rdfid(mc_elm.idtag))
         lsc.name = mc_elm.name
@@ -1349,7 +1396,7 @@ def get_cgmes_linear_shunts(multicircuit_model: MultiCircuit,
 
 def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
-                          logger: DataLogger):
+                          logger: DataLogger) -> None:
     """
     Creates a CgmesCircuit SvVoltage_list
     from PowerFlow results of the numerical circuit.
@@ -1523,6 +1570,70 @@ def create_sv_power_flow(cgmes_model: CgmesCircuit,
     cgmes_model.add(sv_pf)
 
 
+def create_sv_shunt_compensator_sections(cgmes_model: CgmesCircuit,
+                                         sections: int,
+                                         cgmes_shunt_compensator) -> None:
+    """
+    Creates a SvShuntCompensatorSections instance
+
+    :param cgmes_model: Cgmes Circuit
+    :param sections:
+    :param cgmes_shunt_compensator: Linear or Non-linear
+        ShuntCompensator instance from cgmes model
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvShuntCompensatorSections")
+    new_rdf_id = get_new_rdfid()
+    sv_scs = object_template(rdfid=new_rdf_id)
+
+    # sections: The number of sections in service as a continous variable.
+    # To get integer value scale with ShuntCompensator.bPerSection.
+    sv_scs.sections = sections
+    sv_scs.ShuntCompensator = cgmes_shunt_compensator
+
+    cgmes_model.add(sv_scs)
+
+
+def create_sv_status(cgmes_model: CgmesCircuit,
+                     in_service: int,
+                     cgmes_conducting_equipment) -> None:
+    """
+    Creates a SvStatus instance
+
+    :param cgmes_model: Cgmes Circuit
+    :param in_service: is active paramater
+    :param cgmes_conducting_equipment: cgmes CondEq
+    :return:
+    """
+    object_template = cgmes_model.get_class_type("SvStatus")
+    new_rdf_id = get_new_rdfid()
+    sv_status = object_template(rdfid=new_rdf_id)
+
+    sv_status.inService = in_service
+    # TODO sv_status.ConductingEquipment = cgmes_conducting_equipment
+
+    cgmes_model.add(sv_status)
+
+
+def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
+                          nc: NumericalCircuit,
+                          cgmes_model: CgmesCircuit,
+                          pf_results: PowerFlowResults,
+                          logger: DataLogger) -> None:
+
+    branch_objects = multi_circuit.get_branches_wo_hvdc()
+
+    tap_modules = pf_results.tap_module
+
+    for (branch, t_m) in zip(branch_objects, tap_modules):
+
+        if isinstance(branch, gcdev.Transformer2W):
+            pass
+            # branch.tap_changer.h
+
+    pass
+
+
 def get_cgmes_topological_island(multicircuit_model: MultiCircuit,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
@@ -1628,18 +1739,24 @@ def gridcal_to_cgmes(gc_model: MultiCircuit,
 
         # PowerFlow: P, Q results for every terminal
         get_cgmes_sv_power_flow(gc_model, num_circ, cgmes_model, pf_results, logger)
+        # TODO check: two elements on one bus! (loads or gens, shunts)
 
         # SV Status: for ConductingEquipment
-        # active parameter
+        # TODO create_sv_status() elements.active parameter
 
         # SVTapStep: handled at transformer function
+        get_cgmes_sv_tap_step(gc_model, num_circ, cgmes_model, pf_results, logger)
+
+        # SvShuntCompensatorSections:
+        # create_sv_shunt_compensator_sections()
+        # TODO call it from shunt function or write get_cgmes.. func
 
         # Topo Islands
         get_cgmes_topological_island(gc_model, cgmes_model, logger)
 
     else:
-        # abort export on gui ?
-        # strategy?: option to export it with default data
-        print("No PowerFlow result for CGMES export.")
         logger.add_error(msg="Missing power flow result for CGMES export.")
+
+    if logger.__len__() != 0:
+        print("Logger is not empty! (cgmes export)")
     return cgmes_model
