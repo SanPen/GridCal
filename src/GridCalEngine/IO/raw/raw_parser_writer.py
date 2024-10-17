@@ -16,10 +16,8 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-import os
 import chardet
 import datetime
-import re
 from typing import List, AnyStr, Dict
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.IO.raw.devices.area import RawArea
@@ -114,29 +112,6 @@ def interpret_line(raw_line, splitter=','):
     return parsed
 
 
-#
-# class PSSeRawParser:
-#     """
-#     PSSeParser
-#     """
-#
-#     def __init__(self, file_name, text_func=print,  progress_func=None):
-#         """
-#         Parse PSSe file
-#         Args:
-#             file_name: file name or path
-#         """
-#         self.parsers = dict()
-#         self.versions = [35, 34, 33, 32, 30, 29]
-#
-#         self.logger = Logger()
-#
-#         self.file_name = file_name
-#
-#         self.pss_grid, logs = self.parse_psse(text_func=text_func,  progress_func=progress_func)
-#
-#         self.logger += logs
-
 def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
     """
     Read the text file and split it into sections
@@ -157,7 +132,7 @@ def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnySt
     if text_func is not None:
         text_func("Reading raw file...")
 
-    sections_dict: Dict[str, List[str | float | int]] = dict()
+    sections_dict: Dict[str, List[List[str | float | int] | str]] = dict()
     sections_dict["bus"] = list()
     sep = ","
     with open(file_name, 'r', encoding=detection['encoding']) as my_file:
@@ -167,7 +142,7 @@ def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnySt
 
             if line_[0] != '@':
                 # remove garbage
-                lne = line_.strip()
+                lne = str(line_).strip()
 
                 if lne.startswith("program"):
                     # common header
@@ -175,7 +150,7 @@ def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnySt
                     sections_dict[block_category] = list()
 
                 if i == 0:
-                    sections_dict['info'] = [interpret_line(raw_line=lne, splitter=sep)]  # TODO: Fix the typing
+                    sections_dict['info'] = [interpret_line(raw_line=lne, splitter=sep)]
                 elif i == 1:
                     sections_dict['comment'] = [lne]
                 elif i == 2:
@@ -207,6 +182,25 @@ def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnySt
                 pass
 
     return sections_dict
+
+
+def is_3w(row, bus_set):
+    """
+    If this a 3W transformer?
+    :param row: transformer file row
+    :param bus_set: Set of raw bus information
+    :return:
+    """
+    return row[0] in bus_set and row[1] in bus_set and row[2] in bus_set
+
+
+def is_one_line_for_induction_machine(row):
+    """
+    Is this a one line induction machine?
+    :param row: file row
+    :return:
+    """
+    return len(row) != 12
 
 
 def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> PsseCircuit:
@@ -302,12 +296,6 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
 
     bus_set = {lne[0] for lne in sections_dict["bus"]}
 
-    def is_3w(row):
-        return row[0] in bus_set and row[1] in bus_set and row[2] in bus_set
-
-    def is_one_line_for_induction_machine(row):
-        return len(row) != 12
-
     for key, lines in sections_dict.items():
 
         if key in meta_data:
@@ -333,7 +321,7 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
                             # the transformers may have 4 or 5 lines to define them
                             # so, to be able to know, we look at the line "l" and check if the first arguments
                             # are 2 or 3 buses
-                            if is_3w(lines[l_count]):
+                            if is_3w(lines[l_count], bus_set):
                                 # 3 - windings
                                 lines_per_object2 = 5
                             else:
