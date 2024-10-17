@@ -542,7 +542,7 @@ def get_hvdc_from_vscdc(psse_elm: RawVscDCLine,
         bus2 = psse_bus_dict[IBUS2]
 
         name1 = psse_elm.NAME.replace("'", "").replace('/', '').strip()
-        idtag = str(psse_elm.IBUS1) + '_' + str(psse_elm.IBUS2) + '_1'
+        code = str(psse_elm.IBUS1) + '_' + str(psse_elm.IBUS2) + '_1'
 
         Vset_f = psse_elm.ACSET1
         Vset_t = psse_elm.ACSET2
@@ -559,7 +559,7 @@ def get_hvdc_from_vscdc(psse_elm: RawVscDCLine,
         obj = dev.HvdcLine(bus_from=bus1,
                            bus_to=bus2,
                            name=name1,
-                           idtag=idtag,
+                           code=code,
                            Pset=specified_power,
                            Vset_f=Vset_f,
                            Vset_t=Vset_t,
@@ -609,7 +609,7 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine,
         Vset_t = 1.0
 
         name1 = psse_elm.NAME.replace("'", "").replace('"', "").replace('/', '').strip()
-        idtag = str(psse_elm.IPR) + '_' + str(psse_elm.IPI) + '_1'
+        code = str(psse_elm.IPR) + '_' + str(psse_elm.IPI) + '_1'
 
         # set the HVDC line active
         active = bus1.active and bus2.active
@@ -618,7 +618,7 @@ def get_hvdc_from_twotermdc(psse_elm: RawTwoTerminalDCLine,
                            bus_to=bus2,  # inverter as of PSSe
                            active=active,
                            name=name1,
-                           idtag=idtag,
+                           code=code,
                            Pset=specified_power,
                            Vset_f=Vset_f,
                            Vset_t=Vset_t,

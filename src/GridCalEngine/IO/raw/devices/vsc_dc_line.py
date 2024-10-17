@@ -372,7 +372,7 @@ class RawVscDCLine(RawObject):
             (self.IBUS2, self.TYPE2, self.MODE2, self.DCSET2, self.ACSET2, self.ALOSS2, self.BLOSS2, self.MINLOSS2,
              self.SMAX2, self.IMAX2, self.PWF2, self.MAXQ2, self.MINQ2, self.VSREG2, self.NREG2, self.RMPCT2) = data[2]
 
-        if 30 <= version <= 33:
+        elif 30 <= version <= 33:
 
             '''
             NAME, MDC, RDC, O1, F1, ... O4, F4
