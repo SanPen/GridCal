@@ -4,8 +4,8 @@
    height="48"
    viewBox="0 0 48 48"
    version="1.1"
-   id="svg4"
-   sodipodi:docname="cn_icon.svg"
+   id="svg6"
+   sodipodi:docname="ac_line.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -15,18 +15,19 @@
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
-     id="metadata10">
+     id="metadata12">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs8" />
+     id="defs10" />
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -38,23 +39,21 @@
      inkscape:pageshadow="2"
      inkscape:window-width="2509"
      inkscape:window-height="1011"
-     id="namedview6"
+     id="namedview8"
      showgrid="false"
-     inkscape:zoom="4.2760417"
-     inkscape:cx="-0.70158343"
-     inkscape:cy="51.09866"
+     inkscape:zoom="4.9166667"
+     inkscape:cx="53.491525"
+     inkscape:cy="11.084746"
      inkscape:window-x="51"
      inkscape:window-y="32"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg4"
-     inkscape:pagecheckerboard="0"
+     inkscape:current-layer="svg6"
+     inkscape:document-rotation="0"
      inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1" />
-  <ellipse
-     style="fill:#999999;fill-opacity:1;stroke:#8d8d8d;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;paint-order:markers stroke fill"
-     id="path848"
-     cx="24.283655"
-     cy="25.593718"
-     rx="6.8985863"
-     ry="7.1584754" />
+  <path
+     id="path841"
+     d="m 6.6984324,24.629448 34.9814616,0.0088"
+     style="fill:#aeaeae;fill-opacity:1;stroke:#aeaeae;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
 </svg>

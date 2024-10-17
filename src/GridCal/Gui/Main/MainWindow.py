@@ -1098,6 +1098,7 @@ class Ui_mainWindow(object):
         self.verticalLayout_27.setContentsMargins(-1, 6, 0, 6)
         self.dataStructuresTreeView = QTreeView(self.frame_26)
         self.dataStructuresTreeView.setObjectName(u"dataStructuresTreeView")
+        self.dataStructuresTreeView.setAnimated(True)
 
         self.verticalLayout_27.addWidget(self.dataStructuresTreeView)
 
@@ -1473,6 +1474,7 @@ class Ui_mainWindow(object):
 
         self.simulationDataStructuresTreeView = QTreeView(self.frame_28)
         self.simulationDataStructuresTreeView.setObjectName(u"simulationDataStructuresTreeView")
+        self.simulationDataStructuresTreeView.setAnimated(True)
 
         self.gridLayout_19.addWidget(self.simulationDataStructuresTreeView, 1, 0, 1, 4)
 

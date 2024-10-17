@@ -188,11 +188,8 @@ class Assets:
         # emission gasses
         self._emission_gases: List[dev.EmissionGas] = list()
 
-        # self._generators_technologies: List[dev.GeneratorTechnology] = list()
-        #
-        # self._generators_fuels: List[dev.GeneratorFuel] = list()
-        #
-        # self._generators_emissions: List[dev.GeneratorEmission] = list()
+        # list of facilities
+        self._facilities: List[dev.Facility] = list()
 
         # fluids
         self._fluid_nodes: List[dev.FluidNode] = list()
@@ -243,8 +240,8 @@ class Assets:
             "Branches": [
                 dev.Line(),
                 dev.DcLine(),
-                dev.Transformer2W(),
                 dev.Winding(),
+                dev.Transformer2W(),
                 dev.Transformer3W(),
                 dev.SeriesReactance(),
                 dev.HvdcLine(),
@@ -266,7 +263,8 @@ class Assets:
                 dev.InvestmentsGroup(),
                 dev.Investment(),
                 dev.BranchGroup(),
-                dev.ModellingAuthority()
+                dev.ModellingAuthority(),
+                dev.Facility()
             ],
             "Associations": [
                 dev.Technology(),
@@ -3842,6 +3840,64 @@ class Assets:
             pass
 
     # ------------------------------------------------------------------------------------------------------------------
+    # Facility
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @property
+    def facilities(self) -> List[dev.Facility]:
+        """
+        Get the list of facilities
+        :return:
+        """
+        return self._facilities
+
+    @facilities.setter
+    def facilities(self, value: List[dev.Facility]):
+        self._facilities = value
+
+    def get_facilities(self) -> List[dev.Facility]:
+        """
+        Get list of areas
+        :return: List[dev.Facility]
+        """
+        return self._facilities
+
+    def get_facility_names(self) -> StrVec:
+        """
+        Get array of area names
+        :return: StrVec
+        """
+        return np.array([a.name for a in self._facilities])
+
+    def get_facility_number(self) -> int:
+        """
+        Get number of facilities
+        :return: number of facilities
+        """
+        return len(self._facilities)
+
+    def add_facility(self, obj: dev.Facility):
+        """
+        Add facility
+        :param obj: Facility object
+        """
+        self._facilities.append(obj)
+
+    def delete_facility(self, obj: dev.Facility):
+        """
+        Delete area
+        :param obj: Area
+        """
+        for elm in self.injection_items():
+            if elm.facility == obj:
+                elm.facility = None
+
+        try:
+            self._facilities.remove(obj)
+        except ValueError:
+            pass
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Fuels
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -4994,6 +5050,9 @@ class Assets:
         elif device_type == DeviceType.ModellingAuthority:
             return self.get_modelling_authorities()
 
+        elif device_type == DeviceType.FacilityDevice:
+            return self._facilities
+
         elif device_type == DeviceType.LambdaDevice:
             return list()
 
@@ -5188,6 +5247,9 @@ class Assets:
         elif device_type == DeviceType.ModellingAuthority:
             self._modelling_authorities = devices
 
+        elif device_type == DeviceType.FacilityDevice:
+            self._facilities = devices
+
         else:
             raise Exception('Element type not understood ' + str(device_type))
 
@@ -5362,6 +5424,9 @@ class Assets:
 
         elif obj.device_type == DeviceType.ModellingAuthority:
             self.add_modelling_authority(obj=obj)
+
+        elif obj.device_type == DeviceType.FacilityDevice:
+            self.add_facility(obj=obj)
 
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
@@ -5538,6 +5603,9 @@ class Assets:
         elif obj.device_type == DeviceType.ModellingAuthority:
             self.delete_modelling_authority(obj)
 
+        elif obj.device_type == DeviceType.FacilityDevice:
+            self.delete_facility(obj)
+
         else:
             raise Exception('Element type not understood ' + str(obj.device_type))
 
@@ -5605,10 +5673,11 @@ class Assets:
 
         return data, ok
 
-    def get_all_elements_dict_by_type(self,
-                                      add_locations: bool = False,
-                                      string_keys: bool = True) -> dict[
-        Union[str, DeviceType], Union[dict[str, ALL_DEV_TYPES], Any]]:
+    def get_all_elements_dict_by_type(
+            self,
+            add_locations: bool = False,
+            string_keys: bool = True
+    ) -> dict[Union[str, DeviceType], Union[dict[str, ALL_DEV_TYPES], Any]]:
         """
         Get a dictionary of all elements by type
         :param add_locations: Add locations to dict
@@ -5666,62 +5735,73 @@ class Assets:
 
         if elm_type == DeviceType.BusDevice:
             elm = dev.Bus()
-            dictionary_of_lists = {DeviceType.AreaDevice: self.areas,
-                                   DeviceType.ZoneDevice: self.zones,
-                                   DeviceType.SubstationDevice: self.substations,
-                                   DeviceType.VoltageLevelDevice: self.voltage_levels,
-                                   DeviceType.CountryDevice: self.countries,
-                                   DeviceType.ModellingAuthority: self.modelling_authorities,
-                                   }
+            dictionary_of_lists = {
+                DeviceType.AreaDevice: self.areas,
+                DeviceType.ZoneDevice: self.zones,
+                DeviceType.SubstationDevice: self.substations,
+                DeviceType.VoltageLevelDevice: self.voltage_levels,
+                DeviceType.CountryDevice: self.countries,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+            }
 
         elif elm_type == DeviceType.LoadDevice:
             elm = dev.Load()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.StaticGeneratorDevice:
             elm = dev.StaticGenerator()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ControllableShuntDevice:
             elm = dev.ControllableShunt()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.CurrentInjectionDevice:
             elm = dev.CurrentInjection()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.GeneratorDevice:
             elm = dev.Generator()
-            dictionary_of_lists = {DeviceType.Technology: self.technologies,
-                                   DeviceType.FuelDevice: self.fuels,
-                                   DeviceType.EmissionGasDevice: self.emission_gases,
-                                   DeviceType.ModellingAuthority: self.modelling_authorities, }
+            dictionary_of_lists = {
+                DeviceType.Technology: self.technologies,
+                DeviceType.FuelDevice: self.fuels,
+                DeviceType.EmissionGasDevice: self.emission_gases,
+                DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
+            }
 
         elif elm_type == DeviceType.BatteryDevice:
             elm = dev.Battery()
             dictionary_of_lists = {
                 DeviceType.Technology: self.technologies,
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ShuntDevice:
             elm = dev.Shunt()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ExternalGridDevice:
             elm = dev.ExternalGrid()
             dictionary_of_lists = {
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.LineDevice:
@@ -5911,6 +5991,7 @@ class Assets:
                 DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
                 DeviceType.GeneratorDevice: self.get_generators(),
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.FluidPumpDevice:
@@ -5919,6 +6000,7 @@ class Assets:
                 DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
                 DeviceType.GeneratorDevice: self.get_generators(),
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.FluidP2XDevice:
@@ -5927,10 +6009,15 @@ class Assets:
                 DeviceType.FluidNodeDevice: self.get_fluid_nodes(),
                 DeviceType.GeneratorDevice: self.get_generators(),
                 DeviceType.ModellingAuthority: self.modelling_authorities,
+                DeviceType.FacilityDevice: self.facilities,
             }
 
         elif elm_type == DeviceType.ModellingAuthority:
             elm = dev.ModellingAuthority()
+            dictionary_of_lists = dict()
+
+        elif elm_type == DeviceType.FacilityDevice:
+            elm = dev.Facility()
             dictionary_of_lists = dict()
 
         else:

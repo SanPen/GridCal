@@ -25,6 +25,7 @@ from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.enumerations import BuildStatus, DeviceType, SubObjectType
 from GridCalEngine.basic_structures import CxVec
 from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Aggregation.facility import Facility
 
 if TYPE_CHECKING:
     from GridCalEngine.Devices import Technology
@@ -95,6 +96,8 @@ class InjectionParent(PhysicalDevice):
 
         self.build_status = build_status
 
+        self.facility: Facility | None = None
+
         self.technologies: Associations = Associations(device_type=DeviceType.Technology)
 
         self.register(key='bus', units='', tpe=DeviceType.BusDevice, definition='Connection bus',
@@ -117,6 +120,9 @@ class InjectionParent(PhysicalDevice):
 
         self.register(key='Cost', units='e/MWh', tpe=float, definition='Cost of not served energy. Used in OPF.',
                       profile_name='Cost_prof')
+
+        self.register(key='facility', units='', tpe=DeviceType.FacilityDevice,
+                      definition='Facility where this is located', editable=True)
 
         self.register(key='technologies', units='p.u.', tpe=SubObjectType.Associations,
                       definition='List of technologies', display=False)

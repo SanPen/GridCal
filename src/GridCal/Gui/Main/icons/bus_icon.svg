@@ -6,7 +6,7 @@
    version="1.1"
    id="svg4"
    sodipodi:docname="bus_icon.svg"
-   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -37,22 +37,24 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1858"
-     inkscape:window-height="1057"
+     inkscape:window-width="2509"
+     inkscape:window-height="1011"
      id="namedview6"
      showgrid="false"
      inkscape:zoom="3.390625"
-     inkscape:cx="-113.40092"
-     inkscape:cy="82.138249"
-     inkscape:window-x="54"
-     inkscape:window-y="-8"
+     inkscape:cx="-112.95853"
+     inkscape:cy="82.43318"
+     inkscape:window-x="51"
+     inkscape:window-y="32"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg4"
-     inkscape:pagecheckerboard="0" />
+     inkscape:pagecheckerboard="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <g
      id="g845"
      transform="translate(0.88479263,-4.4239631)"
-     style="fill:#333333;stroke:#333333">
+     style="fill:#999999;stroke:#999999;fill-opacity:1;stroke-opacity:1">
     <rect
        ry="0"
        y="21.161293"
@@ -60,19 +62,19 @@
        height="7.0783424"
        width="7.3732719"
        id="rect835"
-       style="opacity:0.853;fill:#333333;fill-opacity:1;stroke:#333333;stroke-width:0.01424989;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers" />
+       style="opacity:0.853;fill:#999999;fill-opacity:1;stroke:#999999;stroke-width:0.01424989;stroke-linecap:square;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers" />
     <path
        inkscape:connector-curvature="0"
        id="path816"
        d="M 7.4185002,35.023041 H 40.655232"
-       style="fill:#333333;fill-rule:evenodd;stroke:#333333;stroke-width:6.43819857;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+       style="fill:#999999;fill-rule:evenodd;stroke:#999999;stroke-width:6.43819857;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1" />
     <text
        id="text839"
        y="27.663115"
        x="15.134903"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.9748px;line-height:125%;font-family:'Alte Haas Grotesk';-inkscape-font-specification:'Alte Haas Grotesk';letter-spacing:0px;word-spacing:0px;fill:#333333;fill-opacity:1;stroke:#333333;stroke-width:0.299371px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.9748px;line-height:125%;font-family:'Alte Haas Grotesk';-inkscape-font-specification:'Alte Haas Grotesk';letter-spacing:0px;word-spacing:0px;fill:#999999;fill-opacity:1;stroke:#999999;stroke-width:0.299371px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
-         style="fill:#333333;fill-opacity:1;stroke:#333333;stroke-width:0.299371px"
+         style="fill:#999999;fill-opacity:1;stroke:#999999;stroke-width:0.299371px;stroke-opacity:1"
          y="27.663115"
          x="15.134903"
          id="tspan837"

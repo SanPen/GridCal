@@ -1041,6 +1041,8 @@ class DeviceType(Enum):
 
     ModellingAuthority = "Modelling Authority"
 
+    FacilityDevice = "Facility"
+
     SimulationOptionsDevice = "SimulationOptionsDevice"
 
     InterAggregationInfo = "InterAggregationInfo"

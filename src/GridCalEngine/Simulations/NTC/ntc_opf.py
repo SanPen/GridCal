@@ -515,8 +515,6 @@ class NtcVars:
         :return: OpfVars instance
         """
 
-        nt = self.nt
-
         data = NtcVars(nt=self.nt,
                        nbus=self.nbus,
                        ng=self.ng,
@@ -1087,10 +1085,6 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
     # declare structures of LP vars
     mip_vars = NtcVars(nt=nt, nbus=n, ng=ng, nb=nb, nl=nl, nbr=nbr, n_hvdc=n_hvdc, model=lp_model)
 
-    # branch index, branch object, flow sense w.r.t the area exchange
-    bus_a1_idx_set = set(bus_a1_idx)
-    bus_a2_idx_set = set(bus_a2_idx)
-
     # objective function
     f_obj = 0.0
 
@@ -1106,6 +1100,11 @@ def run_linear_ntc_opf_ts(grid: MultiCircuit,
                                                             logger=logger)
 
         if t_idx == 0:
+            # branch index, branch object, flow sense w.r.t the area exchange
+            bus_a1_idx_set = set(bus_a1_idx)
+            bus_a2_idx_set = set(bus_a2_idx)
+
+            # find the inter space branches given the bus indices of each space
             mip_vars.branch_vars.inter_space_branches = nc.branch_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,
                                                                                        bus_idx_to=bus_a2_idx_set)
             mip_vars.hvdc_vars.inter_space_hvdc = nc.hvdc_data.get_inter_areas(bus_idx_from=bus_a1_idx_set,

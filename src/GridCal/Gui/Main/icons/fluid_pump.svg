@@ -5,7 +5,7 @@
    viewBox="0 0 48 48"
    version="1.1"
    id="svg4"
-   sodipodi:docname="cn_icon.svg"
+   sodipodi:docname="fluid_pump.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -40,9 +40,9 @@
      inkscape:window-height="1011"
      id="namedview6"
      showgrid="false"
-     inkscape:zoom="4.2760417"
-     inkscape:cx="-0.70158343"
-     inkscape:cy="51.09866"
+     inkscape:zoom="2.1380209"
+     inkscape:cx="-162.76736"
+     inkscape:cy="10.991474"
      inkscape:window-x="51"
      inkscape:window-y="32"
      inkscape:window-maximized="1"
@@ -50,11 +50,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#d1d1d1" />
-  <ellipse
-     style="fill:#999999;fill-opacity:1;stroke:#8d8d8d;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;paint-order:markers stroke fill"
-     id="path848"
-     cx="24.283655"
-     cy="25.593718"
-     rx="6.8985863"
-     ry="7.1584754" />
+  <path
+     style="fill:#999999;fill-opacity:1;stroke:#999999;stroke-width:1px;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1"
+     d="m 38.62372,18.730573 0.0298,16.645135 -27.014951,6.730256 -0.05774,-29.776023 z"
+     id="path32405"
+     sodipodi:nodetypes="ccccc" />
 </svg>

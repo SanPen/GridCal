@@ -1351,7 +1351,11 @@ QProgressBar::chunk{
                  <number>6</number>
                 </property>
                 <item>
-                 <widget class="QTreeView" name="dataStructuresTreeView"/>
+                 <widget class="QTreeView" name="dataStructuresTreeView">
+                  <property name="animated">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>
@@ -2162,7 +2166,11 @@ QProgressBar::chunk{
                  </widget>
                 </item>
                 <item row="1" column="0" colspan="4">
-                 <widget class="QTreeView" name="simulationDataStructuresTreeView"/>
+                 <widget class="QTreeView" name="simulationDataStructuresTreeView">
+                  <property name="animated">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </widget>

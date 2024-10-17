@@ -608,7 +608,7 @@ class CustomFileSystemModel(QtWidgets.QFileSystemModel):
         self.setRootPath(root_path)
 
 
-def get_logger_tree_model(logger: DataLogger):
+def get_logger_tree_model(logger: DataLogger) -> QtGui.QStandardItemModel:
     """
     Fill logger tree
     :param logger: Logger instance
@@ -732,20 +732,26 @@ def get_checked_values(mdl: QtGui.QStandardItemModel()) -> List[str]:
 def fill_model_from_dict(parent: QtGui.QStandardItem,
                          d: Dict[str, Union[Dict[str, Any], List[str]]],
                          editable=False,
-                         icons: Dict[str, str] = None):
+                         icons: Dict[str, str] = None,
+                         font_size: int = 9):
     """
     Fill TreeViewModel from dictionary
     :param parent: Parent QStandardItem
     :param d: item
     :param editable
     :param icons
+    :param font_size
     :return: Nothing
     """
+    font = QtGui.QFont()
+    font.setPointSize(font_size)
+
     if isinstance(d, dict):
         for k, v in d.items():
             name = str(k)
             child = QtGui.QStandardItem(name)
             child.setEditable(editable)
+            child.setFont(font)
 
             if icons is not None:
                 if name in icons.keys():
@@ -762,6 +768,8 @@ def fill_model_from_dict(parent: QtGui.QStandardItem,
     else:
         name = str(d)
         item = QtGui.QStandardItem(name)
+        item.setFont(font)
+
         if icons is not None:
             if name in icons.keys():
                 icon_path = icons[name]
@@ -772,12 +780,12 @@ def fill_model_from_dict(parent: QtGui.QStandardItem,
         parent.appendRow(item)
 
 
-def get_tree_model(d, top='', icons: Dict[str, str] = None):
+def get_tree_model(d, top='', icons: Dict[str, str] = None) -> QtGui.QStandardItemModel:
     """
-
-    :param d:
-    :param top:
-    :param icons:
+    Build a tree model from a dictionary
+    :param d: Any dictionary
+    :param top: Table header
+    :param icons: Dictionary of icons (name of the node, icon to match)
     :return:
     """
     model = QtGui.QStandardItemModel()
@@ -787,11 +795,11 @@ def get_tree_model(d, top='', icons: Dict[str, str] = None):
     return model
 
 
-def get_tree_item_path(item: QtGui.QStandardItem):
+def get_tree_item_path(item: QtGui.QStandardItem) -> List[str]:
     """
-
-    :param item:
-    :return:
+    Get the path of an item in a tree
+    :param item: QStandardItem
+    :return: path in a list
     """
     item_parent = item.parent()
     path = [item.text()]

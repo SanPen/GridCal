@@ -5,7 +5,7 @@
    viewBox="0 0 48 48"
    version="1.1"
    id="svg4"
-   sodipodi:docname="cn_icon.svg"
+   sodipodi:docname="fluid_p2x.svg"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -26,7 +26,24 @@
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs8" />
+     id="defs8">
+    <marker
+       inkscape:collect="always"
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="TriangleInM-1-7"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="TriangleInM">
+      <path
+         transform="scale(-0.4)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path5871-0-9"
+         inkscape:connector-curvature="0" />
+    </marker>
+  </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -41,8 +58,8 @@
      id="namedview6"
      showgrid="false"
      inkscape:zoom="4.2760417"
-     inkscape:cx="-0.70158343"
-     inkscape:cy="51.09866"
+     inkscape:cx="-87.230206"
+     inkscape:cy="-2.6894031"
      inkscape:window-x="51"
      inkscape:window-y="32"
      inkscape:window-maximized="1"
@@ -50,11 +67,16 @@
      inkscape:pagecheckerboard="0"
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#d1d1d1" />
-  <ellipse
-     style="fill:#999999;fill-opacity:1;stroke:#8d8d8d;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;paint-order:markers stroke fill"
-     id="path848"
-     cx="24.283655"
-     cy="25.593718"
-     rx="6.8985863"
-     ry="7.1584754" />
+  <path
+     style="fill:#000000;fill-opacity:0;stroke:#999999;stroke-width:1.00157;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#TriangleInM-1-7)"
+     d="M 41.351194,30.948516 6.2197562,31.380883"
+     id="path35499-2"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cc" />
+  <circle
+     style="fill:#999999;fill-opacity:1;stroke:#999999;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:1;paint-order:markers stroke fill"
+     id="path35695"
+     cx="23.795559"
+     cy="30.634323"
+     r="7" />
 </svg>

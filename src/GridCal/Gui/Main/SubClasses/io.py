@@ -186,9 +186,7 @@ class IoMain(ConfigurationMain):
 
         self.remove_all_diagrams()
 
-        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_template_objects_str_dict(),
-                                                                  top='Objects'))
-        self.expand_object_tree_nodes()
+        self.setup_objects_tree()
 
         # clear the results
         self.ui.resultsTableView.setModel(None)
@@ -384,7 +382,7 @@ class IoMain(ConfigurationMain):
                 # set circuit comments
                 try:
                     self.ui.comments_textEdit.setText(str(self.circuit.comments))
-                except:
+                except ValueError:
                     pass
 
                 # update the drop-down menus that display dates
