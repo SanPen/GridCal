@@ -20,6 +20,7 @@ import numpy as np
 from GridCalEngine.Devices.Substation.bus import Bus
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Branches.winding import Winding
+from GridCalEngine.Devices.Branches.transformer_type import get_impedances
 from GridCalEngine.Devices.profile import Profile
 from GridCalEngine.enumerations import DeviceType
 
@@ -93,6 +94,7 @@ class Transformer3W(PhysicalDevice):
             bus0.is_internal = True
             bus0.Vnom = 1.0
             self.bus0 = bus0
+
         self._bus1 = bus1
         self._bus2 = bus2
         self._bus3 = bus3
@@ -112,9 +114,21 @@ class Transformer3W(PhysicalDevice):
         self._x23 = float(x23)
         self._x31 = float(x31)
 
-        self._rate12 = float(rate12)
-        self._rate23 = float(rate23)
-        self._rate31 = float(rate31)
+        self._rate1 = float(rate12)
+        self._rate2 = float(rate23)
+        self._rate3 = float(rate31)
+
+        # remember design values also
+        self._Pcu12: float = 0.0
+        self._Pcu23: float = 0.0
+        self._Pcu31: float = 0.0
+
+        self._Vsc12: float = 0.0
+        self._Vsc23: float = 0.0
+        self._Vsc31: float = 0.0
+
+        self._Pfe: float = 0.0
+        self._I0: float = 0.0
 
         self.winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag, bus_to=bus1, HV=V1, LV=1.0, name=name + "_W1")
         self.winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag, bus_to=bus2, HV=V2, LV=1.0, name=name + "_W2")
@@ -144,9 +158,22 @@ class Transformer3W(PhysicalDevice):
         self.register(key='x12', units='p.u.', tpe=float, definition='Reactance measured from 1->2')
         self.register(key='x23', units='p.u.', tpe=float, definition='Reactance measured from 2->3')
         self.register(key='x31', units='p.u.', tpe=float, definition='Reactance measured from 3->1')
-        self.register(key='rate12', units='MVA', tpe=float, definition='Rating measured from 1->2')
-        self.register(key='rate23', units='MVA', tpe=float, definition='Rating measured from 2->3')
-        self.register(key='rate31', units='MVA', tpe=float, definition='Rating measured from 3->1')
+
+        self.register(key='rate1', units='MVA', tpe=float, definition='Rating 1', old_names=['rate12'])
+        self.register(key='rate2', units='MVA', tpe=float, definition='Rating 2', old_names=['rate23'])
+        self.register(key='rate3', units='MVA', tpe=float, definition='Rating 3', old_names=['rate31'])
+
+        self.register(key='Pcu12', units='KW', tpe=float, definition='Copper loss between 1->2')
+        self.register(key='Pcu23', units='KW', tpe=float, definition='Copper loss between 2->3')
+        self.register(key='Pcu31', units='KW', tpe=float, definition='Copper loss between 3->1')
+
+        self.register(key='Vsc12', units='%', tpe=float, definition='Short-circuit voltage between 1->2')
+        self.register(key='Vsc23', units='%', tpe=float, definition='Short-circuit voltage between 2->3')
+        self.register(key='Vsc31', units='%', tpe=float, definition='Short-circuit voltage between 3->1')
+
+        self.register(key='Pfe', units='KW', tpe=float, definition='Iron loss')
+        self.register(key='I0', units='%', tpe=float, definition='No-load current')
+
         self.register(key='x', units='px', tpe=float, definition='x position')
         self.register(key='y', units='px', tpe=float, definition='y position')
 
@@ -262,19 +289,18 @@ class Transformer3W(PhysicalDevice):
 
         r1, r2, r3 = delta_to_star(self.r12, self.r23, self.r31)
         x1, x2, x3 = delta_to_star(self.x12, self.x23, self.x31)
-        rate1, rate2, rate3 = delta_to_star(self.rate12, self.rate23, self.rate31)
 
         self.winding1.R = r1
         self.winding1.X = x1
-        self.winding1.rate = rate1
+        self.winding1.rate = self.rate1
 
         self.winding2.R = r2
         self.winding2.X = x2
-        self.winding2.rate = rate2
+        self.winding2.rate = self.rate2
 
         self.winding3.R = r3
         self.winding3.X = x3
-        self.winding3.rate = rate3
+        self.winding3.rate = self.rate3
 
     @property
     def r12(self):
@@ -349,40 +375,151 @@ class Transformer3W(PhysicalDevice):
         self.compute_delta_to_star()
 
     @property
-    def rate12(self):
+    def rate1(self):
         """
-        1->2 measured rate in MVA
+        1 measured rate in MVA
         """
-        return self._rate12
+        return self._rate1
 
-    @rate12.setter
-    def rate12(self, val: float):
-        self._rate12 = val
+    @rate1.setter
+    def rate1(self, val: float):
+        self._rate1 = val
         self.compute_delta_to_star()
 
     @property
-    def rate23(self):
+    def rate2(self):
         """
-        2->3 measured rate in MVA
+        2 measured rate in MVA
         """
-        return self._rate23
+        return self._rate2
 
-    @rate23.setter
-    def rate23(self, val: float):
-        self._rate23 = val
+    @rate2.setter
+    def rate2(self, val: float):
+        self._rate2 = val
         self.compute_delta_to_star()
 
     @property
-    def rate31(self):
+    def rate3(self):
         """
         3->1 measured rate in MVA
         """
-        return self._rate31
+        return self._rate3
 
-    @rate31.setter
-    def rate31(self, val: float):
-        self._rate31 = val
+    @rate3.setter
+    def rate3(self, val: float):
+        self._rate3 = val
         self.compute_delta_to_star()
+
+    @property
+    def Pcu12(self) -> float:
+        """
+
+        :return:
+        """
+        return self._Pcu12
+
+    @Pcu12.setter
+    def Pcu12(self, value: float) -> None:
+        self._Pcu12 = value
+        self._recalc_from_definition(Sbase=100)
+
+    # Property for _Pcu23
+    @property
+    def Pcu23(self) -> float:
+        """
+
+        :return:
+        """
+        return self._Pcu23
+
+    @Pcu23.setter
+    def Pcu23(self, value: float) -> None:
+        self._Pcu23 = value
+        self._recalc_from_definition(Sbase=100)
+
+    # Property for _Pcu31
+    @property
+    def Pcu31(self) -> float:
+        """
+
+        :return:
+        """
+        return self._Pcu31
+
+    @Pcu31.setter
+    def Pcu31(self, value: float) -> None:
+        self._Pcu31 = value
+        self._recalc_from_definition(Sbase=100)
+
+    # Property for _Vsc12
+    @property
+    def Vsc12(self) -> float:
+        """
+
+        :return:
+        """
+        return self._Vsc12
+
+    @Vsc12.setter
+    def Vsc12(self, value: float) -> None:
+        self._Vsc12 = value
+        self._recalc_from_definition(Sbase=100)
+
+    # Property for _Vsc23
+    @property
+    def Vsc23(self) -> float:
+        """
+
+        :return:
+        """
+        return self._Vsc23
+
+    @Vsc23.setter
+    def Vsc23(self, value: float) -> None:
+        self._Vsc23 = value
+        self._recalc_from_definition(Sbase=100)
+
+    # Property for _Vsc31
+    @property
+    def Vsc31(self) -> float:
+        """
+
+        :return:
+        """
+        return self._Vsc31
+
+    @Vsc31.setter
+    def Vsc31(self, value: float) -> None:
+        self._Vsc31 = value
+        self._recalc_from_definition(Sbase=100)
+
+    # Property for _Pfe
+    @property
+    def Pfe(self) -> float:
+        """
+
+        :return:
+        """
+        return self._Pfe
+
+    @Pfe.setter
+    def Pfe(self, value: float) -> None:
+        self._Pfe = value
+        self._recalc_from_definition(Sbase=100)
+
+    # Property for _I0
+    @property
+    def I0(self) -> float:
+        """
+
+        :return:
+        """
+        return self._I0
+
+    @I0.setter
+    def I0(self, value: float) -> None:
+        self._I0 = value
+        self._recalc_from_definition(Sbase=100)
 
     def get_winding(self, i: int) -> Winding:
         """
@@ -398,3 +535,101 @@ class Transformer3W(PhysicalDevice):
             return self.winding3
         else:
             raise Exception("Windings int positions go from 0 to 2")
+
+    def _recalc_from_definition(self, Sbase: float):
+        """
+        Recompute from the definition stored data
+        :param Sbase:
+        :return:
+        """
+        z_series12, y_shunt12 = get_impedances(VH_bus=max(self.bus1.Vnom, self.bus2.Vnom),
+                                               VL_bus=max(self.bus1.Vnom, self.bus2.Vnom),
+                                               Sn=self.rate1,
+                                               HV=max(self.V1, self.V2),
+                                               LV=min(self.V1, self.V2),
+                                               Pcu=self.Pcu12,
+                                               Pfe=self.Pfe,
+                                               I0=self.I0,
+                                               Vsc=self.Vsc12,
+                                               Sbase=Sbase,
+                                               GR_hv1=0.5)
+
+        z_series23, y_shunt23 = get_impedances(VH_bus=max(self.bus2.Vnom, self.bus3.Vnom),
+                                               VL_bus=max(self.bus2.Vnom, self.bus3.Vnom),
+                                               Sn=self.rate2,
+                                               HV=max(self.V2, self.V3),
+                                               LV=min(self.V2, self.V3),
+                                               Pcu=self.Pcu23,
+                                               Pfe=self.Pfe,
+                                               I0=self.I0,
+                                               Vsc=self.Vsc23,
+                                               Sbase=Sbase,
+                                               GR_hv1=0.5)
+
+        z_series31, y_shunt31 = get_impedances(VH_bus=max(self.bus3.Vnom, self.bus1.Vnom),
+                                               VL_bus=max(self.bus3.Vnom, self.bus1.Vnom),
+                                               Sn=self.rate3,
+                                               HV=max(self.V3, self.V1),
+                                               LV=min(self.V3, self.V1),
+                                               Pcu=self.Pcu31,
+                                               Pfe=self.Pfe,
+                                               I0=self.I0,
+                                               Vsc=self.Vsc31,
+                                               Sbase=Sbase,
+                                               GR_hv1=0.5)
+
+        self._r12 = np.round(z_series12.real, 6)
+        self._r23 = np.round(z_series23.real, 6)
+        self._r31 = np.round(z_series31.real, 6)
+
+        self._x12 = np.round(z_series12.imag, 6)
+        self._x23 = np.round(z_series23.imag, 6)
+        self._x31 = np.round(z_series31.imag, 6)
+
+        self.compute_delta_to_star()
+
+    def fill_from_design_values(self, V1: float, V2: float, V3: float,
+                                Sn1: float, Sn2: float, Sn3: float,
+                                Pcu12: float, Pcu23: float, Pcu31: float,
+                                Vsc12: float, Vsc23: float, Vsc31: float,
+                                Pfe: float, I0: float, Sbase: float, ):
+        """
+        Fill winding per unit impedances from the short circuit study values
+        :param V1: Primary voltage (KV)
+        :param V2: Secondary voltage (KV)
+        :param V3: Tertiary Voltage (KV)
+        :param Sn1: Primary power (MVA)
+        :param Sn2: Secondary power (MVA)
+        :param Sn3: Tertiary power (MVA)
+        :param Pcu12: Pcu 1-2(kW)
+        :param Pcu23: Pcu 2-3(kW)
+        :param Pcu31: Pcu 3-1(kW)
+        :param Vsc12: Vsc 1-2(%)
+        :param Vsc23: Vsc 2-3(%)
+        :param Vsc31: Vsc 3-1(%)
+        :param Pfe: Pfe(kW)
+        :param I0: I0(%)
+        :param Sbase: base power
+        :return:
+        """
+
+        self._V1 = float(V1)
+        self._V2 = float(V2)
+        self._V3 = float(V3)
+
+        self._Pcu12: float = Pcu12
+        self._Pcu23: float = Pcu23
+        self._Pcu31: float = Pcu31
+
+        self._Vsc12: float = Vsc12
+        self._Vsc23: float = Vsc23
+        self._Vsc31: float = Vsc31
+
+        self._Pfe: float = Pfe
+        self._I0: float = I0
+
+        self._rate1 = Sn1
+        self._rate2 = Sn2
+        self._rate3 = Sn3
+
+        self._recalc_from_definition(Sbase)

@@ -1000,7 +1000,7 @@ class DeviceType(Enum):
     AreaDevice = 'Area'
     ZoneDevice = 'Zone'
     CountryDevice = 'Country'
-    CommunityDevice = 'Comunity'
+    CommunityDevice = 'Community'
     RegionDevice = 'Region'
     MunicipalityDevice = 'Municipality'
     BusBarDevice = 'BusBar'
@@ -1040,6 +1040,8 @@ class DeviceType(Enum):
     LineLocations = "Line Locations"
 
     ModellingAuthority = "Modelling Authority"
+
+    FacilityDevice = "Facility"
 
     SimulationOptionsDevice = "SimulationOptionsDevice"
 
@@ -1431,6 +1433,8 @@ class ResultTypes(Enum):
     BusVoltagePolar = 'Voltage (polar)'
     BusActivePower = 'P: Active power'
     BusReactivePower = 'Q: Reactive power'
+    BusActivePowerIncrement = "ΔP: Active power increment"
+
     BranchPower = 'Sf: Power'
     BranchActivePowerFrom = 'Pf: Active power "from"'
     BranchReactivePowerFrom = 'Qf: Reactive power "from"'

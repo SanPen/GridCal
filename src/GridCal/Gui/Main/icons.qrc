@@ -1,5 +1,33 @@
 <RCC>
   <qresource prefix="Icons">
+    <file>icons/country.svg</file>
+    <file>icons/region.svg</file>
+    <file>icons/community.svg</file>
+    <file>icons/municipality.svg</file>
+    <file>icons/investment_group.svg</file>
+    <file>icons/investment_dev.svg</file>
+    <file>icons/modelling_authority.svg</file>
+    <file>icons/branch_group.svg</file>
+    <file>icons/contingency_group.svg</file>
+    <file>icons/contingency.svg</file>
+    <file>icons/powerplant.svg</file>
+    <file>icons/associations.svg</file>
+    <file>icons/dam_gray.svg</file>
+    <file>icons/fluid_path.svg</file>
+    <file>icons/fluid_node.svg</file>
+    <file>icons/fluid_p2x.svg</file>
+    <file>icons/fluid_pump.svg</file>
+    <file>icons/fluid_turbine.svg</file>
+    <file>icons/tower.svg</file>
+    <file>icons/remedial_action_group.svg</file>
+    <file>icons/technology.svg</file>
+    <file>icons/remedial_action.svg</file>
+    <file>icons/fuel.svg</file>
+    <file>icons/emission.svg</file>
+    <file>icons/voltage_level.svg</file>
+    <file>icons/substation.svg</file>
+    <file>icons/ac_line.svg</file>
+    <file>icons/winding.svg</file>
     <file>icons/stacked_plot.svg</file>
     <file>icons/add_remedial_action.svg</file>
     <file>icons/plugin.svg</file>
@@ -129,6 +157,13 @@
     <file>icons/map.svg</file>
     <file>icons/dcopf2ts.svg</file>
     <file>icons/rate_br.svg</file>
+    <file>icons/batt.svg</file>
+    <file>icons/gen.svg</file>
+    <file>icons/load_dev.svg</file>
+    <file>icons/sta_gen.svg</file>
+    <file>icons/external_grid.svg</file>
+    <file>icons/shunt.svg</file>
+    <file>icons/controllable_shunt.svg</file>
     <file>icons/detect_tr.svg</file>
     <file>icons/new2c.svg</file>
     <file>icons/loadc.svg</file>

@@ -264,9 +264,9 @@ def get_psse_transformer3w(transformer: dev.Transformer3W, bus_dict: Dict[dev.Bu
     psse_transformer.STAT = 1 if transformer.active else 0
 
     psse_transformer.NAME = transformer.name
-    psse_transformer.RATE1_1 = transformer.rate12
-    psse_transformer.RATE2_1 = transformer.rate23
-    psse_transformer.RATE3_1 = transformer.rate31
+    psse_transformer.RATE1_1 = transformer.rate1
+    psse_transformer.RATE2_1 = transformer.rate2
+    psse_transformer.RATE3_1 = transformer.rate3
 
     psse_transformer.ANG1 = transformer.winding1.tap_phase
     psse_transformer.ANG2 = transformer.winding2.tap_phase

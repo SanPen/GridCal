@@ -766,10 +766,10 @@ def add_transformer3w_data(circuit: MultiCircuit,
                                 V3=elm.V3,
                                 r12=elm.r12, r23=elm.r23, r31=elm.r31,
                                 x12=elm.x12, x23=elm.x23, x31=elm.x31,
-                                rate12=elm.rate12, rate23=elm.rate23, rate31=elm.rate31,
-                                contingency_rate12=elm.rate12,
-                                contingency_rate23=elm.rate23,
-                                contingency_rate31=elm.rate31, )
+                                rate12=elm.rate1, rate23=elm.rate2, rate31=elm.rate3,
+                                contingency_rate12=elm.rate1,
+                                contingency_rate23=elm.rate2,
+                                contingency_rate31=elm.rate3, )
 
         # this is because the central node is in the buses list already from GridCal
         tr3.central_node = bus_dict[elm.bus0.idtag]

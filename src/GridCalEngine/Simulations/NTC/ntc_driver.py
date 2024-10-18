@@ -95,6 +95,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         self.results.voltage = opf_vars.get_voltages()[0, :]
         self.results.Sbus = opf_vars.bus_vars.Pcalc[0, :]
+        self.results.dSbus = opf_vars.bus_vars.delta_p[0, :]
         self.results.bus_shadow_prices = opf_vars.bus_vars.shadow_prices[0, :]
         self.results.load_shedding = opf_vars.bus_vars.load_shedding[0, :]
 
@@ -105,15 +106,15 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.phase_shift = opf_vars.branch_vars.tap_angles[0, :]
         self.results.rates = opf_vars.branch_vars.rates[0, :]
         self.results.contingency_rates = opf_vars.branch_vars.contingency_rates[0, :]
+        self.results.alpha = opf_vars.branch_vars.alpha[0, :]
 
         self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
         self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 
-        self.results.inter_space_branches = self.grid.get_inter_areas_branches(a1=self.options.area_from_bus_idx,
-                                                                               a2=self.options.area_to_bus_idx)
+        self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
+        self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
 
-        self.results.inter_space_hvdc = self.grid.get_inter_areas_hvdc_branches(a1=self.options.area_from_bus_idx,
-                                                                                a2=self.options.area_to_bus_idx)
+        self.results.converged = opf_vars.acceptable_solution
 
         self.report_text('Done!')
 

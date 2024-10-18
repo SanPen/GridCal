@@ -16,6 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Dict, Union, TYPE_CHECKING, Tuple
+
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -29,6 +30,17 @@ import GridCalEngine.DataStructures as ds
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCalEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+    from GridCalEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
+    from GridCalEngine.Simulations.NTC.ntc_results import OptimalNetTransferCapacityResults
+    from GridCalEngine.Simulations.NTC.ntc_ts_results import OptimalNetTransferCapacityTimeSeriesResults
+    from GridCalEngine.Simulations import OptimalNetTransferCapacityResults
+
+    VALID_OPF_RESULTS = Union[
+        OptimalPowerFlowResults,
+        OptimalPowerFlowTimeSeriesResults,
+        OptimalNetTransferCapacityResults,
+        OptimalNetTransferCapacityTimeSeriesResults
+    ]
 
 
 def set_bus_control_voltage(i: int,
@@ -430,7 +442,7 @@ def get_generator_data(
         bus_voltage_used: BoolVec,
         logger: Logger,
         bus_data: ds.BusData,
-        opf_results: Union[OptimalPowerFlowResults, None] = None,
+        opf_results: VALID_OPF_RESULTS | None = None,
         t_idx=-1,
         time_series=False,
         use_stored_guess=False,
@@ -452,8 +464,7 @@ def get_generator_data(
     """
     devices = circuit.get_generators()
 
-    data = ds.GeneratorData(nelm=len(devices),
-                            nbus=circuit.get_bus_number())
+    data = ds.GeneratorData(nelm=len(devices), nbus=circuit.get_bus_number())
 
     gen_index_dict: Dict[str, int] = dict()
     for k, elm in enumerate(devices):
@@ -591,7 +602,7 @@ def get_battery_data(
         bus_voltage_used: BoolVec,
         logger: Logger,
         bus_data: ds.BusData,
-        opf_results: Union[OptimalPowerFlowResults, None] = None,
+        opf_results: VALID_OPF_RESULTS | None = None,
         t_idx=-1,
         time_series=False,
         use_stored_guess=False,
@@ -844,7 +855,7 @@ def fill_controllable_branch(
         branch_tolerance_mode: BranchImpedanceMode,
         t_idx: int,
         time_series: bool,
-        opf_results: Union[OptimalPowerFlowResults, None],
+        opf_results: VALID_OPF_RESULTS | None,
         use_stored_guess: bool,
         bus_voltage_used: BoolVec,
         Sbase: float,
@@ -977,7 +988,7 @@ def get_branch_data(
         branch_tolerance_mode: BranchImpedanceMode,
         t_idx: int = -1,
         time_series: bool = False,
-        opf_results: Union[OptimalPowerFlowResults, None] = None,
+        opf_results: VALID_OPF_RESULTS | None = None,
         use_stored_guess: bool = False,
         control_taps_modules: bool = True,
         control_taps_phase: bool = True,
@@ -1200,7 +1211,7 @@ def get_hvdc_data(circuit: MultiCircuit,
                   bus_voltage_used: BoolVec,
                   t_idx=-1,
                   time_series=False,
-                  opf_results: Union[OptimalPowerFlowResults, None] = None,
+                  opf_results: Union[OptimalPowerFlowResults, OptimalNetTransferCapacityResults, None] = None,
                   use_stored_guess: bool = False,
                   logger: Logger = Logger()):
     """

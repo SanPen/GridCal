@@ -58,6 +58,8 @@ def get_objects_dictionary() -> Dict[str, ALL_DEV_TYPES]:
 
         'emission': dev.EmissionGas(),
 
+        'facility': dev.Facility(),
+
         'bus': dev.Bus(),
 
         'bus_bar': dev.BusBar(),

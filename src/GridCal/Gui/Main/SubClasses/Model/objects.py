@@ -59,10 +59,11 @@ class ObjectsTableMain(DiagramsMain):
         # list of all the objects of the selected type under the Objects tab
         self.type_objects_list = list()
 
-        self.ui.dataStructuresTreeView.setModel(gf.get_tree_model(self.circuit.get_template_objects_str_dict()))
-        self.expand_object_tree_nodes()
+        # setup the objects tree
+        self.setup_objects_tree()
 
-        self.ui.simulationDataStructuresTreeView.setModel(gf.get_tree_model(NumericalCircuit.available_structures))
+        # setup the tree for compiled arrays
+        self.setup_compiled_arrays_tree()
 
         # Buttons
         self.ui.filter_pushButton.clicked.connect(self.objects_smart_search)
@@ -96,6 +97,97 @@ class ObjectsTableMain(DiagramsMain):
 
         # combobox change
         self.ui.associationsComboBox.currentTextChanged.connect(self.display_associations)
+
+    def setup_objects_tree(self):
+        """
+        Setup the database left tree object
+        """
+        icons = {
+            "Regions": ":/Icons/icons/map.svg",
+            DeviceType.CountryDevice.value: ":/Icons/icons/country.svg",
+            DeviceType.CommunityDevice.value: ":/Icons/icons/community.svg",
+            DeviceType.RegionDevice.value: ":/Icons/icons/region.svg",
+            DeviceType.MunicipalityDevice.value: ":/Icons/icons/municipality.svg",
+            DeviceType.AreaDevice.value: ":/Icons/icons/grid_icon.svg",
+            DeviceType.ZoneDevice.value: ":/Icons/icons/grid_icon.svg",
+
+            "Substation": ":/Icons/icons/bus_icon.svg",
+            DeviceType.SubstationDevice.value: ":/Icons/icons/substation.svg",
+            DeviceType.VoltageLevelDevice.value: ":/Icons/icons/voltage_level.svg",
+            DeviceType.BusBarDevice.value: ":/Icons/icons/bus_bar_icon.svg",
+            DeviceType.ConnectivityNodeDevice.value: ":/Icons/icons/cn_icon.svg",
+            DeviceType.BusDevice.value: ":/Icons/icons/bus_icon.svg",
+            DeviceType.SwitchDevice.value: ":/Icons/icons/switch.svg",
+
+            "Injections": ":/Icons/icons/add_load.svg",
+            DeviceType.GeneratorDevice.value: ":/Icons/icons/gen.svg",
+            DeviceType.BatteryDevice.value: ":/Icons/icons/batt.svg",
+            DeviceType.LoadDevice.value: ":/Icons/icons/load_dev.svg",
+            DeviceType.StaticGeneratorDevice.value: ":/Icons/icons/sta_gen.svg",
+            DeviceType.ExternalGridDevice.value: ":/Icons/icons/external_grid.svg",
+            DeviceType.ShuntDevice.value: ":/Icons/icons/shunt.svg",
+            DeviceType.ControllableShuntDevice.value: ":/Icons/icons/controllable_shunt.svg",
+            DeviceType.CurrentInjectionDevice.value: ":/Icons/icons/load_dev.svg",
+
+            "Branches": ":/Icons/icons/reactance.svg",
+            DeviceType.LineDevice.value: ":/Icons/icons/ac_line.svg",
+            DeviceType.DCLineDevice.value: ":/Icons/icons/dc.svg",
+            DeviceType.Transformer2WDevice.value: ":/Icons/icons/to_transformer.svg",
+            DeviceType.WindingDevice.value: ":/Icons/icons/winding.svg",
+            DeviceType.Transformer3WDevice.value: ":/Icons/icons/transformer3w.svg",
+            DeviceType.SeriesReactanceDevice.value: ":/Icons/icons/reactance.svg",
+            DeviceType.HVDCLineDevice.value: ":/Icons/icons/to_hvdc.svg",
+            DeviceType.VscDevice.value: ":/Icons/icons/vsc.svg",
+            DeviceType.UpfcDevice.value: ":/Icons/icons/upfc.svg",
+
+            "Fluid": ":/Icons/icons/dam_gray.svg",
+            DeviceType.FluidNodeDevice.value: ":/Icons/icons/fluid_node.svg",
+            DeviceType.FluidPathDevice.value: ":/Icons/icons/fluid_path.svg",
+            DeviceType.FluidTurbineDevice.value: ":/Icons/icons/fluid_turbine.svg",
+            DeviceType.FluidPumpDevice.value: ":/Icons/icons/fluid_pump.svg",
+            DeviceType.FluidP2XDevice.value: ":/Icons/icons/fluid_p2x.svg",
+
+            "Groups": ":/Icons/icons/grid_icon.svg",
+            DeviceType.ContingencyGroupDevice.value: ":/Icons/icons/contingency_group.svg",
+            DeviceType.ContingencyDevice.value: ":/Icons/icons/contingency.svg",
+            DeviceType.RemedialActionGroupDevice.value: ":/Icons/icons/remedial_action_group.svg",
+            DeviceType.RemedialActionDevice.value: ":/Icons/icons/remedial_action.svg",
+            DeviceType.InvestmentsGroupDevice.value: ":/Icons/icons/investment_group.svg",
+            DeviceType.InvestmentDevice.value: ":/Icons/icons/investment_dev.svg",
+            DeviceType.BranchGroupDevice.value: ":/Icons/icons/branch_group.svg",
+            DeviceType.ModellingAuthority.value: ":/Icons/icons/modelling_authority.svg",
+            DeviceType.FacilityDevice.value: ":/Icons/icons/powerplant.svg",
+
+            "Associations": ":/Icons/icons/associations.svg",
+            DeviceType.Technology.value: ":/Icons/icons/technology.svg",
+            DeviceType.FuelDevice.value: ":/Icons/icons/fuel.svg",
+            DeviceType.EmissionGasDevice.value: ":/Icons/icons/emission.svg",
+
+            "Catalogue": ":/Icons/icons/Catalogue.svg",
+            DeviceType.WireDevice.value: ":/Icons/icons/ac_line.svg",
+            DeviceType.OverheadLineTypeDevice.value: ":/Icons/icons/tower.svg",
+            DeviceType.UnderGroundLineDevice.value: ":/Icons/icons/ac_line.svg",
+            DeviceType.SequenceLineDevice.value: ":/Icons/icons/ac_line.svg",
+            DeviceType.TransformerTypeDevice.value: ":/Icons/icons/to_transformer.svg",
+        }
+
+        db_tree_model = gf.get_tree_model(d=self.circuit.get_template_objects_str_dict(),
+                                          top='Objects',
+                                          icons=icons)
+
+        self.ui.dataStructuresTreeView.setModel(db_tree_model)
+        self.ui.dataStructuresTreeView.setRootIsDecorated(True)
+        self.expand_object_tree_nodes()
+
+    def setup_compiled_arrays_tree(self):
+        """
+
+        :return:
+        """
+        mdl = gf.get_tree_model(d=NumericalCircuit.available_structures,
+                                top='Arrays')
+
+        self.ui.simulationDataStructuresTreeView.setModel(mdl)
 
     def create_objects_model(self, elements, elm_type: DeviceType) -> ObjectsModel:
         """
@@ -333,7 +425,6 @@ class ObjectsTableMain(DiagramsMain):
                                  'Duplicate')
             if ok:
                 for obj in selected_objects:
-
                     cpy = obj.copy(forced_new_idtag=True)
                     cpy.name += ' copy'
                     self.circuit.add_element(obj=cpy)
@@ -518,6 +609,12 @@ class ObjectsTableMain(DiagramsMain):
                 name = f'Modelling authority {self.circuit.get_modelling_authorities_number()}'
                 obj = dev.ModellingAuthority(name=name)
                 self.circuit.add_modelling_authority(obj)
+
+            elif elm_type == DeviceType.FacilityDevice.value:
+
+                name = f'Facility {self.circuit.get_facility_number()}'
+                obj = dev.Facility(name=name)
+                self.circuit.add_facility(obj)
 
             else:
                 info_msg("This object does not support table-like addition.\nUse the schematic instead.")

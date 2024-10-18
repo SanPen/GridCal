@@ -14,12 +14,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from typing import List, Tuple, Dict
 import numpy as np
 import pandas as pd
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.basic_structures import DateVec, IntVec, Vec, StrVec, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
@@ -54,18 +53,20 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                      ResultTypes.BusResults: [
                                          ResultTypes.BusVoltageModule,
                                          ResultTypes.BusVoltageAngle,
+                                         ResultTypes.BusActivePower,
+                                         ResultTypes.BusActivePowerIncrement,
                                      ],
                                      ResultTypes.BranchResults: [
                                          ResultTypes.BranchPower,
                                          ResultTypes.BranchLoading,
                                          ResultTypes.BranchTapAngle,
-                                         ResultTypes.BranchMonitoring
+                                         ResultTypes.BranchMonitoring,
+                                         ResultTypes.AvailableTransferCapacityAlpha,
                                      ],
                                      ResultTypes.HvdcResults: [
                                          ResultTypes.HvdcPowerFrom,
                                      ],
                                      ResultTypes.AreaResults: [
-                                         ResultTypes.AvailableTransferCapacityAlpha,
                                          ResultTypes.InterAreaExchange,
                                      ],
                                      ResultTypes.FlowReports: [
@@ -91,6 +92,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.voltage = np.zeros(n, dtype=complex)
         self.Sbus = np.zeros(n, dtype=complex)
+        self.dSbus = np.zeros(n, dtype=complex)
         self.bus_shadow_prices = np.zeros(n, dtype=float)
         self.load_shedding = np.zeros(n, dtype=float)
 
@@ -102,6 +104,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.phase_shift = np.zeros(m, dtype=float)
         self.rates = np.zeros(m, dtype=float)
         self.contingency_rates = np.zeros(m, dtype=float)
+        self.alpha = np.zeros(m, dtype=float)
 
         self.hvdc_Pf = np.zeros(nhvdc, dtype=float)
         self.hvdc_loading = np.zeros(nhvdc, dtype=float)
@@ -122,6 +125,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
 
         self.register(name='voltage', tpe=CxVec)
         self.register(name='Sbus', tpe=CxVec)
+        self.register(name='dSbus', tpe=CxVec)
         self.register(name='bus_shadow_prices', tpe=Vec)
         self.register(name='load_shedding', tpe=Vec)
 
@@ -133,6 +137,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='phase_shift', tpe=Vec)
         self.register(name='rates', tpe=Vec)
         self.register(name='contingency_rates', tpe=Vec)
+        self.register(name='alpha', tpe=Vec)
 
         self.register(name='hvdc_Pf', tpe=Vec)
         self.register(name='hvdc_loading', tpe=Vec)
@@ -199,6 +204,28 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 columns=['V (radians)'],
                 title=str(result_type.value),
                 ylabel='(radians)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BusDevice
+            )
+
+        elif result_type == ResultTypes.BusActivePower:
+            return ResultsTable(
+                data=np.real(self.Sbus),
+                index=self.bus_names,
+                columns=[result_type.value],
+                title=str(result_type.value),
+                ylabel='(MW)',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BusDevice
+            )
+
+        elif result_type == ResultTypes.BusActivePowerIncrement:
+            return ResultsTable(
+                data=np.real(self.dSbus),
+                index=self.bus_names,
+                columns=[result_type.value],
+                title=str(result_type.value),
+                ylabel='(MW)',
                 cols_device_type=DeviceType.NoDevice,
                 idx_device_type=DeviceType.BusDevice
             )

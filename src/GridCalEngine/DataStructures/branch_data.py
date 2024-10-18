@@ -21,7 +21,7 @@ import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
 from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec, BoolVec
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 
 
 class BranchData:
@@ -372,7 +372,7 @@ class BranchData:
         """
         return np.where(self.contingency_enabled == 1)[0]
 
-    def get_inter_areas(self, bus_idx_from, bus_idx_to):
+    def get_inter_areas(self, bus_idx_from: IntVec | Set[int], bus_idx_to: IntVec | Set[int]):
         """
         Get the Branches that join two areas
         :param bus_idx_from: Area from
