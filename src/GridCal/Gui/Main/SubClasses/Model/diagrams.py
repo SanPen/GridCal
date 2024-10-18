@@ -204,6 +204,10 @@ class DiagramsMain(CompiledArraysMain):
         self.layout_algorithms_dict['spectral_layout'] = nx.spectral_layout
         self.layout_algorithms_dict['fruchterman_reingold_layout'] = nx.fruchterman_reingold_layout
         self.layout_algorithms_dict['kamada_kawai'] = nx.kamada_kawai_layout
+        self.layout_algorithms_dict['arf'] = nx.arf_layout
+        self.layout_algorithms_dict['planar'] = nx.planar_layout
+        self.layout_algorithms_dict['bipartite'] = nx.bipartite_layout
+        self.layout_algorithms_dict['multipartite'] = nx.multipartite_layout
 
         mdl = gf.get_list_model(list(self.layout_algorithms_dict.keys()))
         self.ui.automatic_layout_comboBox.setModel(mdl)

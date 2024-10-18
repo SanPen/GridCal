@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import numpy as np
+from typing import List
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Simulations.NTC.ntc_opf import run_linear_ntc_opf_ts
 from GridCalEngine.Simulations.driver_template import DriverTemplate
@@ -46,7 +46,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         self.logger = Logger()
 
-    def get_steps(self):
+    def get_steps(self) -> List[int]:
         """
         Get time steps list of strings
         """
@@ -71,8 +71,8 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             consider_contingencies=self.options.consider_contingencies,
             contingency_groups_used=self.options.opf_options.contingency_groups_used,
             lodf_threshold=self.options.lin_options.lodf_threshold,
-            bus_a1_idx=self.options.area_from_bus_idx,
-            bus_a2_idx=self.options.area_to_bus_idx,
+            bus_a1_idx=self.options.sending_bus_idx,
+            bus_a2_idx=self.options.receiving_bus_idx,
             transfer_method=self.options.transfer_method,
             monitor_only_ntc_load_rule_branches=self.options.use_branch_rating_contribution,
             alpha_threshold=self.options.branch_exchange_sensitivity,
@@ -91,6 +91,7 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
             bus_names=self.grid.get_bus_names(),
             branch_names=self.grid.get_branch_names_wo_hvdc(),
             hvdc_names=self.grid.get_hvdc_names(),
+            contingency_group_names=self.grid.get_contingency_group_names()
         )
 
         self.results.voltage = opf_vars.get_voltages()[0, :]
@@ -107,10 +108,14 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.rates = opf_vars.branch_vars.rates[0, :]
         self.results.contingency_rates = opf_vars.branch_vars.contingency_rates[0, :]
         self.results.alpha = opf_vars.branch_vars.alpha[0, :]
+        self.results.monitor_logic = opf_vars.branch_vars.monitor_logic[0, :]
+        self.results.contingency_flows_list = opf_vars.branch_vars.contingency_flow_data
 
         self.results.hvdc_Pf = opf_vars.hvdc_vars.flows[0, :]
         self.results.hvdc_loading = opf_vars.hvdc_vars.loading[0, :]
 
+        self.results.sending_bus_idx = self.options.sending_bus_idx
+        self.results.receiving_bus_idx = self.options.receiving_bus_idx
         self.results.inter_space_branches = opf_vars.branch_vars.inter_space_branches
         self.results.inter_space_hvdc = opf_vars.hvdc_vars.inter_space_hvdc
 
@@ -120,10 +125,9 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
 
         return self.results
 
-    def run(self):
+    def run(self) -> None:
         """
-
-        :return:
+        Run this study
         """
         self.tic()
 

@@ -1515,6 +1515,8 @@ class ResultTypes(Enum):
     LossesPerArea = 'Losses per area'
     ActivePowerFlowPerArea = 'Active power flow per area'
     LossesPerGenPerArea = 'Losses per generation unit in area'
+    InterSpaceBranchPower = "Inter-space branch power"
+    InterSpaceBranchLoading = "Inter-space branch loading"
 
     SystemFuel = 'System fuel consumption'
     SystemEmissions = 'System emissions'

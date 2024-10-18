@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from typing import List
 import numpy as np
 import pandas as pd
 from GridCalEngine.Simulations.results_table import ResultsTable
@@ -39,7 +40,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
     def __init__(self,
                  bus_names: StrVec,
                  branch_names: StrVec,
-                 hvdc_names: StrVec):
+                 hvdc_names: StrVec,
+                 contingency_group_names: StrVec,):
         """
 
         :param bus_names:
@@ -66,19 +68,21 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                      ResultTypes.HvdcResults: [
                                          ResultTypes.HvdcPowerFrom,
                                      ],
-                                     ResultTypes.AreaResults: [
-                                         ResultTypes.InterAreaExchange,
-                                     ],
+                                     # ResultTypes.AreaResults: [
+                                     #     ResultTypes.InterAreaExchange,
+                                     # ],
                                      ResultTypes.FlowReports: [
                                          ResultTypes.ContingencyFlowsReport,
-                                         ResultTypes.ContingencyFlowsBranchReport,
-                                         ResultTypes.ContingencyFlowsGenerationReport,
-                                         ResultTypes.ContingencyFlowsHvdcReport,
+                                         # ResultTypes.ContingencyFlowsBranchReport,
+                                         # ResultTypes.ContingencyFlowsGenerationReport,
+                                         # ResultTypes.ContingencyFlowsHvdcReport,
+                                         ResultTypes.InterSpaceBranchPower,
+                                         ResultTypes.InterSpaceBranchLoading,
                                      ],
                                  },
                                  time_array=None,
                                  clustering_results=None,
-                                 study_results_type=StudyResultsType.NetTransferCapacityTimeSeries
+                                 study_results_type=StudyResultsType.NetTransferCapacity
                                  )
 
         n = len(bus_names)
@@ -88,6 +92,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.bus_names = bus_names
         self.branch_names = branch_names
         self.hvdc_names = hvdc_names
+        self.contingency_group_names = contingency_group_names
         self.bus_types = np.ones(n, dtype=int)
 
         self.voltage = np.zeros(n, dtype=complex)
@@ -105,13 +110,17 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.rates = np.zeros(m, dtype=float)
         self.contingency_rates = np.zeros(m, dtype=float)
         self.alpha = np.zeros(m, dtype=float)
+        self.monitor_logic = np.zeros(m, dtype=object)
 
         self.hvdc_Pf = np.zeros(nhvdc, dtype=float)
         self.hvdc_loading = np.zeros(nhvdc, dtype=float)
         self.hvdc_losses = np.zeros(nhvdc, dtype=float)
 
-        self.inter_space_branches: list[tuple[int, object, float]] = list()
-        self.inter_space_hvdc: list[tuple[int, object, float]] = list()
+        # indices to post process
+        self.sending_bus_idx: List[int] = list()
+        self.receiving_bus_idx: List[int] = list()
+        self.inter_space_branches: List[tuple[int, float]] = list()  # index, sense
+        self.inter_space_hvdc: List[tuple[int, float]] = list()  # index, sense
 
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flows_list = list()
@@ -121,6 +130,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='bus_names', tpe=StrVec)
         self.register(name='branch_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
+        self.register(name='contingency_group_names', tpe=StrVec)
         self.register(name='bus_types', tpe=IntVec)
 
         self.register(name='voltage', tpe=CxVec)
@@ -138,6 +148,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='rates', tpe=Vec)
         self.register(name='contingency_rates', tpe=Vec)
         self.register(name='alpha', tpe=Vec)
+        self.register(name='monitor_logic', tpe=StrVec)
 
         self.register(name='hvdc_Pf', tpe=Vec)
         self.register(name='hvdc_loading', tpe=Vec)
@@ -146,6 +157,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='converged', tpe=bool)
         self.register(name='contingency_flows_list', tpe=list)
 
+        self.register(name='sending_bus_idx', tpe=list)
+        self.register(name='receiving_bus_idx', tpe=list)
         self.register(name='inter_space_branches', tpe=list)
         self.register(name='inter_space_hvdc', tpe=list)
 
@@ -322,34 +335,92 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 idx_device_type=DeviceType.BranchDevice
             )
 
-        elif result_type == ResultTypes.BranchMonitoring:
-            return self.get_monitoring_logic_report()
+        elif result_type == ResultTypes.InterSpaceBranchPower:
 
-        elif result_type == ResultTypes.InterAreaExchange:
-            return self.get_interarea_exchange_report()
+            data = list()
+            index = list()
+            for k, sense in self.inter_space_branches:
+                index.append(self.branch_names[k])
+                data.append(self.Sf[k].real)
+
+            for k, sense in self.inter_space_hvdc:
+                index.append(self.hvdc_names[k])
+                data.append(self.hvdc_Pf[k])
+
+            return ResultsTable(
+                data=np.array(data),
+                index=np.array(index),
+                columns=['Flow (MW)'],
+                title=str(result_type.value),
+                ylabel='(MW)',
+                xlabel='',
+                units='',
+                cols_device_type=DeviceType.BranchDevice,
+                idx_device_type=DeviceType.BranchDevice
+            )
+
+        elif result_type == ResultTypes.InterSpaceBranchLoading:
+            data = list()
+            index = list()
+            for k, sense in self.inter_space_branches:
+                index.append(self.branch_names[k])
+                data.append(self.loading[k].real)
+
+            for k, sense in self.inter_space_hvdc:
+                index.append(self.hvdc_names[k])
+                data.append(self.hvdc_loading[k])
+
+            return ResultsTable(
+                data=np.array(data) * 100.0,
+                index=np.array(index),
+                columns=['Loading (%)'],
+                title=str(result_type.value),
+                ylabel='(%)',
+                xlabel='',
+                units='',
+                cols_device_type=DeviceType.BranchDevice,
+                idx_device_type=DeviceType.BranchDevice
+            )
+
+        elif result_type == ResultTypes.BranchMonitoring:
+            return ResultsTable(
+                data=self.monitor_logic,
+                index=self.branch_names,
+                title=str(result_type.value),
+                columns=['Monitoring logic'],
+                ylabel='()',
+                xlabel='',
+                units='',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.BranchDevice
+            )
 
         elif result_type == ResultTypes.ContingencyFlowsReport:
-            return self.get_contingency_report(
-                loading_threshold=self.loading_threshold,
-                reverse=self.reversed_sort_loading,
-            )
+            data = list()
+            index = list()
+            columns = ['Monitored index', 'Contingency group index',
+                       'Contingency branch', 'Contingency group',
+                       'Flow (MW)', 'Loading (%)']
+            for t, m, c, contingency, negative_slack, positive_slack in self.contingency_flows_list:
+                index.append("")
+                flow_c = contingency - negative_slack + positive_slack
+                loading_c = flow_c / self.contingency_rates[m] * 100
+                data.append([
+                    m, c, self.branch_names[m], self.contingency_group_names[c],
+                    np.round(flow_c, 4),
+                    np.round(loading_c, 4)
+                ])
 
-        elif result_type == ResultTypes.ContingencyFlowsBranchReport:
-            return self.get_contingency_branch_report(
-                loading_threshold=self.loading_threshold,
-                reverse=self.reversed_sort_loading,
-            )
-
-        elif result_type == ResultTypes.ContingencyFlowsGenerationReport:
-            return self.get_contingency_generation_report(
-                loading_threshold=self.loading_threshold,
-                reverse=self.reversed_sort_loading,
-            )
-
-        elif result_type == ResultTypes.ContingencyFlowsHvdcReport:
-            return self.get_contingency_hvdc_report(
-                loading_threshold=self.loading_threshold,
-                reverse=self.reversed_sort_loading,
+            return ResultsTable(
+                data=np.array(data),
+                index=np.array(index),
+                columns=columns,
+                title=str(result_type.value),
+                ylabel='',
+                xlabel='',
+                units='',
+                cols_device_type=DeviceType.NoDevice,
+                idx_device_type=DeviceType.NoDevice
             )
 
         else:
