@@ -510,7 +510,12 @@ class CgmesCircuit(BaseCircuit):
         return True
 
     def get_class_type(self, class_name: str) -> Base:
-        return self.cgmes_assets.class_dict.get(class_name)
+        class_type = self.cgmes_assets.class_dict.get(class_name)
+        if class_type is None:
+            raise NotImplementedError(
+                f"Class type missing from CGMES assets! ({class_name})"
+            )
+        return class_type
 
     def get_properties(self) -> List[CgmesProperty]:
         """
