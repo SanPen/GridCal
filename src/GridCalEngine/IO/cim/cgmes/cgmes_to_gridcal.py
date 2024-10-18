@@ -283,7 +283,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
         if slack_id == cgmes_elm.rdfid:
             is_slack = True
 
-        volt_lev, substat, country = None, None, None
+        volt_lev, substat, country, area, zone = None, None, None, None, None
         longitude, latitude = 0.0, 0.0
         if cgmes_elm.ConnectivityNodeContainer:
             volt_lev = find_object_by_idtag(
@@ -309,7 +309,11 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                                        device_property="substation")
                     print(f'No substation found for BUS {cgmes_elm.name}')
                 else:
-                    country = substat.country
+                    if cgmes_model.cgmes_map_areas_like_raw:
+                        area = substat.area
+                        zone = substat.zone
+                    else:
+                        country = substat.country
                     longitude = substat.longitude
                     latitude = substat.latitude
         else:
@@ -328,8 +332,8 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
                               is_slack=is_slack,
                               is_dc=False,
                               # is_internal=False,
-                              area=None,  # areas and zones are not created from cgmes models
-                              zone=None,
+                              area=area,
+                              zone=zone,
                               substation=substat,
                               voltage_level=volt_lev,
                               country=country,
@@ -361,8 +365,7 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
     dc_bus_dict: Dict[str, gcdev.Bus] = dict()
 
     for cgmes_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
-
-        nominal_voltage = 500.0     # TODO get DC nominal Voltage
+        nominal_voltage = 500.0  # TODO get DC nominal Voltage
 
         gcdev_elm = gcdev.Bus(
             name=cgmes_elm.name,
@@ -476,7 +479,8 @@ def get_gcdev_dc_lines(cgmes_model: CgmesCircuit,
 
             if cgmes_elm.length is None:
                 length = 1.0
-                logger.add_error(msg='DCLineSegment length is missing.', device=cgmes_elm.rdfid, device_class=str(cgmes_elm.tpe))
+                logger.add_error(msg='DCLineSegment length is missing.', device=cgmes_elm.rdfid,
+                                 device_class=str(cgmes_elm.tpe))
             else:
                 length = float(cgmes_elm.length)
 
@@ -488,7 +492,7 @@ def get_gcdev_dc_lines(cgmes_model: CgmesCircuit,
                 code=cgmes_elm.description,
                 r=cgmes_elm.resistance,
                 # rate=rate,
-                active = True,
+                active=True,
                 # r_fault = 0.0,
                 # fault_pos = 0.5,
                 length=length,
@@ -1265,7 +1269,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 if getattr(tap_changer, 'TapChangerControl', None):
                     if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
                             and tap_changer.TapChangerControl.enabled):
-                        tap_phase_control_mode = TapPhaseControl.Pf     # TODO Pf ot Pt
+                        tap_phase_control_mode = TapPhaseControl.Pf  # TODO Pf ot Pt
                 else:
                     logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerSymmetrical",
                                        device=tap_changer.rdfid,
@@ -1285,7 +1289,7 @@ def get_transformer_tap_changers(cgmes_model: CgmesCircuit,
                 if getattr(tap_changer, 'TapChangerControl', None):
                     if (tap_changer.TapChangerControl.mode == cgmes_enums.RegulatingControlModeKind.activePower
                             and tap_changer.TapChangerControl.enabled):
-                        tap_phase_control_mode = TapPhaseControl.Pf     # TODO Pf ot Pt
+                        tap_phase_control_mode = TapPhaseControl.Pf  # TODO Pf ot Pt
                 else:
                     logger.add_warning(msg="No TapChangerControl found for PhaseTapChangerAsymmetrical",
                                        device=tap_changer.rdfid,
@@ -1570,10 +1574,21 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
 
         for cgmes_elm in device_list:
 
-            region = find_object_by_idtag(
-                object_list=gcdev_model.communities,
-                target_idtag=cgmes_elm.Region.uuid
-            )
+            community, area, zone = None, None, None
+            if cgmes_model.cgmes_map_areas_like_raw:
+                zone = find_object_by_idtag(
+                    object_list=gcdev_model.zones,
+                    target_idtag=cgmes_elm.Region.uuid
+                )
+                area = find_object_by_idtag(
+                    object_list=gcdev_model.areas,
+                    target_idtag=cgmes_elm.Region.Region.uuid
+                )
+            else:
+                community = find_object_by_idtag(
+                    object_list=gcdev_model.communities,
+                    target_idtag=cgmes_elm.Region.uuid
+                )
 
             if cgmes_elm.Location:
                 longitude = cgmes_elm.Location.PositionPoints.xPosition
@@ -1590,10 +1605,12 @@ def get_gcdev_substations(cgmes_model: CgmesCircuit,
                 longitude=longitude
             )
 
-            if region is not None:
-                gcdev_elm.community = region
-            else:
-                print(f'No Community found for substation {gcdev_elm.name}')
+            if community is not None:
+                gcdev_elm.community = community
+            if area is not None:
+                gcdev_elm.area = area
+            if zone is not None:
+                gcdev_elm.zone = zone
 
             gcdev_model.add_substation(gcdev_elm)
 
@@ -1718,15 +1735,27 @@ def get_gcdev_countries(cgmes_model: CgmesCircuit,
     for device_list in [cgmes_model.cgmes_assets.GeographicalRegion_list]:
 
         for cgmes_elm in device_list:
-            gcdev_elm = gcdev.Country(
-                name=cgmes_elm.name,
-                idtag=cgmes_elm.uuid,
-                code=cgmes_elm.description,
-                # latitude=0.0,     # later from GL profile/Location class
-                # longitude=0.0
-            )
+            if cgmes_model.cgmes_map_areas_like_raw:
+                gcdev_elm = gcdev.Area(
+                    name=cgmes_elm.name,
+                    idtag=cgmes_elm.uuid,
+                    code=cgmes_elm.description,
+                    # latitude=0.0,     # later from GL profile/Location class
+                    # longitude=0.0
+                )
 
-            gcdev_model.add_country(gcdev_elm)
+                gcdev_model.add_area(gcdev_elm)
+
+            else:
+                gcdev_elm = gcdev.Country(
+                    name=cgmes_elm.name,
+                    idtag=cgmes_elm.uuid,
+                    code=cgmes_elm.description,
+                    # latitude=0.0,     # later from GL profile/Location class
+                    # longitude=0.0
+                )
+
+                gcdev_model.add_country(gcdev_elm)
 
 
 def get_gcdev_community(cgmes_model: CgmesCircuit,
@@ -1740,22 +1769,40 @@ def get_gcdev_community(cgmes_model: CgmesCircuit,
     for device_list in [cgmes_model.cgmes_assets.SubGeographicalRegion_list]:
 
         for cgmes_elm in device_list:
-            gcdev_elm = gcdev.Community(
-                name=cgmes_elm.name,
-                idtag=cgmes_elm.uuid,
-                code=cgmes_elm.description,
-                # latitude=0.0,     # later from GL profile/Location class
-                # longitude=0.0
-            )
+            if cgmes_model.cgmes_map_areas_like_raw:
+                gcdev_elm = gcdev.Zone(
+                    name=cgmes_elm.name,
+                    idtag=cgmes_elm.uuid,
+                    code=cgmes_elm.description,
+                    # latitude=0.0,     # later from GL profile/Location class
+                    # longitude=0.0
+                )
 
-            c = find_object_by_idtag(
-                object_list=gcdev_model.countries,
-                target_idtag=cgmes_elm.Region.uuid
-            )
-            if c is not None:
-                gcdev_elm.country = c
+                a = find_object_by_idtag(
+                    object_list=gcdev_model.areas,
+                    target_idtag=cgmes_elm.Region.uuid
+                )
+                if a is not None:
+                    gcdev_elm.area = a
 
-            gcdev_model.add_community(gcdev_elm)
+                gcdev_model.add_zone(gcdev_elm)
+            else:
+                gcdev_elm = gcdev.Community(
+                    name=cgmes_elm.name,
+                    idtag=cgmes_elm.uuid,
+                    code=cgmes_elm.description,
+                    # latitude=0.0,     # later from GL profile/Location class
+                    # longitude=0.0
+                )
+
+                c = find_object_by_idtag(
+                    object_list=gcdev_model.countries,
+                    target_idtag=cgmes_elm.Region.uuid
+                )
+                if c is not None:
+                    gcdev_elm.country = c
+
+                gcdev_model.add_community(gcdev_elm)
 
 
 def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
