@@ -68,6 +68,8 @@ class ResultsModel(WrappableTableModel):
 
         self.units = table.units
 
+        self.max_to_min = np.ones(self.table.c, dtype=bool)
+
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """
 
@@ -78,6 +80,13 @@ class ResultsModel(WrappableTableModel):
             return QtCore.Qt.ItemFlag.ItemIsEditable | QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
+
+    def update(self):
+        """
+        update table
+        """
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
 
     def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
@@ -204,6 +213,16 @@ class ResultsModel(WrappableTableModel):
             return ResultsModel(mdl)
         else:
             return None
+
+    def sort_column(self, c: int):
+        """
+        Sort column, initially max to min, but fliping the side each time
+        :param c:
+        :return:
+        """
+
+        self.table.sort_column(c=c, max_to_min=self.max_to_min[c])
+        self.max_to_min[c] = not self.max_to_min[c]
 
     def copy_to_column(self, row, col):
         """

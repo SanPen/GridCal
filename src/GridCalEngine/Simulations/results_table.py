@@ -139,6 +139,27 @@ class ResultsTable:
         self.cols_c, self.index_c = self.index_c, self.cols_c
         self._col_devices, self._idx_devices = self._idx_devices, self._col_devices
 
+    def sort_column(self, c: int, max_to_min: bool = True):
+        """
+
+        :param c:
+        :param max_to_min:
+        :return:
+        """
+        try:
+            sorting_arr = self.data_c[:, c].astype(float)
+        except ValueError:
+            print("Not a float column...")
+            sorting_arr = self.data_c[:, c]
+
+        if max_to_min:
+            idx = sorting_arr.argsort()[::-1]
+        else:
+            idx = sorting_arr.argsort()
+
+        self.data_c = self.data_c[idx]
+        self.index_c = self.index_c[idx]
+
     def slice_cols(self, col_idx) -> "ResultsTable":
         """
         Make column slicing

@@ -94,10 +94,12 @@ class SystemScalingModel(QtCore.QAbstractTableModel):
         """
         update table
         """
-        row = self.rowCount()
-        self.beginInsertRows(QtCore.QModelIndex(), row, row)
-        # whatever code
-        self.endInsertRows()
+        # row = self.rowCount()
+        # self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        # # whatever code
+        # self.endInsertRows()
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
 
     def set_delegates(self) -> None:
         """

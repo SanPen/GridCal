@@ -404,7 +404,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             for t, m, c, contingency, negative_slack, positive_slack in self.contingency_flows_list:
                 index.append("")
                 flow_c = contingency - negative_slack + positive_slack
-                loading_c = flow_c / self.contingency_rates[m] * 100
+                loading_c = abs(flow_c) / self.contingency_rates[m] * 100
                 data.append([
                     m, c, self.branch_names[m], self.contingency_group_names[c],
                     np.round(flow_c, 4),
@@ -424,4 +424,4 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
             )
 
         else:
-            raise Exception(f"Unknown NTC result type {result_type}")
+            raise ValueError(f"Unknown NTC result type {result_type}")
