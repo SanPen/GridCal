@@ -81,7 +81,7 @@ class ResultsModel(WrappableTableModel):
         else:
             return QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable
 
-    def update(self):
+    def update(self) -> None:
         """
         update table
         """

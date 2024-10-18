@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from GridCalEngine.Simulations.results_table import ResultsTable
 from GridCalEngine.Simulations.results_template import ResultsTemplate
-from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec
+from GridCalEngine.basic_structures import IntVec, Vec, StrVec, CxVec, ObjVec
 from GridCalEngine.enumerations import StudyResultsType, ResultTypes, DeviceType
 
 
@@ -68,14 +68,8 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                                      ResultTypes.HvdcResults: [
                                          ResultTypes.HvdcPowerFrom,
                                      ],
-                                     # ResultTypes.AreaResults: [
-                                     #     ResultTypes.InterAreaExchange,
-                                     # ],
                                      ResultTypes.FlowReports: [
                                          ResultTypes.ContingencyFlowsReport,
-                                         # ResultTypes.ContingencyFlowsBranchReport,
-                                         # ResultTypes.ContingencyFlowsGenerationReport,
-                                         # ResultTypes.ContingencyFlowsHvdcReport,
                                          ResultTypes.InterSpaceBranchPower,
                                          ResultTypes.InterSpaceBranchLoading,
                                      ],
@@ -148,7 +142,7 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
         self.register(name='rates', tpe=Vec)
         self.register(name='contingency_rates', tpe=Vec)
         self.register(name='alpha', tpe=Vec)
-        self.register(name='monitor_logic', tpe=StrVec)
+        self.register(name='monitor_logic', tpe=ObjVec)
 
         self.register(name='hvdc_Pf', tpe=Vec)
         self.register(name='hvdc_loading', tpe=Vec)
@@ -254,17 +248,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 idx_device_type=DeviceType.BranchDevice
             )
 
-        elif result_type == ResultTypes.BusPower:
-            return ResultsTable(
-                data=self.loading * 100.0,
-                index=self.Sbus.real,
-                columns=['Sb'],
-                title=str(result_type.value),
-                ylabel='(MW)',
-                cols_device_type=DeviceType.NoDevice,
-                idx_device_type=DeviceType.BusDevice
-            )
-
         elif result_type == ResultTypes.BranchLoading:
             return ResultsTable(
                 data=self.loading * 100.0,
@@ -319,19 +302,6 @@ class OptimalNetTransferCapacityResults(ResultsTemplate):
                 xlabel='',
                 units='',
                 cols_device_type=DeviceType.NoDevice,
-                idx_device_type=DeviceType.BranchDevice
-            )
-
-        elif result_type == ResultTypes.AvailableTransferCapacityAlphaN1:
-            return ResultsTable(
-                data=self.alpha_n1,
-                index=self.branch_names,
-                columns=self.branch_names,
-                title=str(result_type.value),
-                ylabel='(p.u.)',
-                xlabel='',
-                units='',
-                cols_device_type=DeviceType.BranchDevice,
                 idx_device_type=DeviceType.BranchDevice
             )
 
