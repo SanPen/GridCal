@@ -118,8 +118,8 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
                 consider_contingencies=self.options.consider_contingencies,
                 contingency_groups_used=self.options.opf_options.contingency_groups_used,
                 lodf_threshold=self.options.lin_options.lodf_threshold,
-                bus_a1_idx=self.options.area_from_bus_idx,
-                bus_a2_idx=self.options.area_to_bus_idx,
+                bus_a1_idx=self.options.sending_bus_idx,
+                bus_a2_idx=self.options.receiving_bus_idx,
                 logger=self.logger,
                 progress_text=None,
                 progress_func=None,
@@ -142,9 +142,7 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.hvdc_loading[t_idx, :] = opf_vars.hvdc_vars.loading
 
             self.results.monitor[t_idx, :] = opf_vars.branch_vars.monitor
-            self.results.monitor_type[t_idx, :] = opf_vars.branch_vars.monitor_type
-
-            # TODO: Create analize function to create the massive report
+            self.results.monitor_type[t_idx, :] = opf_vars.branch_vars.monitor_logic
 
             # update progress bar
             self.report_progress2(t_idx, len(self.time_indices))

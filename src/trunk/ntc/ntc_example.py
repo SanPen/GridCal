@@ -12,8 +12,8 @@ opf_options = gce.OptimalPowerFlowOptions()
 lin_options = gce.LinearAnalysisOptions()
 
 ntc_options = gce.OptimalNetTransferCapacityOptions(
-    area_from_bus_idx=info.idx_bus_from,
-    area_to_bus_idx=info.idx_bus_to,
+    sending_bus_idx=info.idx_bus_from,
+    receiving_bus_idx=info.idx_bus_to,
     transfer_method=gce.AvailableTransferMode.InstalledPower,
     loading_threshold_to_report=98.0,
     skip_generation_limits=True,

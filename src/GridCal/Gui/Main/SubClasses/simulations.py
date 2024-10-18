@@ -2111,8 +2111,8 @@ class SimulationsMain(TimeEventsMain):
             return None
 
         opts = sim.OptimalNetTransferCapacityOptions(
-            area_from_bus_idx=idx_from,
-            area_to_bus_idx=idx_to,
+            sending_bus_idx=idx_from,
+            receiving_bus_idx=idx_to,
             transfer_method=self.transfer_modes_dict[self.ui.transferMethodComboBox.currentText()],
             loading_threshold_to_report=self.ui.ntcReportLoadingThresholdSpinBox.value(),
             skip_generation_limits=self.ui.skipNtcGenerationLimitsCheckBox.isChecked(),

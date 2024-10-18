@@ -108,8 +108,8 @@ class ObjectsTableMain(DiagramsMain):
             DeviceType.CommunityDevice.value: ":/Icons/icons/community.svg",
             DeviceType.RegionDevice.value: ":/Icons/icons/region.svg",
             DeviceType.MunicipalityDevice.value: ":/Icons/icons/municipality.svg",
-            DeviceType.AreaDevice.value: ":/Icons/icons/grid_icon.svg",
-            DeviceType.ZoneDevice.value: ":/Icons/icons/grid_icon.svg",
+            DeviceType.AreaDevice.value: ":/Icons/icons/area.svg",
+            DeviceType.ZoneDevice.value: ":/Icons/icons/zone.svg",
 
             "Substation": ":/Icons/icons/bus_icon.svg",
             DeviceType.SubstationDevice.value: ":/Icons/icons/substation.svg",
@@ -147,7 +147,7 @@ class ObjectsTableMain(DiagramsMain):
             DeviceType.FluidPumpDevice.value: ":/Icons/icons/fluid_pump.svg",
             DeviceType.FluidP2XDevice.value: ":/Icons/icons/fluid_p2x.svg",
 
-            "Groups": ":/Icons/icons/grid_icon.svg",
+            "Groups": ":/Icons/icons/groups.svg",
             DeviceType.ContingencyGroupDevice.value: ":/Icons/icons/contingency_group.svg",
             DeviceType.ContingencyDevice.value: ":/Icons/icons/contingency.svg",
             DeviceType.RemedialActionGroupDevice.value: ":/Icons/icons/remedial_action_group.svg",

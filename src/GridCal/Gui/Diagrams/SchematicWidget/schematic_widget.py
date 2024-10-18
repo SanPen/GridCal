@@ -1478,11 +1478,15 @@ class SchematicWidget(BaseDiagramWidget):
 
                             if tr3_graphic_object.connection_lines[i] is None:
                                 winding = tr3_graphic_object.api_object.get_winding(i)
+
                                 winding_graphics = self.create_winding(
                                     from_port=self.started_branch.get_terminal_from(),
                                     to_port=self.started_branch.get_terminal_to(),
                                     api_object=winding
                                 )
+
+                                if winding not in self.circuit.windings:
+                                    self.circuit.add_winding(winding)
 
                                 tr3_graphic_object.set_connection(i=i,
                                                                   bus=bus,
@@ -1506,11 +1510,16 @@ class SchematicWidget(BaseDiagramWidget):
                             )
 
                             if tr3_graphic_object.connection_lines[i] is None:
+
                                 winding = tr3_graphic_object.api_object.get_winding(i)
+
                                 winding_graphics = self.create_winding(
                                     from_port=self.started_branch.get_terminal_from(),
                                     to_port=self.started_branch.get_terminal_to(),
                                     api_object=winding)
+
+                                if winding not in self.circuit.windings:
+                                    self.circuit.add_winding(winding)
 
                                 tr3_graphic_object.set_connection(i=i,
                                                                   bus=bus,

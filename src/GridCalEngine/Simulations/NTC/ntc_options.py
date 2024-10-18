@@ -29,9 +29,9 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
     """
 
     def __init__(self,
-                 area_from_bus_idx: IntVec,
-                 area_to_bus_idx: IntVec,
-                 transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower ,
+                 sending_bus_idx: IntVec,
+                 receiving_bus_idx: IntVec,
+                 transfer_method: AvailableTransferMode = AvailableTransferMode.InstalledPower,
                  loading_threshold_to_report: float = 98.0,
                  skip_generation_limits: bool = True,
                  transmission_reliability_margin: float = 400.0,
@@ -41,11 +41,11 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
                  use_branch_rating_contribution: bool = False,
                  consider_contingencies: bool = False,
                  opf_options: OptimalPowerFlowOptions | None = None,
-                 lin_options: LinearAnalysisOptions | None = None,):
+                 lin_options: LinearAnalysisOptions | None = None, ):
         """
 
-        :param area_from_bus_idx: array of area "from" bus indices
-        :param area_to_bus_idx: array of area "to" bus indices
+        :param sending_bus_idx: array of area "from" bus indices
+        :param receiving_bus_idx: array of area "to" bus indices
         :param transfer_method: AvailableTransferMode
         :param loading_threshold_to_report:
         :param skip_generation_limits:
@@ -60,8 +60,8 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         """
         OptionsTemplate.__init__(self, name="OptimalNetTransferCapacityOptions")
 
-        self.area_from_bus_idx: IntVec = area_from_bus_idx
-        self.area_to_bus_idx: IntVec = area_to_bus_idx
+        self.sending_bus_idx: IntVec = sending_bus_idx
+        self.receiving_bus_idx: IntVec = receiving_bus_idx
 
         self.transfer_method: AvailableTransferMode = transfer_method
         self.loading_threshold_to_report: float = loading_threshold_to_report
@@ -83,8 +83,8 @@ class OptimalNetTransferCapacityOptions(OptionsTemplate):
         else:
             self.lin_options: LinearAnalysisOptions = lin_options
 
-        self.register(key="area_from_bus_idx", tpe=SubObjectType.Array)
-        self.register(key="area_to_bus_idx", tpe=SubObjectType.Array)
+        self.register(key="sending_bus_idx", tpe=SubObjectType.Array)
+        self.register(key="receiving_bus_idx", tpe=SubObjectType.Array)
         self.register(key="transfer_method", tpe=AvailableTransferMode)
         self.register(key="loading_threshold_to_report", tpe=float)
         self.register(key="skip_generation_limits", tpe=bool)

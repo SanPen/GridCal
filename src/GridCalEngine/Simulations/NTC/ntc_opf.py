@@ -361,12 +361,12 @@ class BranchNtcVars:
         self.alpha = np.zeros((nt, n_elm), dtype=float)
 
         self.monitor = np.zeros((nt, n_elm), dtype=bool)
-        self.monitor_type = np.zeros((nt, n_elm), dtype=object)
+        self.monitor_logic = np.zeros((nt, n_elm), dtype=object)
 
         # t, m, c, contingency, negative_slack, positive_slack
         self.contingency_flow_data: List[Tuple[int, int, int, Union[float, LpVar, LpExp], LpVar, LpVar]] = list()
 
-        self.inter_space_branches: List[Tuple[int, float]] = list()  # index, elm, sense
+        self.inter_space_branches: List[Tuple[int, float]] = list()  # index, sense
 
     def get_values(self, Sbase: float, model: LpModel) -> "BranchNtcVars":
         """
@@ -379,6 +379,7 @@ class BranchNtcVars:
         data.rates = self.rates
         data.contingency_rates = self.contingency_rates
         data.alpha = self.alpha
+        data.inter_space_branches = self.inter_space_branches
 
         for t in range(nt):
             for i in range(n_elm):
@@ -401,6 +402,7 @@ class BranchNtcVars:
         data.flow_slacks_pos = data.flow_slacks_pos.astype(float, copy=False)
         data.flow_slacks_neg = data.flow_slacks_neg.astype(float, copy=False)
         data.tap_angles = data.tap_angles.astype(float, copy=False)
+        data.contingency_flow_data = self.contingency_flow_data
 
         # compute loading
         data.loading = data.flows / (data.rates + 1e-20)
@@ -446,7 +448,7 @@ class HvdcNtcVars:
         self.rates = np.zeros((nt, n_elm), dtype=float)
         self.loading = np.zeros((nt, n_elm), dtype=float)
 
-        self.inter_space_hvdc: List[Tuple[int, float]] = list()  # index, elm, sense
+        self.inter_space_hvdc: List[Tuple[int, float]] = list()  # index, sense
 
     def get_values(self, Sbase: float, model: LpModel) -> "HvdcNtcVars":
         """
@@ -456,6 +458,7 @@ class HvdcNtcVars:
         nt, n_elm = self.flows.shape
         data = HvdcNtcVars(nt=nt, n_elm=n_elm)
         data.rates = self.rates
+        data.inter_space_hvdc = self.inter_space_hvdc
 
         for t in range(nt):
             for i in range(n_elm):
