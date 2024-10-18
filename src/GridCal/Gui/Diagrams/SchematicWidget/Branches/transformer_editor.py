@@ -51,7 +51,7 @@ class TransformerEditor(QDialog):
 
         self.setObjectName("self")
 
-        self.setContextMenuPolicy(Qt.NoContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
         self.layout = QVBoxLayout(self)
 
@@ -250,7 +250,9 @@ class TransformerEditor(QDialog):
         if self.templates is not None:
 
             idx = self.catalogue_combo.currentIndex()
-            template = self.templates[idx]
 
-            if isinstance(template, TransformerType):
-                self.load_template(template)
+            if -1 < idx < len(self.templates):
+                template = self.templates[idx]
+
+                if isinstance(template, TransformerType):
+                    self.load_template(template)

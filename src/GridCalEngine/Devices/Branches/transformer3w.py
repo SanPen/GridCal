@@ -130,9 +130,9 @@ class Transformer3W(PhysicalDevice):
         self._Pfe: float = 0.0
         self._I0: float = 0.0
 
-        self.winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag, bus_to=bus1, HV=V1, LV=1.0, name=name + "_W1")
-        self.winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag, bus_to=bus2, HV=V2, LV=1.0, name=name + "_W2")
-        self.winding3 = Winding(bus_from=self.bus0, idtag=w3_idtag, bus_to=bus3, HV=V3, LV=1.0, name=name + "_W3")
+        self._winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag, bus_to=bus1, HV=V1, LV=1.0, name=name + "_W1")
+        self._winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag, bus_to=bus2, HV=V2, LV=1.0, name=name + "_W2")
+        self._winding3 = Winding(bus_from=self.bus0, idtag=w3_idtag, bus_to=bus3, HV=V3, LV=1.0, name=name + "_W3")
 
         self.x = float(x)
         self.y = float(y)
@@ -176,6 +176,30 @@ class Transformer3W(PhysicalDevice):
 
         self.register(key='x', units='px', tpe=float, definition='x position')
         self.register(key='y', units='px', tpe=float, definition='y position')
+
+    @property
+    def winding1(self) -> Winding:
+        """
+        Winding 1 getter
+        :return: Winding
+        """
+        return self._winding1
+
+    @property
+    def winding2(self) -> Winding:
+        """
+        Winding 2 getter
+        :return: Winding
+        """
+        return self._winding2
+
+    @property
+    def winding3(self) -> Winding:
+        """
+        Winding 3 getter
+        :return: Winding
+        """
+        return self._winding3
 
     @property
     def active_prof(self) -> Profile:
