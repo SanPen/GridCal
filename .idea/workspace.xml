@@ -28,34 +28,35 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Fixed NTC time series to match the recent ntc simulation">
-      <change afterPath="$PROJECT_DIR$/src/trunk/cgmes/file opening.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/code_generation/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/__init__.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.1.52 fixed bug with __init__ not being present in ThirdParty">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCal/Gui/Main/icons_rc.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v2_4_15/CGMES_v2.4.15_RDFSSerialisation.ttl" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v2_4_15/CGMES_v2.4.15_RDFSSerialisation.ttl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v2_4_15/EquipmentProfileCoreOperationShortCircuitRDFSAugmented-v2_4_15-4Sep2020.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v2_4_15/EquipmentProfileCoreOperationShortCircuitRDFSAugmented-v2_4_15-4Sep2020.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v2_4_15/GeographicalLocationProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v2_4_15/GeographicalLocationProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v2_4_15/StateVariableProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v2_4_15/StateVariableProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v2_4_15/SteadyStateHypothesisProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v2_4_15/SteadyStateHypothesisProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v2_4_15/TopologyProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v2_4_15/TopologyProfileRDFSAugmented-v2_4_15-4Sep2020.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v2_4_15/cgmes_2_4_15_assoc_info.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v2_4_15/cgmes_2_4_15_assoc_info.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/CGMES_v3.0.0_RDFSSerialisation.ttl" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/CGMES_v3.0.0_RDFSSerialisation.ttl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_EQ.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_EQ.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_GL.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_GL.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_OP.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_OP.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SC.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SC.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SSH.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SSH.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SV.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_SV.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_TP.rdf" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/IEC61970-600-2_CGMES_3_0_0_RDFS2020_TP.rdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/RDFS/cgmes_v3_0_0/cgmes_3_0_0_assoc_info.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/RDFS/cgmes_v3_0_0/cgmes_3_0_0_assoc_info.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/cgmes_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/cgmes_class.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/cgmes_rdfs_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/cgmes_rdfs_graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/copyright_text.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/copyright_text.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/not_in_scope_list.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/not_in_scope_list.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/trunk/cgmes_py_generator/write_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/code_generation/cgmes_py_generator/write_py.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/model/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/copt_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/copt_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/cplex_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/cplex_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/cplex_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/cplex_py.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/gurobi_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/gurobi_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/gurobi_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/gurobi_py.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/highs_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/highs_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/highs_py.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/highs_py.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/lp_solver.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/lp_solver.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/lp_solver_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/lp_solver_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/scip_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/scip_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/apis/xpress_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/apis/xpress_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/model/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/model/lp_objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/model/lp_objects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/model/lp_problem.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/model/lp_problem.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/mps_lp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/mps_lp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/paths.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/paths.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/pulp.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/pulp.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/sparse.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/sparse.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/ThirdParty/pulp/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty/pulp/utilities.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/pulp_interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/Utils/MIP/pulp_interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/gridcal_packaging.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/gridcal_packaging.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/upload_to_pypi.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/upload_to_pypi.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +97,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="199_finalize_cgmes_import" />
+        <entry key="$PROJECT_DIR$" value="devel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -152,52 +153,52 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
-    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
-    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
-    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_load_all_grids.test_line_templates_finding.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for src.tests.test_topology_processor.test_topology_NL_microgrid.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_ntc.test_ntc_ieee_14.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_load_all_grids.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_ntc.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in test_simple_mip.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest in tests.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Run&quot;,
-    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.file opening.executor&quot;: &quot;Run&quot;,
-    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
-    &quot;Python.node_widget.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ntc_example.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.transformer3w_editor.executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
-    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Devices/Aggregation&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable&quot;,
-    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Git.Branch.Popup.ShowAllRemotes": "true",
+    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
+    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
+    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
+    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
+    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
+    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
+    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
+    "Python tests.Nosetests in tests.executor": "Run",
+    "Python tests.pytest for src.tests.test_load_all_grids.test_line_templates_finding.executor": "Run",
+    "Python tests.pytest for src.tests.test_topology_processor.test_topology_NL_microgrid.executor": "Run",
+    "Python tests.pytest for test_ntc.test_ntc_ieee_14.executor": "Run",
+    "Python tests.pytest in test_load_all_grids.py.executor": "Run",
+    "Python tests.pytest in test_ntc.py.executor": "Run",
+    "Python tests.pytest in test_simple_mip.py.executor": "Run",
+    "Python tests.pytest in tests.executor": "Run",
+    "Python.AnalysisDialogue.executor": "Run",
+    "Python.ExecuteGridCal.executor": "Run",
+    "Python.cgmes_rdfs_graph.executor": "Run",
+    "Python.file opening.executor": "Run",
+    "Python.new_circuit_objects.executor": "Run",
+    "Python.node_widget.executor": "Run",
+    "Python.ntc_example.executor": "Debug",
+    "Python.pymoo_example.executor": "Debug",
+    "Python.transformer3w_editor.executor": "Run",
+    "Python.update_gui_file (1).executor": "Run",
+    "Python.update_gui_file.executor": "Run",
+    "Python.upload_to_pypi.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "199__finalize__cgmes__import",
+    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Devices/Aggregation",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "aDefault",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable",
+    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -212,14 +213,14 @@
       <recent name="C:\Work\git_local\GridCal\doc" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/GridCalEngine/Utils/ThirdParty" />
       <recent name="$PROJECT_DIR$/src/trunk/code_generation" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine/Simulations/InvestmentsEvaluation/NumericalMethods" />
       <recent name="$PROJECT_DIR$/src/GridCalEngine" />
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
-      <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.file opening">
+  <component name="RunManager" selected="Python.upload_to_pypi">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -486,29 +487,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="file opening" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="GridCal" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/trunk/cgmes" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/trunk/cgmes/file opening.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="upload_to_pypi" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GridCal" />
       <option name="ENV_FILES" value="" />
@@ -686,20 +664,38 @@
       <option name="_new_targetType" value="&quot;PATH&quot;" />
       <method v="2" />
     </configuration>
+    <configuration name="pytest in tests" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
+      <module name="GridCal" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_keywords" value="&quot;&quot;" />
+      <option name="_new_parameters" value="&quot;&quot;" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/src/tests&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Python.file opening" />
       <item itemvalue="Python.upload_to_pypi" />
       <item itemvalue="Python.ExecuteGridCal" />
+      <item itemvalue="Python tests.pytest in tests" />
       <item itemvalue="Python tests.pytest for test_transformer_type.test_transformer3w_test" />
       <item itemvalue="Python tests.pytest in test_transformer_type.py" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python tests.pytest in tests" />
+        <item itemvalue="Python.upload_to_pypi" />
         <item itemvalue="Python tests.pytest in test_transformer_type.py" />
         <item itemvalue="Python tests.pytest for test_transformer_type.test_transformer3w_test" />
         <item itemvalue="Python.ExecuteGridCal" />
-        <item itemvalue="Python.upload_to_pypi" />
-        <item itemvalue="Python.file opening" />
       </list>
     </recent_temporary>
   </component>
@@ -1415,6 +1411,7 @@
       <workItem from="1729148268568" duration="20823000" />
       <workItem from="1729192466322" duration="6594000" />
       <workItem from="1729327065257" duration="689000" />
+      <workItem from="1729330507783" duration="1375000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1759,7 +1756,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="558" />
+    <option name="localTasksCounter" value="559" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1793,8 +1790,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="default RatioTapChanger added to cgmes export" />
-    <MESSAGE value="Some modifications to PuLP" />
     <MESSAGE value="Changes to protect from garbage values" />
     <MESSAGE value="Tweaked the cplex interface&#10;Fixed bugs in the naming" />
     <MESSAGE value="large refactor of PuLP" />
@@ -1818,7 +1813,9 @@
     <MESSAGE value="deleted legacy psse file parsers" />
     <MESSAGE value="Small refactoring of the raw parser / writer" />
     <MESSAGE value="Implemented double click sorting in the results" />
-    <option name="LAST_COMMIT_MESSAGE" value="Implemented double click sorting in the results" />
+    <MESSAGE value="Added cgmes access example" />
+    <MESSAGE value="5.1.52 fixed bug with __init__ not being present in ThirdParty" />
+    <option name="LAST_COMMIT_MESSAGE" value="5.1.52 fixed bug with __init__ not being present in ThirdParty" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2316,8 +2313,8 @@
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_admittance_tap_derivatives_py.coverage" NAME="Nosetests in test_admittance_tap_derivatives.py Coverage Results" MODIFIED="1708506914959" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$hydro_opf.coverage" NAME="hydro_opf Coverage Results" MODIFIED="1704400043683" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_power_flow_test_zip.coverage" NAME="Nosetests for test_power_flow.test_zip Coverage Results" MODIFIED="1709110212295" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_temp_correction_py.coverage" NAME="Nosetests in test_temp_correction.py Coverage Results" MODIFIED="1609501421833" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_numerical_circuit_test_bus_indexing_remap.coverage" NAME="Nosetests for test_numerical_circuit.test_bus_indexing_remap Coverage Results" MODIFIED="1707314056583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_temp_correction_py.coverage" NAME="Nosetests in test_temp_correction.py Coverage Results" MODIFIED="1609501421833" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$transformer_example.coverage" NAME="transformer_example Coverage Results" MODIFIED="1619382581078" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/per_unit" />
     <SUITE FILE_PATH="coverage/GridCal$failure.coverage" NAME="failure Coverage Results" MODIFIED="1695138991178" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/venv.3.11/lib/python3.11/site-packages/nose" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_tests_test_tutorials_test_define_grid_from_scratch_with_profiles.coverage" NAME="Nosetests for tests.test_tutorials.test_define_grid_from_scratch_with_profiles Coverage Results" MODIFIED="1687769163010" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2458,7 +2455,7 @@
     <SUITE FILE_PATH="coverage/GridCal$io_call.coverage" NAME="io_call Coverage Results" MODIFIED="1708619816856" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/io" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_PTDF_research2_py.coverage" NAME="Nosetests in PTDF_research2.py Coverage Results" MODIFIED="1600161918846" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$setup__GridCal_.coverage" NAME="setup (GridCal) Coverage Results" MODIFIED="1694348254887" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
-    <SUITE FILE_PATH="coverage/GridCal$file_opening.coverage" NAME="file opening Coverage Results" MODIFIED="1729327735001" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/cgmes" />
+    <SUITE FILE_PATH="coverage/GridCal$file_opening.coverage" NAME="file opening Coverage Results" MODIFIED="1729327822565" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/cgmes" />
     <SUITE FILE_PATH="coverage/GridCal$pulp.coverage" NAME="pulp Coverage Results" MODIFIED="1642610724509" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/ThirdParty/pulp" />
     <SUITE FILE_PATH="coverage/GridCal$branch_power_5_sparse_.coverage" NAME="branch_power_5(sparse) Coverage Results" MODIFIED="1662061799081" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/derivatives_and_jacobian" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_for_test_ptdf_test_ptdf_ieee14_definition_ps_flows.coverage" NAME="Nosetests for test_ptdf.test_ptdf_ieee14_definition_ps_flows Coverage Results" MODIFIED="1706276739430" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
@@ -2586,7 +2583,7 @@
     <SUITE FILE_PATH="coverage/GridCal$ACOPF_MIPS_replica.coverage" NAME="ACOPF_MIPS_replica Coverage Results" MODIFIED="1702313943926" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$opf_pf_verification_example.coverage" NAME="opf+pf verification example Coverage Results" MODIFIED="1696857463367" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$topology_driver.coverage" NAME="topology_driver Coverage Results" MODIFIED="1590932816525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/Topology" />
-    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1729267065509" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/GridCal$upload_to_pypi.coverage" NAME="upload_to_pypi Coverage Results" MODIFIED="1729331373035" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/GridCal$download_stats.coverage" NAME="download_stats Coverage Results" MODIFIED="1609500287850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$grid_generator_dialogue.coverage" NAME="grid_generator_dialogue Coverage Results" MODIFIED="1689665364372" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Gui/GridGenerator" />
     <SUITE FILE_PATH="coverage/GridCal$grid_reduction2.coverage" NAME="grid_reduction2 Coverage Results" MODIFIED="1615742120428" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/grid_reduction" />
@@ -2648,7 +2645,7 @@
     <SUITE FILE_PATH="coverage/GridCal$lhs_ts.coverage" NAME="lhs_ts Coverage Results" MODIFIED="1657744078958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/interpolation" />
     <SUITE FILE_PATH="coverage/GridCal$arrillagas_book_grids_to_gridcal.coverage" NAME="arrillagas_book_grids_to_gridcal Coverage Results" MODIFIED="1659437177352" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/experimental_readers" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_reverse_transformer_definition_py.coverage" NAME="Nosetests in test_reverse_transformer_definition.py Coverage Results" MODIFIED="1609501285838" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
-    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1729266861213" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
+    <SUITE FILE_PATH="coverage/GridCal$pytest_in_tests.coverage" NAME="pytest in tests Coverage Results" MODIFIED="1729331747198" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$linear_analysis_run.coverage" NAME="linear_analysis_run Coverage Results" MODIFIED="1696330787545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples" />
     <SUITE FILE_PATH="coverage/GridCal$all2_refactored.coverage" NAME="all2_refactored Coverage Results" MODIFIED="1614533302435" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PGD" />
     <SUITE FILE_PATH="coverage/GridCal$analytic_ptdf_driver.coverage" NAME="analytic_ptdf_driver Coverage Results" MODIFIED="1600179811175" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/GridCal/Engine/Simulations/PTDF" />

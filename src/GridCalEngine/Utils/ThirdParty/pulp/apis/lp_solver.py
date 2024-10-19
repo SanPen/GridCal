@@ -33,12 +33,12 @@ from __future__ import annotations
 import ctypes
 import json
 from typing import TYPE_CHECKING
-import GridCalEngine.ThirdParty.pulp.sparse as sparse
-import GridCalEngine.ThirdParty.pulp.constants as const
-from GridCalEngine.ThirdParty.pulp.constants import to_string
+import GridCalEngine.Utils.ThirdParty.pulp.sparse as sparse
+import GridCalEngine.Utils.ThirdParty.pulp.constants as const
+from GridCalEngine.Utils.ThirdParty.pulp.constants import to_string
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
 
 
 def ctypesArrayFill(myList, tpe=ctypes.c_double):

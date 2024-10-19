@@ -27,9 +27,9 @@ import os
 import sys
 import re
 
-from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver, LpSolver_CMD, subprocess
-import GridCalEngine.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.paths import get_solvers_config
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver, LpSolver_CMD, subprocess
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
 
 
 def _ismip(lp):

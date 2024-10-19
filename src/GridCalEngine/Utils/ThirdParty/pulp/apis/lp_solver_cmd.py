@@ -39,7 +39,7 @@ import subprocess
 from uuid import uuid4
 import configparser
 from typing import Union, Tuple, List
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver import LpSolver
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver import LpSolver
 
 
 Parser = configparser.ConfigParser

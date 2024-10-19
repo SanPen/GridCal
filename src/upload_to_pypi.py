@@ -14,6 +14,10 @@ from GridCal.Gui.update_gui_common import convert_resource_file, convert_ui_file
 
 
 def update_gui_to_make_sure():
+    """
+
+    :return:
+    """
     # pyrcc5 icons.qrc -o icons_rc.py
     # pyuic5 -x MainWindow.ui -o MainWindow.py
 
@@ -35,6 +39,10 @@ def update_gui_to_make_sure():
 
 
 def check_versions() -> bool:
+    """
+
+    :return:
+    """
     if __GridCalEngine_VERSION__ != __GridCal_VERSION__:  # both packages' versions must be exactly the same
         print(__GridCalEngine_VERSION__, 'and', __GridCal_VERSION__, "are different :(")
         return False
@@ -103,7 +111,8 @@ if __name__ == "__main__":
                 description_content_type=_description_content_type,
                 provides_extra=_provides_extra,
                 long_description=_long_description,
-                ext_filter=['.py', '.csv', '.txt']
+                ext_filter=['.py', '.csv', '.txt'],
+                exeption_paths=('__pycache__')
                 )
 
         publish(pkg_name='GridCal',
@@ -120,7 +129,8 @@ if __name__ == "__main__":
                 description_content_type=_description_content_type,
                 provides_extra=_provides_extra,
                 long_description=_long_description,
-                ext_filter=['.py', '.csv', '.txt']
+                ext_filter=['.py', '.csv', '.txt'],
+                exeption_paths=('__pycache__', 'icons', 'svg')
                 )
 
         publish(pkg_name='GridCalServer',
@@ -137,7 +147,8 @@ if __name__ == "__main__":
                 description_content_type=_description_content_type,
                 provides_extra=_provides_extra,
                 long_description=_long_description,
-                ext_filter=['.py', '.csv', '.txt', '.ico']
+                ext_filter=['.py', '.csv', '.txt', '.ico'],
+                exeption_paths=('__pycache__')
                 )
 
     else:

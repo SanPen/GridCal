@@ -3,13 +3,13 @@ import os
 from typing import List, TYPE_CHECKING
 import xml.etree.ElementTree as et
 
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, subprocess
-import GridCalEngine.ThirdParty.pulp.constants as constants
-from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, subprocess
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.paths import get_solvers_config
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
-    from GridCalEngine.ThirdParty.pulp import LpVariable
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable
 
 
 class CPLEX_CMD(LpSolver_CMD):

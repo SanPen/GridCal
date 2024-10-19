@@ -31,9 +31,12 @@ Copyright 2007- Stuart Mitchell (s.mitchell@auckland.ac.nz)
 """
 from .constants import VERSION
 
-from GridCalEngine.ThirdParty.pulp.pulp import *
-from GridCalEngine.ThirdParty.pulp.apis import *
-from GridCalEngine.ThirdParty.pulp.utilities import *
-from GridCalEngine.ThirdParty.pulp.constants import *
+from GridCalEngine.Utils.ThirdParty.pulp.pulp import *
+from GridCalEngine.Utils.ThirdParty.pulp.apis import *
+from GridCalEngine.Utils.ThirdParty.pulp.utilities import *
+from GridCalEngine.Utils.ThirdParty.pulp.constants import *
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import (LpVariable, LpConstraint, LpConstraintVar,
+                                                                  LpFractionConstraint, LpElement, LpAffineExpression)
 
 __version__ = VERSION

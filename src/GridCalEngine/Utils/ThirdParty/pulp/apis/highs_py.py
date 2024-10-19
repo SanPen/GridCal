@@ -30,8 +30,8 @@
 from __future__ import annotations
 from math import inf
 from typing import Tuple, TYPE_CHECKING
-import GridCalEngine.ThirdParty.pulp.constants as constants
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver
 
 try:
     import highspy
@@ -41,7 +41,7 @@ except ImportError:
     HIGHSPY_AVAILABLE = False
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
 
 
 def callback(logType, logMsg, callbackValue=""):

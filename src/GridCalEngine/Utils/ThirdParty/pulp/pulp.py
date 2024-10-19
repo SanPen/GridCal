@@ -123,23 +123,21 @@ References
 
 """
 from collections.abc import Iterable
-from GridCalEngine.ThirdParty.pulp.model.lp_objects import (LpVariable, LpConstraint, LpAffineExpression,
-                                                            LpFractionConstraint, LpConstraintVar)
-from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import (LpAffineExpression)
 
 import json
 from typing import List
-from GridCalEngine.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
-from GridCalEngine.ThirdParty.pulp.apis.cplex_py import CPLEX_PY
-from GridCalEngine.ThirdParty.pulp.apis.gurobi_py import GUROBI
-from GridCalEngine.ThirdParty.pulp.apis.gurobi_cmd import GUROBI_CMD
-from GridCalEngine.ThirdParty.pulp.apis.scip_api import SCIP_PY, SCIP_CMD, FSCIP_CMD
-from GridCalEngine.ThirdParty.pulp.apis.xpress_api import XPRESS_CMD, XPRESS, XPRESS_PY
-from GridCalEngine.ThirdParty.pulp.apis.highs_py import HiGHS
-from GridCalEngine.ThirdParty.pulp.apis.highs_cmd import HiGHS_CMD
-from GridCalEngine.ThirdParty.pulp.apis.copt_api import COPT, COPT_DLL, COPT_CMD
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import (Parser, config_filename, cplex_dll_path, coinMP_path)
-from GridCalEngine.ThirdParty.pulp.constants import PulpSolverError
+from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_cmd import CPLEX_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.apis.cplex_py import CPLEX_PY
+from GridCalEngine.Utils.ThirdParty.pulp.apis.gurobi_py import GUROBI
+from GridCalEngine.Utils.ThirdParty.pulp.apis.gurobi_cmd import GUROBI_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.apis.scip_api import SCIP_PY, SCIP_CMD, FSCIP_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.apis.xpress_api import XPRESS_CMD, XPRESS, XPRESS_PY
+from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
+from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_cmd import HiGHS_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.apis.copt_api import COPT, COPT_DLL, COPT_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import (Parser, config_filename, cplex_dll_path, coinMP_path)
+from GridCalEngine.Utils.ThirdParty.pulp.constants import PulpSolverError
 
 _all_solvers = [
     CPLEX_CMD,

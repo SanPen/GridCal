@@ -27,12 +27,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import os
 import warnings
-import GridCalEngine.ThirdParty.pulp.constants as constants
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, subprocess
-from GridCalEngine.ThirdParty.pulp.paths import get_solvers_config
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, subprocess
+from GridCalEngine.Utils.ThirdParty.pulp.paths import get_solvers_config
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
 
 
 class GUROBI_CMD(LpSolver_CMD):
