@@ -103,7 +103,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
         # list of voltage levels graphics
         self.voltage_level_graphics: List[VoltageLevelGraphicItem] = list()
 
-    def set_size(self, r: float):
+    def re_scale(self, r: float):
         """
 
         :param r: radius in pixels
@@ -113,18 +113,21 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             rect = self.rect()
             rect.setWidth(r)
             rect.setHeight(r)
-            self.radius = r
 
             # change the width and height while keeping the same center
-            r2 = r / 2
-            new_x = rect.x() - r2
-            new_y = rect.y() - r2
+            r2 = (self.radius - r) / 2
+            new_x = rect.x() + r2
+            new_y = rect.y() + r2
+
+            self.radius = r
 
             # Set the new rectangle with the updated dimensions
             self.setRect(new_x, new_y, r, r)
 
             # update the callbacks position for the lines to move accordingly
-            self.set_callabacks(new_x + r2, new_y + r2)
+            xc = new_x + r / 2
+            yc = new_y + r / 2
+            self.set_callabacks(xc, yc)
 
             for vl_graphics in self.voltage_level_graphics:
                 vl_graphics.center_on_substation()
@@ -133,7 +136,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
             self.resize_voltage_levels()
 
-    def resize_voltage_levels(self):
+    def resize_voltage_levels(self) -> None:
         """
 
         :return:
@@ -146,6 +149,7 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
             # radius here is the width, therefore we need to send W/2
             scale = vl_graphics.api_object.Vnom / max_vl * 0.5
             vl_graphics.set_size(r=self.radius * scale)
+            vl_graphics.center_on_substation()
 
     def set_api_object_color(self) -> None:
         """

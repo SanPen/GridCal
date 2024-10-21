@@ -23,7 +23,7 @@ def print_progress_bar(iteration: int, total: int, length=40, txt=""):
     :param iteration: current iteration (1 based)
     :param total: total progress
     :param length: length of the bar in characters
-    :param txt: text to print
+    :param txt: text to print at the end of the progress bar
     """
     if iteration > total:
         iteration = total

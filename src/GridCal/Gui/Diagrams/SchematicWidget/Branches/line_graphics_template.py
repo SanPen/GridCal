@@ -358,13 +358,21 @@ class ArrowHead(QGraphicsPolygonItem):
 
         self.label = QGraphicsTextItem(self)
         self.label.setPlainText("")
-        # self.label.setScale(text_scale)
         self.show_text = show_text
 
         self.w = arrow_size
         self.h = arrow_size
 
         self.setPen(Qt.PenStyle.NoPen)
+
+    def setScale(self, scale):
+        """
+
+        :param scale:
+        :return:
+        """
+        super().setScale(scale)
+        self.label.setScale(scale)
 
     def set_colour(self, color: QColor, w, style: Qt.PenStyle):
         """

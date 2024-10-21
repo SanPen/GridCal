@@ -24,6 +24,7 @@ from PySide6 import QtWidgets, QtCore
 from typing import List
 from datetime import datetime, timedelta
 
+from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.basic_structures import Logger
@@ -85,7 +86,7 @@ class GridsModelItem:
 
         self.name = os.path.basename(path)
 
-    def get_at(self, idx):
+    def get_at(self, idx: int) -> str | pd.Timestamp:
         """
 
         :param idx:
@@ -107,7 +108,7 @@ class GridsModel(QtCore.QAbstractTableModel):
     GridsModel
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
 
         """
@@ -117,12 +118,20 @@ class GridsModel(QtCore.QAbstractTableModel):
 
         self._headers_ = ['Time', 'Name', 'Path']
 
-    def clear(self):
+    def update(self):
+        """
+        update table
+        """
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
+
+    def clear(self) -> None:
         """
 
         :return:
         """
         self._values_.clear()
+        self.update()
 
     def append(self, val: GridsModelItem):
         """
@@ -131,8 +140,9 @@ class GridsModel(QtCore.QAbstractTableModel):
         :return:
         """
         self._values_.append(val)
+        self.update()
 
-    def set_path_at(self, i, path):
+    def set_path_at(self, i: int, path: str):
         """
 
         :param i:
@@ -142,8 +152,9 @@ class GridsModel(QtCore.QAbstractTableModel):
         if i < len(self._values_):
             self._values_[i].path = path
             self._values_[i].name = os.path.basename(path)
+        self.update()
 
-    def items(self):
+    def items(self) -> List[GridsModelItem]:
         """
 
         :return:
@@ -157,8 +168,9 @@ class GridsModel(QtCore.QAbstractTableModel):
         :return:
         """
         self._values_.pop(idx)
+        self.update()
 
-    def rowCount(self, parent=None):
+    def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
 
         :param parent:
@@ -166,7 +178,7 @@ class GridsModel(QtCore.QAbstractTableModel):
         """
         return len(self._values_)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent: QtCore.QModelIndex = None) -> int:
         """
 
         :param parent:
@@ -174,7 +186,7 @@ class GridsModel(QtCore.QAbstractTableModel):
         """
         return len(self._headers_)
 
-    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.ItemDataRole.DisplayRole) -> None | str:
         """
 
         :param index:
@@ -285,7 +297,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
     ModelsInputGUI
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         """
 
         :param parent:
@@ -296,8 +308,6 @@ class ModelsInputGUI(QtWidgets.QDialog):
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.setWindowTitle('Models import dialogue')
-
-        self.ui.deleteModelsButton.setVisible(False)
 
         self.grids_model: GridsModel = GridsModel()
 
@@ -312,8 +322,9 @@ class ModelsInputGUI(QtWidgets.QDialog):
         # click
         self.ui.addModelsButton.clicked.connect(self.add_models)
         self.ui.acceptModelsButton.clicked.connect(self.accept)
+        self.ui.deleteModelsButton.clicked.connect(self.clear_model)
 
-    def accept(self):
+    def accept(self) -> None:
         """
 
         :return:
@@ -321,28 +332,35 @@ class ModelsInputGUI(QtWidgets.QDialog):
         super().accept()
         self.close()
 
-    def add_models(self):
+    def clear_model(self) -> None:
+        """
+        Delete the import data
+        :return:
+        """
+        if self.grids_model.rowCount() > 0:
+            ok = yes_no_question("Do you want to clear the import data?")
+            if ok:
+                self.grids_model.clear()
+
+    def add_models(self) -> None:
         """
         Add the selected models
         """
         # declare the allowed file types
         files_types = "Formats (*.raw *.RAW *.rawx *.xml *.m *.epc *.EPC)"
-        # call dialog to select the file
-        # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
         filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(self, 'Add files', filter=files_types)
 
         if len(filenames):
 
-            self.grids_model.clear()
-
+            b = self.grids_model.rowCount()
             d = datetime.today()
             base_date = datetime(d.year, 1, 1, 00, 00, 00)
             base_inc = 1  # 1 hour
 
             for i, file_path in enumerate(filenames):
-                tme = base_date + timedelta(hours=base_inc * i)
+                tme = base_date + timedelta(hours=base_inc * (i + b))
                 self.grids_model.append(GridsModelItem(file_path, tme=tme, logger=self.logger))
 
             self.ui.modelsTableView.setModel(None)
@@ -412,8 +430,11 @@ class ModelsInputGUI(QtWidgets.QDialog):
                                 device_property="Path",
                                 value=entry.path)
 
-        # check devices' status: if an element is connected to disconnected buses the branch must be disconnected too
-        # this is to handle the typical PSSe garbage modlling practices
+        print()  # to finalize the progressbar
+
+        # check devices' status: if an element is connected to disconnected
+        # buses the branch must be disconnected too this is to handle the
+        # typical PSSe garbage modlling practices
         for elm in main_grid.get_all_branches_iter():
             if not (elm.bus_from.active and elm.bus_to.active):
                 elm.active = False

@@ -55,7 +55,7 @@
       <item>
        <widget class="QPushButton" name="deleteModelsButton">
         <property name="text">
-         <string>Delete</string>
+         <string>Clear</string>
         </property>
         <property name="icon">
          <iconset resource="icons.qrc">

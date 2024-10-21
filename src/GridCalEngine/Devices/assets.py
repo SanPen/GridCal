@@ -2811,6 +2811,27 @@ class Assets:
         except ValueError:
             pass
 
+    def merge_substations(self, selected_objects: List[dev.Substation]):
+        """
+        Merge selected substations into the first one
+        :param selected_objects:
+        :return:
+        """
+        if len(selected_objects) > 1:
+            # remove the first SE from the list and keep it
+            base = selected_objects.pop(0)
+
+            for elm in self.voltage_levels:
+                if elm.substation in selected_objects:
+                    elm.substation = base
+
+            for elm in self.buses:
+                if elm.substation in selected_objects:
+                    elm.substation = base
+
+            for obj in selected_objects:
+                self.delete_substation(obj=obj)
+
     # ------------------------------------------------------------------------------------------------------------------
     # Area
     # ------------------------------------------------------------------------------------------------------------------

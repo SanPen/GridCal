@@ -66,15 +66,17 @@ class MapLineContainer(GenericDiagramWidget):
         self.enabled = True
         self.original = True  # TODO: Que es esto?
 
-    def set_width_scale(self, val: float):
+    def set_width_scale(self, branch_scale: float, arrow_scale: float):
         """
         Set the width scale of the line
-        :param val:
+        :param branch_scale:
+        :param arrow_scale:
         """
         for segment in self.segments_list:
             # pen = segment.pen()  # get the current pen
             # pen.setWidthF(val * segment.width)  # Set the fractional thickness of the line
-            segment.set_width(val * segment.width)  # Assign the pen to the line item
+            segment.set_width(branch_scale * segment.width)  # Assign the pen to the line item
+            segment.set_arrow_scale(arrow_scale)
 
     def clean_segments(self) -> None:
         """

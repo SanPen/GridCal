@@ -116,7 +116,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
         self.addModelsButton.setText(QCoreApplication.translate("Dialog", u"Add", None))
-        self.deleteModelsButton.setText(QCoreApplication.translate("Dialog", u"Delete", None))
+        self.deleteModelsButton.setText(QCoreApplication.translate("Dialog", u"Clear", None))
 #if QT_CONFIG(tooltip)
         self.matchUsingCodeCheckBox.setToolTip(QCoreApplication.translate("Dialog", u"If checked, the objects are match using the code property, otherwise the idtag property is used", None))
 #endif // QT_CONFIG(tooltip)
