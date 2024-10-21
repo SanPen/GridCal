@@ -18,6 +18,9 @@ from __future__ import annotations
 
 import numpy as np
 from typing import Union, List
+
+from numba.cuda.cudadrv.nvvm import logger
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.enumerations import EngineType, ContingencyMethod, SimulationTypes
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
@@ -126,7 +129,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
                     t=t,
-                    t_prob=t_prob
+                    t_prob=t_prob,
+                    logger=self.logger
                 )
 
             elif self.options.contingency_method == ContingencyMethod.PTDF:
@@ -136,7 +140,8 @@ class ContingencyAnalysisDriver(DriverTemplate):
                     linear_multiple_contingencies=self.linear_multiple_contingencies,
                     calling_class=self,
                     t=t,
-                    t_prob=t_prob
+                    t_prob=t_prob,
+                    logger=self.logger
                 )
 
             elif self.options.contingency_method == ContingencyMethod.HELM:

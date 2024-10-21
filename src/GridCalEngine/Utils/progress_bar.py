@@ -17,12 +17,13 @@
 import sys
 
 
-def print_progress_bar(iteration: int, total: int, length=40):
+def print_progress_bar(iteration: int, total: int, length=40, txt=""):
     """
     Simple text progress bar
     :param iteration: current iteration (1 based)
     :param total: total progress
     :param length: length of the bar in characters
+    :param txt: text to print
     """
     if iteration > total:
         iteration = total
@@ -30,5 +31,5 @@ def print_progress_bar(iteration: int, total: int, length=40):
     percent = (iteration / total)
     arrow = '=' * int(length * percent) + '>'
     spaces = ' ' * (length - len(arrow))
-    sys.stdout.write(f'\r[{arrow}{spaces}] {percent:.1%}')
+    sys.stdout.write(f'\r[{arrow}{spaces}] {percent:.1%} {txt}')
     sys.stdout.flush()

@@ -463,12 +463,16 @@ class TimeEventsMain(ObjectsTableMain):
             self.models_input_dialogue.exec_()  # exec leaves the parent on hold
 
             if self.models_input_dialogue.grids_model is not None:
-                self.models_input_dialogue.process(main_grid=self.circuit)
+                logger = Logger()
+                self.models_input_dialogue.process(main_grid=self.circuit, logger=logger)
 
                 # set up sliders
-                # self.set_up_profile_sliders()
                 self.update_date_dependent_combos()
                 self.display_profiles()
+
+                if logger.has_logs():
+                    dialogue = LogsDialogue(name="Import profiles", logger=logger)
+                    dialogue.exec()
 
         else:
             warning_msg("You need to declare a time profile first.\n\n"

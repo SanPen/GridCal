@@ -645,7 +645,7 @@ def split_reactive_power_into_devices(nc: NumericalCircuit, Qbus: Vec, results: 
 
 def multi_island_pf_nc(nc: NumericalCircuit,
                        options: PowerFlowOptions,
-                       logger=Logger(),
+                       logger: Logger | None = None,
                        V_guess: Union[CxVec, None] = None,
                        Sbus_input: Union[CxVec, None] = None) -> PowerFlowResults:
     """
@@ -657,6 +657,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     :param Sbus_input: Use this power injections if provided
     :return: PowerFlowResults instance
     """
+    if logger is None:
+        logger = Logger()
 
     # declare results
     results = PowerFlowResults(
@@ -689,7 +691,8 @@ def multi_island_pf_nc(nc: NumericalCircuit,
     Shvdc_prev = Shvdc.copy()
 
     # compute islands
-    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands)
+    islands = nc.split_into_islands(ignore_single_node_islands=options.ignore_single_node_islands,
+                                    logger=logger)
 
     # initialize the all controls var
     all_controls_ok = False  # to run the first time

@@ -17,17 +17,23 @@
 
 import os
 import re
-import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
 from typing import List
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Utils.progress_bar import print_progress_bar
 from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog
 
 
-def extract_and_convert_to_datetime(filename):
+def extract_and_convert_to_datetime(filename, logger: Logger):
+    """
+
+    :param filename:
+    :param logger:
+    :return:
+    """
     date_patterns = [
         r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b',  # YYYY-MM-DD or YYYY_MM_DD
         r'\b(\d{8})\b',  # YYYYMMDD
@@ -49,25 +55,10 @@ def extract_and_convert_to_datetime(filename):
 
                 return date_object
             except ValueError:
-                print(f"Unable to parse date from: {date_str}")
+                # print(f"Unable to parse date from: {date_str}")
+                logger.add_error(msg="Unable to parse date from", value=date_str)
 
     return None  # Return None if no valid date is found
-
-
-def process_file_names(file_names):
-    """
-
-    :param file_names:
-    :return:
-    """
-    extracted_dates = []
-
-    for filename in file_names:
-        date_object = extract_and_convert_to_datetime(filename)
-        if date_object:
-            extracted_dates.append(date_object)
-
-    return extracted_dates
 
 
 class GridsModelItem:
@@ -205,13 +196,14 @@ class GridsModel(QtCore.QAbstractTableModel):
         super().dropEvent(event)
 
 
-def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secondary_key):
+def assign_grid(t, grid_to_add: MultiCircuit, main_grid: MultiCircuit, use_secondary_key, logger: Logger):
     """
     Assign all the values of the loaded grid to the profiles of the main grid at the time step t
     :param t: time step index
-    :param loaded_grid: loaded grid
+    :param grid_to_add: grid to add to the main cirucuit
     :param main_grid: main grid
     :param use_secondary_key: Use the secondary key ("code") to match
+    :param logger: Logger
     """
     # for each device type that we see in the tree ...
     for dev_template in main_grid.template_items():
@@ -223,20 +215,25 @@ def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secon
         main_elms_dict = main_grid.get_elements_dict_by_type(device_type, use_secondary_key=use_secondary_key)
 
         # get list of devices
-        loaded_elms = loaded_grid.get_elements_by_type(device_type)
+        elms_from_the_grid_to_add = grid_to_add.get_elements_by_type(device_type)
 
         # for each device
-        for loaded_elm in loaded_elms:
+        for elm_to_add in elms_from_the_grid_to_add:
 
-            # fast way to avoid double lookup
-            main_elm = main_elms_dict.get(loaded_elm.code if use_secondary_key else loaded_elm.idtag, None)
+            # try to find the element in the main grid: fast way to avoid double lookup
+            main_elm = main_elms_dict.get(elm_to_add.code if use_secondary_key else elm_to_add.idtag, None)
 
             if main_elm is not None:
 
                 # for every property with profile, set the profile value with the element value
                 for prop, profile_prop in main_elm.properties_with_profile.items():
+                    # copy the element profile properties to the main element at the time index t
+                    getattr(main_elm, profile_prop)[t] = getattr(elm_to_add, prop)
 
-                    getattr(main_elm, profile_prop)[t] = getattr(loaded_elm, prop)
+            else:
+                logger.add_warning("Element not found in the main grid, added on the fly",
+                                   value=elm_to_add.name)
+                main_grid.add_element(elm_to_add)
 
 
 class ModelsInputGUI(QtWidgets.QDialog):
@@ -303,61 +300,72 @@ class ModelsInputGUI(QtWidgets.QDialog):
             self.ui.modelsTableView.setModel(self.grids_model)
             self.ui.modelsTableView.repaint()
 
-    def process(self, main_grid: MultiCircuit, write_report=False, report_name="import_report.xlsx"):
+    def process(self, main_grid: MultiCircuit, logger: Logger):
         """
         Process the imported data
         :param main_grid: Grid to apply the values to, it has to have declared profiles already
-        :param write_report: Write the imports report
-        :param report_name: File name or complete path of the Excel report
+        :param logger: Logger
         :return: None
         """
         use_secondary_key = self.ui.matchUsingCodeCheckBox.isChecked()
 
         n = len(self.grids_model.items())
-        data_m = dict()
-        data_a = dict()
-        index = [''] * n
         dates = [''] * n
 
         for t, entry in enumerate(self.grids_model.items()):
-
-            index[t] = entry.name
+            name = os.path.basename(entry.path)
+            print_progress_bar(iteration=t, total=n, txt=name)
 
             if os.path.exists(entry.path):
-                print(entry.path)
 
-                dates[t] = extract_and_convert_to_datetime(os.path.basename(entry.path))
+                dates[t] = extract_and_convert_to_datetime(filename=os.path.basename(entry.path), logger=logger)
 
                 loaded_grid = FileOpen(entry.path).open()
                 assign_grid(t=t,
-                            loaded_grid=loaded_grid,
+                            grid_to_add=loaded_grid,
                             main_grid=main_grid,
-                            use_secondary_key=use_secondary_key)
+                            use_secondary_key=use_secondary_key,
+                            logger=logger)
 
-                if write_report:
-                    for i, bus in enumerate(loaded_grid.buses):
-                        arr_m = data_m.get(bus.code, None)
-                        arr_a = data_a.get(bus.code, None)
-                        if arr_m is None:
-                            arr_m = np.zeros(n, dtype=float)
-                            data_m[bus.code] = arr_m
-                            arr_a = np.zeros(n, dtype=float)
-                            data_a[bus.code] = arr_a
+                logger.add_info(msg="Loaded grid",
+                                device=name,
+                                device_property="Path",
+                                value=entry.path)
 
-                        arr_m[t] = bus.Vm0 * float(bus.active)
-                        arr_a[t] = bus.Va0 * float(bus.active)
+        # check devices' status: if an element is connected to disconnected buses the branch must be disconnected too
+        # this is to handle the typical PSSe garbage modlling practices
+        for elm in main_grid.get_all_branches_iter():
+            if not (elm.bus_from.active and elm.bus_to.active):
+                elm.active = False
+                logger.add_warning(msg="Inconsistent active state",
+                                   device=elm.name,
+                                   device_property="Snapshot")
 
-        if write_report:
-            with pd.ExcelWriter(report_name) as w:  # pylint: disable=abstract-class-instantiated
-                pd.DataFrame(data=data_m, index=index).to_excel(w, sheet_name="Vm")
-                pd.DataFrame(data=data_a, index=index).to_excel(w, sheet_name="Va")
+            for t in range(main_grid.get_time_number()):
+                if not (elm.bus_from.active_prof[t] and elm.bus_to.active_prof[t]):
+                    elm.active_prof[t] = False
+                    logger.add_warning(msg="Inconsistent active state",
+                                       device=elm.name,
+                                       device_property=str(t))
 
+        for elm in main_grid.injection_items():
+            if not elm.bus.active:
+                elm.active = False
+                logger.add_warning(msg="Inconsistent active state",
+                                   device=elm.name,
+                                   device_property="Snapshot")
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    window = ModelsInputGUI()
-    window.resize(1.61 * 700.0, 600.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec_())
+            for t in range(main_grid.get_time_number()):
+                if not elm.bus.active_prof[t]:
+                    elm.active_prof[t] = False
+                    logger.add_warning(msg="Inconsistent active state",
+                                       device=elm.name,
+                                       device_property=str(t))
 
+# if __name__ == "__main__":
+#     import sys
+#     app = QtWidgets.QApplication(sys.argv)
+#     window = ModelsInputGUI()
+#     window.resize(1.61 * 700.0, 600.0)  # golden ratio
+#     window.show()
+#     sys.exit(app.exec_())
