@@ -57,7 +57,8 @@ class RemedialAction(EditableDevice):
         self._allowed_properties = ['active', '%']
 
         self.register(key='device_idtag', units='', tpe=str, definition='Unique ID', editable=False)
-        self.register(key='prop', units='', tpe=str, definition='Name of the object property to change (active, %)')
+        self.register(key='prop', units='', tpe=str,
+                      definition=f'Name of the object property to change  {", ".join(self._allowed_properties)}')
         self.register(key='value', units='', tpe=float, definition='Property value')
         self.register(key='group', units='', tpe=DeviceType.RemedialActionGroupDevice,
                       definition='Remedial action group')

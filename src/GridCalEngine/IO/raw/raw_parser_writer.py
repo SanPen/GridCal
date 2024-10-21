@@ -112,7 +112,7 @@ def interpret_line(raw_line, splitter=','):
     return parsed
 
 
-def read_and_split(file_name, text_func=None, progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
+def read_and_split(file_name: str, text_func=None, progress_func=None) -> (List[AnyStr], Dict[AnyStr, AnyStr]):
     """
     Read the text file and split it into sections
     :return: list of sections, dictionary of sections by type
@@ -226,7 +226,9 @@ def read_raw(filename, text_func=None, progress_func=None, logger=Logger()) -> P
     if text_func is not None:
         text_func("Reading file...")
 
-    sections_dict = read_and_split(file_name=filename, text_func=text_func, progress_func=progress_func)
+    sections_dict = read_and_split(file_name=filename,
+                                   text_func=text_func,
+                                   progress_func=progress_func)
 
     # header -> new grid
     # grid = PSSeGrid(interpret_line(sections[0]))

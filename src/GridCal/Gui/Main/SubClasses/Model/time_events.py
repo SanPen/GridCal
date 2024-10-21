@@ -452,17 +452,13 @@ class TimeEventsMain(ObjectsTableMain):
             return
 
         if self.circuit.time_profile is None:
-            self.new_profiles_structure()
-
-        # if there are no profiles:
-        if self.circuit.time_profile is not None:
-            self.models_input_dialogue = ModelsInputGUI(parent=self,
-                                                        time_array=self.circuit.time_profile)
+            self.models_input_dialogue = ModelsInputGUI(parent=self)
 
             self.models_input_dialogue.resize(int(1.61 * 600.0), 550)  # golden ratio
-            self.models_input_dialogue.exec_()  # exec leaves the parent on hold
+            self.models_input_dialogue.exec()  # exec leaves the parent on hold
 
             if self.models_input_dialogue.grids_model is not None:
+
                 logger = Logger()
                 self.models_input_dialogue.process(main_grid=self.circuit, logger=logger)
 
@@ -475,11 +471,8 @@ class TimeEventsMain(ObjectsTableMain):
                     dialogue.exec()
 
         else:
-            warning_msg("You need to declare a time profile first.\n\n"
-                        "Then, this button will show the dialogue to\n"
-                        "load the data from the models at the time steps\n"
-                        "that you prefer.\n\n"
-                        "Use the 'Create profiles button'.")
+            warning_msg("The import of profiles from many grid models "
+                        "can only be done if the grid has not profiles :/")
 
     def get_circuit_snapshot_datetime(self):
         """

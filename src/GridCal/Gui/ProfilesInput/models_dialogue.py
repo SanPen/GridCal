@@ -14,12 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import os
 import re
+import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
 from typing import List
+from datetime import datetime, timedelta
+
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.basic_structures import Logger
@@ -27,36 +31,39 @@ from GridCalEngine.Utils.progress_bar import print_progress_bar
 from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog
 
 
-def extract_and_convert_to_datetime(filename, logger: Logger):
+def extract_and_convert_to_datetime(filename, logger: Logger) -> pd.DatetimeIndex | None:
     """
-
-    :param filename:
-    :param logger:
-    :return:
+    Try to extract date from file name
+    :param filename: file name
+    :param logger: Logger
+    :return: pd.DateTimeIndex or None
     """
     date_patterns = [
-        r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b',  # YYYY-MM-DD or YYYY_MM_DD
-        r'\b(\d{8})\b',  # YYYYMMDD
-        r'\b(\d{8}_\d{4})\b',  # YYYYMMDD_HHMM
-        r'\b(\d{4}[^\d]\d{2}[^\d]\d{2}_\d{4})\b'  # YYYY-MM-DD_HHMM
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b', '%Y-%m-%d'),  # YYYY-MM-DD
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b', '%Y_%m_%d'),  # YYYY_MM_DD
+        (r'\b(\d{8})\b', '%Y%m%d'),  # YYYYMMDD
+        (r'\b(\d{12})\b', '%Y%m%d%H%M'),  # YYYYMMDDHHMM
+        (r'\b(\d{8}_\d{4})\b', '%Y%m%d_%H%M'),  # YYYYMMDD_HHMM
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2}_\d{4})\b', '%Y-%m-%d_%H%M'),  # YYYY-MM-DD_HHMM
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2}_\d{4})\b', '%Y_%m_%d_%H%M')  # YYYY_MM_DD_HHMM
     ]
 
-    for date_pattern in date_patterns:
+    date_str = filename
+    for date_pattern, frmt in date_patterns:
         match = re.search(date_pattern, filename)
         if match:
             date_str = match.group(1)
 
             # Try to parse the date string
             try:
-                if '_' in date_str:
-                    date_object = pd.to_datetime(date_str, format='%Y%m%d_%H%M', errors='raise')
-                else:
-                    date_object = pd.to_datetime(date_str, format='%Y%m%d', errors='raise')
+                date_object = pd.to_datetime(date_str, format=frmt, errors='raise')
 
                 return date_object
             except ValueError:
                 # print(f"Unable to parse date from: {date_str}")
-                logger.add_error(msg="Unable to parse date from", value=date_str)
+                pass
+
+    logger.add_error(msg="Unable to parse date from", value=date_str)
 
     return None  # Return None if no valid date is found
 
@@ -66,19 +73,24 @@ class GridsModelItem:
     GridsModelItem
     """
 
-    def __init__(self, path, time=""):
+    def __init__(self, path, tme, logger: Logger):
         """
 
         :param path:
         """
-        self.time = time
+        suggested_tme = extract_and_convert_to_datetime(filename=os.path.basename(path), logger=logger)
+        self.time = suggested_tme if suggested_tme is not None else tme
 
         self.path: str = path
 
         self.name = os.path.basename(path)
 
     def get_at(self, idx):
+        """
 
+        :param idx:
+        :return:
+        """
         # 'Time', 'Name', 'Folder'
         if idx == 0:
             return self.time
@@ -91,32 +103,75 @@ class GridsModelItem:
 
 
 class GridsModel(QtCore.QAbstractTableModel):
+    """
+    GridsModel
+    """
 
     def __init__(self):
+        """
+
+        """
         QtCore.QAbstractTableModel.__init__(self)
 
         self._values_: List[GridsModelItem] = list()
 
         self._headers_ = ['Time', 'Name', 'Path']
 
+    def clear(self):
+        """
+
+        :return:
+        """
+        self._values_.clear()
+
     def append(self, val: GridsModelItem):
+        """
+
+        :param val:
+        :return:
+        """
         self._values_.append(val)
 
     def set_path_at(self, i, path):
+        """
+
+        :param i:
+        :param path:
+        :return:
+        """
         if i < len(self._values_):
             self._values_[i].path = path
             self._values_[i].name = os.path.basename(path)
 
     def items(self):
+        """
+
+        :return:
+        """
         return self._values_
 
     def remove(self, idx: int):
+        """
+
+        :param idx:
+        :return:
+        """
         self._values_.pop(idx)
 
     def rowCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self._values_)
 
     def columnCount(self, parent=None):
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self._headers_)
 
     def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
@@ -169,31 +224,20 @@ class GridsModel(QtCore.QAbstractTableModel):
         """
         return QtCore.Qt.DropAction.MoveAction | QtCore.Qt.DropAction.CopyAction
 
-    def dropEvent(self, event):
+    def dropMimeData(self, data: QtCore.QMimeData,
+                     action: QtCore.Qt.DropAction,
+                     row: int, column: int,
+                     parent: QtCore.QModelIndex | QtCore.QPersistentModelIndex) -> bool:
         """
 
-        :param event:
+        :param data:
+        :param action:
+        :param row:
+        :param column:
+        :param parent:
+        :return:
         """
-        if (event.source() is not self or
-                (event.dropAction() != QtCore.Qt.DropAction.MoveAction and
-                 self.dragDropMode() != QtWidgets.QAbstractItemView.DragDropMode.InternalMove)):
-            super().dropEvent(event)
-        selection = self.selectedIndexes()
-        from_index = selection[0].row() if selection else -1
-
-        globalPos = self.viewport().mapToGlobal(event.pos())
-        header = self.verticalHeader()
-        to_index = header.logicalIndexAt(header.mapFromGlobal(globalPos).y())
-        if to_index < 0:
-            to_index = header.logicalIndex(self.model().rowCount() - 1)
-
-        if from_index != to_index:
-            from_index = header.visualIndex(from_index)
-            to_index = header.visualIndex(to_index)
-            header.moveSection(from_index, to_index)
-            event.accept()
-            event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)
-        super().dropEvent(event)
+        pass
 
 
 def assign_grid(t, grid_to_add: MultiCircuit, main_grid: MultiCircuit, use_secondary_key, logger: Logger):
@@ -241,11 +285,10 @@ class ModelsInputGUI(QtWidgets.QDialog):
     ModelsInputGUI
     """
 
-    def __init__(self, parent=None, time_array=[]):
+    def __init__(self, parent=None):
         """
 
         :param parent:
-        :param time_array: time array
         """
 
         QtWidgets.QDialog.__init__(self, parent)
@@ -259,9 +302,6 @@ class ModelsInputGUI(QtWidgets.QDialog):
         self.grids_model: GridsModel = GridsModel()
 
         self.logger = Logger()
-
-        for t in time_array:
-            self.grids_model.append(GridsModelItem("", str(t)))
 
         self.ui.matchUsingCodeCheckBox.setChecked(True)
 
@@ -278,6 +318,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
 
         :return:
         """
+        super().accept()
         self.close()
 
     def add_models(self):
@@ -293,12 +334,53 @@ class ModelsInputGUI(QtWidgets.QDialog):
         filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(self, 'Add files', filter=files_types)
 
         if len(filenames):
+
+            self.grids_model.clear()
+
+            d = datetime.today()
+            base_date = datetime(d.year, 1, 1, 00, 00, 00)
+            base_inc = 1  # 1 hour
+
             for i, file_path in enumerate(filenames):
-                self.grids_model.set_path_at(i, file_path)
+                tme = base_date + timedelta(hours=base_inc * i)
+                self.grids_model.append(GridsModelItem(file_path, tme=tme, logger=self.logger))
 
             self.ui.modelsTableView.setModel(None)
             self.ui.modelsTableView.setModel(self.grids_model)
             self.ui.modelsTableView.repaint()
+
+    def generate_time_array(self, main_grid: MultiCircuit, logger: Logger):
+        """
+        Generate time profile from model
+        :param main_grid:
+        :param logger:
+        :return:
+        """
+        n = len(self.grids_model.items())
+
+        t_profile = np.zeros(n, dtype=object)
+
+        d = datetime.today()
+        base_date = datetime(d.year, 1, 1, 00, 00, 00)
+        base_inc = 1  # 1 hour
+
+        for t, entry in enumerate(self.grids_model.items()):
+            if entry.time is not None:
+                if isinstance(entry.time, pd.DatetimeIndex):
+                    t_profile[t] = entry.time
+                else:
+                    try:
+                        t_profile[t] = pd.to_datetime(entry.time)
+                    except ValueError:
+                        t_profile[t] = base_date + timedelta(hours=base_inc * t)
+                        logger.add_info(msg="Could not convert time",
+                                        device="time array",
+                                        device_property="",
+                                        value=str(entry.time))
+
+        # set the circuit time profile
+        main_grid.time_profile = pd.to_datetime(t_profile)
+        main_grid.ensure_profiles_exist()
 
     def process(self, main_grid: MultiCircuit, logger: Logger):
         """
@@ -310,16 +392,14 @@ class ModelsInputGUI(QtWidgets.QDialog):
         use_secondary_key = self.ui.matchUsingCodeCheckBox.isChecked()
 
         n = len(self.grids_model.items())
-        dates = [''] * n
+
+        self.generate_time_array(main_grid=main_grid, logger=logger)
 
         for t, entry in enumerate(self.grids_model.items()):
             name = os.path.basename(entry.path)
-            print_progress_bar(iteration=t, total=n, txt=name)
+            print_progress_bar(iteration=t+1, total=n, txt=name)
 
             if os.path.exists(entry.path):
-
-                dates[t] = extract_and_convert_to_datetime(filename=os.path.basename(entry.path), logger=logger)
-
                 loaded_grid = FileOpen(entry.path).open()
                 assign_grid(t=t,
                             grid_to_add=loaded_grid,
