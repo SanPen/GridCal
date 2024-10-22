@@ -145,7 +145,8 @@ class HvdcLine(BranchParent):
                  overload_cost=1000.0, min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0, contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  control_mode: HvdcControlType = HvdcControlType.type_1_Pset, dispatchable=True, angle_droop=0,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned, n_lines: int = 1):
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned, n_lines: int = 1,
+                 dc_link_voltage: float = 200):
         """
         HVDC Line model
         :param bus_from: Bus from
@@ -199,6 +200,10 @@ class HvdcLine(BranchParent):
 
         self.r = float(r)
 
+        self.dc_link_voltage = float(dc_link_voltage)
+
+        self.n_lines = int(n_lines)
+
         self.angle_droop = float(angle_droop)
 
         self.loss_factor = float(loss_factor)
@@ -238,7 +243,7 @@ class HvdcLine(BranchParent):
         self._Vset_t_prof: Vec = Profile(default_value=Vset_t, data_type=float)
         self._angle_droop_prof: Vec = Profile(default_value=angle_droop, data_type=float)
 
-        self.n_lines = n_lines
+
 
         # Line locations
         self._locations: LineLocations = LineLocations()
@@ -248,11 +253,16 @@ class HvdcLine(BranchParent):
         self.register(key='control_mode', units='-', tpe=HvdcControlType, definition='Control type.')
         self.register(key='Pset', units='MW', tpe=float, definition='Set power flow.', profile_name='Pset_prof')
         self.register(key='r', units='Ohm', tpe=float, definition='line resistance.')
+        self.register(key='dc_link_voltage', units='kV', tpe=float,
+                      definition='line voltage (only for compatibility, not used in calcs.)')
+
         self.register(key='angle_droop', units='MW/deg', tpe=float, definition='Power/angle rate control',
                       profile_name='angle_droop_prof')
+
         self.register(key='n_lines', units='', tpe=int,
                       definition='Number of parallel lines between the converter stations. '
                                  'The rating will be equally divided')
+
         self.register(key='Vset_f', units='p.u.', tpe=float, definition='Set voltage at the from side',
                       profile_name='Vset_f_prof')
         self.register(key='Vset_t', units='p.u.', tpe=float, definition='Set voltage at the to side',

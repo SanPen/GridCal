@@ -104,7 +104,7 @@ def newton_raphson_fx(problem: PfFormulationTemplate,
                 print("(newton_raphson_fx.py) Singular Jacobian")
                 return problem.get_solution(elapsed=time.time() - start, iterations=iteration)
 
-            # set the problem state
+            # line search
             mu = trust0
             update_controls = error < (tol * 100)
             x_sol = x
