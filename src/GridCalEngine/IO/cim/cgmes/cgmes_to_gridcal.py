@@ -170,8 +170,9 @@ def get_gcdev_device_to_terminal_dict(cgmes_model: CgmesCircuit,
     return device_to_terminal_dict
 
 
-def get_gcdev_dc_device_to_terminal_dict(cgmes_model: CgmesCircuit,
-                                         logger: DataLogger) -> Dict[str, List[Base]]:
+def get_gcdev_dc_device_to_terminal_dict(
+        cgmes_model: CgmesCircuit,
+        logger: DataLogger) -> tuple[dict[str, list[Base]], list[Base], list[Base]]:
     """
     Dictionary relating the DC conducting equipment to the DC terminal object(s)
     """
@@ -200,11 +201,15 @@ def get_gcdev_dc_device_to_terminal_dict(cgmes_model: CgmesCircuit,
             else:
                 lst.append(dc_term)
 
+    ground_tp_list = list()
+    ground_node_list = list()
+
     # relating the converter terminals to DCTerminals to if DCNode is common
     for conv_dc_term in cgmes_model.cgmes_assets.ACDCConverterDCTerminal_list:
 
         dc_term_n = None    # DCTerminal inside the same DCNode
         dc_node = conv_dc_term.DCNode
+        dc_tp = conv_dc_term.DCTopologicalNode
         if isinstance(dc_node.DCTerminals[0], dc_terminal_type):
             dc_term_n = dc_node.DCTerminals[0]
         elif isinstance(dc_node.DCTerminals[1], dc_terminal_type):
@@ -226,6 +231,8 @@ def get_gcdev_dc_device_to_terminal_dict(cgmes_model: CgmesCircuit,
                             device_property="DCGround",
                             value=conv_dc_term.DCConductingEquipment,
                             comment="get_gcdev_dc_device_to_terminal_dict")
+            ground_tp_list.append(dc_tp)
+            ground_node_list.append(dc_node)
             continue
         else:           # DCTerminals for ACDCConverter DC side
             dc_cond_eq = conv_dc_term.DCConductingEquipment     # the VSC
@@ -235,7 +242,7 @@ def get_gcdev_dc_device_to_terminal_dict(cgmes_model: CgmesCircuit,
             else:
                 lst.append(dc_term_n)
 
-    return dc_device_to_terminal_dict
+    return dc_device_to_terminal_dict, ground_tp_list, ground_node_list
 
 
 def find_connections(cgmes_elm: Base,
@@ -389,6 +396,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
 
 def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
                        gc_model: MultiCircuit,
+                       buses_to_skip: List,
                        logger: DataLogger) -> Dict[str, gcdev.Bus]:
     """
     Convert the DCTopologicalNodes to DC Buses (CalculationNodes)
@@ -403,30 +411,33 @@ def get_gcdev_dc_buses(cgmes_model: CgmesCircuit,
     dc_bus_dict: Dict[str, gcdev.Bus] = dict()
 
     for cgmes_elm in cgmes_model.cgmes_assets.DCTopologicalNode_list:
-        nominal_voltage = 500.0  # TODO get DC nominal Voltage
 
-        gcdev_elm = gcdev.Bus(
-            name=cgmes_elm.name,
-            idtag=cgmes_elm.uuid,
-            code=cgmes_elm.description,
-            Vnom=nominal_voltage,
-            active=True,
-            is_slack=False,
-            is_dc=True,
-            area=None,  # areas and zones are not created from cgmes models
-            zone=None,
-            # substation=substat,
-            # voltage_level=volt_lev,
-            # country=country,
-            # latitude=latitude,
-            # longitude=longitude,
-            # Vm0=vm,
-            # Va0=va
-        )
+        if cgmes_elm not in buses_to_skip:
 
-        gc_model.add_bus(gcdev_elm)
+            nominal_voltage = 500.0  # TODO get DC nominal Voltage
 
-        dc_bus_dict[gcdev_elm.idtag] = gcdev_elm
+            gcdev_elm = gcdev.Bus(
+                name=cgmes_elm.name,
+                idtag=cgmes_elm.uuid,
+                code=cgmes_elm.description,
+                Vnom=nominal_voltage,
+                active=True,
+                is_slack=False,
+                is_dc=True,
+                area=None,  # areas and zones are not created from cgmes models
+                zone=None,
+                # substation=substat,
+                # voltage_level=volt_lev,
+                # country=country,
+                # latitude=latitude,
+                # longitude=longitude,
+                # Vm0=vm,
+                # Va0=va
+            )
+
+            gc_model.add_bus(gcdev_elm)
+
+            dc_bus_dict[gcdev_elm.idtag] = gcdev_elm
 
     return dc_bus_dict
 
@@ -452,9 +463,10 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
         bus = dc_bus_dict.get(cgmes_elm.DCTopologicalNode.uuid, None)
         vnom = 10
         if bus is None:
-            logger.add_error(msg='No DC Bus found for DC Node',
-                             device=cgmes_elm.rdfid,
-                             device_class=cgmes_elm.tpe)
+            logger.add_warning(msg='No DC Bus found for DC Node.',
+                               device=cgmes_elm.rdfid,
+                               device_class=cgmes_elm.tpe,
+                               comment="Maybe it belongs to a DCGround, that is not imported.")
             default_bus = None
         else:
             if bus not in used_buses:
@@ -1768,26 +1780,28 @@ def get_gcdev_voltage_levels(cgmes_model: CgmesCircuit,
 
     for cgmes_elm in cgmes_model.cgmes_assets.VoltageLevel_list:
 
-        # if not isinstance(cgmes_elm.BaseVoltage, str):  # if it is a string it wass not substituted...
+        if not isinstance(cgmes_elm.BaseVoltage, str):  # if it is a string it was not substituted...
 
-        gcdev_elm = gcdev.VoltageLevel(
-            idtag=cgmes_elm.uuid,
-            name=cgmes_elm.name,
-            Vnom=cgmes_elm.BaseVoltage.nominalVoltage
-        )
+            gcdev_elm = gcdev.VoltageLevel(
+                idtag=cgmes_elm.uuid,
+                name=cgmes_elm.name,
+                Vnom=cgmes_elm.BaseVoltage.nominalVoltage
+            )
 
-        subs = find_object_by_idtag(
-            object_list=gcdev_model.substations,
-            target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
-        )
-        if subs:
-            gcdev_elm.substation = subs
+            subs = find_object_by_idtag(
+                object_list=gcdev_model.substations,
+                target_idtag=cgmes_elm.Substation.uuid  # gcdev_elm.idtag
+            )
+            if subs:
+                gcdev_elm.substation = subs
 
-        gcdev_model.add_voltage_level(gcdev_elm)
-        volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
-    else:
-        # TODO: this is very weird and cgmes_elm might not be defined
-        logger.add_error(msg='Base voltage not found', device=str(cgmes_elm.BaseVoltage))
+            gcdev_model.add_voltage_level(gcdev_elm)
+            volt_lev_dict[gcdev_elm.idtag] = gcdev_elm
+
+        else:
+            logger.add_error(msg='Base voltage not found for VoltageLevel',
+                             device=str(cgmes_elm.BaseVoltage),
+                             comment="get_gcdev_voltage_levels")
 
     return volt_lev_dict
 
@@ -2063,14 +2077,17 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     cgmes_model.emit_progress(91)
     cgmes_model.emit_text("Converting CGMES to Gridcal - HVDC!")
     # DC elements  ---------------------------------------------------------
-    dc_device_to_terminal_dict = get_gcdev_dc_device_to_terminal_dict(
+    dc_device_to_terminal_dict, ground_buses, ground_nodes = get_gcdev_dc_device_to_terminal_dict(
         cgmes_model=cgmes_model,
         logger=logger
     )
 
-    dc_bus_dict = get_gcdev_dc_buses(cgmes_model=cgmes_model,
-                                     gc_model=gc_model,
-                                     logger=logger)
+    dc_bus_dict = get_gcdev_dc_buses(
+        cgmes_model=cgmes_model,
+        gc_model=gc_model,
+        buses_to_skip=ground_buses,
+        logger=logger
+    )
 
     dc_cn_dict = get_gcdev_dc_connectivity_nodes(
         cgmes_model=cgmes_model,
