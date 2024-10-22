@@ -18,6 +18,7 @@
 from typing import Tuple, Union
 import numpy as np
 from GridCalEngine.Devices.Substation.bus import Bus
+from GridCalEngine.Devices.Substation.connectivity_node import ConnectivityNode
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Branches.winding import Winding
 from GridCalEngine.Devices.Branches.transformer_type import get_impedances
@@ -50,6 +51,10 @@ class Transformer3W(PhysicalDevice):
                  name: str = 'Branch',
                  bus0: Union[None, Bus] = None,
                  bus1: Bus = None, bus2: Bus = None, bus3: Bus = None,
+                 cn0: Union[None, ConnectivityNode] = None,
+                 cn1: ConnectivityNode = None, 
+                 cn2: ConnectivityNode = None, 
+                 cn3: ConnectivityNode = None,
                  w1_idtag: Union[str, None] = None,
                  w2_idtag: Union[str, None] = None,
                  w3_idtag: Union[str, None] = None,
@@ -94,10 +99,23 @@ class Transformer3W(PhysicalDevice):
             bus0.is_internal = True
             bus0.Vnom = 1.0
             self.bus0 = bus0
+        
+        if cn0 is None:
+            self.cn0 = ConnectivityNode(name=name + '_cn', Vnom=1.0, internal=True)
+        else:
+            cn0.is_internal = True
+            cn0.Vnom = 1.0
+            self.cn0 = cn0
 
+        self.cn0.default_bus = self.bus0
+        
         self._bus1 = bus1
         self._bus2 = bus2
         self._bus3 = bus3
+        
+        self._cn1 = cn1
+        self._cn2 = cn2
+        self._cn3 = cn3
 
         self.active = bool(active)
         self._active_prof = Profile(default_value=self.active, data_type=bool)
@@ -130,9 +148,21 @@ class Transformer3W(PhysicalDevice):
         self._Pfe: float = 0.0
         self._I0: float = 0.0
 
-        self._winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag, bus_to=bus1, HV=V1, LV=1.0, name=name + "_W1")
-        self._winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag, bus_to=bus2, HV=V2, LV=1.0, name=name + "_W2")
-        self._winding3 = Winding(bus_from=self.bus0, idtag=w3_idtag, bus_to=bus3, HV=V3, LV=1.0, name=name + "_W3")
+        self._winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag, 
+                                 bus_to=bus1,
+                                 cn_from=self.cn0,
+                                 cn_to=self.cn1,
+                                 HV=V1, LV=1.0, name=name + "_W1")
+        self._winding2 = Winding(bus_from=self.bus0, idtag=w2_idtag,
+                                 bus_to=bus2,
+                                 cn_from=self.cn0,
+                                 cn_to=self.cn2,
+                                 HV=V2, LV=1.0, name=name + "_W2")
+        self._winding3 = Winding(bus_from=self.bus0, idtag=w3_idtag,
+                                 bus_to=bus3,
+                                 cn_from=self.cn0,
+                                 cn_to=self.cn3,
+                                 HV=V3, LV=1.0, name=name + "_W3")
 
         self.x = float(x)
         self.y = float(y)
@@ -142,6 +172,12 @@ class Transformer3W(PhysicalDevice):
         self.register(key='bus1', units='', tpe=DeviceType.BusDevice, definition='Bus 1.', editable=False)
         self.register(key='bus2', units='', tpe=DeviceType.BusDevice, definition='Bus 2.', editable=False)
         self.register(key='bus3', units='', tpe=DeviceType.BusDevice, definition='Bus 3.', editable=False)
+
+        self.register(key='cn0', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='Middle point connection cn.',
+                      editable=False)
+        self.register(key='cn1', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 1.', editable=False)
+        self.register(key='cn2', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 2.', editable=False)
+        self.register(key='cn3', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 3.', editable=False)
 
         self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
 
@@ -268,6 +304,42 @@ class Transformer3W(PhysicalDevice):
 
         if obj is not None:
             self.winding3.set_hv_and_lv(self.winding3.HV, self.winding3.LV)
+
+    @property
+    def cn1(self) -> ConnectivityNode:
+        """
+        ConnectivityNode 1
+        """
+        return self._cn1
+
+    @cn1.setter
+    def cn1(self, obj: ConnectivityNode):
+        self._cn1 = obj
+        self.winding1.cn_to = obj
+
+    @property
+    def cn2(self) -> ConnectivityNode:
+        """
+        ConnectivityNode 2
+        """
+        return self._cn2
+
+    @cn2.setter
+    def cn2(self, obj: ConnectivityNode):
+        self._cn2 = obj
+        self.winding2.cn_to = obj
+
+    @property
+    def cn3(self) -> ConnectivityNode:
+        """
+        ConnectivityNode 3
+        """
+        return self._cn3
+
+    @cn3.setter
+    def cn3(self, obj: ConnectivityNode):
+        self._cn3 = obj
+        self.winding3.cn_to = obj
 
     @property
     def V1(self) -> float:

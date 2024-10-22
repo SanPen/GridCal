@@ -476,19 +476,19 @@ def get_gcdev_dc_connectivity_nodes(cgmes_model: CgmesCircuit,
                 default_bus = None
             vnom = bus.Vnom
 
-        gcdev_elm = gcdev.ConnectivityNode(
-            idtag=cgmes_elm.uuid,
-            code=cgmes_elm.description,
-            name=cgmes_elm.name,
-            dc=True,
-            default_bus=default_bus,  # this is only set by the BusBar's
-            Vnom=vnom,
-            # voltage_level=vl
-        )
+            gcdev_elm = gcdev.ConnectivityNode(
+                idtag=cgmes_elm.uuid,
+                code=cgmes_elm.description,
+                name=cgmes_elm.name,
+                dc=True,
+                default_bus=default_bus,  # this is only set by the BusBar's
+                Vnom=vnom,
+                # voltage_level=vl
+            )
 
-        gc_model.add_connectivity_node(gcdev_elm)
+            gc_model.add_connectivity_node(gcdev_elm)
 
-        dc_cn_node_dict[gcdev_elm.idtag] = gcdev_elm
+            dc_cn_node_dict[gcdev_elm.idtag] = gcdev_elm
 
     return dc_cn_node_dict
 
@@ -1189,12 +1189,14 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     if i is not None:
                         windings[i - 1] = pte
             windings = [x for x in windings if x is not None]
+
             # windings = get_windings(cgmes_elm)
             # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
 
             rate_mva = rates_dict.get(cgmes_elm.uuid, 9999.0)  # min PATL rate in MW/MVA
 
             if len(windings) == 2:
+
                 calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
                                                    device_to_terminal_dict=device_to_terminal_dict,
                                                    calc_node_dict=calc_node_dict,
@@ -1271,6 +1273,11 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                    cn_dict=cn_dict,
                                                    logger=logger)
 
+                # SORTING of buses and windings
+                windings.sort(key=lambda obj: obj.ratedU, reverse=False)
+                calc_nodes.sort(key=lambda obj: obj.Vnom, reverse=False)
+                cns.sort(key=lambda obj: obj.Vnom, reverse=False)
+
                 if len(calc_nodes) == 3:
                     calc_node_1 = calc_nodes[0]
                     calc_node_2 = calc_nodes[1]
@@ -1285,6 +1292,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     v1 = windings[0].ratedU
                     v2 = windings[1].ratedU
                     v3 = windings[2].ratedU
+                    # TODO check: order of buses are not the same as the order of the winding belonging
+                    # bus.Vnom, soring
                     # HV = max(v1, v2, v3)
                     # LV = min(v1, v2, v3)
                     # get per unit values
@@ -1299,6 +1308,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     bus1=calc_node_1,
                                                     bus2=calc_node_2,
                                                     bus3=calc_node_3,
+                                                    cn1=cn_1,
+                                                    cn2=cn_2,
+                                                    cn3=cn_3,
                                                     w1_idtag=windings[0].uuid,
                                                     w2_idtag=windings[1].uuid,
                                                     w3_idtag=windings[2].uuid,
@@ -1323,8 +1335,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding1.G0 = g0
                     gcdev_elm.winding1.B0 = b0
                     gcdev_elm.winding1.rate = float(windings[0].ratedS)
-                    gcdev_elm.winding1.cn_from = cn_1
-                    gcdev_elm.winding1.cn_to = cn_2
+                    # gcdev_elm.winding1.cn_from = cn_1
+                    # gcdev_elm.winding1.cn_to = cn_2
 
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[1], Sbase)
                     gcdev_elm.winding2.R = r
@@ -1336,8 +1348,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding2.G0 = g0
                     gcdev_elm.winding2.B0 = b0
                     gcdev_elm.winding2.rate = float(windings[1].ratedS)
-                    gcdev_elm.winding2.cn_from = cn_2
-                    gcdev_elm.winding2.cn_to = cn_3
+                    # gcdev_elm.winding2.cn_from = cn_2
+                    # gcdev_elm.winding2.cn_to = cn_3
 
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[2], Sbase)
                     gcdev_elm.winding3.R = r
@@ -1349,8 +1361,8 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     gcdev_elm.winding3.G0 = g0
                     gcdev_elm.winding3.B0 = b0
                     gcdev_elm.winding3.rate = float(windings[2].ratedS)
-                    gcdev_elm.winding3.cn_from = cn_3
-                    gcdev_elm.winding3.cn_to = cn_1
+                    # gcdev_elm.winding3.cn_from = cn_3
+                    # gcdev_elm.winding3.cn_to = cn_1
 
                     # gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=False)  # TODO: Why not adding the middle bus?
                     gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=True)
