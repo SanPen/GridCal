@@ -110,10 +110,16 @@ class MapLineSegment(QGraphicsLineItem):
         pen.setWidthF(width)
         self.setPen(pen)
 
-        self.arrow_p_from.label.setScale(width)
-        self.arrow_q_from.label.setScale(width)
-        self.arrow_p_to.label.setScale(width)
-        self.arrow_q_to.label.setScale(width)
+    def set_arrow_scale(self, width: float):
+        """
+
+        :param width:
+        :return:
+        """
+        self.arrow_p_from.setScale(width)
+        self.arrow_q_from.setScale(width)
+        self.arrow_p_to.setScale(width)
+        self.arrow_q_to.setScale(width)
 
     def set_colour(self, color: QColor, style: Qt.PenStyle):
         """

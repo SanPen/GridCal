@@ -14,13 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 import GridCalEngine.Topology.topology as tp
 from GridCalEngine.enumerations import WindingsConnection
 from GridCalEngine.Utils.Sparse.sparse_array import SparseObjectArray
-from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec, BoolVec
+from GridCalEngine.basic_structures import Vec, IntVec, StrVec, ObjVec, CxVec, BoolVec, Logger
 from typing import List, Tuple, Dict, Set
 
 
@@ -126,11 +128,12 @@ class BranchData:
 
         return self.nelm
 
-    def slice(self, elm_idx: IntVec, bus_idx: IntVec) -> "BranchData":
+    def slice(self, elm_idx: IntVec, bus_idx: IntVec, logger: Logger | None) -> "BranchData":
         """
         Slice branch data by given indices
         :param elm_idx: array of branch indices
         :param bus_idx: array of bus indices
+        :param logger: Logger
         :return: new BranchData instance
         """
 
@@ -204,8 +207,21 @@ class BranchData:
         data.T = self.T[elm_idx]
         bus_map: Dict[int, int] = {o: i for i, o in enumerate(bus_idx)}
         for k in range(data.nelm):
-            data.F[k] = bus_map[data.F[k]]
-            data.T[k] = bus_map[data.T[k]]
+            data.F[k] = bus_map.get(data.F[k], -1)
+
+            if data.F[k] == -1:
+                if logger is not None:
+                    logger.add_error(f"Branch {k}, {self.names[k]} if connected to a disconnected node",
+                                     value=data.F[k])
+                data.active[k] = 0
+
+            data.T[k] = bus_map.get(data.T[k], -1)
+
+            if data.T[k] == -1:
+                if logger is not None:
+                    logger.add_error(f"Branch {k}, {self.names[k]} if connected to a disconnected node",
+                                     value=data.T[k])
+                data.active[k] = 0
 
         data.overload_cost = self.overload_cost[elm_idx]
 

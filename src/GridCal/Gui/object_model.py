@@ -173,10 +173,13 @@ class ObjectsModel(WrappableTableModel):
         update table
         """
         self.r = len(self.objects)
-        row = self.rowCount()
-        self.beginInsertRows(QtCore.QModelIndex(), row, row)
-        # whatever code
-        self.endInsertRows()
+        # row = self.rowCount()
+        # self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        # # whatever code
+        # self.endInsertRows()
+
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlag:
         """

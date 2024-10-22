@@ -15,14 +15,14 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
-from GridCalEngine.Devices import ContingencyGroup
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_results import ContingencyAnalysisResults
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
+from GridCalEngine.basic_structures import Logger
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver
@@ -33,7 +33,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
                                 linear_multiple_contingencies: LinearMultiContingencies,
                                 calling_class: ContingencyAnalysisDriver,
                                 t=None,
-                                t_prob=1.0) -> ContingencyAnalysisResults:
+                                t_prob=1.0,
+                                logger: Logger | None = None, ) -> ContingencyAnalysisResults:
     """
     Run N-1 simulation in series with HELM, non-linear solution
     :param grid: MultiCircuit
@@ -42,6 +43,7 @@ def linear_contingency_analysis(grid: MultiCircuit,
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
     :param t_prob: probability of te time
+    :param logger: logger instance
     :return: returns the results
     """
 
@@ -138,7 +140,8 @@ def linear_contingency_analysis(grid: MultiCircuit,
         # report progress
         if t is None:
             if calling_class is not None:
-                calling_class.report_text(f'Contingency group: {linear_multiple_contingencies.contingency_groups_used[ic].name}')
+                calling_class.report_text(
+                    f'Contingency group: {linear_multiple_contingencies.contingency_groups_used[ic].name}')
                 calling_class.report_progress2(ic, len(linear_multiple_contingencies.multi_contingencies))
 
     results.lodf = linear_analysis.LODF

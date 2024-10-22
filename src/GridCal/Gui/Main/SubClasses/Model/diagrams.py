@@ -52,6 +52,7 @@ from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import OsmTiles
+from trunk.qt_related.slippy_map import MapWidget
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -262,8 +263,10 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.actionDisable_all_results_tags.triggered.connect(self.disable_all_results_tags)
         self.ui.actionEnable_all_results_tags.triggered.connect(self.enable_all_results_tags)
         self.ui.actionConsolidate_diagram_coordinates.triggered.connect(self.consolidate_diagram_coordinates)
+
         # Buttons
         self.ui.colour_results_pushButton.clicked.connect(self.colour_diagrams)
+        self.ui.redraw_pushButton.clicked.connect(self.redraw_current_diagram)
 
         # list clicks
         self.ui.diagramsListView.clicked.connect(self.set_selected_diagram_on_click)
@@ -288,6 +291,7 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.max_branch_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
         self.ui.min_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
         self.ui.max_node_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
+        self.ui.arrow_size_size_spinBox.valueChanged.connect(self.set_diagrams_size_contraints)
 
         # check boxes
         self.ui.branch_width_based_on_flow_checkBox.clicked.connect(self.set_diagrams_size_contraints)
@@ -1606,8 +1610,10 @@ class DiagramsMain(CompiledArraysMain):
                                                      prog_func=None,
                                                      text_func=None)
 
-                diagram_widget.set_data(circuit=self.circuit,
-                                        diagram=diagram)
+                diagram_widget.set_data(circuit=self.circuit, diagram=diagram)
+
+            elif isinstance(diagram_widget, GridMapWidget):
+                diagram_widget.update_device_sizes()
 
     def set_selected_diagram_on_click(self):
         """
@@ -2640,7 +2646,8 @@ class DiagramsMain(CompiledArraysMain):
                     min_branch_width=self.ui.min_branch_size_spinBox.value(),
                     max_branch_width=self.ui.max_branch_size_spinBox.value(),
                     min_bus_width=self.ui.min_node_size_spinBox.value(),
-                    max_bus_width=self.ui.max_node_size_spinBox.value()
+                    max_bus_width=self.ui.max_node_size_spinBox.value(),
+                    arrow_size=self.ui.arrow_size_size_spinBox.value(),
                 )
                 diagram_widget.diagram.default_bus_voltage = self.ui.defaultBusVoltageSpinBox.value()
 

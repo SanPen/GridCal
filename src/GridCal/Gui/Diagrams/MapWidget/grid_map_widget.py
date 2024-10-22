@@ -355,8 +355,6 @@ class GridMapWidget(BaseDiagramWidget):
         self.diagram.latitude = latitude
         self.diagram.longitude = longitude
 
-        # print(f"Pos lat={latitude}, lon={longitude} x={x}, y={y}")
-
     def zoom_in(self):
         """
         Zoom in
@@ -880,7 +878,6 @@ class GridMapWidget(BaseDiagramWidget):
             substation_graphics = self.add_api_substation(api_object=se_object, lat=lat, lon=lon)
 
             for vl_template in dlg.get_voltage_levels():
-
                 # substation_graphics.add_voltage_level()
                 vl = VoltageLevel(name=f"{se_object.name} @{kv}KV VL",
                                   Vnom=vl_template.voltage,
@@ -920,11 +917,37 @@ class GridMapWidget(BaseDiagramWidget):
         scale = self.diagram.min_branch_width + (zoom - min_zoom) / (max_zoom - min_zoom)
         return scale
 
+    def get_arrow_scale(self) -> float:
+        """
+        Get the desired branch width
+        :return:
+        """
+        max_zoom = self.map.max_level
+        min_zoom = self.map.min_level
+        zoom = self.map.zoom_factor
+        scale = self.diagram.arrow_size + (zoom - min_zoom) / (max_zoom - min_zoom)
+        return scale
+
+    def get_substation_scale(self) -> float:
+        """
+        Get the desired branch width
+        :return:
+        """
+        max_zoom = self.map.max_level
+        min_zoom = self.map.min_level
+        zoom = self.map.zoom_factor
+        scale = self.diagram.min_bus_width + (zoom - min_zoom) / (max_zoom - min_zoom)
+        return scale
+
     def update_device_sizes(self) -> None:
         """
         Updat ethe devices' sizes
         :return:
         """
+
+        br_scale = self.get_branch_width()
+        arrow_scale = self.get_arrow_scale()
+        se_scale = self.get_substation_scale()
 
         # rescale lines
         for dev_tpe in [DeviceType.LineDevice,
@@ -932,14 +955,16 @@ class GridMapWidget(BaseDiagramWidget):
                         DeviceType.HVDCLineDevice,
                         DeviceType.FluidPathDevice]:
             graphics_dict = self.graphics_manager.get_device_type_dict(device_type=dev_tpe)
+
             for key, elm_graphics in graphics_dict.items():
-                elm_graphics.set_width_scale(self.get_branch_width())
+                elm_graphics.set_width_scale(branch_scale=br_scale, arrow_scale=arrow_scale)
 
         # rescale substations
         data: Dict[str, SubstationGraphicItem] = self.graphics_manager.get_device_type_dict(DeviceType.SubstationDevice)
+
         for se_key, elm_graphics in data.items():
             elm_graphics.set_api_object_color()
-            elm_graphics.set_size(r=self.diagram.min_bus_width)
+            elm_graphics.re_scale(r=se_scale)
 
     def change_size_and_pen_width_all(self, new_radius, pen_width):
         """
@@ -1067,6 +1092,8 @@ class GridMapWidget(BaseDiagramWidget):
         #                   color=html_color,
         #                   tooltip=tooltip).add_to(marker_cluster)
 
+        arrow_scale = self.get_arrow_scale()
+
         # Try colouring the branches
         if len(branches):
 
@@ -1116,7 +1143,7 @@ class GridMapWidget(BaseDiagramWidget):
                         weight = self.get_branch_width()
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(weight)
+                    graphic_object.set_width_scale(branch_scale=weight, arrow_scale=arrow_scale)
 
                     if hasattr(graphic_object, 'set_arrows_with_power'):
                         graphic_object.set_arrows_with_power(
@@ -1190,7 +1217,7 @@ class GridMapWidget(BaseDiagramWidget):
                         graphic_object.set_arrows_with_hvdc_power(Pf=hvdc_Pf[i], Pt=-hvdc_Pf[i])
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
-                    graphic_object.set_width_scale(weight)
+                    graphic_object.set_width_scale(branch_scale=weight, arrow_scale=arrow_scale)
 
     def get_image(self, transparent: bool = False) -> QImage:
         """
@@ -1274,7 +1301,8 @@ class GridMapWidget(BaseDiagramWidget):
         """
         Consolidate the graphic elements' x, y coordinates into the API DB values
         """
-        graphics: List[SubstationGraphicItem] = self.graphics_manager.query(elm=DeviceType.SubstationDevice)
+        graphics: List[SubstationGraphicItem] = self.graphics_manager.get_device_type_list(
+            device_type=DeviceType.SubstationDevice)
         for gelm in graphics:
             gelm.api_object.latitude = gelm.lat
             gelm.api_object.longitude = gelm.lon

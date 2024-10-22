@@ -29,13 +29,13 @@ import sys
 import warnings
 
 from time import monotonic as clock
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import gurobi_path
-import GridCalEngine.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import gurobi_path
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
 
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
 
 # to import the gurobipy name into the module scope
 gp = None

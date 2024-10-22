@@ -23,11 +23,11 @@ other solver interface easily
 from __future__ import annotations
 
 from typing import List, Union, Callable
-import GridCalEngine.ThirdParty.pulp as pulp
-from GridCalEngine.ThirdParty.pulp import HiGHS, CPLEX_CMD
-from GridCalEngine.ThirdParty.pulp.pulp import LpAffineExpression as LpExp
-from GridCalEngine.ThirdParty.pulp.pulp import LpConstraint as LpCst
-from GridCalEngine.ThirdParty.pulp.pulp import LpVariable as LpVar
+import GridCalEngine.Utils.ThirdParty.pulp as pulp
+from GridCalEngine.Utils.ThirdParty.pulp import HiGHS, CPLEX_CMD
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpConstraint as LpCst
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpVariable as LpVar
 from GridCalEngine.enumerations import MIPSolvers
 from GridCalEngine.basic_structures import Logger
 

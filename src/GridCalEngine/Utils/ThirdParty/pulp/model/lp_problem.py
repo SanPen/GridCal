@@ -129,14 +129,14 @@ from time import time
 import json
 from time import monotonic as clock
 from collections import OrderedDict
-from GridCalEngine.ThirdParty.pulp.apis.highs_py import HiGHS
+from GridCalEngine.Utils.ThirdParty.pulp.apis.highs_py import HiGHS
 
-from GridCalEngine.ThirdParty.pulp.utilities import value
-import GridCalEngine.ThirdParty.pulp.constants as const
-import GridCalEngine.ThirdParty.pulp.mps_lp as mpslp
-from GridCalEngine.ThirdParty.pulp.model.lp_objects import (LpVariable, LpConstraint, LpAffineExpression,
-                                                            LpFractionConstraint, LpConstraintVar,
-                                                            lp_constraint_from_dict)
+from GridCalEngine.Utils.ThirdParty.pulp.utilities import value
+import GridCalEngine.Utils.ThirdParty.pulp.constants as const
+import GridCalEngine.Utils.ThirdParty.pulp.mps_lp as mpslp
+from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import (LpVariable, LpConstraint, LpAffineExpression,
+                                                                  LpFractionConstraint, LpConstraintVar,
+                                                                  lp_constraint_from_dict)
 
 # Default solver selection
 LpSolverDefault = HiGHS(msg=False)

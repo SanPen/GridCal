@@ -29,9 +29,9 @@ import os
 import sys
 import warnings
 
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, LpSolver, subprocess
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import scip_path, fscip_path
-import GridCalEngine.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, LpSolver, subprocess
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import scip_path, fscip_path
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
 
 from typing import Dict, List, Optional, Tuple
 

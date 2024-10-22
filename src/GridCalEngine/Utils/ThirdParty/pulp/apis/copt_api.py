@@ -6,13 +6,12 @@ import warnings
 
 from uuid import uuid4
 from time import monotonic as clock
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import (
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import (
     ctypesArrayFill,
     LpSolver,
     LpSolver_CMD,
-    operating_system,
 )
-from GridCalEngine.ThirdParty.pulp.constants import (
+from GridCalEngine.Utils.ThirdParty.pulp.constants import (
     LpStatusNotSolved,
     LpStatusOptimal,
     LpStatusInfeasible,
@@ -20,10 +19,10 @@ from GridCalEngine.ThirdParty.pulp.constants import (
     LpStatusUndefined,
     PulpSolverError
 )
-from GridCalEngine.ThirdParty.pulp.sparse import Matrix
-from GridCalEngine.ThirdParty.pulp.constants import LpContinuous, LpBinary, LpInteger
-from GridCalEngine.ThirdParty.pulp.constants import LpConstraintEQ, LpConstraintLE, LpConstraintGE
-from GridCalEngine.ThirdParty.pulp.constants import LpMinimize, LpMaximize
+from GridCalEngine.Utils.ThirdParty.pulp.sparse import Matrix
+from GridCalEngine.Utils.ThirdParty.pulp.constants import LpContinuous, LpBinary, LpInteger
+from GridCalEngine.Utils.ThirdParty.pulp.constants import LpConstraintEQ, LpConstraintLE, LpConstraintGE
+from GridCalEngine.Utils.ThirdParty.pulp.constants import LpMinimize, LpMaximize
 
 # COPT string convention
 if sys.version_info >= (3, 0):

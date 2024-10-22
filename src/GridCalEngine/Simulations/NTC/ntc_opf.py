@@ -393,9 +393,9 @@ class BranchNtcVars:
         for i in range(len(self.contingency_flow_data)):
             t, m, c, var, neg_slack, pos_slack = self.contingency_flow_data[i]
             self.contingency_flow_data[i] = (t, m, c,
-                                             model.get_value(var),
-                                             model.get_value(neg_slack),
-                                             model.get_value(pos_slack))
+                                             model.get_value(var) * Sbase,
+                                             model.get_value(neg_slack) * Sbase,
+                                             model.get_value(pos_slack) * Sbase)
 
         # format the arrays appropriately
         data.flows = data.flows.astype(float, copy=False)

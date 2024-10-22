@@ -24,6 +24,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_p
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import PowerFlowOptions, SolverType
 from GridCalEngine.Simulations.LinearFactors.linear_analysis import LinearAnalysis, LinearMultiContingencies
 from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_options import ContingencyAnalysisOptions
+from GridCalEngine.basic_structures import Logger
 
 if TYPE_CHECKING:
     from GridCalEngine.Simulations.ContingencyAnalysis.contingency_analysis_driver import ContingencyAnalysisDriver
@@ -34,7 +35,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
                                    linear_multiple_contingencies: LinearMultiContingencies,
                                    calling_class: ContingencyAnalysisDriver,
                                    t: Union[None, int] = None,
-                                   t_prob: float = 1.0) -> ContingencyAnalysisResults:
+                                   t_prob: float = 1.0,
+                                   logger: Logger | None = None,) -> ContingencyAnalysisResults:
     """
     Run a contingency analysis using the power flow options
     :param grid: MultiCircuit
@@ -43,8 +45,12 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
     :param calling_class: ContingencyAnalysisDriver
     :param t: time index, if None the snapshot is used
     :param t_prob: probability of te time
+    :param logger: logging object
     :return: returns the results (ContingencyAnalysisResults)
     """
+    if logger is None:
+        logger = Logger()
+
     # set the numerical circuit
     numerical_circuit = compile_numerical_circuit_at(grid, t_idx=t)
 
@@ -113,7 +119,8 @@ def nonlinear_contingency_analysis(grid: MultiCircuit,
         # run
         pf_res = multi_island_pf_nc(nc=numerical_circuit,
                                     options=pf_opts,
-                                    V_guess=pf_res_0.voltage)
+                                    V_guess=pf_res_0.voltage,
+                                    logger=logger)
 
         results.Sf[ic, :] = pf_res.Sf
         results.Sbus[ic, :] = pf_res.Sbus

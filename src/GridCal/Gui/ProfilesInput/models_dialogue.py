@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import os
 import re
@@ -21,53 +22,51 @@ import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtCore
 from typing import List
+from datetime import datetime, timedelta
+
+from GridCal.Gui.messages import yes_no_question
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.IO.file_handler import FileOpen
 from GridCalEngine.basic_structures import Logger
+from GridCalEngine.Utils.progress_bar import print_progress_bar
 from GridCal.Gui.ProfilesInput.profiles_from_models_gui import Ui_Dialog
 
 
-def extract_and_convert_to_datetime(filename):
+def extract_and_convert_to_datetime(filename, logger: Logger) -> pd.DatetimeIndex | None:
+    """
+    Try to extract date from file name
+    :param filename: file name
+    :param logger: Logger
+    :return: pd.DateTimeIndex or None
+    """
     date_patterns = [
-        r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b',  # YYYY-MM-DD or YYYY_MM_DD
-        r'\b(\d{8})\b',  # YYYYMMDD
-        r'\b(\d{8}_\d{4})\b',  # YYYYMMDD_HHMM
-        r'\b(\d{4}[^\d]\d{2}[^\d]\d{2}_\d{4})\b'  # YYYY-MM-DD_HHMM
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b', '%Y-%m-%d'),  # YYYY-MM-DD
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2})\b', '%Y_%m_%d'),  # YYYY_MM_DD
+        (r'\b(\d{8})\b', '%Y%m%d'),  # YYYYMMDD
+        (r'\b(\d{12})\b', '%Y%m%d%H%M'),  # YYYYMMDDHHMM
+        (r'\b(\d{8}_\d{4})\b', '%Y%m%d_%H%M'),  # YYYYMMDD_HHMM
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2}_\d{4})\b', '%Y-%m-%d_%H%M'),  # YYYY-MM-DD_HHMM
+        (r'\b(\d{4}[^\d]\d{2}[^\d]\d{2}_\d{4})\b', '%Y_%m_%d_%H%M')  # YYYY_MM_DD_HHMM
     ]
 
-    for date_pattern in date_patterns:
+    date_str = filename
+    for date_pattern, frmt in date_patterns:
         match = re.search(date_pattern, filename)
         if match:
             date_str = match.group(1)
 
             # Try to parse the date string
             try:
-                if '_' in date_str:
-                    date_object = pd.to_datetime(date_str, format='%Y%m%d_%H%M', errors='raise')
-                else:
-                    date_object = pd.to_datetime(date_str, format='%Y%m%d', errors='raise')
+                date_object = pd.to_datetime(date_str, format=frmt, errors='raise')
 
                 return date_object
             except ValueError:
-                print(f"Unable to parse date from: {date_str}")
+                # print(f"Unable to parse date from: {date_str}")
+                pass
+
+    logger.add_error(msg="Unable to parse date from", value=date_str)
 
     return None  # Return None if no valid date is found
-
-
-def process_file_names(file_names):
-    """
-
-    :param file_names:
-    :return:
-    """
-    extracted_dates = []
-
-    for filename in file_names:
-        date_object = extract_and_convert_to_datetime(filename)
-        if date_object:
-            extracted_dates.append(date_object)
-
-    return extracted_dates
 
 
 class GridsModelItem:
@@ -75,19 +74,24 @@ class GridsModelItem:
     GridsModelItem
     """
 
-    def __init__(self, path, time=""):
+    def __init__(self, path, tme, logger: Logger):
         """
 
         :param path:
         """
-        self.time = time
+        suggested_tme = extract_and_convert_to_datetime(filename=os.path.basename(path), logger=logger)
+        self.time = suggested_tme if suggested_tme is not None else tme
 
         self.path: str = path
 
         self.name = os.path.basename(path)
 
-    def get_at(self, idx):
+    def get_at(self, idx: int) -> str | pd.Timestamp:
+        """
 
+        :param idx:
+        :return:
+        """
         # 'Time', 'Name', 'Folder'
         if idx == 0:
             return self.time
@@ -100,35 +104,89 @@ class GridsModelItem:
 
 
 class GridsModel(QtCore.QAbstractTableModel):
+    """
+    GridsModel
+    """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+
+        """
         QtCore.QAbstractTableModel.__init__(self)
 
         self._values_: List[GridsModelItem] = list()
 
         self._headers_ = ['Time', 'Name', 'Path']
 
-    def append(self, val: GridsModelItem):
-        self._values_.append(val)
+    def update(self):
+        """
+        update table
+        """
+        self.layoutAboutToBeChanged.emit()
+        self.layoutChanged.emit()
 
-    def set_path_at(self, i, path):
+    def clear(self) -> None:
+        """
+
+        :return:
+        """
+        self._values_.clear()
+        self.update()
+
+    def append(self, val: GridsModelItem):
+        """
+
+        :param val:
+        :return:
+        """
+        self._values_.append(val)
+        self.update()
+
+    def set_path_at(self, i: int, path: str):
+        """
+
+        :param i:
+        :param path:
+        :return:
+        """
         if i < len(self._values_):
             self._values_[i].path = path
             self._values_[i].name = os.path.basename(path)
+        self.update()
 
-    def items(self):
+    def items(self) -> List[GridsModelItem]:
+        """
+
+        :return:
+        """
         return self._values_
 
     def remove(self, idx: int):
-        self._values_.pop(idx)
+        """
 
-    def rowCount(self, parent=None):
+        :param idx:
+        :return:
+        """
+        self._values_.pop(idx)
+        self.update()
+
+    def rowCount(self, parent: QtCore.QModelIndex = None) -> int:
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self._values_)
 
-    def columnCount(self, parent=None):
+    def columnCount(self, parent: QtCore.QModelIndex = None) -> int:
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self._headers_)
 
-    def data(self, index, role=QtCore.Qt.ItemDataRole.DisplayRole):
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.ItemDataRole.DisplayRole) -> None | str:
         """
 
         :param index:
@@ -178,40 +236,30 @@ class GridsModel(QtCore.QAbstractTableModel):
         """
         return QtCore.Qt.DropAction.MoveAction | QtCore.Qt.DropAction.CopyAction
 
-    def dropEvent(self, event):
+    def dropMimeData(self, data: QtCore.QMimeData,
+                     action: QtCore.Qt.DropAction,
+                     row: int, column: int,
+                     parent: QtCore.QModelIndex | QtCore.QPersistentModelIndex) -> bool:
         """
 
-        :param event:
+        :param data:
+        :param action:
+        :param row:
+        :param column:
+        :param parent:
+        :return:
         """
-        if (event.source() is not self or
-                (event.dropAction() != QtCore.Qt.DropAction.MoveAction and
-                 self.dragDropMode() != QtWidgets.QAbstractItemView.DragDropMode.InternalMove)):
-            super().dropEvent(event)
-        selection = self.selectedIndexes()
-        from_index = selection[0].row() if selection else -1
-
-        globalPos = self.viewport().mapToGlobal(event.pos())
-        header = self.verticalHeader()
-        to_index = header.logicalIndexAt(header.mapFromGlobal(globalPos).y())
-        if to_index < 0:
-            to_index = header.logicalIndex(self.model().rowCount() - 1)
-
-        if from_index != to_index:
-            from_index = header.visualIndex(from_index)
-            to_index = header.visualIndex(to_index)
-            header.moveSection(from_index, to_index)
-            event.accept()
-            event.setDropAction(QtCore.Qt.DropAction.IgnoreAction)
-        super().dropEvent(event)
+        pass
 
 
-def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secondary_key):
+def assign_grid(t, grid_to_add: MultiCircuit, main_grid: MultiCircuit, use_secondary_key, logger: Logger):
     """
     Assign all the values of the loaded grid to the profiles of the main grid at the time step t
     :param t: time step index
-    :param loaded_grid: loaded grid
+    :param grid_to_add: grid to add to the main cirucuit
     :param main_grid: main grid
     :param use_secondary_key: Use the secondary key ("code") to match
+    :param logger: Logger
     """
     # for each device type that we see in the tree ...
     for dev_template in main_grid.template_items():
@@ -223,20 +271,25 @@ def assign_grid(t, loaded_grid: MultiCircuit, main_grid: MultiCircuit, use_secon
         main_elms_dict = main_grid.get_elements_dict_by_type(device_type, use_secondary_key=use_secondary_key)
 
         # get list of devices
-        loaded_elms = loaded_grid.get_elements_by_type(device_type)
+        elms_from_the_grid_to_add = grid_to_add.get_elements_by_type(device_type)
 
         # for each device
-        for loaded_elm in loaded_elms:
+        for elm_to_add in elms_from_the_grid_to_add:
 
-            # fast way to avoid double lookup
-            main_elm = main_elms_dict.get(loaded_elm.code if use_secondary_key else loaded_elm.idtag, None)
+            # try to find the element in the main grid: fast way to avoid double lookup
+            main_elm = main_elms_dict.get(elm_to_add.code if use_secondary_key else elm_to_add.idtag, None)
 
             if main_elm is not None:
 
                 # for every property with profile, set the profile value with the element value
                 for prop, profile_prop in main_elm.properties_with_profile.items():
+                    # copy the element profile properties to the main element at the time index t
+                    getattr(main_elm, profile_prop)[t] = getattr(elm_to_add, prop)
 
-                    getattr(main_elm, profile_prop)[t] = getattr(loaded_elm, prop)
+            else:
+                logger.add_warning("Element not found in the main grid, added on the fly",
+                                   value=elm_to_add.name)
+                main_grid.add_element(elm_to_add)
 
 
 class ModelsInputGUI(QtWidgets.QDialog):
@@ -244,11 +297,10 @@ class ModelsInputGUI(QtWidgets.QDialog):
     ModelsInputGUI
     """
 
-    def __init__(self, parent=None, time_array=[]):
+    def __init__(self, parent=None) -> None:
         """
 
         :param parent:
-        :param time_array: time array
         """
 
         QtWidgets.QDialog.__init__(self, parent)
@@ -257,14 +309,9 @@ class ModelsInputGUI(QtWidgets.QDialog):
         self.ui.setupUi(self)
         self.setWindowTitle('Models import dialogue')
 
-        self.ui.deleteModelsButton.setVisible(False)
-
         self.grids_model: GridsModel = GridsModel()
 
         self.logger = Logger()
-
-        for t in time_array:
-            self.grids_model.append(GridsModelItem("", str(t)))
 
         self.ui.matchUsingCodeCheckBox.setChecked(True)
 
@@ -275,89 +322,151 @@ class ModelsInputGUI(QtWidgets.QDialog):
         # click
         self.ui.addModelsButton.clicked.connect(self.add_models)
         self.ui.acceptModelsButton.clicked.connect(self.accept)
+        self.ui.deleteModelsButton.clicked.connect(self.clear_model)
 
-    def accept(self):
+    def accept(self) -> None:
         """
 
         :return:
         """
+        super().accept()
         self.close()
 
-    def add_models(self):
+    def clear_model(self) -> None:
+        """
+        Delete the import data
+        :return:
+        """
+        if self.grids_model.rowCount() > 0:
+            ok = yes_no_question("Do you want to clear the import data?")
+            if ok:
+                self.grids_model.clear()
+
+    def add_models(self) -> None:
         """
         Add the selected models
         """
         # declare the allowed file types
         files_types = "Formats (*.raw *.RAW *.rawx *.xml *.m *.epc *.EPC)"
-        # call dialog to select the file
-        # filename, type_selected = QFileDialog.getOpenFileNameAndFilter(self, 'Save file', '', files_types)
 
         # call dialog to select the file
         filenames, type_selected = QtWidgets.QFileDialog.getOpenFileNames(self, 'Add files', filter=files_types)
 
         if len(filenames):
+
+            b = self.grids_model.rowCount()
+            d = datetime.today()
+            base_date = datetime(d.year, 1, 1, 00, 00, 00)
+            base_inc = 1  # 1 hour
+
             for i, file_path in enumerate(filenames):
-                self.grids_model.set_path_at(i, file_path)
+                tme = base_date + timedelta(hours=base_inc * (i + b))
+                self.grids_model.append(GridsModelItem(file_path, tme=tme, logger=self.logger))
 
             self.ui.modelsTableView.setModel(None)
             self.ui.modelsTableView.setModel(self.grids_model)
             self.ui.modelsTableView.repaint()
 
-    def process(self, main_grid: MultiCircuit, write_report=False, report_name="import_report.xlsx"):
+    def generate_time_array(self, main_grid: MultiCircuit, logger: Logger):
+        """
+        Generate time profile from model
+        :param main_grid:
+        :param logger:
+        :return:
+        """
+        n = len(self.grids_model.items())
+
+        t_profile = np.zeros(n, dtype=object)
+
+        d = datetime.today()
+        base_date = datetime(d.year, 1, 1, 00, 00, 00)
+        base_inc = 1  # 1 hour
+
+        for t, entry in enumerate(self.grids_model.items()):
+            if entry.time is not None:
+                if isinstance(entry.time, pd.DatetimeIndex):
+                    t_profile[t] = entry.time
+                else:
+                    try:
+                        t_profile[t] = pd.to_datetime(entry.time)
+                    except ValueError:
+                        t_profile[t] = base_date + timedelta(hours=base_inc * t)
+                        logger.add_info(msg="Could not convert time",
+                                        device="time array",
+                                        device_property="",
+                                        value=str(entry.time))
+
+        # set the circuit time profile
+        main_grid.time_profile = pd.to_datetime(t_profile)
+        main_grid.ensure_profiles_exist()
+
+    def process(self, main_grid: MultiCircuit, logger: Logger):
         """
         Process the imported data
         :param main_grid: Grid to apply the values to, it has to have declared profiles already
-        :param write_report: Write the imports report
-        :param report_name: File name or complete path of the Excel report
+        :param logger: Logger
         :return: None
         """
         use_secondary_key = self.ui.matchUsingCodeCheckBox.isChecked()
 
         n = len(self.grids_model.items())
-        data_m = dict()
-        data_a = dict()
-        index = [''] * n
-        dates = [''] * n
+
+        self.generate_time_array(main_grid=main_grid, logger=logger)
 
         for t, entry in enumerate(self.grids_model.items()):
-
-            index[t] = entry.name
+            name = os.path.basename(entry.path)
+            print_progress_bar(iteration=t+1, total=n, txt=name)
 
             if os.path.exists(entry.path):
-                print(entry.path)
-
-                dates[t] = extract_and_convert_to_datetime(os.path.basename(entry.path))
-
                 loaded_grid = FileOpen(entry.path).open()
                 assign_grid(t=t,
-                            loaded_grid=loaded_grid,
+                            grid_to_add=loaded_grid,
                             main_grid=main_grid,
-                            use_secondary_key=use_secondary_key)
+                            use_secondary_key=use_secondary_key,
+                            logger=logger)
 
-                if write_report:
-                    for i, bus in enumerate(loaded_grid.buses):
-                        arr_m = data_m.get(bus.code, None)
-                        arr_a = data_a.get(bus.code, None)
-                        if arr_m is None:
-                            arr_m = np.zeros(n, dtype=float)
-                            data_m[bus.code] = arr_m
-                            arr_a = np.zeros(n, dtype=float)
-                            data_a[bus.code] = arr_a
+                logger.add_info(msg="Loaded grid",
+                                device=name,
+                                device_property="Path",
+                                value=entry.path)
 
-                        arr_m[t] = bus.Vm0 * float(bus.active)
-                        arr_a[t] = bus.Va0 * float(bus.active)
+        print()  # to finalize the progressbar
 
-        if write_report:
-            with pd.ExcelWriter(report_name) as w:  # pylint: disable=abstract-class-instantiated
-                pd.DataFrame(data=data_m, index=index).to_excel(w, sheet_name="Vm")
-                pd.DataFrame(data=data_a, index=index).to_excel(w, sheet_name="Va")
+        # check devices' status: if an element is connected to disconnected
+        # buses the branch must be disconnected too this is to handle the
+        # typical PSSe garbage modlling practices
+        for elm in main_grid.get_all_branches_iter():
+            if not (elm.bus_from.active and elm.bus_to.active):
+                elm.active = False
+                logger.add_warning(msg="Inconsistent active state",
+                                   device=elm.name,
+                                   device_property="Snapshot")
 
+            for t in range(main_grid.get_time_number()):
+                if not (elm.bus_from.active_prof[t] and elm.bus_to.active_prof[t]):
+                    elm.active_prof[t] = False
+                    logger.add_warning(msg="Inconsistent active state",
+                                       device=elm.name,
+                                       device_property=str(t))
 
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    window = ModelsInputGUI()
-    window.resize(1.61 * 700.0, 600.0)  # golden ratio
-    window.show()
-    sys.exit(app.exec_())
+        for elm in main_grid.injection_items():
+            if not elm.bus.active:
+                elm.active = False
+                logger.add_warning(msg="Inconsistent active state",
+                                   device=elm.name,
+                                   device_property="Snapshot")
 
+            for t in range(main_grid.get_time_number()):
+                if not elm.bus.active_prof[t]:
+                    elm.active_prof[t] = False
+                    logger.add_warning(msg="Inconsistent active state",
+                                       device=elm.name,
+                                       device_property=str(t))
+
+# if __name__ == "__main__":
+#     import sys
+#     app = QtWidgets.QApplication(sys.argv)
+#     window = ModelsInputGUI()
+#     window.resize(1.61 * 700.0, 600.0)  # golden ratio
+#     window.show()
+#     sys.exit(app.exec_())

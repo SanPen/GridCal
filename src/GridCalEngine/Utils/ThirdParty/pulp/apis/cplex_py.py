@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import warnings
 from time import monotonic as clock
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver import LpSolver
-import GridCalEngine.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver import LpSolver
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
 
 
 def cplex_var_types(var):

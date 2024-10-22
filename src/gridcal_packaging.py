@@ -363,6 +363,23 @@ def read_pypirc() -> Tuple[str, str]:
     return user, pwd
 
 
+def check_all_folders_contain_init_py(directory, exceptions=('__pycache__')):
+    """
+
+    :param directory:
+    :param exceptions:
+    :return:
+    """
+    for root, dirs, files in os.walk(directory):
+
+        root_name = os.path.basename(root)
+        if root_name not in exceptions:
+            # Check if current folder is not the root folder
+            if '__init__.py' not in files:
+                raise Exception(f"Missing __init__.py in {root}")
+    return True
+
+
 def publish(pkg_name: str,
             setup_path: str,
             version: str,
@@ -377,7 +394,8 @@ def publish(pkg_name: str,
             description_content_type: str,
             provides_extra: str,
             long_description: str,
-            ext_filter=('.py', '.csv', '.txt')):
+            ext_filter=('.py', '.csv', '.txt'),
+            exeption_paths=('__pycache__', 'icons', 'svg')):
     """
     Publish package to Pypi using twine
     :param pkg_name: name of the package (i.e GridCal)
@@ -395,7 +413,11 @@ def publish(pkg_name: str,
     :param provides_extra:
     :param long_description:
     :param ext_filter:
+    :param exeption_paths:
     """
+
+    check_all_folders_contain_init_py(directory=os.path.dirname(setup_path),
+                                      exceptions=exeption_paths)
 
     # build the tar.gz file
     fpath = build_tar_gz_pkg(pkg_name=pkg_name,

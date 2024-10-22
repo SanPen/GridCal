@@ -6,10 +6,10 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import re
-import GridCalEngine.ThirdParty.pulp.constants as const
+import GridCalEngine.Utils.ThirdParty.pulp.constants as const
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
 
 CORE_FILE_ROW_MODE = "ROWS"
 CORE_FILE_COL_MODE = "COLUMNS"

@@ -214,8 +214,32 @@ my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", ])
 # or from a single zip assumed to contain CGMES files
 my_grid = gce.open_file("my_cgmes_set_of_files.zip")
 
-# load a grid from a combination of xml and zip files assumed to be CGMES
+# or load a grid from a combination of xml and zip files assumed to be CGMES
 my_grid = gce.open_file(["grid_EQ.xml", "grid_TP.xml", "grid_SV.xml", "boundary.zip"])
+```
+
+If you need to explore the CGMEs assets before conversion, you'll need to dive deeper in the API:
+
+```python
+from GridCalEngine.IO.cim.cgmes.cgmes_data_parser import CgmesDataParser
+from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
+from GridCalEngine.basic_structures import Logger
+
+fname = "tests/data/grids/CGMES_2_4_15/IEEE 118 Bus v2.zip"
+
+logger = Logger()
+data_parser = CgmesDataParser()
+data_parser.load_files(files=[fname])
+cgmes_circuit = CgmesCircuit(cgmes_version=data_parser.cgmes_version,
+                             cgmes_map_areas_like_raw=False, logger=logger)
+cgmes_circuit.parse_files(data_parser=data_parser)
+
+# print all the ac line segment names
+for ac_line_segment in cgmes_circuit.cgmes_assets.ACLineSegment_list:
+    print(ac_line_segment.name)
+
+# print the logs
+logger.print()
 ```
 
 GridCal supports many file formats:
@@ -226,6 +250,8 @@ GridCal supports many file formats:
 - Matpower .m files directly.
 - DigSilent .DGS (not fully compatible)
 - PowerWorld .EPC (not fully compatible, supports substation coordinates)
+
+Simmilarly to CGMES you may be able to use the conversion objects to explore the original formats.
 
 ### Save a grid
 

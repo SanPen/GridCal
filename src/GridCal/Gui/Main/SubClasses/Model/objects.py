@@ -364,10 +364,10 @@ class ObjectsTableMain(DiagramsMain):
             self.ui.associationsComboBox.clear()
             self.ui.dataStructureTableView.setModel(None)
 
-    def get_selected_objects(self) -> List[ALL_DEV_TYPES]:
+    def get_selected_table_objects(self) -> List[ALL_DEV_TYPES]:
         """
         Get the list of selected objects
-        :return:
+        :return: List[ALL_DEV_TYPES]
         """
         model = self.get_current_objects_model_view()
 
@@ -392,7 +392,7 @@ class ObjectsTableMain(DiagramsMain):
         Delete selection
         """
 
-        selected_objects = self.get_selected_objects()
+        selected_objects = self.get_selected_table_objects()
 
         if len(selected_objects):
 
@@ -417,7 +417,7 @@ class ObjectsTableMain(DiagramsMain):
         Delete selection
         """
 
-        selected_objects = self.get_selected_objects()
+        selected_objects = self.get_selected_table_objects()
 
         if len(selected_objects):
 
@@ -434,12 +434,36 @@ class ObjectsTableMain(DiagramsMain):
                 self.update_from_to_list_views()
                 self.update_date_dependent_combos()
 
+    def fuse_selected(self):
+        """
+        Fuse selection
+        """
+
+        selected_objects = self.get_selected_table_objects()
+
+        if len(selected_objects):
+
+            if selected_objects[0].device_type == DeviceType.SubstationDevice:
+
+                ok = yes_no_question('Are you sure that you want to merge the selected substations?',
+                                     'Merge')
+                if ok:
+                    # merge substations into the first
+                    self.circuit.merge_substations(selected_objects=selected_objects)
+
+                    # update the view
+                    self.view_objects_data()
+                    self.update_from_to_list_views()
+                    self.update_date_dependent_combos()
+            else:
+                info_msg(f'Merge function not available for {selected_objects[0].device_type.value} devices')
+
     def copy_selected_idtag(self):
         """
         Copy selected idtags
         """
 
-        selected_objects = self.get_selected_objects()
+        selected_objects = self.get_selected_table_objects()
 
         if len(selected_objects):
             # copy to clipboard
@@ -453,7 +477,7 @@ class ObjectsTableMain(DiagramsMain):
         Add selected DB objects to current diagram
         """
 
-        selected_objects = self.get_selected_objects()
+        selected_objects = self.get_selected_table_objects()
 
         if len(selected_objects):
 
@@ -1066,6 +1090,11 @@ class ObjectsTableMain(DiagramsMain):
                           text="Duplicate object",
                           icon_path=":/Icons/icons/copy.svg",
                           function_ptr=self.duplicate_selected_objects)
+
+        gf.add_menu_entry(menu=context_menu,
+                          text="Merge",
+                          icon_path=":/Icons/icons/fusion.svg",
+                          function_ptr=self.fuse_selected)
 
         gf.add_menu_entry(menu=context_menu,
                           text="Copy idtag",

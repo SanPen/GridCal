@@ -29,8 +29,8 @@ import warnings
 import math
 from collections import OrderedDict
 from collections.abc import Iterable
-from GridCalEngine.ThirdParty.pulp.utilities import value
-import GridCalEngine.ThirdParty.pulp.constants as const
+from GridCalEngine.Utils.ThirdParty.pulp.utilities import value
+import GridCalEngine.Utils.ThirdParty.pulp.constants as const
 
 
 class LpElement:

@@ -1834,13 +1834,17 @@ class NumericalCircuit:
         return df
 
     def get_island(self, bus_idx: IntVec,
-                   consider_hvdc_as_island_links: bool = False) -> "NumericalCircuit":
+                   consider_hvdc_as_island_links: bool = False,
+                   logger: Logger | None = None) -> "NumericalCircuit":
         """
         Get the island corresponding to the given buses
         :param bus_idx: array of bus indices
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param logger: Logger
         :return: SnapshotData
         """
+        if logger is None:
+            logger = Logger()
 
         # if the island is the same as the original bus indices, no slicing is needed
         if len(bus_idx) == len(self.bus_data.original_idx):
@@ -1875,7 +1879,7 @@ class NumericalCircuit:
 
         # slice data
         nc.bus_data = self.bus_data.slice(elm_idx=bus_idx)
-        nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx)
+        nc.branch_data = self.branch_data.slice(elm_idx=br_idx, bus_idx=bus_idx, logger=logger)
 
         nc.load_data = self.load_data.slice(elm_idx=load_idx, bus_idx=bus_idx)
         nc.battery_data = self.battery_data.slice(elm_idx=batt_idx, bus_idx=bus_idx)
@@ -1890,13 +1894,17 @@ class NumericalCircuit:
 
     def split_into_islands(self,
                            ignore_single_node_islands: bool = False,
-                           consider_hvdc_as_island_links: bool = False) -> List["NumericalCircuit"]:
+                           consider_hvdc_as_island_links: bool = False,
+                           logger: Logger | None = None) -> List["NumericalCircuit"]:
         """
         Split circuit into islands
         :param ignore_single_node_islands: ignore islands composed of only one bus
         :param consider_hvdc_as_island_links: Does the HVDCLine works for the topology as a normal line?
+        :param logger: Logger
         :return: List[NumericCircuit]
         """
+        if logger is None:
+            logger = Logger()
 
         # find the matching islands
         adj = self.compute_adjacency_matrix(consider_hvdc_as_island_links=consider_hvdc_as_island_links)
@@ -1907,10 +1915,14 @@ class NumericalCircuit:
         for bus_idx in idx_islands:
             if ignore_single_node_islands:
                 if len(bus_idx) > 1:
-                    island = self.get_island(bus_idx, consider_hvdc_as_island_links=consider_hvdc_as_island_links)
+                    island = self.get_island(bus_idx,
+                                             consider_hvdc_as_island_links=consider_hvdc_as_island_links,
+                                             logger=logger)
                     circuit_islands.append(island)
             else:
-                island = self.get_island(bus_idx, consider_hvdc_as_island_links=consider_hvdc_as_island_links)
+                island = self.get_island(bus_idx,
+                                         consider_hvdc_as_island_links=consider_hvdc_as_island_links,
+                                         logger=logger)
                 circuit_islands.append(island)
 
         return circuit_islands

@@ -30,11 +30,11 @@
 from __future__ import annotations
 import os
 from typing import List, TYPE_CHECKING
-import GridCalEngine.ThirdParty.pulp.constants as constants
-from GridCalEngine.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, subprocess
+import GridCalEngine.Utils.ThirdParty.pulp.constants as constants
+from GridCalEngine.Utils.ThirdParty.pulp.apis.lp_solver_cmd import LpSolver_CMD, subprocess
 
 if TYPE_CHECKING:
-    from GridCalEngine.ThirdParty.pulp.model.lp_problem import LpProblem
+    from GridCalEngine.Utils.ThirdParty.pulp.model.lp_problem import LpProblem
 
 
 class HiGHS_CMD(LpSolver_CMD):
