@@ -83,6 +83,8 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         # Allow moving the node
         self.setFlag(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
 
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
 
@@ -93,7 +95,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.colorBorder = QColor(36, 59, 131, 100)  # dark blue
 
         # Assign color to the node
-        self.setNodeColor(inner_color=self.colorInner, border_color=self.colorBorder)
+        self.set_node_color(inner_color=self.colorInner, border_color=self.colorBorder)
         self.hovered = False
         self.needsUpdate = False
         self.setZValue(0)
@@ -137,7 +139,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         # Set the new rectangle with the updated dimensions
         self.setRect(new_x, new_y, r, r)
 
-    def updateDiagram(self) -> None:
+    def update_position_at_the_diagram(self) -> None:
         """
 
         :return:
@@ -156,7 +158,6 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         Event handler for mouse move events.
         """
-        # super().mouseMoveEvent(event)
         if self.hovered:
             self.parent.mouseMoveEvent(event)
 
@@ -166,12 +167,12 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         super().mousePressEvent(event)
         self.editor.disableMove = True
-        self.updateDiagram()  # always update
+        self.update_position_at_the_diagram()  # always update
 
         if self.api_object is not None:
             self.editor.set_editor_model(api_object=self.api_object)
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse release events.
         """
@@ -182,7 +183,8 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         Event handler for when the mouse enters the item.
         """
-        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
+        # self.set_node_color(QColor(Qt.GlobalColor.red), QColor(Qt.GlobalColor.red))
+        self.set_color(self.hoover_color, self.color)
         self.hovered = True
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
@@ -190,7 +192,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         Event handler for when the mouse leaves the item.
         """
         self.hovered = False
-        self.setNodeColor(self.colorInner, self.colorBorder)
+        self.set_node_color(self.colorInner, self.colorBorder)
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """
@@ -204,7 +206,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
                        icon_path="",
                        function_ptr=self.add_bus)
 
-    def setNodeColor(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+    def set_node_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
 
         :param inner_color:

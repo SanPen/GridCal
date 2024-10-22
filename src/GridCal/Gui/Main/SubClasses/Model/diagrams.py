@@ -1689,7 +1689,7 @@ class DiagramsMain(CompiledArraysMain):
         if diagram_widget:
 
             if isinstance(diagram_widget, SchematicWidget):
-                diagram = diagram_widget.get_selection_diagram()
+                diagram = diagram_widget.create_schematic_from_selection()
 
                 diagram_widget = SchematicWidget(gui=self,
                                                  circuit=self.circuit,

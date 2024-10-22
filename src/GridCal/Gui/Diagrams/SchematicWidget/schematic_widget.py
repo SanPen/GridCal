@@ -3590,7 +3590,7 @@ class SchematicWidget(BaseDiagramWidget):
         """
         return [e.api_object for e in self.diagram_scene.selectedItems()]
 
-    def get_selection_diagram(self) -> SchematicDiagram:
+    def create_schematic_from_selection(self) -> SchematicDiagram:
         """
         Get a SchematicDiagram of the current selection
         :return: SchematicDiagram

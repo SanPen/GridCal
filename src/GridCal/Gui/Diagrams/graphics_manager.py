@@ -38,7 +38,7 @@ from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.generator_graphics import GeneratorGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
-from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCalEngine.Devices.Substation.busbar import BusBar
@@ -67,7 +67,7 @@ ALL_BUS_BRACH_GRAPHICS = Union[
 ALL_MAP_GRAPHICS = Union[
     MapLineContainer,
     VoltageLevelGraphicItem,
-    NodeGraphicItem,
+    LineLocationGraphicItem,
     SubstationGraphicItem,
     MapLineSegment
 ]

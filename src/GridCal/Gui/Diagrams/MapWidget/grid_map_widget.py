@@ -54,7 +54,7 @@ from GridCal.Gui.Diagrams.MapWidget.Branches.map_ac_line import MapAcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_dc_line import MapDcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_hvdc_line import MapHvdcLine
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_fluid_path import MapFluidPathLine
-from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
 from GridCal.Gui.Diagrams.MapWidget.map_widget import MapWidget
@@ -92,7 +92,7 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     return R * c
 
 
-def compare_options(it1: NodeGraphicItem, it2: NodeGraphicItem):
+def compare_options(it1: LineLocationGraphicItem, it2: LineLocationGraphicItem):
     """
 
     :param it1:
@@ -424,7 +424,7 @@ class GridMapWidget(BaseDiagramWidget):
     def create_node(self,
                     line_container: MAP_BRANCH_GRAPHIC_TYPES,
                     api_object: LineLocation,
-                    lat: float, lon: float, index: int) -> NodeGraphicItem:
+                    lat: float, lon: float, index: int) -> LineLocationGraphicItem:
         """
 
         :param line_container:
@@ -434,13 +434,13 @@ class GridMapWidget(BaseDiagramWidget):
         :param index:
         :return:
         """
-        graphic_object = NodeGraphicItem(editor=self,
-                                         line_container=line_container,
-                                         api_object=api_object,
-                                         lat=lat,
-                                         lon=lon,
-                                         index=index,
-                                         r=0.005)
+        graphic_object = LineLocationGraphicItem(editor=self,
+                                                 line_container=line_container,
+                                                 api_object=api_object,
+                                                 lat=lat,
+                                                 lon=lon,
+                                                 index=index,
+                                                 r=0.005)
 
         self.graphics_manager.add_device(elm=api_object, graphic=graphic_object)
 
@@ -509,6 +509,9 @@ class GridMapWidget(BaseDiagramWidget):
         """
         return [s for s in self.map.view.selected_items() if isinstance(s, SubstationGraphicItem)]
 
+    # def get_selected(self):
+    #     return self.map.get_selected()
+
     def create_new_line_wizard(self):
         """
         Create a new line in the map with dialogues
@@ -540,7 +543,7 @@ class GridMapWidget(BaseDiagramWidget):
                 error_msg(text="Some of the buses was None :(", title="Create new line")
                 return None
 
-    def removeNode(self, node: NodeGraphicItem):
+    def remove_line_location_graphic(self, node: LineLocationGraphicItem):
         """
         Removes node from diagram and scene
         :param node: Node to remove
@@ -548,11 +551,9 @@ class GridMapWidget(BaseDiagramWidget):
 
         nod = self.graphics_manager.delete_device(node.api_object)
         self.map.diagram_scene.removeItem(nod)
-        nod.line_container.removeNode(node)
+        nod.line_container.remove_line_location_graphic(node)
 
-    pass
-
-    def removeSubstation(self, substation: SubstationGraphicItem):
+    def remove_substation(self, substation: SubstationGraphicItem):
         """
 
         :param substation:
@@ -563,14 +564,14 @@ class GridMapWidget(BaseDiagramWidget):
 
         br_types = [DeviceType.LineDevice, DeviceType.DCLineDevice, DeviceType.HVDCLineDevice]
 
-        for ty in br_types:
-            lins = self.graphics_manager.get_device_type_list(ty)
-            for lin in lins:
-                if (lin.api_object.get_substation_from() == substation.api_object
-                        or lin.api_object.get_substation_to() == substation.api_object):
-                    self.removeLine(lin)
+        for tpe in br_types:
+            elms = self.graphics_manager.get_device_type_list(tpe)
+            for elm in elms:
+                if (elm.api_object.get_substation_from() == substation.api_object
+                        or elm.api_object.get_substation_to() == substation.api_object):
+                    self.remove_branch_graphic(elm)
 
-    def removeLine(self, line: MAP_BRANCH_GRAPHIC_TYPES):
+    def remove_branch_graphic(self, line: MAP_BRANCH_GRAPHIC_TYPES):
         """
         Removes line from diagram and scene
         :param line: Line to remove

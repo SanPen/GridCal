@@ -28,10 +28,9 @@ from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_editor import LineEditor
 
 from GridCalEngine.Devices.types import BRANCH_TYPES
-from GridCalEngine.enumerations import DeviceType
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
@@ -41,15 +40,15 @@ class MapLineSegment(QGraphicsLineItem):
     Segment joining two NodeGraphicItem
     """
 
-    def __init__(self, first: NodeGraphicItem, second: NodeGraphicItem, container: MapLineContainer):
+    def __init__(self, first: LineLocationGraphicItem, second: LineLocationGraphicItem, container: MapLineContainer):
         """
         Segment constructor
         :param first: NodeGraphicItem
         :param second: NodeGraphicItem
         """
         QGraphicsLineItem.__init__(self)
-        self.first: NodeGraphicItem = first
-        self.second: NodeGraphicItem = second
+        self.first: LineLocationGraphicItem = first
+        self.second: LineLocationGraphicItem = second
         self.container: MapLineContainer = container
         self.draw_labels = True
 
@@ -125,7 +124,6 @@ class MapLineSegment(QGraphicsLineItem):
         """
         Set color and style
         :param color: QColor instance
-        :param w: width
         :param style: PenStyle instance
         :return:
         """
@@ -235,14 +233,14 @@ class MapLineSegment(QGraphicsLineItem):
                        icon_path=":/Icons/icons/assign_to_profile.svg")
 
         add_menu_entry(menu=menu,
-                       text="Split line",
-                       function_ptr=self.split_line,
-                       icon_path=":/Icons/icons/divide.svg")
+                       text="Add point",
+                       function_ptr=self.add_path_node,
+                       icon_path=":/Icons/icons/cn_icon.svg")
 
-        add_menu_entry(menu=menu,
-                       text="Split line with in/out",
-                       function_ptr=self.split_line_in_out,
-                       icon_path=":/Icons/icons/divide.svg")
+        # add_menu_entry(menu=menu,
+        #                text="Add substation here",
+        #                function_ptr=self.add_substation_here,
+        #                icon_path=":/Icons/icons/substation.svg")
 
         menu.addSeparator()
 
@@ -319,8 +317,7 @@ class MapLineSegment(QGraphicsLineItem):
         current_template = self.api_object.template
         dlg = LineEditor(line=self.api_object, Sbase=Sbase, frequency=self.editor.circuit.fBase,
                          templates=templates, current_template=current_template)
-        if dlg.exec_():
-            pass
+        dlg.exec()
 
     def plot_profiles(self) -> None:
         """
@@ -343,14 +340,14 @@ class MapLineSegment(QGraphicsLineItem):
         """
         self.editor.set_active_status_to_profile(self.api_object)
 
-    def split_line(self):
+    def add_path_node(self):
         """
-
-        :return:
+        Add a path to the container by adding a new graphical segment
         """
 
         if len(self.container.nodes_list) == 0:
             self.container.insert_new_node_at_position(0)
+
         elif len(self.container.nodes_list) == 1:
             if self.second == self.container.substation_to() or self.first == self.container.substation_to():
                 self.container.insert_new_node_at_position(1)
@@ -359,24 +356,26 @@ class MapLineSegment(QGraphicsLineItem):
         else:
             if self.second == self.container.substation_to() or self.first == self.container.substation_to():
                 self.container.insert_new_node_at_position(len(self.container.nodes_list))
+
             elif self.second == self.container.substation_from() or self.first == self.container.substation_from():
                 self.container.insert_new_node_at_position(0)
+
             else:
                 if self.first.index > self.second.index:
                     self.container.insert_new_node_at_position(self.second.index)
+
                 elif self.first.index < self.second.index:
                     self.container.insert_new_node_at_position(self.second.index)
 
-        # TODO implement
-        # self.editor.split_line(line_graphics=self)
-        pass
-
-    def split_line_in_out(self):
+    def add_substation_here(self):
         """
         Split the line
         :return:
         """
-        # TODO implement
+        # TODO implement:
+        # The container of this segment must be split into two new containers
+        # and in the middle, we need to create a substation object
+
         # self.editor.split_line_in_out(line_graphics=self)
         pass
 

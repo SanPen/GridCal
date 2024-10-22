@@ -22,18 +22,15 @@ from typing import TYPE_CHECKING, List, Union
 import logging
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPen
+from PySide6.QtGui import QColor
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
 from GridCalEngine.Devices import LineLocation
-from GridCalEngine.Devices.Diagrams.base_diagram import PointsGroup
 from GridCalEngine.Devices.types import BRANCH_TYPES, FluidPath
-from GridCalEngine.Devices.Branches.line import Line
-from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.messages import error_msg
 
 if TYPE_CHECKING:
-    from GridCal.Gui.Diagrams.MapWidget.Substation.node_graphic_item import NodeGraphicItem
+    from GridCal.Gui.Diagrams.MapWidget.Branches.line_location_graphic_item import LineLocationGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.Substation.voltage_level_graphic_item import VoltageLevelGraphicItem
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
@@ -61,7 +58,7 @@ class MapLineContainer(GenericDiagramWidget):
 
         self.editor: GridMapWidget = editor  # reassign to make clear the editor type
 
-        self.nodes_list: List[NodeGraphicItem] = list()
+        self.nodes_list: List[LineLocationGraphicItem] = list()
         self.segments_list: List[MapLineSegment] = list()
         self.enabled = True
         self.original = True  # TODO: Que es esto?
@@ -110,7 +107,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
         return len(self.nodes_list)
 
-    def register_new_node(self, node: NodeGraphicItem):
+    def register_new_node(self, node: LineLocationGraphicItem):
         """
         Add node
         :param node: NodeGraphicItem
@@ -174,7 +171,7 @@ class MapLineContainer(GenericDiagramWidget):
         # second pass: create the segments
         self.redraw_segments()
 
-    def removeNode(self, node: NodeGraphicItem):
+    def removeNode(self, node: LineLocationGraphicItem):
         """
 
         :param node:
@@ -200,7 +197,7 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.clean_segments()
 
-        connection_elements: List[Union[NodeGraphicItem, SubstationGraphicItem, VoltageLevelGraphicItem]] = list()
+        connection_elements: List[Union[LineLocationGraphicItem, SubstationGraphicItem, VoltageLevelGraphicItem]] = list()
 
         # add the substation from
         substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
@@ -296,7 +293,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Add the node to the nodes list
             self.nodes_list.insert(index, graphic_obj)
 
-            graphic_obj.updatePosition()
+            graphic_obj.update_position()
 
             # Update connectors if necessary
             self.redraw_segments()
@@ -336,7 +333,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Add the node to the nodes list
             self.nodes_list.insert(0, graphic_obj)
 
-            graphic_obj.updatePosition()
+            graphic_obj.update_position()
 
             # Update connectors if necessary
             self.redraw_segments()
@@ -391,7 +388,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Add the node to the nodes list
             self.nodes_list.insert(index, graphic_obj)
 
-            graphic_obj.updatePosition()
+            graphic_obj.update_position()
 
             # Update connectors if necessary
             self.redraw_segments()

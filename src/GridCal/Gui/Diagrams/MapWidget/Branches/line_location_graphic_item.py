@@ -16,11 +16,11 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
-from PySide6.QtWidgets import QApplication, QMenu, QGraphicsSceneContextMenuEvent
+from PySide6.QtWidgets import QMenu, QGraphicsSceneContextMenuEvent
 from GridCal.Gui.gui_functions import add_menu_entry
 from PySide6 import QtWidgets
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QBrush, QColor, QCursor
+from PySide6.QtGui import QBrush, QColor
 
 from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
@@ -30,7 +30,7 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import GridMapWidget
 
 
-class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
+class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
     """
       Represents a block in the diagram
       Has an x and y and width and height
@@ -60,7 +60,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         :param r:
         :param draw_labels:
         """
-        QtWidgets.QGraphicsRectItem.__init__(self)
+        QtWidgets.QGraphicsEllipseItem.__init__(self)
         NodeTemplate.__init__(self,
                               api_object=api_object,
                               editor=editor,
@@ -74,9 +74,8 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.radius = r
         self.draw_labels = True
 
-        # self.editor: GridMapWidget = editor
         self.line_container: MapLineContainer = line_container
-        # self.api_object: LineLocation = api_object
+
         self.index = index
 
         self.resize(r * 10)
@@ -84,23 +83,20 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsMovable)  # Allow moving the node
         self.setFlag(QtWidgets.QGraphicsItem.GraphicsItemFlag.ItemIsSelectable)  # Allow selecting the node
 
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        # self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         self.hovered = False
         self.enabled = True
 
         # Create a pen with reduced line width
-        self.change_pen_width(0.001)
-
-        # self.colorInner = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        # self.colorBorder = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-
-        self.colorInner = QColor(255, 100, 100, 100)
-        self.colorBorder = QColor(255, 100, 100, 100)
+        self.change_pen_width(0)
+        self.colorInner = QColor(100, 100, 100, 100)
+        self.colorBorder = QColor(100, 100, 100, 100)
         self.setZValue(1)
 
         # Assign color to the node
-        self.setDefaultColor()
+        self.set_default_color()
 
     def get_center_pos(self) -> QPointF:
         """
@@ -111,49 +107,45 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         y = self.rect().y() + self.rect().height() / 2
         return QPointF(x, y)
 
-    def updateRealPos(self) -> None:
+    def update_real_pos(self) -> None:
         """
 
         :return:
         """
         real_position = self.pos()
-        center_point = self.getPos()
+        center_point = self.get_pos()
         self.x = center_point.x() + real_position.x()
         self.y = center_point.y() + real_position.y()
 
-    def updatePosition(self):
+    def update_position(self) -> None:
         """
 
         :return:
         """
 
         if self.enabled:
-            self.updateRealPos()
-            self.needsUpdate = True
+            self.update_real_pos()
+            self.needs_update = True
             self.line_container.update_connectors()
 
-    def updateDiagram(self):
+    def update_position_at_the_diagram(self) -> None:
         """
-
-        :return:
+        This function updates the position of this graphical element in the diagram
         """
         real_position = self.pos()
-        center_point = self.getPos()
+        center_point = self.get_pos()
 
-        lat, long = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
-                                           y=center_point.y() + real_position.y())
+        self.lat, self.lon = self.editor.to_lat_lon(x=center_point.x() + real_position.x(),
+                                                    y=center_point.y() + real_position.y())
 
-        print(f'Updating node position id:{self.api_object.idtag}, lat:{lat}, lon:{long}')
+        # print(f'Updating node position id:{self.api_object.idtag}, lat:{self.lat}, lon:{self.lon}')
 
         self.editor.update_diagram_element(device=self.api_object,
-                                           latitude=lat,
-                                           longitude=long,
+                                           latitude=self.lat,
+                                           longitude=self.lon,
                                            graphic_object=self)
 
-        self.lat = lat
-        self.lon = long
-
-    def mouseMoveEvent(self, event):
+    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
         """
@@ -165,51 +157,48 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             self.set_callabacks(pos.x(), pos.y())
 
             if self.hovered and self.enabled:
-                self.updatePosition()
+                self.update_position()
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        selected_items = self.editor.map.view._scene.selectedItems()
-        if len(selected_items) < 2:
-            self.setSelected(True)
+        # selected_items = self.editor.map.get_selected()
+        #
+        # if len(selected_items) < 2:
+        #     self.setSelected(True)
         if self.enabled:
             self.editor.map.view.disable_move = True
-            if event.button() == Qt.RightButton:
+            if event.button() == Qt.MouseButton.RightButton:
                 pass
 
-    def mouseReleaseEvent(self, event):
+    def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse release events.
         """
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
-        self.updateDiagram()
-        self.editor.map.view._scene.update()
+        self.update_position_at_the_diagram()
+        # self.editor.map.view._scene.update()
 
-        selected_items = self.editor.map.view._scene.selectedItems()
-        if len(selected_items) < 2:
-            self.setSelected(True)
+        # selected_items = self.editor.map.get_selected()
+        # if len(selected_items) < 2:
+        #     self.setSelected(True)
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse enters the item.
         """
-        # self.editor.map.view.in_item = True
         self.hovered = True
-        self.setNodeColor(QColor(Qt.red), QColor(Qt.red))
-        QApplication.instance().setOverrideCursor(Qt.PointingHandCursor)
+        self.setNodeColor(QColor(Qt.GlobalColor.red), QColor(Qt.GlobalColor.red))
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
         Event handler for when the mouse leaves the item.
         """
-        # self.editor.map.view.in_item = False
         self.hovered = False
-        self.setDefaultColor()
-        QApplication.instance().restoreOverrideCursor()
+        self.set_default_color()
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """
@@ -219,20 +208,20 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         """
         menu = QMenu()
 
-        add_menu_entry(menu=menu,
-                       text="Merge",
-                       icon_path="",
-                       function_ptr=self.MergeFunction)
-
-        add_menu_entry(menu=menu,
-                       text="Split",
-                       icon_path=":/Icons/icons/divide.svg",
-                       function_ptr=self.SplitFunction)
+        # add_menu_entry(menu=menu,
+        #                text="Merge",
+        #                icon_path="",
+        #                function_ptr=self.MergeFunction)
+        #
+        # add_menu_entry(menu=menu,
+        #                text="Split",
+        #                icon_path=":/Icons/icons/divide.svg",
+        #                function_ptr=self.SplitFunction)
 
         add_menu_entry(menu=menu,
                        text="Delete",
                        icon_path=":/Icons/icons/delete.svg",
-                       function_ptr=self.RemoveFunction)
+                       function_ptr=self.remove)
 
         menu.exec_(event.screenPos())
 
@@ -254,13 +243,13 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # Implement the functionality for Action 1 here
         pass
 
-    def RemoveFunction(self):
+    def remove(self):
         """
 
         :return:
         """
         # Implement the functionality for Action 1 here
-        self.editor.removeNode(self)
+        self.editor.remove_line_location_graphic(self)
 
     def MergeFunction(self):
         """
@@ -286,7 +275,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
             pen.setColor(border_color)
             self.setPen(pen)
 
-    def setDefaultColor(self) -> None:
+    def set_default_color(self) -> None:
         """
 
         :return:
@@ -294,7 +283,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
         # Example: color assignment
         self.setNodeColor(self.colorInner, self.colorBorder)
 
-    def getPos(self) -> QPointF:
+    def get_pos(self) -> QPointF:
         """
 
         :return:
@@ -312,7 +301,7 @@ class NodeGraphicItem(QtWidgets.QGraphicsRectItem, NodeTemplate):
 
         :return:
         """
-        self.updateRealPos()
+        self.update_real_pos()
         return self.x, self.y
 
     def resize(self, new_radius: float):
