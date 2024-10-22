@@ -383,7 +383,7 @@ class MapView(QGraphicsView):
 
         self.map_widget.view.centerOn(point)
 
-    def get_selected(self):
+    def get_selected(self) -> List[QGraphicsItem]:
         """
         Get the selection
         :return:
@@ -1915,7 +1915,7 @@ class MapWidget(QWidget):
 
         return old_tileset
 
-    def get_selected(self):
+    def get_selected(self) -> List[QGraphicsItem]:
         """
         Get the selection
         :return:

@@ -30,6 +30,7 @@ from PySide6.QtCore import (Qt, QSize, QRect, QMimeData, QIODevice, QByteArray, 
 from PySide6.QtGui import (QIcon, QPixmap, QImage, QPainter, QStandardItemModel, QStandardItem, QColor,
                            QDropEvent, QWheelEvent)
 
+from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_container import MapLineContainer
 from GridCal.Gui.SubstationDesigner.substation_designer import SubstationDesigner
 from GridCalEngine.Devices.Diagrams.map_location import MapLocation
 from GridCalEngine.Devices.Substation import Bus
@@ -422,7 +423,7 @@ class GridMapWidget(BaseDiagramWidget):
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
     def create_line_location_graphic(self,
-                                     line_container: MAP_BRANCH_GRAPHIC_TYPES,
+                                     line_container: MapLineContainer,
                                      api_object: LineLocation,
                                      lat: float,
                                      lon: float,
@@ -457,7 +458,7 @@ class GridMapWidget(BaseDiagramWidget):
         :return:
         """
 
-        selected_items = self.map.view._scene.selectedItems()
+        selected_items = self.map.get_selected()
         selectedItems = []
         for item in selected_items:
             selectedItems.append(item)
@@ -732,8 +733,6 @@ class GridMapWidget(BaseDiagramWidget):
                     self.add_api_substation(api_object=location.api_object,
                                             lon=location.longitude,
                                             lat=location.latitude)
-
-
 
         # second pass: create the rest of devices
         for category, points_group in diagram.data.items():
@@ -1045,12 +1044,12 @@ class GridMapWidget(BaseDiagramWidget):
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
 
-        vmin = 0
-        vmax = 1.2
-        vrng = vmax - vmin
-        vabs = np.abs(voltages)
-        vang = np.angle(voltages, deg=True)
-        vnorm = (vabs - vmin) / vrng
+        # vmin = 0
+        # vmax = 1.2
+        # vrng = vmax - vmin
+        # vabs = np.abs(voltages)
+        # vang = np.angle(voltages, deg=True)
+        # vnorm = (vabs - vmin) / vrng
 
         n = len(buses)
         longitudes = np.zeros(n)
@@ -1258,14 +1257,6 @@ class GridMapWidget(BaseDiagramWidget):
             painter.end()
         else:
             raise Exception('Extension ' + str(extension) + ' not supported :(')
-
-    # def capture_video_frame(self):
-    #     """
-    #     Save video frame
-    #     """
-    #     image, w, h = self.get_image()
-    #     cv2_image = qimage_to_cv(image)
-    #     self._video.write(cv2_image)
 
     def new_substation_diagram(self, substation: Substation):
         """

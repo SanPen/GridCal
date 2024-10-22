@@ -16,10 +16,7 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 
-# import uuid
 from typing import TYPE_CHECKING, List, Union
-
-import logging
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
@@ -126,7 +123,6 @@ class MapLineContainer(GenericDiagramWidget):
         """
         Set color and style
         :param color: QColor instance
-        :param w: width
         :param style: PenStyle instance
         :param tool_tip: tool tip text
         :return:
@@ -250,9 +246,17 @@ class MapLineContainer(GenericDiagramWidget):
         self.editor.update_device_sizes()
 
     def substation_to(self):
+        """
+
+        :return:
+        """
         return self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
 
     def substation_from(self):
+        """
+
+        :return:
+        """
         return self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
 
     def insert_new_node_at_position(self, index: int):
@@ -352,7 +356,7 @@ class MapLineContainer(GenericDiagramWidget):
             # Return the newly created node
             return graphic_obj
 
-        elif (0 == index or index >= len(self.api_object.locations.data) - 1):
+        elif 0 == index or index >= len(self.api_object.locations.data) - 1:
 
             substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
             substation_to_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_to())
@@ -407,11 +411,9 @@ class MapLineContainer(GenericDiagramWidget):
             # Return the newly created node
             return graphic_obj
 
-        else:
-
-            logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
-            logging.info("Invalid node index")
+        # else:
+        #     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+        #     logging.info("Invalid node index")
 
     def split_Line(self, index):
         """
@@ -450,8 +452,8 @@ class MapLineContainer(GenericDiagramWidget):
             ln1.bus_from = self.api_object.bus_from
             ln2.bus_to = self.api_object.bus_to
 
-            l1 = self.editor.add_api_line(ln1, original=False)
-            l2 = self.editor.add_api_line(ln2, original=False)
+            # l1 = self.editor.add_api_line(ln1, original=False)
+            # l2 = self.editor.add_api_line(ln2, original=False)
 
             self.disable_line()
 
