@@ -421,10 +421,12 @@ class GridMapWidget(BaseDiagramWidget):
 
         self.graphics_manager.add_device(elm=device, graphic=graphic_object)
 
-    def create_node(self,
-                    line_container: MAP_BRANCH_GRAPHIC_TYPES,
-                    api_object: LineLocation,
-                    lat: float, lon: float, index: int) -> LineLocationGraphicItem:
+    def create_line_location_graphic(self,
+                                     line_container: MAP_BRANCH_GRAPHIC_TYPES,
+                                     api_object: LineLocation,
+                                     lat: float,
+                                     lon: float,
+                                     index: int) -> LineLocationGraphicItem:
         """
 
         :param line_container:
@@ -731,7 +733,9 @@ class GridMapWidget(BaseDiagramWidget):
                                             lon=location.longitude,
                                             lat=location.latitude)
 
-        # second pass: create voltage levels
+
+
+        # second pass: create the rest of devices
         for category, points_group in diagram.data.items():
 
             if category == DeviceType.VoltageLevelDevice.value:

@@ -87,6 +87,14 @@ class SubstationGraphicItem(QGraphicsRectItem, NodeTemplate):
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
+
+        # Create a pen with reduced line width
+        self.color = QColor(self.api_object.color)
+        self.color.setAlpha(128)
+        self.hoover_color = QColor(self.api_object.color)
+        self.hoover_color.setAlpha(180)
+        self.border_color = QColor(self.api_object.color)  # No Alpha
+
         self.set_default_color()
 
         # list of voltage levels graphics

@@ -24,8 +24,9 @@ import logging
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from GridCal.Gui.Diagrams.MapWidget.Branches.map_line_segment import MapLineSegment
-from GridCalEngine.Devices import LineLocation
+from GridCalEngine.Devices.Branches.line_locations import LineLocation
 from GridCalEngine.Devices.types import BRANCH_TYPES, FluidPath
+from GridCalEngine.enumerations import DeviceType
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget
 from GridCal.Gui.messages import error_msg
 
@@ -158,13 +159,22 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.clean()
 
+        # get the diagram line locations
+        line_locs_info = self.editor.diagram.query_by_type(device_type=DeviceType.LineLocation)
+
         # draw line locations
         for elm in self.api_object.locations.data:
-            graphic_obj = self.editor.create_node(line_container=self,
-                                                  api_object=elm,
-                                                  lat=elm.lat,  # 42.0 ...
-                                                  lon=elm.long,
-                                                  index=self.number_of_nodes())  # 2.7 ...
+
+            if line_locs_info is not None:
+                loc_data = line_locs_info.locations.get(elm.idtag, None)
+            else:
+                loc_data = None
+
+            graphic_obj = self.editor.create_line_location_graphic(line_container=self,
+                                                                   api_object=elm,
+                                                                   lat=elm.lat if loc_data is None else loc_data.latitude,
+                                                                   lon=elm.long if loc_data is None else loc_data.longitude,
+                                                                   index=self.number_of_nodes())  # 2.7 ...
 
             self.register_new_node(node=graphic_obj)
 
@@ -197,7 +207,8 @@ class MapLineContainer(GenericDiagramWidget):
         """
         self.clean_segments()
 
-        connection_elements: List[Union[LineLocationGraphicItem, SubstationGraphicItem, VoltageLevelGraphicItem]] = list()
+        connection_elements: List[
+            Union[LineLocationGraphicItem, SubstationGraphicItem, VoltageLevelGraphicItem]] = list()
 
         # add the substation from
         substation_from_graphics = self.editor.graphics_manager.query(elm=self.api_object.get_substation_from())
@@ -275,11 +286,11 @@ class MapLineContainer(GenericDiagramWidget):
 
             # Create a new graphical node item
 
-            graphic_obj = self.editor.create_node(line_container=self,
-                                                  api_object=new_api_object,
-                                                  lat=new_api_object.lat,
-                                                  lon=new_api_object.long,
-                                                  index=index)
+            graphic_obj = self.editor.create_line_location_graphic(line_container=self,
+                                                                   api_object=new_api_object,
+                                                                   lat=new_api_object.lat,
+                                                                   lon=new_api_object.long,
+                                                                   index=index)
 
             idx = 0
 
@@ -324,11 +335,11 @@ class MapLineContainer(GenericDiagramWidget):
 
             # Create a new graphical node item
 
-            graphic_obj = self.editor.create_node(line_container=self,
-                                                  api_object=new_api_object,
-                                                  lat=new_api_object.lat,
-                                                  lon=new_api_object.long,
-                                                  index=0)
+            graphic_obj = self.editor.create_line_location_graphic(line_container=self,
+                                                                   api_object=new_api_object,
+                                                                   lat=new_api_object.lat,
+                                                                   lon=new_api_object.long,
+                                                                   index=0)
 
             # Add the node to the nodes list
             self.nodes_list.insert(0, graphic_obj)
@@ -370,11 +381,11 @@ class MapLineContainer(GenericDiagramWidget):
 
             # Create a new graphical node item
 
-            graphic_obj = self.editor.create_node(line_container=self,
-                                                  api_object=new_api_object,
-                                                  lat=new_api_object.lat,
-                                                  lon=new_api_object.long,
-                                                  index=index)
+            graphic_obj = self.editor.create_line_location_graphic(line_container=self,
+                                                                   api_object=new_api_object,
+                                                                   lat=new_api_object.lat,
+                                                                   lon=new_api_object.long,
+                                                                   index=index)
 
             idx = 0
 

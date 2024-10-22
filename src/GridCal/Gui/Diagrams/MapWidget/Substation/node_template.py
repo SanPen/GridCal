@@ -51,13 +51,6 @@ class NodeTemplate(GenericDiagramWidget):
         self.lat = lat
         self.lon = lon
 
-        # Create a pen with reduced line width
-        self.color = QColor(self.api_object.color)
-        self.color.setAlpha(128)
-        self.hoover_color = QColor(self.api_object.color)
-        self.hoover_color.setAlpha(180)
-        self.border_color = QColor(self.api_object.color)  # No Alpha
-
         self.hovered = False
         self.needsUpdate = False
 

@@ -87,6 +87,13 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
 
         # Create a pen with reduced line width
         self.change_pen_width(0.5)
+        # Create a pen with reduced line width
+        se_color = self.api_object.substation.color if self.api_object.substation is not None else QColor("#3d7d95")
+        self.color = QColor(se_color)
+        self.color.setAlpha(128)
+        self.hoover_color = QColor(se_color)
+        self.hoover_color.setAlpha(180)
+        self.border_color = QColor(se_color)  # No Alpha
 
         # self.colorInner = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         # self.colorBorder = QColor(100, random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -95,7 +102,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         self.colorBorder = QColor(36, 59, 131, 100)  # dark blue
 
         # Assign color to the node
-        self.set_node_color(inner_color=self.colorInner, border_color=self.colorBorder)
+        self.set_color(inner_color=self.colorInner, border_color=self.colorBorder)
         self.hovered = False
         self.needsUpdate = False
         self.setZValue(0)
@@ -183,7 +190,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         """
         Event handler for when the mouse enters the item.
         """
-        # self.set_node_color(QColor(Qt.GlobalColor.red), QColor(Qt.GlobalColor.red))
+        # self.set_color(QColor(Qt.GlobalColor.red), QColor(Qt.GlobalColor.red))
         self.set_color(self.hoover_color, self.color)
         self.hovered = True
 
@@ -192,7 +199,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         Event handler for when the mouse leaves the item.
         """
         self.hovered = False
-        self.set_node_color(self.colorInner, self.colorBorder)
+        self.set_color(self.colorInner, self.colorBorder)
 
     def contextMenuEvent(self, event: QGraphicsSceneContextMenuEvent):
         """
@@ -206,7 +213,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
                        icon_path="",
                        function_ptr=self.add_bus)
 
-    def set_node_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
+    def set_color(self, inner_color: QColor = None, border_color: QColor = None) -> None:
         """
 
         :param inner_color:
@@ -254,3 +261,11 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
                   voltage_level=self.api_object)
 
         self.editor.circuit.add_bus(obj=bus)
+
+    def set_default_color(self) -> None:
+        """
+
+        :return:
+        """
+        # Example: color assignment
+        self.set_color(self.color, self.border_color)

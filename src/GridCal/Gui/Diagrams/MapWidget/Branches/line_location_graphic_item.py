@@ -145,6 +145,8 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
                                            longitude=self.lon,
                                            graphic_object=self)
 
+        print()
+
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         """
         Event handler for mouse move events.
@@ -164,10 +166,6 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
-        # selected_items = self.editor.map.get_selected()
-        #
-        # if len(selected_items) < 2:
-        #     self.setSelected(True)
         if self.enabled:
             self.editor.map.view.disable_move = True
             if event.button() == Qt.MouseButton.RightButton:
@@ -180,11 +178,6 @@ class LineLocationGraphicItem(QtWidgets.QGraphicsEllipseItem, NodeTemplate):
         super().mouseReleaseEvent(event)
         self.editor.disableMove = True
         self.update_position_at_the_diagram()
-        # self.editor.map.view._scene.update()
-
-        # selected_items = self.editor.map.get_selected()
-        # if len(selected_items) < 2:
-        #     self.setSelected(True)
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         """
