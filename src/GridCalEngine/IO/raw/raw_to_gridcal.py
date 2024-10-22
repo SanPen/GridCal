@@ -161,9 +161,9 @@ def get_gridcal_load(psse_load: RawLoad, bus: dev.Bus, logger: Logger) -> dev.Lo
 
 def get_gridcal_shunt_fixed(psse_elm: RawFixedShunt, bus: dev.Bus, logger: Logger):
     """
-    Return Newton Load object
+    Return GridCal Shunt object
     Returns:
-        Newton Load object
+        GridCal Shunt object
     """
     name = str(psse_elm.I) + '_' + str(psse_elm.ID).replace("'", "")
     name = name.strip()
