@@ -448,6 +448,92 @@ class PfAdvancedFormulation(PfFormulationTemplate):
                 + len(self.idx_dtau)
                 + len(self.idx_dbeq))
 
+    def check_error(self, x: Vec) -> Tuple[float, Vec]:
+        """
+        Check error of the solution without affecting the problem
+        :param x: Solution vector
+        :return: error
+        """
+        a = len(self.idx_dVa)
+        b = a + len(self.idx_dVm)
+        c = b + len(self.idx_dm)
+        d = c + len(self.idx_dtau)
+        e = d + len(self.idx_dbeq)
+
+        # update the vectors
+        Va = self.Va.copy()
+        Vm = self.Vm.copy()
+        Va[self.idx_dVa] = x[0:a]
+        Vm[self.idx_dVm] = x[a:b]
+        m = x[b:c]
+        tau = x[c:d]
+        beq = x[d:e]
+
+        # recompute admittances
+        adm = compute_admittances(
+            R=self.nc.branch_data.R,
+            X=self.nc.branch_data.X,
+            G=self.nc.branch_data.G,
+            B=self.nc.branch_data.B,
+            k=self.nc.branch_data.k,
+            tap_module=expand(self.nc.nbr, m, self.idx_dm, 1.0),
+            vtap_f=self.nc.branch_data.virtual_tap_f,
+            vtap_t=self.nc.branch_data.virtual_tap_t,
+            tap_angle=expand(self.nc.nbr, tau, self.idx_dtau, 0.0),
+            Beq=expand(self.nc.nbr, beq, self.idx_dbeq, 0.0),
+            Cf=self.nc.Cf,
+            Ct=self.nc.Ct,
+            Gsw=expand(self.nc.nbr, self.Gsw, self.idx_conv, 0.0),
+            Yshunt_bus=self.nc.Yshunt_from_devices,
+            conn=self.nc.branch_data.conn,
+            seq=1,
+            add_windings_phase=False,
+            verbose=self.options.verbose,
+        )
+
+        # compute the complex voltage
+        V = polar_to_rect(Vm, Va)
+
+        # Update converter losses
+        It = get_It(k=self.idx_conv, V=V, ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T)
+        Itm = np.abs(It)
+        Itm2 = Itm * Itm
+        PLoss_IEC = (self.nc.branch_data.alpha3[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha2[self.idx_conv] * Itm2
+                     + self.nc.branch_data.alpha1[self.idx_conv])
+
+        self.Gsw = PLoss_IEC / np.power(Vm[self.nc.F[self.idx_conv]], 2.0)
+
+        # compute the function residual
+        Sbus = compute_zip_power(self.S0, self.I0, self.Y0, Vm)
+        Scalc = compute_power(adm.Ybus, V)
+
+        dS = Scalc - Sbus  # compute the mismatch
+
+        Pf = get_Sf(k=self.idx_dPf, Vm=Vm, V=V,
+                    yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).real
+
+        Qf = get_Sf(k=self.idx_dQf, Vm=Vm, V=V,
+                    yff=adm.yff, yft=adm.yft, F=self.nc.F, T=self.nc.T).imag
+
+        Pt = get_St(k=self.idx_dPt, Vm=Vm, V=V,
+                    ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).real
+
+        Qt = get_St(k=self.idx_dQt, Vm=Vm, V=V,
+                    ytf=adm.ytf, ytt=adm.ytt, F=self.nc.F, T=self.nc.T).imag
+
+        _f = np.r_[
+            dS[self.idx_dP].real,
+            dS[self.idx_dQ].imag,
+            Pf - self.nc.branch_data.Pset[self.idx_dPf],
+            Qf - self.nc.branch_data.Qset[self.idx_dQf],
+            Pt - self.nc.branch_data.Pset[self.idx_dPt],
+            Qt - self.nc.branch_data.Qset[self.idx_dQt]
+        ]
+
+        # compute the rror
+        return compute_fx_error(_f), x
+
     def update(self, x: Vec, update_controls: bool = False) -> Tuple[float, bool, Vec, Vec]:
         """
         Update step

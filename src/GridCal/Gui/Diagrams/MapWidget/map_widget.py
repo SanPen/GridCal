@@ -636,8 +636,8 @@ class MapWidget(QWidget):
         :return:
         """
         super().mousePressEvent(event)
-        click_x = event.x()
-        click_y = event.y()
+        # click_x = event.x()
+        # click_y = event.y()
 
         # assume we aren't dragging
         # self.start_drag_x = None
