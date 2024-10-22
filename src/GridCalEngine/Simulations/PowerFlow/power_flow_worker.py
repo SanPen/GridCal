@@ -418,13 +418,18 @@ def solve(nc: NumericalCircuit,
                            elapsed=solution.elapsed,
                            iterations=solution.iterations)
 
-                if abs(solution.norm_f) < 0.1:
+                if solution.method in [SolverType.DC, SolverType.LACPF]:
+                    # if the method is linear, we do not check the solution quality
                     final_solution = solution
                 else:
-                    logger.add_info('Tried solution is garbage',
-                                    solver_type.value,
-                                    value="{:.4e}".format(solution.norm_f),
-                                    expected_value=0.1)
+                    # if the method is supposed to be exact, we check the solution quality
+                    if abs(solution.norm_f) < 0.1:
+                        final_solution = solution
+                    else:
+                        logger.add_info('Tried solution is garbage',
+                                        solver_type.value,
+                                        value="{:.4e}".format(solution.norm_f),
+                                        expected_value=0.1)
             else:
                 logger.add_info('Tried solver but it did not improve the solution',
                                 solver_type.value,
