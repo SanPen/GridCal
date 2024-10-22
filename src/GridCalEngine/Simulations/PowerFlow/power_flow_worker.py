@@ -417,7 +417,14 @@ def solve(nc: NumericalCircuit,
                            error=solution.norm_f,
                            elapsed=solution.elapsed,
                            iterations=solution.iterations)
-                final_solution = solution
+
+                if abs(solution.norm_f) < 0.1:
+                    final_solution = solution
+                else:
+                    logger.add_info('Tried solution is garbage',
+                                    solver_type.value,
+                                    value="{:.4e}".format(solution.norm_f),
+                                    expected_value=0.1)
             else:
                 logger.add_info('Tried solver but it did not improve the solution',
                                 solver_type.value,
