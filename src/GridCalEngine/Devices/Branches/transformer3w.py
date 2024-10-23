@@ -44,6 +44,21 @@ def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, flo
         return 1e-20, 1e-20, 1e-20
 
 
+def start_to_delta(z1: float, z2: float, z3: float):
+    """
+    Perform the star->delta transformation
+    :param z1:
+    :param z2:
+    :param z3:
+    :return:
+    """
+    z12 = z1 + z2
+    z23 = z2 + z3
+    z31 = z3 + z1
+
+    return z12, z23, z31
+
+
 class Transformer3W(PhysicalDevice):
 
     def __init__(self, idtag: Union[str, None] = None,
@@ -52,8 +67,8 @@ class Transformer3W(PhysicalDevice):
                  bus0: Union[None, Bus] = None,
                  bus1: Bus = None, bus2: Bus = None, bus3: Bus = None,
                  cn0: Union[None, ConnectivityNode] = None,
-                 cn1: ConnectivityNode = None, 
-                 cn2: ConnectivityNode = None, 
+                 cn1: ConnectivityNode = None,
+                 cn2: ConnectivityNode = None,
                  cn3: ConnectivityNode = None,
                  w1_idtag: Union[str, None] = None,
                  w2_idtag: Union[str, None] = None,
@@ -99,7 +114,7 @@ class Transformer3W(PhysicalDevice):
             bus0.is_internal = True
             bus0.Vnom = 1.0
             self.bus0 = bus0
-        
+
         if cn0 is None:
             self.cn0 = ConnectivityNode(name=name + '_cn', Vnom=1.0, internal=True)
         else:
@@ -108,11 +123,11 @@ class Transformer3W(PhysicalDevice):
             self.cn0 = cn0
 
         self.cn0.default_bus = self.bus0
-        
+
         self._bus1 = bus1
         self._bus2 = bus2
         self._bus3 = bus3
-        
+
         self._cn1 = cn1
         self._cn2 = cn2
         self._cn3 = cn3
@@ -148,7 +163,7 @@ class Transformer3W(PhysicalDevice):
         self._Pfe: float = 0.0
         self._I0: float = 0.0
 
-        self._winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag, 
+        self._winding1 = Winding(bus_from=self.bus0, idtag=w1_idtag,
                                  bus_to=bus1,
                                  cn_from=self.cn0,
                                  cn_to=self.cn1,
@@ -173,11 +188,15 @@ class Transformer3W(PhysicalDevice):
         self.register(key='bus2', units='', tpe=DeviceType.BusDevice, definition='Bus 2.', editable=False)
         self.register(key='bus3', units='', tpe=DeviceType.BusDevice, definition='Bus 3.', editable=False)
 
-        self.register(key='cn0', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='Middle point connection cn.',
+        self.register(key='cn0', units='', tpe=DeviceType.ConnectivityNodeDevice,
+                      definition='Middle point connection cn.',
                       editable=False)
-        self.register(key='cn1', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 1.', editable=False)
-        self.register(key='cn2', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 2.', editable=False)
-        self.register(key='cn3', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 3.', editable=False)
+        self.register(key='cn1', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 1.',
+                      editable=False)
+        self.register(key='cn2', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 2.',
+                      editable=False)
+        self.register(key='cn3', units='', tpe=DeviceType.ConnectivityNodeDevice, definition='ConnectivityNode 3.',
+                      editable=False)
 
         self.register('active', units="", tpe=bool, definition='Is active?', profile_name="active_prof")
 
@@ -397,6 +416,28 @@ class Transformer3W(PhysicalDevice):
         self.winding3.R = r3
         self.winding3.X = x3
         self.winding3.rate = self.rate3
+
+    def fill_from_star(self, r1: float, r2: float, r3: float, x1: float, x2: float, x3: float) -> None:
+        """
+        Fill from Star values
+        :param r1: resistance of the branch 1 (p.u.)
+        :param r2: resistance of the branch 2 (p.u.)
+        :param r3: resistance of the branch 3 (p.u.)
+        :param x1: reactance of the branch 1 (p.u.)
+        :param x2: reactance of the branch 2 (p.u.)
+        :param x3: reactance of the branch 3 (p.u.)
+        """
+        self._r12, self._r23, self._r31 = start_to_delta(z1=r1, z2=r2, z3=r3)
+        self._x12, self._x23, self._x31 = start_to_delta(z1=x1, z2=x2, z3=x3)
+
+        self.winding1.R = r1
+        self.winding1.X = x1
+
+        self.winding2.R = r2
+        self.winding2.X = x2
+
+        self.winding3.R = r3
+        self.winding3.X = x3
 
     @property
     def r12(self):

@@ -1314,40 +1314,39 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                                                     rate23=windings[1].ratedS,
                                                     rate31=windings[2].ratedS,)
 
-                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[0], Sbase)
-                    gcdev_elm.winding1.R = r
-                    gcdev_elm.winding1.X = x
-                    gcdev_elm.winding1.G = g
-                    gcdev_elm.winding1.B = b
-                    gcdev_elm.winding1.R0 = r0
-                    gcdev_elm.winding1.X0 = x0
-                    gcdev_elm.winding1.G0 = g0
-                    gcdev_elm.winding1.B0 = b0
+                    r1, x1, g1, b1, r01, x01, g01, b01 = get_pu_values_power_transformer_end(windings[0], Sbase)
+                    gcdev_elm.winding1.R = r1
+                    gcdev_elm.winding1.X = x1
+                    gcdev_elm.winding1.G = g1
+                    gcdev_elm.winding1.B = b1
+                    gcdev_elm.winding1.R0 = r01
+                    gcdev_elm.winding1.X0 = x01
+                    gcdev_elm.winding1.G0 = g01
+                    gcdev_elm.winding1.B0 = b01
                     gcdev_elm.winding1.rate = float(windings[0].ratedS)
 
-                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[1], Sbase)
-                    gcdev_elm.winding2.R = r
-                    gcdev_elm.winding2.X = x
-                    gcdev_elm.winding2.G = g
-                    gcdev_elm.winding2.B = b
-                    gcdev_elm.winding2.R0 = r0
-                    gcdev_elm.winding2.X0 = x0
-                    gcdev_elm.winding2.G0 = g0
-                    gcdev_elm.winding2.B0 = b0
+                    r2, x2, g2, b2, r02, x02, g02, b02 = get_pu_values_power_transformer_end(windings[1], Sbase)
+                    gcdev_elm.winding2.R = r2
+                    gcdev_elm.winding2.X = x2
+                    gcdev_elm.winding2.G = g2
+                    gcdev_elm.winding2.B = b2
+                    gcdev_elm.winding2.R0 = r02
+                    gcdev_elm.winding2.X0 = x02
+                    gcdev_elm.winding2.G0 = g02
+                    gcdev_elm.winding2.B0 = b02
                     gcdev_elm.winding2.rate = float(windings[1].ratedS)
 
-                    r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer_end(windings[2], Sbase)
-                    gcdev_elm.winding3.R = r
-                    gcdev_elm.winding3.X = x
-                    gcdev_elm.winding3.G = g
-                    gcdev_elm.winding3.B = b
-                    gcdev_elm.winding3.R0 = r0
-                    gcdev_elm.winding3.X0 = x0
-                    gcdev_elm.winding3.G0 = g0
-                    gcdev_elm.winding3.B0 = b0
+                    r3, x3, g3, b3, r03, x03, g03, b03 = get_pu_values_power_transformer_end(windings[2], Sbase)
+                    gcdev_elm.winding3.R = r3
+                    gcdev_elm.winding3.X = x3
+                    gcdev_elm.winding3.G = g3
+                    gcdev_elm.winding3.B = b3
+                    gcdev_elm.winding3.R0 = r03
+                    gcdev_elm.winding3.X0 = x03
+                    gcdev_elm.winding3.G0 = g03
+                    gcdev_elm.winding3.B0 = b03
                     gcdev_elm.winding3.rate = float(windings[2].ratedS)
 
-                    # gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=False)  # TODO: Why not adding the middle bus?
                     gcdev_model.add_transformer3w(gcdev_elm, add_middle_bus=True)
 
                 else:
