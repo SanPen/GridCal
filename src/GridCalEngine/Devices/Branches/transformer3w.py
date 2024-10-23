@@ -29,6 +29,7 @@ from GridCalEngine.enumerations import DeviceType
 def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, float]:
     """
     Perform the delta->star transformation
+    See: https://www.electronics-tutorials.ws/dccircuits/dcp_10.html
     :param z12: 1 to 2 delta value
     :param z23: 2 to 3 delta value
     :param z31: 3 to 1 delta value
@@ -44,17 +45,19 @@ def delta_to_star(z12: float, z23: float, z31: float) -> Tuple[float, float, flo
         return 1e-20, 1e-20, 1e-20
 
 
-def start_to_delta(z1: float, z2: float, z3: float):
+def star_to_delta(z1: float, z2: float, z3: float) -> Tuple[float, float, float]:
     """
     Perform the star->delta transformation
-    :param z1:
-    :param z2:
-    :param z3:
-    :return:
+    See: https://www.electronics-tutorials.ws/dccircuits/dcp_10.html
+    :param z1: 0->1 impedance
+    :param z2: 0->2 impedance
+    :param z3: 0->3 impedance
+    :return: z12, z23, z31 impedances
     """
-    z12 = z1 + z2
-    z23 = z2 + z3
-    z31 = z3 + z1
+    zt = z1 * z2 + z2 * z3 + z3 * z1
+    z12 = zt / z3
+    z23 = zt / z2
+    z31 = zt / z1
 
     return z12, z23, z31
 
@@ -427,8 +430,8 @@ class Transformer3W(PhysicalDevice):
         :param x2: reactance of the branch 2 (p.u.)
         :param x3: reactance of the branch 3 (p.u.)
         """
-        self._r12, self._r23, self._r31 = start_to_delta(z1=r1, z2=r2, z3=r3)
-        self._x12, self._x23, self._x31 = start_to_delta(z1=x1, z2=x2, z3=x3)
+        self._r12, self._r23, self._r31 = star_to_delta(z1=r1, z2=r2, z3=r3)
+        self._x12, self._x23, self._x31 = star_to_delta(z1=x1, z2=x2, z3=x3)
 
         self.winding1.R = r1
         self.winding1.X = x1
