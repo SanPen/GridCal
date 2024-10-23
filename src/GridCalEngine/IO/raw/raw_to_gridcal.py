@@ -19,25 +19,16 @@ from typing import Dict, List, Tuple, Union
 from GridCalEngine.basic_structures import Logger
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
-from GridCalEngine.IO.raw.devices.area import RawArea
 from GridCalEngine.IO.raw.devices.branch import RawBranch
 from GridCalEngine.IO.raw.devices.bus import RawBus
 from GridCalEngine.IO.raw.devices.facts import RawFACTS
 from GridCalEngine.IO.raw.devices.generator import RawGenerator
-from GridCalEngine.IO.raw.devices.induction_machine import RawInductionMachine
-from GridCalEngine.IO.raw.devices.inter_area import RawInterArea
 from GridCalEngine.IO.raw.devices.load import RawLoad
 from GridCalEngine.IO.raw.devices.fixed_shunt import RawFixedShunt
 from GridCalEngine.IO.raw.devices.switched_shunt import RawSwitchedShunt
 from GridCalEngine.IO.raw.devices.transformer import RawTransformer
 from GridCalEngine.IO.raw.devices.two_terminal_dc_line import RawTwoTerminalDCLine
 from GridCalEngine.IO.raw.devices.vsc_dc_line import RawVscDCLine
-from GridCalEngine.IO.raw.devices.zone import RawZone
-from GridCalEngine.IO.raw.devices.owner import RawOwner
-from GridCalEngine.IO.raw.devices.substation import RawSubstation
-from GridCalEngine.IO.raw.devices.gne_device import RawGneDevice
-from GridCalEngine.IO.raw.devices.system_switching_device import RawSystemSwitchingDevice
-from GridCalEngine.IO.base.base_circuit import BaseCircuit
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.enumerations import TapChangerTypes
 
@@ -263,7 +254,7 @@ def get_gridcal_generator(psse_elm: RawGenerator, psse_bus_dict: Dict[int, dev.B
                         Pmax=psse_elm.PT,
                         Pmin=psse_elm.PB,
                         active=bool(psse_elm.STAT),
-                        power_factor=psse_elm.WPF)
+                        power_factor=psse_elm.WPF if psse_elm.WPF is not None else 0.8)
 
     if psse_elm.IREG > 0:
         if psse_elm.IREG != psse_elm.I:
