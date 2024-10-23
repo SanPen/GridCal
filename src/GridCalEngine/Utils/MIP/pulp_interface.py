@@ -209,7 +209,12 @@ class LpModel:
             progress_text(f"Solving model with {self.solver_type.value}...")
 
         # solve the model
-        status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
+        try:
+            status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
+        except pulp.PulpSolverError as e:
+            self.logger.add_error(msg=str(e), )
+            # Retry with Highs
+            status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
 
         if status != self.OPTIMAL:
             self.originally_infeasible = True

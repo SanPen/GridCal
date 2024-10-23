@@ -1,35 +1,46 @@
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import numpy as np
 
-from GridCalEngine.DataStructures.numerical_circuit import \
-    compile_numerical_circuit_at, NumericalCircuit
+from datetime import datetime
+from GridCalEngine.DataStructures.numerical_circuit import (compile_numerical_circuit_at, NumericalCircuit)
 from GridCalEngine.Devices import MultiCircuit
 from GridCalEngine.Devices.Substation.bus import Bus
-from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid, \
-    rfid2uuid
+from GridCalEngine.IO.cim.cgmes.base import get_new_rdfid, form_rdfid
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
 from GridCalEngine.IO.cim.cgmes.cgmes_enums import (cgmesProfile,
                                                     WindGenUnitKind,
                                                     RegulatingControlModeKind,
                                                     UnitMultiplier,
                                                     TransformerControlMode)
-from GridCalEngine.IO.cim.cgmes.cgmes_utils import find_object_by_uuid, \
-    find_object_by_vnom, find_object_by_cond_eq_uuid, \
-    get_ohm_values_power_transformer, find_tn_by_name, find_object_by_attribute
-from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import \
-    FullModel
+from GridCalEngine.IO.cim.cgmes.cgmes_utils import (find_object_by_uuid,
+                                                    find_object_by_vnom, find_object_by_cond_eq_uuid,
+                                                    get_ohm_values_power_transformer, find_tn_by_name,
+                                                    find_object_by_attribute)
+from GridCalEngine.IO.cim.cgmes.cgmes_v2_4_15.devices.full_model import FullModel
 from GridCalEngine.IO.cim.cgmes.base import Base
 import GridCalEngine.Devices as gcdev
-from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import \
-    compute_zip_power
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import \
-    PowerFlowResults
+from GridCalEngine.Simulations.PowerFlow.NumericalMethods.common_functions import compute_zip_power
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
 from GridCalEngine.enumerations import CGMESVersions, TapChangerTypes
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import (
-    SynchronousMachineOperatingMode,
-    SynchronousMachineKind)
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import (SynchronousMachineOperatingMode, SynchronousMachineKind)
 
 from GridCalEngine.data_logger import DataLogger
-from typing import Dict, List, Tuple, Union
+from typing import List, Union
 
 
 # region create new classes for CC
@@ -39,8 +50,16 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
                          desc: str = "",
                          scenariotime: str = "",
                          modelingauthorityset: str = "", version: str = ""):
-    from datetime import datetime
+    """
 
+    :param cgmes_model:
+    :param profiles_to_export:
+    :param desc:
+    :param scenariotime:
+    :param modelingauthorityset:
+    :param version:
+    :return:
+    """
     if cgmes_model.cgmes_version == CGMESVersions.v2_4_15:
         fm_list = [FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
                    FullModel(rdfid=get_new_rdfid(), tpe="FullModel"),
@@ -63,7 +82,7 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
         fm.scenarioTime = scenariotime
         if modelingauthorityset != "":
             fm.modelingAuthoritySet = modelingauthorityset
-        current_time = datetime.utcnow()
+        current_time = datetime.now()
         formatted_time = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         fm.created = formatted_time
         fm.version = version
@@ -154,33 +173,26 @@ def create_cgmes_headers(cgmes_model: CgmesCircuit,
     return cgmes_model
 
 
-# def create_multic_cn_nodes_from_buses(multi_circuit_model: MultiCircuit,
-#                                       logger: DataLogger) -> None:
-#
-#     for cgmes_elm in multi_circuit_model.buses:
-#         gcdev_elm = gcdev.ConnectivityNode(
-#             idtag=cgmes_elm.uuid,
-#             code=cgmes_elm.description,
-#             name=cgmes_elm.name,
-#             dc=False,
-#             default_bus=bus
-#         )
-#
-#         multi_circuit_model.connectivity_nodes.append(gcdev_elm)
-#
-#
 def create_cgmes_terminal(mc_bus: Bus,
                           seq_num: Union[int, None],
                           cond_eq: Union[None, Base],
                           cgmes_model: CgmesCircuit,
                           logger: DataLogger):
-    """ Creates a new Terminal in CGMES model,
-    and connects it the relating Topologinal Node """
+    """
+    Creates a new Terminal in CGMES model,
+    and connects it the relating Topologinal Node
+    :param mc_bus:
+    :param seq_num:
+    :param cond_eq:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
 
     new_rdf_id = get_new_rdfid()
     terminal_template = cgmes_model.get_class_type("Terminal")
     term = terminal_template(new_rdf_id)
-    term.name = f'{cond_eq.name} - T{seq_num}'
+    term.name = f'{cond_eq.name} - T{seq_num}' if cond_eq is not None else ""
     # term.shortName =
     if seq_num is not None:
         term.sequenceNumber = seq_num
@@ -215,6 +227,13 @@ def create_cgmes_terminal(mc_bus: Bus,
 def create_cgmes_load_response_char(load: gcdev.Load,
                                     cgmes_model: CgmesCircuit,
                                     logger: DataLogger):
+    """
+
+    :param load:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     new_rdf_id = get_new_rdfid()
     lrc_template = cgmes_model.get_class_type("LoadResponseCharacteristic")
     lrc = lrc_template(rdfid=new_rdf_id)
@@ -434,6 +453,13 @@ def create_cgmes_current_limit(terminal,
 def create_operational_limit_set(terminal,
                                  cgmes_model: CgmesCircuit,
                                  logger: DataLogger):
+    """
+
+    :param terminal:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("OperationalLimitSet")
     op_lim_set = object_template(rdfid=new_rdf_id)
@@ -452,6 +478,13 @@ def create_operational_limit_set(terminal,
 def create_operational_limit_type(mc_elm: gcdev.Line,
                                   cgmes_model: CgmesCircuit,
                                   logger: DataLogger):
+    """
+
+    :param mc_elm:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     new_rdf_id = get_new_rdfid()
     object_template = cgmes_model.get_class_type("OperationalLimitSet")
     op_lim_type = object_template(rdfid=new_rdf_id)
@@ -465,6 +498,15 @@ def add_location(cgmes_model: CgmesCircuit,
                  longitude: float,
                  latitude: float,
                  logger: DataLogger):
+    """
+
+    :param cgmes_model:
+    :param device:
+    :param longitude:
+    :param latitude:
+    :param logger:
+    :return:
+    """
     object_template = cgmes_model.get_class_type("Location")
     location = object_template(rdfid=get_new_rdfid(), tpe="Location")
 
@@ -495,6 +537,13 @@ def add_location(cgmes_model: CgmesCircuit,
 def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
                                   cgmes_model: CgmesCircuit,
                                   logger: DataLogger):
+    """
+
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     for mc_class in [multi_circuit_model.countries, multi_circuit_model.areas]:
         for mc_elm in mc_class:
             object_template = cgmes_model.get_class_type("GeographicalRegion")
@@ -513,6 +562,13 @@ def get_cgmes_geograpical_regions(multi_circuit_model: MultiCircuit,
 def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
                                      cgmes_model: CgmesCircuit,
                                      logger: DataLogger):
+    """
+
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     for mc_class in [multi_circuit_model.communities,
                      multi_circuit_model.zones]:
         for mc_elm in mc_class:
@@ -540,7 +596,7 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
             else:
                 try:
                     sub_geo_region.Region = \
-                    cgmes_model.cgmes_assets.GeographicalRegion_list[0]
+                        cgmes_model.cgmes_assets.GeographicalRegion_list[0]
                 except:
                     sub_geo_region.Region = None
                 logger.add_warning(
@@ -556,6 +612,12 @@ def get_cgmes_subgeograpical_regions(multi_circuit_model: MultiCircuit,
 
 
 def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
+    """
+
+    :param cgmes_model:
+    :param vnom:
+    :return:
+    """
     bv_list = cgmes_model.elements_by_type_boundary.get("BaseVoltage")
     if bv_list is not None:
         for bv in bv_list:
@@ -567,6 +629,13 @@ def get_base_voltage_from_boundary(cgmes_model: CgmesCircuit, vnom: float):
 def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
                             cgmes_model: CgmesCircuit,
                             logger: DataLogger) -> None:
+    """
+
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     base_volt_set = set()
     for bus in multi_circuit_model.buses:
 
@@ -587,6 +656,13 @@ def get_cgmes_base_voltages(multi_circuit_model: MultiCircuit,
 def get_cgmes_substations(multi_circuit_model: MultiCircuit,
                           cgmes_model: CgmesCircuit,
                           logger: DataLogger) -> None:
+    """
+
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     for mc_elm in multi_circuit_model.substations:
         object_template = cgmes_model.get_class_type("Substation")
         substation = object_template(rdfid=form_rdfid(mc_elm.idtag))
@@ -602,8 +678,7 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
             substation.Region = region
         else:
             try:
-                substation.Region = \
-                cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
+                substation.Region = cgmes_model.cgmes_assets.SubGeographicalRegion_list[0]
             except:
                 substation.Region = None
             logger.add_warning(msg='Region not found for Substation',
@@ -618,6 +693,13 @@ def get_cgmes_substations(multi_circuit_model: MultiCircuit,
 def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
                              cgmes_model: CgmesCircuit,
                              logger: DataLogger) -> None:
+    """
+
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     for mc_elm in multi_circuit_model.voltage_levels:
         object_template = cgmes_model.get_class_type("VoltageLevel")
         vl = object_template(rdfid=form_rdfid(mc_elm.idtag))
@@ -655,6 +737,13 @@ def get_cgmes_voltage_levels(multi_circuit_model: MultiCircuit,
 def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
                        cgmes_model: CgmesCircuit,
                        logger: DataLogger) -> None:
+    """
+
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     for bus in multi_circuit_model.buses:
 
         if not bus.is_internal:
@@ -701,6 +790,13 @@ def get_cgmes_tn_nodes(multi_circuit_model: MultiCircuit,
 def get_cgmes_cn_nodes_from_tn_nodes(multi_circuit_model: MultiCircuit,
                                      cgmes_model: CgmesCircuit,
                                      logger: DataLogger) -> None:
+    """
+
+    :param multi_circuit_model:
+    :param cgmes_model:
+    :param logger:
+    :return:
+    """
     for tn in cgmes_model.cgmes_assets.TopologicalNode_list:
         new_rdf_id = get_new_rdfid()
         object_template = cgmes_model.get_class_type("ConnectivityNode")
@@ -862,7 +958,7 @@ def get_cgmes_ac_line_segments(multicircuit_model: MultiCircuit,
         line.length = mc_elm.length
 
         current_rate = mc_elm.rate * 1e3 / (
-                    mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+                mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
         current_rate = np.round(current_rate, 4)
         create_cgmes_current_limit(line.Terminals[0], current_rate,
                                    cgmes_model, logger)
@@ -1058,7 +1154,7 @@ def get_cgmes_power_transformers(multicircuit_model: MultiCircuit,
         )
 
         current_rate = mc_elm.rate * 1e3 / (
-                    mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
+                mc_elm.get_max_bus_nominal_voltage() * 1.73205080756888)
         current_rate = np.round(current_rate, 4)
         create_cgmes_current_limit(cm_transformer.Terminals[0], current_rate,
                                    cgmes_model, logger)
@@ -1417,9 +1513,9 @@ def get_cgmes_sv_voltages(cgmes_model: CgmesCircuit,
         sv_voltage = object_template(rdfid=new_rdf_id, tpe='SvVoltage')
 
         tp_list_with_boundary = (
-                    cgmes_model.cgmes_assets.TopologicalNode_list +
-                    cgmes_model.elements_by_type_boundary.get(
-                        'TopologicalNode', None))
+                cgmes_model.cgmes_assets.TopologicalNode_list +
+                cgmes_model.elements_by_type_boundary.get(
+                    'TopologicalNode', None))
         sv_voltage.TopologicalNode = tp_list_with_boundary[i]
 
         # as the ORDER of the results is the same as the order of buses (=tn)
@@ -1492,12 +1588,12 @@ def get_cgmes_sv_power_flow(multi_circuit: MultiCircuit,
         Y0=nc.load_data.Y,
         Vm=np.abs(pf_results.voltage[nc.load_data.get_bus_indices()])
     )
-    
+
     for (mc_load_like, load_power) in zip(load_objects, load_power):
 
         term = find_object_by_cond_eq_uuid(
             object_list=cgmes_model.cgmes_assets.Terminal_list,
-            cond_eq_target_uuid=mc_load_like.idtag      # missing Load uuid
+            cond_eq_target_uuid=mc_load_like.idtag  # missing Load uuid
         )
         if isinstance(term, cgmes_model.get_class_type("Terminal")):
 
@@ -1620,7 +1716,6 @@ def get_cgmes_sv_tap_step(multi_circuit: MultiCircuit,
                           cgmes_model: CgmesCircuit,
                           pf_results: PowerFlowResults,
                           logger: DataLogger) -> None:
-
     branch_objects = multi_circuit.get_branches_wo_hvdc()
 
     tap_modules = pf_results.tap_module

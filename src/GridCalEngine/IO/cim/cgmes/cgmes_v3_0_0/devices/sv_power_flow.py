@@ -14,17 +14,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 from GridCalEngine.IO.base.units import UnitMultiplier, UnitSymbol
 from GridCalEngine.IO.cim.cgmes.base import Base
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile, UnitSymbol
+from GridCalEngine.IO.cim.cgmes.cgmes_enums import UnitSymbol
 
 
 class SvPowerFlow(Base):
-	def __init__(self, rdfid, tpe, resources=list(), class_replacements=dict()):
+	def __init__(self, rdfid, tpe="SvPowerFlow", resources=list(), class_replacements=dict()):
 		Base.__init__(self, rdfid=rdfid, tpe=tpe, resources=resources, class_replacements=class_replacements)
 
-		self.p: float = None
-		self.q: float = None
+		self.p: float = 0.0
+		self.q: float = 0.0
 		from GridCalEngine.IO.cim.cgmes.cgmes_v3_0_0.devices.terminal import Terminal
 		self.Terminal: Terminal | None = None
 
