@@ -696,6 +696,7 @@ class TapPhaseControl(Enum):
     fixed = 'Fixed'
     Pf = 'Pf'
     Pt = 'Pt'
+
     # Droop = "Droop"
 
     def __str__(self) -> str:
@@ -1902,6 +1903,40 @@ class SubstationTypes(Enum):
         """
         try:
             return SubstationTypes[s]
+        except KeyError:
+            return s
+
+    @classmethod
+    def list(cls):
+        """
+
+        :return:
+        """
+        return list(map(lambda c: c.value, cls))
+
+
+class ContingencyOperationTypes(Enum):
+    """
+    Types of contingency operations
+    """
+    Active = 'active'
+    PowerPercentage = '%'
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+
+        :param s:
+        :return:
+        """
+        try:
+            return ContingencyOperationTypes[s]
         except KeyError:
             return s
 

@@ -4368,22 +4368,34 @@ class Ui_mainWindow(object):
         self.frame_79.setFrameShadow(QFrame.Raised)
         self.gridLayout_5 = QGridLayout(self.frame_79)
         self.gridLayout_5.setObjectName(u"gridLayout_5")
+        self.line_31 = QFrame(self.frame_79)
+        self.line_31.setObjectName(u"line_31")
+        palette46 = QPalette()
+        palette46.setBrush(QPalette.Active, QPalette.WindowText, brush3)
+        palette46.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
+        palette46.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.line_31.setPalette(palette46)
+        self.line_31.setFrameShadow(QFrame.Plain)
+        self.line_31.setLineWidth(4)
+        self.line_31.setFrameShape(QFrame.Shape.HLine)
+
+        self.gridLayout_5.addWidget(self.line_31, 1, 0, 1, 3)
+
         self.label_134 = QLabel(self.frame_79)
         self.label_134.setObjectName(u"label_134")
-        palette46 = QPalette()
-        palette46.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette46.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
-        palette46.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.label_134.setPalette(palette46)
+        palette47 = QPalette()
+        palette47.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette47.setBrush(QPalette.Inactive, QPalette.WindowText, brush5)
+        palette47.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
+        self.label_134.setPalette(palette47)
         self.label_134.setFont(font4)
 
         self.gridLayout_5.addWidget(self.label_134, 0, 1, 1, 2)
 
-        self.cgmes_boundary_set_label = QLabel(self.frame_79)
-        self.cgmes_boundary_set_label.setObjectName(u"cgmes_boundary_set_label")
-        self.cgmes_boundary_set_label.setFont(font1)
+        self.label_102 = QLabel(self.frame_79)
+        self.label_102.setObjectName(u"label_102")
 
-        self.gridLayout_5.addWidget(self.cgmes_boundary_set_label, 9, 0, 1, 2)
+        self.gridLayout_5.addWidget(self.label_102, 10, 0, 1, 1)
 
         self.label_139 = QLabel(self.frame_79)
         self.label_139.setObjectName(u"label_139")
@@ -4391,44 +4403,17 @@ class Ui_mainWindow(object):
 
         self.gridLayout_5.addWidget(self.label_139, 11, 0, 1, 3)
 
-        self.label_137 = QLabel(self.frame_79)
-        self.label_137.setObjectName(u"label_137")
-        self.label_137.setMinimumSize(QSize(24, 24))
-        self.label_137.setMaximumSize(QSize(24, 24))
-        self.label_137.setPixmap(QPixmap(u":/Icons/icons/new2.svg"))
-        self.label_137.setScaledContents(True)
+        self.cgmes_dc_as_hvdclines_checkBox = QCheckBox(self.frame_79)
+        self.cgmes_dc_as_hvdclines_checkBox.setObjectName(u"cgmes_dc_as_hvdclines_checkBox")
+        self.cgmes_dc_as_hvdclines_checkBox.setFont(font1)
 
-        self.gridLayout_5.addWidget(self.label_137, 0, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.cgmes_dc_as_hvdclines_checkBox, 15, 0, 1, 3)
 
-        self.label_102 = QLabel(self.frame_79)
-        self.label_102.setObjectName(u"label_102")
+        self.cgmes_single_profile_per_file_checkBox = QCheckBox(self.frame_79)
+        self.cgmes_single_profile_per_file_checkBox.setObjectName(u"cgmes_single_profile_per_file_checkBox")
+        self.cgmes_single_profile_per_file_checkBox.setFont(font1)
 
-        self.gridLayout_5.addWidget(self.label_102, 10, 0, 1, 1)
-
-        self.label_135 = QLabel(self.frame_79)
-        self.label_135.setObjectName(u"label_135")
-        self.label_135.setFont(font1)
-
-        self.gridLayout_5.addWidget(self.label_135, 2, 0, 1, 3)
-
-        self.line_31 = QFrame(self.frame_79)
-        self.line_31.setObjectName(u"line_31")
-        palette47 = QPalette()
-        palette47.setBrush(QPalette.Active, QPalette.WindowText, brush3)
-        palette47.setBrush(QPalette.Inactive, QPalette.WindowText, brush3)
-        palette47.setBrush(QPalette.Disabled, QPalette.WindowText, brush1)
-        self.line_31.setPalette(palette47)
-        self.line_31.setFrameShadow(QFrame.Plain)
-        self.line_31.setLineWidth(4)
-        self.line_31.setFrameShape(QFrame.Shape.HLine)
-
-        self.gridLayout_5.addWidget(self.line_31, 1, 0, 1, 3)
-
-        self.cgmes_profiles_listView = QListView(self.frame_79)
-        self.cgmes_profiles_listView.setObjectName(u"cgmes_profiles_listView")
-        self.cgmes_profiles_listView.setFont(font1)
-
-        self.gridLayout_5.addWidget(self.cgmes_profiles_listView, 12, 0, 1, 3)
+        self.gridLayout_5.addWidget(self.cgmes_single_profile_per_file_checkBox, 13, 0, 1, 3)
 
         self.selectCGMESBoundarySetButton = QPushButton(self.frame_79)
         self.selectCGMESBoundarySetButton.setObjectName(u"selectCGMESBoundarySetButton")
@@ -4443,22 +4428,44 @@ class Ui_mainWindow(object):
 
         self.gridLayout_5.addWidget(self.cgmes_version_comboBox, 3, 0, 1, 3)
 
+        self.cgmes_map_regions_like_raw_checkBox = QCheckBox(self.frame_79)
+        self.cgmes_map_regions_like_raw_checkBox.setObjectName(u"cgmes_map_regions_like_raw_checkBox")
+        self.cgmes_map_regions_like_raw_checkBox.setFont(font1)
+
+        self.gridLayout_5.addWidget(self.cgmes_map_regions_like_raw_checkBox, 14, 0, 1, 3)
+
+        self.label_135 = QLabel(self.frame_79)
+        self.label_135.setObjectName(u"label_135")
+        self.label_135.setFont(font1)
+
+        self.gridLayout_5.addWidget(self.label_135, 2, 0, 1, 3)
+
         self.label_90 = QLabel(self.frame_79)
         self.label_90.setObjectName(u"label_90")
         self.label_90.setFont(font1)
 
         self.gridLayout_5.addWidget(self.label_90, 8, 0, 1, 3)
 
-        self.cgmes_single_profile_per_file_checkBox = QCheckBox(self.frame_79)
-        self.cgmes_single_profile_per_file_checkBox.setObjectName(u"cgmes_single_profile_per_file_checkBox")
-        self.cgmes_single_profile_per_file_checkBox.setFont(font1)
+        self.cgmes_boundary_set_label = QLabel(self.frame_79)
+        self.cgmes_boundary_set_label.setObjectName(u"cgmes_boundary_set_label")
+        self.cgmes_boundary_set_label.setFont(font1)
 
-        self.gridLayout_5.addWidget(self.cgmes_single_profile_per_file_checkBox, 13, 0, 1, 3)
+        self.gridLayout_5.addWidget(self.cgmes_boundary_set_label, 9, 0, 1, 2)
 
-        self.cgmes_map_regions_like_raw_checkBox = QCheckBox(self.frame_79)
-        self.cgmes_map_regions_like_raw_checkBox.setObjectName(u"cgmes_map_regions_like_raw_checkBox")
+        self.label_137 = QLabel(self.frame_79)
+        self.label_137.setObjectName(u"label_137")
+        self.label_137.setMinimumSize(QSize(24, 24))
+        self.label_137.setMaximumSize(QSize(24, 24))
+        self.label_137.setPixmap(QPixmap(u":/Icons/icons/new2.svg"))
+        self.label_137.setScaledContents(True)
 
-        self.gridLayout_5.addWidget(self.cgmes_map_regions_like_raw_checkBox, 14, 0, 1, 1)
+        self.gridLayout_5.addWidget(self.label_137, 0, 0, 1, 1)
+
+        self.cgmes_profiles_listView = QListView(self.frame_79)
+        self.cgmes_profiles_listView.setObjectName(u"cgmes_profiles_listView")
+        self.cgmes_profiles_listView.setFont(font1)
+
+        self.gridLayout_5.addWidget(self.cgmes_profiles_listView, 12, 0, 1, 3)
 
 
         self.horizontalLayout_40.addWidget(self.frame_79)
@@ -5821,24 +5828,28 @@ class Ui_mainWindow(object):
         self.label_115.setText(QCoreApplication.translate("mainWindow", u"File Information", None))
         self.label_24.setText("")
         self.label_134.setText(QCoreApplication.translate("mainWindow", u"CGMES", None))
-#if QT_CONFIG(tooltip)
-        self.cgmes_boundary_set_label.setToolTip(QCoreApplication.translate("mainWindow", u"Path of the CGMES default boundary set (single zip file)", None))
-#endif // QT_CONFIG(tooltip)
-        self.cgmes_boundary_set_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
-        self.label_139.setText(QCoreApplication.translate("mainWindow", u"Profiles to export", None))
-        self.label_137.setText("")
         self.label_102.setText("")
-        self.label_135.setText(QCoreApplication.translate("mainWindow", u"Export version", None))
+        self.label_139.setText(QCoreApplication.translate("mainWindow", u"Profiles to export", None))
+#if QT_CONFIG(tooltip)
+        self.cgmes_dc_as_hvdclines_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>Converters and DC lines in CGMES are attempted to be converted to the simplified HvdcLine objects in GridCal</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
+        self.cgmes_dc_as_hvdclines_checkBox.setText(QCoreApplication.translate("mainWindow", u"Treat DC equipement as HvdcLines", None))
+        self.cgmes_single_profile_per_file_checkBox.setText(QCoreApplication.translate("mainWindow", u"One file per profile", None))
 #if QT_CONFIG(tooltip)
         self.selectCGMESBoundarySetButton.setToolTip(QCoreApplication.translate("mainWindow", u"Select the CGMES boundary set (single zip file)", None))
 #endif // QT_CONFIG(tooltip)
         self.selectCGMESBoundarySetButton.setText(QCoreApplication.translate("mainWindow", u"Select", None))
-        self.label_90.setText(QCoreApplication.translate("mainWindow", u"Boundary set", None))
-        self.cgmes_single_profile_per_file_checkBox.setText(QCoreApplication.translate("mainWindow", u"One file per profile", None))
 #if QT_CONFIG(tooltip)
         self.cgmes_map_regions_like_raw_checkBox.setToolTip(QCoreApplication.translate("mainWindow", u"<html><head/><body><p>If active the CGMEs mapping will be:</p><p>GeographicalRegion &lt;-&gt; Area</p><p>SubGeographicalRegion &lt;-&gt; Zone</p><p>Otherwise:</p><p>GeographicalRegion &lt;-&gt; Country</p><p>SubGeographicalRegion &lt;-&gt; Community</p><p><br/></p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
         self.cgmes_map_regions_like_raw_checkBox.setText(QCoreApplication.translate("mainWindow", u"Map regions like raw files", None))
+        self.label_135.setText(QCoreApplication.translate("mainWindow", u"Export version", None))
+        self.label_90.setText(QCoreApplication.translate("mainWindow", u"Boundary set", None))
+#if QT_CONFIG(tooltip)
+        self.cgmes_boundary_set_label.setToolTip(QCoreApplication.translate("mainWindow", u"Path of the CGMES default boundary set (single zip file)", None))
+#endif // QT_CONFIG(tooltip)
+        self.cgmes_boundary_set_label.setText(QCoreApplication.translate("mainWindow", u"...", None))
+        self.label_137.setText("")
         self.settings_tabWidget.setTabText(self.settings_tabWidget.indexOf(self.file_tab), QCoreApplication.translate("mainWindow", u"File", None))
 #if QT_CONFIG(tooltip)
         self.settings_tabWidget.setTabToolTip(self.settings_tabWidget.indexOf(self.file_tab), QCoreApplication.translate("mainWindow", u"File related settings", None))

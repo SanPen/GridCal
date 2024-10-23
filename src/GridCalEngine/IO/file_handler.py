@@ -134,8 +134,21 @@ class FileOpenOptions:
     """
 
     def __init__(self,
-                 cgmes_map_areas_like_raw: bool = False):
+                 cgmes_map_areas_like_raw: bool = False,
+                 try_to_map_dc_to_hvdc_line: bool = True):
+        """
+
+        :param cgmes_map_areas_like_raw: If active the CGMEs mapping will be:
+                                            GeographicalRegion <-> Area
+                                            SubGeographicalRegion <-> Zone
+                                        Otherwise:
+                                            GeographicalRegion <-> Country
+                                            SubGeographicalRegion <-> Community
+        :param try_to_map_dc_to_hvdc_line: Converters and DC lines in CGMES are attemted to be converted
+                                            to the simplified HvdcLine objects in GridCal
+        """
         self.cgmes_map_areas_like_raw = cgmes_map_areas_like_raw
+        self.try_to_map_dc_to_hvdc_line = try_to_map_dc_to_hvdc_line
 
 
 class FileOpen:

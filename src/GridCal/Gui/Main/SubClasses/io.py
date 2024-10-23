@@ -720,8 +720,10 @@ class IoMain(ConfigurationMain):
         """
 
         cgmes_map_areas_like_raw = self.ui.cgmes_map_regions_like_raw_checkBox.isChecked()
+        try_to_map_dc_to_hvdc_line = self.ui.hvdc_try_to_map_dc_checkBox.isChecked()
 
-        options = filedrv.FileOpenOptions(cgmes_map_areas_like_raw=cgmes_map_areas_like_raw)
+        options = filedrv.FileOpenOptions(cgmes_map_areas_like_raw=cgmes_map_areas_like_raw,
+                                          try_to_map_dc_to_hvdc_line=try_to_map_dc_to_hvdc_line)
 
         return options
 

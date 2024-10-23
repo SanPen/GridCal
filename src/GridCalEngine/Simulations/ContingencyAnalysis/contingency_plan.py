@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
+
 from itertools import combinations
 import numpy as np
 from typing import List, Tuple
@@ -22,6 +24,7 @@ from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Devices.Aggregation.contingency import Contingency, ContingencyGroup
 from GridCalEngine.Devices.Parents.editable_device import DeviceType
 from GridCalEngine.Devices.types import BRANCH_TYPES
+from GridCalEngine.enumerations import ContingencyOperationTypes
 import GridCalEngine.Devices as dev
 
 
@@ -82,7 +85,7 @@ def add_n1_contingencies(branches: List[BRANCH_TYPES],
                 device_idtag=b.idtag,
                 name=b.name,
                 code=b.code,
-                prop='active',
+                prop=ContingencyOperationTypes.Active,
                 value=0,
                 group=group
             )
@@ -132,7 +135,7 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                             device_idtag=branch_i.idtag,
                             name=branch_i.name,
                             code=branch_i.code,
-                            prop='active',
+                            prop=ContingencyOperationTypes.Active,
                             value=0,
                             group=group
                         )
@@ -141,7 +144,7 @@ def add_n2_contingencies(branches, vmin, vmax, filter_branches_by_voltage, branc
                             device_idtag=branch_j.idtag,
                             name=branch_j.name,
                             code=branch_j.code,
-                            prop='active',
+                            prop=ContingencyOperationTypes.Active,
                             value=0,
                             group=group
                         )
@@ -182,7 +185,7 @@ def add_generator_contingencies(
                 device_idtag=gen.idtag,
                 name=gen.name,
                 code=gen.code,
-                prop='%',
+                prop=ContingencyOperationTypes.PowerPercentage,
                 value=contingency_perc,
                 group=group
             )
@@ -200,13 +203,13 @@ def generate_automatic_contingency_plan(
         filter_branches_by_voltage: bool = False,
         vmin: float = 0,
         vmax: float = 1000,
-        branch_types: List[DeviceType] = list(),
+        branch_types: List[DeviceType] | None = None,
         consider_injections: bool = False,
         filter_injections_by_power: bool = False,
         contingency_perc=100.0,
         pmin=0,
         pmax=10000,
-        injection_types: List[DeviceType] = list()
+        injection_types: List[DeviceType] | None = None
 ) -> Tuple[List[Contingency], List[ContingencyGroup]]:
     """
 
@@ -225,6 +228,12 @@ def generate_automatic_contingency_plan(
     :param injection_types: List of allowed injection types
     :return:
     """
+
+    if branch_types is None:
+        branch_types = list()
+
+    if injection_types is None:
+        injection_types = list()
 
     assert (k in [1, 2])
     contingencies = list()
