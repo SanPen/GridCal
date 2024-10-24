@@ -33,7 +33,8 @@ from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, 
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_turbine_graphics import FluidTurbineGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_pump_graphics import FluidPumpGraphicItem
 from GridCal.Gui.Diagrams.SchematicWidget.Fluid.fluid_p2x_graphics import FluidP2xGraphicItem
-from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.messages import yes_no_question, error_msg
+from GridCal.Gui.gui_functions import add_menu_entry
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
@@ -112,6 +113,14 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.change_size(self.w, self.h)
 
         self.set_position(x, y)
+
+    def set_api_object_color(self):
+        """
+        Gether the color from the api object and apply
+        :return:
+        """
+        self.color = QColor(self.api_object.color) if self.api_object is not None else ACTIVE['fluid']
+        self.set_tile_color(self.color)
 
     def set_label(self, val: str):
         """
@@ -290,49 +299,47 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         menu = QMenu()
         menu.addSection("Fluid node")
 
-        pl = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-        pl.setIcon(plot_icon)
-        pl.triggered.connect(self.plot_profiles)
+        add_menu_entry(menu=menu,
+                       text="Plot electrical profiles",
+                       icon_path=":/Icons/icons/plot.svg",
+                       function_ptr=self.plot_electrical_profiles)
 
-        arr = menu.addAction('Arrange')
-        arr_icon = QIcon()
-        arr_icon.addPixmap(QPixmap(":/Icons/icons/automatic_layout.svg"))
-        arr.setIcon(arr_icon)
-        arr.triggered.connect(self.arrange_children)
+        add_menu_entry(menu=menu,
+                       text="Plot fluid profiles",
+                       icon_path=":/Icons/icons/plot.svg",
+                       function_ptr=self.plot_fluid_profiles)
 
-        ra3 = menu.addAction('Delete all the connections')
-        del2_icon = QIcon()
-        del2_icon.addPixmap(QPixmap(":/Icons/icons/delete_conn.svg"))
-        ra3.setIcon(del2_icon)
-        ra3.triggered.connect(self.delete_all_connections)
+        add_menu_entry(menu=menu,
+                       text="Arrange",
+                       icon_path=":/Icons/icons/automatic_layout.svg",
+                       function_ptr=self.arrange_children)
 
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
+        add_menu_entry(menu=menu,
+                       text="Delete all the connections",
+                       icon_path=":/Icons/icons/delete_conn.svg",
+                       function_ptr=self.delete_all_connections)
+
+        add_menu_entry(menu=menu,
+                       text="Delete",
+                       icon_path=":/Icons/icons/delete3.svg",
+                       function_ptr=self.remove)
 
         menu.addSection("Add")
 
-        al = menu.addAction('Turbine')
-        al_icon = QIcon()
-        al_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
-        al.setIcon(al_icon)
-        al.triggered.connect(self.add_turbine)
+        add_menu_entry(menu=menu,
+                       text="Turbine",
+                       icon_path=":/Icons/icons/add_gen.svg",
+                       function_ptr=self.add_turbine)
 
-        ash = menu.addAction('Pump')
-        ash_icon = QIcon()
-        ash_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
-        ash.setIcon(ash_icon)
-        ash.triggered.connect(self.add_pump)
+        add_menu_entry(menu=menu,
+                       text="Pump",
+                       icon_path=":/Icons/icons/add_gen.svg",
+                       function_ptr=self.add_pump)
 
-        acg = menu.addAction('P2X')
-        acg_icon = QIcon()
-        acg_icon.addPixmap(QPixmap(":/Icons/icons/add_gen.svg"))
-        acg.setIcon(acg_icon)
-        acg.triggered.connect(self.add_p2x)
+        add_menu_entry(menu=menu,
+                       text="P2X",
+                       icon_path=":/Icons/icons/add_gen.svg",
+                       function_ptr=self.add_p2x)
 
         menu.exec_(event.screenPos())
 
@@ -455,14 +462,32 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         """
         self.set_tile_color(QBrush(ACTIVE['color']))
 
-    def plot_profiles(self):
+    def plot_electrical_profiles(self):
         """
 
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.fluid_nodes.index(self.api_object)
-        # self.editor.diagramScene.plot_bus(i, self.api_object)
+        if self.api_object is not None:
+            if self.api_object.bus is not None:
+                i = self.editor.circuit.fluid_nodes.index(self.api_object)
+                self.editor.plot_bus(i, self.api_object.bus)
+            else:
+                error_msg("No electrical bus attached :/")
+        else:
+            error_msg("No DB object attached :/")
+
+    def plot_fluid_profiles(self):
+        """
+
+        @return:
+        """
+        # get the index of this object
+        if self.api_object is not None:
+            i = self.editor.circuit.fluid_nodes.index(self.api_object)
+            self.editor.plot_fluid_node(i, self.api_object)
+        else:
+            error_msg("No DB object attached :/")
 
     def set_values(self, i: int, Vm: float, Va: float, P: float, Q: float,
                    tpe: str, format_str="{:10.2f}"):
@@ -498,6 +523,81 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                 p = format_str.format(P)
                 q = format_str.format(Q)
                 msg += f"P={p} MW<br>Q={q} MVAr"
+        else:
+            msg = ""
+
+        title = self.api_object.name if self.api_object is not None else ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)
+
+    def set_fluid_values(self, i: int, Vm: float, Va: float, P: float, Q: float,
+                         tpe: str,
+                         fluid_node_p2x_flow: float,
+                         fluid_node_current_level: float,
+                         fluid_node_spillage: float,
+                         fluid_node_flow_in: float,
+                         fluid_node_flow_out: float,
+                         format_str="{:10.2f}"):
+        """
+
+        :param i:
+        :param Vm:
+        :param Va:
+        :param P:
+        :param Q:
+        :param tpe:
+        :param fluid_node_p2x_flow:
+        :param fluid_node_current_level:
+        :param fluid_node_spillage:
+        :param fluid_node_flow_in:
+        :param fluid_node_flow_out:
+        :param format_str:
+        :return:
+        """
+        if self.draw_labels:
+            vm = format_str.format(Vm)
+
+            if self.api_object is not None:
+                if self.api_object.bus is not None:
+                    vm_kv = format_str.format(Vm * self.api_object.bus.Vnom)
+                else:
+                    vm_kv = "No electrical bus"
+            else:
+                vm_kv = ""
+            va = format_str.format(Va)
+            msg = f"Bus {i}"
+            if tpe is not None:
+                msg += f" [{tpe}]"
+            msg += "<br>"
+            msg += f"v={vm}&lt;{va}º pu<br>"
+            msg += f"V={vm_kv} KV<br>"
+            if P is not None:
+                p = format_str.format(P)
+                q = format_str.format(Q)
+                msg += f"P={p} MW<br>Q={q} MVAr<br>"
+
+            if fluid_node_flow_in is not None:
+                f_in = format_str.format(fluid_node_flow_in)
+                msg += f"In={f_in} m3/s<br>"
+
+            if fluid_node_flow_out is not None:
+                f_out = format_str.format(fluid_node_flow_out)
+                msg += f"Out={f_out} m3/s<br>"
+
+            if fluid_node_spillage is not None:
+                f_spill = format_str.format(fluid_node_spillage)
+                msg += f"Spill={f_spill} m3/s<br>"
+
+            if fluid_node_current_level is not None:
+                f_lvl = format_str.format(fluid_node_current_level)
+                msg += f"Lvl={f_lvl} m3<br>"
+
+            if fluid_node_p2x_flow is not None:
+                f_p2x = format_str.format(fluid_node_p2x_flow)
+                msg += f"P2X={f_p2x} m3/s<br>"
+
         else:
             msg = ""
 

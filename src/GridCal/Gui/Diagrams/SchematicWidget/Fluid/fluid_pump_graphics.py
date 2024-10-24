@@ -16,11 +16,12 @@
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from PySide6.QtGui import QPen, QIcon, QPixmap
+from PySide6.QtGui import QPen
 from PySide6.QtWidgets import (QMenu, QGraphicsTextItem)
 from GridCalEngine.Devices.Fluid.fluid_pump import FluidPump
 from GridCal.Gui.Diagrams.generic_graphics import ACTIVE, DEACTIVATED, OTHER, Circle
 from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.Injections.injections_template_graphics import InjectionTemplateGraphicItem
 
 if TYPE_CHECKING:  # Only imports the below statements during type checking
@@ -94,25 +95,22 @@ class FluidPumpGraphicItem(InjectionTemplateGraphicItem):
         # pc.setChecked(self.api_object.is_controlled)
         # pc.triggered.connect(self.enable_disable_control_toggle)
 
-        pa = menu.addAction('Plot profiles')
-        plot_icon = QIcon()
-        plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-        pa.setIcon(plot_icon)
-        pa.triggered.connect(self.plot)
+        add_menu_entry(menu=menu,
+                       text="Plot fluid profiles",
+                       icon_path=":/Icons/icons/plot.svg",
+                       function_ptr=self.plot)
 
         menu.addSeparator()
 
-        da = menu.addAction('Delete')
-        del_icon = QIcon()
-        del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-        da.setIcon(del_icon)
-        da.triggered.connect(self.remove)
+        add_menu_entry(menu=menu,
+                       text="Delete",
+                       icon_path=":/Icons/icons/delete3.svg",
+                       function_ptr=self.remove)
 
-        rabf = menu.addAction('Change bus')
-        move_bus_icon = QIcon()
-        move_bus_icon.addPixmap(QPixmap(":/Icons/icons/move_bus.svg"))
-        rabf.setIcon(move_bus_icon)
-        rabf.triggered.connect(self.change_bus)
+        add_menu_entry(menu=menu,
+                       text="Change bus",
+                       icon_path=":/Icons/icons/move_bus.svg",
+                       function_ptr=self.change_bus)
 
         menu.exec_(event.screenPos())
 
