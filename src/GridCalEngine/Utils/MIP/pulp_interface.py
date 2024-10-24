@@ -23,6 +23,7 @@ other solver interface easily
 from __future__ import annotations
 
 from typing import List, Union, Callable
+import subprocess
 import GridCalEngine.Utils.ThirdParty.pulp as pulp
 from GridCalEngine.Utils.ThirdParty.pulp import HiGHS, CPLEX_CMD
 from GridCalEngine.Utils.ThirdParty.pulp.model.lp_objects import LpAffineExpression as LpExp
@@ -212,6 +213,11 @@ class LpModel:
         try:
             status = self.model.solve(solver=self.get_solver(show_logs=show_logs))
         except pulp.PulpSolverError as e:
+            self.logger.add_error(msg=str(e), )
+            # Retry with Highs
+            status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))
+
+        except subprocess.CalledProcessError as e:
             self.logger.add_error(msg=str(e), )
             # Retry with Highs
             status = self.model.solve(solver=HiGHS(mip=self.model.isMIP(), msg=show_logs))

@@ -322,7 +322,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.bus_names,
                                 cols_device_type=DeviceType.BusDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(p.u.)',
                                 xlabel='',
                                 units='(p.u.)')
@@ -334,7 +334,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.bus_names,
                                 cols_device_type=DeviceType.BusDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(deg)',
                                 xlabel='',
                                 units='(deg)')
@@ -346,7 +346,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.bus_names,
                                 cols_device_type=DeviceType.BusDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(currency / MW)',
                                 xlabel='',
                                 units='(currency / MW)')
@@ -358,7 +358,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.bus_names,
                                 cols_device_type=DeviceType.BusDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -370,7 +370,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.branch_names,
                                 cols_device_type=DeviceType.BranchDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -382,7 +382,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.branch_names,
                                 cols_device_type=DeviceType.BranchDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(%)',
                                 xlabel='',
                                 units='(%)')
@@ -394,7 +394,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.branch_names,
                                 cols_device_type=DeviceType.BranchDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -406,7 +406,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.branch_names,
                                 cols_device_type=DeviceType.BranchDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -418,7 +418,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.branch_names,
                                 cols_device_type=DeviceType.BranchDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(deg)',
                                 xlabel='',
                                 units='(deg)')
@@ -430,7 +430,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.hvdc_names,
                                 cols_device_type=DeviceType.HVDCLineDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -442,7 +442,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.hvdc_names,
                                 cols_device_type=DeviceType.HVDCLineDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(%)',
                                 xlabel='',
                                 units='(%)')
@@ -454,7 +454,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fluid_node_names,
                                 cols_device_type=DeviceType.FluidNodeDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(hm3)',
                                 xlabel='',
                                 units='(hm3)')
@@ -466,7 +466,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fluid_node_names,
                                 cols_device_type=DeviceType.FluidNodeDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(m3/s)',
                                 xlabel='',
                                 units='(m3/s)')
@@ -478,7 +478,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fluid_node_names,
                                 cols_device_type=DeviceType.FluidNodeDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(m3/s)',
                                 xlabel='',
                                 units='(m3/s)')
@@ -490,7 +490,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fluid_node_names,
                                 cols_device_type=DeviceType.FluidNodeDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(m3/s)',
                                 xlabel='',
                                 units='(m3/s)')
@@ -502,7 +502,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fluid_node_names,
                                 cols_device_type=DeviceType.FluidNodeDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(m3/s)',
                                 xlabel='',
                                 units='(m3/s)')
@@ -514,7 +514,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fluid_path_names,
                                 cols_device_type=DeviceType.FluidPathDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(m3/s)',
                                 xlabel='',
                                 units='(m3/s)')
@@ -526,7 +526,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fluid_injection_names,
                                 cols_device_type=DeviceType.FluidInjectionDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(m3/s)',
                                 xlabel='',
                                 units='(m3/s)')
@@ -538,7 +538,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.load_names,
                                 cols_device_type=DeviceType.LoadLikeDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -550,7 +550,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.generator_names,
                                 cols_device_type=DeviceType.GeneratorDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -562,7 +562,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.generator_names,
                                 cols_device_type=DeviceType.GeneratorDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -574,7 +574,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.generator_names,
                                 cols_device_type=DeviceType.GeneratorDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(Currency)',
                                 xlabel='',
                                 units='(Currency)')
@@ -586,7 +586,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.generator_names,
                                 cols_device_type=DeviceType.GeneratorDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='',
                                 xlabel='',
                                 units='')
@@ -598,7 +598,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.generator_names,
                                 cols_device_type=DeviceType.GeneratorDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='',
                                 xlabel='',
                                 units='')
@@ -610,7 +610,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.generator_names,
                                 cols_device_type=DeviceType.GeneratorDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='',
                                 xlabel='',
                                 units='')
@@ -622,7 +622,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.battery_names,
                                 cols_device_type=DeviceType.BatteryDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MW)',
                                 xlabel='',
                                 units='(MW)')
@@ -634,7 +634,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.battery_names,
                                 cols_device_type=DeviceType.BatteryDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(MWh)',
                                 xlabel='',
                                 units='(MWh)')
@@ -646,7 +646,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.fuel_names,
                                 cols_device_type=DeviceType.FuelDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(t)',
                                 xlabel='',
                                 units='(t)')
@@ -658,7 +658,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=self.emission_names,
                                 cols_device_type=DeviceType.EmissionGasDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(t)',
                                 xlabel='',
                                 units='(t)')
@@ -670,7 +670,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.TimeDevice,
                                 columns=['System cost'],
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value,
+                                title=str(result_type.value),
                                 ylabel='(Currency/MWh)',
                                 xlabel='',
                                 units='(Currency/MWh)')
@@ -698,7 +698,7 @@ class OptimalPowerFlowTimeSeriesResults(ResultsTemplate):
                                 idx_device_type=DeviceType.NoDevice,
                                 columns=columns,
                                 cols_device_type=DeviceType.NoDevice,
-                                title=result_type.value)
+                                title=str(result_type.value))
 
         else:
             raise Exception('Result type not understood:' + str(result_type))

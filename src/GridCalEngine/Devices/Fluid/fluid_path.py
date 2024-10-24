@@ -36,7 +36,8 @@ class FluidPath(PhysicalDevice):
                  source: FluidNode = None,
                  target: FluidNode = None,
                  min_flow: float = 0.0,
-                 max_flow: float = 0.0):
+                 max_flow: float = 0.0,
+                 color: str | None = None):
         """
         Fluid path
         :param name:Name of the fluid transporter
@@ -46,6 +47,7 @@ class FluidPath(PhysicalDevice):
         :param target: target for the fluid (direction matters)
         :param min_flow: minimum flow (m3/s)
         :param max_flow: maximum flow (m3/s)
+        :param color: color of the fluid
         """
         PhysicalDevice.__init__(self,
                                 name=name,
@@ -58,6 +60,8 @@ class FluidPath(PhysicalDevice):
         self.min_flow = float(min_flow)
         self.max_flow = float(max_flow)
 
+        self.color = color if color is not None else "#00aad4"  # nice blue color
+
         # Line locations
         self._locations: LineLocations = LineLocations()
 
@@ -66,6 +70,7 @@ class FluidPath(PhysicalDevice):
         self.register(key='min_flow', units="m3/s", tpe=float, definition="Minimum flow")
         self.register(key='max_flow', units="m3/s", tpe=float, definition="Maximum flow")
         self.register(key='locations', units='', tpe=SubObjectType.LineLocations, definition='Locations', editable=False)
+        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram')
 
     def copy(self):
         """

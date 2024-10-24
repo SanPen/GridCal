@@ -14,11 +14,15 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 from typing import Union
+import numpy as np
 from GridCalEngine.Devices.Parents.physical_device import PhysicalDevice
 from GridCalEngine.Devices.Fluid.fluid_node import FluidNode
 from GridCalEngine.Devices.Injections.generator import Generator
+from GridCalEngine.Devices.profile import Profile
+from GridCalEngine.Devices.Aggregation.facility import Facility
 from GridCalEngine.enumerations import BuildStatus, DeviceType
 
 
@@ -52,11 +56,18 @@ class FluidInjectionTemplate(PhysicalDevice):
                                 code=code,
                                 device_type=device_type)
 
+        self.active = True
+        self._active_prof = Profile(default_value=self.active, data_type=bool)
+
         self.efficiency = float(efficiency)  # MWh/m3
         self.max_flow_rate = float(max_flow_rate)  # m3/s
         self._plant: FluidNode = plant
         self._generator: Generator = generator
         self.build_status = build_status
+
+        self.facility: Facility | None = None
+
+        self.register(key='active', units='', tpe=bool, definition='Is the load active?', profile_name='active_prof')
 
         self.register(key='efficiency', units="MWh/m3", tpe=float,
                       definition="Power plant energy production per fluid unit")
@@ -67,6 +78,9 @@ class FluidInjectionTemplate(PhysicalDevice):
                       editable=False)
         self.register(key='build_status', units='', tpe=BuildStatus,
                       definition='Branch build status. Used in expansion planning.')
+
+        self.register(key='facility', units='', tpe=DeviceType.FacilityDevice,
+                      definition='Facility where this is located', editable=True)
 
     @property
     def plant(self) -> FluidNode:
@@ -102,3 +116,20 @@ class FluidInjectionTemplate(PhysicalDevice):
         """
         if isinstance(val, Generator):
             self._generator = val
+
+    @property
+    def active_prof(self) -> Profile:
+        """
+        Cost profile
+        :return: Profile
+        """
+        return self._active_prof
+
+    @active_prof.setter
+    def active_prof(self, val: Union[Profile, np.ndarray]):
+        if isinstance(val, Profile):
+            self._active_prof = val
+        elif isinstance(val, np.ndarray):
+            self._active_prof.set(arr=val)
+        else:
+            raise Exception(str(type(val)) + 'not supported to be set into a active_prof')

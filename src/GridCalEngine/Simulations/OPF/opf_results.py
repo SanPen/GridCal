@@ -34,6 +34,9 @@ class OptimalPowerFlowResults(ResultsTemplate):
                  hvdc_names: StrVec,
                  bus_types: IntVec,
                  area_names: StrVec,
+                 fluid_node_names: StrVec,
+                 fluid_path_names: StrVec,
+                 fluid_inj_names: StrVec,
                  F: IntVec,
                  T: IntVec,
                  F_hvdc: IntVec,
@@ -99,6 +102,9 @@ class OptimalPowerFlowResults(ResultsTemplate):
         nbat = len(battery_names)
         nload = len(load_names)
         nhvdc = len(hvdc_names)
+        n_fluid_node = len(fluid_node_names)
+        n_fluid_path = len(fluid_path_names)
+        n_fluid_inj = len(fluid_inj_names)
 
         self.bus_names = bus_names
         self.branch_names = branch_names
@@ -106,6 +112,9 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.generator_names = generator_names
         self.battery_names = battery_names
         self.hvdc_names = hvdc_names
+        self.fluid_node_names = fluid_node_names
+        self.fluid_path_names = fluid_path_names
+        self.fluid_inj_names = fluid_inj_names
         self.bus_types = bus_types
 
         self.voltage = np.zeros(n, dtype=complex)
@@ -131,6 +140,14 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.generator_power = np.zeros(ngen, dtype=float)
         self.battery_power = np.zeros(nbat, dtype=float)
 
+        self.fluid_node_p2x_flow = np.zeros(n_fluid_node, dtype=float)  # m3
+        self.fluid_node_current_level = np.zeros(n_fluid_node, dtype=float)  # m3
+        self.fluid_node_spillage = np.zeros(n_fluid_node, dtype=float)  # m3/s
+        self.fluid_node_flow_in = np.zeros(n_fluid_node, dtype=float)  # m3/s
+        self.fluid_node_flow_out = np.zeros(n_fluid_node, dtype=float)  # m3/s
+        self.fluid_path_flow = np.zeros(n_fluid_path, dtype=float)  # m3/s
+        self.fluid_injection_flow = np.zeros(n_fluid_inj, dtype=float)  # m3/s
+
         self.contingency_flows_list = list()
         self.contingency_indices_list = list()  # [(t, m, c), ...]
         self.contingency_flows_slacks_list = list()
@@ -151,6 +168,11 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.register(name='generator_names', tpe=StrVec)
         self.register(name='battery_names', tpe=StrVec)
         self.register(name='hvdc_names', tpe=StrVec)
+
+        self.register(name='fluid_node_names', tpe=StrVec)
+        self.register(name='fluid_path_names', tpe=StrVec)
+        self.register(name='fluid_inj_names', tpe=StrVec)
+
         self.register(name='bus_types', tpe=IntVec)
 
         self.register(name='voltage', tpe=CxVec)
@@ -175,6 +197,14 @@ class OptimalPowerFlowResults(ResultsTemplate):
         self.register(name='generator_power', tpe=Vec)
         self.register(name='generator_shedding', tpe=Vec)
         self.register(name='battery_power', tpe=Vec)
+
+        self.register(name='fluid_node_p2x_flow', tpe=Vec)
+        self.register(name='fluid_node_current_level', tpe=Vec)
+        self.register(name='fluid_node_spillage', tpe=Vec)
+        self.register(name='fluid_node_flow_in', tpe=Vec)
+        self.register(name='fluid_node_flow_out', tpe=Vec)
+        self.register(name='fluid_path_flow', tpe=Vec)
+        self.register(name='fluid_injection_flow', tpe=Vec)
 
         self.register(name='converged', tpe=bool)
         self.register(name='contingency_flows_list', tpe=list)

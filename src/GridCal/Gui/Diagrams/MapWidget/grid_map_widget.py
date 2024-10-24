@@ -38,7 +38,6 @@ from GridCalEngine.Devices.Branches.line import Line
 from GridCalEngine.Devices.Branches.dc_line import DcLine
 from GridCalEngine.Devices.Branches.hvdc_line import HvdcLine
 from GridCalEngine.Devices.Diagrams.map_diagram import MapDiagram
-from GridCalEngine.Devices.types import BRANCH_TYPES
 from GridCalEngine.Devices.Fluid import FluidNode, FluidPath
 from GridCalEngine.basic_structures import Vec, CxVec, IntVec
 from GridCalEngine.Devices.Substation.substation import Substation
@@ -983,9 +982,6 @@ class GridMapWidget(BaseDiagramWidget):
             graphic_object.change_pen_width(pen_width)
 
     def colour_results(self,
-                       buses: List[Bus],
-                       branches: List[BRANCH_TYPES],
-                       hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
                        Sf: CxVec,
@@ -1004,6 +1000,13 @@ class GridMapWidget(BaseDiagramWidget):
                        ma: Vec = None,
                        theta: Vec = None,
                        Beq: Vec = None,
+                       fluid_node_p2x_flow: Vec = None,
+                       fluid_node_current_level: Vec = None,
+                       fluid_node_spillage: Vec = None,
+                       fluid_node_flow_in: Vec = None,
+                       fluid_node_flow_out: Vec = None,
+                       fluid_path_flow: Vec = None,
+                       fluid_injection_flow: Vec = None,
                        use_flow_based_width: bool = False,
                        min_branch_width: int = 5,
                        max_branch_width=5,
@@ -1012,9 +1015,6 @@ class GridMapWidget(BaseDiagramWidget):
                        cmap: palettes.Colormaps = None):
         """
         Color objects based on the results passed
-        :param buses: list of matching bus objects
-        :param branches: list of Branches without HVDC
-        :param hvdc_lines: list of HVDC lines
         :param Sbus: Buses power (MVA)
         :param bus_active: Bus active status
         :param Sf: Branches power from the "from" bus (MVA)
@@ -1033,6 +1033,13 @@ class GridMapWidget(BaseDiagramWidget):
         :param ma: branch phase shift angle (rad)
         :param theta: branch tap module (p.u.)
         :param Beq: Branch equivanet susceptance (p.u.)
+        :param fluid_node_p2x_flow: P2X flow rate (m3)
+        :param fluid_node_current_level: Current level (m3)
+        :param fluid_node_spillage: Spillage (m3)
+        :param fluid_node_flow_in: Flow rate (m3)
+        :param fluid_node_flow_out: Flow rate (m3)
+        :param fluid_injection_flow: Injection rate (m3)
+        :param fluid_path_flow: fluid flow (m3)
         :param use_flow_based_width: use branch width based on the actual flow?
         :param min_branch_width: Minimum branch width [px]
         :param max_branch_width: Maximum branch width [px]
@@ -1050,12 +1057,12 @@ class GridMapWidget(BaseDiagramWidget):
         # vabs = np.abs(voltages)
         # vang = np.angle(voltages, deg=True)
         # vnorm = (vabs - vmin) / vrng
+        nbus = self.circuit.get_bus_number()
 
-        n = len(buses)
-        longitudes = np.zeros(n)
-        latitudes = np.zeros(n)
+        longitudes = np.zeros(nbus)
+        latitudes = np.zeros(nbus)
         nodes_dict = dict()
-        for i, bus in enumerate(buses):
+        for i, bus in enumerate(self.circuit.buses):
 
             # try to find the diagram object of the DB object
             graphic_object = self.graphics_manager.query(bus)
@@ -1099,13 +1106,13 @@ class GridMapWidget(BaseDiagramWidget):
         arrow_scale = self.get_arrow_scale()
 
         # Try colouring the branches
-        if len(branches):
+        if self.circuit.get_branch_number_wo_hvdc():
 
             lnorm = np.abs(loadings)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(Sf)
             Sfnorm = Sfabs / np.max(Sfabs + 1e-20)
-            for i, branch in enumerate(branches):
+            for i, branch in enumerate(self.circuit.get_branches_wo_hvdc_iter()):
 
                 # try to find the diagram object of the DB object
                 graphic_object: Union[MapAcLine, MapDcLine] = self.graphics_manager.query(branch)
@@ -1159,14 +1166,14 @@ class GridMapWidget(BaseDiagramWidget):
                     pass
 
         # try colouring the HVDC lines
-        if len(hvdc_lines) > 0:
+        if self.circuit.get_hvdc_number() > 0:
 
             lnorm = np.abs(hvdc_loading)
             lnorm[lnorm == np.inf] = 0
             Sfabs = np.abs(hvdc_Pf)
             Sfnorm = Sfabs / np.max(Sfabs + 1e-9)
 
-            for i, branch in enumerate(hvdc_lines):
+            for i, branch in enumerate(self.circuit.hvdc_lines):
 
                 # try to find the diagram object of the DB object
                 graphic_object: MapHvdcLine = self.graphics_manager.query(branch)
@@ -1203,7 +1210,8 @@ class GridMapWidget(BaseDiagramWidget):
                     style = Qt.PenStyle.SolidLine
                     if use_flow_based_width:
                         weight = int(
-                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1))
+                            np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width) * 0.1)
+                        )
                     else:
                         weight = self.get_branch_width()
 
@@ -1222,6 +1230,17 @@ class GridMapWidget(BaseDiagramWidget):
 
                     graphic_object.set_colour(color=color, style=style, tool_tip=tooltip)
                     graphic_object.set_width_scale(branch_scale=weight, arrow_scale=arrow_scale)
+
+        if fluid_path_flow is not None:
+
+            if self.circuit.get_fluid_paths_number() == len(fluid_path_flow):
+                for i, elm in enumerate(self.circuit.fluid_paths):
+
+                    # try to find the diagram object of the DB object
+                    graphic_object = self.graphics_manager.query(elm)
+
+                    if graphic_object:
+                        pass
 
     def get_image(self, transparent: bool = False) -> QImage:
         """

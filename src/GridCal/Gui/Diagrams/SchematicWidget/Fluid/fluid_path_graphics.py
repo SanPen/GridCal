@@ -63,7 +63,8 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
         # self.style = Qt.CustomDashLine
         self.style = ACTIVE['style']
-        self.color = ACTIVE['fluid']
+        self.color = QColor(api_object.color) if api_object is not None else ACTIVE['fluid']
+
         self.set_colour(color=self.color,
                         w=self.width,
                         style=self.style)
@@ -77,7 +78,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         :return:
         """
 
-        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        pen = QPen(color, w, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
         # pen.setDashPattern([5, 3, 2, 3])
 
         self.setPen(pen)
@@ -89,7 +90,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         if self.symbol is not None:
             self.symbol.set_colour(color, w, style)
 
-    def recolour_mode(self):
+    def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         """

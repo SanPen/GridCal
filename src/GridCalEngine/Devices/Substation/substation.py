@@ -73,7 +73,8 @@ class Substation(GenericAreaGroup):
                                   code=code,
                                   device_type=DeviceType.SubstationDevice,
                                   latitude=latitude,
-                                  longitude=longitude)
+                                  longitude=longitude,
+                                  color=color,)
 
         self._area: Union[Area, None] = area
         self._zone: Union[Zone, None] = zone
@@ -93,8 +94,6 @@ class Substation(GenericAreaGroup):
         self._wind_speed_prof = Profile(default_value=self.wind_speed, data_type=float)
 
         self.terrain_roughness: float = float(terrain_roughness)
-
-        self.color = color if color is not None else "#3d7d95"
 
         self.register(key="area", units="", tpe=DeviceType.AreaDevice,
                       definition="Substation area, altenativelly this can be obtained from the zone")
@@ -136,8 +135,6 @@ class Substation(GenericAreaGroup):
                                  "Slightly rough (grass, cereal field): 0.02~0.2\n"
                                  "Rough (forest, small houses): 1.0~1.5\n"
                                  "Very rough (Large buildings):1.0~4.0")
-
-        self.register(key='color', units='', tpe=str, definition='Color to paint the SE in the map diagram')
 
     @property
     def area(self) -> Union[Area, None]:

@@ -18,9 +18,9 @@ from __future__ import annotations
 import numpy as np
 from typing import Union, TYPE_CHECKING, List, Dict
 from PySide6 import QtWidgets
-from PySide6.QtCore import Qt, QPoint
-from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QPainterPath, QFont
-from PySide6.QtWidgets import QMenu, QGraphicsRectItem, QGraphicsSceneMouseEvent, QGraphicsTextItem
+from PySide6.QtCore import Qt, QPoint, QPointF
+from PySide6.QtGui import QPen, QCursor, QIcon, QPixmap, QBrush, QColor
+from PySide6.QtWidgets import QMenu, QGraphicsSceneMouseEvent
 
 from GridCalEngine.Devices.Fluid import FluidNode, FluidTurbine, FluidPump, FluidP2x
 from GridCalEngine.Devices.Substation.bus import Bus
@@ -39,48 +39,6 @@ if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
 
-class RoundedRect(QtWidgets.QGraphicsRectItem):
-    """
-    Rounded rectangle
-    """
-    def __init__(self, x, y, width, height, radius, parent):
-        super().__init__(x, y, width, height, parent=parent)
-        self.radius = radius
-
-    def paint(self, painter, option, widget):
-        path = QPainterPath()
-        path.addRoundedRect(self.rect(), self.radius, self.radius)
-        painter.setClipPath(path)
-        painter.setBrush(self.brush())
-        painter.setPen(self.pen())
-        painter.drawRoundedRect(self.rect(), self.radius, self.radius)
-
-
-class VerticalWaterIndicator(QGraphicsRectItem):
-    def __init__(self, x, y, width, height, outer_radius, inner_radius, parent=None):
-        super().__init__(x, y, width, height, parent=parent)
-        self.outer_radius = outer_radius
-        self.inner_radius = inner_radius
-        self.setBrush(Qt.lightGray)  # Set the outer rectangle color
-
-        self.inner_rect = QGraphicsRectItem(self.rect(), self)
-        self.inner_rect.setBrush(Qt.blue)  # Set the inner rectangle color
-
-        self.label = QGraphicsTextItem('', self)
-        self.label.setDefaultTextColor(Qt.black)
-        self.label.setFont(QFont('Arial', 10))
-
-    def set_percentage(self, percentage):
-        # Update the inner rectangle size based on the percentage
-        inner_height = self.rect().height() * percentage / 100
-        self.inner_rect.setRect(self.rect().x(), self.rect().y() + self.rect().height() - inner_height,
-                                self.rect().width(), inner_height)
-        self.inner_rect.setPos(self.rect().x(), self.rect().y())
-
-        # Update the label text
-        self.label.setPlainText(f'{percentage}%')
-
-
 class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
     """
       Represents a block in the diagram
@@ -96,7 +54,8 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                  parent=None, index=0, h: int = 20, w: int = 80, x: float = 0, y: float = 0,
                  draw_labels: bool = True):
 
-        GenericDiagramWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor, draw_labels=draw_labels)
+        GenericDiagramWidget.__init__(self, parent=parent, api_object=fluid_node, editor=editor,
+                                      draw_labels=draw_labels)
         QtWidgets.QGraphicsRectItem.__init__(self, parent)
 
         self.min_w = 180.0
@@ -104,6 +63,8 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         self.offset = 20
         self.h = h if h >= self.min_h else self.min_h
         self.w = w if w >= self.min_w else self.min_w
+
+        self.api_object: FluidNode = fluid_node  # reassign for type to be clear
 
         # loads, shunts, generators, etc...
         self.shunt_children = list()
@@ -116,7 +77,7 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         # index
         self.index = index
 
-        self.color = ACTIVE['fluid']
+        self.color = QColor(fluid_node.color) if fluid_node is not None else ACTIVE['fluid']
         self.style = ACTIVE['style']
 
         # Label:
@@ -130,7 +91,8 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         # connection terminals the block
         self._terminal = BarTerminalItem('s', parent=self, editor=self.editor)  # , h=self.h))
-        self._terminal.setPen(QPen(Qt.transparent, self.pen_width, self.style, Qt.RoundCap, Qt.RoundJoin))
+        self._terminal.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style,
+                                   Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin))
 
         # Create corner for resize:
         self.sizer = HandleItem(self._terminal, callback=self.change_size)
@@ -141,10 +103,10 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
 
         self.set_tile_color(self.color)
 
-        self.setPen(QPen(Qt.transparent, self.pen_width, self.style))
-        self.setBrush(Qt.transparent)
+        self.setPen(QPen(Qt.GlobalColor.transparent, self.pen_width, self.style))
+        self.setBrush(Qt.GlobalColor.transparent)
         self.setFlags(self.GraphicsItemFlag.ItemIsSelectable | self.GraphicsItemFlag.ItemIsMovable)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
         # Update size:
         self.change_size(self.w, self.h)
@@ -209,6 +171,14 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         for e in self.shunt_children:
             if e is not None:
                 e.recolour_mode()
+
+    def get_nexus_point(self) -> QPointF:
+        """
+        Get the connection point for the chldren nexus line
+        :return: QPointF
+        """
+        return QPointF(self.x() + self.rect().width() / 2.0,
+                       self.y() + self.rect().height() + self._terminal.h / 2.0)
 
     def set_tile_color(self, brush):
         """
@@ -493,3 +463,46 @@ class FluidNodeGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
         # get the index of this object
         i = self.editor.circuit.fluid_nodes.index(self.api_object)
         # self.editor.diagramScene.plot_bus(i, self.api_object)
+
+    def set_values(self, i: int, Vm: float, Va: float, P: float, Q: float,
+                   tpe: str, format_str="{:10.2f}"):
+        """
+
+        :param i:
+        :param Vm:
+        :param Va:
+        :param P:
+        :param Q:
+        :param tpe:
+        :param format_str:
+        :return:
+        """
+        if self.draw_labels:
+            vm = format_str.format(Vm)
+
+            if self.api_object is not None:
+                if self.api_object.bus is not None:
+                    vm_kv = format_str.format(Vm * self.api_object.bus.Vnom)
+                else:
+                    vm_kv = "No electrical bus"
+            else:
+                vm_kv = ""
+            va = format_str.format(Va)
+            msg = f"Bus {i}"
+            if tpe is not None:
+                msg += f" [{tpe}]"
+            msg += "<br>"
+            msg += f"v={vm}&lt;{va}º pu<br>"
+            msg += f"V={vm_kv} KV<br>"
+            if P is not None:
+                p = format_str.format(P)
+                q = format_str.format(Q)
+                msg += f"P={p} MW<br>Q={q} MVAr"
+        else:
+            msg = ""
+
+        title = self.api_object.name if self.api_object is not None else ""
+        self.label.setHtml(f'<html><head/><body><p><span style=" font-size:10pt;">{title}<br/></span>'
+                           f'<span style=" font-size:6pt;">{msg}</span></p></body></html>')
+
+        self.setToolTip(msg)

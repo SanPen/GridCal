@@ -4489,13 +4489,22 @@ class Assets:
 
     def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
         """
-        Return all the branch objects.
+        Return all the real branch objects.
         :return: lines + transformers 2w + hvdc
         """
         lst = list()
         for dev_list in self.get_branch_lists_wo_hvdc():
             lst += dev_list
         return lst
+
+    def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator all the real branch objects.
+        :return: lines + transformers 2w + hvdc
+        """
+        for dev_list in self.get_branch_lists_wo_hvdc():
+            for elm in dev_list:
+                yield elm
 
     def get_branches_wo_hvdc_names(self) -> StrVec:
         """

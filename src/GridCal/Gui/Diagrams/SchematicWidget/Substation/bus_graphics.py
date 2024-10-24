@@ -49,7 +49,6 @@ from GridCalEngine.Devices.Substation import Bus
 if TYPE_CHECKING:  # Only imports the below statements during type checking
     from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 
-
 SHUNT_GRAPHICS = Union[
     BatteryGraphicItem,
     ShuntGraphicItem,
@@ -62,13 +61,11 @@ SHUNT_GRAPHICS = Union[
 ]
 
 
-
-
-
 class ShortCircuitFlags:
     """
     Short circuit flags
     """
+
     def __init__(self, sc_3p: bool = False, sc_lg: bool = False, sc_ll: bool = False, sc_llg: bool = False):
         self.sc_3p = sc_3p
         self.sc_lg = sc_lg
