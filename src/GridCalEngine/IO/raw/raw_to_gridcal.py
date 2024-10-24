@@ -341,31 +341,41 @@ def get_gridcal_transformer(psse_elm: RawTransformer,
             HV = V2
             LV = V1
 
-        elm = dev.Transformer2W(bus_from=bus_from,
-                                bus_to=bus_to,
-                                idtag=psse_elm.idtag,
-                                code=code,
-                                name=name,
-                                HV=HV,
-                                LV=LV,
-                                nominal_power=psse_elm.SBASE1_2,
-                                r=r,
-                                x=x,
-                                g=g,
-                                b=b,
-                                rate=psse_elm.RATE1_1,
-                                contingency_factor=round(contingency_factor, 6),
-                                tap_module=tap_module,
-                                tap_phase=tap_angle,
-                                active=bool(psse_elm.STAT),
-                                mttf=0,
-                                mttr=0)
+        elm = dev.Transformer2W(
+            bus_from=bus_from,
+            bus_to=bus_to,
+            idtag=psse_elm.idtag,
+            code=code,
+            name=name,
+            HV=HV,
+            LV=LV,
+            nominal_power=psse_elm.SBASE1_2,
+            r=r,
+            x=x,
+            g=g,
+            b=b,
+            rate=psse_elm.RATE1_1,
+            contingency_factor=round(contingency_factor, 6),
+            tap_module=1.0,  # it is modified afterwards to account for PSSe not having virtual taps
+            tap_phase=tap_angle,
+            active=bool(psse_elm.STAT),
+            mttf=0,
+            mttr=0
+        )
+
+        mf, mt = elm.get_virtual_taps()
+
+        # we need to discount that PSSe includes the virtual tap inside the normal tap
+        elm.tap_module = tap_module / mf * mt
 
         if psse_elm.COD1 == 0:
-            elm.tap_changer.total_positions = 2
-            elm.tap_changer.neutral_position = 0
-            elm.tap_changer.tap_position = -1
-            elm.tap_changer.dV = round(1 - tap_module, 6)
+            elm.tap_changer.total_positions = psse_elm.NTP1
+            elm.tap_changer.neutral_position = int(psse_elm.NTP1 / 2)
+            elm.tap_changer.tap_position = elm.tap_changer.neutral_position
+            if (psse_elm.NTP1 - 1) > 0:
+                elm.tap_changer.dV = (psse_elm.VMA1 - psse_elm.VMI1) / (psse_elm.NTP1 - 1)
+            else:
+                elm.tap_changer.dV = 0.01
             elm.tap_changer.asymmetry_angle = 90.0
             elm.tap_changer.tc_type = TapChangerTypes.NoRegulation
         else:
