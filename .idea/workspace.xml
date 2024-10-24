@@ -28,12 +28,9 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="5.1.55">
-      <change afterPath="$PROJECT_DIR$/src/trunk/transformer/transformer_psse.py" afterDir="false" />
+    <list default="true" id="aa3ee678-6e91-470f-91a9-09e9d8a4756d" name="Changes" comment="Improved the PSSe transformer conversion">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/gridcal_to_raw.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/gridcal_to_raw.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/GridCalEngine/IO/raw/raw_to_gridcal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/trunk/transformer/transformer_psse.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/trunk/transformer/transformer_psse.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +71,7 @@
     </favorite-branches>
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="devel_spike_22_10_2024" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -130,59 +127,59 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Git.Branch.Popup.ShowAllRemotes": "true",
-    "MATLAB_INTERPRETER": "/usr/local/MATLAB/R2018a/bin/matlab",
-    "Python tests.Nosetests for test_power_flow.test_zip.executor": "Debug",
-    "Python tests.Nosetests for tests.test_hydro.executor": "Run",
-    "Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor": "Run",
-    "Python tests.Nosetests for tests.test_topology_processor.executor": "Run",
-    "Python tests.Nosetests in admittance_matrix_test.py.executor": "Run",
-    "Python tests.Nosetests in deep_copy_test.py.executor": "Run",
-    "Python tests.Nosetests in tests.executor": "Run",
-    "Python tests.pytest for src.tests.test_cgmes_to_gridcal_ac_transformers.test_ac_transformers3w_only_two_terminals_log_error.executor": "Debug",
-    "Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor": "Run",
-    "Python tests.pytest for src.tests.test_load_all_grids.test_line_templates_finding.executor": "Run",
-    "Python tests.pytest for src.tests.test_ptdf.executor": "Run",
-    "Python tests.pytest for src.tests.test_raw_roundtrip.test_rawx_roundtrip.executor": "Run",
-    "Python tests.pytest for src.tests.test_topology_processor.test_topology_NL_microgrid.executor": "Run",
-    "Python tests.pytest for test_ntc.test_ntc_ieee_14.executor": "Run",
-    "Python tests.pytest in test_load_all_grids.py.executor": "Run",
-    "Python tests.pytest in test_ntc.py.executor": "Run",
-    "Python tests.pytest in test_ptdf.py.executor": "Run",
-    "Python tests.pytest in test_simple_mip.py.executor": "Run",
-    "Python tests.pytest in tests.executor": "Run",
-    "Python.AnalysisDialogue.executor": "Run",
-    "Python.ExecuteGridCal.executor": "Debug",
-    "Python.cgmes_rdfs_graph.executor": "Run",
-    "Python.file opening.executor": "Run",
-    "Python.new_circuit_objects.executor": "Run",
-    "Python.node_widget.executor": "Run",
-    "Python.nr_improvement_on_ill_conditioned_grid.executor": "Run",
-    "Python.ntc_example.executor": "Debug",
-    "Python.pymoo_example.executor": "Debug",
-    "Python.transformer3w_editor.executor": "Run",
-    "Python.transformer_psse.executor": "Run",
-    "Python.update_gui_file (1).executor": "Run",
-    "Python.update_gui_file.executor": "Run",
-    "Python.upload_to_pypi.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "199__finalize__cgmes__import",
-    "last_opened_file_path": "/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Devices/Aggregation",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable",
-    "two.files.diff.last.used.file": "C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Git.Branch.Popup.ShowAllRemotes&quot;: &quot;true&quot;,
+    &quot;MATLAB_INTERPRETER&quot;: &quot;/usr/local/MATLAB/R2018a/bin/matlab&quot;,
+    &quot;Python tests.Nosetests for test_power_flow.test_zip.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.Nosetests for tests.test_hydro.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_opf_time_series.test_opf_ts.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests for tests.test_topology_processor.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in admittance_matrix_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in deep_copy_test.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.Nosetests in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_cgmes_to_gridcal_ac_transformers.test_ac_transformers3w_only_two_terminals_log_error.executor&quot;: &quot;Debug&quot;,
+    &quot;Python tests.pytest for src.tests.test_generator_q_control.test_q_control_true.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_load_all_grids.test_line_templates_finding.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_ptdf.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_raw_roundtrip.test_rawx_roundtrip.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for src.tests.test_topology_processor.test_topology_NL_microgrid.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest for test_ntc.test_ntc_ieee_14.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_load_all_grids.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_ntc.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_ptdf.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in test_simple_mip.py.executor&quot;: &quot;Run&quot;,
+    &quot;Python tests.pytest in tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.AnalysisDialogue.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ExecuteGridCal.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.cgmes_rdfs_graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.file opening.executor&quot;: &quot;Run&quot;,
+    &quot;Python.new_circuit_objects.executor&quot;: &quot;Run&quot;,
+    &quot;Python.node_widget.executor&quot;: &quot;Run&quot;,
+    &quot;Python.nr_improvement_on_ill_conditioned_grid.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ntc_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.pymoo_example.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.transformer3w_editor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.transformer_psse.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_gui_file.executor&quot;: &quot;Run&quot;,
+    &quot;Python.upload_to_pypi.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;199__finalize__cgmes__import&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/santi/Documentos/Git/GitHub/GridCal/src/GridCalEngine/Devices/Aggregation&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyIntegratedToolsModulesConfigurable&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;C:/WorkProjects/PycharmProjects/GridCal/src/trunk/cgmes_py_generator/cgmes_v2_4_15/cgmes_enums.py&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="PyDebuggerOptionsProvider">
     <option name="mySaveCallSignatures" value="true" />
     <option name="mySupportGeventDebugging" value="true" />
@@ -204,7 +201,7 @@
       <recent name="C:\WorkProjects\PycharmProjects\GridCal\src\GridCalEngine\IO\cim\cgmes\export_docs" />
     </key>
   </component>
-  <component name="RunManager" selected="Python tests.pytest in tests">
+  <component name="RunManager" selected="Python.transformer_psse">
     <configuration default="true" type="DjangoTestsConfigurationType">
       <module name="GridCalEngine" />
       <option name="ENV_FILES" value="" />
@@ -680,8 +677,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python.transformer_psse" />
+        <item itemvalue="Python tests.pytest in tests" />
         <item itemvalue="Python tests.pytest for src.tests.test_raw_roundtrip.test_rawx_roundtrip" />
         <item itemvalue="Python.ExecuteGridCal" />
         <item itemvalue="Python.update_gui_file" />
@@ -1403,7 +1400,7 @@
       <workItem from="1729330507783" duration="1375000" />
       <workItem from="1729496920557" duration="22549000" />
       <workItem from="1729666269397" duration="7169000" />
-      <workItem from="1729754941322" duration="4354000" />
+      <workItem from="1729754941322" duration="5083000" />
     </task>
     <task id="LOCAL-00310" summary="implemented newtonPA time series">
       <created>1656059954202</created>
@@ -1748,7 +1745,7 @@
       <option name="project" value="LOCAL" />
       <updated>1698766404661</updated>
     </task>
-    <option name="localTasksCounter" value="569" />
+    <option name="localTasksCounter" value="570" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1782,7 +1779,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added missing delete functions for some devices&#10;Made all delete functions more robust using try except&#10;Made some improvements in transformer3w_graphics.py" />
     <MESSAGE value="Improved diagrams representation" />
     <MESSAGE value="Now, when changing a line, dc line or hvdcline length the electrical parameters change accordingly" />
     <MESSAGE value="Improved line editor with the new line length logic" />
@@ -1807,7 +1803,8 @@
     <MESSAGE value="Added dc_link_voltage to HvdcLine" />
     <MESSAGE value="Improvement in CGMEs transformer3W parsing" />
     <MESSAGE value="Contingencies and remedial actions are not mapped to an enum: ContingencyOperationTypes&#10;Added CGMES HVDC mapping option" />
-    <option name="LAST_COMMIT_MESSAGE" value="Contingencies and remedial actions are not mapped to an enum: ContingencyOperationTypes&#10;Added CGMES HVDC mapping option" />
+    <MESSAGE value="Improved the PSSe transformer conversion" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improved the PSSe transformer conversion" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2228,9 +2225,19 @@
           <option name="timeStamp" value="1496" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/cim/cgmes/gridcal_to_cgmes.py</url>
+          <line>1416</line>
+          <option name="timeStamp" value="1504" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_cgmes_raw_crosstrip.py</url>
           <line>54</line>
           <option name="timeStamp" value="1548" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/GridCalEngine/IO/raw/gridcal_to_raw.py</url>
+          <line>205</line>
+          <option name="timeStamp" value="1555" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/tests/test_ntc.py</url>
@@ -2562,7 +2569,7 @@
     <SUITE FILE_PATH="coverage/GridCal$PTDF_research.coverage" NAME="PTDF_research Coverage Results" MODIFIED="1600707513093" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/PTDF" />
     <SUITE FILE_PATH="coverage/GridCal$pytest_for_src_tests_test_raw_cgmes_cross_roundtrip_test_raw_to_cgmes_cross_roundtrip.coverage" NAME="pytest for src.tests.test_raw_cgmes_cross_roundtrip.test_raw_to_cgmes_cross_roundtrip Coverage Results" MODIFIED="1727788367925" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_acopf_function_evaluation_py.coverage" NAME="Nosetests in acopf_function_evaluation.py Coverage Results" MODIFIED="1704358701624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/examples/trunk/acopf" />
-    <SUITE FILE_PATH="coverage/GridCal$transformer_psse.coverage" NAME="transformer_psse Coverage Results" MODIFIED="1729757361230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/transformer" />
+    <SUITE FILE_PATH="coverage/GridCal$transformer_psse.coverage" NAME="transformer_psse Coverage Results" MODIFIED="1729760008624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/trunk/transformer" />
     <SUITE FILE_PATH="coverage/GridCal$demo_Rosenbrock.coverage" NAME="demo_Rosenbrock Coverage Results" MODIFIED="1659034362122" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/genetic_algorithms/iDone" />
     <SUITE FILE_PATH="coverage/GridCal$5_bus_se.coverage" NAME="5_bus_se Coverage Results" MODIFIED="1635960804767" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/research/state_estimation" />
     <SUITE FILE_PATH="coverage/GridCal$Nosetests_in_test_basic_py.coverage" NAME="Nosetests in test_basic.py Coverage Results" MODIFIED="1609500352073" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/tests" />
