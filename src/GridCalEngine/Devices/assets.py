@@ -3963,7 +3963,7 @@ class Assets:
         Delete area
         :param obj: Area
         """
-        for elm in self.injection_items():
+        for elm in self.get_injection_devices_iter():
             if elm.facility == obj:
                 elm.facility = None
 
@@ -4766,7 +4766,7 @@ class Assets:
             elms += lst
         return elms
 
-    def injection_items(self) -> Generator[INJECTION_DEVICE_TYPES, None, None]:
+    def get_injection_devices_iter(self) -> Generator[INJECTION_DEVICE_TYPES, None, None]:
         """
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice
