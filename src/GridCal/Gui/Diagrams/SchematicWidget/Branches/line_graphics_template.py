@@ -462,7 +462,9 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
                  width=5,
                  api_object: Union[Line, Transformer2W, VSC, UPFC, HvdcLine, DcLine, FluidPath, None] = None,
                  arrow_size=10,
-                 draw_labels: bool = True):
+                 draw_labels: bool = True,
+                 arrow_f_pos=0.2,
+                 arrow_t_pos=0.8, ):
         """
 
         :param from_port:
@@ -511,10 +513,10 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
 
         # arrows
         self.view_arrows = True
-        self.arrow_p_from = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=False)
-        self.arrow_q_from = ArrowHead(parent=self, arrow_size=arrow_size, position=0.2, under=True)
-        self.arrow_p_to = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=False)
-        self.arrow_q_to = ArrowHead(parent=self, arrow_size=arrow_size, position=0.8, under=True)
+        self.arrow_p_from = ArrowHead(parent=self, arrow_size=arrow_size, position=arrow_f_pos, under=False)
+        self.arrow_q_from = ArrowHead(parent=self, arrow_size=arrow_size, position=arrow_f_pos, under=True)
+        self.arrow_p_to = ArrowHead(parent=self, arrow_size=arrow_size, position=arrow_t_pos, under=False)
+        self.arrow_q_to = ArrowHead(parent=self, arrow_size=arrow_size, position=arrow_t_pos, under=True)
 
         if from_port and to_port:
             self.redraw()
@@ -843,6 +845,16 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         self.arrow_p_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
         self.arrow_q_to.set_value(Pt, True, Pt > 0, name="Pt", units="MW", draw_label=self.draw_labels)
 
+    def set_arrows_with_fluid_flow(self, flow: float) -> None:
+        """
+        Set the arrow directions
+        :param flow: branch_flow (m3/s)
+        """
+        self.arrow_p_from.set_value(flow, True, flow < 0, name="flow", units="m3/s", draw_label=self.draw_labels)
+        self.arrow_q_from.set_value(flow, True, flow < 0, name="flow", units="m3/s", draw_label=False)
+        self.arrow_p_to.setVisible(False)
+        self.arrow_q_to.setVisible(False)
+
     def change_bus(self):
         """
         change the from or to bus of the nbranch with another selected bus
@@ -936,6 +948,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         if self._from_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
+                # keep this here, we need an actual instance
                 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import \
                     Transformer3WGraphicItem
             return isinstance(self.get_terminal_from_parent(), Transformer3WGraphicItem)
@@ -949,6 +962,7 @@ class LineGraphicTemplateItem(GenericDiagramWidget, QGraphicsLineItem):
         """
         if self._to_port:
             if 'Transformer3WGraphicItem' not in sys.modules:
+                # keep this here, we need an actual instance
                 from GridCal.Gui.Diagrams.SchematicWidget.Branches.transformer3w_graphics import \
                     Transformer3WGraphicItem
             return isinstance(self.get_terminal_to_parent(), Transformer3WGraphicItem)

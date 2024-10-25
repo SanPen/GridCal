@@ -150,9 +150,7 @@ class LpVariable(LpElement):
         existence in the objective function and constraints
     """
 
-    def __init__(
-            self, name, lowBound=None, upBound=None, cat=const.LpContinuous, e=None
-    ):
+    def __init__(self, name, lowBound=None, upBound=None, cat=const.LpContinuous, e=None):
         LpElement.__init__(self, name)
         self._lowbound_original = self.lowBound = lowBound
         self._upbound_original = self.upBound = upBound

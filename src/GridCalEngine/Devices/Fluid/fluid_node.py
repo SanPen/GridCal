@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 from typing import Union
 import numpy as np
@@ -38,7 +39,8 @@ class FluidNode(PhysicalDevice):
                  spillage_cost: float = 1000.0,
                  inflow: float = 0.0,
                  bus: Union[None, Bus] = None,
-                 build_status: BuildStatus = BuildStatus.Commissioned):
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 color: str | None = None):
         """
         FluidNode
         :param name: name of the node
@@ -67,6 +69,8 @@ class FluidNode(PhysicalDevice):
         self.inflow = float(inflow)  # m3/s
         self._bus: Bus = bus
         self.build_status = build_status
+
+        self.color = color if color is not None else "#00aad4"  # nice blue color
 
         self._inflow_prof = Profile(default_value=self.inflow, data_type=float)  # m3/s
         self._spillage_cost_prof = Profile(default_value=self.spillage_cost, data_type=float)  # e/(m3/s)
@@ -104,6 +108,8 @@ class FluidNode(PhysicalDevice):
         self.register(key='inflow', units='m3/s', tpe=float,
                       definition='Flow of fluid coming from the rain',
                       profile_name='inflow_prof')
+
+        self.register(key='color', units='', tpe=str, definition='Color to paint the device in the map diagram')
 
     @property
     def spillage_cost_prof(self) -> Profile:

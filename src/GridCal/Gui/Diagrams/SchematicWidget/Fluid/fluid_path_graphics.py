@@ -22,6 +22,7 @@ from PySide6.QtWidgets import QMenu
 from GridCal.Gui.Diagrams.SchematicWidget.terminal_item import BarTerminalItem, RoundTerminalItem
 from GridCal.Gui.Diagrams.generic_graphics import GenericDiagramWidget, ACTIVE
 from GridCal.Gui.messages import yes_no_question
+from GridCal.Gui.gui_functions import add_menu_entry
 from GridCal.Gui.Diagrams.SchematicWidget.Branches.line_graphics_template import LineGraphicTemplateItem
 from GridCalEngine.Devices.Fluid.fluid_path import FluidPath
 from GridCalEngine.enumerations import DeviceType
@@ -59,11 +60,24 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
                                          editor=editor,
                                          width=width,
                                          api_object=api_object,
-                                         arrow_size=arrow_size)
+                                         arrow_size=arrow_size,
+                                         arrow_f_pos=0.5,
+                                         arrow_t_pos=0.5)
 
         # self.style = Qt.CustomDashLine
         self.style = ACTIVE['style']
-        self.color = ACTIVE['fluid']
+        self.color = QColor(api_object.color) if api_object is not None else ACTIVE['fluid']
+
+        self.set_colour(color=self.color,
+                        w=self.width,
+                        style=self.style)
+
+    def set_api_object_color(self):
+        """
+        Gether the color from the api object and apply
+        :return:
+        """
+        self.color = QColor(self.api_object.color) if self.api_object is not None else ACTIVE['fluid']
         self.set_colour(color=self.color,
                         w=self.width,
                         style=self.style)
@@ -77,7 +91,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         :return:
         """
 
-        pen = QPen(color, w, style, Qt.RoundCap, Qt.RoundJoin)
+        pen = QPen(color, w, style, Qt.PenCapStyle.RoundCap, Qt.PenJoinStyle.RoundJoin)
         # pen.setDashPattern([5, 3, 2, 3])
 
         self.setPen(pen)
@@ -89,7 +103,7 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         if self.symbol is not None:
             self.symbol.set_colour(color, w, style)
 
-    def recolour_mode(self):
+    def recolour_mode(self) -> None:
         """
         Change the colour according to the system theme
         """
@@ -122,25 +136,21 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
 
             menu.addSeparator()
 
-            ra6 = menu.addAction('Plot profiles')
-            plot_icon = QIcon()
-            plot_icon.addPixmap(QPixmap(":/Icons/icons/plot.svg"))
-            ra6.setIcon(plot_icon)
-            ra6.triggered.connect(self.plot_profiles)
+            add_menu_entry(menu=menu,
+                           text="Plot profiles",
+                           icon_path=":/Icons/icons/plot.svg",
+                           function_ptr=self.plot_profiles)
 
-            ra2 = menu.addAction('Delete')
-            del_icon = QIcon()
-            del_icon.addPixmap(QPixmap(":/Icons/icons/delete3.svg"))
-            ra2.setIcon(del_icon)
-            ra2.triggered.connect(self.remove)
+            add_menu_entry(menu=menu,
+                           text="Delete",
+                           icon_path=":/Icons/icons/delete3.svg",
+                           function_ptr=self.remove)
 
             menu.addSection('Convert to')
-
-            ra4 = menu.addAction('Line')
-            ra4_icon = QIcon()
-            ra4_icon.addPixmap(QPixmap(":/Icons/icons/assign_to_profile.svg"))
-            ra4.setIcon(ra4_icon)
-            ra4.triggered.connect(self.to_line)
+            add_menu_entry(menu=menu,
+                           text="Convert to line",
+                           icon_path=":/Icons/icons/assign_to_profile.svg",
+                           function_ptr=self.to_line)
 
             menu.exec_(event.screenPos())
         else:
@@ -152,8 +162,9 @@ class FluidPathGraphicItem(LineGraphicTemplateItem):
         @return:
         """
         # get the index of this object
-        i = self.editor.circuit.get_fluid_paths().index(self.api_object)
+        # i = self.editor.circuit.get_fluid_paths().index(self.api_object)
         # self.editor.diagramScene.plot_branch(i, self.api_object)
+        pass
 
     def edit(self):
         """

@@ -52,7 +52,6 @@ from GridCal.Gui.Main.object_select_window import ObjectSelectWindow
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.blue_marble import BlueMarbleTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
 from GridCal.Gui.Diagrams.MapWidget.Tiles.TileProviders.open_street_map import OsmTiles
-from trunk.qt_related.slippy_map import MapWidget
 
 ALL_EDITORS = Union[SchematicWidget, GridMapWidget]
 ALL_EDITORS_NONE = Union[None, SchematicWidget, GridMapWidget]
@@ -481,10 +480,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active for br in branches]
         hvdc_active = [hvdc.active for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.Sbus,
+        return diagram_widget.colour_results(Sbus=results.Sbus,
                                              bus_active=bus_active,
                                              Sf=results.Sf,
                                              St=results.St,
@@ -537,10 +533,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active_prof[t_idx] for br in branches]
         hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.S[t_idx, :],
+        return diagram_widget.colour_results(Sbus=results.S[t_idx, :],
                                              bus_active=bus_active,
                                              Sf=results.Sf[t_idx, :],
                                              St=results.St[t_idx, :],
@@ -588,10 +581,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active for br in branches]
         hvdc_active = [hvdc.active for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.Sbus[-1, :],
+        return diagram_widget.colour_results(Sbus=results.Sbus[-1, :],
                                              bus_active=bus_active,
                                              Sf=results.Sf[-1, :],
                                              St=results.St[-1, :],
@@ -632,16 +622,13 @@ class DiagramsMain(CompiledArraysMain):
         """
         buses = self.circuit.buses
         branches = self.circuit.get_branches_wo_hvdc()
-        hvdc_lines = self.circuit.hvdc_lines
+        # hvdc_lines = self.circuit.hvdc_lines
 
         bus_active = [bus.active for bus in buses]
         br_active = [br.active for br in branches]
         # hvdc_active = [hvdc.active for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.S_points.mean(axis=0),
+        return diagram_widget.colour_results(Sbus=results.S_points.mean(axis=0),
                                              types=results.bus_types,
                                              voltages=results.V_points.mean(axis=0),
                                              bus_active=bus_active,
@@ -688,10 +675,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active for br in branches]
         hvdc_active = [hvdc.active for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.Sbus1,
+        return diagram_widget.colour_results(Sbus=results.Sbus1,
                                              bus_active=bus_active,
                                              Sf=results.Sf1,
                                              St=results.St1,
@@ -738,10 +722,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active for br in branches]
         hvdc_active = [hvdc.active for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.Sbus,
+        return diagram_widget.colour_results(Sbus=results.Sbus,
                                              voltages=results.voltage,
                                              bus_active=bus_active,
                                              loadings=results.loading,
@@ -753,6 +734,13 @@ class DiagramsMain(CompiledArraysMain):
                                              hvdc_Pt=-results.hvdc_Pf,
                                              hvdc_loading=results.hvdc_loading,
                                              hvdc_active=hvdc_active,
+                                             fluid_node_p2x_flow=results.fluid_node_p2x_flow,
+                                             fluid_node_current_level=results.fluid_node_current_level,
+                                             fluid_node_spillage=results.fluid_node_spillage,
+                                             fluid_node_flow_in=results.fluid_node_flow_in,
+                                             fluid_node_flow_out=results.fluid_node_flow_out,
+                                             fluid_path_flow=results.fluid_path_flow,
+                                             fluid_injection_flow=results.fluid_injection_flow,
                                              use_flow_based_width=use_flow_based_width,
                                              min_branch_width=min_branch_width,
                                              max_branch_width=max_branch_width,
@@ -790,10 +778,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active_prof[t_idx] for br in branches]
         hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             voltages=results.voltage[t_idx, :],
+        return diagram_widget.colour_results(voltages=results.voltage[t_idx, :],
                                              Sbus=results.Sbus[t_idx, :],
                                              types=results.bus_types,
                                              bus_active=bus_active,
@@ -805,6 +790,13 @@ class DiagramsMain(CompiledArraysMain):
                                              hvdc_Pt=-results.hvdc_Pf[t_idx, :],
                                              hvdc_loading=results.hvdc_loading[t_idx, :],
                                              hvdc_active=hvdc_active,
+                                             fluid_node_p2x_flow=results.fluid_node_p2x_flow[t_idx, :],
+                                             fluid_node_current_level=results.fluid_node_current_level[t_idx, :],
+                                             fluid_node_spillage=results.fluid_node_spillage[t_idx, :],
+                                             fluid_node_flow_in=results.fluid_node_flow_in[t_idx, :],
+                                             fluid_node_flow_out=results.fluid_node_flow_out[t_idx, :],
+                                             fluid_path_flow=results.fluid_path_flow[t_idx, :],
+                                             fluid_injection_flow=results.fluid_injection_flow[t_idx, :],
                                              use_flow_based_width=use_flow_based_width,
                                              min_branch_width=min_branch_width,
                                              max_branch_width=max_branch_width,
@@ -839,10 +831,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active for br in branches]
         hvdc_active = [hvdc.active for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.Sbus,
+        return diagram_widget.colour_results(Sbus=results.Sbus,
                                              voltages=results.voltage,
                                              bus_active=bus_active,
                                              loadings=results.loading,
@@ -891,10 +880,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active_prof[t_idx] for br in branches]
         hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             voltages=results.voltage[t_idx, :],
+        return diagram_widget.colour_results(voltages=results.voltage[t_idx, :],
                                              Sbus=results.Sbus[t_idx, :],
                                              types=np.ones(len(buses), dtype=int),
                                              bus_active=bus_active,
@@ -944,10 +930,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active_prof[t_idx2] for br in self.circuit.get_branches_wo_hvdc()]
         hvdc_active = [hvdc.active_prof[t_idx2] for hvdc in self.circuit.hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             voltages=results.voltage[t_idx2, :],
+        return diagram_widget.colour_results(voltages=results.voltage[t_idx2, :],
                                              Sbus=results.Sbus[t_idx2, :],
                                              types=results.bus_types,
                                              bus_active=bus_active,
@@ -995,10 +978,7 @@ class DiagramsMain(CompiledArraysMain):
 
         voltage = np.ones(self.circuit.get_bus_number())
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             voltages=voltage,
+        return diagram_widget.colour_results(voltages=voltage,
                                              Sbus=results.Sbus,
                                              types=results.bus_types,
                                              bus_active=bus_active,
@@ -1045,10 +1025,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active_prof[t_idx] for br in branches]
         hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.S[t_idx],
+        return diagram_widget.colour_results(Sbus=results.S[t_idx],
                                              voltages=results.voltage[t_idx],
                                              types=results.bus_types,
                                              bus_active=bus_active,
@@ -1091,10 +1068,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active for br in branches]
         hvdc_active = [hvdc.active for hvdc in hvdc_lines]
         con_idx = 0
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=results.Sbus[con_idx, :],
+        return diagram_widget.colour_results(Sbus=results.Sbus[con_idx, :],
                                              voltages=results.voltage[con_idx, :],
                                              types=results.bus_types,
                                              bus_active=bus_active,
@@ -1140,10 +1114,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [br.active_prof[t_idx] for br in branches]
         hvdc_active = [hvdc.active_prof[t_idx] for hvdc in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             voltages=np.ones(results.nbus, dtype=complex),
+        return diagram_widget.colour_results(voltages=np.ones(results.nbus, dtype=complex),
                                              Sbus=results.S[t_idx, :],
                                              types=results.bus_types,
                                              bus_active=bus_active,
@@ -1190,10 +1161,7 @@ class DiagramsMain(CompiledArraysMain):
         br_active = [elm.active_prof[t_idx] if t_idx is not None else elm.active for elm in branches]
         hvdc_active = [elm.active_prof[t_idx] if t_idx is not None else elm.active for elm in hvdc_lines]
 
-        return diagram_widget.colour_results(buses=buses,
-                                             branches=branches,
-                                             hvdc_lines=hvdc_lines,
-                                             Sbus=np.zeros(nbus, dtype=complex),
+        return diagram_widget.colour_results(Sbus=np.zeros(nbus, dtype=complex),
                                              voltages=np.ones(nbus, dtype=complex),
                                              bus_active=bus_active,
                                              Sf=np.zeros(nbr, dtype=complex),
@@ -1228,10 +1196,6 @@ class DiagramsMain(CompiledArraysMain):
 
         cmap_text = self.ui.palette_comboBox.currentText()
         cmap = self.cmap_dict[cmap_text]
-
-        buses = self.circuit.buses
-        branches = self.circuit.get_branches_wo_hvdc()
-        hvdc_lines = self.circuit.hvdc_lines
 
         if current_study == sim.PowerFlowDriver.tpe.value:
             if t_idx is None:

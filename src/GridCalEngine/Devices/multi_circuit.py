@@ -1426,7 +1426,7 @@ class MultiCircuit(Assets):
 
             devices_by_type = dict()
 
-            for elm in self.injection_items():
+            for elm in self.get_injection_devices_iter():
 
                 if elm.bus is not None:
                     if group_type == DeviceType.AreaDevice:
@@ -1621,7 +1621,7 @@ class MultiCircuit(Assets):
         val = np.zeros(self.get_bus_number(), dtype=complex)
         bus_dict = self.get_bus_index_dict()
 
-        for elm in self.get_injection_devices():
+        for elm in self.get_injection_devices_iter():
             k = bus_dict[elm.bus]
             val[k] = elm.get_S()
 
@@ -1636,7 +1636,7 @@ class MultiCircuit(Assets):
 
         bus_dict = self.get_bus_index_dict()
 
-        for elm in self.get_injection_devices():
+        for elm in self.get_injection_devices_iter():
             k = bus_dict[elm.bus]
             val[:, k] = elm.get_Sprof()
 
@@ -1850,6 +1850,7 @@ class MultiCircuit(Assets):
         :param grid2: MultiCircuit
         :param detailed_profile_comparison: if true, profiles are compared element-wise with the getters
         :param skip_internals: skip non visible properties
+        :param tolerance
         :return: equal?, Logger with the comparison information
         """
         logger = Logger()

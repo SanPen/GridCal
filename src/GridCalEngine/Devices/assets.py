@@ -618,6 +618,9 @@ class Assets:
         """
         try:
             self._lines.remove(obj)
+
+            self.delete_groupings_with_object(obj=obj)
+
         except ValueError:
             pass
 
@@ -661,6 +664,7 @@ class Assets:
         """
         try:
             self._dc_lines.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
 
@@ -718,6 +722,7 @@ class Assets:
         """
         try:
             self._transformers2w.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
 
@@ -775,6 +780,7 @@ class Assets:
         """
         try:
             self._hvdc_lines.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
 
@@ -825,6 +831,7 @@ class Assets:
         """
         try:
             self._vsc_devices.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
 
@@ -868,6 +875,7 @@ class Assets:
         """
         try:
             self._upfc_devices.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
 
@@ -920,6 +928,7 @@ class Assets:
         """
         try:
             self._switch_devices.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
 
@@ -1056,6 +1065,7 @@ class Assets:
 
         try:
             self._windings.remove(obj)
+            self.delete_groupings_with_object(obj=obj)
         except ValueError:
             pass
 
@@ -3255,15 +3265,30 @@ class Assets:
         """
         self._contingencies.append(obj)
 
-    def delete_contingency(self, obj):
+    def delete_contingency(self, obj, del_group: bool = False):
         """
         Delete zone
         :param obj: index
+        :param del_group: Delete group if empty?
         """
         try:
             self._contingencies.remove(obj)
         except ValueError:
             pass
+
+        if del_group:
+            to_del = list()
+            for grp in self.contingency_groups:
+                found = False
+                for elm in self.contingencies:
+                    if elm.group == grp:
+                        found = True
+
+                if not found:
+                    to_del.append(grp)
+
+            for grp in to_del:
+                self.delete_contingency_group(grp)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Contingency group
@@ -3447,15 +3472,30 @@ class Assets:
         """
         self._investments.append(obj)
 
-    def delete_investment(self, obj: dev.Investment):
+    def delete_investment(self, obj: dev.Investment, del_group: bool = False):
         """
         Delete zone
         :param obj: index
+        :param del_group: delete the group?
         """
         try:
             self._investments.remove(obj)
         except ValueError:
             pass
+
+        if del_group:
+            to_del = list()
+            for grp in self.investments_groups:
+                found = False
+                for elm in self.investments:
+                    if elm.group == grp:
+                        found = True
+
+                if not found:
+                    to_del.append(grp)
+
+            for grp in to_del:
+                self.delete_investment_groups(grp)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Remedial action
@@ -3487,7 +3527,7 @@ class Assets:
         """
         self._remedial_actions.append(obj)
 
-    def delete_remedial_action(self, obj):
+    def delete_remedial_action(self, obj, del_group: bool = False):
         """
         Delete RemedialAction
         :param obj: index
@@ -3496,6 +3536,20 @@ class Assets:
             self._remedial_actions.remove(obj)
         except ValueError:
             pass
+
+        if del_group:
+            to_del = list()
+            for grp in self.remedial_action_groups:
+                found = False
+                for elm in self.remedial_actions:
+                    if elm.group == grp:
+                        found = True
+
+                if not found:
+                    to_del.append(grp)
+
+            for grp in to_del:
+                self.delete_remedial_action_group(grp)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Remedial Actions group
@@ -3909,7 +3963,7 @@ class Assets:
         Delete area
         :param obj: Area
         """
-        for elm in self.injection_items():
+        for elm in self.get_injection_devices_iter():
             if elm.facility == obj:
                 elm.facility = None
 
@@ -4484,18 +4538,28 @@ class Assets:
         for branch_list in self.get_branch_lists():
             try:
                 branch_list.remove(obj)
+                self.delete_groupings_with_object(obj=obj)
             except ValueError:  # element not found ...
                 pass
 
     def get_branches_wo_hvdc(self) -> list[BRANCH_TYPES]:
         """
-        Return all the branch objects.
+        Return all the real branch objects.
         :return: lines + transformers 2w + hvdc
         """
         lst = list()
         for dev_list in self.get_branch_lists_wo_hvdc():
             lst += dev_list
         return lst
+
+    def get_branches_wo_hvdc_iter(self) -> Generator[BRANCH_TYPES, None, None]:
+        """
+        Iterator all the real branch objects.
+        :return: lines + transformers 2w + hvdc
+        """
+        for dev_list in self.get_branch_lists_wo_hvdc():
+            for elm in dev_list:
+                yield elm
 
     def get_branches_wo_hvdc_names(self) -> StrVec:
         """
@@ -4611,6 +4675,25 @@ class Assets:
             T[i] = bus_dict[elm.bus_to]
         return F, T
 
+    def delete_groupings_with_object(self, obj: BRANCH_TYPES, delete_groups: bool = True):
+        """
+        Delete the dependencies that may come with a branch
+        :param obj: branch object or any object
+        :param delete_groups: delete empty groups too?
+        :return:
+        """
+        for elm in self.contingencies:
+            if elm.device_idtag == obj.idtag:
+                self.delete_contingency(elm, del_group=delete_groups)
+
+        for elm in self.remedial_actions:
+            if elm.device_idtag == obj.idtag:
+                self.delete_remedial_action(elm, del_group=delete_groups)
+
+        for elm in self.investments:
+            if elm.device_idtag == obj.idtag:
+                self.delete_investment(elm, del_group=delete_groups)
+
     def get_hvdc_FT(self) -> Tuple[IntVec, IntVec]:
         """
         get the from and to arrays of indices of HVDC lines
@@ -4683,7 +4766,7 @@ class Assets:
             elms += lst
         return elms
 
-    def injection_items(self) -> Generator[INJECTION_DEVICE_TYPES, None, None]:
+    def get_injection_devices_iter(self) -> Generator[INJECTION_DEVICE_TYPES, None, None]:
         """
         Get a list of all devices that can inject or subtract power from a node
         :return: List of EditableDevice

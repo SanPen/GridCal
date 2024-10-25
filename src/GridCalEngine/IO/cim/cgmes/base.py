@@ -142,7 +142,11 @@ class Base:
         return len(self.references_to_me) > 0
 
     def parse_dict(self, data: Dict[str, str], logger: DataLogger):
+        """
 
+        :param data:
+        :param logger:
+        """
         self.parsed_properties = data
 
         for prop_name, prop_value in data.items():

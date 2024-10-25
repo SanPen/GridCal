@@ -813,19 +813,17 @@ class LpProblem:
         self.solver = solver
         return status
 
-    def startClock(self):
+    def startClock(self) -> None:
         "initializes properties with the current time"
         self.solutionCpuTime = -clock()
         self.solutionTime = -time()
 
-    def stopClock(self):
+    def stopClock(self) -> None:
         "updates time wall time and cpu time"
         self.solutionTime += time()
         self.solutionCpuTime += clock()
 
-    def sequentialSolve(
-            self, objectives, absoluteTols=None, relativeTols=None, solver=None, debug=False
-    ):
+    def sequentialSolve(self, objectives, absoluteTols=None, relativeTols=None, solver=None, debug=False):
         """
         Solve the given Lp problem with several objective functions.
 
@@ -837,18 +835,18 @@ class LpProblem:
            the constraints should be +ve for a minimise objective
         :param relativeTols: the list of relative tolerances applied to the constraints
         :param solver: the specific solver to be used, defaults to the default solver.
-
+        :param debug
         """
         # TODO Add a penalty variable to make problems elastic
         # TODO add the ability to accept different status values i.e. infeasible etc
 
-        if not (solver):
+        if not solver:
             solver = self.solver
-        if not (solver):
+        if not solver:
             solver = LpSolverDefault
-        if not (absoluteTols):
+        if not absoluteTols:
             absoluteTols = [0] * len(objectives)
-        if not (relativeTols):
+        if not relativeTols:
             relativeTols = [1] * len(objectives)
         # time it
         self.startClock()
@@ -873,7 +871,7 @@ class LpProblem:
         """
         resolves an Problem using the same solver as previously
         """
-        if not (solver):
+        if not solver:
             solver = self.solver
         if self.resolveOK:
             return self.solver.actualResolve(self, **kwargs)
@@ -901,9 +899,13 @@ class LpProblem:
         return len(self.constraints)
 
     def getSense(self):
+        """
+
+        :return:
+        """
         return self.sense
 
-    def assignStatus(self, status, sol_status=None):
+    def assignStatus(self, status: int, sol_status: int = None) -> bool:
         """
         Sets the status of the model after solving.
         :param status: code for the status of the model

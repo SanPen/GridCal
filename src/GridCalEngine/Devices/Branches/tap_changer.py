@@ -385,7 +385,7 @@ class TapChanger:
 
         if self._negative_low:
             self.asymmetry_angle = float(asymmetry_angle)  # assymetry angle (Theta)
-            self._total_positions = int(high-low+1)  # total number of positions
+            self._total_positions = int(high - low + 1)  # total number of positions
             self.dV = float(stepVoltageIncrement / 100)  # voltage increment in p.u.
             self.neutral_position = int(neutral - low + 1)  # neutral position
             self.normal_position = int(normal - low + 1)  # normal position
@@ -394,7 +394,7 @@ class TapChanger:
 
         else:
             self.asymmetry_angle = float(asymmetry_angle)  # assymetry angle (Theta)
-            self._total_positions = int(high-low+1)  # total number of positions
+            self._total_positions = int(high - low + 1)  # total number of positions
             self.dV = float(stepVoltageIncrement / 100)  # voltage increment in p.u.
             self.neutral_position = int(neutral)  # neutral position
             self.normal_position = int(normal)  # normal position
@@ -424,7 +424,7 @@ class TapChanger:
             step = self.tap_position + low - 1
         else:
             low = 0
-            high = self.total_positions-1
+            high = self.total_positions - 1
             normal = self.normal_position
             neutral = self.neutral_position
             sVI = self.dV * 100

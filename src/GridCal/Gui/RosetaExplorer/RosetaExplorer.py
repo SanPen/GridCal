@@ -1,24 +1,38 @@
-import gc
+# GridCal
+# Copyright (C) 2015 - 2024 Santiago Peñate Vera
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 3 of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 import os.path
 from typing import List, Union
 import webbrowser
-import darkdetect
 import numpy as np
 import pandas as pd
-import GridCal.ThirdParty.qdarktheme as qdarktheme
 # Engine imports
 
 # GUI imports
 from GridCal.Gui.gui_functions import get_list_model, get_logger_tree_model
 
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtGui, QtCore
 from GridCal.Gui.messages import *
-from GridCal.Gui.RosetaExplorer.MainWindow import *
+from GridCal.Gui.RosetaExplorer.MainWindow import Ui_mainWindow, QMainWindow
 from GridCal.Gui.RosetaExplorer.roseta_objects_model import RosetaObjectsModel, ObjectsModelOld
 from GridCal.Gui.TreeModelViewer.TreeModelViewer import TreeModelViewerGUI
-
+from GridCal.Gui.gui_functions import add_menu_entry
+from GridCal.Gui.object_model import ObjectsModel
+from GridCal.Gui.pandas_model import PandasModel
 from GridCalEngine.IO.cim.cgmes.cgmes_circuit import CgmesCircuit
-from GridCalEngine.IO.cim.cgmes.cgmes_enums import cgmesProfile
 from GridCalEngine.IO.raw.devices.psse_circuit import PsseCircuit
 from GridCalEngine.IO.cim.db.db_handler import DbHandler
 from GridCalEngine.data_logger import DataLogger
@@ -136,6 +150,12 @@ class RosetaExplorerGUI(QMainWindow):
 
         self.ui.dbTablesListView.clicked.connect(self.on_look_up_db_class_click)
 
+        # context menu
+        self.ui.propertiesTableView.customContextMenuRequested.connect(self.show_objects_context_menu)
+
+        # Set context menu policy to CustomContextMenu
+        self.ui.propertiesTableView.setContextMenuPolicy(QtGui.Qt.ContextMenuPolicy.CustomContextMenu)
+
         self.UNLOCK()
         self.update_combo_boxes()
 
@@ -187,7 +207,7 @@ class RosetaExplorerGUI(QMainWindow):
         """
         Properly update te combo boxes
         """
-        if type(self.circuit) == PsseCircuit:
+        if isinstance(self.circuit, PsseCircuit):
             # we do this first so that the model changing does not trigger the on_combo_box_text_change function
             if self.db_handler.psse_lookup_db.last_file_opened in self.db_handler.psse_lookup_db.list_of_db_files:
                 idx = self.db_handler.psse_lookup_db.list_of_db_files.index(
@@ -198,7 +218,7 @@ class RosetaExplorerGUI(QMainWindow):
             self.ui.availableDBsComboBox.setModel(get_list_model(self.db_handler.psse_lookup_db.list_of_db_files))
             self.ui.availableDBsComboBox.setCurrentIndex(idx)
 
-        elif type(self.circuit) == CgmesCircuit:
+        elif isinstance(self.circuit, CgmesCircuit):
 
             # we do this first so that the model changing does not trigger the on_combo_box_text_change function
             if self.db_handler.cgmes_lookup_db.last_file_opened in self.db_handler.cgmes_lookup_db.list_of_db_files:
@@ -454,12 +474,12 @@ class RosetaExplorerGUI(QMainWindow):
         """
         name = self.ui.availableDBsComboBox.currentText()
 
-        if type(self.circuit) == PsseCircuit:
+        if isinstance(self.circuit, PsseCircuit):
             self.db_handler.psse_lookup_db.read_db_file(name)
             self.ui.dbTablesListView.setModel(get_list_model(self.db_handler.psse_lookup_db.get_structures_names()))
             self.on_look_up_db_class_click()
 
-        elif type(self.circuit) == CgmesCircuit:
+        elif isinstance(self.circuit, CgmesCircuit):
             self.db_handler.cgmes_lookup_db.read_db_file(name)
             self.ui.dbTablesListView.setModel(get_list_model(self.db_handler.cgmes_lookup_db.get_structures_names()))
             self.on_look_up_db_class_click()
@@ -473,12 +493,12 @@ class RosetaExplorerGUI(QMainWindow):
         if len(self.ui.dbTablesListView.selectedIndexes()) > 0:
             elm_type = self.ui.dbTablesListView.selectedIndexes()[0].data(role=QtCore.Qt.ItemDataRole.DisplayRole)
 
-            if type(self.circuit) == PsseCircuit:
+            if isinstance(self.circuit, PsseCircuit):
                 db = self.db_handler.psse_lookup_db
                 df = getattr(db, elm_type)
                 mdl = PandasModel(data=df)
 
-            elif type(self.circuit) == CgmesCircuit:
+            elif isinstance(self.circuit, CgmesCircuit):
                 objects = self.db_handler.cgmes_lookup_db.circuit.elements_by_type.get(elm_type, [])
                 if len(objects) > 0:
                     editable_headers = {p.property_name: p for p in objects[0].get_properties()}
@@ -501,6 +521,37 @@ class RosetaExplorerGUI(QMainWindow):
         else:
             self.ui.dbTableView.setModel(None)
 
+    def show_objects_context_menu(self, pos: QtCore.QPoint):
+        """
+        Show diagrams list view context menu
+        :param pos: Relative click position
+        """
+        context_menu = QtWidgets.QMenu(parent=self.ui.propertiesTableView)
+
+        add_menu_entry(menu=context_menu,
+                       text="Copy",
+                       icon_path=":/Icons/icons/copy.svg",
+                       function_ptr=self.copy_table_to_clipboard)
+
+    def copy_table_to_clipboard(self) -> None:
+        """
+        Copy objects model to the clipboard
+        """
+        mdl = self.ui.propertiesTableView.model()
+
+        if isinstance(mdl, QtCore.QSortFilterProxyModel):
+            mdl = mdl.sourceModel()
+
+        if isinstance(mdl, RosetaObjectsModel):
+            mdl.copy_to_clipboard()
+            info_msg("Copied table to clipboard!")
+        elif isinstance(mdl, ObjectsModel):
+            mdl.copy_to_clipboard()
+            info_msg("Copied table to clipboard!")
+        elif isinstance(mdl, PandasModel):
+            mdl.copy_to_clipboard()
+            info_msg("Copied table to clipboard!")
+
     @staticmethod
     def show_docs():
         """
@@ -520,36 +571,3 @@ class RosetaExplorerGUI(QMainWindow):
         :return:
         """
         pass
-
-
-def runRosetaExplorer(use_native_dialogues=False):
-    """
-    Main function to run the GUI
-    :return:
-    """
-    import sys
-    qdarktheme.enable_hi_dpi()
-    app = QApplication()
-    # app.setStyle('Fusion')  # ['Breeze', 'Oxygen', 'QtCurve', 'Windows', 'Fusion']
-
-    # Apply the complete dark theme to your Qt App.
-    qdarktheme.setup_theme(
-        theme='auto',
-        custom_colors={
-            "primary": "#00aa88ff",
-            "primary>list.selectionBackground": "#00aa88be"
-        }
-    )
-
-    # dark = QDarkPalette(None)
-    # dark.set_app(app)
-
-    window = RosetaExplorerGUI()
-    h = 740
-    window.resize(int(1.61 * h), h)  # golden ratio :)
-    window.show()
-    sys.exit(app.exec_())
-
-
-if __name__ == "__main__":
-    runRosetaExplorer()

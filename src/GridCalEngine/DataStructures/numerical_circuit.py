@@ -24,7 +24,7 @@ from GridCalEngine.Devices import RemedialAction
 from GridCalEngine.basic_structures import Logger
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.basic_structures import Vec, IntVec, CxVec
-from GridCalEngine.enumerations import BranchImpedanceMode, BusMode
+from GridCalEngine.enumerations import BranchImpedanceMode, BusMode, ContingencyOperationTypes
 import GridCalEngine.Topology.topology as tp
 import GridCalEngine.Topology.simulation_indices as si
 
@@ -494,12 +494,12 @@ class NumericalCircuit:
                 structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
 
                 if structure is not None:
-                    if cnt.prop == 'active':
+                    if cnt.prop == ContingencyOperationTypes.Active:
                         if revert:
                             structure.active[idx] = int(not bool(cnt.value))
                         else:
                             structure.active[idx] = int(cnt.value)
-                    elif cnt.prop == '%':
+                    elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                         if revert:
                             structure.p[idx] /= float(cnt.value / 100.0)
                         else:
@@ -528,12 +528,12 @@ class NumericalCircuit:
                 structure, idx = self.structs_dict.get(cnt.device_idtag, (None, 0))
 
                 if structure is not None:
-                    if cnt.prop == 'active':
+                    if cnt.prop == ContingencyOperationTypes.Active:
                         if revert:
                             structure.active[idx] = int(not bool(cnt.value))
                         else:
                             structure.active[idx] = int(cnt.value)
-                    elif cnt.prop == '%':
+                    elif cnt.prop == ContingencyOperationTypes.PowerPercentage:
                         # TODO Cambiar el acceso a P por una función (o función que incremente- decremente porcentaje)
                         assert not isinstance(structure, ds.HvdcData)  # TODO Arreglar esto
                         dev_injections = np.zeros(structure.size())

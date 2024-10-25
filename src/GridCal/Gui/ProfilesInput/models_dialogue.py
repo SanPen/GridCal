@@ -449,7 +449,7 @@ class ModelsInputGUI(QtWidgets.QDialog):
                                        device=elm.name,
                                        device_property=str(t))
 
-        for elm in main_grid.injection_items():
+        for elm in main_grid.get_injection_devices_iter():
             if not elm.bus.active:
                 elm.active = False
                 logger.add_warning(msg="Inconsistent active state",

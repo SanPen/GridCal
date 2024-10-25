@@ -3253,9 +3253,9 @@ class SchematicWidget(BaseDiagramWidget):
         self.recolour_mode()
 
     def colour_results(self,
-                       buses: List[Bus],
-                       branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
-                       hvdc_lines: List[HvdcLine],
+                       # buses: List[Bus],
+                       # branches: List[Union[Line, DcLine, Transformer2W, Winding, UPFC, VSC]],
+                       # hvdc_lines: List[HvdcLine],
                        Sbus: CxVec,
                        bus_active: IntVec,
                        Sf: CxVec,
@@ -3274,6 +3274,13 @@ class SchematicWidget(BaseDiagramWidget):
                        ma: Vec = None,
                        theta: Vec = None,
                        Beq: Vec = None,
+                       fluid_node_p2x_flow: Vec = None,
+                       fluid_node_current_level: Vec = None,
+                       fluid_node_spillage: Vec = None,
+                       fluid_node_flow_in: Vec = None,
+                       fluid_node_flow_out: Vec = None,
+                       fluid_path_flow: Vec = None,
+                       fluid_injection_flow: Vec = None,
                        use_flow_based_width: bool = False,
                        min_branch_width: int = 5,
                        max_branch_width=5,
@@ -3282,9 +3289,6 @@ class SchematicWidget(BaseDiagramWidget):
                        cmap: palettes.Colormaps = None):
         """
         Color objects based on the results passed
-        :param buses: list of matching bus objects
-        :param branches: list of Branches without HVDC
-        :param hvdc_lines: list of HVDC lines
         :param Sbus: Buses power (MVA)
         :param bus_active: Bus active status
         :param Sf: Branches power from the "from" bus (MVA)
@@ -3303,6 +3307,13 @@ class SchematicWidget(BaseDiagramWidget):
         :param ma: branch phase shift angle (rad)
         :param theta: branch tap module (p.u.)
         :param Beq: Branch equivanet susceptance (p.u.)
+        :param fluid_node_p2x_flow: P2X flow rate (m3)
+        :param fluid_node_current_level: Current level (m3)
+        :param fluid_node_spillage: Spillage (m3)
+        :param fluid_node_flow_in: Flow rate (m3)
+        :param fluid_node_flow_out: Flow rate (m3)
+        :param fluid_injection_flow: Injection rate (m3)
+        :param fluid_path_flow: fluid flow (m3)
         :param use_flow_based_width: use branch width based on the actual flow?
         :param min_branch_width: Minimum branch width [px]
         :param max_branch_width: Maximum branch width [px]
@@ -3318,19 +3329,7 @@ class SchematicWidget(BaseDiagramWidget):
         vabs = np.abs(voltages)
         vang = np.angle(voltages, deg=True)
         vnorm = (vabs - vmin) / vrng
-
-        if Sbus is not None:
-            if len(Sbus) > 0:
-                Pabs = np.abs(Sbus)
-                mx = Pabs.max()
-                if mx != 0.0:
-                    Pnorm = Pabs / mx
-                else:
-                    Pnorm = np.zeros(len(buses))
-            else:
-                Pnorm = np.zeros(len(buses))
-        else:
-            Pnorm = np.zeros(len(buses))
+        nbus = self.circuit.get_bus_number()
 
         voltage_cmap = viz.get_voltage_color_map()
         loading_cmap = viz.get_loading_color_map()
@@ -3348,8 +3347,8 @@ class SchematicWidget(BaseDiagramWidget):
         bus_types = ['', 'PQ', 'PV', 'Slack', 'PQV', 'P']
         max_flow = 1
 
-        if len(buses) == len(vnorm):
-            for i, bus in enumerate(buses):
+        if nbus == len(vnorm):
+            for i, bus in enumerate(self.circuit.buses):
 
                 # try to find the diagram object of the DB object
                 graphic_object = self.graphics_manager.query(bus)
@@ -3414,8 +3413,8 @@ class SchematicWidget(BaseDiagramWidget):
                 else:
                     Sfnorm = Sfabs
 
-                if len(branches) == len(Sf):
-                    for i, branch in enumerate(branches):
+                if self.circuit.get_branch_number_wo_hvdc() == len(Sf):
+                    for i, branch in enumerate(self.circuit.get_branches_wo_hvdc_iter()):
 
                         # try to find the diagram object of the DB object
                         graphic_object = self.graphics_manager.query(branch)
@@ -3426,8 +3425,8 @@ class SchematicWidget(BaseDiagramWidget):
 
                                 if use_flow_based_width:
                                     w = int(
-                                        np.floor(
-                                            min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width)))
+                                        np.floor(min_branch_width + Sfnorm[i] * (max_branch_width - min_branch_width))
+                                    )
                                 else:
                                     w = graphic_object.pen_width
 
@@ -3502,12 +3501,13 @@ class SchematicWidget(BaseDiagramWidget):
                               "Did you change the numbe rof devices? If so, re-run the simulation.")
                     return
 
+        # HVDC lines
         if hvdc_Pf is not None:
 
             hvdc_sending_power_norm = np.abs(hvdc_Pf) / (max_flow + 1e-20)
 
-            if len(hvdc_lines) == len(hvdc_Pf):
-                for i, elm in enumerate(hvdc_lines):
+            if self.circuit.get_hvdc_number() == len(hvdc_Pf):
+                for i, elm in enumerate(self.circuit.hvdc_lines):
 
                     # try to find the diagram object of the DB object
                     graphic_object = self.graphics_manager.query(elm)
@@ -3575,6 +3575,45 @@ class SchematicWidget(BaseDiagramWidget):
             else:
                 error_msg("HVDC results length differs from the number of HVDC results. \n"
                           "Did you change the numbe rof devices? If so, re-run the simulation.")
+
+        # fluid paths
+        if fluid_path_flow is not None:
+
+            if self.circuit.get_fluid_paths_number() == len(fluid_path_flow):
+                for i, elm in enumerate(self.circuit.fluid_paths):
+
+                    # try to find the diagram object of the DB object
+                    graphic_object = self.graphics_manager.query(elm)
+
+                    if graphic_object:
+                        graphic_object.set_api_object_color()
+                        graphic_object.set_arrows_with_fluid_flow(flow=fluid_path_flow[i])
+
+        # fluid nodes
+        if fluid_node_current_level is not None:
+
+            if self.circuit.get_fluid_nodes_number() == len(fluid_node_current_level):
+                for i, elm in enumerate(self.circuit.fluid_nodes):
+
+                    # try to find the diagram object of the DB object
+                    graphic_object = self.graphics_manager.query(elm)
+
+                    if graphic_object:
+                        graphic_object.set_api_object_color()
+                        graphic_object.set_fluid_values(
+                            i=i,
+                            Vm=vabs[i],
+                            Va=vang[i],
+                            P=Sbus[i].real if Sbus is not None else None,
+                            Q=Sbus[i].imag if Sbus is not None else None,
+                            tpe=bus_types[types[i]] if types is not None else None,
+                            fluid_node_p2x_flow=fluid_node_p2x_flow[i] if fluid_node_p2x_flow is not None else None,
+                            fluid_node_current_level=fluid_node_current_level[
+                                i] if fluid_node_current_level is not None else None,
+                            fluid_node_spillage=fluid_node_spillage[i] if fluid_node_spillage is not None else None,
+                            fluid_node_flow_in=fluid_node_flow_in[i] if fluid_node_flow_in is not None else None,
+                            fluid_node_flow_out=fluid_node_flow_out[i] if fluid_node_flow_out is not None else None,
+                        )
 
     def get_selected(self) -> List[Tuple[ALL_DEV_TYPES, QGraphicsItem]]:
         """
@@ -3784,6 +3823,61 @@ class SchematicWidget(BaseDiagramWidget):
                     except ValueError:
                         # use regular plots
                         df.plot(ax=ax_1)
+
+                plt.legend()
+                fig.suptitle(api_object.name, fontsize=20)
+
+                # plot the profiles
+                plt.show()
+        else:
+            info_msg("There are no time series, so nothing to plot :/")
+
+    def plot_fluid_node(self, i: int, api_object: FluidNode):
+        """
+        Plot branch results
+        :param i: bus index
+        :param api_object: Bus API object
+        :return:
+        """
+        fig = plt.figure(figsize=(12, 8))
+        ax_1 = fig.add_subplot(211)
+        ax_1.set_title('Capacity', fontsize=14)
+        ax_1.set_ylabel('State [m3]', fontsize=11)
+
+        ax_2 = fig.add_subplot(212, sharex=ax_1)
+        ax_2.set_title('Time', fontsize=14)
+        ax_2.set_ylabel('Flow [m3/s]', fontsize=11)
+
+        # set time
+        x = self.circuit.get_time_array()
+
+        if x is not None:
+            if len(x) > 0:
+
+                # search drivers for voltage data
+                for driver, results in self.gui.session.drivers_results_iter():
+                    if results is not None:
+                        if isinstance(results, OptimalPowerFlowTimeSeriesResults):
+
+                            # plot the nodal fluid level
+                            table = results.mdl(result_type=ResultTypes.FluidCurrentLevel)
+                            table.plot_device(ax=ax_1, device_idx=i, title="Optimal power flow")
+
+                            # plot the nodal flows
+                            data = np.empty((len(table.index_c), 4))
+                            data[:, 0] = results.fluid_node_flow_in[:, i]
+                            data[:, 1] = results.fluid_node_flow_out[:, i]
+                            data[:, 2] = results.fluid_node_p2x_flow[:, i]
+                            data[:, 3] = results.fluid_node_spillage[:, i]
+                            df = pd.DataFrame(
+                                data=data,
+                                index=table.index_c,
+                                columns=['Flow in', 'Flow out', 'P2X', 'Spillage']
+                            )
+                            try:
+                                df.plot(ax=ax_2, legend=True, stacked=False)
+                            except TypeError:
+                                print('No numeric data to plot...')
 
                 plt.legend()
                 fig.suptitle(api_object.name, fontsize=20)

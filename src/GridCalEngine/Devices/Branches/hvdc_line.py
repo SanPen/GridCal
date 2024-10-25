@@ -145,7 +145,7 @@ class HvdcLine(BranchParent):
                  overload_cost=1000.0, min_firing_angle_f=-1.0, max_firing_angle_f=1.0, min_firing_angle_t=-1.0,
                  max_firing_angle_t=1.0, contingency_factor=1.0, protection_rating_factor: float = 1.4,
                  control_mode: HvdcControlType = HvdcControlType.type_1_Pset, dispatchable=True, angle_droop=0,
-                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned, n_lines: int = 1,
+                 capex=0, opex=0, build_status: BuildStatus = BuildStatus.Commissioned,
                  dc_link_voltage: float = 200):
         """
         HVDC Line model
@@ -202,7 +202,7 @@ class HvdcLine(BranchParent):
 
         self.dc_link_voltage = float(dc_link_voltage)
 
-        self.n_lines = int(n_lines)
+        # self.n_lines = int(n_lines)
 
         self.angle_droop = float(angle_droop)
 
@@ -243,8 +243,6 @@ class HvdcLine(BranchParent):
         self._Vset_t_prof: Vec = Profile(default_value=Vset_t, data_type=float)
         self._angle_droop_prof: Vec = Profile(default_value=angle_droop, data_type=float)
 
-
-
         # Line locations
         self._locations: LineLocations = LineLocations()
 
@@ -259,9 +257,9 @@ class HvdcLine(BranchParent):
         self.register(key='angle_droop', units='MW/deg', tpe=float, definition='Power/angle rate control',
                       profile_name='angle_droop_prof')
 
-        self.register(key='n_lines', units='', tpe=int,
-                      definition='Number of parallel lines between the converter stations. '
-                                 'The rating will be equally divided')
+        # self.register(key='n_lines', units='', tpe=int,
+        #               definition='Number of parallel lines between the converter stations. '
+        #                          'The rating will be equally divided')
 
         self.register(key='Vset_f', units='p.u.', tpe=float, definition='Set voltage at the from side',
                       profile_name='Vset_f_prof')

@@ -173,6 +173,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         Event handler for mouse press events.
         """
         super().mousePressEvent(event)
+        self.parent.mousePressEvent(event)
         self.editor.disableMove = True
         self.update_position_at_the_diagram()  # always update
 
@@ -184,6 +185,7 @@ class VoltageLevelGraphicItem(GenericDiagramWidget, QGraphicsEllipseItem):
         Event handler for mouse release events.
         """
         super().mouseReleaseEvent(event)
+        self.parent.mouseReleaseEvent(event)
         self.editor.disableMove = True
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
