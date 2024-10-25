@@ -27,6 +27,7 @@ from PySide6 import QtGui, QtWidgets
 from matplotlib.colors import LinearSegmentedColormap
 import GridCal.Gui.gui_functions as gf
 import GridCal.Gui.Visualization.visualization as viz
+from GridCal.Gui.Diagrams.SchematicWidget.Substation.bus_graphics import BusGraphicItem
 from GridCal.Gui.general_dialogues import LogsDialogue
 from GridCal.Gui.Diagrams.SchematicWidget.schematic_widget import SchematicWidget
 from GridCal.Gui.Diagrams.MapWidget.grid_map_widget import MapWidget
@@ -932,9 +933,10 @@ class SimulationsMain(TimeEventsMain):
                         if isinstance(diagram_widget, SchematicWidget):
 
                             for i, bus, graphic_object in diagram_widget.get_buses():
-                                if graphic_object.any_short_circuit():
-                                    sel_buses.append(i)
-                                    self_short_circuit_types.append(graphic_object.sc_type)
+                                if isinstance(graphic_object, BusGraphicItem):
+                                    if graphic_object.any_short_circuit():
+                                        sel_buses.append(i)
+                                        self_short_circuit_types.append(graphic_object.sc_type)
 
                     if len(sel_buses) > 1:
                         error_msg("GridCal only supports one short circuit bus at the time", "Short circuit")

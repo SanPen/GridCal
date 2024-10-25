@@ -51,13 +51,13 @@ class BarTerminalItem(QGraphicsRectItem):
         """
 
         QGraphicsRectItem.__init__(self, QRectF(-6.0, -6.0, h, w), parent)
-        self.setCursor(QCursor(Qt.CrossCursor))
+        self.setCursor(QCursor(Qt.CursorShape.CrossCursor))
 
         # Properties:
         self.color = ACTIVE['color']
         self.pen_width = 2
         self.style = ACTIVE['style']
-        self.setBrush(Qt.darkGray)
+        self.setBrush(Qt.GlobalColor.darkGray)
         self.setPen(QPen(self.color, self.pen_width, self.style))
 
         # terminal parent object
@@ -142,6 +142,14 @@ class BarTerminalItem(QGraphicsRectItem):
             del self._hosting_connections[graphic_obj]
         else:
             print(f'No such hosting connection {self.name} -> {graphic_obj}')
+
+    @property
+    def hosting_connections(self):
+        """
+        Getter for hosting connections
+        :return:
+        """
+        return self._hosting_connections
 
     def update(self, rect: Union[QRectF, QRect] = ...):
         """

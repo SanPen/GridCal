@@ -14,14 +14,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, NonlinearOPFResults
+from __future__ import annotations
 from GridCalEngine.basic_structures import *
 from GridCalEngine.Simulations import *
 from GridCalEngine.IO import *
 from GridCalEngine.Devices import *
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures import *
 from GridCalEngine.enumerations import *
-from GridCalEngine.Topology.detect_substations import detect_substations
 
 
 def open_file(filename: Union[str, List[str]]) -> MultiCircuit:
@@ -133,6 +132,81 @@ def power_flow_ts(grid: MultiCircuit,
     return driver.results
 
 
+def short_circuit(grid: MultiCircuit,
+                  fault_index: int,
+                  fault_type=FaultType.LG,
+                  pf_options: PowerFlowOptions = PowerFlowOptions(),
+                  pf_results: PowerFlowResults | None = None) -> ShortCircuitResults:
+    """
+    Run short circuit
+    :param grid: MultiCircuit instance
+    :param fault_index: Bus fault index
+    :param fault_type: Short circuit FaultType
+    :param pf_options: Power Flow Options instance (optional)
+    :param pf_results: PowerFlowResults (optional, if none, a power flow is run)
+    :return: Short circuit results
+    """
+    if pf_results is None:
+        pf_results = power_flow(grid=grid,
+                                options=pf_options)
+
+    sc_options = ShortCircuitOptions(bus_index=fault_index,
+                                     fault_type=fault_type)
+
+    sc = ShortCircuitDriver(grid=grid,
+                            options=sc_options,
+                            pf_options=pf_options,
+                            pf_results=pf_results)
+    sc.run()
+
+    return sc.results
+
+
+def continuation_power_flow(grid: MultiCircuit,
+                            options: ContinuationPowerFlowOptions = None,
+                            pf_options: PowerFlowOptions = PowerFlowOptions(),
+                            pf_results: PowerFlowResults | None = None) -> ShortCircuitResults:
+    """
+    Run continuation power flow circuit
+    :param grid: MultiCircuit instance
+    :param options: ContinuationPowerFlowOptions instance (optional)
+    :param pf_options: Power Flow Options instance (optional)
+    :param pf_results: PowerFlowResults (optional, if none, a power flow is run)
+    :return: Short circuit results
+    """
+    if pf_results is None:
+        pf_results = power_flow(grid=grid,
+                                options=pf_options)
+
+    # declare the CPF options
+    if options is None:
+        options = ContinuationPowerFlowOptions(step=0.001,
+                                               approximation_order=CpfParametrization.ArcLength,
+                                               adapt_step=True,
+                                               step_min=0.00001,
+                                               step_max=0.2,
+                                               error_tol=1e-3,
+                                               tol=1e-6,
+                                               max_it=20,
+                                               stop_at=CpfStopAt.Full,
+                                               verbose=False)
+
+    # We compose the target direction
+    base_power = pf_results.Sbus / grid.Sbase
+    vc_inputs = ContinuationPowerFlowInput(Sbase=base_power,
+                                           Vbase=pf_results.voltage,
+                                           Starget=base_power * 2)
+
+    # declare the CPF driver and run
+    vc = ContinuationPowerFlowDriver(grid=grid,
+                                     options=options,
+                                     inputs=vc_inputs,
+                                     pf_options=pf_options)
+    vc.run()
+
+    return vc.results
+
+
 def acopf(grid: MultiCircuit,
           pf_options: PowerFlowOptions = PowerFlowOptions(),
           opf_options: OptimalPowerFlowOptions = OptimalPowerFlowOptions(),
@@ -155,6 +229,22 @@ def acopf(grid: MultiCircuit,
                                   pf_init=pf_init)
 
     return acopf_res
+
+
+def lin_opf(grid: MultiCircuit,
+            options: OptimalPowerFlowOptions = OptimalPowerFlowOptions()) -> OptimalPowerFlowResults:
+    """
+    Run Linear Optimal Power Flow
+    :param grid: MultiCircuit instance
+    :param options: Optimal Power Flow Options instance (optional)
+    :return: Linear Optimal Power Flow results
+    """
+
+    # declare the snapshot opf
+    opf_driver = OptimalPowerFlowDriver(grid=grid, options=options)
+    opf_driver.run()
+
+    return opf_driver.results
 
 
 def contingencies_ts(circuit: MultiCircuit,

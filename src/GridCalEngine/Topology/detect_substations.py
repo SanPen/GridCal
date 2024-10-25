@@ -14,15 +14,17 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-from typing import List, Union
+from __future__ import annotations
+from typing import List, Union, TYPE_CHECKING
 import numpy as np
 import GridCalEngine.Devices as dev
 from GridCalEngine.Devices.types import BRANCH_TYPES
-from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from GridCalEngine.Topology.topology import find_islands, get_adjacency_matrix
-from GridCalEngine.basic_structures import IntVec, Logger
+from GridCalEngine.basic_structures import IntVec
 from scipy.sparse import lil_matrix
+
+if TYPE_CHECKING:
+    from GridCalEngine.Devices.multi_circuit import MultiCircuit
 
 
 def get_bus_group_substation(bus_indices: IntVec, buses: List[dev.Bus]) -> Union[dev.Substation, None]:

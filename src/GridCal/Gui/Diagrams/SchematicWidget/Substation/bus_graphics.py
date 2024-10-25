@@ -587,7 +587,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
             self.api_object.active = not self.api_object.active
 
             # change the Branches state (snapshot)
-            for host in self._terminal._hosting_connections:
+            for host in self._terminal.hosting_connections:
                 if host.api_object is not None:
                     host.set_enable(val=self.api_object.active)
 
@@ -602,7 +602,7 @@ class BusGraphicItem(GenericDiagramWidget, QtWidgets.QGraphicsRectItem):
                     self.editor.set_active_status_to_profile(self.api_object, override_question=True)
 
                     # change the Branches state (time series)
-                    for host in self._terminal._hosting_connections:
+                    for host in self._terminal.hosting_connections:
                         if host.api_object is not None:
                             self.editor.set_active_status_to_profile(host.api_object, override_question=True)
 
