@@ -20,6 +20,7 @@ from GridCalEngine.Simulations import *
 from GridCalEngine.IO import *
 from GridCalEngine.Devices import *
 from GridCalEngine.DataStructures import *
+from GridCalEngine.Topology import *
 from GridCalEngine.enumerations import *
 
 
