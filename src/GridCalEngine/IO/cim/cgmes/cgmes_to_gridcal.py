@@ -302,7 +302,7 @@ def get_gcdev_buses(cgmes_model: CgmesCircuit,
     if slack_id is None:
         logger.add_error(msg="Couldn't find referencePriority 1 in the SynchronousMachines.",
                          device_class="SynchronousMachine",
-                         device_property="referencePriority")  # TODO error check
+                         device_property="referencePriority")
 
     # dictionary relating the TopologicalNode uuid to the gcdev CalculationNode
     calc_node_dict: Dict[str, gcdev.Bus] = dict()
@@ -899,7 +899,6 @@ def get_gcdev_generators(cgmes_model: CgmesCircuit,
 
                     if technology:
                         gcdev_elm.technologies.append(gcdev.Association(api_object=technology, value=1.0))
-                        # gcdev_model.add_generator_fuel()
                 else:
                     logger.add_error(msg='SynchronousMachine has no generating unit',
                                      device=cgmes_elm.rdfid,
@@ -1022,7 +1021,7 @@ def get_gcdev_ac_lines(cgmes_model: CgmesCircuit,
                                                                            Sbase=Sbase)
 
                 current_rate = rates_dict.get(cgmes_elm.uuid, None)  # A
-                if current_rate:
+                if current_rate and cgmes_elm.BaseVoltage is not None:
                     # rate in MVA = kA * kV * sqrt(3)
                     rate = np.round((current_rate / 1000.0) * cgmes_elm.BaseVoltage.nominalVoltage * 1.73205080756888,
                                     4)
@@ -1187,9 +1186,6 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                         windings[i - 1] = pte
             windings = [x for x in windings if x is not None]
 
-            # windings = get_windings(cgmes_elm)
-            # windings: List[PowerTransformerEnd] = list(cgmes_elm.references_to_me['PowerTransformerEnd'])
-
             rate_mva = rates_dict.get(cgmes_elm.uuid, 9999.0)  # min PATL rate in MW/MVA
 
             calc_nodes, cns = find_connections(cgmes_elm=cgmes_elm,
@@ -1206,12 +1202,9 @@ def get_gcdev_ac_transformers(cgmes_model: CgmesCircuit,
                     cn_f = cns[0]
                     cn_t = cns[1]
 
-                    # v1 = windings[0].BaseVoltage.nominalVoltage
-                    # v2 = windings[1].BaseVoltage.nominalVoltage
                     HV = windings[0].ratedU
                     LV = windings[1].ratedU
-                    # HV = max(v1, v2)
-                    # LV = min(v1, v2)
+
                     # get per unit values
                     r, x, g, b, r0, x0, g0, b0 = get_pu_values_power_transformer(cgmes_elm, Sbase)
                     rated_s = windings[0].ratedS
@@ -1559,8 +1552,6 @@ def get_gcdev_shunts(cgmes_model: CgmesCircuit,
                     B=B * cgmes_elm.sections,
                     G0=G0 * cgmes_elm.sections,
                     B0=B0 * cgmes_elm.sections,
-                    # Bmax=B * cgmes_elm.maximumSections,
-                    # Bmin=B,
                     active=True,
                 )
                 gcdev_model.add_shunt(bus=calc_node, api_obj=gcdev_elm, cn=cn)
@@ -1690,7 +1681,6 @@ def get_gcdev_switches(cgmes_model: CgmesCircuit,
                     bus_to=calc_node_t,
                     rate=op_rate,
                     rated_current=rated_current,
-                    # is_open=cgmes_elm.open,   # not used
                     retained=cgmes_elm.retained,
                     normal_open=cgmes_elm.normalOpen
                 )
@@ -1830,21 +1820,13 @@ def get_gcdev_busbars(cgmes_model: CgmesCircuit,
                                                logger=logger)
 
             if len(calc_nodes) == 1 or len(cns) == 1:
-                # calc_node = calc_nodes[0]
-                cn = cns[0]
 
                 vl_type = cgmes_model.get_class_type("VoltageLevel")
-                bay_type = cgmes_model.get_class_type("Bay")
                 container = cgmes_elm.EquipmentContainer
                 if isinstance(container, vl_type):
                     vl = container
-                    substation = container.Substation
-                elif isinstance(container, bay_type):
-                    vl = None
-                    substation = container.VoltageLevel.Substation
                 else:
                     vl = None
-                    substation = None
 
                 cn = cn_look_up.get_busbar_cn(bb_id=cgmes_elm.uuid)
                 bus = cn_look_up.get_busbar_bus(bb_id=cgmes_elm.uuid)
@@ -1964,21 +1946,12 @@ def cgmes_to_gridcal(cgmes_model: CgmesCircuit,
     Sbase = gc_model.Sbase
     cgmes_model.emit_progress(70)
     cgmes_model.emit_text("Converting CGMES to Gridcal")
-    # busbar_dict = parse_bus_bars(cgmes_model, circuit, logger)
-    # parse_ac_line_segment(cgmes_model, circuit, busbar_dict, logger)
-    # parse_power_transformer(cgmes_model, circuit, busbar_dict, logger)
-    # parse_switches(cgmes_model, circuit, busbar_dict, logger)
-    # parse_loads(cgmes_model, circuit, busbar_dict, logger)
-    # parse_shunts(cgmes_model, circuit, busbar_dict, logger)
-    # parse_generators(cgmes_model, circuit, busbar_dict, logger)
 
     get_gcdev_countries(cgmes_model, gc_model)
 
     get_gcdev_community(cgmes_model, gc_model)
 
     get_gcdev_substations(cgmes_model, gc_model)
-
-    vl_dict = get_gcdev_voltage_levels(cgmes_model, gc_model, logger)
 
     cn_look_up = CnLookup(cgmes_model)
 
