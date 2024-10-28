@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+from __future__ import annotations
 
 import pandas as pd
 import numpy as np
@@ -30,12 +31,12 @@ from GridCalEngine.Devices.Parents.editable_device import DeviceType
 class VSC(ControllableBranchParent):
 
     def __init__(self,
-                 bus_from: Bus = None,
-                 bus_to: Bus = None,
-                 cn_from: ConnectivityNode = None,
-                 cn_to: ConnectivityNode = None,
+                 bus_from: Bus | None = None,
+                 bus_to: Bus | None = None,
+                 cn_from: ConnectivityNode | None = None,
+                 cn_to: ConnectivityNode | None = None,
                  name='VSC',
-                 idtag=None,
+                 idtag: str | None = None,
                  code='',
                  active=True,
                  r=0.0001,
